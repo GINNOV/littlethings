@@ -1,0 +1,12 @@
+Short:        A 68000-assembler with integrated editor
+Uploader:     trulsson student docs uu se (Erik Trulsson)
+Architecture: m68k-amigaos
+
+
+
+This is a quite nice 68000 assembler with a very nice integrated editor.
+Note that it *only* handles 68000 code, there is no support for 68020
+or later CPUs. 
+One bug that I have found is that when tell it to try to make instructions
+PC relative it attempts to do so with BSET/BCLR also which results in
+illegal instructions.

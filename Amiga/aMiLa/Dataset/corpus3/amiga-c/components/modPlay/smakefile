@@ -1,0 +1,10 @@
+OBJS= modPlay.o example.o ptplayer/ptplayer.o
+
+example: $(OBJS)
+   sc link to example with <<
+$(OBJS)
+<
+
+modPlay.o: modPlay.c
+example.o: example.c modPlay.h
+

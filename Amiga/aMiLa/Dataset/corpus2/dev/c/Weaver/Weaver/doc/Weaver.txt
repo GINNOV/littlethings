@@ -1,0 +1,548 @@
+Weaver (C) 2008 J.v.d.Loo
+Weaver (C) 2009 J.v.d.Loo & Frank Wille
+
+Documentation  written  by  Joerg  -  if  Frank would have written it we
+would now look at a five line documentation... ;) SCNR Frank! ;)
+
+
+Foreword:
+---------
+Weaver was initially designed to support AROS only.
+As  a  direct result of the close collaboration with Frank Wille, Weaver
+is  now  able to support different targets and is in addition able to be
+launched on different hosts.
+
+The  enclosed binaries were compiled using vbcc 0.9a (AmigaOS3, MorphOS,
+AmigaOS4), gcc 3.3.1 (AROS) and cl 15.0 (aka VC++ 9.0, Windows).
+For  other  hosts,  such  as  NetBSD,  or  for  a Linux derivate, try to
+contact Frank and ask him for a compiled version.
+
+
+Purpose of Weaver:
+------------------
+Allows  you to create a source code composed in C for the creation of an
+AmigaOS3,  AROS,  MorphOS  and AmigaOS4 shared library (frame) where the
+needed information to build such a library are taken from a SFD file.
+In  addition,  it  can produce for the AROS target the end-user required
+CLIB,  DEFINE,  PROTO  format  files.  In  addition,  for the OS4 target
+Weaver  assists  you  in  order  to create the required interface format
+file, the 68k-stubs include file and the inline4 include file.
+
+Weaver's  command  line  interface  is platform independent but follows,
+nonetheless,  the AmigaOS2 style in order to pass parameters. That means
+that  even  under  NetBSD or Windows the command line parameters are the
+same  as  if  you  were using an Amiga flavour while still utilising the
+underlying file system.
+
+Before  you can make use of those by Weaver created source codes, please
+make  sure  that  you  have  installed SDI-Headers (not required for the
+AROS  builds),  because Weaver creates source codes basing on the header
+files coming with SDI-Headers (for AmigaOS3, MorphOS and AmigaOS4).
+
+In  the  'os-include' drawer of this archive you'll find the SDI_Headers
+include files in case you are searching for them.
+
+In  addition,  ensure  that  these header files have been stored in your
+compiler's root-include directory so that something like this will work:
+
+#include <SDI_lib.h>
+
+If that is done, we can continue.
+
+Type 'weaver' on its own and it shows:
+
+weaver FROM/A,TO/K,LIBFRAME/S,CLIB/S,DEFINE/S,PROTO/S,SDIFRAME/S,SDI/S,
+       IFACE/S,68K/S,INLINE/S,VERBOSE/S
+
+FROM      - source SFD file.
+TO        - destination file.
+            Keyword TO must be specified.
+LIBFRAME  - create the AROS library frame (default).
+CLIB      - create AROS CLIB include file.
+DEFINE    - create AROS DEFINE include file.
+PROTO     - create PROTO (main) include file covering all
+            supported targets.
+SDIFRAME  - create the universal SDI-Headers library frame
+            that allows you to create a library frame for
+            OS3, MorphOS and OS4 by using SDI-Headers.
+SDI       - create SDI-Header required prototypes
+            and stubs for OS3/MorphOS/OS4 library creation.
+IFACE     - create OS4 interface.
+68K       - create OS4 68k stubs.
+INLINE    - create OS4 INLINE4 macros (synonyms).
+VERBOSE   - show something...
+
+
+
+Creating of the required prerequisites:
+---------------------------------------
+As  you  can  see  from the above output, Weaver relies on so called SFD
+files (super(?) function description).
+SFD  files  are  the  common  description  files for describing a shared
+library and its function on OS3 and MorphOS.
+Since  AROS doesn't need SFD files to create include files but all other
+Amiga  flavours,  this  format  was  chosen  in  order  to have a simple
+configuration  file  from which the required information can be taken. A
+side  effect  is that by using a SFD file you can easily support AROS if
+you  created  already  a  library  by  using SDI-Headers when you follow
+these rules:
+
+Your  library  functions  (routines)  are not directly combined with the
+library  frame's  source  code. That means that you have different files
+for the functions and library frame and headers.
+Let's say you have two functions, one called Add() and one called Sub().
+Store  these  functions  and its codes in a from the library frame (that
+we  call  simply  "lib.c") seperated file, called "functions.c". Include
+this file in "lib.c" or link it to "lib.o". Both ways work.
+Normally, using SDI-Headers you declare a library function like this:
+
+LIBFUNC ULONG Add( REG( d0, ULONG a), REG( d1, ULONG b) )
+{
+ ...
+}
+
+For  the  AROS  port  you  then only need to define LIBFUNC to something
+empty:
+
+#ifdef __AROS__
+#undef LIBFUNC
+#define LIBFUNC
+#endif
+
+Then,  your  code  works with SDI-Headers and Weaver and most important,
+you are able to reuse the same code for different platforms!
+
+
+Preparations before Weaver should be invoked:
+---------------------------------------------
+You  already  should  have  written your functions with the 68k register
+usage   as  shown  above.  Use  "SDI-compiler.h"  to  simplify  REGISTER
+attributes. Note that the only registers you should use are:
+
+D0 to D7
+and
+A0 to A5
+
+If  you  can,  avoid  the use of the register A4 (on 68k it contains the
+pointer  to  the  data  section  (small data model)) and A5 (local stack
+frame used by C/C++ compilers).
+Ax  registers  are suitable for pointers and addresses, Dx registers for
+values.
+
+
+Once  you notate your functions as shown above, you should pay attention
+at naming your functions.
+Weaver  relies  on the genuine names of your functions and will use them
+"as  such". That means that you should think about unique names for your
+functions, which will make it in the SFD file.
+Let's  assume  you're  writing  a  Net-Stack  and  you want to name your
+library  "netstack"  and it has got a function called "Push". Do not use
+the  function  "Push"  "as  it", because already a library function with
+the   same   name   could  exist.  Use  something  unique,  for  example
+"NetStackPush".
+Weaver  can  only  address operations to the name you provide in the SFD
+file  and  this  name  must  be  exactly written as your function name -
+otherwise  you put yourself into the trouble to edit everything per hand
+later - and nothing is then anymore automatically created.
+You  can,  of course, use two SFD files. One for developing the library,
+where  this  SFD file never leaves your hard disk and one SFD file meant
+for the public.
+For  example,  if  your NetStack's push function is called Push, you can
+create  two  SFD  files  where  one  uses  the real function name (here:
+"Push")  but  in  the  SFD  file  meant  for the public you rename it to
+"NetStackPush".
+
+Now,  take a look at the SFD file format as published by Commodore Amiga
+and  fill  in  your  SFD file with all relevant entries and functions of
+yours.
+Please  pay attention to the fact that revisions numbers are not allowed
+in  SFD  files,  so  you  have  to  change  the  revision  number in the
+generated lib-frame later.
+
+
+Creating the lib frame:
+-----------------------
+
+For AROS it looks like:
+weaver test_lib.sfd to RAM:lib.c
+ or
+weaver test_lib.sfd to RAM:lib.c libframe
+
+For AmigaOS3, MorphOS or AmigaOS4 use this command line:
+weaver test_lib.sfd to RAM:lib.c sdiframe
+
+In all cases a 'standard' library frame was created.
+NOTE:  The  composed  AmigaOS3,  MorphOS or AmigaOS4 'lib.c' source code
+requires SDI-Headers urgently - in contrast to the AROS build.
+
+Once  you  created  the lib frame, open additional required libraries in
+the  UserInit()  function.  Close  these  libraries in the UserCleanup()
+function.
+
+Define  your  additional  library bases local and global. Local means to
+set  them  into  your  library's  structure  and  global  as  usually as
+ordinary variable.
+
+The  use  of  the  global  variable  is  a  must, unless you encode your
+library's  base as a parameter in each function led to the outside (only
+required  for ROM code), whereby the local one is optionally (encoded in
+your library's base).
+
+
+An example, step by step:
+-------------------------
+
+In  order  to  build  the  C  source  code  which forms the base for the
+library,  you  will  have to write something like this, presupposed that
+the input file (a SFD file) was named 'test_lib.sfd'.
+
+weaver test_lib.sfd to RAM:lib.c [sdiframe]
+
+Assume  that  we  have put some function together which reside in a file
+called   "functions.c"   and  they  require  two  additional  libraries,
+"graphics" and "intuition".
+
+Open  them  in  UserInit()  and  close  them in UserCleanup(). Note that
+UserCleanup()  is also called if you return FALSE from UserInit, i.e. in
+case  a  library  could  not  be  opened  in  UserInit()  and  you leave
+UserInit()  with  FALSE,  the  library  code  will  immediately  fire up
+UserCleanup.  That  saves  you  from  doing  the  necessary  cleanups in
+UserInit().
+Use  for AmigaOS3, MorphOS and AmigaOS4 the provided macros (misc_lib.c)
+in order to open or close libraries.
+
+Now  take  a look at the generated library frame and locate your library
+structure (record).
+Your  library  structure  (record)  is called exactly as you named it in
+the  SFD  file (e.g. ==libname test.library). That is, it would be named
+"TestLibrary".  Please,  don't use an other type then "struct Library *"
+(i.e.  ==basetype struct Library *) for your library's base type because
+nowadays  the  library  base (record) should remain private. If you need
+to  grant  others access to your private library structure then consider
+to  add  a vector for retrieving those library private things instead of
+publishing  that  library  base structure. If your library has to handle
+dynamically  changeable  things,  protect  these  things  with  a signal
+semaphore.   Set  up  this  signal  semaphore  in  UserInit()  and  take
+possession  of it straight from the outset. The same applies if you need
+to  open  other disk resident libraries. Once you took possession of the
+signal   semaphore   in  UserInit(),  any  call  made  to  LibOpen()  or
+LibClose()  -  in  case  you  didn't  forget  to  execute  the necessary
+"OptainSemaphore()"  calls  within  these - will block this caller until
+you   release   the  signal  semaphore  in  UserInit(),  i.e.  all  disk
+operations  have  been  finished  or  your  dynamically things have been
+entirely  set  up.  The reason for this is that LibInit(), LibOpen() and
+LibClose()  are only protected by a Forbid() call but any disk operation
+will  break off the forbid-state. To grant only one user at any one time
+access  at  your  library,  obtaining  exclusive  access  via  a  signal
+semaphore  is  a  good  solution  and  works  around  breaking  off  the
+mentioned Forbid-state.
+
+
+Now further.
+Because in the SFD file these three entries were entered:
+==basetype struct Library *
+==libname test.library
+==base _TestBase
+
+Weaver  will  create  a  library source code (frame) that utilises these
+settings. So, the library base structure (record) is defined as:
+
+struct TestLibrary
+{
+ ...
+ ...
+};
+
+and its library base as:
+
+struct TestLibrary *TestBase = NULL;
+
+
+You  may  add  other items into your TestLibrary structure (record). You
+also   may   add  other  global  variables  behind  "struct  nnnnLibrary
+*nnnnBase = NULL;".
+
+The  basic library structure (record) has got a few entries, for example
+two library bases and one segment list pointer.
+You may extent it if required.
+
+A  SIDE  NOTE:  Your  library  base  name  (==base nnnnBase) must end on
+"Base"  otherwise  weird  things  may happen. We may (or not) revise the
+source  code  in  order to allow other 'suffixes'. Currently you have to
+live with this limitation.
+
+
+For  example,  the  example  source  code  was enhanced in order to take
+"GfxBase"  and  "IntuitionBase"  -  both, locally (TestLibrary structure
+(record)) and globally (file scope).
+
+These two libraries are required by the example source code "functions.c".
+
+In  case  you  want  to create the AROS version of test-library your are
+already able to compile the source codes.
+The  source  code  "functions.c"  is  *NOT*  referenced by the generated
+"lib.c" source code in contrast to the OS3, MorphOS and OS4 builds.
+However,  what  you have to do is to undo the definition of "LIBFUNC" in
+"functions.c"   and   to   start  your  compiler  in  order  to  compile
+"functions.c" and "lib.c".
+Note   that   "functions.c"   requires   SDI-Headers  because  it  is  a
+multiplatform source code suitable for different targets.
+
+
+For  the  other  targets  (OS3, MorphOS and OS4) you will need to create
+the required proto-file, which is basing on SDI-Headers.
+
+weaver test_lib.sfd to ram:test_protos.h sdi
+
+It creates the mentioned file.
+In  case you want to compile the OS3 or MorphOS version, all you need to
+do  is  to  copy  the  file  "misc_lib.c"  next to "lib.c". Then you are
+already able to compile the source codes.
+
+    ***NOTE:***
+    In  case  you  use 'vbcc' for compilation of the OS3 target you must
+    specify  the  switch  '-c99' otherwise the SDI_Headers include files
+    will refuse to work with 'vbcc'!
+
+For OS4 you have to create two additional files.
+
+weaver test_lib.sfd to ram:test_68k.c 68k
+
+This  will create the required 68k-stub file for OS4. Because there is a
+reference  in  "test_68k.c"  to  "<interfaces/test.h>" let's even create
+this file:
+
+weaver test_lib.sfd to ram:test.h iface
+
+Please  note: If you don't install lasting "test.h" into your compiler's
+include  directory,  more  precisely,  into the interface directory, you
+will  need  to change one line of text in "test_68k.c", and this is this
+line:
+
+#include <interfaces/test.h>
+
+Because  "test.h" wasn't yet copied to the compiler's include directory,
+change it to:
+
+#include "test.h"
+
+Once  that  was  done,  you  are  able  to  compile  the  OS4 version of
+"test-library".
+
+An  other  approach  is  used  by the example code: It will instruct the
+compiler  (option  -I)  to  scan  also the current directory for include
+files.
+
+
+Preparing the end-user files.
+-----------------------------
+
+For AROS, Weaver can do this.
+-----------------------------
+makedir clib
+makedir defines
+makedir proto
+
+weaver test_lib.sfd to clib/test_protos.h clib
+weaver test_lib.sfd to defines/test.h define
+weaver test_lib.sfd to proto/test.h proto
+
+Copy   these  files  to  the  corresponding  directory  inside  of  your
+sys-include directory and you're done.
+
+
+AmigaOS4 needs two additional files.
+------------------------------------
+For  an  end-user using AmigaOS4 we need two additional files apart from
+the  interface  file we already created, and that is the INLINE4 include
+file  containing  macros  allowing  the  old-style for calling a library
+function and the prototype file.
+You  can invoke Weaver in order to create this end-user required INLINE4
+macro file by:
+
+weaver test_lib.sfd to ram:inline4/test.h inline
+
+For the prototype file you enter:
+
+weaver test_lib.sfd to ram:proto/test.h proto
+
+By  the way: Weaver creates a prototype file covering OS3, AROS, MorphOS
+and AmigaOS4.
+
+
+For OS3 and MorphOS you need an additional tool, "fd2pragma".
+-------------------------------------------------------------
+"fd2pragma"  can  be found on "Aminet/dev/misc" or within the bin-drawer
+of the 'vbcc' distribution.
+
+Just  as  an  example,  'makedir'  a  directory  in the "RAM Disk" named
+"include".
+Copy the "test_lib.sfd" file into this directory.
+Then,  for  OS3  and  MorphOS,  copy this snippet and execute it in your
+Shell:
+
+- SNIP START -
+; Create the user required header files for test.library -
+; using the SFD file as input for fd2pragma
+
+pcd RAM:include
+
+if exists clib
+skip drawersthere
+endif
+makedir clib
+makedir proto
+makedir inline
+makedir lib
+makedir pragma
+makedir morphos
+makedir morphos/inline
+
+lab drawersthere
+
+
+; -> include/clib
+fd2pragma test_lib.sfd to clib SPECIAL 111
+
+; ->include/pragma
+fd2pragma test_lib.sfd to pragma
+
+; -> include/proto
+fd2pragma test_lib.sfd to proto SPECIAL 38
+
+; -> include/inline
+;   GCC
+fd2pragma test_lib.sfd to inline SPECIAL 40
+;  VBCC
+fd2pragma test_lib.sfd to inline SPECIAL 70
+
+; -> lib/
+fd2pragma test_lib.sfd to lib SPECIAL 12
+
+; -> morphos
+fd2pragma test_lib.sfd to morphos/inline SPECIAL 122
+
+fd2pragma test_lib.sfd to morphos/inline SPECIAL 130
+
+pcd
+- SNIP END-
+
+
+
+Limitations:
+------------
+Register  parameters  get  not  validated. This means that you may write
+any two character combination (e.g. Zz).
+
+Register  parameters  for  64-bit  arguments  which  require on a 32-bit
+target  two  registers  (notation  e.g.  D0-D1)  get  not  supported. In
+addition, 64-bit parameters get not supported at all.
+
+VARARG  functions  get  only  created  as compiler directives and not as
+references to variadic functions that are present in the library itself,
+except for AmigaOS4 and then only for the PPC part.
+
+Resources  and  alike  get not supported because the register A6 is used
+by  such  functions  which causes some troubles when generating the glue
+code  and  we  currently  do  not see the necessity to support resources
+because Weaver is designed for libraries only.
+
+Due  to  the  limitations  given  by  a  SFD  file,  the lonely AmigaOS4
+interface  type  (INTERFACE) supported is "main". There is no chance for
+me to work around this limitation.
+
+The  base  name  must  end  on  "Base", e.g. "==base _TestBase". Without
+specifying  "Base"  (case sensitive) weird things may happen sooner than
+you think. You have been warned.
+
+Wrong line number in case of an error displayed:
+Due  to  the type of parsing it might happen that a wrong line number is
+thrown,  because  often  already  a line of text in front of the current
+caused  trouble  which  might  only  surface while examining the current
+line of text, thus resulting in throwing the wrong line number.
+
+
+Bugs:
+-----
+Some might be there, but none of them surfaced yet!
+What  we  can  tell,  nonetheless,  is  that  VARARG  functions  are not
+supported  at  all,  that means that real "variable argument lists" have
+never  been  encountered  at  least by me (Joerg) in a m68k Amiga shared
+library and thus no reason is given to support VARARGs.
+Please,  don't mix up those functions, which only exist as prototypes in
+the  CLIB  files,  by  which VARARG functions are formed, which call the
+ordinary  lib  functions.  Linear  "variable argument lists", as used in
+the  past,  are  not  guaranteed  to  work  without  (compiler)  patches
+correctly under different ABIs...
+
+
+Compilation notes:
+------------------
+Upon  using  'vbcc'  and building the OS3 target, the switch '-c99' must
+be  specified  urgently! You should also specify a 32bit cpu (e.g. 68020
+-  also  when using 'gcc') otherwise longword multiplications or divides
+may  cause  references  to  unknown  functions  in  case you do not link
+against the compiler's runtime library (for example "vc").
+An  additional  approach  for  the  creation  of a plain MC68000 version
+could  be  achieved  by  using functions of the Utility library but this
+would require in that case OS2.
+
+Upon   creating   a   shared  library  references  to  thread-unsafe  or
+non-reentrant  functions  must be avoided at all events! This means also
+that  you cannot use the ordinary functions of 'libnix' or 'ixemul' when
+using 'gcc'. Use  always  the  switch  '-nostdlib' for 'gcc' in case you
+are  unsure  whether  a  function  in  question  is  reentrant  or  not,
+otherwise you run the risk of corrupting your library.
+For  example,  the  uncritical parts of the "vc" runtime library are the
+32/64   bit   support  functions,  the  ctype  and  the  string  support
+functions.  I would speculate that the same applies to 'gcc'. Do not use
+any other!
+
+A  shared  library is just a collection of functions, not a program with
+a  program  flow  in  sense  of the disk operating system, so you cannot
+compile  it  as  if  you  would  build  an ordinary program. As a direct
+consequence  we  cannot  therefore  make  use of the startup-code, which
+normally  initialises  some  library bases (especially Exec and DOS) and
+opens the input/output terminals (stdin, stdout).
+In  order  to  instruct  the compiler to leave out the startup-code, use
+for 'vbcc' the switch '-nostdlib' and for 'gcc' '-nostartfiles'.
+
+Example calls:
+vc +aos68k -c99 -cpu=68020 -nostdlib lib.c -o out.library          [m68k]
+vc -nostdlib lib.c -o out.library                              [PPC, x86]
+gcc -m68020-60 -nostartfiles -nostdlib lib.c -o out.library        [m68k]
+gcc -nostartfiles -nostdlib lib.c -o out.library               [PPC, x86]
+
+If  you  are  going  to  use floating point operatins you cannot use the
+compiler's  functions  anymore, because the startup-code which opens and
+stores  the  base  pointers  of  the  math-libraries  in question, isn't
+invoked.  This  means  that  you have to use the OS functions 'as such',
+i.e.  opening  of  the  math-libraries  in  question and using their API
+natively  unless  you  decide  to  rebuild  the compiler's references in
+question.
+
+'printf()' and alike...
+...have absolutely no place in a shared library!
+Use  'kprintf'  or,  in  case  of  OS4  DebugPrintF(),  to  output debug
+information.
+Functions  of  the  standard-C-lib  are  not  thread-safe nor reentrant!
+Avoid them by all means!
+
+Small data or large data model?
+A  silly  question. Since a shared library is no program in the sense of
+the disk operating system its native format is 'large'.
+
+
+Credits:
+--------
+The  AROS  version  of  Weaver makes use of a portable snprintf-function
+written by Mark Martinec:
+    http://www.ijs.si/software/snprintf/
+All  other  builds  use  the runtime version of snprintf that come along
+with the compiler which was used for the build in question.
+
+
+
+Have fun,
+
+Frank & Joerg

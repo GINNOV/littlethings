@@ -1,0 +1,1002 @@
+#
+# :ts=8
+#
+
+##############################################################################
+
+.c.o:
+	@echo "Compiling $<"
+	@sc nover $(CFLAGS) objname=$*.o $<
+
+.c.mo:
+	@echo "Compiling $<"
+	@sc nover $(CFLAGS) define=IEEE_FLOATING_POINT_SUPPORT MATH=ieee objname=$*.mo $<
+
+.c.uo:
+	@echo "Compiling $<"
+	@sc nover $(CFLAGS) define=UNIX_PATH_SEMANTICS objname=$*.uo $<
+
+.c.no:
+	@echo "Compiling $<"
+	@sc nover $(CFLAGS) define=SOCKET_SUPPORT define=USERGROUP_SUPPORT idir=netinclude objname=$*.no $<
+
+.asm.o:
+	@echo "Assembling $<"
+	@asm $(AFLAGS) $<
+
+##############################################################################
+
+# You might want to change this to the directory where your operating system
+# header files are stored. On my system, that's "V:include", but you might
+# get lucky with "sc:include" instead, which is the default for SAS/C.
+#INCLUDE_DIR = V:include
+INCLUDE_DIR = sc:include
+
+##############################################################################
+
+ OPTIMIZE	= optimize opttime optschedule optinline 
+#DEBUG		= debug=line noopt define=CHECK_FOR_NULL_POINTERS
+#DEBUG		= debug=line
+ DEBUG		= debug=line define=NDEBUG
+#DEBUG		= debug=sf noopt define=DEBUG
+#DEBUG		= debug=sf noopt define=CHECK_FOR_NULL_POINTERS
+#PROFILE	= profile
+ DATA		= data=faronly
+#CODE		= code=far
+ CPU		= cpu=030
+
+##############################################################################
+
+CFLAGS = \
+	resopt \
+	nover \
+	memorysize=huge \
+	idlen=64 \
+	commentnest \
+	nostackcheck \
+	stringmerge \
+	errorrexx \
+	math=ieee \
+	$(PROFILE) $(OPTIMIZE) $(CODE) $(DATA) $(CPU) \
+	$(DEBUG) \
+	define=__C_MACROS__
+
+AFLAGS = \
+	-d -m2
+
+##############################################################################
+
+LIB_C_OBJS1 = \
+	c.lib_rev.o \
+	ctype_isalnum.o \
+	ctype_isalpha.o \
+	ctype_isascii.o \
+	ctype_isblank.o \
+	ctype_iscntrl.o \
+	ctype_isdigit.o \
+	ctype_isgraph.o \
+	ctype_islower.o \
+	ctype_isprint.o \
+	ctype_ispunct.o \
+	ctype_isspace.o \
+	ctype_isupper.o \
+	ctype_isxdigit.o \
+	ctype_table.o \
+	ctype_tolower.o \
+	ctype_toupper.o \
+	dirent_closedir.o \
+	dirent_opendir.o \
+	dirent_readdir.o \
+	dirent_rewinddir.o \
+	errno_data.o \
+	fcntl_close.o \
+	fcntl_creat.o \
+	fcntl_fcntl.o \
+	fcntl_get_default_file.o \
+	fcntl_lock.o \
+	fcntl_lseek.o \
+	fcntl_open.o \
+	fcntl_read.o \
+	fcntl_write.o \
+	ftw_ftw.o \
+	ftw_nftw.o \
+	inttypes_imaxdiv.o \
+	inttypes_imaxabs.o \
+	inttypes_strtoimax.o \
+	inttypes_strtoumax.o \
+	libgen_basename.o \
+	libgen_dirname.o \
+	locale_init_exit.o \
+	locale_localeconv.o \
+	locale_open_locale.o \
+	locale_setlocale.o \
+	mount_convertinfo.o \
+	mount_fstatfs.o \
+	mount_statfs.o \
+	signal_checkabort.o \
+	signal_data.o \
+	signal_kill.o \
+	signal_mask.o \
+	signal_raise.o \
+	signal_sigaddset.o \
+	signal_sigblock.o \
+	signal_sigemptyset.o \
+	signal_sigmask.o \
+	signal_signal.o \
+	signal_sigprocmask.o \
+	signal_sigsetmask.o \
+	stat_chmod.o \
+	stat_convertfileinfo.o \
+	stat_fchmod.o \
+	stat_fstat.o \
+	stat_lstat.o \
+	stat_lock.o \
+	stat_mkdir.o \
+	stat_rmdir.o \
+	stat_stat.o \
+	stat_umask.o \
+	stdio_asprintf.o \
+	stdio_change_fd_action.o \
+	stdio_change_fd_user_data.o \
+	stdio_clearerr.o \
+	stdio_dropiobreadbuffer.o \
+	stdio_duplicate_fd.o \
+	stdio_examine_fh.o \
+	stdio_fclose.o \
+	stdio_fdhookentry.o \
+	stdio_feof.o \
+	stdio_ferror.o \
+	stdio_fflush.o \
+	stdio_fgetc.o \
+	stdio_fgetpos.o \
+	stdio_fgets.o \
+	stdio_filliobreadbuffer.o \
+	stdio_findvacantfdentry.o \
+	stdio_findvacantiobentry.o \
+	stdio_flockfile.o \
+	stdio_flush.o \
+	stdio_flush_all_files.o \
+	stdio_flushiobwritebuffer.o \
+	stdio_fopen.o \
+	stdio_fprintf.o \
+	stdio_fputc.o \
+	stdio_fputs.o \
+	stdio_fread.o \
+	stdio_freopen.o \
+	stdio_fscanf.o \
+	stdio_fseek.o \
+	stdio_fseeko.o \
+	stdio_fsetpos.o
+
+LIB_C_OBJS2 = \
+	stdio_ftell.o \
+	stdio_ftello.o \
+	stdio_ftrylockfile.o \
+	stdio_funlockfile.o \
+	stdio_fwrite.o \
+	stdio_getc.o \
+	stdio_getc_unlocked.o \
+	stdio_getchar.o \
+	stdio_getchar_unlocked.o \
+	stdio_gets.o \
+	stdio_get_fd.o \
+	stdio_get_file_descriptor.o \
+	stdio_growfdtable.o \
+	stdio_growiobtable.o \
+	stdio_grow_file.o \
+	stdio_initializefd.o \
+	stdio_initializeiob.o \
+	stdio_init_exit.o \
+	stdio_file_init.o \
+	stdio_iobhookentry.o \
+	stdio_lock.o \
+	stdio_locksemaphorename.o \
+	stdio_nostdio.o \
+	stdio_openiob.o \
+	stdio_parent_of_fh.o \
+	stdio_perror.o \
+	stdio_popen.o \
+	stdio_printf.o \
+	stdio_putc.o \
+	stdio_putc_unlocked.o \
+	stdio_putchar.o \
+	stdio_putchar_unlocked.o \
+	stdio_puts.o \
+	stdio_remove.o \
+	stdio_remove_fd_alias.o \
+	stdio_rename.o \
+	stdio_resolve_fd_file.o \
+	stdio_rewind.o \
+	stdio_scanf.o \
+	stdio_setbuf.o \
+	stdio_setvbuf.o \
+	stdio_snprintf.o \
+	stdio_sprintf.o \
+	stdio_sscanf.o \
+	stdio_sscanf_hook_entry.o \
+	stdio_tmpfile.o \
+	stdio_tmpnam.o \
+	stdio_translateioerror.o \
+	stdio_ungetc.o \
+	stdio_unlockfile.o \
+	stdio_vasprintf.o \
+	stdio_vasprintf_hook_entry.o \
+	stdio_vfprintf.o \
+	stdio_vfscanf.o \
+	stdio_vprintf.o \
+	stdio_vsnprintf.o \
+	stdio_vsnprintf_hook_entry.o \
+	stdio_vsprintf.o \
+	stdio_vsprintf_hook_entry.o \
+	stdio_vsscanf.o \
+	stdio_vscanf.o \
+	stdlib_abort.o \
+	stdlib_abs.o \
+	stdlib_alloca.o \
+	stdlib_alloca_cleanup.o \
+	stdlib_alloca_trap.o \
+	stdlib_assertion_failure.o \
+	stdlib_atexit.o \
+	stdlib_atoi.o \
+	stdlib_atol.o \
+	stdlib_atoll.o \
+	stdlib_bsearch.o \
+	stdlib_calloc.o \
+	stdlib_checkdetach.o \
+	stdlib_constructor.o \
+	stdlib_constructor_begin.o \
+	stdlib_default_pool_size.o \
+	stdlib_default_puddle_size.o \
+	stdlib_destructor.o \
+	stdlib_detach.o \
+	stdlib_disablerequesters.o \
+	stdlib_div.o \
+	stdlib_dosbase.o \
+	stdlib_exit.o \
+	stdlib_free.o \
+	stdlib_free_unused_slabs.o \
+	stdlib_decay_unused_slabs.o \
+	stdlib_getdefstacksize.o \
+	stdlib_getenv.o \
+	stdlib_getmemstats.o \
+	stdlib_getsp.o \
+	stdlib_get_errno.o \
+	stdlib_get_slab_usage.o \
+	stdlib_get_slab_allocations.o \
+	stdlib_get_slab_stats.o \
+	stdlib_isresident.o \
+	stdlib_labs.o \
+	stdlib_llabs.o
+
+LIB_C_OBJS3 = \
+	stdlib_ldiv.o \
+	stdlib_lldiv.o \
+	stdlib_lib_main.o \
+	stdlib_lib_startup.o \
+	stdlib_machine_test.o \
+	stdlib_main.o \
+	stdlib_main_stub.o \
+	stdlib_malloc.o \
+	stdlib_math.o \
+	stdlib_mkdtemp.o \
+	stdlib_mkstemp.o \
+	stdlib_mktemp.o \
+	stdlib_modsi3.o \
+	stdlib_mulsi3.o \
+	stdlib_never_free.o \
+	stdlib_osliberror.o \
+	stdlib_oslibversion.o \
+	stdlib_priority.o \
+	stdlib_process_name.o \
+	stdlib_program_name.o \
+	stdlib_putenv.o \
+	stdlib_qsort.o \
+	stdlib_rand.o \
+	stdlib_rand_r.o \
+	stdlib_realloc.o \
+	stdlib_red_black.o \
+	stdlib_resetmemstats.o \
+	stdlib_semaphore.o \
+	stdlib_setenv.o \
+	stdlib_setjmp.o \
+	stdlib_set_errno.o \
+	stdlib_set_process_window.o \
+	stdlib_shell_escape.o \
+	stdlib_showerror.o \
+	stdlib_slab.o \
+	stdlib_slab_max_size.o \
+	stdlib_slab_purge_threshold.o \
+	stdlib_srand.o \
+	stdlib_stacksize.o \
+	stdlib_stack_usage.o \
+	stdlib_arg.o \
+	stdlib_stdio_window_spec.o \
+	stdlib_strtol.o \
+	stdlib_strtoll.o \
+	stdlib_strtoul.o \
+	stdlib_strtoull.o \
+	stdlib_swapstack.o \
+	stdlib_sysbase.o \
+	stdlib_system.o \
+	stdlib_termination_message.o \
+	stdlib_threshold.o \
+	stdlib_utilitybase.o \
+	stdlib_udivsi3.o \
+	stdlib_udivsi4.o \
+	stdlib_umodsi3.o \
+	stdlib_unsetenv.o \
+	strings_ffs.o \
+	strings_strcasecmp.o \
+	strings_strncasecmp.o \
+	string_bcmp.o \
+	string_bcopy.o \
+	string_bzero.o \
+	string_index.o \
+	string_memchr.o \
+	string_memcmp.o \
+	string_memcpy.o \
+	string_memmove.o \
+	string_memset.o \
+	string_rindex.o \
+	string_strcat.o \
+	string_strchr.o \
+	string_strcmp.o \
+	string_strcoll.o \
+	string_strcpy.o \
+	string_strcspn.o \
+	string_strdup.o \
+	string_strerror.o \
+	string_strerror_r.o \
+	string_strlcat.o \
+	string_strlcpy.o \
+	string_strlen.o \
+	string_strncat.o \
+	string_strncmp.o \
+	string_strncpy.o \
+	string_strpbrk.o \
+	string_strrchr.o \
+	string_strspn.o \
+	string_strstr.o \
+	string_strtok.o \
+	string_strtok_r.o \
+	string_strxfrm.o \
+	time_asctime.o \
+	time_asctime_r.o \
+	time_clock.o \
+	time_converttime.o \
+	time_convert_datestamp.o \
+	time_convert_time.o \
+	time_ctime.o \
+	time_ctime_r.o \
+	time_data.o
+
+LIB_C_OBJS4 = \
+	time_days_per_date.o \
+	time_gettimeofday.o \
+	time_gmtime.o \
+	time_gmtime_r.o \
+	time_localtime.o \
+	time_localtime_r.o \
+	time_mktime.o \
+	time_numbertostring.o \
+	time_strftime.o \
+	time_time.o \
+	time_weekday.o \
+	uio_readv.o \
+	uio_writev.o \
+	ulimit_ulimit.o \
+	unistd_access.o \
+	unistd_chdir.o \
+	unistd_chdir_exit.o \
+	unistd_chown.o \
+	unistd_currentpathname.o \
+	unistd_dup.o \
+	unistd_dup2.o \
+	unistd_fchown.o \
+	unistd_fdatasync.o \
+	unistd_fdopen.o \
+	unistd_fileno.o \
+	unistd_fsync.o \
+	unistd_ftruncate.o \
+	unistd_getcwd.o \
+	unistd_getopt.o \
+	unistd_getpid.o \
+	unistd_init_exit.o \
+	unistd_isatty.o \
+	unistd_lchown.o \
+	unistd_link.o \
+	unistd_lockf.o \
+	unistd_readlink.o \
+	unistd_realpath.o \
+	unistd_sleep.o \
+	unistd_symlink.o \
+	unistd_sync_fd.o \
+	unistd_timer.o \
+	unistd_time_delay.o \
+	unistd_truncate.o \
+	unistd_unlink.o \
+	unistd_unlink_retries.o \
+	unistd_usleep.o \
+	utime_utime.o \
+	utsname_uname.o \
+	sas_cxamemcpy.o \
+	sas_cxamemset.o \
+	sas_cxv.o \
+	sas_profile.o
+
+LIB_UNIX_OBJS = \
+	unix.lib_rev.uo \
+	dirent_closedir.uo \
+	dirent_rewinddir.uo \
+	dirent_opendir.uo \
+	dirent_readdir.uo \
+	fcntl_creat.uo \
+	fcntl_fcntl.uo \
+	fcntl_open.uo \
+	fcntl_get_default_file.uo \
+	getopt_getopt_long.uo \
+	mount_convertinfo.uo \
+	mount_statfs.uo \
+	resource_getrlimit.uo \
+	resource_setrlimit.uo \
+	stat_chmod.uo \
+	stat_fstat.uo \
+	stat_lstat.uo \
+	stat_lock.uo \
+	stat_mkdir.uo \
+	stat_rmdir.uo \
+	stat_stat.uo \
+	stdio_ctermid.uo \
+	stdio_fdhookentry.uo \
+	stdio_fflush.uo \
+	stdio_fopen.uo \
+	stdio_init_exit.uo \
+	stdio_file_init.uo \
+	stdio_locksemaphorename.uo \
+	stdio_openiob.uo \
+	stdio_popen.uo \
+	stdio_record_locking.uo \
+	stdio_remove.uo \
+	stdio_rename.uo \
+	stdlib_alloca.uo \
+	stdlib_alloca_cleanup.uo \
+	stdlib_alloca_trap.uo \
+	stdlib_arg.uo \
+	stdlib_expand_wildcard.uo \
+	stdlib_expand_wildcard_check.uo \
+	stdlib_getmemstats.uo \
+	stdlib_main.uo \
+	stdlib_main_stub.uo \
+	stdlib_mkdtemp.uo \
+	stdlib_mkstemp.uo \
+	stdlib_mktemp.uo \
+	stdlib_malloc.uo \
+	stdlib_realloc.uo \
+	stdlib_resetmemstats.uo \
+	stdlib_system.uo \
+	systeminfo_sysinfo.uo \
+	termios_cfgetispeed.uo \
+	termios_cfgetospeed.uo \
+	termios_cfmakeraw.uo \
+	termios_cfsetispeed.uo \
+	termios_cfsetospeed.uo \
+	termios_console_fdhookentry.uo \
+	termios_tcdrain.uo \
+	termios_tcflow.uo \
+	termios_tcflush.uo \
+	termios_tcgetattr.uo \
+	termios_tcsendbreak.uo \
+	termios_tcsetattr.uo \
+	timeb_ftime.uo \
+	uio_readv.uo \
+	uio_writev.uo \
+	unistd_access.uo \
+	unistd_chdir.uo \
+	unistd_chdir_exit.uo \
+	unistd_chown.uo \
+	unistd_common_pathconf.uo \
+	unistd_def_path.uo \
+	unistd_def_path_delimiter.uo \
+	unistd_environ.uo \
+	unistd_execl.uo \
+	unistd_execle.uo \
+	unistd_execlp.uo \
+	unistd_execv.uo \
+	unistd_execve.uo \
+	unistd_execve_env_exit.uo \
+	unistd_execve_env_init.uo \
+	unistd_execve_exit.uo \
+	unistd_execvp.uo \
+	unistd_fpathconf.uo \
+	unistd_getcwd.uo \
+	unistd_lchown.uo \
+	unistd_link.uo \
+	unistd_lockf.uo \
+	unistd_pathconf.uo \
+	unistd_readlink.uo \
+	unistd_realpath.uo \
+	unistd_restorepathname.uo \
+	unistd_setcurrentpath.uo \
+	unistd_strip_double_slash.uo \
+	unistd_symlink.uo \
+	unistd_translatea2u.uo \
+	unistd_translaterel.uo \
+	unistd_translateu2a.uo \
+	unistd_truncate.uo \
+	unistd_ttyname.uo \
+	unistd_ttyname_r.uo \
+	unistd_unix_path_semantics.uo \
+	unistd_unlink.uo \
+	unistd_wildcard_expand.uo \
+	utime_utime.uo
+
+LIB_MATH_OBJS = \
+	complex_carg.mo \
+	complex_cargf.mo \
+	complex_cargl.mo \
+	complex_cimag.mo \
+	complex_cimagf.mo \
+	complex_cimagl.mo \
+	complex_conj.mo \
+	complex_conjf.mo \
+	complex_conjl.mo \
+	complex_creal.mo \
+	complex_crealf.mo \
+	complex_creall.mo \
+	fenv_feclearexcept.mo \
+	fenv_fegetenv.mo \
+	fenv_fegetexceptflag.mo \
+	fenv_fegetround.mo \
+	fenv_feholdexcept.mo \
+	fenv_feraiseexcept.mo \
+	fenv_fesetenv.mo \
+	fenv_fesetexceptflag.mo \
+	fenv_fetestexcept.mo \
+	fenv_fetestround.mo \
+	fenv_feupdateenv.mo \
+	math_acos.mo \
+	math_acosf.mo \
+	math_acosh.mo \
+	math_acoshf.mo \
+	math_asin.mo \
+	math_asinf.mo \
+	math_asinh.mo \
+	math_asinhf.mo \
+	math_atan.mo \
+	math_atan2.mo \
+	math_atan2f.mo \
+	math_atanf.mo \
+	math_atanh.mo \
+	math_atanhf.mo \
+	math_cbrt.mo \
+	math_cbrtf.mo \
+	math_ceil.mo \
+	math_ceilf.mo \
+	math_copysign.mo \
+	math_copysignf.mo \
+	math_cos.mo \
+	math_cosf.mo \
+	math_cosh.mo \
+	math_coshf.mo \
+	math_erf.mo \
+	math_erfc.mo \
+	math_erfcf.mo \
+	math_erff.mo \
+	math_exp.mo \
+	math_exp2.mo \
+	math_exp2f.mo \
+	math_expf.mo \
+	math_expm1.mo \
+	math_expm1f.mo \
+	math_fabs.mo \
+	math_fabsf.mo \
+	math_fdim.mo \
+	math_fdimf.mo \
+	math_floor.mo \
+	math_floorf.mo \
+	math_fma.mo \
+	math_fmaf.mo \
+	math_fmax.mo \
+	math_fmaxf.mo \
+	math_fmin.mo \
+	math_fminf.mo \
+	math_fmod.mo \
+	math_fmodf.mo \
+	math_fpclassify.mo \
+	math_frexp.mo \
+	math_frexpf.mo \
+	math_huge_val.mo \
+	math_huge_valf.mo \
+	math_hypot.mo \
+	math_hypotf.mo \
+	math_ilogb.mo \
+	math_ilogbf.mo \
+	math_inf.mo \
+	math_inff.mo \
+	math_init_exit.mo \
+	math_isfinite.mo \
+	math_isunordered.mo \
+	math_kernel_cosf.mo \
+	math_kernel_sinf.mo \
+	math_kernel_tanf.mo \
+	math_ldexp.mo \
+	math_ldexpf.mo \
+	math_lgamma.mo \
+	math_lgammaf.mo \
+	math_llrint.mo \
+	math_log.mo \
+	math_log10.mo \
+	math_log10f.mo \
+	math_log1p.mo \
+	math_log1pf.mo \
+	math_log2.mo \
+	math_log2f.mo \
+	math_logb.mo \
+	math_logbf.mo \
+	math_logf.mo \
+	math_lrint.mo \
+	math_lrintf.mo \
+	math_lround.mo \
+	math_lroundf.mo \
+	math_modf.mo \
+	math_modff.mo \
+	math_nan.mo \
+	math_nanf.mo \
+	math_nearbyint.mo \
+	math_nearbyintf.mo \
+	math_nextafter.mo \
+	math_nextafterf.mo \
+	math_pow.mo \
+	math_powf.mo \
+	math_remainder.mo \
+	math_remainderf.mo \
+	math_remquo.mo \
+	math_remquof.mo \
+	math_rem_pio2f.mo \
+	math_rint.mo \
+	math_rintf.mo \
+	math_round.mo \
+	math_roundf.mo \
+	math_scalbn.mo \
+	math_scalbnf.mo \
+	math_signbit.mo \
+	math_sin.mo \
+	math_sinf.mo \
+	math_sinh.mo \
+	math_sinhf.mo \
+	math_sqrt.mo \
+	math_sqrtf.mo \
+	math_tan.mo \
+	math_tanf.mo \
+	math_tanh.mo \
+	math_tanhf.mo \
+	math_tgamma.mo \
+	math_tgammaf.mo \
+	math_trunc.mo \
+	math_truncf.mo \
+	stdio_asprintf.mo \
+	stdio_flush.mo \
+	stdio_flush_all_files.mo \
+	stdio_fprintf.mo \
+	stdio_fscanf.mo \
+	stdio_printf.mo \
+	stdio_scanf.mo \
+	stdio_snprintf.mo \
+	stdio_sprintf.mo \
+	stdio_sscanf.mo \
+	stdio_vasprintf.mo \
+	stdio_vfprintf.mo \
+	stdio_vfscanf.mo \
+	stdio_vsscanf.mo \
+	stdio_vscanf.mo \
+	stdio_vprintf.mo \
+	stdio_vsnprintf.mo \
+	stdio_vsprintf.mo \
+	stdlib_atof.mo \
+	stdlib_strtod.mo \
+	stdlib_strtof.mo \
+	time_difftime.mo \
+	sas_cxv52.o \
+	sas_cxv54.o \
+	sas_cxferr.o
+
+LIB_NET_OBJS = \
+	net.lib_rev.no \
+	socket_accept.no \
+	socket_bind.no \
+	socket_check_daemon.no \
+	socket_connect.no \
+	socket_gethostbyaddr.no \
+	socket_gethostbyname.no \
+	socket_gethostid.no \
+	socket_gethostname.no \
+	socket_getnetbyaddr.no \
+	socket_getnetbyname.no \
+	socket_getpeername.no \
+	socket_getprotobyname.no \
+	socket_getprotobynumber.no \
+	socket_getservbyname.no \
+	socket_getservbyport.no \
+	socket_getsockname.no \
+	socket_getsockopt.no \
+	socket_get_descriptor.no \
+	socket_inet_addr.no \
+	socket_inet_aton.no \
+	socket_inet_lnaof.no \
+	socket_inet_makeaddr.no \
+	socket_inet_netof.no \
+	socket_inet_network.no \
+	socket_inet_ntoa.no \
+	socket_init_exit.no \
+	socket_ioctl.no \
+	socket_isdaemon.no \
+	socket_listen.no \
+	socket_obtain_daemon.no \
+	socket_recv.no \
+	socket_recvfrom.no \
+	socket_recvmsg.no \
+	socket_select_signal.no \
+	socket_select.no \
+	socket_wait_select.no \
+	socket_send.no \
+	socket_sendmsg.no \
+	socket_sendto.no \
+	socket_setsockopt.no \
+	socket_shutdown.no \
+	socket_socket.no \
+	socket_hook_entry.no \
+	socket_hstrerror.no \
+	socket_get_h_errno.no \
+	socket_set_h_errno.no \
+	stat_umask.no \
+	systeminfo_sysinfo.no \
+	usergroup_crypt.no \
+	usergroup_data.no \
+	usergroup_endgrent.no \
+	usergroup_endpwent.no \
+	usergroup_getegid.no \
+	usergroup_geteuid.no \
+	usergroup_getgid.no \
+	usergroup_getgrent.no \
+	usergroup_getgrgid.no \
+	usergroup_getgrnam.no \
+	usergroup_getgroups.no \
+	usergroup_getpass.no \
+	usergroup_getpwent.no \
+	usergroup_getpwnam.no \
+	usergroup_getpwuid.no \
+	usergroup_getuid.no \
+	usergroup_initgroups.no \
+	usergroup_init_exit.no \
+	usergroup_rootmode.no \
+	usergroup_setegid.no \
+	usergroup_seteuid.no \
+	usergroup_setgid.no \
+	usergroup_setgrent.no \
+	usergroup_setgroups.no \
+	usergroup_setpwent.no \
+	usergroup_setregid.no \
+	usergroup_setreuid.no \
+	usergroup_setsid.no \
+	usergroup_setuid.no \
+	utsname_uname.no
+
+LIB_DEBUG_OBJS = \
+	debug.lib_rev.o \
+	debug.o \
+	debug_cmpstrexec.o \
+	debug_kcmpstr.o \
+	debug_kdofmt.o \
+	debug_kgetc.o \
+	debug_kgetch1.o \
+	debug_kgetch2.o \
+	debug_kgetchar1.o \
+	debug_kgetchar2.o \
+	debug_kgetnum1.o \
+	debug_kgetnum2.o \
+	debug_kmaygetch.o \
+	debug_kmaygetchar.o \
+	debug_kprintf1.o \
+	debug_kprintf2.o \
+	debug_kputc.o \
+	debug_kputch1.o \
+	debug_kputch2.o \
+	debug_kputchar1.o \
+	debug_kputchar2.o \
+	debug_kputfmt.o \
+	debug_kputs1.o \
+	debug_kputs2.o \
+	debug_kputstr1.o \
+	debug_kputstr2.o \
+	debug_kvprintf1.o \
+	debug_kvprintf2.o \
+	debug_level.o
+
+LIB_AMIGA_OBJS = \
+	amiga.lib_rev.o \
+	amiga_acrypt.o \
+	amiga_addtof.o \
+	amiga_argarraydone.o \
+	amiga_argarrayinit.o \
+	amiga_argint.o \
+	amiga_argstring.o \
+	amiga_beginio.o \
+	amiga_callhook.o \
+	amiga_callhooka.o \
+	amiga_coercemethod.o \
+	amiga_createextio.o \
+	amiga_createport.o \
+	amiga_createstdio.o \
+	amiga_createtask.o \
+	amiga_deleteextio.o \
+	amiga_deleteport.o \
+	amiga_deletestdio.o \
+	amiga_deletetask.o \
+	amiga_domethod.o \
+	amiga_dosupermethod.o \
+	amiga_dotimer.o \
+	amiga_fastrand.o \
+	amiga_freeievents.o \
+	amiga_hookentry.o \
+	amiga_hotkey.o \
+	amiga_invertstring.o \
+	amiga_newlist.o \
+	amiga_rangerand.o \
+	amiga_remtof.o \
+	amiga_rexxvars.o \
+	amiga_setsuperattrs.o \
+	amiga_timedelay.o \
+	amiga_waitbeam.o
+
+##############################################################################
+
+all: setup c.lib unix.lib math.lib net.lib debug.lib amiga.lib startup.o cleanup
+
+clean:
+	-delete \#?.o \#?.mo \#?.no \#?.uo \#?.lib \#?.map
+
+##############################################################################
+
+setup:
+	@echo "Setting up include: assignment"
+	@assign include: include $(INCLUDE_DIR)
+
+cleanup:
+	@echo "Cleaning up include: assignment"
+	@assign include: sc:include
+
+##############################################################################
+
+version:
+	copy clone c.lib_rev.rev amiga.lib_rev.rev
+	copy clone c.lib_rev.rev debug.lib_rev.rev
+	copy clone c.lib_rev.rev m.lib_rev.rev
+	copy clone c.lib_rev.rev m881.lib_rev.rev
+	copy clone c.lib_rev.rev net.lib_rev.rev
+	copy clone c.lib_rev.rev stack.lib_rev.rev
+	copy clone c.lib_rev.rev unix.lib_rev.rev
+	bumprev 1 amiga.lib
+	bumprev 1 c.lib
+	bumprev 1 debug.lib
+	bumprev 1 m.lib
+	bumprev 1 m881.lib
+	bumprev 1 net.lib
+	bumprev 1 stack.lib
+	bumprev 1 unix.lib
+
+##############################################################################
+
+amiga_hookentry.o : amiga_hookentry.asm
+
+amiga_callhooka.o : amiga_callhooka.asm
+
+stdlib_getsp.o : stdlib_getsp.asm
+
+stdlib_setjmp.o : stdlib_setjmp.asm
+
+stdlib_swapstack.o : stdlib_swapstack.asm
+
+##############################################################################
+
+stdlib_main.o : stdlib_main.c
+	@echo "Compiling $<"
+	@sc $(CFLAGS) noprofile objname=$*.o stdlib_main.c
+
+sas_profile.o : sas_profile.c
+	@echo "Compiling $<"
+	@sc $(CFLAGS) noprofile objname=$*.o sas_profile.c
+
+##############################################################################
+
+stdio_vasprintf_hook_debug.o : stdio_vasprintf_hook_entry.c
+	@echo "Compiling $<"
+	@sc $(CFLAGS) define=__USE_MEM_TREES define=__MEM_DEBUG objname=stdio_vasprintf_hook_debug.o stdio_vasprintf_hook_entry.c
+
+stdio_vasprintf_debug.o : stdio_vasprintf.c
+	@echo "Compiling $<"
+	@sc $(CFLAGS) define=__USE_MEM_TREES define=__MEM_DEBUG objname=stdio_vasprintf_debug.o stdio_vasprintf.c
+
+stdlib_alloca_debug.o : stdlib_alloca.c
+	@echo "Compiling $<"
+	@sc $(CFLAGS) define=__USE_MEM_TREES define=__MEM_DEBUG objname=stdlib_alloca_debug.o stdlib_alloca.c
+
+stdlib_calloc_debug.o : stdlib_calloc.c
+	@echo "Compiling $<"
+	@sc $(CFLAGS) define=__USE_MEM_TREES define=__MEM_DEBUG objname=stdlib_calloc_debug.o stdlib_calloc.c
+
+stdlib_free_debug.o : stdlib_free.c
+	@echo "Compiling $<"
+	@sc $(CFLAGS) define=__USE_MEM_TREES define=__MEM_DEBUG objname=stdlib_free_debug.o stdlib_free.c
+
+stdlib_malloc_debug.o : stdlib_malloc.c
+	@echo "Compiling $<"
+	@sc $(CFLAGS) define=__USE_MEM_TREES define=__MEM_DEBUG objname=stdlib_malloc_debug.o stdlib_malloc.c
+
+string_strdup_debug.o : string_strdup.c
+	@echo "Compiling $<"
+	@sc $(CFLAGS) define=__USE_MEM_TREES define=__MEM_DEBUG objname=string_strdup_debug.o string_strdup.c
+
+unistd_getcwd_debug.o : unistd_getcwd.c
+	@echo "Compiling $<"
+	@sc $(CFLAGS) define=__USE_MEM_TREES define=__MEM_DEBUG objname=unistd_getcwd_debug.o unistd_getcwd.c
+
+##############################################################################
+
+c1.lib : $(LIB_C_OBJS1)
+	@date to $@
+
+c2.lib : $(LIB_C_OBJS2)
+	@date to $@
+
+c3.lib : $(LIB_C_OBJS3)
+	@date to $@
+
+c4.lib : $(LIB_C_OBJS4)
+	@date to $@
+
+c.lib : c1.lib c2.lib c3.lib c4.lib
+	@-delete >NIL: $@ T:$@
+	oml T:$@ add $(LIB_C_OBJS1)
+	oml T:$@ add $(LIB_C_OBJS2)
+	oml T:$@ add $(LIB_C_OBJS3)
+	oml T:$@ add $(LIB_C_OBJS4)
+	@copy buf=0 clone T:$@ $@
+	@delete >NIL: T:$@
+
+unix.lib : $(LIB_UNIX_OBJS)
+	@-delete >NIL: $@ T:$@
+	oml T:$@ add $(LIB_UNIX_OBJS)
+	@copy buf=0 clone T:$@ $@
+	@delete >NIL: T:$@
+
+math.lib : $(LIB_MATH_OBJS)
+	@-delete >NIL: $@ T:$@
+	oml T:$@ add $(LIB_MATH_OBJS)
+	@copy buf=0 clone T:$@ $@
+	@delete >NIL: T:$@
+
+net.lib : $(LIB_NET_OBJS)
+	@-delete >NIL: $@ T:$@
+	oml T:$@ add $(LIB_NET_OBJS)
+	@copy buf=0 clone T:$@ $@
+	@delete >NIL: T:$@
+
+debug.lib : $(LIB_DEBUG_OBJS)
+	@-delete >NIL: $@ T:$@
+	oml T:$@ add $(LIB_DEBUG_OBJS)
+	@copy buf=0 clone T:$@ $@
+	@delete >NIL: T:$@
+
+amiga.lib : $(LIB_AMIGA_OBJS)
+	@-delete >NIL: $@ T:$@
+	oml T:$@ add $(LIB_AMIGA_OBJS)
+	@copy buf=0 clone T:$@ $@
+	@delete >NIL: T:$@
+
+##############################################################################
+
+mkid:
+	mkid \#?.(c|h|asm|i) include/\#?.(c|h|asm|i) include/sys/\#?.(c|h|asm|i)
+
+update:
+	mkid -v -u

@@ -1,0 +1,55 @@
+
+    Hi there again.
+
+    Well this is my first bit of code for the disk, It`s a pretty simple
+little demo but the flash graphics and great soundtrack make is seem more
+`professional` than simply bouncing a screen up and down. Unfortunately my
+first demo also has to go in the `fix-someones-code` section as well, even
+though it `works`. Why? Because sometimes when it starts to scroll the screen
+down, it trashes the display, but not always! What basically happens is
+that screen loses some colours and a picture of the CLI/Genam2 screen
+appears in lo-res, classic signs of the BPL pointers pointing to where they
+shouldn`t! Another thing is my interrupt routine. I use the one Mike Cross
+gave, back around ACC3, to update the stars and music routine each frame.
+It works fine but when you exit and the try to call up, say the assemble
+window in Genam2, the Guru pays you a visit! Am I forgetting to reset
+something to it`s original setting when it exits?
+
+    Of course, when you assemble this program, it`s going to work perfectly
+and you`re going to think `Bugs? What`s he talking about!` but I can assure
+you, this routine DOES NOT work correctly. 
+
+    I`ve spent hours trying to debug this (standard practice, eh?) but
+still I can`t find the bug! If anybody out there can see what I`m doing
+wrong, PLEASE TELL ME!
+
+    Well I`m going to leave this little project for now and start a new
+one. It`s half term at the moment so I`ve got a whole week to see how many
+bugs I can pack into a program, before sending it to you for debugging!
+(Joke!) My next venture will be a blitter scroller (thanks to Mike Cross
+again!) and I`m not looking forward to it because I have so far completely
+failed to get the blitter to do anything more adventurous than put a single
+bitplane on the screen. Maybe It will be completed in time to be on the
+same disk as this demo? (But I doubt it!) (Answer - No! 12-02-91)
+
+    Actually the last paragraph has just given my a *great* idea for a
+competition! Why not throw some heavily bugged code (deliberately or
+otherwise) at the readers and get them to debug it! Or maybe ask for the
+best improvement on a basic demo (like mine!), maybe making it smaller,
+faster or better. Hope you like these ideas! (I need the disks!!!)
+
+				Bye for now,
+
+					Neil.
+
+P.s. The fonts used in this demo were not by me, but borrowed from some PD
+     disks I found. I sent them (and a load of others) to Mark (in IFF 
+     format) along with this letter, but I don`t know if he has included 
+     them. Why not have a look on the disk?
+
+P.P.s If my competition idea didn`t win the disks, how about a design-a-logo
+      for an ACC demo (maybe a birthday demo, to celebrate it`s first year?)
+
+
+
+

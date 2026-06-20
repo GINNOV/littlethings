@@ -1,0 +1,215 @@
+#
+# :ts=8
+#
+
+##############################################################################
+
+.c.o:
+	@echo "Compiling $<"
+	@sc nover $(CFLAGS) $<
+
+.c.mo:
+	@echo "Compiling $<"
+	@sc nover $(CFLAGS) objname=$*.mo math=IEEE $<
+
+.asm.o:
+	@echo "Assembling $<"
+	@asm $(AFLAGS) $<
+
+##############################################################################
+
+# You might want to change this to the directory where your operating system
+# header files are stored. On my system, that's "V:include", but you might
+# get lucky with "sc:include" instead, which is the default for SAS/C.
+#INCLUDE_DIR = V:include
+INCLUDE_DIR = sc:include
+
+##############################################################################
+
+# This is where the header files, the startup code and the c.lib files are
+# stored; see below how this prefix is used.
+LIB = /library
+
+STARTUP = $(LIB)/startup.o
+LIBS = $(LIB)/amiga.lib $(LIB)/c.lib $(LIB)/debug.lib
+MATH_LIBS = $(LIB)/math.lib $(LIBS)
+
+##############################################################################
+
+ OPTIMIZE	= optimize opttime optschedule optinline 
+#DEBUG		= debug=line noopt define=CHECK_FOR_NULL_POINTERS
+#DEBUG		= debug=line
+ DEBUG		= debug=line define=NDEBUG
+#DEBUG		= debug=sf noopt
+#DEBUG		= debug=sf noopt define=CHECK_FOR_NULL_POINTERS
+#PROFILE	= profile
+ DATA		= data=faronly
+#CODE		= code=far
+ CPU		= cpu=030
+
+##############################################################################
+
+CFLAGS = \
+	resopt \
+	nover \
+	memorysize=huge \
+	idlen=64 \
+	commentnest \
+	nostackcheck \
+	stringmerge \
+	errorrexx \
+	$(PROFILE) $(OPTIMIZE) $(CODE) $(DATA) $(CPU) $(DEBUG) \
+	math=ieee \
+	define=VERBOSE
+
+AFLAGS = \
+	-d -m2
+
+##############################################################################
+
+all: \
+	setup \
+	test fgets_test iotest sscanf_test printf_test sprintf_test \
+	stack_size_test translate_test strtok_test uname simple \
+	fstat_stdout_test simple_sprintf date_test factorial \
+	execvp_test setlocale rand fstat_test base_dir_nametest \
+	malloc-test slab-test \
+	cleanup
+
+clean:
+	-delete \#?.o \#?.mo \#?.map \
+		test fgets_test iotest sscanf_test printf_test sprintf_test \
+		stack_size_test translate_test strtok_test uname simple \
+		fstat_stdout_test simple_sprintf date_test factorial \
+		execvp_test setlocale rand fstat_test base_dir_nametest \
+		malloc-test slab-test
+
+##############################################################################
+
+setup:
+	@echo "Setting up include: assignment"
+	@assign include: $(LIB)/include $(INCLUDE_DIR)
+
+cleanup:
+	@echo "Cleaning up include: assignment"
+	@assign include: sc:include
+
+##############################################################################
+
+test: test.o
+	@echo "Linking $@"
+	@slink $(STARTUP) $*.o to $@ lib $(LIBS) addsym \
+		map $@.map,fhx fwidth 32 pwidth 32 swidth 32
+
+date_test: date_test.o
+	@echo "Linking $@"
+	@slink $(STARTUP) $*.o to $@ lib $(LIBS) addsym \
+		map $@.map,fhx fwidth 32 pwidth 32 swidth 32
+
+fgets_test: fgets_test.o
+	@echo "Linking $@"
+	@slink $(STARTUP) $*.o to $@ lib $(LIBS) addsym \
+		map $@.map,fhx fwidth 32 pwidth 32 swidth 32
+
+strtok_test: strtok_test.o
+	@echo "Linking $@"
+	@slink $(STARTUP) $*.o to $@ lib $(LIBS) addsym \
+		map $@.map,fhx fwidth 32 pwidth 32 swidth 32
+
+iotest: iotest.o
+	@echo "Linking $@"
+	@slink $(STARTUP) $*.o to $@ lib $(LIBS) addsym \
+		map $@.map,fhx fwidth 32 pwidth 32 swidth 32
+
+sscanf_test: sscanf_test.mo
+	@echo "Linking $@"
+	@slink $(STARTUP) $*.mo to $@ lib $(MATH_LIBS) addsym \
+		map $@.map,fhx fwidth 32 pwidth 32 swidth 32
+
+printf_test: printf_test.mo
+	@echo "Linking $@"
+	@slink $(STARTUP) $*.mo to $@ lib $(MATH_LIBS) addsym \
+		map $@.map,fhx fwidth 32 pwidth 32 swidth 32
+
+sprintf_test: sprintf_test.o
+	@echo "Linking $@"
+	@slink $(STARTUP) $*.o to $@ lib $(LIBS) addsym \
+		map $@.map,fhx fwidth 32 pwidth 32 swidth 32
+
+stack_size_test: stack_size_test.o
+	@echo "Linking $@"
+	@slink $(STARTUP) $*.o to $@ lib $(LIBS) addsym \
+		map $@.map,fhx fwidth 32 pwidth 32 swidth 32
+
+translate_test: translate_test.o
+	@echo "Linking $@"
+	@slink $(STARTUP) $*.o to $@ lib $(LIB)/unix.lib $(LIBS) addsym \
+		map $@.map,fhx fwidth 32 pwidth 32 swidth 32
+
+uname: uname.o
+	@echo "Linking $@"
+	@slink $(STARTUP) $*.o to $@ lib $(LIBS) addsym \
+		map $@.map,fhx fwidth 32 pwidth 32 swidth 32
+
+simple: simple.o
+	@echo "Linking $@"
+	@slink $(STARTUP) $*.o to $@ lib $(LIBS) addsym \
+		map $@.map,fhx fwidth 32 pwidth 32 swidth 32
+
+fstat_stdout_test: fstat_stdout_test.o
+	@echo "Linking $@"
+	@slink $(STARTUP) $*.o to $@ lib $(LIBS) addsym \
+		map $@.map,fhx fwidth 32 pwidth 32 swidth 32
+
+simple_sprintf: simple_sprintf.o
+	@echo "Linking $@"
+	@slink $*.o to $@ lib $(LIBS) addsym \
+		map $@.map,fhx fwidth 32 pwidth 32 swidth 32
+
+factorial: factorial.mo
+	@echo "Linking $@"
+	@slink $(STARTUP) $*.mo to $@ lib $(MATH_LIBS) addsym \
+		map $@.map,fhx fwidth 32 pwidth 32 swidth 32
+
+execvp_test: execvp_test.o
+	@echo "Linking $@"
+	@slink $(STARTUP) $*.o to $@ lib $(LIB)/unix.lib $(LIBS) addsym \
+		map $@.map,fhx fwidth 32 pwidth 32 swidth 32
+
+setlocale: setlocale.o
+	@echo "Linking $@"
+	@slink $(STARTUP) $*.o to $@ lib $(LIBS) addsym \
+		map $@.map,fhx fwidth 32 pwidth 32 swidth 32
+
+rand: rand.o
+	@echo "Linking $@"
+	@slink $(STARTUP) $*.o to $@ lib $(LIBS) addsym \
+		map $@.map,fhx fwidth 32 pwidth 32 swidth 32
+
+fstat_test: fstat_test.o
+	@echo "Linking $@"
+	@slink $(STARTUP) $*.o to $@ lib $(LIBS) addsym \
+		map $@.map,fhx fwidth 32 pwidth 32 swidth 32
+
+base_dir_nametest: base_dir_nametest.o
+	@echo "Linking $@"
+	@slink $(STARTUP) $*.o to $@ lib $(LIBS) addsym \
+		map $@.map,fhx fwidth 32 pwidth 32 swidth 32
+
+malloc-test: malloc-test.mo
+	@echo "Linking $@"
+	@slink $(STARTUP) $*.mo to $@ lib $(MATH_LIBS) addsym \
+		map $@.map,fhx fwidth 32 pwidth 32 swidth 32
+
+slab-test: slab-test.o
+	@echo "Linking $@"
+	@slink $(STARTUP) $*.o to $@ lib $(LIBS) addsym \
+		map $@.map,fhx fwidth 32 pwidth 32 swidth 32
+
+##############################################################################
+
+mkid:
+	mkid \#?.(c|h|asm|i) include/\#?.(c|h|asm|i) include/sys/\#?.(c|h|asm|i)
+
+update:
+	mkid -v -u

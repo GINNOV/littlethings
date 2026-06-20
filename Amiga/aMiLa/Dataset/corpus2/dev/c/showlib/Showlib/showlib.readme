@@ -1,0 +1,47 @@
+Short:        System libraries and devices lister 0.03
+Author:       Gilles Pelletier
+Uploader:     gilles.pelletier@voila.fr (Gilles Pelletier)
+Type:         dev/c
+Version:      0.04 (29-Feb-08)
+Requires:     
+Architecture: m68k-amigaos
+
+Introduction
+~~~~~~~~~~~~
+A simple lister of all libraries and devices present in the system.
+You should assign FD: where fd files are stored to see function names
+in the listing.
+
+Compilation
+~~~~~~~~~~~
+- SASC6.0
+ 
+
+Installation
+~~~~~~~~~~~~
+Just click, or die.
+
+
+Future
+~~~~~~
+none
+
+Known Bugs
+~~~~~~~~~~
+source included, so let's go.
+
+Steps
+~~~~~
+V0.04 -29Feb2008 migthy crash, improved list run, wrong counter
+V0.03 -28Feb2008 devices list
+V0.02 -05Dec1999 function names via fd files.
+V0.01 -23Nov1997 lister
+V0.00 -10Jan1990 first steps
+
+
+Contact address
+~~~~~~~~~~~~~~~
+Any mail, comments, suggestions, documentations are welcome!
+gilles dot pelletier at voila point fr
+
+Only Amiga makes it possible!

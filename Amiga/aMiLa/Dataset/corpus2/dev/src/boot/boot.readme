@@ -1,0 +1,4 @@
+Short:        Assem src of a bootblock w/ filled vectors
+Architecture: m68k-amigaos
+
+

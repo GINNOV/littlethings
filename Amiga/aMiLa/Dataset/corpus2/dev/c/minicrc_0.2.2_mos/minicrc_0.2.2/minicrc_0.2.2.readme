@@ -1,0 +1,14 @@
+Short:    minicrc 0.2.2
+Author:   http://sarovar.org/projects/minicrc/
+Type:     dev/c
+Uploaded: djbase@gmx.de - DJBase
+Requires: MorphOS
+
+
+minicrc is an application that helps to calculate CRC32
+checksums. The package also includes a C++ class for developers.
+
+
+Ported by DJBase - http://www.djbase.de
+
+-----------------------------------------

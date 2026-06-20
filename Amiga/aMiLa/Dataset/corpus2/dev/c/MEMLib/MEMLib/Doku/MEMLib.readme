@@ -1,0 +1,61 @@
+Short:     Port of MEM.Lib for vbcc
+Author:    Michaela Pruess (GatewayBBS@bigfoot.de)
+Uploader:  Michaela Pruess (GatewayBBS@bigfoot.de)
+Kurz:      Portierung der MEM.Lib für vbcc
+Type:      dev/c
+URL:       http://Gateway.To/Gateway5/index.html
+Version:   1.2
+Replaces:  version 1.0
+
+English:   (deutsch, siehe unten)
+
+About:     This is a freeware linklib for vbcc. Included functions
+           for save testing memoryusage.
+           Original by "The Software Distillery". Source included in
+           the original and changed version.
+
+Requires:  Amiga :-)
+           STRINGLIB.Lib, ADOSLIB.Lib
+
+Install:   For use with vbcc see documents from vbcc.
+
+Copyright: For all copyrights see docs in this archive.
+           You have only permission for non-commercial use of this tool.
+           The Aminet has permission to publish this file on all
+           Aminet-sites, Aminet-mirror's and Aminet-CD's.
+           This software is provided as-is, without warranty of any kind,
+           either expressed or implied. In no event will the authoress be
+           liable for direct, indirect, incidental or consequential damages
+           or data loss resulting from the use or application of this software.
+           The entire risk as to the results and performance of this software
+           is assumed by the user. Furthermore, the contents of the archive
+           cannot be altered in any way, although the archive itself can be
+           transmitted electronically via BBS systems or the Internet.
+
+
+
+Deutsch:
+
+Ueber:     Dies ist eine Freeware-Linklib für vbcc, enthält Funktionen
+           zum sicheren Test der Speicherverwaltung.
+           Das Original kommt von der "Software Distillery". Der Source
+           ist im Original und der angepassten Version enthalten.
+
+Benoetigt: Amiga :-)
+           STRINGLIB.Lib, ADOSLIB.Lib
+
+Install.:  Für die Nutzung mit vbcc siehe vbcc-Dokumentation.
+
+Copyright: Für alle Copyright bitte die enthaltenen Doku's beachten.
+           Dies File darf nicht kommerziell benutzt werden, ansonsten
+           ist die Nutzung frei.
+           Das Aminet hat die Erlaubnis zur Verbreitung über alle Server,
+           Mirror's und die AmiNet-CD's.
+           Diese Software wird verbreitet, wie sie ist, ohne eine Garantie
+           jeglicher Art. In keinem Fall, weder direkt noch indirekt ist
+           die Autorin haftbar für Schäden oder Datenverluste die durch die
+           Verwendung dieser Software entstehen. Die Benutzung erfolgt
+           ausschließlich auf eigenes Risiko des Benutzers. Jede Änderung
+           des Archives oder Teilen davon ist verboten. Das Archiv darf
+           auf elektronischm Weg via Mailbox oder Internet verbreitet
+           werden.

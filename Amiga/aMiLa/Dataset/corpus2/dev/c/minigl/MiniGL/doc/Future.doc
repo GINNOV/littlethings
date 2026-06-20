@@ -1,0 +1,25 @@
+Last updated 30-06-02 by Christian Michael.
+
+Ideas for future additions to MiniGL:
+
+Reduction of pr vertex calculations
+----------------------------------- 
+GL_EXT_clip_volume_hint:
+www.opengl.org/developers/documentation/Version1.2/EXTspecs/clip_volume_hint.txt
+
+enable: glHint(CLIP_VOLUME_CLIPPING_HINT_EXT, GL_FASTEST)
+disable: glHint(CLIP_VOLUME_CLIPPING_HINT_EXT, GL_DONT_CARE)
+
+This extension provides a way of hinting to the pipeline
+that the primitives can be assumed to be within the frustum,
+thus in the case of MiniGL, outcodes could be completely bypassed. In addition, projection could be combined with transformation.
+It would make sense to set this hint in all situations where bounding-geometry is fully within the frustum.
+A good place to start with the implementation would be
+glDrawElements pipeline - locked arrays case, since it already has similar functionality (Clip_Volume_Bypass).
+
+
+API overhead reduction
+----------------------
+GL_EXT_multi_draw_arrays:
+The specification allows 1 function call to draw multiple
+arrays or indices with the same primitive type.

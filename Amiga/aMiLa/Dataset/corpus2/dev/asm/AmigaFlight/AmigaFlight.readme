@@ -1,0 +1,24 @@
+Short:        680x0 learning utility with applications board
+Uploader:     a duffy staffs ac uk (Andrew Duffy)
+Type:         dev/asm
+Architecture: m68k-amigaos
+Authors:      a.duffy@staffs.ac.uk (Andrew Duffy), c.morris@staffs.ac.uk (Chris Morris)
+
+AmigaFlight is a freely distributable 68000 learning utility that provides many
+pre-programmed subroutines to eliminate the need for learning the internal
+workings of the Amiga Operating System.
+
+AmigaFlight is for AmigaOS 2.0+ machines only.
+
+Below is a run-down of the most important features of AmigaFlight:
+
+    o Simple to use environment
+    o Applications board consists of many control and output windows
+    o Works with all CPU's, including 68040
+    o Uses Workbench 2 `newlook' screen (clones Workbench mode)
+    o Uses AppIcons and AppMenuItems
+    o Conditional WB3 code to take advantage of new functions
+    o Comes with documentation in AmigaGuide format
+    o Substantial on-line AmigaGuide Help system
+    o Installation scripts for Installer
+    o Fully configurable environment

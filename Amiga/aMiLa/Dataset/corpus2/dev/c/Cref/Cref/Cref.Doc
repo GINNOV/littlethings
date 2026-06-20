@@ -1,0 +1,28 @@
+  cref - C cross referencer
+
+This program reads C source from its standard input or one or more files
+and prints the source code with line numbers followed by an alphabetic
+list of  word references by line number.
+
+To run:
+    cref [-q] [-lnnn] [-wnnn] [-hheading] [-tnnn] [-?] [file ...]
+
+Options:
+    q    - don't print normal input file listing.
+
+    lnnn - set page length to n instead of the default 66.
+            Minimum allowed is 4, maximum is 9999.
+
+    wnnn - set page width to n instead of the default 132.
+            Minimum allowed is 27, maximum is 132.
+
+    hccc - set page heading to 'ccc' rather than file names.
+
+    tnnn - set tab spaces to n instead if the default 8.
+            Minimum is 1, maximum is 132.
+     ?    - display this list.
+
+This program was written by Mike Edmonds for use on Unix. It was ported
+to the Amiga by Joel Swank. The original UNIX source is included for
+the sake of completeness.
+

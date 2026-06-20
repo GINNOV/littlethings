@@ -1,0 +1,95 @@
+***************************************************************************
+*                                                                         *
+*                              KeysPlease V1.2                            *
+*                                                                         *
+*                          © 1994 by Brian Koetting                       *
+*                                                                         *
+***************************************************************************
+
+
+** DISTRIBUTION:***********************************************************
+
+KeysPlease is SHAREWARE and may be redistributed with the provision that
+only reasonable media and distribution costs are charged.
+
+If you like it, and use it, send $3 (that's THREE DOLLARS) to:
+	Brian Koetting
+	671 East 420 North
+	Provo, Utah  84606
+
+This is not a large program.  Three dollars is not a large sum of money.
+
+** AAD:********************************************************************
+
+Please add ALL APPLICABLE DISCLAIMERS here.
+
+** INTRODUCTION:***********************************************************
+
+KeysPlease is a nice little utility for programmers who every time they
+need a RAWKEY code or an ASCII code, go hunting for that place where
+they KNEW they wouldn't forget, where that stack of papers lies hidden
+that contains all those important tables, lists, etc...
+
+So unless you've got 'em all memorized (or use something different)
+KeysPlease is for you.
+
+KeysPlease displays a nice rendition of the Amiga keyboard and allows you
+to either click on a key-gadget or press a key to find that key's rawcode.
+
+Alternately, the program also displays a chart of all ASCII characters
+which you can select either by mouse or key to find its value.
+
+Numbers are displayed in both decimal and hexidecimal.
+
+Moreover, the program is very self-explanitory.
+
+There are other programs that perform these functions, though I have not
+seen one to do them all, and certainly not as nice.
+
+KeysPlease is "Enforcer" and "Mungwall" passed.
+
+Note that there is a dead area on the Return key-gadget which clicking
+has no effect. (this is the area under the ']' key.  By sending in your
+$3 SHAREWARE fee, and a self-addressed stamped disk mailer and a blank
+disk, you'll receive a version that fixes this problem.  (There has to
+be _some_ motivation for registering)
+
+** USAGE:******************************************************************
+
+KeysPlease runs only under AmigaDOS 2.0 and above.
+
+KeysPlease accepts the following command line argument:
+
+	KeysPlease SCREEN/K:
+
+where SCREEN is the keyword to indicate which public screen to open on.
+If the public screen does not exist, KeysPlease will open on the default
+public screen or Workbench.
+
+For example, I have the following line added to my TTX_Startup.dfn file
+in the KEYBOARD section:
+
+	F2  ExecTool "run BOOT:Bin/KP SCREEN=TURBOTEXT"
+
+There is also a SCREEN ToolType for Workbench users.
+
+In addition to the CloseWindow gadget, RightAmiga-Q will quit the program
+
+** CREDITS, COMMENTS, REQUESTS, BUGS, DONATIONS:***************************
+
+Brian Koetting can be reached through:
+
+	BIX: bsk
+	EMAIL: koettingb@yvax.byu.edu
+
+	MAIL:
+	671 East 420 North
+	Provo, Utah  84606
+
+Always happy to receive anything, including critisms, suggestions, etc...
+
+** HISTORY:****************************************************************
+
+V1.2: First public release
+
+***************************************************************************

@@ -1,0 +1,12 @@
+GI1 42.1 - Copyright (c) 1994 Commodore-Amiga, Inc.
+           All Rights Reserved.
+           Written by David N. Junod
+
+This is a collection of BOOPSI gadgets and images.  Includes a
+sophisticated button gadget, calendar gadget, LED image and a page
+selection gadget.  These classes work with all Amigas and require a
+minimum of 2.04 (V37).
+
+See GI1.License for distribution information.  An Installer installation
+script is included to ease installation of the classes, Autodocs, header
+files and examples.

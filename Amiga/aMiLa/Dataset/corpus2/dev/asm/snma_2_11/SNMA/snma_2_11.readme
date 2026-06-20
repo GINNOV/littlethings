@@ -1,0 +1,14 @@
+Short:    680x0/6888x Amiga macro assembler
+Author:   Samu Nuojua, Mikolaj Calusinski <bloelle@priv.gold.pl>
+Version:  2.11
+Type:     dev/asm
+
+ SNMA is freeware conditional 680x0/688x macro assembler for  the  Amiga.  It
+ supports  the  most  common  directives, generates Amiga object-files and/or
+ executables. It is used mainly from the  shell.  Arexx  port.   AmigaOS  2.0
+ and greater only. AmigaGuide docs only. This is version 2.11.
+
+News: Samu Nuojua passed development of this brilliant assembler to me,
+Mikolaj Calusinski. I just fixed a few bugs and added some new stuff. Hope
+I've managed to improve this incredibly good assembler a bit. For details see
+docs.

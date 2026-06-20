@@ -1,0 +1,16 @@
+Short:        This program sorting text files.
+Author:       Kaczus/BlaBla (Tomasz Kaczanowski) BLABLA PRODUCT
+Uploader:     kaczus poczta onet pl
+Type:         dev/c
+Version:      0.4 (04.01.01)
+Architecture: m68k-amigaos
+Name:         TKLsort
+
+STATUS:   FreeWare
+
+NOTE:  Program to sort lines in text files with source
+
+
+CONTACT WITH AUTHOR:
+                     email: kaczus@poczta.onet.pl
+                     

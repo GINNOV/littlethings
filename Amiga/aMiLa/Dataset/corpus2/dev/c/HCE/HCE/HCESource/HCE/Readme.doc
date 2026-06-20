@@ -1,0 +1,38 @@
+(21.4.94)
+
+      NOTE: you cannot remake HCE without the Commodore Include files.
+
+
+      HOW TO MAKE HCE.
+      ----------------
+
+      FROM HCE:
+
+      1) Select 'Load (c/a-source)' from the 'Disk' menu and then 
+         load this document (if you haven`t already).
+         You can then view the instructions from the editor.
+      2) Select 'Lock?' from the 'Other' menu and then Lock the
+         'HceSrc:HCE/HCE/' directory.
+      3) Select 'Compiler-options' from the 'Compile' menu.
+      4) Select 'Load Compile List' and load the file called 'HCE.CL'.
+      5) Click on the 'Compile' gadget until it shows 'FROM-LIST'.
+      6) Exit the options window.
+      7) Set the 'Outpath' gadget in the  'Assembler-options' window to
+         a path of your choice. (Default is, RAM:)
+      8) Select the 'Compile+Optimize+Assemble' gadget.
+      9) Wait until all files have been compiled.(30-40 mins)
+     10) Lock the 'HceSrc:HCE/HCC/' directory.
+     11) Select 'Compiler-options' from the 'Compile' menu.
+     12) Select 'Load Compile List' and load the file called 'HCC.CL'.
+     13) Exit the options window.
+     14) Set the 'Outpath' gadget again.(is changed when list is loaded)
+     15) Select the 'Compile+Optimize+Assemble' gadget.
+     16) Wait until all files have been compiled.(10-20 mins)
+     17) Select 'Linker-options' from the 'Link' menu.
+     18) Select 'Load Link List' and load the file called 'HCE.LL' from
+         this directory.( HceSrc:HCE/HCE.LL )
+     19) If you do not have enough memory then change the 'OutName' gadget
+         to a name+path of your choice.
+     20) Exit the options window.
+     21) Select 'Link List' from the Link menu and wait.(1-2 mins)
+

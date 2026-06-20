@@ -1,0 +1,85 @@
+$VER readme.amiga 3.01 (19 Aug 1996) © koessi
+
+
+I found the sources at
+
+  http://www.salam.cae.wisc.edu/hpux/language/byacc-3.0.html
+
+and there were no big changes necessary to compile them for
+the Amiga with SAS-C v6.56 (by default, temporary files are
+created in "t:").
+
+
+This archive contains:
+
+byacc          56516  : Amiga binary for any cpu
+byacc.020      55684  : Amiga binary for >=68020 cpu
+byacc-3.0.lha  36997  : original archive of byacc-3.0
+NEW_FEATURES    2541  : original text
+pch.lha         4399  : patches to apply to original sources
+README          1041  : original text
+SCoptions        191  : sas-c 6.56 options
+SCoptions.info  4197  : newicon
+SMakefile       6229  : this will build everything
+SMakefile.info  2096  : newicon
+
+
+To examine the sources and diffs use the smakefile:
+
+
+  smake        - to create all dirs and build executable
+                 MUST be called first!
+  smake exe    - to build executable for any 680x0 cpu
+  smake exe020 - to build executable for >=68020 cpu
+  smake difs   - to build diffs-file
+  smake pats   - to build and archive patch-files
+  smake srcs   - to apply the patches
+  smake clean  - to remove all created dirs and files
+                 newly created exe-files are kept
+
+
+Therefor you need a complete SAS-C v6.5x installation.
+
+
+*** WARNING ***
+
+Of course this port isn't tested to be called bugfree, so
+all riscs are on your own. Don't blame me for any damage -
+be it your machine, soft or brain :-)
+
+*** FIXED BUG (19 Aug 1996) ***
+
+Normand Belanger  <normand@vlsi.polymtl.ca>
+found this one in BYacc 3.0 for Amiga [Fri Aug 16 1996]
+
+
+NB> Hello Bernd,
+NB>
+NB> I'm using your port of BYacc 3.0 for Amiga and I have a
+NB> little problem. I have the line "#include <exec/types.h>"
+NB> in my yacc file and it gets transformed into
+NB> "#include <exec//types.h>" (in the y.tab.c file) which
+NB> is (obviously) incorrect.
+
+
+you're right - I didn't notice this because I always use
+local headerfiles (ala "defs.h")
+
+It happens in :
+
+  file      reader.c
+  function  copy_text()
+  line      405-406      should be deleted, because
+                         the Slash is already written out
+                         at the beginning of this case-leaf
+
+  I just tried and it seems to be okay now
+
+It was nothing I had changed :-)
+
+
+
+
+
+
+have fun - koessi

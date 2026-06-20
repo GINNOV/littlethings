@@ -1,0 +1,98 @@
+Portable Object Compiler (c) 1997,98,2002.  All Rights Reserved.
+
+
+This file contains some notes that are specific to running "objc"
+(pronounced as "Object Compiler") on Windows95 or WindowsNT using
+the Microsoft Visual C (cl.exe) compiler.
+
+General
+-------
+
+       The Visual C port was done by Serge Broslavsky (bros@dan.lv)
+       using VC 5.0.  Probably requires at least VC 4.0 to work.
+       Extra code was added by Lee Willis, Ronald Pijnacker and others
+
+AUTOEXEC.BAT
+------------
+
+	Add C:\OBJC\BIN to your PATH.  This directory contains OBJC.EXE
+	the compiler driver, and OBJC1.EXE, the compiler proper.  It's
+	also assumed that the compiler tools (nmake,link,cl etc.) are in 
+	the PATH.
+	
+	It's also convenient to "set OBJCOPT=options" in this file, where
+	options can be "-q" for example.
+
+	If you want to install in a different location than C:\OBJC\BIN,
+	then set the OBJCDIR environment variable (points to top directory).
+
+Makefiles
+---------
+
+	The Makefiles have a .nmk extension (for nmake)
+
+	At the top level, there is a .BAT file that drives the process.
+	So you type:
+
+		setup nmk
+		make
+
+	to start building the different components of the compiler.
+
+
+BISON & FLEX
+------------
+
+	We're using the win32 ports of these tools. That is,
+	the parser and scanner is no longer generated on UNIX.
+	but is now generated on Windows itself from lex.lm and yacc.ym.
+	
+	Flex and Bison for Windows95 are available on 
+	http://www.winsite.com.
+
+	You might have to edit C:\TOOLS\SHARE\BISON.SIMPLE to define
+	_alloca by including #include <malloc.h> (cfr. WATCOM readme)
+
+	If you use a different port of flex/bison, check the definition of
+	YYLEXC and YTABH/YTABC in the src/objc/Makefile.  It's either y.tab.c
+	or y_tab.c
+
+Binary Driver
+-------------
+
+	There's no Bourne shell compiler driver for Windows95.  Only
+	the binary, compiled, version is available (as "objc.exe").
+
+Using the MSVC Project Manager
+------------------------------
+
+	1. Add an Objective-C file (.m) to your MSVC project
+	2. In the Workspace window, click on the FileView tab.
+	3. Right click on the Objective-C file and choose "Settings".
+	4. Click on the "Custom Build" tab of the Project Settings window.
+	5. In the "Commands" text box type:
+	        C:\objc\bin\objc -retain $(InputName).m -Zi -c
+	6. In the "Outputs" text box type:
+		$(InputName).obj 
+
+Using the Debugger
+------------------
+
+The debugger works, but if one tries to step into a message, one gets the Objective-C runtime messenger function "fwdimp()", rather than the
+implementation of the corresponding method. e.g. If one does a "Step Into"
+on the following line:
+
+	[myObject printOn: aFile];
+
+Instead of stepping into the "printOn:" method, the debugger steps into
+"fwdimp()". One has to perform a second "Step Into" to get to the actual
+"printOn:" method. This is tiresome, and generally not what you want. To fix
+this, edit the file "AutoExp.dat", which resides in the MSDev.exe directory
+(%VC Install%\Common\MSDev98\Bin). Add the following lines:
+
+	[ExecutionControl]
+	fwdimp=NoStepInto
+
+This tells the debugger not to enter the function "fwdimp", but to skip over
+it, and enter the next function.
+

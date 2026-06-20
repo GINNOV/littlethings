@@ -1,0 +1,273 @@
+F    GURU-MEDITATION
+
+F.1  INTRODUCTION
+
+If you have been programming the Amiga for a while you have
+most certainly seen your nice Amiga blow up in front of your
+eyes. However, the Amiga is a nice computer, and if it crashes
+it will try to do that as neatly as possible. You are usually
+(!) allowed to save any important files, and when the Amiga
+goes down it will give you a last message, trying to tell you
+what went wrong.
+
+Many programmers have not realized how important that last
+message is. For them, it is just a collection of strange
+numbers. But those numbers can actually tell you what exactly
+went wrong, and once you know what went wrong, it is usually
+no problem to find the bug.
+
+
+
+F.2  AMIGA CRASHING
+
+When the Amiga is crashing it happens that the Exec have
+realized that something will go wrong and halted that task.
+Exec will then open a System requester with a warning message:
+
+  --------------------------------
+  |  Software error - task held  |
+  |   Finish all disk activity   |
+  | Select CANCEL to reset/debug |
+  |                              |
+  | ---------         ---------- |
+  | | Retry |         | Cancel | |
+  | ---------         ---------- |
+  --------------------------------
+
+You can then save any important files to a disk before you
+answer the requester (once you have pressed CANCEL the Guru
+will visit you!). Important, since the Amiga is in trouble
+it can crash any second, and if you were saving anything onto
+a disk at that moment, the disk may become corrupted, and all
+data lost. The best solution is to have an empty emergency
+disk that you only use when the Amiga is upset. Sometimes the
+Exec have not been able to halt the task, and the Guru will
+immediately visit you.
+
+
+
+F.3  GURU ALERTS
+
+Once the Amiga really crashes, the powerlight will flash for
+some seconds, and an Alert will be activated. For example:
+
+  ----------------------------------------------------------
+  | Software failure! Press left mouse button to continue. |
+  |          Guru Meditation   #84010007.00C13870          |
+  ----------------------------------------------------------
+
+Now you only need to decode the message and you have found
+the error. (Advanced programmer can attach a modem to the
+Amiga and use a program called ROMWack in order to debug the
+computer. But we will not discuss it here.)
+
+
+
+F.4  GURU MEDITATION NUMBERS
+
+There exist two different types of Guru Meditation Numbers:
+  - CPU Errors (680x0 Processor Traps)
+  - System Software Errors
+
+
+
+F.5  CPU ERRORS
+
+CPU Errors look like this:
+
+Guru Meditation  #0000000x.yyyyyyyy
+
+x is one of the following values:
+
+2  Bus Error              Hardware error
+3  Address Error          Word access on odd byte boundary
+4  Illegal Instruction
+5  Divide by zero
+6  CHK Instruction
+7  TRAPV Instruction
+8  Privilege Violation
+9  Trace
+A  Opcode 1010 Emulation  Instruction word with a value
+                          between A000-AFFF.
+B  Opcode 1111 Emulation  Instruction word with a value
+                          between F000-FFFF.
+
+yyyyyyyy is the address of the task which went wrong. (It
+is normally your own program that caused the problem.)
+
+If you get a Guru Meditation number like #00000005.00C13870
+it means: A program, at the address C13870, tried to devide
+a value by zero. Since you now know what the error was you
+only need to look at the places where your program can be
+forced to devide a value by zero, and it should not take to
+long time to find the bug.
+
+
+
+F.6  SYSTEM SOFTWARE ERRORS
+
+System Software errors look like this:
+
+Guru Meditation  #aabbcccc.dddddddd
+
+The first field of the number tells us if the error is a
+Recoverable Error or if it is a Dead End Alert. If the error
+is a Dead End Alert the number will start with 8 otherwise it
+is 0. (The total screen will also be black, while on 
+Recoverable Errors the screen is merely pushed down a bit.)
+
+The first field of the number tells us also which Device,
+Library or Resource went wrong:
+
+01  Exec Library         LIBRARIES
+02  Graphics Library
+03  Layers Library
+04  Intuition Library
+05  Math Library
+06  CList Library
+07  AmigaDOS Library
+08  RAM Handler Library
+09  Icons Library
+
+10  Audio Device         DEVICES
+11  Console Device
+12  GamePort Device
+13  Keyboard Device
+14  Trackdisk Device
+15  Timer Device
+
+20  CIA Resource         RESOURCES
+21  Disk Resource
+22  Misc Resource
+
+30  BootStrap            OTHERS
+31  Workbench
+32  Disk Copy
+
+A number like 04 means: Recoverable Error in the Intuition
+Library. While a number like 84 means: Fatal Error in
+the Intuition Library.
+
+
+The second field (bb) of the Guru Meditation number gives
+us the general cause of the problem:
+
+01  No Memory
+02  Unable to Create Library
+03  Unable to Open Library
+04  Unable to Open Device
+05  Unable to Open Resource
+06  Input/Output (I/O) Error
+07  No Signal
+
+So a number like 8201cccc means a fatal error in the Graphics
+Library, the problem was caused by not enough memory.
+
+
+The last field (cccc) before the dot gives some more specific
+information. Here is a list of some common Guru Meditation
+Numbers: (This information is taken form the headerfile
+"exec/alerts.h" [V1.3]:)
+
+Exec Library:
+  01000000
+  81000001  68000 exception vector checksum
+  81000002  Execbase checksum
+  81000003  Library checksum failure
+  81000004  No memory to make library
+  81000005  Corrupted memory list
+  81000006  No memory for interrupt servers
+  81000007  InitStruct() of an APTR source
+  81000008  A semaphore is in illegal state
+  81000009  Freeing memory already freed
+  8100000A  Illegal 68k exception taken
+
+
+Graphics Library:
+  02000000
+  82010000  Graphics out of memory
+  82010006  Long frame, no memory
+  82010007  Short frame, no memory
+  02010009  Text, no memory for TmpRas
+  8201000A  BltBitMap, no memory
+  8201000B  Regions, memory not available
+  82010030  MakeVPort, no memory
+  82011234  Emergency memory not available *
+
+
+Layers Library:
+  03000000
+  83010000  Layers out of memory
+
+
+Intuition Library:
+  04000000
+  84000001  Unknown gadet type
+  04000001  Recovery form of AN_GadgetType
+  84010002  Create port, no memory
+  04010003  Item plane alloc, no memory
+  04010004  Sub alloc, no memory
+  84010005  Plane alloc, no memory
+  84000006  Item box top < RelZero
+  84010007  Open screen, no memory
+  84010008  Open screen, raster alloc, no memory
+  84000009  Open sys screen, unknown type
+  8401000A  Add SW gadgets, no memory
+  8401000B  Open window, no memory
+  8400000C  Bad State Return entering Intuition
+  8400000D  Bad Message received by IDCMP
+  8400000E  Weird echo causing incomprehension
+  8400000F  Couldn't open the Console Device
+
+
+Amiga DOS Library:
+  07000000
+  07010001  No memory at startup
+  07000002  EndTask didn't
+  07000003  Qpkt failure
+  07000004  Unexpected packet received
+  07000005  Freevec failed
+  07000006  Disk block sequence error
+  07000007  Bitmap corrupt
+  07000008  Key already free
+  07000009  Invalid checksum
+  0700000A  Disk Error
+  0700000B  Key out of range
+  0700000C  Bad overlay
+
+
+RAM Library:
+  08000000
+  08000001  No overlays in library seglists
+
+
+Trackdisk Device:
+  14000000
+  14000001  Calibrate: seek error
+  14000002  Delay: error on timer wait
+
+
+Timer Device:
+  15000000
+  15000001  Bad request
+  15000002  Power supply does not supply ticks
+
+
+Disk Resourcek.resource:
+  21000000
+  21000001  Get unit: already has disk
+  21000002  Interrupt: no active unit
+
+
+BootStrap:
+  30000000
+  30000001  Boot code returned an error
+
+
+The number after the dot (dddddd dd) can be three things:
+1. Address of the task which went wrong.
+2. If the error occured because of some sort of memory
+   allocation/deallocation, it is the address of that memory
+   block.
+3. If Exec is realy confused the number is 48454C50, which
+   stands for HELP. (48=H, 45=E, 4C=L, 50=P)

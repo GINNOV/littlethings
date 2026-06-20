@@ -1,0 +1,547 @@
+
+;SAS/C Amiga Compiler (Phase 1)  6.50                May 12 2018 18:51:30                                                                            Page 1
+
+
+;===> Including file "include:clib/alib_protos.h"
+;===> Including file "include:exec/types.h"
+;===> Including file "include:sys/commnull.h"
+;===> Including file "include:devices/timer.h"
+;===> Including file "include:exec/io.h"
+;===> Including file "include:exec/ports.h"
+;===> Including file "include:exec/nodes.h"
+;===> Including file "include:exec/lists.h"
+;===> Including file "include:exec/tasks.h"
+;===> Including file "include:devices/keymap.h"
+;===> Including file "include:libraries/commodities.h"
+;===> Including file "include:utility/hooks.h"
+;===> Including file "include:intuition/classes.h"
+;===> Including file "include:intuition/classusr.h"
+;===> Including file "include:graphics/graphint.h"
+;===> Including file "include:clib/asl_protos.h"
+;===> Including file "include:utility/tagitem.h"
+;===> Including file "include:libraries/asl.h"
+;===> Including file "include:workbench/startup.h"
+;===> Including file "include:libraries/dos.h"
+;===> Including file "include:dos/dos.h"
+;===> Including file "include:graphics/text.h"
+;===> Including file "include:graphics/gfx.h"
+;===> Including file "include:graphics/displayinfo.h"
+;===> Including file "include:graphics/monitor.h"
+;===> Including file "include:exec/semaphores.h"
+;===> Including file "include:graphics/gfxnodes.h"
+;===> Including file "include:graphics/modeid.h"
+;===> Including file "include:clib/dos_protos.h"
+;===> Including file "include:dos/dosextens.h"
+;===> Including file "include:exec/libraries.h"
+;===> Including file "include:dos/record.h"
+;===> Including file "include:dos/rdargs.h"
+;===> Including file "include:dos/dosasl.h"
+;===> Including file "include:dos/var.h"
+;===> Including file "include:dos/notify.h"
+;===> Including file "include:dos/datetime.h"
+;===> Including file "include:clib/exec_protos.h"
+;===> Including file "include:clib/gadtools_protos.h"
+;===> Including file "include:intuition/intuition.h"
+;===> Including file "include:graphics/clip.h"
+;===> Including file "include:graphics/view.h"
+;===> Including file "include:graphics/copper.h"
+;===> Including file "include:hardware/custom.h"
+;===> Including file "include:graphics/rastport.h"
+;===> Including file "include:graphics/layers.h"
+;===> Including file "include:devices/inputevent.h"
+;===> Including file "include:intuition/screens.h"
+;===> Including file "include:intuition/iobsolete.h"
+;===> Including file "include:intuition/preferences.h"
+;===> Including file "include:libraries/gadtools.h"
+
+;SAS/C Amiga Compiler (Phase 1)  6.50                May 12 2018 18:51:30                                                                            Page 2
+
+
+;===> Including file "include:clib/graphics_protos.h"
+;===> Including file "include:graphics/gels.h"
+;===> Including file "include:graphics/regions.h"
+;===> Including file "include:graphics/sprite.h"
+;===> Including file "include:hardware/blit.h"
+;===> Including file "include:clib/icon_protos.h"
+;===> Including file "include:workbench/workbench.h"
+;===> Including file "include:clib/intuition_protos.h"
+;===> Including file "include:intuition/cghooks.h"
+;===> Including file "include:clib/wb_protos.h"
+;===> Including file "include:pragmas/asl_pragmas.h"
+;===> Including file "include:pragmas/dos_pragmas.h"
+;===> Including file "include:pragmas/exec_pragmas.h"
+;===> Including file "include:pragmas/gadtools_pragmas.h"
+;===> Including file "include:pragmas/graphics_pragmas.h"
+;===> Including file "include:pragmas/icon_pragmas.h"
+;===> Including file "include:pragmas/intuition_pragmas.h"
+;===> Including file "include:pragmas/wb_pragmas.h"
+;===> Including file "include:dos.h"
+;===> Including file "include:libraries/dosextens.h"
+;===> Including file "include:sys/commsize.h"
+;===> Including file "include:sys/commwben.h"
+;===> Including file "include:exec/memory.h"
+;===> Including file "include:intuition/gadgetclass.h"
+;===> Including file "include:stdio.h"
+;===> Including file "include:sys/commlist.h"
+;===> Including file "include:string.h"
+;===> Including file "include:stdlib.h"
+;===> Including file "include:sys/commchar.h"
+;===> Including file "defines.h"
+;===> Including file "proj:cgle/gle.h"
+6.50 (Cross Reference)        May 12 2018 18:51:34                         Page 1
+
+
+      SYMBOL        ATTRIBUTES AND CROSS REFERENCE
+
+
+_WBArgc          int
+                 trainer.c:  276
+
+_WBArgv          pointer to pointer to char
+                 trainer.c:  277
+
+__DATE__         #define symbol
+                 trainer.c:  41
+
+__TIME__         #define symbol
+                 trainer.c:  41
+
+__builtin_strlen far function returning "size_t"
+                 trainer.c:  52
+
+__builtin_strcmp far function returning int
+                 trainer.c:  90, 94
+
+argc             int
+                 trainer.c:  275, 276, 282
+
+argc             int
+                 trainer.c:  105, 109
+
+argc             "ULONG"
+                 trainer.c:  77, 81, 82, 83, 84, 88
+
+argc             int
+                 trainer.c:  270
+
+argv             pointer to pointer to char
+                 trainer.c:  105, 109
+
+argv             pointer to pointer to char
+                 trainer.c:  77, 81, 82, 83, 84, 88
+
+argv             pointer to pointer to char
+                 trainer.c:  270, 277, 282
+
+BOOL             short
+                 trainer.c:  105, 163, 170, 171, 272
+
+BootString       array [100] of char
+                 trainer.c:  273, 307, 310
+
+6.50 (Cross Reference)        May 12 2018 18:51:34                         Page 2
+
+
+      SYMBOL        ATTRIBUTES AND CROSS REFERENCE
+
+
+
+class            "ULONG"
+                 trainer.c:  166, 180, 185
+
+code             "UWORD"
+                 trainer.c:  167, 181, 205, 220
+
+ctrl             "STRPTR"
+                 trainer.c:  79, 88, 90, 94
+
+Class            unsigned long in struct "IntuiMessage" (offset: 20)
+                 trainer.c:  180
+
+Code             unsigned short in struct "IntuiMessage" (offset: 24)
+                 trainer.c:  181
+
+Control          unsigned char in struct "PREFS" (offset: 4)
+                 trainer.c:  86, 92, 96, 142, 205, 206, 309
+
+CreateControlPanel far function returning "BOOL"
+                 trainer.c:  123
+
+DOSBase          pointer to struct "Library"
+                 trainer.c:  117, 125, 133, 310
+
+Done             "BOOL"
+                 trainer.c:  170, 173, 177, 210, 214, 225, 230, 252
+
+exit             far function returning void
+                 trainer.c:  285, 313
+
+Execute          far function returning "LONG"
+                 trainer.c:  310
+
+FALSE            #define symbol
+                 trainer.c:  118, 126, 134, 170, 171, 213, 229, 251
+
+FindString       #define symbol  (3 arguments)
+                 trainer.c:  72, 81, 82, 83, 84
+
+GAD_AMMO         #define symbol
+                 trainer.c:  194, 240
+
+GAD_ENERGY       #define symbol
+                 trainer.c:  139, 196, 198, 235
+
+GAD_AMMO         #define symbol
+                 trainer.c:  140, 192
+
+6.50 (Cross Reference)        May 12 2018 18:51:34                         Page 3
+
+
+      SYMBOL        ATTRIBUTES AND CROSS REFERENCE
+
+
+
+GAD_HACK         #define symbol
+                 trainer.c:  141, 200, 202, 245
+
+GAD_CONTROL      #define symbol
+                 trainer.c:  142, 204, 206
+
+GAD_PLAY         #define symbol
+                 trainer.c:  208
+
+GAD_CANCEL       #define symbol
+                 trainer.c:  212
+
+GT_BeginRefresh far function returning void
+                 trainer.c:  256
+
+GT_EndRefresh    far function returning void
+                 trainer.c:  257
+
+GT_GetIMsg       far function returning pointer to struct "IntuiMessage" (size
+                 52 bytes)
+                 trainer.c:  177
+
+GT_ReplyIMsg     far function returning void
+                 trainer.c:  183
+
+Gad              pointer to struct "Gadget"
+                 trainer.c:  168, 179, 190
+
+GadToolsBase     pointer to struct "Library"
+                 trainer.c:  177, 183, 256, 257
+
+GadgetID         unsigned short in enum <no tag> (offset: 38)
+                 trainer.c:  190
+
+Gadget           struct tag (size 44 bytes)
+                 trainer.c:  168, 179
+                 members:
+                   NextGadget (offset: 0)
+                   LeftEdge (offset: 4)
+                   TopEdge (offset: 6)
+                   Width (offset: 8)
+                   Height (offset: 10)
+                   Flags (offset: 12)
+                   Activation (offset: 14)
+                   GadgetType (offset: 16)
+                   GadgetRender (offset: 18)
+                   SelectRender (offset: 22)
+                   GadgetText (offset: 26)
+                   MutualExclude (offset: 30)
+6.50 (Cross Reference)        May 12 2018 18:51:34                         Page 4
+
+
+      SYMBOL        ATTRIBUTES AND CROSS REFERENCE
+
+
+
+                   SpecialInfo (offset: 34)
+                   GadgetID (offset: 38)
+                   UserData (offset: 40)
+
+GlobalConstructor far function returning "BOOL"
+                 trainer.c:  105, 282
+
+GlobalDestructor far function returning void
+                 trainer.c:  152, 284, 301
+
+HandleWindowEvents far function returning "BOOL"
+                 trainer.c:  163, 292
+
+i                "UWORD"
+                 trainer.c:  49, 54(3), 56, 58
+
+IAddress         pointer to void in struct "IntuiMessage" (offset: 28)
+                 trainer.c:  179
+
+IDCMP_REFRESHWINDOW #define symbol
+                 trainer.c:  255
+
+IDCMP_MOUSEMOVE #define symbol
+                 trainer.c:  188
+
+IDCMP_GADGETDOWN #define symbol
+                 trainer.c:  187
+
+IDCMP_GADGETUP   #define symbol
+                 trainer.c:  189
+
+IDCMP_CLOSEWINDOW #define symbol
+                 trainer.c:  250
+
+IDCMP_VANILLAKEY #define symbol
+                 trainer.c:  219
+
+IMsg             pointer to struct "IntuiMessage"
+                 trainer.c:  165, 177, 179, 180, 181, 183
+
+INTUI_V36_NAMES_ONLY #define symbol
+                 trainer.c:  1
+
+InfAmmo          unsigned char in struct "PREFS" (offset: 1)
+                 trainer.c:  83, 140, 193(2), 194, 239(2), 240, 308
+
+InfEnergy        unsigned char in struct "PREFS" (offset: 2)
+                 trainer.c:  82, 139, 197(2), 198, 234(2), 235, 308
+
+6.50 (Cross Reference)        May 12 2018 18:51:34                         Page 5
+
+
+      SYMBOL        ATTRIBUTES AND CROSS REFERENCE
+
+
+
+IntuiMessage     struct tag (size 52 bytes)
+                 trainer.c:  165
+                 members:
+                   ExecMessage (offset: 0)
+                   Class (offset: 20)
+                   Code (offset: 24)
+                   Qualifier (offset: 26)
+                   IAddress (offset: 28)
+                   MouseX (offset: 32)
+                   MouseY (offset: 34)
+                   Seconds (offset: 36)
+                   Micros (offset: 40)
+                   IDCMPWindow (offset: 44)
+                   SpecialLink (offset: 48)
+
+main             far function returning int
+                 trainer.c:  270
+
+mp_SigBit        unsigned char in struct "MsgPort" (offset: 15)
+                 trainer.c:  175
+
+MaxNum           "ULONG"
+                 trainer.c:  47, 54
+
+NULL             #define symbol
+                 trainer.c:  50, 81, 82, 83, 84, 88
+
+NoGUI            unsigned char in struct "PREFS" (offset: 0)
+                 trainer.c:  81, 111, 154, 290
+
+OpenControlPanel far function returning "BOOL"
+                 trainer.c:  131
+
+PREFS            struct tag (size 5 bytes)
+                 trainer.c:  42
+                 members:
+                   NoGUI (offset: 0)
+                   InfAmmo (offset: 1)
+                   InfEnergy (offset: 2)
+                   UseHack (offset: 3)
+                   Control (offset: 4)
+
+Panel            struct "PANEL" (size 28 bytes)
+                 trainer.c:  169
+
+Play             short
+                 trainer.c:  296, 305
+
+6.50 (Cross Reference)        May 12 2018 18:51:34                         Page 6
+
+
+      SYMBOL        ATTRIBUTES AND CROSS REFERENCE
+
+
+
+Play             "BOOL"
+                 trainer.c:  171, 209, 213, 224, 229, 251, 263
+
+Play             "BOOL"
+                 trainer.c:  272, 292
+
+Prefs            struct "PREFS" (size 5 bytes)
+                 trainer.c:  194, 197(2), 198, 201(2), 202, 205, 206, 234(2),
+                             235, 239(2), 240, 244(2), 245, 290, 308(2), 309(2)
+
+Prefs            struct "PREFS" (size 5 bytes)
+                 trainer.c:  42, 81, 82, 83, 84, 86, 92, 96, 111, 139, 140, 141,
+                             142, 154, 193(2)
+
+PrefsConstructor far function returning void
+                 trainer.c:  77, 109
+
+PutStr           far function returning "LONG"
+                 trainer.c:  117, 125, 133
+
+RETURN_OK        #define symbol
+                 trainer.c:  313
+
+RETURN_WARN      #define symbol
+                 trainer.c:  285
+
+Result           "STRPTR"
+                 trainer.c:  50, 58, 63
+
+sprintf          far __stdargs function returning int
+                 trainer.c:  307
+
+srlen            "UWORD"
+                 trainer.c:  49, 52, 56, 58
+
+strcmp           #define symbol  (2 arguments)
+                 trainer.c:  90, 94
+
+strlen           #define symbol  (1 argument)
+                 trainer.c:  52
+
+strncmp          far function returning int
+                 trainer.c:  56
+
+STRPTR           pointer to unsigned char
+                 trainer.c:  47(3), 50, 58, 79
+
+6.50 (Cross Reference)        May 12 2018 18:51:34                         Page 7
+
+
+      SYMBOL        ATTRIBUTES AND CROSS REFERENCE
+
+
+
+Search           "STRPTR"
+                 trainer.c:  47, 52, 56
+
+SetCheckbox      far function returning void
+                 trainer.c:  139, 140, 141, 194, 198, 202, 235, 240, 245
+
+SetCycle         far function returning void
+                 trainer.c:  142, 206
+
+Strings          pointer to "STRPTR"
+                 trainer.c:  47, 56, 58
+
+StringValue      far function returning "STRPTR"
+                 trainer.c:  47, 81, 82, 83, 84, 88
+
+TRUE             #define symbol
+                 trainer.c:  145, 209, 210, 214, 224, 225, 230, 252, 257, 296
+
+UBYTE            unsigned char
+                 trainer.c:  58
+
+ULONG            unsigned long
+                 trainer.c:  47, 77, 109, 166
+
+UWORD            unsigned short
+                 trainer.c:  49, 167
+
+UseHack          unsigned char in struct "PREFS" (offset: 3)
+                 trainer.c:  84, 141, 201(2), 202, 244(2), 245, 309
+
+UserPort         pointer to struct "MsgPort" in struct "Window" (offset: 86)
+                 trainer.c:  175, 177
+
+VERSIONSTRING    #define symbol
+                 trainer.c:  41
+
+Version          pointer to char
+                 trainer.c:  41
+
+WINDOWTITLE      #define symbol
+                 trainer.c:  41
+
+Wait             far function returning "ULONG"
+                 trainer.c:  175
+
+Win              pointer to struct "Window" in struct "PANEL" (offset: 0)
+                 trainer.c:  169
+
+6.50 (Cross Reference)        May 12 2018 18:51:34                         Page 8
+
+
+      SYMBOL        ATTRIBUTES AND CROSS REFERENCE
+
+
+
+Win              pointer to struct "Window"
+                 trainer.c:  169, 175, 177, 256, 257
+
+Window           struct tag (size 136 bytes)
+                 trainer.c:  169
+                 members:
+                   NextWindow (offset: 0)
+                   LeftEdge (offset: 4)
+                   TopEdge (offset: 6)
+                   Width (offset: 8)
+                   Height (offset: 10)
+                   MouseY (offset: 12)
+                   MouseX (offset: 14)
+                   MinWidth (offset: 16)
+                   MinHeight (offset: 18)
+                   MaxWidth (offset: 20)
+                   MaxHeight (offset: 22)
+                   Flags (offset: 24)
+                   MenuStrip (offset: 28)
+                   Title (offset: 32)
+                   FirstRequest (offset: 36)
+                   DMRequest (offset: 40)
+                   ReqCount (offset: 44)
+                   WScreen (offset: 46)
+                   RPort (offset: 50)
+                   BorderLeft (offset: 54)
+                   BorderTop (offset: 55)
+                   BorderRight (offset: 56)
+                   BorderBottom (offset: 57)
+                   BorderRPort (offset: 58)
+                   FirstGadget (offset: 62)
+                   Parent (offset: 66)
+                   Descendant (offset: 70)
+                   Pointer (offset: 74)
+                   PtrHeight (offset: 78)
+                   PtrWidth (offset: 79)
+                   XOffset (offset: 80)
+                   YOffset (offset: 81)
+                   IDCMPFlags (offset: 82)
+                   UserPort (offset: 86)
+                   WindowPort (offset: 90)
+                   MessageKey (offset: 94)
+                   DetailPen (offset: 98)
+                   BlockPen (offset: 99)
+                   CheckMark (offset: 100)
+                   ScreenTitle (offset: 104)
+                   GZZMouseX (offset: 108)
+                   GZZMouseY (offset: 110)
+                   GZZWidth (offset: 112)
+6.50 (Cross Reference)        May 12 2018 18:51:34                         Page 9
+
+
+      SYMBOL        ATTRIBUTES AND CROSS REFERENCE
+
+
+
+                   GZZHeight (offset: 114)
+                   ExtData (offset: 116)
+                   UserData (offset: 120)
+                   WLayer (offset: 124)
+                   IFont (offset: 128)
+                   MoreFlags (offset: 132)
+
+WindowConstructor far function returning "BOOL"
+                 trainer.c:  115
+
+WindowDestructor far function returning void
+                 trainer.c:  156

@@ -1,0 +1,54 @@
+* Now compiled with Aztec C, vers 3.6A
+
+This version compiled with a faster I/O system than previously
+distributed by Fred Fish (but thanks for doing it in the first
+place!!!!).  The input and expansion buffers are very large in
+this version to handle the funny stuff any Object Orientated
+translators should throw at us!  This is handled by the makefile
+and not changes to cppdef.h.
+
+I have compiled this version using 16-bits and stack checking.
+ANSi style macros and enabling of #import directive set TRUE.
+
+The different files are contained in this directory; use the source
+from FF #28, then load these files on top of them.  This version
+defines  "MCH_AMIGA".  The names "AZTEC_C", "manx", "lattice"
+are no longer defined, since the preprocessor is none of these!
+
+Fixed in cpp6.c are:  ctime() really returns the correct time,
+Now #define to use movmem() when ANSI function memmov() is called.
+Removed functions from cpp6.c that are now part of Aztec library.
+
+Added to cpp2.c are:  #endif ignores all text after it.  The
+directive #error has been added.  When encountered, it simply
+prints the rest of the file line to stdout.  Added #import to
+behave like on the NeXT GNU cpp program.
+
+--- brian witt (October 1990)
+--- Internet:  brian@babbage.ecs.csus.edu
+ (August 1989)
+
+-----------------------------------
+
+
+This is a version of the Decus cpp which has been modified to run on
+the Amiga.  The bootstraping and porting process is not real straight-
+forward, and in fact required the resources of a Unix system cpp since
+neither Manx nor Lattice could properly deal with the cpp source code
+before preprocessing.  Thus, it may require some work and ingenuity
+to recreate the supplied executable!
+
+This cpp predefines "amiga" as opposed to "AMIGA".  This is a somewhat
+belated attempt to coerce the Amiga world into following the convention
+of other C environments that the system predefines are lowercase to avoid
+clashes with user predefines, which are uppercase by convention.
+
+A hacked up version of my Unix like cc frontend that knows about the
+cpp is also supplied, for the Manx compiler.
+
+I was holding this back until I had a copy of the public domain C
+compiler and assembler to go along with it, but since these two items
+appear to be unreleasable for the immediate future, decided to go ahead
+and release the cpp now.
+
+-Fred

@@ -1,0 +1,29 @@
+Short:    header cutter for MP3 files with source
+Author:   vassili@kma.ee,  bedazzle@mail.ru (Smirnov Vassili (aka Bedazzle))
+Uploader: vassili@kma.ee,  bedazzle@mail.ru (Smirnov Vassili (aka Bedazzle))
+Version:  1
+Type:     dev/c
+
+english:
+
+Hello!
+This is small utility coded by me, source in C language included. =)
+Do all what you want with it. But if you include some parts of this archive
+in your project, tell me know. :)  For copyright and distribution rules read
+AFD copyright, which can be found at Aminet.
+P.S.
+Program uses lame code - reading file into memory, and writing back to disk.
+But it is small and works. :-/
+
+
+russian:
+
+ѕривет!
+Ёта небольша€ утилитка написана мной, исходники на —и прилагаютс€. :)
+ƒелайте с ней все что хотите. Ќо если ¬ы используете что-нибудь из этого
+архива в своем проекте, дайте мне знать. :)  ƒл€ ознакомлени€ с авторскими
+правами и правилами распространени€ читайте AFD-copyright на соответствующем
+€зыке, который доступен на јминете.
+P.S.
+ѕрограммка варварским способом зачитывает весь файл в пам€ть, после чего
+записывает обратно на диск. Ќо она небольшого размера и работает.  :-/

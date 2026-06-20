@@ -1,0 +1,20 @@
+Short:        A simple 24 bit bitmap C++ class
+Author:       jarno@kcbbs.gen.nz (Jarno van der Linden)
+Uploader:     jarno kcbbs gen nz (Jarno van der Linden)
+Type:         dev/c
+Version:      1.0
+Architecture: m68k-amigaos
+
+This a simple 24 bit bitmap class. I've used this class
+in various forms in a number of programs. I hope you find
+it as useful as I have.
+
+The class also contains an IFFParse based reader and
+writer, which only handles 24 bit ILBM IFF files.
+
+There is also a simple Z-Buffered bitmap subclass included
+in the archive. Also included is a demonstration program,
+and AutoDoc-style documentation of the BitMap24 class.
+
+
+---JvdL---

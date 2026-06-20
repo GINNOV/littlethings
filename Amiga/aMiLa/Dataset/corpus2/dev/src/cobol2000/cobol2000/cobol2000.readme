@@ -1,0 +1,20 @@
+Short: COBOL and the Year 2000
+Type: dev/src
+Uploader: Andreas_Kleinert@t-online.de
+Author: Andreas R. Kleinert
+
+ You can read various interesting texts and tutorials
+ about the Year 2000 problem, software only using
+ two-digit variables for their year counter, etc.
+
+ But did you ever take a look at a real COBOL source
+ code that deals with date checking ?
+
+ Here's one - and it's Y2K (2000/2100) proof.
+ Hopefully ;)
+
+ datpruef.cbl:  - the original german version
+ datcheck.cbl:  - the english translation
+
+ --
+ ARK, 02/Jan/99

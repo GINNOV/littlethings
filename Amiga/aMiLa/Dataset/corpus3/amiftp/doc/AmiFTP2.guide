@@ -1,0 +1,1520 @@
+@database AmiFTP.guide
+@author Magnus Lilja
+@smartwrap
+@Width 72
+
+@node Main "AmiFTP documentation"
+
+                            @{b}AmiFTP@{ub}
+
+        Copyright © 1995-1996 Magnus Lilja. All Rights Reserved.
+
+
+     @{" I   " link "Copyright"}  Copyright and legal information.
+
+     @{" II  " link "Addresses"}  Where to send those bug reports etc.
+
+     @{" III " link "Register"}  How to register
+
+
+     @{" IV  " link "Requirements"}  What is needed to use AmiFTP?
+
+     @{" V   " link "Installation"}  Installation
+
+     @{" VI  " link "Usage"}  Basic usage
+
+     @{" VII " link "Configuration"}  Configuration
+
+     @{" IIX " link "AmiFTPMenus"}  Menus
+
+     @{" IX  " link "ARexx"}  The ARexx interface
+
+
+     @{" A   " link "FAQ"}  Common questions
+
+     @{" B   " link "Acknowledgements"}  Thanks to...
+
+     @{" C   " link "Bugs"}  Known bugs/problems
+
+     @{" D   " link "HISTORY/MAIN"}  Program history
+
+
+@endnode
+
+@node "Copyright" "Copyrights and other legal things"
+
+   @{b}Copyright and distribution stuff@{ub}
+
+
+   COPYRIGHT
+
+
+   Copyright © 1995-1998 Magnus Lilja. All Rights Reserved.
+
+   ClassAct is Copyright © 1995-1998 ClassAct Development Team.
+
+
+   Some of the files (in the Contrib and/or the Rexx directory) have
+other copyrights.
+
+   AmiFTP is Shareware, go to the @{"registration" link "Register"} section
+for more information.
+
+   DISTRIBUTION
+
+
+   The main distribution channel for AmiFTP is Aminet (http://www.aminet.org/).
+Permission to distribute AmiFTP on disk is granted provided no money except
+for the disk is charged. So called 'Commercial distributors of freely
+distributable software' are not allowed to distribute AmiFTP without the
+authors permission. Permission to distribute AmiFTP via bulletin board
+systems and computer networks is granted as long as no money is charged
+for accessing or downloading the archive.
+
+
+   Naturally, the Aminet organization has the permission to include AmiFTP on the
+Aminet-CD.
+
+
+   You may not add/delete files from the AmiFTP archive or create a
+new archive with only some of the files and redistribute it unless you have my
+permission to do so. This also applies to BBS's that automatically add those
+annoying '.display_me' and 'camefrom.bbs' files, I do not want those added
+to the AmiFTP-archive.
+
+
+   If you want to include this program in any package, CD-ROM, coverdisk etc
+contact the @{"author" link "Addresses"} for permission.
+
+
+   Not all versions of AmiFTP will be uploaded to Aminet, minor updates will be
+available from 
+
+
+     ftp://geek.rcc.se/pub/amiga/amiftp/ and
+
+
+     http://www.lysator.liu.se/~lilja/amiftp/
+
+
+
+   If you want to get a notice via e-mail when new versions are available, write
+an e-mail to me (lilja@lysator.liu.se) and I'll add you to the announce-list.
+
+
+   DISCLAIMER:
+
+
+This software is provided as is. Use it at your own risk. No warranties are made in any way.
+
+@endnode
+
+@node "Addresses" "Addresses"
+
+   @{b}Authors addresses@{ub}
+
+
+   @{b}Normal mail:@{ub}
+
+
+            Magnus Lilja
+
+            Rydsvägen 130 B
+
+            S-584 31 LINKÖPING
+
+            SWEDEN
+
+
+   @{b}E-Mail:@{ub}
+
+
+            lilja@lysator.liu.se
+
+
+   One small note about writing e-mail: Please make sure that you have 
+configured your e-mail-software correctly so I can reply to your e-mail. I have
+received e-mail a couple of times which has bounced on me when I tried to reply.
+
+
+   New versions of AmiFTP will be available via ftp from
+
+
+      ftp://geek.rcc.se/pub/amiga/amiftp/
+
+
+   and via www from
+
+
+      http://www.lysator.liu.se/~lilja/amiftp/
+
+
+   Some versions will be uploaded to Aminet.
+
+@endnode
+
+@node "Register" "Registering AmiFTP"
+
+   @{b}Registering AmiFTP@{ub}
+
+
+   AmiFTP is Shareware. At the moment AmiFTP is not crippled in any way, which
+also means that there's no extra functions that are available for users that
+register. But if you use AmiFTP and are happy with it (or even if you're unhappy
+with it ;) , please consider registering AmiFTP.
+
+
+   The registration fee is 15 USD, 10 UKP, 20 DEM or 100 SEK. See the @{"registration form" link "REGISTER/MAIN"} 
+for more information on how to register.
+
+
+   Since there's no extra features available for registered user at the moment
+there's no need for a key-file, but if/when I add such features I will send
+out keyfiles.
+
+
+   If you have any questions about registering AmiFTP, don't hesitate to write
+an e-mail to me (lilja@lysator.liu.se).
+@endnode
+
+@node "Requirements" "Requirements"
+
+   @{b}Requirements@{ub}
+
+
+   In order to run AmiFTP you'll need AmigaOS 2.0 or higher, one of the following
+TCP/IP-stacks:
+
+
+  · AmiTCP 3.0 or higher.
+
+
+  · AS225r2 or the new I-Net 225.
+
+
+  · CPR TCP/IP Base Kit.
+
+
+  · mlink.
+
+  · TermiteTCP.
+
+  · Miami.
+
+  · Or any other stack that is compatible with as225r2 or AmiTCP.
+
+  
+AmiFTP first tries to open AmiTCP's bsdsocket.library and if that failes it opens
+socket.library. If you want to force AmiFTP to use socket.library, use the AS225-flag (cli/tooltype option).
+
+In order to detect mlink, AmiFTP searches for a port called "MLINK".
+
+  · reqtools.library
+
+  · The online help in AmiFTP requires amigaguide.library v36 or higher.
+
+@endnode
+
+@node "Installation" "Installation of AmiFTP"
+
+   @{b}Installation@{ub}
+
+
+   The easiest way to install AmiFTP is to use the supplied Installer-script. To
+run this, doubleclick on the Install_AmiFTP icon.
+
+
+   Make sure you are using the latest version of the ClassAct system. You can get
+it from ftp://ftp.thule.no/pub/classact/
+
+   Before you try to connect to a site, make sure that your anonymous
+password is set correctly, it's in the menu "Settings/Global".
+
+@endnode
+
+@Node "Usage" "Using AmiFTP"
+
+   @{b}Using AmiFTP@{ub}
+
+
+   AmiFTP can be started either from the CLI or from Workbench.
+
+
+   @{" Arguments       " Link "Arguments"}           Command line arguments and Tooltypes.
+
+   @{" Main window     " Link "MainWindow"}           Main window.
+
+   @{" Connect window  " Link "ConnectWindow"}           Connect window.
+
+   @{" Transfer window " Link "TransferWindow"}           Transfer window.
+
+
+   AmiFTP will save the config-file when exiting if you have altered the settings
+and forgotten to save it. If you alter the position/size of the window or the
+'Log window?', 'Show dot-files?' menus, AmiFTP will not automatically save the
+new config.
+
+@EndNode
+
+@node "MainWindow" "Main window"
+
+   @{b}Main window@{ub}
+
+
+   Most things in this window need no explanation, but a few notes:
+
+
+   You can multiselect by either drag the mouse pointer (while holding down
+the left mousebutton), or you can hold down shift and click on the files you
+want to download.
+
+
+   Depending on if you're connected to a site that's marked as Aminet-site or
+not, you will either see the button 'Parent' or 'View readme'.
+
+@endnode
+
+@node "TransferWindow" "Transfer window"
+
+   @{b}Transfer window@{ub}
+
+
+   Shows the name of the file being transferred at the moment, also shows total
+size, CPS and data transferred and estimated time to arrival. AmiFTP will try to
+get the true size of a link and use that as the size instead of -1 that's shown
+in the filelist.
+
+
+If the file you want to download is already present in the download-directory AmiFTP
+will ask you want to overwrite the file or cancel the transfer, if the file to be downloaded
+is longer than the file present in the dl-dir you can also resume the transfer (ala Z-Modem
+resume).
+
+@endnode
+
+@node "ConnectWindow" "Connect window"
+
+   @{b}Connect window@{ub}
+
+   Shows the status of the connection, the order of the information is:
+
+     'Connecting...'
+
+     'Sending login...'
+
+     'Sending password...'
+
+     'Reading directory..'
+
+
+   Currently you can only Abort AmiFTP at the 'Connecting...' phase.
+
+@endnode
+
+@node "Arguments" "CLI arguments and Workbench ToolTypes"
+
+   @{b}Arguments@{ub}
+
+
+   The following arguments are available as cli arguments and Workbench
+Tooltypes:
+
+   AS225         - @{lindent 19}Force AmiFTP to open socket.library instead of first trying to open AmiTCP's bsdsocket.library.@{lindent 0}
+
+
+   ICONIFIED     - @{lindent 19}Start AmiFTP in iconified mode.@{lindent 0}
+
+
+   PORTNAME      - @{lindent 19}The name of AmiFTP's ARexx port.@{lindent 0}
+
+
+   PUBSCREEN     - @{lindent 19}Name of the public screen AmiFTP should open on.@{lindent 0}
+
+
+   SETTINGS      - @{lindent 19}Tells AmiFTP which preference-file to use.@{lindent 0}
+
+
+   Note that the fontsettings is currently ignored.
+
+@endnode
+
+@node "Configuration" "Configuring AmiFTP"
+
+   @{b}Configuration of AmiFTP@{ub}
+
+
+   At startup AmiFTP searches for a AmiFTP.prefs-file in the following directories (in this order):
+
+
+   @{lindent 3}Current directory, PROGDIR:, ENVARC: and ~user/@{lindent 0}
+
+
+   If it can't find a preferences file the default name for it will be PROGDIR:AmiFTP.prefs.
+
+
+   You can save the preferences with the menu @{"Settings/Save settings" Link "MENUSaveSettings"}.
+AmiFTP will save the settings for you when quitting AmiFTP in case you have forgotten to do so.
+
+
+   @{" Global preferences " Link "Globalpreferences"}  The Global preferences window
+
+   @{" Sitelist " Link "Sitelist"}            Sitelist window
+
+@endnode
+
+@node "Globalpreferences" "Global preferences"
+
+   @{b}Global preferences@{ub}
+
+
+The Global prefences window has four pages, General, Aminet, Display, and Proxy.
+
+
+   General:
+
+   · Anonymous password:
+
+     @{lindent 5}Enter your e-mail-address here, this will be sent to the ftp-server
+when you log in as anonymous user.@{lindent 0}
+
+
+   · View command:
+
+     @{lindent 5}Enter the command AmiFTP should use when viewing files, %F in the
+string will expand to the filename and %P will expand to the name
+of the public screen AmiFTP lives on. Note that at the moment you
+have to specify the complete path for the command if you run
+AmiFTP from Workbench since I haven't fixed the path yet.@{lindent 0}
+
+
+   · Default local drawer
+
+     @{lindent 5}For sites which you don't specify a download directory this directory
+will be used.@{lindent 0}
+
+
+   · Buffer size
+
+     @{lindent 5}The size of the transferbuffer, in bytes.@{lindent 0}
+
+
+   · Directory cache size
+
+     @{lindent 5}The maximum number of directories that should be in the 
+directory cache.@{lindent 0}
+
+
+   · Delete viewed files
+
+     @{lindent 5}If this is checked AmiFTP will delete the files that have been
+'View'-ed when exiting AmiFTP.@{lindent 0}
+
+
+   · Ignore case
+
+     @{lindent 5}Well, guess twice!@{lindent 0}
+
+
+   · Beep after transfer
+
+     @{lindent 5}When a transfer is done, AmiFTP will do a DisplayBeep() if you
+have this checked. Normally this will result in flashing the screen and perhaps
+a beep from your speaker.@{lindent 0}
+
+
+   Aminet:
+
+   · Hide directories
+
+     @{lindent 5}This should be a standard AmigaDOS pattern, all files that are
+in a directory that matches this pattern will be hidden. I have this set to 
+"(mods/#?|demo/#?)" since I'm not interesting in any files in mods/ or demo/.
+@{lindent 0}
+
+
+   · Preserve filepath
+
+     @{lindent 5}Not implemented yet.@{lindent 0}
+
+
+   · Show MOTD-file
+
+     @{lindent 5}If this is checked AmiFTP will download and view the 
+Aminet-MOTD-file if it has changed since the last visit to Aminet.@{lindent 0}
+
+
+   · Download readme
+
+     @{lindent 5}If this is checked AmiFTP will also download the readme of the
+files you're downloading.@{lindent 0}
+
+
+   Display:
+
+   · Open on default public screen
+
+     @{lindent 5}If this is checked AmiFTP will open on the default public screen. If not it will open on the named public screen.@{lindent 0}
+
+
+   · Public screen
+
+     @{lindent 5}Tells AmiFTP which public screen to open on if the above flag isn't set.@{lindent 0}
+
+
+   · Use system fonts
+
+     @{lindent 5}If this is checked AmiFTP will use the current screen font, otherwise it will use the fonts you specify.@{lindent 0}
+
+
+   · Interface font
+
+     @{lindent 5}This font is the font used everywhere in AmiFTP except in the main listview where the directory lists are shown.@{lindent 0}
+
+
+   · Filelist font
+
+     @{lindent 5}This font is used in the listview where the directory lists are shown.@{lindent 0}
+
+
+   · Show buttons
+
+     @{lindent 5}Set this if you want the Parent/Get/Put/View/Connect to.../Disconnect buttons to be visibile.@{lindent 0}
+
+
+   · Show toolbar
+
+     @{lindent 5}Set this if you want the icon toolbar to be visible. The order of the icons are: Exit, Iconify, Connect, Disconnect, Parent, Get, Put, View.@{lindent 0}
+
+
+   Proxy:
+
+   · Proxy host:
+
+     @{lindent 5}The name of the proxy-host to use for proxy-connections. Note that
+the proxy that AmiFTP needs is not generally available, it will
+not work with the Cern httpd-proxy function.@{lindent 0}
+
+
+   · Proxy port:
+
+     @{lindent 5}Which port on the proxy-host to use.@{lindent 0}
+
+
+   · Use proxy as default?
+
+     @{lindent 5}Should AmiFTP use the proxy for all connections? You can override
+this with the proxy-flag for each site.@{lindent 0}
+
+
+@endnode
+
+@Node "Sitelist"
+
+   @{b}The sitelist window@{ub}
+
+
+   @{lindent 3}There are two ways to get to this window, and depending on how you
+got here things look and act different. If you got here via the
+"Settings/Hostlist" , double-clicking on a site will pop up the
+@{"Site configuration window" link "Siteconfiguration"}. If you got here from the Connect-gadget
+in the main window, you will have one 'Connect'-gadget and one
+'Cancel'-gadget instead of the single 'OK' gadget. Also double-clicking
+on a site will make AmiFTP connect to it.@{lindent 0}
+
+   @{lindent 3}By adding a new group you can move sites into a submenu. In order to
+move a site into a group, the group needs to be "open", which means that the 
+arrow that's on the left side of the groupname should point downwards. Then you move
+the site you have selected by pressing the up/down-buttons. In order to learn
+how this works, the best is probably to try it out.@{lindent 0}
+
+   @{lindent 3}It's possible to add separators to menu by pressing the 'Add bar'
+button. Note that the bar will always show up in the menu in one way or another. So
+if you add it to a submenu that isn't hotlisted it will still show up somewhere.@{lindent 0}
+
+
+   @{lindent 3}You can select sites by using the cursor-keys (UP/DOWN).@{lindent 0}
+
+@EndNode
+
+@Node "Siteconfiguration" "Site configuration"
+   @{b}Site configuration@{ub}
+
+
+   · Name:
+
+     @{lindent 5}This name will show up in the sitelist window and in the 
+hotlist-menu.@{lindent 0}
+
+
+   · Site:
+
+     @{lindent 5}This should be the ftpsite's actual Internet address (either
+hostname or IP).@{lindent 0}
+
+
+   · Port:
+
+     @{lindent 5}Normally all ftp-sites use port-number 21 (which is the 
+default), but some sites are on other ports.@{lindent 0}
+
+
+   · Auto-cd to directory:
+
+     @{lindent 5}If this is set, AmiFTP will cd to this directory right after
+the connection is made. It's convenient to have /pub/aminet here for the Aminet
+sites.@{lindent 0}
+
+
+   · Download path:
+
+     @{lindent 5}If you click on the button a path-requester will show up,
+you can also type the download path into the string gadget. If you don't
+specify a path, the default path specified in @{"Global preferences" Link "Globalpreferences"}
+will be used.@{lindent 0}
+
+
+   · Anonymous login?
+
+     @{lindent 5}Selfexplaining!@{lindent 0}
+
+
+   · Login name:
+
+     @{lindent 5}Which loginname to use for non-anonymous logins.@{lindent 0}
+
+
+   · Password:
+
+     @{lindent 5}The password for the above username. If you don't specify one, AmiFTP
+will pop up a requester asking for it when you connect. The password will
+be saved in the AmiFTP.prefs file, although it's not written out in plain
+ASCII, so if you load the prefs-file into an editor you can't read the password.
+The encryption routine is not very advanced, it's just that I don't like writing
+the password in the prefs-file so people can do a 'type AmiFTP.prefs hex' and
+find dozens of passwords without any effort. So for maximum security you should
+not write your password here. You have been warned.@{lindent 0}
+
+
+   · Operating System
+
+     @{lindent 5}In order to parse the directory listing correctly, AmiFTP needs to
+know what Operating System the site is using. For most sites, UNIX will
+work. Supported systems are UNIX, VMS and MSDOS. If you connect to a
+Amiga-site you can try UNIX, it all depends on which ls the server is using.
+AmiFTP can't parse the default AmiTCP:bin/ls yet, but this will be added.@{lindent 0}
+
+
+   · Proxy:
+
+     @{lindent 5}This is mostly for my personal use since the proxy-support
+in AmiFTP is not compataible with the www-proxys that are available. This proxy is
+only used locally here at rydnet.lysator.liu.se.@{lindent 0}
+
+
+   · Hotlist:
+
+     @{lindent 5}If this is checked the site will appear under the
+menu-label "HotList".@{lindent 0}
+
+
+   · Aminet-mode:
+
+     @{lindent 5}If this is checked this site will be marked as a Aminet-site and
+AmiFTP will get the recent-file (in info/adt/) and display the new files since your
+last visit to Aminet. Note that you have to set 'Auto-cd to directory' to the root
+Aminet-directory at the site (normally this is /pub/aminet/).@{lindent 0}
+
+@EndNode
+
+@node "AmiFTPMenus" "AmiFTP Menus"
+@prev "Configuration"
+@next "ARexx"
+
+   @{b}AmiFTP Menus@{ub}
+
+
+   Project
+
+   @{"  Connect            " link "MENUConnect"}
+
+   @{"  Disconnect         " link "MENUDisconnect"}
+
+   @{"  Reconnect          " link "MENUReconnect"}
+
+   @{"  Send FTP Command   " link "MENUFTPCommand"}
+
+   @{"  Add to sitelist    " link "MENUAddToSiteList"}
+
+   @{"  Reset Aminet-date  " link "MENUResetADT"}
+
+   @{"  Iconify            " link "MENUIconify"}
+
+   @{"  About              " link "MENUAbout"}
+
+   @{"  Quit               " link "MENUQuit"}
+
+
+   Files
+
+   @{"  Tag all            " link "MENUTagAll"}
+
+   @{"  Untag all          " link "MENUUntagAll"}
+
+   @{"  Select by pattern  " link "MENUPatternSelect"}
+
+   @{"  Transfer mode      " link "MENUTransferMode"}
+
+   @{"    Binary           " link "MENUTransferMode"}
+
+   @{"    ASCII            " link "MENUTransferMode"}
+
+   @{"  Clear cache        " link "MENUClearCache"}
+
+   @{"  Parent             " link "MENUParent"}
+
+   @{"  Get                " link "MENUGet"}
+
+   @{"  Put                " link "MENUPut"}
+
+   @{"  View               " link "MENUView"}
+
+   @{"  View readme        " link "MENUViewReadme"}
+
+   @{"  Create directory   " link "MENUCreateDir"}
+
+   @{"  Delete             " link "MENUDelete"}
+
+   @{"  Rename             " link "MENURename"}
+
+
+   Sort
+
+   @{"  Sort               " link "MENUSort"}
+
+   @{"   by name           " link "MENUSort"}
+
+   @{"   by date           " link "MENUSort"}
+
+
+   Settings
+
+   @{" Global              " link "MENUGlobal"}
+
+   @{" Sitelist            " link "MENUSitelist"}
+
+   @{" Log Window?         " link "MENULogWindow"}
+
+   @{" Show dotfiles?      " link "MENUShowDots"}
+
+   @{" Show entire RECENT? " link "MENUShowRecent"}
+
+   @{" Load settings...    " link "MENULoadSettings"}
+
+   @{" Save settings       " link "MENUSaveSettings"}
+
+   @{" Save settings as... " link "MENUSaveSettings"}
+
+
+   Hotlist
+
+   @{" Hotlist entries     " link "MENUHotList"}
+
+@endnode
+
+@node "MENUConnect"
+@toc "AmiFTPMenus"
+
+   @{b}Connect...@{ub}
+
+
+   Opens the sitelistwindow and lets you choose which site you want to connec to.
+@endnode
+
+@node "MENUDisconnect"
+@toc "AmiFTPMenus"
+
+   @{b}Disconnect@{ub}
+
+
+   Disconnects from the server.
+@endnode
+
+@node "MENUReconnect"
+@toc "AmiFTPMenus"
+
+   @{b}Reconnect@{ub}
+
+
+   Reconnects you to the last server you was connected to, and goes to the directory
+you were in.
+@endnode
+
+@node "MENUFTPCommand"
+@toc "AmiFTPMenus"
+
+   @{b}Send FTP Command@{ub}
+
+
+   Prompts you for a string to send to the server.
+@endnode
+
+@node "MENUAddToSiteList"
+@toc "AmiFTPMenus"
+
+  @{b}Add to sitelist@{ub}
+
+
+   Add the current site to the sitelist, the current remote directory will also be copied.
+
+@endnode
+
+@node "MENUResetADT"
+@toc "AmiFTPMenus"
+
+  @{b}Reset Aminet-date@{ub}
+
+
+   This will reset the internal Aminet-date in AmiFTP, and you will see all
+files in the RECENT-list.
+
+@endnode
+
+@node "MENUIconify"
+@toc "AmiFTPMenus"
+
+   @{b}Iconify@{ub}
+
+
+   Removes the gui-interface and puts an icon on the workbench so you can re-open the gui again.
+
+@endnode
+
+@node "MENUAbout"
+@toc "AmiFTPMenus"
+
+   @{b}About@{ub}
+
+
+   Pops up the About-window.
+
+@endnode
+
+@node "MENUQuit"
+@toc "AmiFTPMenus"
+
+   @{b}Quit@{ub}
+
+
+   Exists AmiFTP and saves the configuration if it has changed since you last saved it. The
+window size and position is not saved, to do this you have to use @{"Settings/Save settings" link "MENUSaveSettings"}.
+
+@endnode
+
+@node "MENUTagAll"
+@toc "AmiFTPMenus"
+
+   @{b}Tag all@{ub}
+
+
+   Selects all files in the current remote directory.
+@endnode
+
+@node "MENUUntagAll"
+@toc "AmiFTPMenus"
+
+   @{b}Untag all@{ub}
+
+
+   Deselects all selected files.
+@endnode
+
+@node "MENUPatternSelect"
+@toc "AmiFTPMenus"
+
+   @{b}Select by pattern...@{ub}
+
+
+   Lets you select files by entering an AmigaDOS pattern.
+@endnode
+
+@node "MENUTransferMode"
+@toc "AmiFTPMenus"
+
+   @{b}Transfer mode@{ub}
+
+
+   You can switch between binary mode and ASCII-mode.
+@endnode
+
+@node "MENUClearCache"
+@toc "AmiFTPMenus"
+
+   @{b}Clear cache@{ub}
+
+
+   Clears the directory cache.
+@endnode
+
+@node "MENUParent"
+@toc "AmiFTPMenus"
+
+   @{b}Parent@{ub}
+
+
+   Changes the current directory to the parent directory.
+@endnode
+
+@node "MENUGet"
+@toc "AmiFTPMenus"
+
+   @{b}Get@{ub}
+
+
+   Gets the selected file(s).
+@endnode
+
+@node "MENUPut"
+@toc "AmiFTPMenus"
+
+   @{b}Put@{ub}
+
+
+   Upload files.
+@endnode
+
+@node "MENUView"
+@toc "AmiFTPMenus"
+
+   @{b}View@{ub}
+
+
+   Views the selected file with the View command set in global preferences. The file is downloaded to T: before viewing.
+@endnode
+
+@node "MENUViewReadme"
+@toc "AmiFTPMenus"
+
+   @{b}View readme@{ub}
+
+
+   Views the readme of a file when AmiFTP is in Aminet-mode.
+@endnode
+
+@node "MENUCreateDir"
+@toc "AmiFTPMenus"
+
+   @{b}Create directory@{ub}
+
+
+   Creates a new directory on the server.
+@endnode
+
+@node "MENUDelete"
+@toc "AmiFTPMenus"
+
+   @{b}Delete@{ub}
+
+
+   Deletes the selected files. Be careful! You have been warned.
+@endnode
+
+@node "MENURename"
+@toc "AmiFTPMenus"
+
+   @{b}Rename@{ub}
+
+
+   Renames the selected files. You will be prompted for a new name for each file.
+@endnode
+
+@node "MENUSort"
+@toc "AmiFTPMenus"
+
+   @{b}Sort@{ub}
+
+
+   The will sort the filelist either by Name or Date.
+
+@endnode
+
+@node "MENUGlobal"
+@toc "AmiFTPMenus"
+
+   @{b}Global settings@{ub}
+
+
+   Opens the @{"Global settings window" link "Globalpreferences"}.
+@endnode
+
+@node "MENULogWindow"
+@toc "AmiFTPMenus"
+
+   @{b}Log window@{ub}
+
+
+   Toggles the logwindow on/off. The logwindow is just a CON: at the moment.
+
+@endnode
+
+@node "MENUShowDots"
+@toc "AmiFTPMenus"
+
+   @{b}Show dotfiles?@{ub}
+
+
+   Toggles viewing of dot-files (files beginning with a '.').
+
+@endnode
+
+@node "MENUShowRecent"
+@toc "AmiFTPMenus"
+
+   @{b}Show entire RECENT?@{ub}
+
+
+   Displays the entire RECENT-file.
+
+@endnode
+
+@node "MENUSitelist"
+@toc "AmiFTPMenus"
+
+   @{b}Hostlist@{ub}
+
+
+   Opens the @{"Sitelist window" link "Sitelist"}.
+
+@endnode
+
+@node "MENULoadSettings"
+@toc "AmiFTPMenus"
+
+   @{b}Load settings@{ub}
+
+
+   Load new settings.
+@endnode
+
+@node "MENUSaveSettings"
+@toc "AmiFTPMenus"
+
+   @{b}Save settings@{ub}
+
+
+   Save the current settings to file. When starting AmiFTP it looks for AmiFTP.prefs
+in 'Current directory', PROGDIR:, ENVARC: and ~home/. AmiFTP will also save the current size
+and position of the main window to the config-file.
+
+@endnode
+
+@node "MENUHotList"
+@toc "AmiFTPMenus"
+
+   @{b}Hotlist@{ub}
+
+
+   If you have checked the 'Hotlist'-gadget in @{"Site configuration" link "Siteconfiguration"} for
+one or more sites, this menu will provide an easy way to connect to your favourite site without
+going through the @{"Sitelist window" link "Sitelist"}.
+@endnode
+
+@node "ARexx" "ARexx documenation"
+@prev "AmiFTPMenus"
+@next "Acknowledgements"
+
+   @{b}ARexx@{ub}
+
+
+   AmiFTP's ARexx-port default name is "AMIFTP". In case a commands
+fails a non-zero returncode is returned.
+
+   The following ARexx commands are available:
+
+
+   @{" GETATTR " Link "GETATTR"} 
+
+   @{" SETATTR " Link "SETATTR"} 
+
+   @{" CONNECT " Link "CONNECT"} 
+
+   @{" DISCONNECT " Link "DISCONNECT"} 
+
+   @{" CD " Link "CD"} 
+
+   @{" LCD " Link "LCD"} 
+
+   @{" DELETE " Link "DELETE"}
+
+   @{" SITE " Link "SITE"} 
+
+   @{" GET " Link "GET"} 
+
+   @{" MGET " Link "MGET"} 
+
+   @{" PUT " Link "PUT"} 
+
+   @{" MPUT " Link "MPUT"} 
+
+   @{" VIEW " Link "VIEW"}
+
+   @{" FTPCOMMAND " Link "FTPCOMMAND"}
+
+   @{" ACTIVATE " Link "ACTIVATE"}
+
+   @{" DEACTIVATE " Link "DEACTIVATE"}
+
+   @{" QUIT " Link "QUIT"} 
+
+@EndNode
+
+@Node "GETATTR" "GETATTR"
+@Toc "ARexx"
+
+   @{b}GETATTR@{ub}
+
+
+   Syntax: GETATTR STEM/A, HOTLIST/S, FILELIST/S
+
+
+   Description:
+
+
+   Fills the STEM-variable with current AmiFTP-status:
+
+
+     stem.VERSION   = @{lindent 22}Version of AmiFTP@{lindent 0}
+
+     stem.SCREEN    = @{lindent 22}Name of the public screen AmiFTP lives on@{lindent 0}
+
+     stem.HOST      = @{lindent 22}Current host@{lindent 0}
+
+     stem.PORT      = @{lindent 22}Current port@{lindent 0}
+
+     stem.PROXYHOST = @{lindent 22}Name of proxyhost@{lindent 0}
+
+     stem.PROXYPORT = @{lindent 22}Proxyport@{lindent 0}
+
+     stem.USEPROXY  = @{lindent 22}Use proxy for this connection?@{lindent 0}
+
+     stem.ANONYMOUS = @{lindent 22}Set to 1 if anonymous login is used, otherwise 0@{lindent 0}
+
+     stem.USERNAME  = @{lindent 22}Loginname used@{lindent 0}
+
+     stem.LOCALDIR  = @{lindent 22}Current localdirectory@{lindent 0}
+
+     stem.REMOTEDIR = @{lindent 22}Current remotedirectory@{lindent 0}
+
+     stem.CONNECTED = @{lindent 22}Set to 1 if AmiFTP is connected, otherwise 0. (AmiFTP will send a "NOOP"-command
+     in order to check this)@{lindent 0}
+     
+
+   @{lindent 3}If HOSTLIST is specified the following structure will also be set:@{lindent 0}
+
+
+     stem.HOTLIST.COUNT       = @{lindent 32}Number of hotlist entries@{lindent 0}
+
+     stem.HOTLIST.n.NAME      = @{lindent 32}Host hotlist name@{lindent 0}
+
+     stem.HOTLIST.n.ADDRESS   = @{lindent 32}Host address@{lindent 0}
+
+     stem.HOTLIST.n.PORT      = @{lindent 32}Port number to use@{lindent 0}
+
+     stem.HOTLIST.n.USERNAME  = @{lindent 32}Loginname@{lindent 0}
+
+     stem.HOTLIST.n.ANONYMOUS = @{lindent 32}Set to 1 if anonymous login should be used@{lindent 0}
+
+     stem.HOTLIST.n.REMOTEDIR = @{lindent 32}Default remote directory@{lindent 0}
+
+     stem.HOTLIST.n.LOCALDIR  = @{lindent 32}Default local directory@{lindent 0}
+
+     stem.HOTLIST.n.USEPROXY  = @{lindent 32}Set to 1 if proxy should be used@{lindent 0}
+
+
+   @{lindent 3}If FILELIST is specified AmiFTP will also fill the stem with the current
+remote directory listing (if there is one available)@{lindent 0}
+
+
+     stem.FILELIST.COUNT      = @{lindent 32}Number of files@{lindent 0}
+
+     stem.FILELIST.n.NAME     = @{lindent 32}Filename@{lindent 0}
+
+     stem.FILELIST.n.SIZE     = @{lindent 32}Filesize@{lindent 0}
+
+     stem.FILELIST.n.TYPE     = @{lindent 32}'FILE' for regular file, 'DIR' for directory and 'LINK' if
+AmiFTP can't figure out what it is.@{lindent 0}
+
+@EndNode
+
+@Node "SETATTR" "SETATTR"
+@Toc "ARexx"
+
+   @{b}SETATTR@{ub}
+
+
+   Syntax: SETATTR @{lindent 19}HOST/K, PORT/K, USEPROXY/S, REMOTEDIR/K, LOCALDIR/K, USERNAME/K, PASSWORD/K, QUIET/K@{lindent 0}
+
+
+   Description:
+
+
+   @{lindent 3}Sets the attribute to specified value. QUIET should be set to either TRUE or FALSE.
+When run in QUIET-mode AmiFTP won't wait for user input anywhere, that means that no requesters
+are shown, and the ConnectWindow and TransferWindow closes automatically. No transfers will
+be resumed when AmiFTP is in QUIET-mode, everything is overwritten.@{lindent 0}
+
+
+@EndNode
+
+@Node "CONNECT" "CONNECT"
+@Toc "ARexx"
+
+   @{b}CONNECT@{ub}
+
+
+   Syntax: CONNECT NOSCAN/S
+
+
+   Description:
+
+
+   @{lindent 3}Connects AmiFTP to a server, you must have specified which server
+you want to connect to with either 'SETATTR HOST server' or 'SITE
+servername'. If you don't want AmiFTP to read the remote directory use
+the NOSCAN option.@{lindent 0}
+
+
+@EndNode
+
+@Node "DISCONNECT" "DISCONNECT"
+@Toc "ARexx"
+
+   @{b}DISCONNECT@{ub}
+
+
+   Syntax: DISCONNECT
+
+
+   Description:
+
+
+   @{lindent 3}Disconnect AmiFTP from the current server. It is safe to call
+DISCONNECT even if you're not connected to a server.@{lindent 0}
+
+
+@EndNode
+
+@Node "CD" "CD"
+@Toc "ARexx"
+
+   @{b}CD@{ub}
+
+
+   Syntax: CD NOSCAN/S, PARENT/S, DIR
+
+
+   Description:
+
+
+   @{lindent 3}Changes remote directory to DIR or PARENT. If you don't want AmiFTP
+to read the directory use the NOSCAN option.@{lindent 0}
+
+
+@EndNode
+
+@Node "LCD" "LCD"
+@Toc "ARexx"
+
+   @{b}LCD@{ub}
+
+
+   Syntax: LCD DIR
+
+
+   Description:
+
+
+   @{lindent 3}Changes local directory to DIR.@{lindent 0}
+
+@EndNode
+
+@Node "DELETE" "DELETE"
+@Toc "ARexx"
+
+   @{b}DELETE@{ub}
+
+
+   Syntax: DELETE FILE/M
+
+
+   Description:
+
+
+   @{lindent 4}Deletes all files, if something goes wrong, AmiFTP will not
+continue to delete the rest of the files in the list.@{lindent 0}
+
+@EndNode
+
+@Node "SITE" "SITE"
+@Toc "ARexx"
+
+   @{b}SITE@{ub}
+
+
+   Syntax: SITE SITE/A/F
+
+
+   Description:
+
+
+   @{lindent 3}Scans the sitelist and, if the SITE is present, makes AmiFTP ready
+to connect to the site. Use the CONNECT-command to connect.@{lindent 0}
+
+
+@EndNode
+
+@Node "GET" "GET"
+@Toc "ARexx"
+
+   @{b}GET@{ub}
+
+
+   Syntax: GET ASCII/S, BIN/S, FILE/A, LOCAL
+
+
+   Description:
+
+
+   @{lindent 3}Gets a file from server in ASCII or BINary mode (default is binary),
+with the filename LOCAL if specified, otherwise the filename will be
+the same as FILE.@{lindent 0}
+
+
+@EndNode
+
+@Node "MGET" "MGET"
+@Toc "ARexx"
+
+   @{b}MGET@{ub}
+
+
+   Syntax: MGET ASCII/S, BIN/S, FILE/M
+
+
+   Description:
+
+
+   @{lindent 3}Gets multiple files in ASCII or BINary mode (default is binary) from
+the server.@{lindent 0}
+
+
+@EndNode
+
+@Node "PUT" "PUT"
+@Toc "ARexx"
+
+   @{b}PUT@{ub}
+
+
+   Syntax: PUT FILE, REMOTE
+
+
+   Description:
+
+
+   @{lindent 3}Uploads FILE to the server.@{lindent 0}
+
+
+@EndNode
+
+@Node "MPUT" "MPUT"
+@Toc "ARexx"
+
+   @{b}MPUT@{ub}
+
+
+   Syntax: MPUT FILE/M
+
+
+   Description:
+
+
+   @{lindent 3}Uploads multiple files to the server.@{lindent 0}
+
+
+@EndNode
+
+@Node "VIEW" "VIEW"
+@Toc "ARexx"
+
+   @{b}VIEW@{ub}
+
+
+   Syntax: VIEW ASCII/S,BIN/S,FILE/A
+
+
+   Description:
+
+
+   @{lindent 3}Downloads the file to 'T:' and then spawns the viewer (@{"Settings/Global/View command" Link "Globalpreferences"}). When AmiFTP exists it will try to delete all the viewed files.
+
+@EndNode
+
+@Node "FTPCOMMAND" "FTPCOMMAND"
+@Toc "ARexx"
+
+   @{b}FTPCOMMAND@{ub}
+
+
+   Syntax: FTPCOMMAND COMMAND/F
+
+
+   Description:
+
+
+   @{lindent 3}Sends the supplied string directly to the server on the control
+channel without doing any checks first. This way you can use AmiFTP in order to
+remove directories, change protection bits etc. "FTPCOMMAND RMD test" will remove
+the directory called test.@{lindent 0}
+
+@EndNode
+
+@Node "ACTIVATE" "ACTIVATE"
+@Toc "ARexx"
+
+   @{b}ACTIVATE@{ub}
+
+
+   Syntax: ACTIVATE
+
+
+   Description:
+
+
+   @{lindent 3}De-iconifies AmiFTP.@{lindent 0}
+
+@endnode
+@Node "DEACTIVATE" "DEACTIVATE"
+@Toc "ARexx"
+
+   @{b}DEACTIVATE@{ub}
+
+
+   Syntax: DEACTIVATE
+
+
+   Description:
+
+
+   @{lindent 3}Iconifies AmiFTP and puts an icon on the Workbench.@{lindent 0}
+
+@endnode
+
+@Node "QUIT" "QUIT"
+@Toc "ARexx"
+
+   @{b}QUIT@{ub}
+
+
+   Syntax: QUIT
+
+
+   Description:
+
+
+   @{lindent 3}Quits AmiFTP, if you are connected to a server AmiFTP will
+disconnect you first.@{lindent 0}
+
+@endnode
+
+@node "FAQ"
+@prev "ARexx"
+
+   @{b}Common questions@{ub}
+
+
+   Why doesn't the proxy-function work for me?
+
+
+   Simple, it's not designed to work with anything else than a local ftp-proxy
+we use here at rydnet.lysator.liu.se. It's in no way compatible with the common
+http/ftp-proxies available.
+
+@endnode
+
+@node "Acknowledgements"
+@prev "FAQ"
+
+   @{b}Acknowledgements@{ub}
+
+
+   @{lindent 3}First of all, thanks to all who have tested the program and reported
+bugs/suggestions.@{lindent 0}
+
+
+   Special thanks to:
+
+
+     @{lindent 5}Andreas Johansson (andjo@lysator.liu.se) for lots of alphatesting@{lindent 0}
+
+     @{lindent 5}Per Peman (peman@ludd.luth.se) for testing and for the ftp-site@{lindent 0}
+
+     @{lindent 5}Robert Reiswig (rcr@vgr.com) for the installer-script and the icon.@{lindent 0}
+
+     @{lindent 5}Sami Itkonen (Sami.Itkonen@hut.fi) for the find.amiftp script.@{lindent 0}
+
+     @{lindent 5}Heikki Kantola (hezu@iki.fi) for testing and for the KMI-style dockicon (Icons/AmiFTP.KMI-dock.info).@{lindent 0}
+
+
+     @{lindent 5}Timothy Aston (timmer@warped.com) for the speedbar icons.@{lindent 0}
+
+     @{lindent 5}Phil Vedovatti (vedovatt@u.washington.edu aka aesculape) for the AmiFTP-icon in NewIcon-style (Icons/AmiFTP.NI.info)@{lindent 0}
+
+
+     @{lindent 3}And the following translators:@{lindent 0}
+
+
+     @{lindent 5}Osma Ahvenlampi (oa@iki.fi) for the Finnish translation@{lindent 0}
+
+     @{lindent 5}Volker Graf (vgraf@hydra.informatik.uni-ulm.de) for the Danish and German translations@{lindent 0}
+
+     @{lindent 5}Troels Walsted Hansen (troels@stud.cs.uit.no) for the Norwegian translation@{lindent 0}
+
+     @{lindent 5}Pantelis Kopelias (leestar@acropolis.gr) for the Greek translation@{lindent 0}
+
+     @{lindent 5}Sigurbjörn B. Lárusson (sibbi@cc.is) for the Icelandic translation@{lindent 0}
+
+     @{lindent 5}Giacomo Magnini (prometeo@flashnet.it) for the Italian translation@{lindent 0}
+
+     @{lindent 5}José Roberto González Rocha (alu756@csi.ull.es) for the Spanish translation@{lindent 0}
+
+     @{lindent 5}Arno van Wouwe (apwouwe@cs.vu.nl) for the Dutch translation@{lindent 0}
+
+
+     @{lindent 5}The people behind ClassAct@{lindent 0}
+
+
+     and everyone else I've forgotten...
+
+@endnode
+
+@node "Bugs"
+@prev "Acknowledgements"
+
+   @{b}Known bugs/problems@{ub}
+
+   @{lindent 0}Sometimes after a timeout or a transfer has been aborted, AmiFTP quits. This is not working the way I want, and I'm looking into it.@{lindent 0}
+
+
+   @{lindent 3}I've had two reports saying that AmiFTP sometimes uses 100% of the CPU. I have no idea why
+this is happening, it hasn't happened to me yet.@{lindent 0}
+
+
+   @{lindent 3}(This seems to apply to as225/I-Net 225 users only) When aborting a filetransfer the entire connection
+is lost.@{lindent 0}
+
+
+
+   @{lindent 3}It could take a while before the transfer is actually aborted after the
+Abort-button is pressed.@{lindent 0}
+
+@endnode

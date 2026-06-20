@@ -1,0 +1,60 @@
+
+
+              ZipWd Version 0.5 Public Domain
+
+ZipWd needs at minimum OS 2.xx Version 37.xx .
+
+ZipWd is a little tool which only runs from CLI.
+
+It ziped the current active Window, that means it does the same
+as when you activate the ZipGadget of the Window (in the right
+top Corner beneth the DepthGadget).
+
+It is useful if you want to zip a Window which ZipGadget you can`t
+reach with the mousepointer.
+
+It is much better to make a macro for a Functionkey than to use it
+from CLI.
+
+
+
+Legal Stuff:
+
+
+        This program and all files come with it also the docfiles are
+        released as PUBLIC DOMAIN.
+
+        this means:
+
+            everybody may use it, modify it and (re)distribute it.
+            It would be very nice to include a notice about the
+            original author.
+
+        I take no warranty or garanty for the function of this program.
+        The whole risk of using it stays by the user.
+
+        The list of all files:
+
+        ZipWd
+        ZipWd.info
+        ZipWd.c
+        ZipWd.c.info
+        DMakeFile
+        DMakeFile.info
+        ZipWd.doc
+        ZipWd.doc.info
+        ZipWd.dok
+        ZipWd.dok.info
+
+The End
+
+Have Fun ...
+
+    my address:
+
+        Hans-Peter Guenther
+        Gruener Weg 5
+        W-3501 Fuldatal 2
+        GERMANY
+
+    your H.P.G

@@ -1,0 +1,43 @@
+Short: HardDisk report programs.  Source included.
+Author:    Jim Steichen (jimbot@frontiernet.net)
+Uploader:  Jim Steichen (jimbot@frontiernet.net)
+Type:      dev/src
+Version:   2.0
+Requires:  C-Compiler of some sort (SAS-C (or gcc) recommended).
+
+   There are several programs in this archive that will generate
+   reports on the contents of the RDB blocks on any hard disk
+   you have in your Amiga (or AmigaOne).  Read DiskHelpers.guide
+   for more information.
+
+AUTHOR
+~~~~~~
+    James T. Steichen
+    2217 N. Tamarack Dr.
+    Slayton, Mn. 56172-1155, USA
+    jimbot@frontiernet.net
+
+What You Get:
+~~~~~~~~~~~~~   
+DiskHelpers.readme           -- What you're looking at now.
+DiskHelpers.guide            -- Program guidance (NOT Wisdom!)
+DiskHelpers.guide.info
+CheckForSCSI                 -- Example script for CheckSCSIVolPPC
+CheckSCSIVol.c               -- See if an Environmental Variable is present.
+CheckSCSIVolPPC
+SetSCSIEnv.c                 -- Generate Environmental Variables for CheckSCSIVolPPC
+SetSCSIEnvPPC
+RDBInformer.c                -- Generate a report on a Hard Disk & its partitions
+RDBInformerPPC
+ReadCapacity.c               -- Report on the number of Sectors & (block size) for a Hard Disk. 
+ReadCapacityPPC
+ReadHardBlocks.c             -- Generate a more in-depth report on a Hard Disk & its partitions
+ReadHardBlocksPPC
+ReadSector.c                 -- Generate a report on a given sector of a Hard Disk.
+ReadSectorPPC
+MakeFile                     -- gcc MakeFile for the source code. 
+SMakeFile                    -- SAS-C MakeFile for the source code.
+AmigaDOSErrs.h               -- Complete collection of various error codes.
+Author.h                     -- Information about me.
+RDBInformer.output           -- Example of what RDBInformerPPC should report.
+ReadHardBlocks.output        -- Example of what ReadHardBlocksPPC should report.

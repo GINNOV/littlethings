@@ -1,0 +1,63 @@
+Short:    GNU getopt() <-> Workbench interface
+Author:   <jensthi@ifi.uio.no> (Jens T. Berger Thielemann)
+Uploader: <jensthi@ifi.uio.no> (Jens T. Berger Thielemann)
+Version:  1.0
+Type:     dev/c,dev/cross
+Requires: Amiga, C compiler, C= includes, OS 2.04+
+
+As  C/C++  is  currently  the  only  compilable  languages  worth doing
+cross-development  in, I decided to push portability a bit further.  As
+many  other  platforms haven't noticed, the computer has a mouse, which
+can be utilized for passing options to programs, amongs others.
+
+Still,  as  the  Workbench  is  very OS specific; the GNU getopt_long()
+routines  are still the programmer's choice if he wishes to easily port
+his program.
+
+WB2Argv  is  a  set of routines which solve this problem.  They convert
+the tooltypes and shift-clicked icons into an argv similar array, which
+can   be   passed   directly  onto  getopt_long().   The  getopt()  and
+getopt_long()  routines  are included in the archive.  A minor quirk is
+that  they  require  that  the  Amiga  has OS 2.04 or higher.  This may
+change if there is enough interest for these routines.
+
+An  example:   Suppose your program is called "Foo".  The user puts the
+following arguments as tooltypes:
+
+SPEED=FAST
+IQ=HIGH
+UNIVERSE=UTOPIA
+
+In addition, he shift-clicks the files "dh1:Data" and "dh1:Neural".
+
+The routine WB2Argv() will take the WBenchMsg which is passed onto you,
+and  convert it to the following array (line shifts indicating separate
+array elements):
+
+Foo
+--speed=FAST
+--iq=HIGH
+--universe=UTOPIA
+--
+dh1:Data
+dh1:Neural
+
+This  is  fully  compliant to the getopt_long() format.  The folding of
+options case can be specified via flags (it stops at the `=' sign).
+
+As  getopt_long(),  this  is  distributed  under the GNU General Public
+License,  with  the  following  addition:   You  must mention that your
+program uses my routine in your document.
+
+Copyright © 1996 Jens T. Berger Thielemann.
+
+To contact the author:
+        Jens Berger
+        Spektrumvn. 4
+        N-0666 Oslo
+        Norway
+
+Note: These routines were written for one of my other projects, ChkTeX,
+      which  may  be  useful  if you're doing serious typesetting using
+      LaTeX.  Available on AmiNet as text/tex/chktex.lha.
+

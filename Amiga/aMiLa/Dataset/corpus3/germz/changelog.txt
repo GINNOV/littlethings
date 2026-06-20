@@ -1,0 +1,200 @@
+21.9.1
+	- added maps c11-15
+	- starting level option in campaign menu
+	- added germz4.mod
+
+21.5.31
+	- added confirmation screen before clearing map
+
+21.5.27
+	- added "starting level" option to campaign menu
+
+21.4.16
+	- ingame music now cycles between two tracks
+
+21.4.12
+	- fixed audio filter being enabled when playing sfx
+
+21.4.6
+	- fixed being able to attack other nodes even if road is in different direction
+
+21.4.2
+	- added steer selection on running game from the editor
+	- added c06 and c07 maps
+	- when game is started from editor, it switches back to editor on end of match
+
+21.3.3
+	- re-enabled logo display, fixed waiting for LMC jingle
+	- added new version of LMC jingle
+	- .mod and sfx replay should be mostly bugless by now
+
+21.2.24
+	- fixed freeze when returning from map test back to the editor
+	- fixed game screen flicker before fade when testing map from the editor
+	- fixed sample repeat issue in music playback
+
+21.2.14
+	- Hopefully fixed waiting for LMC morse code sfx playback
+	- Added c01-c05, kriss, kross and cube maps
+
+21.2.08
+	- Fixed memory corruption when opening maps with nodes on first/last column and row
+	- Minor speedup of map description display in battle menu
+
+21.1.23
+	- Fixed nodes having negative charges and related to it on-screen garbage
+	- Fixed crash when exiting logo screen before LMC jingle fully played back
+	- Added "kross" map to official builds
+
+21.1.6
+	- Improved "how to play" submenu
+	- Fixed displaying steer options for players in battle menu, which aren't available on given map
+	- Probably fixed graphical glitches in campaign summary
+
+21.1.4
+	- Added special nodes with global effect - effect scales per each controlled node
+	- Added special attack node which adds flat boost to attack power
+	- Added special tick node which shortens node power regen period
+	- Special capacity node increases max capacity of each controlled node
+	- Disabled auto alignment of paths in editor
+	- Removed support for map's per-player initial stats
+	- Changed format of defs.json to reflect above changes
+	- Regen ticks are now defined as 1 tick = 1 frame (was: 1 tick = 5 frames)
+
+21.1.1
+	- Added "how to play screen"
+	- Fixed going out of bounds in editor
+	- When testing map, ESC/P buttons bring back the editor
+	- Better autocalculating path direction in editor, unoptimized a bit
+
+20.12.29
+	- Fixed player HUD not being cleared after being defeated
+	- Fixed being able to enter targeting mode when selecting non-owned node
+	- Pause navigation is always allowed via arrows
+	- Fixed garbage being drawn on HUD when restarting game
+	- Fixed entering pause in editor
+	- Added subdirectory navigation for selecting map in battle menu and editor
+	- Added campaign mode along with outro message placeholder
+
+20.12.4
+	- HUD is now properly colored
+	- Fixed map preview's bg color in editor's load dialog
+	- Added targeting icon on HUD
+
+20.12.3
+	- Cleanup of GUI code - every dialog uses scanlines
+	- First half of HUD speedup complete - currently without colors
+
+20.11.20
+	- Probably fixed incrementing scores when pressing ESC in game summary
+	- Probably fixed not being able to navigate in summary if defeated by CPU
+	- Attack power now doesn't affect final plep count after takeover
+
+20.11.15
+	- "load" dialog in editor now should work, "save" probably not
+	- fixed old digits on HUD blinking after restarting map from pause menu
+
+20.11.12
+	- pause is now single-buffered
+	- added per-player per-map charge rate and attack power defs
+
+20.11.3
+	- added post-battle summary
+	- scores should now be working properly
+
+20.10.28
+	- battle menu is now displayed in laced manner
+	- editor's map load dialog is broken and doesn't work
+
+20.10.23
+	- Rearranged menu a bit
+	- Added defs.json for configuring node parameters
+
+20.9.27
+- fixed special nodes not having proper gfx after takeover
+- game background is now visible under the HUD
+- changed steer method: hold fire to enter targeting mode, press direction to launch attack
+- fixed AI not being properly aggressive
+
+20.9.18
+- added special node with 2x regeneration speed and increased capacity to 125
+- fixed flickering nodes on map
+- cursor doesn't return on source node anymore
+
+20.9.15
+- added confirmation dialog before exiting from editor
+- fixed hud redraw when dealing with big numbers
+- maximum charge on a single node is 999
+
+20.9.14
+- added confirmation dialog before overwriting map in editor
+- fixed player HUD being displayed and blinking after defeat
+- slowed down AI a bit, resulting in significant performance gain
+
+20.9.13
+- speedup of ai pathfinding
+- re-enabled sfx due to ptplayer performance improvements
+- fixed ai going over its memory bounds
+- fixed garbage being appended in text inputs
+
+20.9.6
+- in-game hud scanlines
+- added "infect" submenu for map/player select
+
+20.8.23
+- removed debug colors
+- switched game display to raw coplist
+- use big font in menu and game
+- optimized hud display
+
+20.8.16
+- fixed losing buffer sync between bob management and display manager
+- always use 3rd channel for sfx in game
+- removed Revision stuff from credits
+- music playback starts from main menu, fading affects music volume
+- added TAB / shift+TAB navigation in editor save dialog
+
+20.8.14
+- fixed garbled ingame tiles and gui input bug
+- added "9" button to editor
+- mod playback now works for whole game
+- added LMC logo audio effect
+- added in-game sound effects
+- added map preview in map loading in editor
+- added credits screen
+- added blinking of cursors when overlapping in game
+- timing tweaks to node takeover animations
+
+20.6.21
+- added save/load in map editor
+- added fade-in and fade-out
+- editor now aligns blob links properly
+- editor now always use keyboard arrows or joy1
+
+20.5.9
+- editor kinda works, press F1 ingame
+- reorganized source for displaying game summary and editor directly from game
+
+20.4.25
+- updated graphics
+- music kinda works
+- menu has proper graphics
+- added logo screen
+
+20.4.8
+- Fixed startup-sequence in ADF
+- fixed neutral blobs growing without limit
+- fixed frames in initial draw anim
+- added menu
+- hud displays number of charges which will be transferred to plep in targeting mode
+- fixed blob conversion using wrong colors
+
+20.4.7.1
+- Neutral blobs grow every 3s
+- Initial work on input switching
+- You can now have more than 100 charges on blob by transporting it
+- Excessive charges will decay by 1 point every 3s
+- Initial charge incresed to 60 from 50
+
+20.4.7
+- Initial version

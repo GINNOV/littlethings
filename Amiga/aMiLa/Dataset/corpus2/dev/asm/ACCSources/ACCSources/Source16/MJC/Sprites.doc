@@ -1,0 +1,472 @@
+
+
+	ACC Tutorial - Hardware Sprites by Mike Cross
+	---------------------------------------------
+	
+    1.  What is a sprite?
+    
+     Most Amiga magazines, noteably those who review games, are constantly
+   getting sprites and bobs mixed up.  A bob, (Blitter OBject) can be any
+   size, and any number of bitplanes (hence any number of colours)  A
+   sprite is limited to only four colours, (or sixteen in attatch mode)
+   is capable of a horizontal width of only sixteen pixels and normally
+   only 8 sprites can be used at any one time.  With these facts in mind,
+   it would seem wiser for a programmer to use bobs as apposed to sprites.
+   Sprites win hands down over bobs when it comes to hardware programming.
+   A Sprite needs very little in the way of setting up, and can be moved
+   with great ease.  Bobs, on the other hand, are fiddly to initialise,
+   awkward to move, (masking and shifting -  argghhh!) and when used in
+   great numbers, (anything over about 1!) a double buffered screen will
+   usually be required to avoid flickering.
+
+    2.  Creating a sprite.
+    
+     Creating a sprite is simplicity itself.  I assume you all have a 
+   varient of Electronic Arts Deluxe Paint art package at hand with 
+   which sprites can be created.  Do not use Photon Paint or any HAM art
+   package for creating your images, as you will encounter big problems
+   when you come to convert the IFF file to a RAW file.   In fact, while
+   we are on the subject of screen modes, a sprite can be used in low
+   res, hi res, interlace or Ham without actually abiding by the particular
+   modes screen rules.  This is why the mouse pointer, (yes, this is a
+   sprite!) will always appear the same no matter what.  Set the screen
+   to 4 or 16 colours depending upon which you desire, though I personally
+   do not recommend the 16 colour attatch sprites if this is your first 
+   attempt!  As was mentioned earlier, a sprite can be only sixteen pixels
+   wide.  The depth of a sprite does not matter, and can be any value you
+   want.  In fact, the height of a sprite can actually be deeper than the
+   visible screen area.  Once the image has been drawn it can be saved in
+   one of two ways.  You can save the data as either an IFF brush or as
+   a standard IFF ILBM file.  The way in which you save the file is
+   dependent upon which utility you are going to use to convert the file
+   to RAW format.  There are many PD programs available which allow you
+   to convert brushes to sprite dc.w data, and the majority of competent
+   IFF picture converters will also allow you this option.  I use the
+   Kefrens IFF Converter myself, which I find very adequate for all my
+   graphical needs.  As I write this, I do not know if I have a brush to
+   sprite converter.  I will attempt to search one out, and if I manage to
+   actually locate one, will include it on this disk.  A final note on
+   sprite creation is the methods suggested in the Hardware manual and
+   Systems programmers guide.  These two books suggest you draw your 
+   sprite on graph paper and convert all the colours to binary or hex
+   numbers by hand!  For gods sake, this is Nineteen Ninety One, not
+   the dark ages!     
+
+
+    3.  The Sprite structure.
+   
+     Once the sprite is safely saved as a RAW file, (preferably as a
+   string of dc.w statements, we can start to think about displaying it.
+   Lets take the cursor from my "as yet un-released", game map editor as
+   an example here.  The converted data appears as this :-
+    	
+		dc.w		$1818,$781e,$0000,$8001,$0000,$8001,$8001
+		dc.w		$8001,$8001,$8001,$0000,$0000,$0000,$0000
+		dc.w		$0000,$0000,$0000,$0000,$0000,$0000,$0000
+		dc.w		$0000,$8001,$8001,$8001,$8001,$0000,$8001
+		dc.w		$0000,$8001,$1818,$781e	
+
+     The sprite is a standard 4 colours (although only 3 are used) and is
+   16 pixels deep.  This information alone will not be sufficient for
+   the Amiga hardware.  An obvious factor needed when displaying a sprite
+   is the position or, the co-ordinates.  All sprite co-ordinates are
+   taken from the top left corner of the sprite in relation to the top
+   left corner of the screen.  Even if, in your image the sprite does not 
+   actually have any visible data in this section, the position will still
+   be taken from here.  Now you know why in some games, a collision will
+   be logged even when it would appear not to have taken place!  In 
+   addition to the actual sprite data the hardware needs two sprite control
+   words which take the following form :-
+   
+	Control word one.
+   
+	Bits 00 - 07  Horizontal position of sprite (bits 00 - 07)      
+	Bits 08 - 15  First raster line of sprite (bits 00 - 07)
+	
+	Control word two.
+	
+	Bit 00  Horizontal position of sprite (bit 8)
+	Bit 01  Last raster line of sprite+1 (bit 8)
+	Bit 02  First raster line of sprite (bit 8)
+	Bits 03 - 06 Not used - set to zero
+	Bit 07  Attach control bit
+	Bit 08 - 15  Bottom raster line of sprite+1 (bits 00 - 07)  
+
+     As you can see, Commodore have taken it upon themselves to make
+   life for the sprite programmer as miserable as possible by 
+   splitting the 9 bit sprite positions throughout the control words.
+   If a sprite is to be moved to the extreme right of the screen, and
+   the co-ordinates exceed the 8 bit value allowed in the first control
+   word, the 9th bit in the second control word will need to be set and
+   the original value will need to be reset.  This is further complicated
+   for the vertical positioning.  If the bottom of the sprite data+1 is
+   in excess of 255 ($ff) pixels down the screen, the sprite will again
+   need to have its position split between two registers.  The actual
+   sprite positions are not taken from the top left corner of the visible
+   screen, but rather the screen as defined in the DDFSTRT and DDFSTOP
+   registers.  If you have a very small x or y position, the chances are
+   the sprite will not actually be on the viewable area.  This comes
+   in handy when sprites need to be smoothly scrolled onto the screen.
+   The Attach bit, (bit 7 of control word 2) is used for creating 16
+   colour sprites.  Only consecutive sprite pairs can be attached to each
+   other, ie.  Sprites 0 and 1, sprites 2 and 3, sprites 4 and 5 and so
+   on.  To create a 16 colour sprite, set the attach bit in the required
+   sprite pairs and ensure the two sprites have exactly the same screen
+   position.  If these factors fail to be met, the sprite will return to
+   only four colours.
+   
+     As well as the two necessary control words, the Amiga needs to be
+   told when the sprite has finished being displayed.  To do this two
+   null (zero) words are needed at the end of the data list.  That is
+   about all there is to creating the sprite.  The sprite from my
+   cursor mentioned earlier will now take on the following appearance :-
+        
+   Spr0		dc.w		$3040,$4100
+		dc.w		$1818,$781e,$0000,$8001,$0000,$8001,$8001
+		dc.w		$8001,$8001,$8001,$0000,$0000,$0000,$0000
+		dc.w		$0000,$0000,$0000,$0000,$0000,$0000,$0000
+		dc.w		$0000,$8001,$8001,$8001,$8001,$0000,$8001
+		dc.w		$0000,$8001,$1818,$781e	
+		dc.w		$0000,$0000
+
+     This means, the sprite will appear at a vertical position of $30
+   and will end at $41, with a horizontal position of $40. This sprite
+   would appear in the top left corner of the visible screen.
+
+
+    4.  Displaying the sprite.
+
+     A fully initialised sprite structure has to be placed into the
+   copper list.  When I say `into the copper list' it is not simply a
+   matter of putting the data into the list, (it won`t work if you do!)
+   You should use the hardware SprXpt registers instead.  There are 8
+   of the SprXpt registers, one for each sprite.  The registers are
+   full 19 bit addresses, (comprising of SprXptl and SprXpth) which means
+   the sprite data can be written to the registers in a similar way to
+   the bitplanes (with a single move.l instruction)   The following code
+   fragment can be used to initialise sprite0 :-
+    
+    		move.l		#Spr0,d0		* Source 	
+		lea		Sprite,a0		* Destination
+		move.w		d0,4(a0)		* Copy low word
+		swap		d0			* Swap bits
+		move.w		d0,(a0)			* Copy high word
+	
+     And in the copper list . . . 
+	
+		dc.w		sprpt+$00		
+Sprite		dc.w		$0000,sprpt+$02,$0000,sprpt+$04
+		dc.w		$0000,sprpt+$06,$0000,sprpt+$08
+		dc.w		$0000,sprpt+$0a,$0000,sprpt+$0c
+		dc.w		$0000,sprpt+$0e,$0000,sprpt+$10
+		dc.w		$0000,sprpt+$12,$0000,sprpt+$14
+		dc.w		$0000,sprpt+$16,$0000,sprpt+$18
+		dc.w		$0000,sprpt+$1a,$0000,sprpt+$1c
+		dc.w		$0000,sprpt+$1e,$0000
+   
+     Even though only one sprites is being used and displayed, it is
+   always a good idea to initialise the other pointers and point them
+   to a null long word somewhere in memory.  If this suggestion is not
+   observed, you may get the horrid flickers down your screen, which cause
+   so much frustration for inexperianced programmers!  The sprpt+$xx names I 
+   have used in my copper list are from the custom.i file.  My opinions
+   on using include files are the same as those of Mark Meany.  Any
+   programmer who does not use include files cannot class himself as a
+   programmer.  The final point to be taken into consideration when
+   displaying sprites is the DMAF_SPRITE bit of the DMACON register.  You
+   should always set this bit else the DMA does not know it is supposed 
+   to be displaying sprites.  Something on the lines of :-
+   
+		move.w		#SETCLR!DMAF_SPRITE,dmacon(a5)	
+     
+     Should suffice.  Note, the hardware dmabits.i file should be included
+   for the bit DMA definitions.  Using these is much easier than using a
+   string of binary numbers, and then having to search through them to
+   see which bits are set or not.
+
+ 
+    5.  Sprite colours.
+
+     Sprites do not have seperate colour registers from those used by
+   the bitplanes.  A sprite takes it colours from the top 16 colours 
+   available from the 32 colour palette.  If a sixteen colour screen is
+   used to display the sprites, the screen colours can be totally 
+   different from those used by the sprites.  If a 32 colour screen is
+   needed, you will have to be careful with what colours are used 
+   where.  The sprite colours are used as follows :-
+   
+	Sprite	Registers
+	------	---------
+	0 and 1	color16 - color19
+	2 and 3	color20 - color23
+	4 and 5	color24 - color27
+	6 and 7	color28 - color31
+
+     In each case, the first colour from each sprite, (16, 20, 24 and 28)
+   are treated as being the `transparant' colour which will always show
+   through, (this is usually black)
+
+    
+    6.  Sprites in motion.
+
+     Perhaps one of the main advantages of using sprites rather than
+   bobs, is the ease of which they can be moved.  To move a sprite
+   simply write a routine which increases or decreases the values 
+   stored in the sprite control words.  Such a routine may look 
+   something like this :-
+   
+   MAX_SPEED	equ		4
+   
+   MoveSprite	lea		Sprite0,a0
+		addi.b		#MAX_SPEED,1(a0)	* move right
+   		rts
+
+     This routine, though rather simple will accomplish the task of
+   moving a sprite 4 pixels at a time to the right until it reaches
+   the right edge of the screen.  Once there, the co-ordinates will overflow
+   causing the sprite to re-appear at the left of the screen.  When moving
+   sprites vertically, the start of the sprite and the end line+1 will 
+   both need to be changed.  I find it always works best to increase or 
+   decrease the end value before the start value.
+     
+
+    7.  Priorities and other bits.
+    
+     The sprites have a fixed priority as regards to each other.  Sprite0
+   will always appear in front of sprite1 and sprite1 in front of sprite2
+   and so on.  Sprite 7 has the lowest priority and will always appear
+   behind the other sprites.
+    
+     If an extra wide playfield such as overscan is being used, you will
+   lose the use of some of the sprites.  This is because of the way the
+   Amiga DMA fetches bitplane screen data.  With a super extra wide 
+   screen you can lose all of the sprites except sprite0.  Sprite0 can
+   not be deleted in this manner, as it lies outside the minimum value
+   allowed for the data fetch start register.  The mouse pointer is
+   actually sprite0, so it can never be lost in this way.
+   
+     As was mentioned at the start of this tutorial, it is possible to
+   display more than 8 sprites on the screen at any one time.  To do this
+   you can simply re-use the sprite channels.  Say for example, a sprite
+   is being displayed at the top of the screen.  Once the DMA has passed
+   the two null words at the end of the data, the sprite can be used 
+   again for something else at a completly different screen location.
+   The only fact to be taken into consideration when doing this is that
+   the new sprite must always be at least one raster line lower down the
+   screen than the original sprite.  It is quite easy to produce a 
+   sprite starfield by constantly reusing the same sprite over and over
+   again! - Believe me, I know, because I have done one.
+
+     As well as attaching sprites together to form 16 colour images, you
+   can also attach two sixteen colour sprites next to each other to
+   form a 32 pixel wide sprite.  There is, in fact, nothing to stop you
+   creating a four colour, 128 pixel wide sprite by incrementing the
+   horizontal position in each sprite by 16 each time.
+
+
+
+   Mike Cross, March 1991
+
+
+
+	Sprites, Part II - A practical use :- `The starfield'
+	-----------------------------------------------------
+
+   I better not leave you without a practical example of using sprites.
+   The commonest use for sprites is in the starfield.  Star fields come in
+   all shapes and sizes, ranging from simple 1 pixel stars to 16 colour 
+   rotating vector bob stars.  I will show you one of the easiest ways of
+   coding a starfield using the method mentioned earlier of re-using a
+   sprites channel over and over again.
+  
+   1.  Initialisation.
+
+   To display the hundred or so stars required to make an authentic looking
+   starfield requires a fair bit of initialising.  First off, You will need
+   some memory to store all of the sprites and their control words.  I
+   personally always allocate memory using AllocMem() but I know most
+   `hardware bashers' don't, so in this example - I won't.  At the start of
+   the code I have two starfield relative equates :-
+  
+
+	NumberOfStars		equ	127
+	Max_Speed		equ	4
+
+   I think it is pretty clear as to what these control.  Now we now how many
+   sprites are to be displayed; we can grab some chip memory :-
+
+	StarSprite		dcb.w	4*NumberOfStars,0
+
+   This is the amount I need for each sprite.  The dcb.w grabs me 4*127=508
+   words for the sprites data.   We need 2 words for each stars control
+   words, and 2 words for each stars actual data.  Placing two null words
+   at the end of the sprite is not necessary as the channel is being 
+   reused and does not need 'turning off' 
+   
+   Now we can show the copper where to find the sprite data :-
+
+		move.l		#StarSprite,d0
+		lea		Sprites,a0
+		move.w		d0,4(a0)
+		swap		d0
+		move.w		d0,(a0)
+		rts
+
+	And in the copper list . . . 
+
+		dc.w	sprpt+$00
+Sprites		dc.w	$0000,sprpt+$02,$0000,sprpt+$04,$0000,sprpt+$06
+		dc.w	$0000,sprpt+$08,$0000,sprpt+$0a,$0000,sprpt+$0c
+		dc.w	$0000,sprpt+$0e,$0000,sprpt+$10,$0000,sprpt+$12
+		dc.w	$0000,sprpt+$14,$0000,sprpt+$16,$0000,sprpt+$18
+		dc.w	$0000,sprpt+$1a,$0000,sprpt+$1c,$0000,sprpt+$1e
+		dc.w	$0000
+
+   Only 1 sprite is used here, the channel is used over and over again
+   for each star.  As was mentioned earlier, the rest of the sprite 
+   channels have been cleared so as to prevent flickers or glitches.
+
+
+   2.  Building the starfield.
+
+   Now that the system knows where to find the sprites we can build the
+   data for each one.  This is all done in a loop.
+   
+   Lets look at the loop a section at a time :-
+   
+   
+		lea		StarSprite,a0
+		move.w		#NumberOfStars-1,d7
+		move.w		#$20,d0			
+		move.w		#1,d1
+		moveq.l		#0,d2
+
+   The address of the star data structure is loaded into A0 and the
+   amount of stars in D7.  The #$20 loaded into D0 is the start Y position
+   and the #1 loaded into D1 is the actual sprite data (only 1 pixel
+   set)  D2 is cleared - this will be used to set the 9th bit of the
+   vertical position when the Y positions overflow.
+   
+   Next is the routine to calculate a random horizontal position :-
+    
+		move.w		#$321f,d3
+		move.w		#$5512,d5
+MakeStarLoop	move.w		vhposr(a5),d4		
+		or.l		d3,d5
+		add.l		d4,d5
+
+   The numbers loaded into D3 and D4 are random seeds and can be absolutly
+   anything (although random seeds of zero would be pretty pointless!)
+   The best (and most frequent) used method for generating a random
+   number is by reading the current raster beam position.  This is done
+   and the value returned is OR'd with the seeds.  To help jumble things
+   up even more so, the numbers are added together again.
+
+   Now that we have the horizontal and vertical positions ready, we can
+   build the actual sprite data :-
+  
+		move.b		d0,(a0)+
+		move.b		d5,(a0)+		
+		add.w		#1,d0
+		move.b		d0,(a0)+		
+		move.b		d2,(a0)+
+		move.w		d1,(a0)+		
+		move.w		#1,(a0)+
+
+   D0 contains the start Y position, this is loaded first.  D5 contains the
+   random X position this follows.  D0 is incremented and loaded into the
+   second control word (remember - the second control word starts with
+   Y pos +1)  D2 holds the vertical overflow bit (bit 6)   This is still 
+   zero at present.  The data pixel (in D1) is loaded into the sprites
+   data area for the first plane and then another 1 for the second plane.
+   The reason for doing it this way is that by performing :-
+   
+		eori.w		#1,d1
+
+   straigt afterwards, gives the effect of 'dimming' every second star.
+   This is why the stars are two different colours.  If you have been
+   following so far - we have created a single sprite in the data area
+   of the following appearance :-
+
+		dc.w		$2073,$2100
+		dc.w		$0001,$0001
+
+   (The $73 is totally random and WILL vary)  Next comes the code for 
+   creating 'the rest' of the stars :-
+    
+		addq.b		#1,d0
+		cmpi.w		#238,d0
+		bls		Okay
+		move.w		#0,d0
+		move.w		#6,d2	
+Okay		dbf		d7,MakeStarLoop
+		rts
+	
+   D0 is incremented so the next sprite will move down another raster line.
+   If we are on line 238 or more, the vertical position (in D0) is reset
+   and the Y pos 9th bit in the second control word is set (in D2)  If
+   the Y position is less (bls) than 238 the loop will contine as normal
+   as controlled by the dbf instruction.  After executing this loop we
+   should have a screen full of stars.  A bit useless on their own don't
+   you agree?  I suppose it would be a good idea to move them.
+  
+
+   3.  Moving the starfield.
+
+   The code for moving the entire starfield is actually quite small and
+   simple.  This code should be placed into an interrupt handler :-
+        
+MoveStar	lea		StarSprite,a0
+		moveq.l		#NumberOfStars-1,d0	
+		moveq.l		#2,d1			
+StarLoop	sub.b		d1,1(a0)
+		add.w		#8,a0
+		addq.b		#1,d1
+		cmpi.b		#Max_Speed,d1
+		ble		SpeedOkay
+		moveq.b		#2,d1	
+SpeedOkay	dbf		d0,StarLoop
+		rts
+		
+   Again, the start of the star structure is loaded into A0.  The number
+   of stars minus one (for the loop) is loaded into D0.  D1 now controls
+   the movement speed.  It would be a pretty dire starfield if all stars
+   where to move at the same speed, so by altering the value in D1 we in
+   effect alter the speed of each stars movement.  To move the stars left
+   we subtract from the control word horizontal position - to move left
+   replace the sub.b d1,1(a0) with :-
+
+		add.b		d1,1(a0)
+
+   By adding #8 to A0 we move onto the next star.  The speed is increased
+   (by adding 1 to D1) and then checked to ensure the maximum has not been
+   reached.  If full speed has been reached (which is only 4 (anything
+   higher is too fast!)) the speed counter is reset to two.  The loop
+   ensures all stars are moved every frame.
+
+
+   4.  And finally . . .
+
+   Well, there you go - two tutorials for the price of one.  I have
+   enclosed a few example sprite sources with this tutorial for you to
+   tinker with and generally rip to shreads.  Enjoy.
+   
+   Hasta la Vista Baby.
+   
+   
+   Mike Cross - September 1991
+   
+   
+
+		
+		
+		
+		
+		
+
+
+		
+
+
+
+	

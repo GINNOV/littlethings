@@ -1,0 +1,37 @@
+Short:			Clickable C function overview for SAS/C
+Uploader:		tim@aaack.org
+Author:			Tim Johnson
+Type:			dev/c
+Version:		1.0
+Architecture:	m68k-amigaos >= 2.0.4
+Distribution:	Aminet
+
+These are two REXX scripts for SAS/C's SE editor.  When you have
+a C file open, one script will scan for function definitions
+and send them to the SCMSG utility.  You can then use the SCMSG
+utility to click around your source file to easily navigate from
+function to function.
+
+The other REXX script dumps the contents of the SCMSG listing to
+a text file in RAM, similar to output from GREP.
+
+I tried to comment well and describe what the scripts are doing;
+please look at their source code (especially funcoverview.se) to
+learn more and customize to your needs.  Instructions are in that
+file to explain how to assign these REXX scripts to a key in the
+SE editor (I used Ctrl-F2 and Ctrl-F3).
+
+Of course I can't guarantee that these will work on your computer.
+They were developed and tested with SAS/C 6.58 on an Amiga 1200 
+with OS 3.0.  No warranty expressed or implied.
+
+If you improve on these please let me know and perhaps share your
+discoveries/creations.
+
+I didn't check Aminet for any similar utilities before I created 
+this, so I hope I am not duplicating anyone else's efforts.  It
+was a learning experience nonetheless :)
+
+Happy new year!
+
+31-Dec-2010

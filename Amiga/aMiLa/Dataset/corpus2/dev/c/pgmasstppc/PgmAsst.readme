@@ -1,0 +1,56 @@
+Short:     A GUI (V3.1) for various text editing & formatting tools (C).
+Uploader:  jimbot@frontiernet.net (Jim Steichen)
+Author:    jimbot@frontiernet.net (Jim Steichen)
+Type:      dev/c
+Requires:  68000+, V3.1+ Amiga OS & indent program (included)
+Version:   3.1
+
+ProgrammerAssist has been updated to run on the AmigaOne & AmigaOS4.0.
+Old 680x0 targets are still included & may be deleted if you do not
+need them anymore.
+
+ProgrammerAssist (c) 1999-2005 by J. T. Steichen is a program that allows
+a programmer to modify & edit source code (developed for C).
+The indent program is included in this distribution, since finding the
+right version might not be easy.  CPU-specific versions will be compiled
+if there is any interest.
+
+Un-archive PgmAsstPPC.lha where ever you want it located.  Everything is in
+a directory called ProgrammerAssist.  You can move AdjustText & Indent
+to your C: directory if you like, but be sure to update the ToolTypes
+in the ProgrammerAssist icon to reflect where AdjustText & Indent are
+located.  ProgrammerAssist is a commodity, so it can be placed in your
+WBStartup drawer (if you use it a lot).  The default hot key is 'Alt-p'.
+ 
+   HISTORY
+   
+       1.7 Changed some vanilla keys for button gadgets.
+
+       1.8 Added the Adjust Text Button.
+
+       2.0 Added ProgrammerAssistPPC for AmigaOne PPC & AmigaOS4.0
+   
+       3.0 Added AmigaOS4 & gcc support.
+
+       3.1 Minor cleanup.
+
+What you get:
+~~~~~~~~~~~~~
+Listing of archive 'PgmAsstPPC.lha':
+Original  Packed Ratio    Date     Time    Name
+-------- ------- ----- --------- --------  -------------
+    2414    1173 51.4% 27-Oct-04 10:13:40  PgmAsst2.0.readme
+    1503    1300 13.5% 23-Jan-05 16:56:46  ProgrammerAssistPPC.info
+  236800   80740 65.9% 02-Feb-05 15:08:32  ProgrammerAssistPPC
+   40300   22364 44.5% 07-Jul-01 06:05:32  ProgrammerAssist040
+    1503    1298 13.6% 23-Jan-05 16:56:46  ProgrammerAssist040.info
+   89836   44046 50.9% 27-Oct-04 10:03:54  ProgrammerAssist060
+    1503    1302 13.3% 23-Jan-05 16:56:46  ProgrammerAssist060.info
+  141051   55821 60.4% 27-Oct-04 09:50:42  AdjustText
+  105685   39901 62.2% 27-Oct-04 07:39:30  TrimSpaces
+   55308   29213 47.1% 25-Dec-95 08:19:56  Indent
+   28522    9140 67.9% 12-Jan-00 05:01:58  indent.1
+   11369    4032 64.5% 02-Feb-05 15:06:32  ProgrammerAssist.guide
+    1382     953 31.0% 23-Jan-05 16:56:46  ProgrammerAssist.guide.info
+-------- ------- ----- --------- --------
+  717176  291283 59.3% 02-Feb-105 15:08:42   13 files

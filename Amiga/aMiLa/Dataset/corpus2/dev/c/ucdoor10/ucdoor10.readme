@@ -1,0 +1,87 @@
+Short:        Library for MAXs BBS doors.
+Author:       cdemaeyer@mmm.com (Chris De Maeyer)
+Uploader:     cdemaeyer mmm com
+Type:         dev/c
+Version:      1.0
+Architecture: m68k-amigaos
+
+This archive contains a linkable library containing functions to create
+doors for MAX's BBS.
+
+Features:       - general door creation
+                - general door operations
+                - user data structures functions
+                - ANSI support funtions.
+
+============================= Archive contents =============================
+
+Original  Packed Ratio    Date     Time    Name
+-------- ------- ----- --------- --------  -------------
+    5325    1609 69.7% 17-Feb-97 13:50:56 +demo.info
+   12776    7545 40.9% 17-Feb-97 13:40:12 +cd_test1
+    4006    1149 71.3% 17-Feb-97 13:40:12 +cd_test1.c
+     486     273 43.8% 17-Feb-97 13:50:56 +cd_test1.c.info
+    5325    1612 69.7% 17-Feb-97 13:53:18 +guide.info
+   16808    4759 71.6% 17-Feb-97 13:40:12 +UCDoor_V1.0.guide
+     840     319 62.0% 17-Feb-97 13:53:18 +UCDoor_V1.0.guide.info
+    5325    1610 69.7% 17-Feb-97 13:52:22 +html.info
+     687     418 39.1% 17-Feb-97 13:40:14 +bugs.htm
+     974     536 44.9% 17-Feb-97 13:40:14 +carrier.htm
+     663     391 41.0% 17-Feb-97 13:40:14 +cdcls.htm
+     710     426 40.0% 17-Feb-97 13:40:14 +cddoor.htm
+     991     500 49.5% 17-Feb-97 13:40:14 +cdend.htm
+     757     448 40.8% 17-Feb-97 13:40:14 +cdgetstr.htm
+    1061     559 47.3% 17-Feb-97 13:40:14 +cdmain.htm
+     736     439 40.3% 17-Feb-97 13:40:14 +cdputstr.htm
+     687     404 41.1% 17-Feb-97 13:40:14 +cdsetbg.htm
+     683     401 41.2% 17-Feb-97 13:40:14 +cdsetfg.htm
+    1128     583 48.3% 17-Feb-97 13:40:16 +changeac.htm
+    1911     957 49.9% 17-Feb-97 13:40:14 +copyrigh.htm
+    1015     583 42.5% 17-Feb-97 13:40:12 +disclaim.htm
+     750     444 40.8% 17-Feb-97 13:40:14 +dofuncti.htm
+     859     494 42.4% 17-Feb-97 13:40:14 +filehere.htm
+     699     407 41.7% 17-Feb-97 13:40:14 +getchar.htm
+     743     430 42.1% 17-Feb-97 13:40:14 +getcharp.htm
+     742     436 41.2% 17-Feb-97 13:40:14 +getnumin.htm
+     770     455 40.9% 17-Feb-97 13:40:14 +getstrin.htm
+     803     465 42.0% 17-Feb-97 13:40:14 +getstrpr.htm
+    1183     580 50.9% 17-Feb-97 13:40:14 +getuserd.htm
+     791     441 44.2% 17-Feb-97 13:40:14 +getuseri.htm
+    1020     566 44.5% 17-Feb-97 13:40:14 +history.htm
+    8296    8296  0.0% 17-Feb-97 13:40:16 +amiga.gif
+    8821    8821  0.0% 17-Feb-97 13:40:16 +bg.gif
+     197     197  0.0% 17-Feb-97 13:40:16 +content.gif
+     229     229  0.0% 17-Feb-97 13:40:16 +dcontent.gif
+     215     215  0.0% 17-Feb-97 13:40:16 +dhelp.gif
+     217     217  0.0% 17-Feb-97 13:40:16 +dindex.gif
+     235     235  0.0% 17-Feb-97 13:40:16 +dnext.gif
+     232     232  0.0% 17-Feb-97 13:40:16 +dprev.gif
+     180     180  0.0% 17-Feb-97 13:40:16 +help.gif
+     180     180  0.0% 17-Feb-97 13:40:16 +index.gif
+     198     198  0.0% 17-Feb-97 13:40:16 +next.gif
+     199     199  0.0% 17-Feb-97 13:40:16 +prev.gif
+    2706    2706  0.0% 17-Feb-97 13:40:16 +RBOPBOOK.GIF
+     754     438 41.9% 17-Feb-97 13:40:14 +installa.htm
+     892     536 39.9% 17-Feb-97 13:40:14 +introduc.htm
+    1479     749 49.3% 17-Feb-97 13:40:14 +last.htm
+    1500     662 55.8% 17-Feb-97 13:51:30 +main.htm
+     832     309 62.8% 17-Feb-97 13:52:22 +main.htm.info
+     704     412 41.4% 17-Feb-97 13:40:14 +printfil.htm
+    1165     574 50.7% 17-Feb-97 13:40:16 +putuserd.htm
+    1884     689 63.4% 17-Feb-97 13:40:14 +referenc.htm
+     722     424 41.2% 17-Feb-97 13:40:14 +setcolor.htm
+     685     398 41.8% 17-Feb-97 13:40:14 +twitcurr.htm
+    2062     899 56.4% 17-Feb-97 13:40:14 +usage.htm
+     968     502 48.1% 17-Feb-97 13:40:14 +waitmsg.htm
+    5325    1612 69.7% 17-Feb-97 13:52:30 +include.info
+    8401    2382 71.6% 17-Feb-97 13:40:40 +ucdoor.h
+     486     228 53.0% 17-Feb-97 13:52:30 +ucdoor.h.info
+    5325    1612 69.7% 17-Feb-97 13:52:46 +lib.info
+    4232    2070 51.0% 17-Feb-97 13:40:16 +ucdoor.lib
+    4052    2019 50.1% 17-Feb-97 13:40:16 +ucdoorr.lib
+     410     229 44.1% 17-Feb-97 13:46:52 +ucdoor10.readme
+     840     318 62.1% 17-Feb-97 13:53:34 +ucdoor10.readme.info
+-------- ------- ----- --------- --------
+  135877   69206 49.0% 17-Feb-97 13:54:26   64 files
+
+Operation successful.

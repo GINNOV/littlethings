@@ -1,0 +1,231 @@
+14    HINTS AND TIPS
+
+14.1  INTRODUCTION
+
+This chapter contains a mixture of useful hints and tips.
+
+
+
+14.2  NTSC VERSUS PAL
+
+If you have an American Amiga you can open screens that are up
+to 200 lines high. (400 with interlace) This system is called
+NTSC. However, an European Amiga can open screens that are up
+to 256 lines high. (512 with interlace) This system is called
+PAL.
+
+
+
+14.2.1  HOW TO WRITE PROGRAMS THAT WILL FIT BOTH SYSTEMS
+
+If you want to write programs that will fit both systems you
+must do one of the following things:
+
+1. Do not open screens that are taller than 200 lines. The
+   program can then be run on both systems. However, this is
+   not always the best solution since the PAL user will be
+   annoyed when he can not use the last 56 lines of the
+   display.
+
+2. Open the Graphics library and see what type of system your
+   program is running under. If you discover that it is running
+   on a NTSC system, use only the first 200 lines. If the
+   program is running on a PAL system you may use all 256 lines.
+
+
+If you decide that your program should only use screens up to
+200 lines tall you should still check what system the program
+is running under. If you discover that it is an European Amiga
+you can position the display 28 (56/2) lines down, and the
+large unused are at the bottom of the PAL displays will
+visually disappear.
+
+
+
+14.2.2  NTSC OR PAL?
+
+To check which system, NTSC or PAL, your program is running on
+you simply open the graphics library and check the DisplayFlags.
+Here is a short demonstration program:
+
+/* Example 1                                               */
+/* This example tell you if you have an American (NTSC) or */
+/* European (PAL) system.                                  */ 
+
+
+/* Declares commonly used data types, such as UWORD etc: */
+#include <exec/types.h>
+
+/* This header file declares the GfxBase structure: */
+#include <graphics/gfxbase.h>
+
+
+/* Pointer to the GfxBase structure. NOTE! This pointer must */
+/* always be called "GfxBase"!                               */
+struct GfxBase *GfxBase;
+
+
+main()
+{
+  /* Open the Graphics Library: (any version) */
+  GfxBase = (struct GfxBase *)
+    OpenLibrary( "graphics.library", 0 );
+
+  if( !GfxBase )
+    exit(); /* ERROR! Could not open the Graphics Library! */
+
+
+  if( GfxBase->DisplayFlags & NTSC )
+    printf( "You have an American (NTSC) Amiga.\n" );
+
+  if( GfxBase->DisplayFlags & PAL )
+    printf( "You have an European (PAL) Amiga.\n" );
+
+
+  /* Close the Graphics Library: */
+  CloseLibrary( GfxBase );
+}
+
+
+
+14.3  PROGRAMS RUNNING UNDER WORKBENCH
+
+A program can either be run from the CLI or Workbench. If a
+program is run from workbench a special "console" window is
+automatically opened. All text will then be outputted in that
+window. If the program was run from CLI no special "console"
+window is opened since the text can be printed in the CLI
+window.
+
+The special window is, as said above, automatically opened
+when the program is run from workbench. However, sometimes
+you do not want this window. If you will not print anything
+the window is unnecessary, and somehow annoying.
+
+To get rid of the window you simply call your main() function
+_main(). (Note the special symbol "_".) The program will then
+not open the console window if run from workbench, but the
+disadvantage is of course that you can not print any text
+with the printf() function etc. If you would try to print text
+without having any window to print it in, the system will
+crash. (Not to be recommended.)
+
+Here are two examples. The first one is a normal C program that
+simply prints "Hello!". If the program is run from the CLI, the
+text will be printed in the CLI window. If the program is run
+from workbench, a console window will be opened and the text
+printed in it. The second example will not open any console
+window if run from workbench, but it can then of course not
+print anything.
+
+/* Example 2                                                  */
+/* This program will print "Hello!" in the CLI window if      */
+/* started from CLI, or the text will be printed in a special */
+/* window that is automatically opened if run from workbench. */
+
+void main();
+
+void main()
+{
+  int loop; 
+
+  printf( "Hello!\n" );
+
+  /* Wait for a while: */
+  for( loop = 0; loop < 500000; loop++ )
+    ;
+}
+
+
+/* Example 3 */
+/* This program will not open any console window if run from */
+/* workbench. The disadvantage is of course that you can not */
+/* use any "console functions" such as printf().             */
+
+void _main();
+
+void _main() /* Note the special character in front of main()! */
+{
+  int loop;
+
+  /* Wait for a while: */
+  for( loop = 0; loop < 500000; loop++ )
+    ;
+}
+
+
+The reason why no console window is opened in Example 3 is
+because we have called our main() function _main(). The first
+function that is processed by C is actually not the main()
+function, it is the _main() function which then calls main().
+The _main() function is like a preprocessor that initializes
+the argc and argv variables. It also checks if the program is
+running under workbench, and will then open a console window.
+ 
+The _main() function can be found on the fourth Lattice C disk,
+in the source directory called "umain.c".
+
+If you call your own main() function _main(), the prewritten
+_main() function will not be used. No window will be opened,
+but no text can be printed, and you have to preprocess the
+argc and argv variables yourself.
+
+
+
+14.4  CHECK IF THE PROGRAM WAS STARTED FROM CLI OR WORKBENCH
+
+It sometimes happen that you would like to know if the program
+was run from Workbench or a CLI window. It is actually very
+simple to check. The "argc" value will always be equal to one
+ore more if the program was run from a CLI window, while it
+will be equal to zero if the program was run from Workbench.
+
+Here is a short program that tells you if it was run from a
+CLI window or from Workbench.
+
+/* Example 4                                              */
+/* This program tells you if it was run from workbench or */
+/* from a CLI window.                                     */
+
+void main();
+
+void main( argc, argv )
+int argc;
+char *argv[];
+{
+  int loop;
+
+
+  if( argc )
+    printf( "The program was run from a CLI window!\n" );
+  else
+    printf( "The program was run from Workbench!\n" );
+
+
+  /* Wait for a while: */
+  for( loop = 0; loop < 500000; loop++ )
+    ;
+}
+
+
+
+14.5  EXAMPLES
+
+Example1
+  This example tell you if you have an American (NTSC) or
+  European (PAL) system.
+
+Example2
+  This program will print "Hello!" in the CLI window if
+  started from CLI, or the text will be printed in a special
+  window that is automatically opened if run from workbench.
+
+Example3
+  This program will not open any console window if run from
+  workbench. The disadvantage is of course that you can not
+  use any "console functions" such as printf().
+
+Example4
+  This program tells you if it was run from workbench or
+  from a CLI window.
+

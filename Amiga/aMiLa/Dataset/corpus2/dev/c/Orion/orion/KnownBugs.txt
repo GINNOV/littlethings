@@ -1,0 +1,8 @@
+
+Known Bugs:
+
+-If the task being tracked is run from the shell, it will likely
+   be listed as 'Shell Process' by the List command.
+-If you rely on the auto-setup by not first running OrionTool, the
+   setting up of the CON: window can fail with no way of reporting
+   it.

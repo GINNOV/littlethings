@@ -1,0 +1,196 @@
+    The EXTernal DATA package
+    -------------------------
+
+                       Cédric BEUST (beust@sophia.inria.fr)
+
+
+
+This linkable library will let you dump the internal structures of
+a program to a file, and the other way around, very easily. The file
+created is an IFF one, so you can also see this library as a layer
+above iffparse that will hide all its complexity behind a friendly
+API (which iffparse lacks :-)).
+
+ExtData ensures a maximum compatibility between different versions of
+the same file, since it uses named records to store its information.
+Its main use is for the "Open", "Save", "Save as..." menus that
+any Amiga-application should have.
+
+For example, here is a sample code to write a file :
+
+      xd = xd_Open("test", XD_WRITE, "xdtest");
+      if (xd) {
+	 xd_DeclareField(xd, "name", XD_STRING);
+	 xd_DeclareField(xd, "age", XD_INTEGER);
+	 xd_DeclareField(xd, "height", XD_INTEGER);
+
+	 xd_AssignField(xd, "name", "Cedric");
+	 xd_AssignField(xd, "age", & age);
+	 xd_AssignField(xd, "height", & height);
+	 xd_WriteRecord(xd);
+
+         xd_Close(xd);
+      }
+
+and to read it :
+
+      xd = xd_Open("test", XD_READ, "xdtest");
+      if (xd) {
+	 while (xd_NextRecord(xd)) {
+	    xd_ReadField(xd, "age", XD_INTEGER, & a);
+	    xd_ReadField(xd, "name", XD_STRING, & name);
+	    xd_ReadField(xd, "height", XD_STRING, & h);
+	    printf("read name=%s age=%d height=%d\n", name, a, h);
+	 }
+	 xd_Close(xd);
+      }
+
+Suppose this version of your file is 1.0. Then your application is bumped
+to version 1.1 with the effect of adding a new field to your internal
+structures (say "sex").
+
+1.0 reads 1.1 file -> works fine (ascending compatibility)
+1.1 reads 1.0 file -> "can't find field sex" and set it to a default value
+
+Another advantage is that fields can be read in any order (since they
+are "named").
+
+Additionally, ExtData will let you define some "shared" information
+in the file (e.g. the application to which it belongs, or its version
+number).
+
+
+
+    The distribution
+    ----------------
+
+The library is in xd.c and the compilation will output a linked
+library called xd.lib.
+
+xdtest is a small test program. Type "xdtest" to write an ExtData file
+called "test" and then type "xdtest 1" to read it.
+
+All your program has to do in order to use ExtData is to include xd.h
+and add xd.lib to the list of linked libraries it uses (see smakefile).
+
+
+    Bugs and limitations
+    --------------------
+
+. xd is very verbose for errors (the source is filled with
+fprintf(stderr, ...)), so it is not appropriate for Workbench applications
+unless they have some stderr. I'm thinking about giving an easy way
+to control this (e.g. keep it verbose for debugging purposes, but
+shutting it off for distribution with a single define)
+
+. xd doesn't solve the problem of nested structures. But without xd,
+the problem is even worse, so... Anyway, I'll try to come up with
+a solution.
+
+
+    Miscellaneous considerations
+    ----------------------------
+
+There are two reasons why I wrote ExtData :
+
+. When you develop an application, you have more important things
+to think about than juggling with iffparse. Hopefully, the ExtData
+user will be able to focus on the specific aspects of their application
+and let ExtData do the dirty work. At least during the debugging process.
+When the application "stands", they can always decide to rip ExtData off
+it in order to have more control on the way files are Read/Writted, or
+to cut off size (although ExtData is rather small).
+
+. ExtData seems to provide a clean way to advertise the format your application
+is using, making transfers to and from other application easy. For example,
+xdtest uses the following format :
+
+Shared:
+  Type: "xdtest"
+Information:
+  "info" ("General information" in the example)
+Fields:
+  "name" (string)
+  "age" (integer)
+  "height" (integer)
+
+With this mere information, any application using ExtData will be able to reread
+files saved by xdtest.
+
+    Errors
+    ------
+
+Most functions that can fail will return an int. 0 will mean success.
+In case of failure, the error code can be retrieved with xd_ErrorCode()
+and a string indicating the error with xd_ErrorString().
+
+
+    API and List of functions
+    -------------------------
+
+All functions start with xd_.
+All defined types start with Xd_.
+
+The API can be found in xd.h where it is abundantly commented.
+
+xd_Init
+xd_Uninit
+xd_Open
+xd_Close
+xd_ErrorCode
+xd_ErrorString
+xd_DeclareAuthor
+xd_DeclareApplication
+xd_DeclareVersion
+xd_DeclareDate
+xd_ReadType
+xd_ReadApplication
+xd_ReadAuthor
+xd_ReadDate
+xd_ReadVersion
+xd_DeclareSharedString
+xd_ReadSharedString
+xd_DeclareField
+xd_AssignField
+xd_WriteRecord
+xd_NextRecord
+xd_EndOfFile
+xd_ReadField
+xd_Free
+
+
+    The internal format
+    -------------------
+
+An ExtData file is split in two parts : a "common" part and the content
+of the data itself. The common part can be seen as the header.
+
+The common part contains three different sections :
+- XINF   constant information. There are five slots here, of which
+         only the first one is mandatory : type, application, author,
+         version and date.
+         Writing : xd_Open(), xd_DeclareApplication(), xd_DeclareAuthor(),
+                   xd_DeclareVersion() and xd_DeclareDate().
+         Reading : xd_ReadType(), xd_ReadApplication(), xd_ReadAuthor(),
+                   xd_ReadVersion(), xd_ReadDate()
+
+- XFIE   the name of each field your records contain, with their
+         type.
+         Writing : xd_DeclareField().
+         Reading : automatically performed by xd_Open() in XD_READ mode
+
+- XUSE   if you need your file to contain additional data that wouldn't
+         fit in the previous categories, you can use this section to store
+         association values (key/value).
+         Writing : xd_DeclareSharedString()
+         Reading : xd_ReadSharedString()
+
+The data itself is stored in an XCON chunk. Each record is introduced by
+an XREC chunk followed by the value of each field (which are looked up
+between those read in the XFIE chunk).
+
+
+
+
+
+

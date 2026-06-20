@@ -1,0 +1,74 @@
+This document is based on the 'bugs' doc by Detlef Wuerkner and describes
+known bugs in the 'HCC' compiler.
+
+*************************************************************************
+*                            BUG No.1                                   *
+*************************************************************************
+
+      main()
+       {
+        char text[] = "Hello";   /* Bad line. */
+        printf( "%s\n", text);
+        }
+
+This would cause error messages 'expect ;' and 'syntax (try skipping...)'
+for line 3.
+
+If you declared 'text[]' as global like:
+
+char text[] = "Hello";
+
+      main()
+        {
+         printf( "%s\n", text);
+         }
+
+or as a char pointer:
+
+      main()
+        {
+         char *text = "Hello";
+         printf( "%s\n", text);
+         }
+
+then everything would be ok.
+This error seems to happen because 'text' is handled as a pointer to a 
+null terminated array of char.
+
+*************************************************************************
+*                            BUG No.2                                   *
+*************************************************************************
+
+
+      struct xx {
+                   struct xx *ptr;
+                 } 
+                dummy[2] = {
+                               {
+                                &dummy[1]   /* Bad line. (line 6) */
+                                },
+                               {
+                                &dummy[0]   /* Bad line. (line 9) */
+                                },
+                            };
+
+This would cause 'undefined: dummy' error messages for lines 6 and 9 and
+also cause other error messages. This is because the 'dummy' structure is not
+defined until the end of the structure declaration and references made to
+'dummy' before then are invalid.
+
+The correct way:
+
+  extern struct xx {                /* use 'extern' and declare the struct */
+                   struct xx *ptr;  /* in advance. */
+                 } dummy[2];
+ 
+        struct xx dummy[2] = {
+                               {
+                                 &dummy[1]
+                                },
+                               {
+                                 &dummy[0]
+                                },
+                            };
+

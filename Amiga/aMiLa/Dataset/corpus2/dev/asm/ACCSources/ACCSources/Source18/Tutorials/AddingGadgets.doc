@@ -1,0 +1,598 @@
+
+
+				ImageMaker
+				~~~~~~~~~~
+
+ To start off, let me explain that ImageMaker is just the start of what I
+hope to be a more comprehensive utility. As it stands, the program can be
+used to convert an IFF brush into image data and supply a suitable Image
+structure for the data.
+
+ This tutorial will show you how to start with an IFF brush and end up
+with a working gadget that uses the brush data.
+
+ Getting A Brush
+ ~~~~~~~~~~~~~~~
+ For this you will need DPaint, any version will do. Load the program in
+64O x 256 mode with four colours. Why? because this is the format of the
+Workbench screen where the gadget will eventually be displayed!
+
+ At this stage it is worth setting the colours of the display to that of
+your workbench screen. This will ensure that the gadget looks the same as
+you intend it to. Of course this does not gaurentee the gadget will look
+okay on other workbench configurations, but this is a good rule of thumb.
+
+ Next, draw the image you require.
+
+ Once the image has been drawn, cut it out as a brush. Try to cut as small
+an area as possible, the bigger the brush the more memory it consumes!
+
+ Save the brush to disc, giving it a name you will remember.
+
+ For the purpose of this tutorial, you can use the two brushes in the IFF
+drawer, more on these shortly.
+
+ Converting Brush To Image
+ ~~~~~~~~~~~~~~~~~~~~~~~~~
+ Time to use the ImageMaker utility. Double click on the utilities icon to
+start it running. Once running, click on the ' LOAD IFF ' gadget. You will
+be presented with the now familiar ARP filerequester. Use this to select the
+file ' QuitUp.iff ' from the IFF directory on the source disc.
+
+ After a short delay the status line should inform you that the brush has
+been loaded. At the top of the display are some statistics about the brush
+that has been loaded, there is no need to write these down as they are saved
+as part of the Image structure. To see the brush click on the ' VIEW '
+gadget, you will be able to see an exploded view of the gadget. Press the
+left mouse button to resume.
+
+ Time to generate the Image source code. Press on the ' SAVE ' gadget, a
+window will open allowing you to enter the name of the source file to
+create and also the label to give the Image structure.
+
+ For this tutorial, call the file ' ram:temp ' and give the structure the
+label ' IM1 '. Now click on the ' DO IT! ' gadget. After a short delay the
+status line should read ' Image file created ok. '.
+
+ You have now converted the brush into a source file in Devpac2 format. Don't
+believe me heh? Take a look by loading ' ram:temp ' into Genam, you should
+see:
+
+			~~~~~~~~~~~~~~~~~~~~~~~~
+
+IM1
+		dc.w		0,0		; x,y 
+		dc.w		95,19		; width,height
+		dc.w		2		; depth
+		dc.l		IM1Data		; Image def
+		dc.b		3		; PlanePick
+		dc.b		0		; PlaneOnOff
+		dc.l		0		; no more images
+
+		SECTION	im,DATA_C		; get CHIP mem
+
+; Data For first plane of image now follows.
+
+IM1Data
+		dc.w	$FFFF,$FFFF,$FFFF,$FFFF,$FFFF,$FFFC,$8000,$0000
+		dc.w	$0000,$0000,$0000,$0000,$8000,$0000,$0000,$0000
+		dc.w	$0000,$0000,$8000,$0000,$0000,$0000,$0000,$0000
+		dc.w	$8000,$0000,$0000,$0000,$0000,$0000,$8000,$0000
+		dc.w	$0000,$0000,$0000,$0000,$8000,$0000,$0000,$0000
+		dc.w	$0000,$0000,$8000,$0000,$0000,$0000,$0000,$0000
+		dc.w	$8000,$0000,$0000,$0000,$0000,$0000,$8000,$0000
+		dc.w	$0000,$0000,$0000,$0000,$8000,$0000,$0000,$0000
+		dc.w	$0000,$0000,$8000,$0000,$0000,$0000,$0000,$0000
+		dc.w	$8000,$0000,$0000,$0000,$0000,$0000,$8000,$0000
+		dc.w	$0000,$0000,$0000,$0000,$8000,$0000,$0000,$0000
+		dc.w	$0000,$0000,$8000,$0000,$0000,$0000,$0000,$0000
+		dc.w	$8000,$0000,$0000,$0000,$0000,$0000,$8000,$0000
+		dc.w	$0000,$0000,$0000,$0000,$8000,$0000,$0000,$0000
+		dc.w	$0000,$0000
+
+; Data for second plane of image now follows.
+
+		dc.w	$0000,$0000,$0000,$0000,$0000,$0002,$0000,$0000
+		dc.w	$0000,$0000,$0000,$0002,$0000,$0000,$0000,$0000
+		dc.w	$0000,$0002,$0000,$0000,$0000,$0000,$0000,$0002
+		dc.w	$0000,$0000,$0000,$0000,$0000,$0002,$0000,$0000
+		dc.w	$0000,$0000,$0000,$0002,$0000,$0000,$0000,$0000
+		dc.w	$0000,$0002,$0000,$0000,$0000,$0000,$0000,$0002
+		dc.w	$0000,$0000,$0000,$0000,$0000,$0002,$0000,$0000
+		dc.w	$0000,$0000,$0000,$0002,$0000,$0000,$0000,$0000
+		dc.w	$0000,$0002,$0000,$0000,$0000,$0000,$0000,$0002
+		dc.w	$0000,$0000,$0000,$0000,$0000,$0002,$0000,$0000
+		dc.w	$0000,$0000,$0000,$0002,$0000,$0000,$0000,$0000
+		dc.w	$0000,$0002,$0000,$0000,$0000,$0000,$0000,$0002
+		dc.w	$0000,$0000,$0000,$0000,$0000,$0002,$0000,$0000
+		dc.w	$0000,$0000,$0000,$0002,$7FFF,$FFFF,$FFFF,$FFFF
+		dc.w	$FFFF,$FFFE
+
+
+; End of source generation. © M.Meany, November 91.
+
+			~~~~~~~~~~~~~~~~~~~~~~~~
+
+ I could not resist the little plug at the end, an ego trip every time I
+use the thing ( head becomes so heavy I topple backwards out of the chair ).
+
+ What Next
+ ~~~~~~~~~
+ Now you have created a masterpiece of imagery, you need to write a program
+to go with it!
+
+ 'Alf a mo', what about that startup code called Int_Start.s? You guessed it.
+If ever there was a piece of code waiting for someone to design an image for,
+this is it!
+
+ To start with, lets just plonk the image into the window, we'll get onto 
+gadgets afterwards.
+
+ You may recall that to display an image you use the Intuition function:
+
+		DrawImage ( RPort, Image, LeftOffset, TopOffset )
+			     a0      a1       d0         d1
+
+ Using the image created above, a suitable subroutine would be:
+
+DoImage		move.l		window.rp,a0	a0->rastport
+		lea		IM1,a1		a1->image
+		moveq.l		#50,d0		x=50
+		move.l		d0,d1		y=x=50
+		CALLINT		DrawImage	put image into window
+		rts				and return
+
+ To add this to Int_Start.s, go right to the bottom of the file and type
+the routine in. Next, insert the file ' ram:temp ' after the subroutine.
+You have now added a subroutine to display an image and the required 
+structure and data for the image to the startup code. All that remain is
+to add a call to this subroutine.
+
+ The subroutine must be called after the window has been opened ( obvious ),
+so goto line 54 and insert the following line of code:
+
+		jsr		DoImage		add an image!
+
+ It is necessary to use jsr since section commands have been introduced into
+the source to seperate code, chip data and BSS hunks. The subroutine may be
+beyond the reach of bsr. You can try and use bsr, if GenIm spots an error
+though change it to jsr.
+
+ Lastly, assemble and run the program. Instant image!!!!
+
+ The beauty of this approach is that you can use whatever immagery you like.
+For instance, consider opening a borderless window with no Intuition gadgets.
+Next put an image in this the same size as the window. This is how the menu
+screen used on this disc is displayed.
+
+ There is nothing to stop you from using the same image data for more than
+one image. This is useful when displaying gadgets. To demonstrate, edit the
+DoImage routine so that it reads:
+
+			~~~~~~~~~~~~~~~~~~~~~~~~
+
+DoImage		move.l		window.rp,a0	a0->rastport
+		lea		IM1,a1		a1->image
+		moveq.l		#50,d0		x=50
+		move.l		d0,d1		y=x=50
+		CALLINT		DrawImage	put image into window
+
+		move.l		window.rp,a0	a0->rastport
+		lea		IM2,a1		a1->image
+		moveq.l		#50,d0		x=50
+		moveq.l		#80,d1		y=80
+		CALLINT		DrawImage	put image into window
+
+		rts				and return
+
+			~~~~~~~~~~~~~~~~~~~~~~~~
+
+ Now we need to create an image structure at IM2. To do this, cut out the
+image structure at IM1 and paste it after itself. You should now have the
+following:
+
+			~~~~~~~~~~~~~~~~~~~~~~~~
+
+IM1
+		dc.w		0,0		; x,y 
+		dc.w		95,19		; width,height
+		dc.w		2		; depth
+		dc.l		IM1Data		; Image def
+		dc.b		3		; PlanePick
+		dc.b		0		; PlaneOnOff
+		dc.l		0		; no more images
+IM1
+		dc.w		0,0		; x,y 
+		dc.w		95,19		; width,height
+		dc.w		2		; depth
+		dc.l		IM1Data		; Image def
+		dc.b		3		; PlanePick
+		dc.b		0		; PlaneOnOff
+		dc.l		0		; no more images
+
+			~~~~~~~~~~~~~~~~~~~~~~~~
+ All that is required is to alter the label from IM1 to IM2. Since the call
+to DrawImage is being used to define the x and y offsets, there is no need
+to alter the values in the structure. Note that both structures point to the
+same image data!
+
+ Now assemble and run this code. Instant double vision!!!!
+
+ One last word on stand alone images, though it applies to any chip data. 
+ImageMaker will produce a section directive for each and every image it
+saves. If your program is using more than one image, use cut and paste to
+collect all the image datas together under one section directive at the end
+of the source listing. You can then delete all the extra section directives.
+
+
+ Linking The Image To A Gadget
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ It's all well and good being able to display an image, but user interaction
+is what we want. For this we must use a gadget and link the image structure
+to it. 
+
+ As we can read the size of the image from the image structure, it makes 
+sense to set the gadget hit box to the same dimensions. The following gadget
+structure defines a Boolean gadget that will be displayed at position 50,50
+on the screen. Note the link to the image structure, the size of the hit box
+and the address of the subroutine to call if this gadget is selected. Also
+remember to set the flags field to signal this gadget is using image data.
+These lines are marked by an asterix at the start of the comment field:
+
+			~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+QuitGadg	dc.l		0		next gadget
+		dc.w		50,50		XY of hit box rel to TopLeft
+		dc.w		95,19		* hit box width and height
+		dc.w		GADGIMAGE	* gadget flags
+		dc.w		RELVERIFY	activation flags
+		dc.w		BOOLGADGET	gadget type flags
+		dc.l		IM1		* image to be rendered
+		dc.l		0		alt imagery for selection
+		dc.l		0		IntuiText structure
+		dc.l		0		mutual-exclude long word
+		dc.l		0		SpecialInfo structure
+		dc.w		0		user-definable data
+		dc.l		QuitSub		* pointer to subroutine
+
+
+			~~~~~~~~~~~~~~~~~~~~~~~~
+ This will suffice. The gadget will be displayed in inverse colours when
+selected since no pointer has been supplied for SELECT imagery, but that
+will be dealt with shortly.
+
+ Load Int_Start.s again. Type the above structure after the window structure
+which starts at line ####. Now link the gadget to the window so it appears as
+soon as the window opens, this is done by writing the label QuitGadg in the
+window structure nw_FirstGadget field. You should end up with the following:
+
+			~~~~~~~~~~~~~~~~~~~~~~~~
+MyWindow	dc.w		101,9
+		dc.w		400,190
+		dc.b		1,2
+		dc.l		GADGETDOWN+GADGETUP+CLOSEWINDOW
+		dc.l		WINDOWDRAG+WINDOWDEPTH+WINDOWCLOSE+ACTIVATE+NOCAREREFRESH
+		dc.l		QuitGadg	;gadgets
+		dc.l		0
+		dc.l		WindowName
+		dc.l		0
+		dc.l		0
+		dc.w		5,5
+		dc.w		640,200
+		dc.w		WBENCHSCREEN
+
+WindowName	dc.b		' Test ',0
+		even
+
+QuitGadg	dc.l		0		next gadget
+		dc.w		50,50		XY of hit box rel to TopLeft
+		dc.w		95,19		* hit box width and height
+		dc.w		GADGIMAGE	gadget flags
+		dc.w		RELVERIFY	activation flags
+		dc.w		BOOLGADGET	gadget type flags
+		dc.l		IM1		* image to be rendered
+		dc.l		0		alt imagery for selection
+		dc.l		0		IntuiText structure
+		dc.l		0		mutual-exclude long word
+		dc.l		0		SpecialInfo structure
+		dc.w		0		user-definable data
+		dc.l		QuitSub		* pointer to subroutine
+
+
+			~~~~~~~~~~~~~~~~~~~~~~~~
+ We still have to add the subroutine to be called when the gadget is clicked
+on and also the image structure and data before assembling the program. Go to
+the bottom of the source and type in the following subroutine:
+
+			~~~~~~~~~~~~~~~~~~~~~~~~
+
+QuitSub		move.l		#CLOSEWINDOW,D2	   simulate close window
+		rts				   and return
+
+			~~~~~~~~~~~~~~~~~~~~~~~~
+
+ To see how this causes the program to quit refer to the WaitForMsg
+subroutine.
+
+ Finally, add the file ' ram:temp ' after this subroutine. All is now ready
+for assembling so assemble and run the program. Quit it by clicking on the
+new gadget we have added.
+
+ Adding A Second Image ( SELECT )
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ The effect created by adding image data to the gadget in the last example
+is ruined when the gadget is clicked on. Just inverting a gadget is really
+naff!
+
+ What is needed is a second image that is displayed when the gadget is
+selected. Time to load ImageMaker again! From ImageMaker load the IFF brush
+called ' QuitDown.iff '. Convert this to an image source file and save as
+' ram:temp1 ' with source label ' IM2 '.
+
+ Insert the file ' ram:temp1 ' at the bottom of the last example, ie after
+the IM1 defenition. You should now have the following at the end of the
+Int_Start.s code:
+
+		IM1 structure
+
+		section directive
+
+		IM1 chip data
+
+		IM2 structure
+
+		section directive
+
+		IM2 chip data
+
+ Rearrange these blocks, using cut 'n' paste, into the following order:
+
+		IM1 structure
+
+		IM2 structure
+
+		section directive
+
+		IM1 chip data
+
+		IM2 chip data
+
+ You should end up with the folling at the end of Int_Start.s:
+
+			~~~~~~~~~~~~~~~~~~~~~~~~
+
+IM1
+		dc.w		0,0		; x,y 
+		dc.w		95,19		; width,height
+		dc.w		2		; depth
+		dc.l		IM1Data		; Image def
+		dc.b		3		; PlanePick
+		dc.b		0		; PlaneOnOff
+		dc.l		0		; no more images
+
+
+IM2
+		dc.w		0,0		; x,y 
+		dc.w		95,19		; width,height
+		dc.w		2		; depth
+		dc.l		IM2Data		; Image def
+		dc.b		3		; PlanePick
+		dc.b		0		; PlaneOnOff
+		dc.l		0		; no more images
+
+
+		SECTION	im,DATA_C		; get CHIP mem
+
+; Data For first plane of image now follows.
+
+IM1Data
+		dc.w	$FFFF,$FFFF,$FFFF,$FFFF,$FFFF,$FFFC,$8000,$0000
+		dc.w	$0000,$0000,$0000,$0000,$8000,$0000,$0000,$0000
+		dc.w	$0000,$0000,$8000,$0000,$0000,$0000,$0000,$0000
+		dc.w	$8000,$0000,$0000,$0000,$0000,$0000,$8000,$0000
+		dc.w	$0000,$0000,$0000,$0000,$8000,$0000,$0000,$0000
+		dc.w	$0000,$0000,$8000,$0000,$0000,$0000,$0000,$0000
+		dc.w	$8000,$0000,$0000,$0000,$0000,$0000,$8000,$0000
+		dc.w	$0000,$0000,$0000,$0000,$8000,$0000,$0000,$0000
+		dc.w	$0000,$0000,$8000,$0000,$0000,$0000,$0000,$0000
+		dc.w	$8000,$0000,$0000,$0000,$0000,$0000,$8000,$0000
+		dc.w	$0000,$0000,$0000,$0000,$8000,$0000,$0000,$0000
+		dc.w	$0000,$0000,$8000,$0000,$0000,$0000,$0000,$0000
+		dc.w	$8000,$0000,$0000,$0000,$0000,$0000,$8000,$0000
+		dc.w	$0000,$0000,$0000,$0000,$8000,$0000,$0000,$0000
+		dc.w	$0000,$0000
+
+; Data for second plane of image now follows.
+
+		dc.w	$0000,$0000,$0000,$0000,$0000,$0002,$0000,$0000
+		dc.w	$0000,$0000,$0000,$0002,$0000,$0000,$0000,$0000
+		dc.w	$0000,$0002,$0000,$0000,$0000,$0000,$0000,$0002
+		dc.w	$0000,$0000,$0000,$0000,$0000,$0002,$0000,$0000
+		dc.w	$0000,$0000,$0000,$0002,$0000,$0000,$0000,$0000
+		dc.w	$0000,$0002,$0000,$0000,$0000,$0000,$0000,$0002
+		dc.w	$0000,$0000,$0000,$0000,$0000,$0002,$0000,$0000
+		dc.w	$0000,$0000,$0000,$0002,$0000,$0000,$0000,$0000
+		dc.w	$0000,$0002,$0000,$0000,$0000,$0000,$0000,$0002
+		dc.w	$0000,$0000,$0000,$0000,$0000,$0002,$0000,$0000
+		dc.w	$0000,$0000,$0000,$0002,$0000,$0000,$0000,$0000
+		dc.w	$0000,$0002,$0000,$0000,$0000,$0000,$0000,$0002
+		dc.w	$0000,$0000,$0000,$0000,$0000,$0002,$0000,$0000
+		dc.w	$0000,$0000,$0000,$0002,$7FFF,$FFFF,$FFFF,$FFFF
+		dc.w	$FFFF,$FFFE
+
+
+; Data For first plane of image now follows.
+
+IM2Data
+		dc.w	$0000,$0000,$0000,$0000,$0000,$0002,$0000,$0000
+		dc.w	$0000,$0000,$0000,$0002,$0000,$0000,$0000,$0000
+		dc.w	$0000,$0002,$0000,$0000,$0000,$0000,$0000,$0002
+		dc.w	$0000,$0000,$0000,$0000,$0000,$0002,$0000,$0000
+		dc.w	$0000,$0000,$0000,$0002,$0000,$0000,$0000,$0000
+		dc.w	$0000,$0002,$0000,$0000,$0000,$0000,$0000,$0002
+		dc.w	$0000,$0000,$0000,$0000,$0000,$0002,$0000,$0000
+		dc.w	$0000,$0000,$0000,$0002,$0000,$0000,$0000,$0000
+		dc.w	$0000,$0002,$0000,$0000,$0000,$0000,$0000,$0002
+		dc.w	$0000,$0000,$0000,$0000,$0000,$0002,$0000,$0000
+		dc.w	$0000,$0000,$0000,$0002,$0000,$0000,$0000,$0000
+		dc.w	$0000,$0002,$0000,$0000,$0000,$0000,$0000,$0002
+		dc.w	$0000,$0000,$0000,$0000,$0000,$0002,$0000,$0000
+		dc.w	$0000,$0000,$0000,$0002,$7FFF,$FFFF,$FFFF,$FFFF
+		dc.w	$FFFF,$FFFE
+
+; Data for second plane of image now follows.
+
+		dc.w	$FFFF,$FFFF,$FFFF,$FFFF,$FFFF,$FFFC,$8000,$0000
+		dc.w	$0000,$0000,$0000,$0000,$8000,$0000,$0000,$0000
+		dc.w	$0000,$0000,$8000,$0000,$0000,$0000,$0000,$0000
+		dc.w	$8000,$0000,$0000,$0000,$0000,$0000,$8000,$0000
+		dc.w	$0000,$0000,$0000,$0000,$8000,$0000,$0000,$0000
+		dc.w	$0000,$0000,$8000,$0000,$0000,$0000,$0000,$0000
+		dc.w	$8000,$0000,$0000,$0000,$0000,$0000,$8000,$0000
+		dc.w	$0000,$0000,$0000,$0000,$8000,$0000,$0000,$0000
+		dc.w	$0000,$0000,$8000,$0000,$0000,$0000,$0000,$0000
+		dc.w	$8000,$0000,$0000,$0000,$0000,$0000,$8000,$0000
+		dc.w	$0000,$0000,$0000,$0000,$8000,$0000,$0000,$0000
+		dc.w	$0000,$0000,$8000,$0000,$0000,$0000,$0000,$0000
+		dc.w	$8000,$0000,$0000,$0000,$0000,$0000,$8000,$0000
+		dc.w	$0000,$0000,$0000,$0000,$8000,$0000,$0000,$0000
+		dc.w	$0000,$0000
+
+
+			~~~~~~~~~~~~~~~~~~~~~~~~
+
+ This is more logical and easier to read.
+
+ The image is now in the source, all that needs to be done now is to tell
+the gadget about it. This is done by setting the GADGHIMAGE flag in the
+gg_Flags field ( tells Intuition to use SELECT image ) and also putting
+a pointer to the image structure in the gg_SelectRender field ( so that
+Intuition knows where to find the structure ). Below is the modified
+gadget structure, the two fields just discussed are marked with an asterix
+at the start of their comment fields:
+
+			~~~~~~~~~~~~~~~~~~~~~~~~
+
+QuitGadg	dc.l		0		next gadget
+		dc.w		50,50		XY of hit box rel to TopLeft
+		dc.w		95,19		hit box width and height
+		dc.w		GADGIMAGE+GADGHIMAGE	* gadget flags
+		dc.w		RELVERIFY	activation flags
+		dc.w		BOOLGADGET	gadget type flags
+		dc.l		IM1		image to be rendered
+		dc.l		IM2		* alt imagery for selection
+		dc.l		0		IntuiText structure
+		dc.l		0		mutual-exclude long word
+		dc.l		0		SpecialInfo structure
+		dc.w		0		user-definable data
+		dc.l		QuitSub		pointer to subroutine
+
+
+			~~~~~~~~~~~~~~~~~~~~~~~~
+
+ To see this masterpiece in action assemble and run. Note the apparent
+sinking of the gadget into the display ( arrgh, wb2 rip! ) when it is
+clicked on.
+
+ Adding Text To The Gadget
+ ~~~~~~~~~~~~~~~~~~~~~~~~~
+ This last section brings together a couple of principles. First, gadgets
+using custom imagery are visually more pleasing than a box that changes
+colour. The problem is image data uses valuable chip mem, so you want to
+use as few images as possible.
+
+ I have already demonstrated how to reuse image data and this certainly
+helps in cutting down on chip memory usage. The problem is how does the
+user know what function a particular gadget serves if all the gadgets
+look the same?
+
+ The answer lies in the gg_GadgetText field of the gadget structure. If an
+IText structure is prepared and a pointer to it placed in this field, then
+the text will be rendered AFTER any image attached to the gadget.
+
+ I am not going to explain the use of IText all over again. For a quick
+demonstration, cut the IText structure out of the last example. It can
+be found near line 465. Now paste it after the gadget structure. Edit the
+structure so that it reads:
+
+			~~~~~~~~~~~~~~~~~~~~~~~~
+
+GadgTxt		dc.b		1		FrontPen
+		dc.b		0		BackPen
+		dc.b		RP_JAM2		DrawMode
+		dc.b		0		KludgeFill00
+		dc.w		5		x position
+		dc.w		2		y position
+		dc.l		0		font
+		dc.l		.Text		address of text to print
+		dc.l		0		no more text
+
+.Text		dc.b		'QUIT',0	the text itself
+		even
+
+
+			~~~~~~~~~~~~~~~~~~~~~~~~
+
+ Now link this structure to the gadget by putting the label GadgTxt in the
+gg_GadgetText field of the gadget structure:
+
+
+			~~~~~~~~~~~~~~~~~~~~~~~~
+
+QuitGadg	dc.l		0		next gadget
+		dc.w		50,50		XY of hit box rel to TopLeft
+		dc.w		95,19		hit box width and height
+		dc.w		GADGIMAGE+GADGHIMAGE	gadget flags
+		dc.w		RELVERIFY	activation flags
+		dc.w		BOOLGADGET	gadget type flags
+		dc.l		IM1		image to be rendered
+		dc.l		IM2		alt imagery for selection
+		dc.l		GadgTxt		* IntuiText structure
+		dc.l		0		mutual-exclude long word
+		dc.l		0		SpecialInfo structure
+		dc.w		0		user-definable data
+		dc.l		QuitSub		pointer to subroutine
+
+
+			~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+ Assemble and run the example.
+
+ If you had problems following this, the final example is on the source disc
+and is called GG_Eg1.s. You can examine this for enlightenment!
+
+ A Final Word
+ ~~~~~~~~~~~~
+ I find it easier to keep all gadget/image/text structures in a seperate
+source file and the subroutines for the gadgets in yet another source file.
+When it comes to assembling, I put include statements at the appropriate
+position of Int_Start.s ( at the end will do ).
+
+ For instance, suppose the subroutines are in a file called ' subs.i ' and
+the gadgets are in a file called ' structs.i ', then I would add the
+following two lines to the bottom of Int_Start.s:
+
+		include		subs.i
+		include		structs.i
+
+ Of course Int_Start.s may still need minor modifications, such as linking
+the gadgets to the window structure, but the advantage is that your source
+file does not grow to an unmanagable size ( try finding a subroutine in a
+source listing 2000 lines long to see what I mean ).
+
+ Sometimes I even move the window structure out of Int_Start.s so it is
+located with the other structures. Remember Int_Start.s is only a skeleton
+routine and is intended as a quick way to get a utility/porogram off the
+ground.
+
+ Feedback
+ ~~~~~~~~
+ Have you read this far? Did you work through the examples given? Have you
+expanded on the basics presented here? Used your own image data? If the
+answer is 'YES', then write. Send an example of your experimentation. Why?
+Because it will make me feel better!
+
+					Mark.
+

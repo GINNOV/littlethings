@@ -1,0 +1,22 @@
+Short:        Fully commented MorphOS PPC assembly
+Author:       ausppc@gmail.com (Matthew Gundry)
+Uploader:     ausppc gmail com (Matthew Gundry)
+Type:         dev/src
+Version:      1.01
+Architecture: generic
+
+This archive contains wif_info.s and wif_info.s.asc.  
+
+The source file is fairly heavily commented.  
+
+The signature and source file can be verified against this public key - 
+https://pgp.mit.edu/pks/lookup?op=get&search=0x4114BE634BD3931B
+
+wif_info is a shell program that takes a W(allet)I(mport)F(ormat) string as 
+input and it verifies the checksum and converts the rest of the  WIF string 
+to a raw, hexadecimal format.  
+
+This version correctly processes the leading-zero WIF prefix byte in bitcoin 
+addresses.  
+
+Set your tab size to four.  ;)

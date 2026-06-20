@@ -1,0 +1,65 @@
+#ifndef GUI_FILE_H
+#define GUI_FILE_H
+
+/* Types */
+#include <exec/types.h>
+struct ObjApp
+{
+	APTR	App;
+	APTR	WI_MAIN;
+	APTR	CY_MESH;
+	APTR	BT_CALCULATE;
+	APTR	BT_INFO;
+	APTR	BT_CAMLIG;
+	APTR	BT_NEW;
+	APTR	STR_COPYRIGHT;
+	APTR	CY_FORMAT3D;
+	APTR	PA_FILE3D;
+	APTR	STR_PA_FILE3D;
+	APTR	STR_EXTENSION3D;
+	APTR	BT_SAVE3D;
+	APTR	CY_FORMAT2D;
+	APTR	CY_VIEWTYPE2D;
+	APTR	CY_DRAWMODE2D;
+	APTR	PA_FILE2D;
+	APTR	STR_PA_FILE2D;
+	APTR	STR_EXTENSION2D;
+	APTR	BT_SAVE2D;
+	APTR	BT_ABOUT;
+	APTR	WI_CAMLIG;
+	APTR	STR_CX;
+	APTR	STR_CY;
+	APTR	STR_CZ;
+	APTR	STR_CLX;
+	APTR	STR_CLY;
+	APTR	STR_CLZ;
+	APTR	STR_LX;
+	APTR	STR_LY;
+	APTR	STR_LZ;
+	APTR	SL_RED;
+	APTR	SL_GREEN;
+	APTR	SL_BLUE;
+	char **CY_MESHContent;
+	char **CY_FORMAT3DContent;
+	char **CY_FORMAT2DContent;
+	char *	CY_VIEWTYPE2DContent[8];
+	char **CY_DRAWMODE2DContent;
+};
+
+#define ID_CALCULATE 1
+#define ID_NEW 2
+#define ID_ABOUT 3
+#define ID_INFO 4
+#define ID_OKCAMLIG 5
+#define ID_CANCELCAMLIG 6
+#define ID_FORMAT3D 7
+#define ID_FORMAT2D 8
+#define ID_SAVE3D 9
+#define ID_SAVE2D 10
+#define ID_OPENCAMLIG 11
+#define ID_CAMLIGACT 12
+
+extern struct ObjApp * CreateApp(void);
+extern void DisposeApp(struct ObjApp *);
+
+#endif

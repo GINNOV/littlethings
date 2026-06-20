@@ -1,0 +1,30 @@
+Short:    Ada95-Source: Greatest common divisor of n numbers
+Author:   walternn@studi.informatik.uni-stuttgart.de (Norman Walter)
+Uploader: walternn@studi.informatik.uni-stuttgart.de
+Type:     dev/src
+Requires: Ada Compiler (e.g. GNU Gnat)
+
+Calculates the greatest common divisor of n numbers by using a stack.
+
+This example includes a generic pointer-management and a generic stack (FIFO).
+It also shows the concept of abstract datatypes (ADT).
+
+
+For more examples visit my homepage:
+http://www.norman-interactive.com
+
+Book hints:
+
+Programming in Ada95
+John Barnes
+Addison-Wesely
+ISBN 0-201-34293-6
+
+
+
+
+
+
+
+
+

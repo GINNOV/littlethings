@@ -1,0 +1,11 @@
+	IFND	MATH_I
+MATH_I	set	1
+
+PI	equ.d	(3.14159265358979323846)
+TWOPI	equ.d	(2*PI)
+PI2	equ.d	(PI/2)
+PI4	equ.d	(PI/4)
+PI180	equ.d	(PI/180)
+
+	ENDC
+

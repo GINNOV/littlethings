@@ -1,0 +1,2880 @@
+
+
+
+			ARM (Acorn RISC Machine)
+			========================
+
+			    Instruction Set
+			    ==============
+
+
+
+This DOC file contains the entire ARM instruction set, plus supplementary in-
+formation about using the ARM and writing software in ARM assembler.
+
+
+
+			Conventions Used In This
+			========================
+
+				DOC File
+				========
+
+
+The following conventions are used to represent important quantites when des-
+cribing the fundamentals of ARM assembly language, the operation of the pro-
+cessor and the various addressing modes:
+
+
+	rl		: Left hand operand register
+
+        rr		: Right hand operand register
+
+        rd		: Destination operand register
+
+        (rn)		: Contents of specified register
+
+        CC		: Condition codes treated as a unit
+
+        op		: General operand including a register
+			  operand
+
+	<op>		: Value contained in the specified
+			  operand
+
+	addr		: Address operand in any legal ARM
+			  addressing mode
+
+	offset		: Any legal ARM offset in those ARM
+			  addressing modes using offsets
+
+	<ea>		: Represents an effective address as
+			  computed by the processor whenever
+			  a memory reference is made
+
+	#nnn		: Immediate operand
+
+	->		: Means 'value is written to' as in
+ 			  0 -> rn
+
+	{reglist}	: Any list of ARM registers enclosed in
+			  braces, for example:
+
+				{R0,R2,R5} , {R2-R8}
+
+			  are legal register lists.
+
+	{ }		: Anything contained within these braces is
+			  an optional quantity, other than a register
+			  list as specified above. For example, the
+			  specification {cc} is used to specify the
+			  optional condition code field in an assem-
+			  bly language instruction mnemonic.
+
+	cc		: General condition code specifier
+
+			  When signalling condition code status, the
+			  following is used:
+
+				0   Condition code cleared by
+				    operation
+
+				1   Condition code set by operation
+
+				*   Condition code functionally
+				    altered by operation
+
+				U   Condition code undefined after
+				    operation
+
+				X   Condition code unaffected by
+				    operation
+
+
+
+			ARM Processor Model
+			===================
+
+			And Design Features
+			===================
+
+
+The Acorn RISC Machine (abbreviated to ARM) is a RISC processor. RISC stands
+for Reduced Instruction Set Controlled (and not Reduced Instruction Set Comp-
+uter-this latter interpretation makes less sense in the construction 'Acorn
+RISC Machine') and decribes a philosophy of processor design adopted in the
+mid- to late-1980's to counter the problem of executing an instruction in a
+single machine cycle.
+
+
+	CISC (Complex Instruction Set Controlled) processors, including the
+1980's designs such as the Motorola MC68000 series, have instructions which
+are capable of making many memory references in one instruction. However, as
+memory access speeds have been largely left behind by processor speeds, the
+memory accesses cause the processor to require more than one clock cycle in
+order to complete the instruction. Applications requiring fast processors or
+fast memory access were traditionally managed using cache memory and virtual
+memory managers, and the ability of processors such as the MC68020 to 'farm
+out' extra processing to coprocessors such as the MC68881 mathematics chip, a
+capability not possessed by mid-1970's designs.
+
+
+	However, once the task of managing large-memory applications at speed
+using even processors such as the MC68040 (at 50MHz clock speed!) placed huge
+burdens on software developers, and even bigger demands upon system designers
+requiring large quantities of expensive static RAM to enhance system perform-
+ance. Also, the actual manufacture of ever more complex processors placed a
+huge strain on the resources of processor designers. For example, the latest
+Intel 80486 processor (which consists of 3.6 million transistors on a single
+piece of silicon!) appears under a microscope to be far more complex than an
+aerial view of New York, & special techniques are required to ensure that all
+of the processor's components are interfaced correctly.
+
+
+	In order to allow fast processor execution, while still using lower-
+speed (and consequently much lower-cost) dynamic RAM, the RISC processor was
+born. The fundamental principles guiding the RISC processor are:simple inst-
+ructions (thus requiring fewer on-chip components), register-intensive opera-
+tion (thus reducing memory accesses) and consequently simple design (which
+results in faster overall speed). The ARM is one example of this philosophy
+in action, and I shall now disclose the programming model.
+
+
+
+	The ARM is a 32-bit processor, consisting of 16 32-bit registers from
+R0 to R15. Registers R0 to R13 are undedicated, general-purpose registers to
+be used for any purpose desired by the programmer. Register R14 is used as a
+link register (see later) but is otherwise available to the programmer. This
+leaves register R15, which has a special purpose.
+
+
+	All processors need a program counter, and usually a status register
+too. The ARM solves the problem neatly by combining the program counter (PC)
+and status register (SR) into one 32-bit register, namely R15. The format of
+register R15 is:
+
+
+		NZCV IF PP PPPP PPPP  PPPP PPPP PPPP PP S1 S0
+
+
+The bits marked N,Z,C and V are the condition codes. The condition codes are
+similar to those found on more conventional processors (e.g., the MC68000).
+The condition codes are:
+
+
+			N : Negative flag
+
+			Z : Zero flag
+
+			V : Overflow flag
+
+			C : Carry flag
+
+
+The I and F bits are the interrupt disable masks. The I bit disables the nor-
+mal interrupt request when set, and the F bit disables the fast interrupt re-
+quest when set. The bits marked S1 and S0 are used to set the processor mode,
+the modes allowable being:
+
+
+			S1	S0	Mode
+			--	--	----
+
+			1	1	SVC : Supervisor Mode
+
+			1	0	IRQ : Interrupt Request
+
+			0	1	FIRQ : Fast Interrupt Request
+
+			0	0	User Mode
+
+
+The bits marked 'P' above are the program counter bits. The program counter
+is 24 bits in width, and would normally address a 16 megabyte address space.
+However, the PC on the ARM does not address memory bytes, but memory words,
+a word in ARM parlance being a 32-bit entity. Thus the ACTUAL memory location
+addressed by the PC bits of register R15 is:
+
+
+			(value of PC bits of R15) * 4
+
+
+thus allowing the ARM to address a 64 megabyte physical address space.
+
+
+	When operating in user mode, the above programming model is suffici-
+ent. However, for interrupt and supervisor modes, there exist extra registers
+which are private to that processor mode. These are:
+
+
+			Supervisor mode : R13_SVC, R14_SVC
+
+			Fast Interrupt  : R13_FIRQ, R14_FIRQ
+
+			Interrupt   : R8_IRQ to R14_IRQ
+
+
+The status bits S0 and S1 CANNOT be changed when in user mode, but are modi-
+fiable when in one of the non-user modes. The ARM allows access to external
+hardware to the state of the S0 and S1 bits, so that external hardware can be
+used to determine if the processor is in a non-user mode, and hence grant ac-
+cess to dedicated hardware locations (e.g., disc controller chip registers)
+whose access should be regulated in order to prevent accidental system damage
+caused by rogue user programs. Non-user modes are 'privileged' modes (in the
+same way as supervisor mode on, for example, the 68000) and allow access to
+privileged features of the system.
+
+
+	The terminology used on the ARM processor with respect to memory size
+is as follows:
+
+
+		BYTE		: Any 8-bit quantity
+
+		HALFWORD	: Any 16-bit quantity
+
+		WORD		: Any 32-bit quantity
+
+
+ALL ARM instructions MUST be word aligned (using the definitions above). The
+alignment of data is also critical on the ARM, with word data requiring word
+alignment as for program instructions. Byte data, however, may be aligned on
+any linear address boundary.
+
+
+	The ARM has its own coprocessors, these being the FPU (floating point
+unit) and the MEMC (memory controller). The FPU operates in a manner analog-
+ous to other, more conventional mathematics coprocessors (e.g., the Motorola
+MC68881), and the MEMC provides hardware support for such features as virtual
+memory. Each coprocessor has its own instruction set, communication between a
+coprocessor and the ARM being provided (as in more conventional processors)
+by means of special coprocessor communication instructions.
+
+
+	In the case of the ARM itself, as opposed to the coprocessors availa-
+ble for the ARM, the instruction set possesses a feature that is quite possi-
+bly unique to the ARM. ALL of its basic instructions will fit into a single
+instruction word (in this case, one 32-bit entity). This makes ARM code ext-
+remely compact (especially when optimised to take advantage of universally
+available conditional execution and built-in barrel shifting), and when there
+exists a suitably written operating system to support applications (RISC OS
+on the Archimedes series for computers, for example) then native-code prog-
+rams for the ARM can be almost ridiculously small.
+
+
+
+			ARM Basic Processor Operation
+			=============================
+
+
+The ARM processor uses a 'pipelined' method of operation. The ARM has space
+for three instruction words to be read into an on-chip instruction cache, &
+whenever an instruction is read into this cache, the program counter is up-
+dated.
+
+
+	The cache is a first-in, first-out (FIFO) array structure. It is com-
+posed of three words, the 'fetch', 'decode' and 'execute' words (each word is
+32 bits wide). The ARM reads instructions into the 'fetch' word of the cache,
+and when a new instruction is fetched, words currently in the cache are moved
+up the cache into the 'decode' and then the 'execute' words of the cache. In
+actuality, the state of the instruction in the 'execute' word of the cache is
+the controlling factor:once the instruction in the 'execute' word has comple-
+ted execution, only then is the cache advanced and a new instruction fetched.
+
+
+	Let the ARM begin reading instructions and processing them. If our PC
+began reading instructions at address N, then the table below identifies the
+instructions contained in the cache after reading sufficient instructions to
+fill the cache:
+
+
+			Entry	Instruction 	Address
+			-----	-----------	-------
+
+			Execute	    1st		   N
+
+			Decode	    2nd		   N+4
+
+			Fetch	    3rd		   N+8
+
+			No Entry    4th		   N+12
+
+
+Because of this pipelined operation, if the '1st' instruction is a branch in-
+struction, then the PC will already be pointing to the '3rd' instruction, at
+PC address N+8. So the relative branch address MUST be adjusted to take this
+into account (this will be supported by the assembler). This also means that 
+instructions affecting the PC directly (other than branches and the 'branch
+& link' instruction) will skip the two pre-fetched instructions already in
+the cache. There do exist ways of circumventing this (for example, affecting
+the status bits alone using TEQP) but this is more suitably covered later.
+
+
+	The ARM possesses an arithmetic/logical unit (ALU) as on conventional
+processors, but it also possesses a barrel shifter. A barrel shifter differs
+from a more conventional shifter in that it can output its shifted values in
+very small instants of time. This allows instantaneous (from the programmer's
+viewpoint) shifting of operands prior to performing ALU operations upon them,
+and thus the ARM instruction set contains built-in provision for shifting of
+operands with no increase in execution time whenever a shifted operand exists
+within the instruction. Actually, the barrel shifter takes one 'tick' of the
+CPU master clock, but it takes this small amount of time regardless of shift
+size or shift type. This gives the ARM a performance edge over those proces-
+sors using conventional shifters and whose shift instructions have execution
+timings that are dependent upon the shift count (including the MC680x0).
+
+
+
+			ARM Exeception Vectors
+			======================
+
+
+The ARM possesses a small cluster of exception vectors located at the lowest
+region of the physical address space. The contents of these vectors are loa-
+ded into the PC section of R15 when the appropriate exception condition oc-
+curs and execution contiues at the location specified by the given vector. 
+Also, the I and F bits of the status register section of R15 are affected by
+loading some of these exception vectors. The table below lists the exception
+vectors, and the status of the I and F bits after the exception vector is
+loaded and the exception routine begins execution:
+
+
+		Vector		Name		I F	Mode
+		------		----		- -	----
+
+		$00000000	RESET		1 1	SVC
+		$00000004	Undefined	1 X	SVC
+				instruction
+		$00000008	Software
+				Interrupt (SWI)	1 X	SVC
+		$0000000C	Abort		1 X	SVC
+				(Prefetch)
+		$00000010	Abort (Data)	1 X	SVC
+		$00000014	Address		1 X	SVC
+				Exception
+		$00000018	IRQ		1 X	IRQ
+		$0000001C	FIRQ		1 1	FIRQ
+
+
+The 'mode' entry indicates which processor mode is entered upon entering the
+specified exception. A detailed exposition of the exceptions will follow, but
+first it must be pointed out that the exception mechanism is vastly different
+from that of, for example, the MC68000. Instead of pointers to exception code
+being placed in the exception vectors, a branch instruction to the routine is
+placed in each exception vector, and it is this branch instruction that the
+ARM executes.
+
+
+1) RESET. On an ARM-controlled system, the RESET line of the ARM processor is
+connected to the power-up reset circuitry of the MEMC coprocessor. Upon RESET
+being received, the ARM enters an idle state, and suspends the execution of
+the current instruction. It remains in the idle state until the RESET signal
+is removed. Once RESET is removed, the processor performs the following:
+
+
+		a) Supervisor (SVC) mode is entered
+
+		b) R15 is saved in R14_SVC
+
+		c) FIRQ, IRQ are disabled (F, I bits are
+		   set to 1)
+
+		d) PC section of R15 is loaded with the
+		   address $0000000
+
+		e) The instruction at that address is executed.
+		   Execution continues at that point.
+
+
+In general, the chances are that RESET was applied in order to recover from a
+bad system crash, and so the state of the PC prior to RESET will not, in gen-
+eral, be preserved by the operating system, except if the operating system is
+re-booted in a special 'debugging' mode (which is possible on the ARM just as
+it is on Motorola 680x0 systems).
+
+
+	In general, the ARM will be accompanied by a MEMC chip, and so MEMC
+will control such matters as I/O device re-initialisation and memory re-con-
+figuration. Thus the ARM will have little to do other than restarting the OS
+and preparing for execution of whatever user mode program is selected by the
+user.
+
+
+2) Undefined Instruction. When a bit pattern that does not form part of the
+ARM instruction set is prefetched and processed by the instruction execution
+unit of the ARM, an Undefined Instruction exception occurs. The event sequ-
+ence resulting from this is:
+
+
+		a) Supervisor (SVC) mode is entered
+
+		b) R15 saved in R14_SVC
+
+		c) I bit set (IRQ disabled)
+
+		d) PC section of R15 loaded with
+		   address $00000004
+
+		e) Execution continues at this point.
+
+
+This exception allows transparent expansion of the instruction set, first by
+software emulators (such as the Acorn IEEE floating-point emulator), and then
+by hardware as and when it becomes available. An assembler could generate the
+instruction sequences for new instructions as yet unrecognised by the ARM, & 
+these could be passed to a software emulator using the undefined instruction
+exception. When a new, enhanced ARM is available (or a coprocessor capable of
+executing the new instruction), then the system can transparently execute an
+instruction in the new set, the only change being visible to the user being a
+speed increase as hardware takes over a previously software-moderated opera-
+tion (once such hardware is available, the exception would no longer be trig-
+gered, and would only be triggered for those bit patterns that remained unre-
+cognised by the enhanced system).
+
+
+3) Software Interrupt. This vector is provided for use with the SWI (software
+interrupt) instruction. Whereas this exception is not a true 'exception' (in
+the classic sense), and functions differently from an interrupt (it is execu-
+ted synchronously), it nevertheless provides a position-independent means by
+which user programs can access operating system routines and functions.
+
+
+	A software interrupt on the ARM bears some relation to the 68000 TRAP
+instruction or the Intel 80x86 INT instruction (but is not identical in oper-
+ation). Software interrupts are used to access code (usually OS code) that is
+executed in supervisor mode.
+
+
+	Upon executing a SWI instruction, the ARM performs the following:
+
+
+		a) Supervisor (SVC) mode is entered
+
+		b) R15 is saved in R14_SVC
+
+		c) I bit is set (IRQ disabled)
+
+		d) PC section of R15 is loaded with the
+		   address $0000008
+
+		e) Instruction execution continues at this point.
+
+
+The SWI instruction itself contains a 24-bit field which is freely usable for
+parameter passing, etc., to the operating system. This field is not read and
+is not used by the ARM for any purpose in its current incarnation, and can be
+used by operating system code for parameter reception. Also, the system is so
+designed that SWI handlers can be chained together and extra SWI handlers ad-
+ded with little trouble.
+
+
+	To return to the calling user program, the SWI routine transfers the
+value of R14_SVC into R15 using code such as:
+
+
+			MOV R15,R14
+
+
+Since the ARM will be in supervisor mode, R14_SVC will be referenced by the
+instruction above.
+
+
+4) Aborts and Virtual Memory. A 'memory abort' is defined as the response by
+the system to an attempt by a program to reference a memory location or I/O
+device that is out of bounds to that program. On a full ARM system, the abort
+response will be generated by the MEMC memory controller, and MEMC will gen-
+erate an abort whenever an attempt is made to:
+
+
+		a) Write to a read-only physical RAM page
+
+		b) Access physical RAM or I/O devices
+		   while in user mode
+
+		c) Access a supervisor-mode only logical
+		   page in user or OS mode
+
+		d) Access an OS-only logical page in user
+		   mode
+
+		e) Access a logical page which has no corres-
+		   ponding physical page (i.e., nonexistent
+		   memory)
+
+
+Two classes of abort are supported. Prefetch aborts occur when the error re-
+sults from an attempt by the ARM to fetch a new instruction to execute from
+an illegal memory page. Data aborts occur whenever the memory load/store in-
+structions are used in an attempt to access data without the necessary priv-
+ileges (or from within nonexistent memory).
+
+
+	The sequence of events for a prefetch abort is:
+
+
+		a) SVC mode entered
+
+		b) R15 saved in R14_SVC
+
+		c) I bit set (IRQ disabled)
+
+		d) PC section of R15 loaded with address
+		   $0000000C
+
+		e) Execution continues at this point.
+
+
+whereas for a data abort, the sequence is more complex:
+
+
+		a) If current instruction is LDR or STR,
+		   abandon it completely. DO NOT ALTER
+		   ANY REGISTERS (even if, for example,
+		   writeback in preindexing was speci-
+		   fied).
+
+		b) If current instruction is LDM/STM,
+		   complete the instruction (although
+		   no registers are altered in LDM),
+		   and update addressing base register
+		   if writeback enabled.
+
+		c) SVC mode entered
+
+		d) R15 saved in R14_SVC
+
+		e) I bit set (IRQ disabled)
+
+		f) PC section of R15 loaded with $00000010
+
+		g) Execution continues at this point.
+
+
+Note that the value of the PC saved in R14_SVC differs if an LDM/STM instruc-
+tion caused the data abort (pointing to the instruction following the LDM/STM
+which is two words long, not one). The abort handler must examine the aborted
+instruction and determine the type and address mode. Then, it must undo the
+effect of any adjustment to the base register caused by writeback. Then, it
+must handle page faults in virtual memory if a page fault was the cause, load
+the correct logical page, inform the MEMC of the updated memory state, & then
+re-execute the instruction.
+
+
+5) Address Exception. This is an attempt by a load/store instruction to refe-
+rence a memory location whose address is outside the range of the ARM's add-
+ress bus (i.e., outside the 64MB address range of the ARM).
+
+
+
+			ARM Addressing Modes
+			====================
+
+
+The following is a list of legal addresing modes for the ARM processor, plus
+descriptions of the operation of the various allowed addressing modes.
+
+
+1) Preindexed Addressing. This addressing mode requires a register to be spe-
+cified as the base register, and an offset to be added to the value contained
+in the specified base register:
+
+
+		Assembler   : [rn,offset]
+		Generation  : <ea> = (rn) + offset
+
+
+The offset can be specified in several ways. Immediate-offset preindexed ad-
+dressing uses an immediate data constant (in the range -4095 to +4095) which
+is specified as a 12-bit magnitude plus a 1-bit direction field in the inst-
+ruction opcode, for example:
+
+
+			STR R0,[R1,#20]
+
+			STR R0,[R1,#-300]
+
+
+Register-offset preindexed addressing uses another ARM register to specify an
+offset, which furthermore can have an optional shift value applied to it, as
+in the examples:
+
+
+			STR R0,[R1,R2]		;addr = (R1) + (R2)
+
+			STR R0,[R1,-R2]		;addr = (R1) - (R2)
+
+			STR R0,[R1,R2,LSL#3]	;addr = (R1) + (R2*8)
+
+
+An added capability is provided by register-offset preindexed with writeback,
+specified using the syntax:
+
+
+			STR R0,[R1,R2,LSL#2]!
+
+
+The '!' specifies that the instruction is to compute the address for the op-
+eration, and then write that address back into the specified base register
+to allow indexing of table elements. This extra computation requires no over-
+head and executes in the same time as the non-writeback form of the instruc-
+tion.
+
+
+2) Postindexed Addressing. This addressing mode requires a register again to
+be specified as a base register, and an offset which is to be added on to the
+value contained in the base register to compute an address. The major differ-
+ence here is that the offset is added on to the value contained in the base
+register AFTER the memory reference has been made. The format of this addres-
+sing mode is:
+
+
+		Assembler   : [rn],offset
+		Generation  : <ea> = (rn)
+                              (rn) + offset -> rn
+
+
+3) Immediate Addressing. This addressing mode requires that an immediate data
+constant be specified (which is included in the instruction opcode upon ass-
+embly). This constant can take only a certain range of values, due to the way
+in which it is encoded.
+
+
+	An immediate data constant is encoded using 12 bits, the lower 8 bits
+specifying a value from 0 to 255, and the upper 4 bits being used to specify
+a shift count from 0 to 30 to apply to this 8-bit value. Thus it is possible
+to specify any constant whose uppermost 8 bits are 1 and whose remaining bits
+are zero. For example:
+
+
+		$0F is encoded as	: $00F
+
+		$200 is encoded as	: $F80 ($80 ROR #30)
+						or equivalent
+
+		$FF000000 is encoded as	: $4FF ($FF ROR #8)
+
+
+This means that constants such as $101 CANNOT be encoded into a single imme-
+diate operand, but have to be computed! Note that the shift is actually a ro-
+tate (and a rotate right, i.e. ROR) and that the ACTUAL shift count applied
+is TWICE the value of the shift count specified in the 4-bit shift field!
+
+
+4) Register Indirect Addressing. This is used in conjunction with the LDM &
+STM instructions (see below for full information). In this mode, a register
+is specified for use as a stack pointer, and its contents are the address in
+memory where the load or store operation is to take place. Again, is it pos-
+sible to specify writeback on or off, as in:
+
+
+			STMFD   R13,{R0-R4}
+
+			STMFD   R13!,{R1,R3,R5}
+
+
+In the case of LDM, an extra addition is supplied, which allows the program-
+mer to specify whether the PC portion of R15 alone is updated or whether the
+status bits are updated also:
+
+
+		LDMFD   R13!,{R10,R15}		;update PC alone
+
+		LDMFD   R13!,{R10,R15}^		;update PC + status
+
+
+The exact operation and syntax of the above instructions will be covered in
+their own sections in the main instruction set listing below. However, the
+principle of stack operation on the ARM requires separate discussion, and I
+shall cover this now.
+
+
+
+			   ARM Stack Operation
+			   ===================
+
+
+The LDM and STM operations on the ARM use stack principles, even though it is
+possible to specify any of the general-purpose registers as a stack pointer
+for the operation.
+
+
+	Stacks are described as being ascending or descending, and being full
+or empty. A 'full' stack occurs when the currently designated stack pointer
+points to the last element 'pushed', and an 'empty' stack when the currently
+designated stack pointer points at the next free slot in the stack to be occ-
+upied. The ARM supports both stack usages in the instruction set.
+
+
+	An ascending stack, naturally enough, is one where new items pushed
+onto the stack are added at increasing addresses, and a descending stack is
+one where new items are added at decreasing addresses. For example, after an
+instruction:
+
+
+		STMFD   R13!,{R0,R1,R2} ;full descending...
+
+
+the pushed items will be written at decreasing addresses, and after transfer,
+the stack pointer (in this case, R13) will point to the last pushed item. If
+R13 began by pointing at address N, then after the instruction the memory map
+will look like this:
+
+
+		Address		Item
+		-------		----
+
+		   N		 ???
+		  N-4		Contents of R2
+		  N-8		Contents of R1
+		  N-12		Contents of R0  <- R13 points here
+
+
+For an empty stack, the memory map will be different. The instruction:
+
+
+		STMED   R13!,{R0,R1,R2} ;empty descending...
+
+
+will give rise to:
+
+
+		Address		    Item
+		-------		    ----
+
+		   N		Contents of R2
+		  N-4		Contents of R1
+		  N-8		Contents of R0
+		  N-12		    ???       <- R13 points here
+
+
+although the chosen stack pointer will still end up pointing to the same ad-
+dress.
+
+
+	For ascending stacks, a similar principle operates. For example, the
+instruction:
+
+
+		STMFA   R13!,{R0,R1,R2}	;full ascending...
+
+
+will give rise to the following memory map:
+
+
+		Address		Item
+		-------		----
+
+		N+12      	Contents of R2  <- R13 points here
+		N+8		Contents of R1
+		N+4		Contents of R0
+		 N		???
+
+
+and the memory map arising from:
+
+
+		STMEA   R13!,{R0,R1,R2}	;empty ascending...
+
+
+will be:
+
+
+		Address		Item
+		-------		----
+
+		 N+12		???     <- R13 points here
+		 N+8		Contents of R2
+		 N+4		Contents of R1
+		  N		Contents of R0
+
+
+The stack pointer value to use for the operation is the current value of the
+chosen stack pointer for ascending stacks. The final value after stack writes
+of the stack pointer is then written back if writeback is enabled. For desc-
+ending stacks, the final value of the stack pointer is pre-computed, and then
+the stack is written to in ascending fashion using this pre-computed address.
+The register used as the stack pointer is ONLY updated with this pre-computed
+address if writeback is enabled.
+
+
+	Notice that registers are stored ALWAYS in such a way that the lowest
+numbered register is stored at the lowest memory address, and higher numbered
+registers stored at higher addresses in strict ordinal fashion. So if regis-
+ters R3, R4, R7 and R9 are stored in memory using an STM, the memory map will
+be:
+
+
+			Address		Item
+			-------		----
+
+			  N+12		Contents of R9
+			  N+8		Contents of R7
+			  N+4		Contents of R4
+			   N		Contents of R3
+
+
+An LDM will load the required items in the reverse order that is specified by
+the equvialent STM. Thus the two instructions:
+
+
+			STMFD   R13!,{R0,R1,R2}
+
+			LDMFD   R13!,{R0,R1,R2}
+
+
+are inverses of each other.
+
+
+
+			Alternative Stack Convention
+			============================
+
+
+For programmers more familiar with postincrement/predecrement addressing on
+processors such as the MC680x0, an alternative convention exists for descri-
+bing ARM stacks. This uses the letters I/D (increment/decrement) to describe
+what to do to the stack pointer, and A/B (after/before) to describe when to
+perform the stack pointer update (after or before loading/storing).
+
+
+	So for 68000 programmers, the equivalent of the 68000 instruction:
+
+
+			MOVEM.L	D0-D3,-(SP)
+
+
+will be the ARM instruction:
+
+
+			STMDB	R13!,{R0-R3}    ;decrement before
+
+
+and the equivalent of:
+
+
+			MOVEM.L	(SP)+,D0-D3
+
+
+will be the ARM instruction:
+
+
+			LDMIA	R13!,{R0-R3}	;increment after
+
+
+The ARM also supports 'decrement after' and 'increment before'. Both the ARM
+standard convention above and this alternative convention describe the same
+operation, but using different concepts. The alternative convention will be
+easier to adapt to for programmers coming to the ARM from processors such as
+the MC680x0 series.
+
+
+	The correspondence between the two different conventions can be sum-
+marised using the table below:
+
+
+		      FD/EA type      DB/IA type
+		      ----------      --------
+
+
+			STMFD		STMDB	;this is equivalent
+			LDMFD		LDMIA	;to 68000 stack handling
+
+			STMFA		STMIB
+			LDMFA		LDMDA
+
+			STMED		STMDA
+			LDMED		LDMIB
+
+			STMEA		STMIA
+			LDMEA		LDMDB
+
+
+The full operation of LDM and STM is given in the instruction set listing be-
+low.
+
+
+			Conditional Execution
+			=====================
+
+
+ALL of the ARM instuctions can be executed conditionally. That is, a condit-
+ion can be specified in the assembler instruction to be tested for, and the
+instruction will only be executed at run-time if that condition is TRUE. This
+is a major departure from conventional processors, where the sole conditional
+instructions are branch instructions. On the ARM, ALL instructions contain a
+condition code field, and will only execute should that condition be TRUE at
+the time of execution. Furthermore, another field exists within most instruc-
+tions that allows the programmer to specify whether or not to affect the con-
+dition codes when the instruction executes. For example:
+
+
+			ADD R0,R1,R2
+
+
+will perform the addition specified unconditionally (i.e., always), but will
+NOT affect the condition codes. The instruction:
+
+
+			ADDS    R0,R1,R2
+
+
+WILL affect the condition codes after performing the addition, the condition
+codes being dependent upon the result stored in the destination operand. But
+it is also possible to specify, for example:
+
+
+			ADDCS   R0,R1,R2
+
+
+which will ONLY perform the addition if the carry flag (C) is set! If it is
+desired to set the condition codes after such an instruction, then the ass-
+embly language for this is:
+
+
+			ADDCSS R0,R1,R2
+
+
+Basically, one of 16 condition codes can be appended to ANY instruction, and
+for many instructions it is also possible to specify (by appending an 'S' to
+the whole, AFTER any condition code specifier) whether the instruction is to
+affect the condition codes depending upon the result.
+
+
+	The full list of condition codes is:
+
+
+		EQ	: TRUE if last result was equal to zero
+			  (Z flag set).
+
+		NE	: TRUE if last resul not equal to zero
+			  (Z flag cleared).
+
+		CS	: TRUE if carry set by last instruction.
+
+		CC	: TRUE if carry cleared by last instruction.
+
+		MI	: TRUE if last result was negative (minus)
+			  (N flag set).
+
+		PL	: TRUE if last result was positive (plus)
+			  (N flag cleared).
+
+		VS	: TRUE if overflow set by last instruction.
+
+		VC	: TRUE if overflow cleared by last instruc-
+			  tion.
+
+		HI	: TRUE if one operand higher than the other
+			  (unsigned arithmetic).
+
+		LS	: TRUE if one operand lower than or the
+			  same as the other (unsigned arithmetic).
+
+		GE	: TRUE if one operand greater than or equal
+			  to the other (signed arithmetic).
+
+		LT	: TRUE if one operand less than the other
+			  (signed arithmetic).
+
+		GT	: TRUE if one operand greater than the other
+			  (signed arithmetic).
+
+		LE	: TRUE if one operand less than or equal to
+			  the other (signed arithmetic).
+
+		AL	: TRUE ALWAYS
+
+		NV	: TRUE NEVER
+
+
+If an instruction is written without a condition field specifier, as in:
+
+
+			ADD R0,R1,R2
+
+
+then this is treated as identical to:
+
+
+			ADDAL	R0,R1,R2	;add always
+
+
+For branch instructions, the assembler syntaxes:
+
+
+			B	label
+			BAL	label
+
+
+are equivalent-both are unconditional branch instructions.
+
+
+	Some assemblers may support synonyms for the above conditions. Two of
+the most frequently encountered synonyms are:
+
+
+	LO (Synonym for CS)	: TRUE if one operand
+				  lower than the other
+				  (unsigned arithmetic).
+
+	HS (Synonym for CC)	: TRUE if one operand
+				  higher than or same as
+				  the other (unsigned
+				  arithmetic).
+
+
+Programmers familiar with such synonyms on MC68000 assemblers will be famil-
+iar with the concept. They are merely lexical devices supplied to enhance the
+programmer's ability to understand the function of the code, and if the ass-
+embler supports them, then the instruction codes generated for, for example:
+
+
+			MOVLO	R0,R2
+
+
+will be the same as that generated for:
+
+
+			MOVCS	R0,R1
+
+
+The code NV (true never) allows large portions of the instruction set to be
+used as NOPs. There is no explicit NOP instruction on the ARM, but the use of
+the NV condition specifier, as in:
+
+
+			MOVNV	R0,R1
+
+
+allows access to a range of NOP-type instructions with a range of different
+instruction timings.
+
+
+
+			ARM Programming Peculiarities
+			=============================
+
+
+The ARM has a number of features which differ radically from more convention-
+al processors. For instance, a program does not have an explicitly specified
+stack (although by convention, register R13 is used as a stack pointer by the
+program) and thus conventional subroutine calling cannot be performed without
+some preparation on the part of the PROGRAMMER.
+
+
+	Instead of a CALL or BSR/JSR type instruction, the ARM uses BL (the
+branch and link) instruction. This instruction copies the value of R15 that
+corresponds to the PC value of the next instruction into R14, which is used
+as a link register, and then branches to the specified routine. If the pro-
+grammer wishes to issue multiple calls, then R14 must be explicitly saved on
+the 'stack' (usually that area of memory pointed to by R13, but other stacks
+are possible) before continuing. The RTS or RET instruction is replaced on
+the ARM by:
+
+
+			MOV	R15,R14
+
+
+which is (roughly) equivalent to the MC68000 RTS instruction. The condition
+codes can be restored at the end by using:
+
+
+			MOVS	R15,R14
+
+
+which takes account of the fact that the instruction:
+
+
+			BLAL	routine
+
+
+which performed the initial call (or any equivalent BL instruction such as a
+BLEQ, for example), preserves the condition codes automatically upon storing
+R15 in R14 prior to taking the branch. In this case, the MOVS instruction is
+roughly equivalent to the MC68000 RTR (return and restore) instruction when
+used in this manner. Of course, one could set the condition codes within the
+routine, and return them as part of the routine's return parameters, and use
+the MOV R15,R14 to restore the PC part of the instruction alone.
+
+
+	Similar peculiarities are encountered by any program wishing to enter
+one of the non-user modes. There is no explicit instruction for setting the
+status bits of R15 (which is forbidden in user mode anyway). If the operating
+system provides a SWI (software interrupt) granting supervisor (SVC) mode to
+a calling user-mode program for special operations (analogous to the mechan-
+ism on, for example, the MC68000), then once in suprevisor mode, it is then
+possible to condition ALL status bits.
+
+
+	Also, the special function of the register R15 (combined PC and stat-
+us register) means that special conventions apply when using this register in
+a Group 1 instruction (see below). The rules are:
+
+
+	1) If R15 is a left-hand source operand, then only those
+	   bits corresponding to the program counter (PC) are
+	   accessible for data transfer. The status bits are
+	   read as zero.
+
+	2) If R15 is a right-hand source operand, then ALL bits
+	   of R15 (status bits included) are accessible for data
+	   transfer.
+
+	3) If R15 is a destination operand, then only the PC bits
+	   are written unless the S option (set flags) is speci-
+	   fied in the instruction, in which case those status bits
+	   accessible in the current processor mode are written. In
+	   user mode, this limits the programmer to the NZVC condi-
+	   tion codes.
+
+
+			ARM Memory Map (with MEMC)
+			==========================
+
+
+On ARM systems equipped with the MEMC memory controller chip, the low 32MB of
+the address space will be allocated to LOGICAL RAM. This is divided into up
+to 128 logical pages, each page being a minimum of 8K in size, and a maximum
+of 32K in size. Each page has a protection level associated with it, this be-
+ing a value from 0 to 3.
+
+
+	In user mode, a program can read and write to level 0 pages. Level 1
+pages can only be read, and ALL access to level 2 & 3 pages is denied. In SVC
+(supervisor) mode, ALL pages can be read and written to.
+
+
+	The MEMC chip allows another form of user mode, called OS mode. If a
+user-mode program enters OS mode, then level 0 and 1 pages are read-write, &
+level 2 and 3 pages are read-only.
+
+
+	The next 16MB is set aside for PHYSICAL RAM. This is ONLY accessible
+in supervisor mode. The top 16MB is split between ROM and memory-mapped I/O
+devices. ROM is readable in any processor mode, but access to some I/O loca-
+tions is restricted to supervisor mode. THOSE LOCATIONS THAT ARE LINKED TO
+MEMC CONTROL REGISTERS ARE RESTRICTED TO SUPERVISOR MODE ONLY!
+
+
+			The Instruction Set
+			===================
+
+
+In the following exposition of the ARM instruction set, the instructions are
+collected together into various groups. The groups are:
+
+
+		Group 1		: Data Processing
+
+		Group 1A	: Multiply Instructions
+
+		Group 2		: Load And Store Instructions
+
+		Group 3		: Multiple Load/Store Instructions
+
+		Group 4		: Branch Instructions
+
+		Group 5		: Software Interrupt Instructions
+
+
+Following this group of ARM instruction to be executed by the ARM itself are
+a range of ARM coprocessor instructions.
+
+
+	Each group has a specific binary instruction format common to every
+instruction within the group. The formats are:
+
+
+Group 1 Instruction Format
+--------------------------
+
+
+	CCCC00IZZZZSLLLLDDDDOOOOOOOOOOOO
+
+	The fields for this instruction are:
+
+	CCCC	: Condition field. The condition field
+		  can take one of the following values:
+
+		  0000 EQ   0001 NE   0010 CS   0011 CC
+		  0100 MI   0101 PL   0110 VS   0111 VC
+		  1000 HI   1001 LS   1010 GE   1011 LT
+		  1100 GT   1101 LE   1110 AL   1111 NV
+
+		  This field specifies the condition to
+		  be tested prior to execution of the
+		  instruction. If the condition is TRUE,
+		  the instruction is executed, else the
+		  processor skips to the next instruction
+		  in sequence.
+
+	ZZZZ	: Opcode. Specifies the operation to be
+		  performed.
+
+	S	: Set flags bit. If S=0, then the condition
+		  codes are not set by the instruction. If
+		  S=1, then the instruction sets the cond-
+		  ition codes according to the nature of the
+		  operation.
+
+	LLLL	: Left hand source register (rl) specifier.
+		  Specifies which of the registers R0-R15
+		  is the left hand source register.
+
+	DDDD	: Destination register (rd) specifier. This
+		  field specifies which of the registers
+		  R0-R15 is the destination register into
+		  which the result is to be stored.
+
+	OOOO...	: Right hand operand field. Specifies either
+		  an immediate data operand, or a right hand
+		  source register (rr) operand plus shift to
+		  apply to that register operand.
+
+	I	: Immediate operand bit. If I=0, then the op-
+		  erand field above specifies a register plus
+		  a shift to apply to it. If I=1, then the
+		  operand field specifies an immediate const-
+		  ant operand.
+
+	Operand Field Variations :
+
+	I = 0		: TTTSSSSSRRRR
+
+		TTT Field	: Specifies shift type.
+
+		SSSSS Field	: Specifies shift value.
+
+		RRRR Field	: Specifies right hand
+				  source register (rr).
+
+	I = 1		: SSSSVVVVVVVV
+
+		SSSS Field	: Specifies an immediate
+				  shift count to apply to
+				  the value contained in
+				  the VVV... field. This
+				  is ALWAYS a ROR shift
+				  (i.e., a rotate)!
+
+		VVV... Field	: 8-bit constant value.
+
+
+Group 1A Instruction Format
+---------------------------
+
+    CCCC000000ASLLLLDDDDRRRR1001PPPP
+
+    The fields for this instruction are:
+
+    CCCC        : As for Group 1.
+
+    A		: Accumulate bit. A=0 specifies MUL,
+		  A=1 specifies MLA.
+
+    S		: As for Group 1.
+
+    LLLL	: Left hand source register (rl) specifier
+		  as for Group 1.
+
+    DDDD	: Destination register (rd) specifier
+		  as for Group 1.
+
+    RRRR	: Right hand source register (rr) specifier
+		  as for Group 1.
+
+    PPPP	: Addition register (ra) specifier for MLA.
+
+
+Group 2 Instruction Format
+--------------------------
+
+    CCCC01IPUWBLRRRRDDDDOOOOOOOOOOOO
+
+    The fields for this instruction are:
+
+    CCCC	: Condition field. As for Group 1.
+
+    P		: P=0 selects postindexed addressing,
+		  P=1 selects preindexed addressing.
+
+    U		: U=0 selects subtract offset from base,
+		  U=1 selects add offset to base.
+
+    W		: W=0 selects no writeback,
+		  W=1 selects writeback on.
+
+    B		: Byte operand bit.
+
+		  B=0 : Load/store word.
+
+		  B=1 : Load/store byte/
+
+    L		: Load/Store bit.
+
+		  L=0 : Store instruction.
+
+		  L=1 : Load instruction.
+
+    I		: I=0 selects register offset,
+		  I=1 selects immediate offset.
+
+    OOO...	: Offset field. Differs whether a register
+		  or immediate offset is selected.
+
+
+Group 3 Instruction Format
+--------------------------
+
+    CCCC100PUSWLRRRREEEEEEEEEEEEEEEE
+
+    The fields for this instruction are:
+
+    CCCC	: Condition field. As for Group 1.
+
+    P		: Pre/post indexing as for Group 2.
+
+    U		: Up/Down bit as for Group 2.
+
+    S		: Set condition codes on loading R15
+		  or force user mode if S=1, otherwise
+		  do not.
+
+    W		: Writeback bit as for Group 2.
+
+    L		: Load/Store bit as for Group 2.
+
+    RRRR	: Base register used as 'stack pointer'.
+
+    EEE...	: Each set bit of this field represents a
+		  register. If register Rn is in the regi-
+		  ster list, then bit n of this field is
+		  set.
+
+
+Group 4 Instruction Format
+--------------------------
+
+    CCCC101LOOOOOOOOOOOOOOOOOOOOOOOO
+
+    The fields for this instruction are:
+
+    CCCC	: Condition field as for Group 1.
+
+    L		: Link bit.
+
+		  L=0 : Branch instruction.
+
+		  L=1 : Branch and link with R13.
+
+    OOO...	: Offset field. This is a 24-bit value
+		  which is shifted 2 places left and added
+		  to the PC section of R15 upon taking the
+		  branch. The offset is 2's complement.
+
+
+Group 5 Instruction Format
+--------------------------
+
+    CCCC1111XXXXXXXXXXXXXXXXXXXXXXXX
+
+    The fields for this instruction are:
+
+    CCCC	: Condition field as for Group 1.
+
+    XXX...	: 24-bit 'comment' field ignored by ARM.
+		  Usable by operating system to determine
+		  the operating system function to call,
+		  or for parameter passing. The use of
+		  this field is IMPLEMENTATION DEPENDENT.
+
+
+Coprocessor Data Operation Instruction Format
+---------------------------------------------
+
+    CCCC1110oooorrrrddddiiiisss0mmmm
+
+    The fields for this instruction are:
+
+    CCCC	: Condition field as for Group 1.
+
+    oooo	: Coprocessor operation code.
+
+    rrrr	: Coprocessor operand register.
+
+    dddd	: Coprocessor destination register.
+
+    iiii	: Coprocessor ID number.
+
+    sss		: Coprocessor information.
+
+    mmmm	: Coprocessor right hand source register
+		  number.
+
+
+Coprocessor Data Transfer Instruction Format
+--------------------------------------------
+
+    CCCC110PUNWLRRRRddddiiiiOOOOOOOO
+
+    The fields for this instruction are:
+
+    CCCC	: Condition field as for Group 1.
+
+    P		: Pre/post indexing as for Group 2.
+
+    U		: Up/down bit as for Group 2.
+
+    N		: Transfer length bit.
+
+    W		: Writeback bit as for Group 2.
+
+    L		: Load/store bit as for Group 2.
+
+    RRRR	: ARM register number.
+
+    dddd	: Coprocessor destination register.
+
+    iiii	: Coprocessor ID field.
+
+    OOO...	: Offset field.
+
+
+Coprocessor Register Transfer Instruction Format
+------------------------------------------------
+
+    CCCC1110ooooLrrrrddddDDDDiiiisss1mmmm
+
+    The fields for this instruction are:
+
+    CCCC	: Condition field as for Group 1.
+
+    oooo	: Coprocessor operation code.
+
+    L		: Load/Store bit.
+
+		  L=0 : Store to coprocessor.
+
+		  L=1 : Load from coprocessor.
+
+    rrrr	: Coprocessor operand register.
+
+    dddd	: Coprocessor destination register.
+
+    DDDD	: ARM destination register.
+
+    iiii	: Coprocessor ID field.
+
+    sss		: Coprocessor information field.
+
+    mmmm	: Coprocessor right hand source register
+		  field.
+
+
+Undefined Instruction Formats
+-----------------------------
+
+    CCCC0001xxxxxxxxxxxxxxxx1xx1xxxx
+
+    CCCC011xxxxxxxxxxxxxxxxxxxx1xxxx
+
+    The fields for these instructions are:
+
+    CCCC	: Condition field as for Group 1.
+
+    xxx...	: Don't care:set to any value.
+
+
+            The Individual Instructions
+            ---------------------------
+
+
+ADC : Add with carry
+
+        Instruction Group : 1
+
+        Opcode		: 0101
+
+        Assembler	: ADC{cc}{s} rd,rl,op
+
+        Operation	: IF condition cc is TRUE
+			     THEN
+				(rl) + <op> + C -> rd
+			     ELSE
+				skip to next instruction
+
+        Description	: Add the contents of the left-hand source
+			  register to the value contained in the
+			  right-hand source operand, add the carry
+			  flag to the whole, and store the final
+			  result in the destination register. The
+			  operation is ALWAYS a word (32-bit) op-
+			  eration.
+
+			  If a condition is specified in the con-
+			  dition field, then perform this operation
+			  if the condition is TRUE, else perform
+			  no operation. If the Set Flags field is
+			  specified, then condition the flags ac-
+			  cordingly.
+
+        Condition Codes : N Z V C
+			  * * * *
+
+			  N :   Set if result negative.
+				Cleared otherwise.
+
+			  Z :   Set if the result is zero.
+				Cleared otherwise.
+
+			  V :   Set if an overflow occurred.
+				Cleared otherwise.
+
+			  C :   Set if a carry is generated.
+				Cleared otherwise.
+
+        Addressing Modes for <op> :
+
+        #nnnn       :	Immediate data operand
+
+        rr <shift>  :	Right hand source register
+			plus optional shift operation.
+
+
+ADD : Add binary
+
+        Instruction Group : 1
+
+        Opcode		: 0100
+
+        Assembler	: ADD{cc}{s} rd,rl,op
+
+        Operation	: IF condition cc is TRUE
+			    THEN
+				(rl) + <op> -> rd
+			    ELSE
+				skip to next instruction
+
+        Description	: Add the contents of the left-hand source
+			  register (rl) to the value of the operand
+			  (op), and store the result in the dest-
+			  ination register (rd). The operation is
+			  ALWAYS a word (32-bit) operation.
+
+			  If a condition is specified in the cond-
+			  ition field, then perform this operation
+			  if the condition is TRUE, else perform
+			  no operation. If the Set Flags field is
+			  specified, then condition the flags ac-
+			  cordingly.
+
+        Condition Codes : N Z V C
+			  * * * *
+
+			  N :   Set if result negative.
+				Cleared otherwise.
+
+			  Z :   Set if the result is zero.
+				Cleared otherwise.
+
+			  V :   Set if an overflow occurred.
+				Cleared otherwise.
+
+			  C :   Set if a carry is generated.
+				Cleared otherwise.
+
+        Addressing Modes for <op> :
+
+        #nnnn       :	Immediate data operand
+
+        rr <shift>  :	Right hand source register
+			plus optional shift operation.
+
+
+AND : Logical AND
+
+        Instruction Group : 1
+
+        Opcode		: 0000
+
+        Assembler	: AND{cc}{s} rd,rl,op
+
+        Operation	: IF condition cc is TRUE
+			    THEN
+				(rl) AND <op> -> rd
+			    ELSE
+				skip to next instruction
+
+        Description	: Logically AND together (bitwise) the
+			  contents of the left-hand source reg-
+			  ister and the contents of the right-
+			  hand source operand, and store the re-
+			  sult in the destination register. This
+			  is ALWAYS a word (32-bit) operation.
+
+			  If a condition is specified in the cond-
+			  ition field, then perform this operation
+			  if the condition is TRUE, else perform
+			  no operation. If the Set Flags field is
+			  specified, then condition the flags ac-
+			  cordingly.
+
+        Condition Codes : N Z V C
+			  * * * *
+
+			  N :   Set if result negative.
+				Cleared otherwise.
+
+			  Z :   Set if the result is zero.
+				Cleared otherwise.
+
+			  V :   Not Affected.
+
+			  C :   Not Affected.
+
+        Addressing Modes for <op> :
+
+        #nnnn       :	Immediate data operand
+
+        rr <shift>  :	Right hand source register
+			plus optional shift operation.
+
+
+B   : Branch
+
+        Instruction Group : 4
+
+        Opcode		: 0
+
+        Assembler	: B{cc} label
+
+        Operation	: IF condition is TRUE
+			    THEN
+				PC + displacement -> PC
+			    ELSE
+				execute next instruction
+
+        Description	: Add the relative displacement contained
+			  in the instruction word to the value of
+			  the program counter section of R15, thus
+			  effecting a branch to another program
+			  location.
+
+			  As with more conventional processors, the
+			  branch instruction on the ARM has a con-
+			  ditional form. There is a close parallel
+			  between the implementation of the branch
+			  instruction on the ARM and that on the
+			  Motorola MC68000, in that a condition
+			  field exists within the instruction word
+			  defining which condition is to affect
+			  the branch.
+
+        Condition Codes : NOT AFFECTED.
+
+
+BIC : Clear specified bits
+
+        Instruction Group : 1
+
+        Opcode		: 1110
+
+        Assembler	: BIC{cc}{s} rd,rl,op
+
+        Operation	: IF condition cc is TRUE
+			    THEN
+				(rl) AND NOT<op> -> rd
+			    ELSE
+				skip to next instruction
+
+        Description	: Negate the value contained in the right
+			  hand operand, and logically AND this value
+			  with the value stored in the left-hand
+			  source operand, and store the result in
+			  the destination register. This operation
+			  is ALWAYS a word (32-bit) operation.
+
+			  If a condition is specified in the cond-
+			  ition field, then perform this operation
+			  if the condition is TRUE, else perform
+			  no operation. If the Set Flags field is
+			  specified, then condition the flags ac-
+			  cordingly.
+
+        Condition Codes : N Z V C
+			  * * * *
+
+			  N :   Set if result negative.
+			    Cleared otherwise.
+
+			  Z :   Set if the result is zero.
+			    Cleared otherwise.
+
+			  V :   Not Affected.
+
+			  C :   Not Affected.
+
+        Addressing Modes for <op> :
+
+        #nnnn		: Immediate data operand
+
+        rr <shift>	: Right hand source register
+			  plus optional shift operation.
+
+
+BL  : Branch And Link
+
+        Instruction Group : 4
+
+        Opcode		: 1
+
+        Assembler	: BL{cc} label
+
+        Operation	: IF condition is TRUE
+			    THEN
+				R15 -> R14
+			    PC + displacement -> PC
+			    ELSE
+				execute next instruction
+
+        Description	: Save the current value of R15 by moving
+			  the value to R14, and then add the rela-
+			  tive displacement contained in the inst-
+			  ruction word to the value of the program
+			  counter section of R15, thus effecting a
+			  branch to another program location.
+
+			  If a condition is specified in the cond-
+			  ition field, then perform this operation
+			  if the condition is TRUE, else perform
+			  no operation.
+
+			  This instruction is somewhat more prim-
+			  itive than more conventional BSR/JSR in-
+			  structions, but operates more quickly.
+			  If a routine does not need to call any
+			  other routines within itself, then it
+			  can execute faster than if it preserves
+			  the value of R15 on the stack. If stack
+			  preservation of R15 is needed (nested
+			  calls, for example), then it is the PRO-
+			  GRAMMER'S responsibility to save R14 on
+			  the stack after the call.
+
+			  NOTE : The version of register R14 used
+			  for linking will be that one relevant to
+			  the current operating mode, so that if
+			  supervisor (SVC) mode is in force, then
+			  BL will use R14_SVC as the link register.
+
+        Condition Codes : NOT AFFECTED.
+
+
+CMN : Compare (with) negative
+
+        Instruction Group : 1
+
+        Opcode		: 1011
+
+        Assembler	: CMN{cc} rl,op
+
+        Operation	: IF condition cc is TRUE
+			    THEN
+				(rl) + <op> -> CC
+			    ELSE
+				skip to next instruction
+
+        Description	: Compare the contents of the left-hand
+			  source register with the negative value
+			  contained in the right-hand source oper-
+			  and. This is achieved by performing the
+			  operation:
+
+					(rl) - -<op>
+
+			  whereby the contents of the right-hand
+			  source operand are negated prior to the
+			  subtraction (see CMP below). This is to
+			  allow comparisons with small negative
+			  values which is impossible using immed-
+			  iate addressing with CMP below because
+			  of the method of data encoding within
+			  the instruction. The results of the com-
+			  parison are used to set the condition
+			  codes. The S option is mandatory for
+			  this instruction (the assembler sets the
+			  S bit in the instruction word without
+			  requiring the S option to be specified
+			  in the instruction).
+
+			  If a condition is specified in the con-
+			  dition field, then perform this operation
+			  if the condition is TRUE, else perform
+			  no operation.
+
+        Condition Codes : N Z V C
+			  * * * *
+
+			  N :   Set if result negative.
+				Cleared otherwise.
+
+			  Z :   Set if the result is zero.
+				Cleared otherwise.
+
+			  V :   Set if an overflow occurred.
+				Cleared otherwise.
+
+			  C :   Set if a carry is generated.
+				Cleared otherwise.
+
+        Addressing Modes for <op> :
+
+        #nnnn		: Immediate data operand
+
+        rr <shift>	: Right hand source register
+			  plus optional shift operation.
+
+CMP : Compare
+
+        Instruction Group : 1
+
+        Opcode		: 1010
+
+        Assembler	: CMP{cc} rl,op
+
+        Operation	: IF condition cc is TRUE
+			    THEN
+				(rl) - <op> -> CC
+			    ELSE
+				skip to next instruction
+
+        Description	: Compare the value contained in the left-
+			  hand source register with the value con-
+			  tained in the right-hand source operand,
+			  by performing the subtraction:
+
+					(rl) - <op>
+
+			  The result of the subtraction is used to
+			  set the condition codes, and thus the S
+			  option is mandatory for this instruction
+			  (the assembler sets the S bit in the ins-
+			  truction word without requiring the S op-
+			  tion to be specified in the instruction).
+			  The result itself is discarded once the
+			  condition codes are set.
+
+			  If a condition is specified in the con-
+			  dition field, then perform this operation
+			  if the condition is TRUE, else perform
+			  no operation.
+
+        Condition Codes : N Z V C
+			  * * * *
+
+			  N :   Set if result negative.
+				Cleared otherwise.
+
+			  Z :   Set if the result is zero.
+				Cleared otherwise.
+
+			  V :   Set if an overflow occurred.
+				Cleared otherwise.
+
+			  C :   Set if a carry is generated.
+				Cleared otherwise.
+
+        Addressing Modes for <op> :
+
+        #nnnn		: Immediate data operand
+
+        rr <shift>	: Right hand source register
+			  plus optional shift operation.
+
+
+EOR : Logical Exclusive-OR
+
+        Instruction Group : 1
+
+        Opcode		: 0001
+
+        Assembler	: EOR{cc}{s} rd,rl,op
+
+        Operation	: IF condition cc is TRUE
+			    THEN
+				(rl) EOR <op> -> rd
+			    ELSE
+				skip to next instruction
+
+        Description	: Logically exclusive-OR together the value
+			  stored in the left hand source register
+			  with the value stored in the right hand
+			  source operand, and store the result in
+			  the destination register. This operation
+			  is ALWAYS a word (32-bit) operation.
+
+			  If a condition is specified in the cond-
+			  ition field, then perform this operation
+			  if the condition is TRUE, else perform
+			  no operation. If the Set Flags field is
+			  specified, then condition the flags ac-
+			  cordingly.
+
+        Condition Codes : N Z V C
+			  * * * *
+
+			  N :   Set if result negative.
+				Cleared otherwise.
+
+			  Z :   Set if the result is zero.
+				Cleared otherwise.
+
+			  V :   Not Affected.
+
+			  C :   Not Affected.
+
+        Addressing Modes for <op> :
+
+        #nnnn		: Immediate data operand
+
+        rr <shift>	: Right hand source register
+			  plus optional shift operation.
+
+
+LDM : Load Multiple Registers
+
+        Instruction Group : 3
+
+        Opcode		: 1
+
+        Assembler	: LDM{cc}{type} rb{!},{reglist} {^}
+
+        Operation	: IF condition is TRUE
+			    THEN
+				load registers in
+				{reglist} from memory
+			    ELSE
+				skip to next instruction
+
+        Description	: Load data from memory into one or more
+			  registers as specified in the register
+			  list of the instruction. The load order
+			  for the instruction is:
+
+				  register number
+				0123456789  ...  15
+				--->        --->
+				increasing addresses
+
+			  The memory address is specified using
+			  a base register (designated 'rb' in the
+			  assembler syntax above). This register
+			  can also appear in the source register
+			  list.
+
+			  If a condition is specified in the cond-
+			  ition field, then perform this operation
+			  if the condition is TRUE, else perform
+			  no operation.
+
+			  There is no S option for this instruction.
+			  Instead the '^' character is used to det-
+			  ermine whether the status bits are read if
+			  one of the registers in the {reglist} is
+			  R15. The condition codes are ONLY affected
+			  if R15 appears in the {reglist} AND the '^'
+			  option (force PSR load) is specified, else
+			  they are not affected.
+
+        Condition Codes : N Z V C
+			  * * * *
+
+			  N :   Set according to the value read
+				into R15 if '^' option specified.
+				Unaffected otherwise.
+
+			  Z :   Set according to the value read
+				into R15 if '^' option specified.
+				Unaffected otherwise.
+
+			  V :   Set according to the value read
+				into R15 if '^' option specified.
+				Unaffected otherwise.
+
+			  C :   Set according to the value read
+				into R15 if '^' option specified.
+				Unaffected otherwise.
+
+
+LDR : Load Word/Byte
+
+        Instruction Group : 2
+
+        Opcode		: 1
+
+        Assembler	: LDR{cc}{B}{T} rd,<op>
+
+        Operation	: IF condition is TRUE
+			    THEN
+				<op> -> rd
+			    ELSE
+				skip to next instruction
+
+        Description	: Load the specified word or byte addressed
+			  by the source operand into the specified
+			  destination register. If a byte operand is
+			  to be addressed, the 'B' option in the as-
+			  sembler source is appended to the instruc-
+			  tion AFTER the condition.
+
+			  If a condition is specified in the cond-
+			  ition field, then perform this operation
+			  if the condition is TRUE, else perform
+			  no operation. If the Set Flags field is
+			  specified, then condition the flags ac-
+			  cordingly.
+
+			  The S bit of the LDR instruction is used
+			  for a different purpose. It is used by a
+			  supervisor-mode program to allow access
+			  to user-mode memory. The assembler option
+			  used is the T (translate) option. This is
+			  to allow hardware memory management to de-
+			  cide if the transfer is legal (by sensing
+			  the SPVMD signal of the ARM). Both word &
+			  byte transfers can be thus affected. The T
+			  option is only valid with with postindexed
+			  addressing.
+
+        Condition Codes : NOT AFFECTED.
+
+			  There is no 'S' option for LDR.
+
+        Addressing Modes for <op> :
+
+			[Rn,#value] {!}
+
+			[Rn,Rm {,shift #j}] {!}
+
+			[Rn],#value
+
+			[Rn],Rm {,shift #j}
+
+
+MLA : Multiply with accumulate
+
+        Instruction Group : 1A
+
+        Opcode		: 1
+
+        Assembler	: MLA{cc}{s} rd,rl,rr,ra
+
+        Operation	: IF condition is TRUE
+			    THEN
+				rl * rr + ra -> rd
+			    ELSE
+				skip to next instruction
+
+        Description	: Multiply together the two values con-
+			  tained in the left-hand and right-hand
+			  source registers, and then add onto the
+			  whole the value contained in the add-on
+			  register (ra). This final value is then
+			  stored in the specified destination reg-
+			  ister.
+
+			  For this instruction, the following
+			  restrictions apply:
+
+			  1) The registers 'rr' and 'rd' MUST
+			     be different;
+
+			  2) Register R15 is not allowed as a
+			     destination. R15 is explicitly
+			     protected from alteration by mul-
+			     tiply instructions;
+
+			  3) ALL operands MUST be contained in
+			     registers.
+
+			  The operands can be treated as either
+			  unsigned or 2's complement signed op-
+			  erands. However, the LARGEST values
+			  that can be handled without overflow
+			  are two 16-bit operands.
+
+			  If a condition is specified in the cond-
+			  ition field, then perform this operation
+			  if the condition is TRUE, else perform
+			  no operation. If the Set Flags field is
+			  specified, then condition the flags ac-
+			  cordingly.
+
+        Condition Codes : N Z V C
+			  * * X U
+
+			  N :   Set if the result is negative.
+				Cleared otherwise.
+
+			  Z :   Set if the result is zero.
+				Cleared otherwise.
+
+			  V :   Not Affected.
+
+			  C :   Undefined.
+
+
+MOV : Move data
+
+        Instruction Group : 1
+
+        Opcode		: 1101
+
+        Assembler	: MOV{cc}{s} rd,op
+
+        Operation	: IF condition is TRUE
+			    THEN
+				<op> -> rd
+			    ELSE
+				skip to next instruction
+
+        Description	: Move the value contained in the speci-
+			  fied right-hand source operand into the
+			  specified destination register. This is
+			  ALWAYS a word (32-bit) operation.
+
+			  If a condition is specified in the cond-
+			  ition field, then perform this operation
+			  if the condition is TRUE, else perform
+			  no operation. If the Set Flags field is
+			  specified, then condition the flags ac-
+			  cordingly.
+
+        Condition Codes : N Z V C
+			  * * * *
+
+			  N :   Set if result negative.
+				Cleared otherwise.
+
+			  Z :   Set if the result is zero.
+				Cleared otherwise.
+
+			  V :   Not Affected.
+
+			  C :   Not Affected.
+
+        Addressing Modes for <op> :
+
+        #nnnn		: Immediate data operand
+
+        rr <shift>	: Right hand source register
+			  plus optional shift operation.
+
+
+MUL : Multiply
+
+        Instruction Group : 1A
+
+        Opcode		: 1
+
+        Assembler	: MUL{cc}{s} rd,rl,rr
+
+        Operation	: IF condition is TRUE
+			    THEN
+				rl * rr -> rd
+			    ELSE
+				skip to next instruction
+
+        Description	: Multiply together the two values con-
+			  tained in the left-hand and right-hand
+			  source registers, and store the result
+			  in the specified destination register.
+
+			  For this instruction, the following
+			  restrictions apply:
+
+			  1) The registers 'rr' and 'rd' MUST
+			     be different;
+
+			  2) Register R15 is not allowed as a
+			     destination. R15 is explicitly
+			     protected from alteration by mul-
+			     tiply instructions;
+
+			  3) ALL operands MUST be contained in
+			     registers.
+
+			  The operands can be treated as either
+			  unsigned or 2's complement signed op-
+			  erands. However, the LARGEST values
+			  that can be handled without overflow
+			  are two 16-bit operands.
+
+			  If a condition is specified in the cond-
+			  ition field, then perform this operation
+			  if the condition is TRUE, else perform
+			  no operation. If the Set Flags field is
+			  specified, then condition the flags ac-
+			  cordingly.
+
+        Condition Codes : N Z V C
+			  * * X U
+
+			  N :   Set if the result is negative.
+				Cleared otherwise.
+
+			  Z :   Set if the result is zero.
+				Cleared otherwise.
+
+			  V :   Not Affected.
+
+			  C :   Undefined.
+
+
+MVN : Move data complemented
+
+        Instruction Group : 1
+
+        Opcode		: 1101
+
+        Assembler	: MVN{cc}{s} rd,op
+
+        Operation	: IF condition is TRUE
+			    THEN
+				NOT<op> -> rd
+			    ELSE
+				skip to next instruction
+
+        Description	: Logically NOT the value contained in the
+			  specified right-hand source operand, and
+			  store this complemented value in the spe-
+			  cified destination register. This is AL-
+			  WAYS a word (32-bit) operation.
+
+			  If a condition is specified in the cond-
+			  ition field, then perform this operation
+			  if the condition is TRUE, else perform
+			  no operation. If the Set Flags field is
+			  specified, then condition the flags ac-
+			  cordingly.
+
+        Condition Codes : N Z V C
+			  * * * *
+
+			  N :   Set if result negative.
+				Cleared otherwise.
+
+			  Z :   Set if the result is zero.
+				Cleared otherwise.
+
+			  V :   Not Affected.
+
+			  C :   Not Affected.
+
+        Addressing Modes for <op> :
+
+        #nnnn		: Immediate data operand
+
+        rr <shift>	: Right hand source register
+			  plus optional shift operation.
+
+
+ORR : Logical OR
+
+        Instruction Group : 1
+
+        Opcode		: 1100
+
+        Assembler	: ORR{cc}{s} rd,rl,op
+
+        Operation	: IF condition cc is TRUE
+			    THEN
+				(rl) OR <op> -> rd
+			    ELSE
+				skip to next instruction
+
+        Description	: Logically OR together the value stored
+			  in the left hand source register with
+			  the value stored in the right hand source
+			  operand, and store the result in the des-
+			  tination register. This operation is AL-
+			  WAYS a word (32-bit) operation.
+
+			  If a condition is specified in the cond-
+			  ition field, then perform this operation
+			  if the condition is TRUE, else perform
+			  no operation. If the Set Flags field is
+			  specified, then condition the flags ac-
+			  cordingly.
+
+        Condition Codes : N Z V C
+			  * * * *
+
+			  N :   Set if result negative.
+				Cleared otherwise.
+
+			  Z :   Set if the result is zero.
+				Cleared otherwise.
+
+			  V :   Set if an overflow occurred.
+				Cleared otherwise.
+
+			  C :   Set if a carry is generated.
+				Cleared otherwise.
+
+        Addressing Modes for <op> :
+
+        #nnnn		: Immediate data operand
+
+        rr <shift>	: Right hand source register
+			  plus optional shift operation.
+
+
+RSB : Reverse subtract binary
+
+        Instruction Group : 1
+
+        Opcode		: 0011
+
+        Assembler	: RSB{cc}{s} rd,rl,op
+
+        Operation	: IF condition cc is TRUE
+			    THEN
+				<op> - (rl) -> rd
+			    ELSE
+				skip to next instruction
+
+        Description	: Subtract the value contained in the
+			  left-hand source register from the
+			  value contained in the right-hand
+			  operand, and store the result in the
+			  specified destination register. This
+			  operation is ALWAYS a word (32-bit)
+			  operation. Note that the order of sub-
+			  traction is the reverse of that for
+			  the SUB instruction (see SUB below).
+
+			  If a condition is specified in the cond-
+			  ition field, then perform this operation
+			  if the condition is TRUE, else perform
+			  no operation. If the Set Flags field is
+			  specified, then condition the flags ac-
+			  cordingly.
+
+        Condition Codes : N Z V C
+			  * * * *
+
+			  N :   Set if result negative.
+				Cleared otherwise.
+
+			  Z :   Set if the result is zero.
+				Cleared otherwise.
+
+			  V :   Set if an overflow occurred.
+				Cleared otherwise.
+
+			  C :   Set if a carry is generated.
+				Cleared otherwise.
+
+        Addressing Modes for <op> :
+
+        #nnnn		: Immediate data operand
+
+        rr <shift>	: Right hand source register
+			  plus optional shift operation.
+
+
+RSC : Reverse subtract with carry (borrow)
+
+        Instruction Group : 1
+
+        Opcode		: 0111
+
+        Assembler	: RSC{cc}{s} rd,rl,op
+
+        Operation	: IF condition cc is TRUE
+			    THEN
+				<op> - (rl) - NOT(C) -> rd
+			    ELSE
+				skip to next instruction
+
+        Description	: Subtract the value contained in the left-
+			  hand source register from the value stored
+			  in the right-hand source operand, and then
+			  subtract the borrow (the logical inverse
+			  of the carry) from the whole. Once the fi-
+			  nal result is computed, store this final
+			  result in the specified destination regis-
+			  ter. This operation is ALWAYS a word (32-
+			  bit) operation. Note that the order of sub-
+			  traction is the reverse of that for the SBC
+			  instruction (see below).
+
+			  If a condition is specified in the cond-
+			  ition field, then perform this operation
+			  if the condition is TRUE, else perform
+			  no operation. If the Set Flags field is
+			  specified, then condition the flags ac-
+			  cordingly.
+
+        Condition Codes : N Z V C
+			  * * * *
+
+			  N :   Set if result negative.
+				Cleared otherwise.
+
+			  Z :   Set if the result is zero.
+				Cleared otherwise.
+
+			  V :   Set if an overflow occurred.
+				Cleared otherwise.
+
+			  C :   Set if a carry is generated.
+				Cleared otherwise.
+
+        Addressing Modes for <op> :
+
+        #nnnn		: Immediate data operand
+
+        rr <shift>	: Right hand source register
+			  plus optional shift operation.
+
+
+SBC : Subtract with carry (borrow)
+
+        Instruction Group : 1
+
+        Opcode		: 0110
+
+        Assembler	: SBC{cc}{s} rd,rl,op
+
+        Operation	: IF condition cc is TRUE
+			    THEN
+				(rl) - <op> - NOT(C) -> rd
+			    ELSE
+				skip to next instruction
+
+        Description	: Subtract the value of the right-hand
+			  source operand from the value contained
+			  in the left-hand source register, and
+			  then subtract the borrow (the logical
+			  inverse of the carry) from the result.
+			  Store the final computed result in the
+			  specified destination register. This
+			  operation is ALWAYS a word (32-bit)
+			  operation.
+
+			  If a condition is specified in the cond-
+			  ition field, then perform this operation
+			  if the condition is TRUE, else perform
+			  no operation. If the Set Flags field is
+			  specified, then condition the flags ac-
+			  cordingly.
+
+        Condition Codes : N Z V C
+			  * * * *
+
+			  N :   Set if result negative.
+				Cleared otherwise.
+
+			  Z :   Set if the result is zero.
+				Cleared otherwise.
+
+			  V :   Set if an overflow occurred.
+				Cleared otherwise.
+
+			  C :   Set if a carry is generated.
+				Cleared otherwise.
+
+        Addressing Modes for <op> :
+
+        #nnnn		: Immediate data operand
+
+        rr <shift>	: Right hand source register
+			  plus optional shift operation.
+
+
+STM : Store Multiple Registers
+
+        Instruction Group : 3
+
+        Opcode		: 0
+
+        Assembler	: STM{cc}{type} rb{!},{reglist} {^}
+
+        Operation	: IF condition is TRUE
+			    THEN
+				store registers in
+				{reglist} into memory
+			    ELSE
+				skip to next instruction
+
+        Description	: Store the contents of the registers
+			  specified in {reglist} into memory.
+			  The store order for this instruction
+			  is:
+
+				  register number
+				0123456789  ...  15
+				--->        --->
+				increasing addresses
+
+			  The memory address is specified using
+			  a base register (designated 'rb' in the
+			  assembler syntax above). This register
+			  can also appear in the source register
+			  list.
+
+			  If a condition is specified in the cond-
+			  ition field, then perform this operation
+			  if the condition is TRUE, else perform
+			  no operation.
+
+			  There is no S option for this instruction.
+
+			  The '^' option for this instruction is used
+			  to allow a supervisor-mode program to store
+			  the contents of the user bank of registers
+			  into memory. This forces user-mode access
+			  while in supervisor mode. NOTE : writeback
+			  will affect the USER-MODE registers if the
+			  '^' option is specified. Unless there is a
+			  valid reason to do so, DO NOT specify '^'
+			  and writeback together!
+
+        Condition Codes : NOT AFFECTED.
+
+
+STR : Store Word/Byte
+
+        Instruction Group : 2
+
+        Opcode		: 0
+
+        Assembler	: STR{cc}{B} rd,<op>
+
+        Operation	: IF condition is TRUE
+			    THEN
+				<op> -> rd
+			    ELSE
+				skip to next instruction
+
+        Description	: Store the byte or word contained in the
+			  specified destination register at the
+			  address specified by the source operand.
+			  If a byte store is specified, then the
+			  'B' option in the assembler source is ap-
+			  pended to the instruction AFTER the cond-
+			  ition field.
+
+			  If a condition is specified in the cond-
+			  ition field, then perform this operation
+			  if the condition is TRUE, else perform
+			  no operation. If the Set Flags field is
+			  specified, then condition the flags ac-
+			  cordingly.
+
+        Condition Codes : NOT AFFECTED.
+
+			  There is no 'S' option for STR.
+
+        Addressing Modes for <op> :
+
+        [Rn,#value] {!}
+
+        [Rn,Rm {,shift #j}] {!}
+
+        [Rn],#value
+
+        [Rn],Rm {,shift #j}
+
+
+SUB : Subtract binary
+
+        Instruction Group : 1
+
+        Opcode		: 0010
+
+        Assembler	: SUB{cc}{s} rd,rl,op
+
+        Operation	: IF condition cc is TRUE
+			    THEN
+				(rl) - <op> -> rd
+			    ELSE
+				skip to next instruction
+
+        Description	: Subtract the contents of the right-
+			  hand source operand from the value
+			  contained in the left-hand source
+			  register, and store the result in
+			  the specified destination register.
+			  This operation is ALWAYS a word
+			  (32-bit) operation.
+
+			  If a condition is specified in the cond-
+			  ition field, then perform this operation
+			  if the condition is TRUE, else perform
+			  no operation. If the Set Flags field is
+			  specified, then condition the flags ac-
+			  cordingly.
+
+        Condition Codes : N Z V C
+			  * * * *
+
+			  N :   Set if result negative.
+				Cleared otherwise.
+
+			  Z :   Set if the result is zero.
+				Cleared otherwise.
+
+			  V :   Set if an overflow occurred.
+				Cleared otherwise.
+
+			  C :   Set if a carry is generated.
+				Cleared otherwise.
+
+        Addressing Modes for <op> :
+
+        #nnnn		: Immediate data operand
+
+        rr <shift>	: Right hand source register
+			  plus optional shift operation.
+
+
+SWI : Software Interrupt
+
+        Instruction Group : 5
+
+        Opcode		: N/A
+
+        Assembler	: SWI{cc} <expression>
+
+        Operation	: IF condition is TRUE
+			    THEN
+				Enter Supervisor (SVC) mode
+				R15 -> R14_SVC
+				8 -> PC section of R15
+			    ELSE
+				skip to next instruction
+
+        Description	: Upon executing this instruction, the
+			  processor enters Supervisor (SVC) mode,
+			  and then transfers the contents of R15
+			  into the supervisor-private copy of R14.
+			  Then, the PC section of R15 is set to
+			  point to location 8 (the software in-
+			  terrupt vector) and execution continues
+			  from there.
+
+			  If a condition is specified in the cond-
+			  ition field, then perform this operation
+			  if the condition is TRUE, else perform
+			  no operation. If the Set Flags field is
+			  specified, then condition the flags ac-
+			  cordingly.
+
+			  Note that if a supervisor-mode (SVC) pro-
+			  gram executes a SWI, then the previous
+			  value of R14_SVC MUST be preserved if its
+			  contents are important. This is VITAL if
+			  nested SWI calls are envisaged.
+
+			  The <expression> in the assembler syntax
+			  is any expression that evaluates to form
+			  a valid 24-bit value. The ARM ignores this
+			  field within the instruction, but it can
+			  be used by the called operating system
+			  code to determine such things as function
+			  called, or address of parameter block etc.
+			  The use of this value by the operating sys-
+			  tem is IMPLEMENTATION DEPENDENT.
+
+        Condition Codes : NOT AFFECTED. However, the code that is
+			  called by the SWI instruction may affect
+			  the condition codes. If the operating
+			  system call returns to the user program
+			  via a MOVS, then the condition codes as
+			  they existed upon entry to the SWI will
+			  be restored. However, the state of the
+			  condition codes will be IMPLEMENTATION
+			  DEPENDENT.
+
+
+TEQ : Test equivalence
+
+        Instruction Group : 1
+
+        Opcode		: 1001
+
+        Assembler	: TEQ{cc} rl,op
+			  TEQP R15,op
+
+        Operation     : IF condition cc is TRUE
+			    THEN
+				(rl) EOR <op> -> CC
+			    ELSE
+				skip to next instruction
+
+        Description	: Test the equivalence of the value con-
+			  tained in the left-hand source register
+			  with the value contained in the right-
+			  hand source operand. This is achieved by
+			  performing the operation:
+
+					(rl) EOR <op>
+
+			  The result of this operation is used to
+			  affect the condition codes, and is then
+			  discarded. For this instruction, the S
+			  option is mandatory (the assembler will
+			  set the S bit in the instruction word
+			  without requiring the S option to be
+			  specified in the source instruction).
+
+			  If a condition is specified in the con-
+			  dition field, then perform this operation
+			  if the condition is TRUE, else perform
+			  no operation.
+
+			  The special case TEQP is provided to allow
+			  writes to the status bits of R15 without
+			  altering the PC in a way that causes ins-
+			  truction skipover due to pipelining.
+
+        Condition Codes : N Z V C
+			  * * * *
+
+			  N :   Set if result negative.
+				Cleared otherwise.
+
+			  Z :   Set if the result is zero.
+				Cleared otherwise.
+
+			  V :   Not Affected.
+
+			  C :   Not Affected.
+
+        Addressing Modes for <op> :
+
+        #nnnn		: Immediate data operand
+
+        rr <shift>	: Right hand source register
+			  plus optional shift operation.
+
+
+
+TST : Test bits
+
+        Instruction Group : 1
+
+        Opcode		: 1000
+
+        Assembler	: TST{cc} rl,op
+
+        Operation	: IF condition cc is TRUE
+			    THEN
+				(rl) AND <op> -> CC
+			    ELSE
+				skip to next instruction
+
+        Description	: Test the bits of the left-hand source
+			  operand by performing a logical AND with
+			  the mask contained in the right-hand
+			  source operand. The result is used to set
+			  the condition codes and then discarded.
+			  For this instruction, the S option is man-
+			  datory (the assembler sets the S bit in
+			  the instruction word without requiring the
+			  S option to be specified in the instruc-
+			  tion).
+
+			  If a condition is specified in the con-
+			  dition field, then perform this operation
+			  if the condition is TRUE, else perform
+			  no operation.
+
+        Condition Codes : N Z V C
+			  * * * *
+
+			  N :   Set if result negative.
+				Cleared otherwise.
+
+			  Z :   Set if the result is zero.
+				Cleared otherwise.
+
+			  V :   Not Affected.
+
+			  C :   Not Affected.
+
+        Addressing Modes for <op> :
+
+        #nnnn		: Immediate data operand
+
+        rr <shift>	: Right hand source register
+			  plus optional shift operation.
+
+
+
+            Instruction Timings
+            ===================
+
+
+The fundamental timings for ARM instructions are measured in terms of differ-
+ent instruction cycles. The main instruction cycle types are:
+
+
+	1) s-cycles. These are cycles used to access memory in
+	   sequential order (as in program instruction fetching).
+
+	2) n-cycles. These are cycles used to access memory in
+	   non-sequential order (as in a branch instruction).
+
+	3) i-cycles. These are cycles used by the ARM for per-
+	   forming internal operations.
+
+
+If the ARM uses a clock speed of 8MHz, then an s-cycle lasts 125 nanoseconds
+for RAM access, and 250 ns for ROM access. All n-cycles last 250 ns and all
+i-cycles last 125ns. These timings are valid for an 8MHz ARM, and naturally
+change for ARMs with faster clock speeds.
+
+
+	The instruction timings are:
+
+
+	Group 1:1 s-cycle. If the right hand source operand con-
+		tains a shift count in a register (NOT an imme-
+		diate shift), then add 1 s-cycle. If the dest-
+		ination register is R15, then add 1 s-cycle plus
+		1 n-cycle.
+
+	Group 1A:1 s-cycle plus 16 i-cycles worst-case.
+
+	Group 2:Timings differ for LDR and STR.
+
+        	LDR:1 s-cycle + 1 n-cycle + 1 i-cycle.
+		    If the destination register is R15,
+		    add 1 s-cycle plus 1 n-cycle.
+
+		STR:2 n-cycles always.
+
+	Group 3:Timings differ for LDM and STM. Also, timings
+		depend upon how many registers are loaded or
+		stored. If N registers are loaded or stored
+		then the timings are:
+
+		LDM:(N-1) s-cycles + 1 n-cycle + 1 i-cycle.
+		If R15 is loaded, add 1 s-cycle plus 1
+		n-cycle.
+
+		STM:2 n-cycles plus (N-1) s-cycles.
+
+	Group 4:2 s-cycles plus 1 n-cycle always.
+
+	Group 5:2 s-cycles plus 1 n-cycle always.
+
+
+
+
+

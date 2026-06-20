@@ -1,0 +1,214 @@
+####################################################################
+#
+#             MAKEFILE FOR ClipIt! program(s)
+#
+####################################################################
+#
+COPTS    = opt optsize strmer cpu=68040 ignore=100,225,304,147,315 nostkchk idir=Include:
+#
+LIBS     = LIB:scm.lib,LIB:sc.lib,LIB:Amiga.lib
+#
+DOPTS    = DEBUG=SYMBOL nostkchk ansi strmer cpu=68040 ignore=51,147,100,225 idir=INCLUDE:
+#
+GLOB     = CPGM:GlobalObjects/CommonFuncs.o
+#
+OBJS     = ClipIt.o ClipFuncs.o ClipItReq.o ClipItTools.o
+#
+DBGOBJS  = ClipItDBG.o ClipFuncsD.o ClipItReqDBG.o ClipItToolsDBG.o
+#
+# ------------------ gcc stuff: ---------------------------------------------------
+#
+MAKE     = SDK:c/make
+#
+CC       = GCC:Bin/gcc
+#
+CFLAGS   = -c -Wformat -ISDK:Local/common/Include
+#
+DBGFLAGS = -c -ggdb -gdwarf-2 -DDEBUG=1 -ISDK:Local/common/Include
+#
+PPCLIBS  = -lm -lstringfuncs -lamiga -lauto
+#
+PPCGLOB  = CPGM:GlobalObjects/CommonFuncsPPC.o
+#
+PPCOBJS  = ClipItPPC.o ClipFuncsPPC.o ClipItReqPPC.o ClipItToolsPPC.o
+#
+PPCDOBJS = ClipItPPCDBG.o ClipFuncsPPCDBG.o ClipItReqPPCDBG.o ClipItToolsPPCDBG.o
+#
+#
+help :
+	@echo "Available target(s) are:"
+	@echo "ClipIt        (SAS-C)"
+	@echo "ClipItDBG     (SAS-C)"
+	@echo "ClipItPPC     (gcc & OS4)"
+	@echo "ClipItPPCDBG  (gcc & OS4)"
+	@echo "ClipIt.guide"
+	@echo "clipit.lha (including source code!)"
+#
+clean :
+	Delete *.o QUIET
+#
+all   :
+	SMake ClipIt
+	$(MAKE) ClipItPPC
+#
+ClipIt.guide : ClipIt.c ClipItReq.c ClipFuncs.c
+	RoboDoc ClipIt.c    ClipIt.temp    -ts 3 SORT GUIDE TOC
+	RoboDoc ClipItReq.c ClipItReq.temp -ts 3 SORT GUIDE TOC
+	RoboDoc ClipFuncs.c ClipFuncs.temp -ts 3 SORT GUIDE TOC
+	TYPE ClipIt.temp ClipItReq.temp ClipFuncs.temp >$@
+	@echo "$@ Needs to be edited!!"
+#
+# -------------------- Final SAS-C target(s): ----------------------------------
+#
+ClipIt: $(OBJS) # $(GLOB)
+	SLink LIB:c.o,$(OBJS),$(GLOB) TO ClipIt LIB $(LIBS) STRIPDEBUG
+#
+ClipIt.o : ClipIt.c ClipItLocale.h
+	SC $(COPTS) ClipIt.c
+#
+ClipItTools.o : ClipItTools.c ClipItLocale.h ClipItConstants.h
+	SC $(COPTS) ClipItTools.c
+#
+ClipItReq.o : ClipItReq.c ClipItLocale.h
+	SC $(COPTS) ClipItReq.c
+#
+ClipFuncs.o : ClipFuncs.c
+	SC $(COPTS) ignore=154 ClipFuncs.c 
+#
+# -------------------- Final gcc Target(s): -----------------------------------
+#
+ClipItPPC : $(PPCOBJS)
+	$(CC) $(PPCOBJS) $(PPCGLOB) -o $@ $(PPCLIBS)
+#
+ClipItPPC.o : ClipIt.c ClipItLocale.h
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(CFLAGS) -o $@ $<
+#
+ClipFuncsPPC.o : ClipFuncs.c
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(CFLAGS) -o $@ $<
+#
+ClipItReqPPC.o : ClipItReq.c ClipItLocale.h
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(CFLAGS) -o $@ $<
+#
+ClipItToolsPPC.o : ClipItTools.c ClipItLocale.h ClipItConstants.h
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(CFLAGS) -o $@ $<
+#
+#
+# -------------------- Debug target(s): ----------------------------------
+#
+ClipItDBG: $(DBGOBJS) # $(GLOB)
+	SLink LIB:c.o,$(DBGOBJS),$(GLOB) TO $@ LIB $(LIBS) ADDSYM
+#
+ClipItDBG.o : ClipIt.c ClipItLocale.h
+	SC $(DOPTS) objname=$@ ClipIt.c
+#
+ClipItToolsD.o : ClipItTools.c ClipItLocale.h ClipItConstants.h
+	SC $(DOPTS) objname=$@ ClipItTools.c
+#
+ClipFuncsD.o : ClipFuncs.c
+	SC $(DOPTS) objname=$@ ClipFuncs.c
+#
+#
+ClipItPPCDBG : $(PPCDOBJS)
+	$(CC) $(PPCDOBJS) $(PPCGLOB) -o $@ $(PPCLIBS) -lnet -lz
+#
+ClipItPPCDBG.o : ClipIt.c ClipItLocale.h
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(DBGFLAGS) -o $@ $<
+#
+ClipItToolsPPCDBG.o : ClipItTools.c ClipItLocale.h ClipItConstants.h
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(DBGFLAGS) -o $@ $<
+#
+ClipFuncsPPCDBG.o : ClipFuncs.c
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(DBGFLAGS) -o $@ $<
+#
+ClipItReqPPCDBG.o : ClipItReq.c ClipItLocale.h
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$<
+	$(CC) $(DBGFLAGS) -o $@ $<
+#
+# -------------------- Misc Targets: -------------------------------------
+#
+ClipItLocale.h : ClipIt.cd
+	CatComp $< CFILE  $@ NOCODE NOARRAY NOBLOCK
+	CatComp $< CTFILE ClipIt.ct
+#
+#
+TestFileIO: TestFileIO.o ClipFuncsD.o
+	SLink LIB:c.o,TestFileIO.o,ClipFuncsD.o,$(GLOB) TO TestFileIO LIB $(LIBS)
+#
+TestFileIO.o: TestFileIO.c 
+	SC debug=SYMBOL $(DOPTS) TestFileIO.c
+#
+# -------------------- Archive Target: -----------------------------------
+#
+ACMD = LhArc
+#
+OPTS = -x -a 
+#
+makeList:
+	$(ACMD) list $(TARGET) >Archive.list  
+#
+#
+clipit.lha : ClipItPPC
+	$(ACMD) $(OPTS) add $@ ClipIt.readme
+	COPY SDK:Local/common/include/Author.h          Author.h
+	COPY SDK:Local/common/include/AmigaDOSErrs.h    AmigaDOSErrs.h
+	COPY SDK:Local/common/include/CommonFuncs.h     CommonFuncs.h
+	COPY CPGM:GlobalObjects/CommonFuncsPPC.o        CommonFuncsPPC.o
+	COPY CPGM:GlobalObjects/CommonFuncs.o           CommonFuncs.o
+	COPY SDK:Local/common/include/StringFunctions.h StringFunctions.h
+	COPY SDK:Local/lib/libstringfuncs.a             libstringfuncs.a
+	$(ACMD) $(OPTS) add $@ Author.h
+	$(ACMD) $(OPTS) add $@ AmigaDOSErrs.h
+	$(ACMD) $(OPTS) add $@ CommonFuncs.h
+	$(ACMD) $(OPTS) add $@ CommonFuncs.o
+	$(ACMD) $(OPTS) add $@ CommonFuncsPPC.o
+	$(ACMD) $(OPTS) add $@ StringFunctions.h
+	$(ACMD) $(OPTS) add $@ libstringfuncs.a
+	DELETE  Author.h          AmigaDOSErrs.h
+	DELETE  CommonFuncs.h     CommonFuncsPPC.o CommonFuncs.o
+	DELETE  StringFunctions.h libstringfuncs.a
+	$(ACMD) $(OPTS) add $@ CB.h
+	$(ACMD) $(OPTS) add $@ ClipFuncs.c
+	$(ACMD) $(OPTS) add $@ ClipIt
+	$(ACMD) $(OPTS) add $@ ClipIt.c          
+	$(ACMD) $(OPTS) add $@ ClipIt.cd
+	$(ACMD) $(OPTS) add $@ ClipIt.ct
+	$(ACMD) $(OPTS) add $@ ClipIt.guide      
+	$(ACMD) $(OPTS) add $@ ClipIt.iff
+	$(ACMD) $(OPTS) add $@ ClipIt.info
+	$(ACMD) $(OPTS) add $@ ClipItConstants.h
+	$(ACMD) $(OPTS) add $@ ClipItLocale.h
+	$(ACMD) $(OPTS) add $@ ClipItPPC
+	$(ACMD) $(OPTS) add $@ ClipItPPC.info
+	$(ACMD) $(OPTS) add $@ ClipItReq.c       
+	$(ACMD) $(OPTS) add $@ ClipItTools.c
+	$(ACMD) $(OPTS) add $@ cprInit
+	$(ACMD) $(OPTS) add $@ MakeFile
+	$(ACMD) $(OPTS) add $@ SMakeFile
+	$(ACMD) $(OPTS) add $@ TestClip2
+	$(ACMD) $(OPTS) add $@ TestClip3         
+	$(ACMD) $(OPTS) add $@ TestClip4
+	$(ACMD) $(OPTS) add $@ TestClip5
+#

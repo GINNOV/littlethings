@@ -1,0 +1,83 @@
+Portable Object Compiler (c) 1997,98,2002.  All Rights Reserved.
+
+This file contains some notes that are specific to running "objc"
+(pronounced as "Object Compiler") on Windows95 or WindowsNT using
+the Sybase WATCOM compiler.
+
+AUTOEXEC.BAT
+------------
+
+	Add C:\OBJC\BIN to your PATH.  This directory contains OBJC.EXE
+	the compiler driver, and OBJC1.EXE, the compiler proper.  It's
+	also assumed that the WATCOM tools (WCC386,WLINK etc.) are in 
+	the PATH.
+	
+	It's also convenient to "set OBJCOPT=options" in this file, where
+	options can be "-q" for example.
+
+	If you want to install in a different location than C:\OBJC\BIN,
+	then set the OBJCDIR environment variable (points to top directory).
+
+Makefiles
+---------
+
+	The Makefiles have a .wmk extension (for wmake)
+
+	At the top level, there is a .BAT file that drives the process.
+	So you type:
+
+		setup wmk
+		make
+
+	to start building the different components of the compiler.
+
+ARWAT.BAT
+---------
+
+        There's a script in the 'util' directory to provide a UNIX style
+	'ar' interface towards the WATCOM wlib utility.
+
+	Copy this file to a location in the PATH (e.g. c:\objc\bin) if it's
+	not already there.
+
+BISON & FLEX
+------------
+
+	We're using the win32 ports of these tools.  That is,
+	the parser and scanner is no longer generated on UNIX (scan.m, parser.m)
+	but is now generated on Windows itself from scan.lm and parser.ym.
+	
+	Flex and Bison for Windows95 are available on http://www.winsite.com.
+	They're configured for VisualC++.  I've modified "bison.simple" to 
+	include
+	(before the top #if __GNUC__) the following lines (to define alloca()
+	correctly :)
+	
+		#if __WATCOMC__
+		#include <malloc.h>
+		#endif
+		
+	I've contacted the author of the port, so this might already have
+	been fixed meanwhile.
+
+	If you use a different port of flex/bison, check the definition of
+	YYLEXC and YTABH/YTABC in the src/objc/Makefile.  It's either y.tab.c
+	or y_tab.c
+
+Garbage Collection
+------------------
+
+	The -gc option has been tested on WIN32 with the Boehm library
+	(compiled with WATCOM).
+
+	Compile (using the WCC_MAKEFILE in the Boehm package, included
+	since 4.12) gc.lib, and copy gc.lib into c:\objc\lib.
+	Also copy gc.h into c:\objc\include\objcrt or some place that
+	is going to be searched.
+
+Binary Driver
+-------------
+
+	There's no Bourne shell compiler driver for Windows95.  Only
+	the binary, compiled, version is available (as "objc.exe").
+

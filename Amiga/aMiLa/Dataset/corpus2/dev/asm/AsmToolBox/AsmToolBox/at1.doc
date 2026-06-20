@@ -1,0 +1,299 @@
+Assembler Toolkit #1 by Warren A. Ring   2/8/88
+
+This tool box is, as of this date, scheduled to be featured in the March,
+April, and May 1988 issues of Amazing Computing.
+
+This is the first in what I hope will be a series of assembler toolboxes
+created to make interfacing between assembler programs and AmigaDOS easy. 
+Each toolbox consists of a macro file and a library file.  The primary
+vehicle for getting data to and from these routines is a data structure I
+call the "string buffer".  It can contain text strings, but can just as
+easily be used for disk buffers.  A string buffer may contain either binary
+or ASCII data, and is structured to have overrun protection and fast
+manipulation.  String buffers consist of three fields, shown in the following
+example:  
+
+           CNOP    0,2
+       Buffer1Length equ 10
+       Buffer1
+           DC.L    Buffer1Length   ;Capacity of the data field
+           DC.L    0               ;Current useage of the data field
+           DS.B    Buffer1Length   ;Data field
+           CNOP    0,2
+
+The first field is a long integer specifying the physical size, in bytes, of
+the data field (the maximum length of a string you wish to hold).  This
+allows routines that write into the string buffer to know the physical size
+of the data field, and thus avoid writing beyond the end of that string
+buffer, destroying unrelated data or stack variables.  The second is a long
+integer specifying the current useage (the length of the string CURRENTLY in
+the buffer), in bytes, of the data field.  The third is the data field
+itself.  In the above example, the current useage is zero, and the data field
+is uninitialized.  The CNOP statement is an assembler directive that aligns
+the program counter to the next word boundary.  If Buffer1Length is an odd
+number, then the assembler will throw in an extra byte at the end of the
+buffer, so that whatever follows will be word-aligned.
+
+So what functions are in this package?  Disk I/O, string manipulation, and
+Integer/ASCII conversion are the primary functions, as shown in the following
+table.
+
+In this table, arguments are defined as follows:
+
+   [filename]      the address of a string buffer containing the name
+   [old-filename]  of a file
+   [new-filename]
+
+   [file-handle]   the address of a 4-byte file handle
+
+   [data]          the address of a string buffer containing data
+   [from-data]
+   [to-data]
+
+   [seek-location] the number of bytes, zero being the beginning of file,
+                   at which the next disk read or write is to take place
+
+   [text]          an ASCII text operand.  May be values separated by
+                   commas, or literal text in quotes
+
+   [label]         a label
+
+   [length]        the length of a string buffer
+
+
+                          --- Function Table ---
+
+Name       Function/Format
+---------- ----------------------------------------
+
+General:
+
+Start      Performs housekeeping at the beginning
+              of a program, sets scanning to the
+              command line residue
+           Format: Start
+
+Exit       Performs housekeeping at the end of a
+              program, and exits
+           Format: Exit
+
+
+Disk I/O:
+
+Open       Opens a disk file
+           Format: Open [filename],[file-handle]
+           Upon return, if the zero flag is set, then there is no such file.
+
+Create     Creates a disk file
+           Format: Create [filename],[file-handle]
+           Upon return, if the zero flag is set, then the file could not
+           be created.
+
+Delete     Deletes a disk file
+           Format: Delete [filename]
+           Upon return, if the zero flag is set, then the file did not exist,
+           or had its protection attribute set.
+
+Close      Closes a disk file
+           Format: Close [file-handle]
+
+Rename     Rename a disk file
+           Format: Rename [old-filename],[new-filename]
+           Upon return, if the zero flag is set, then the file did not exist,
+           or had its protection attribute set.
+
+Read       Reads from a disk file
+           Format: Read [file-handle],[data]
+           This routine attempts to read a full string buffer of data.
+           Upon return, the current useage of the string buffer used
+           as the disk I/O buffer indicates the number of bytes
+           successfully read from the file.  If the current useage is
+           zero, then you have reached the end of file.
+
+Write      Writes to a disk file
+           Format: Write [file-handle],[data]
+           This routine attempts to write the number of bytes specified
+           by the current useage to the file.
+
+Seek       Seeks to a specified position in a disk file
+           Format: Seek [file-handle],[seek-location]
+
+
+These functions handle I/O to the console:
+
+ReadCon    Gets a line from the console
+           Format: ReadCon [data]
+
+WritCon    Writes to the console
+           Format: WritCon [data]
+
+Display    Displays an immediate text string
+           Format: Display <[text]>
+
+Crlf       Displays a CR/LF
+           Format: Crlf
+
+Space      Displays a space character
+           Format: Space
+
+
+These functions handle scanning of a string buffer
+to pick up words (including punctuation),
+alphanumeric words, or single characters:
+
+SetScan    Sets scanning to the beginning of a specified string buffer
+           Format: SetScan [data]
+           Default scanning is on the command line residue
+
+Scanw      Sets [data] to the next text word in the command line residue
+           or the string buffer specified in the most recent SetScan command
+           Format: Scanw [data]
+
+Scana      Sets [data] to the next alphanumeric word in the command line
+           residue or the string buffer specified in the most recent
+           SetScan command
+           Format: Scana [data]
+
+Scanc      Sets [data] to the next character in the command line residue
+           or the string buffer specified in the most recent SetScan command
+
+
+These functions perform string handling, best
+described by BASIC or C language equivalent
+expressions:  
+
+StrCpy     A$=B$, copies one string to another
+           Format: StrCpy [from-data],[to-data]
+
+StrCat     A$=A$+B$, appends one string to another
+           Format: StrCat [from-data],[to-data]
+
+StrCmp     Compares one string with another
+           Format: StrCmp [data],[data]
+
+StrLen     I=LEN(A$), gets a string length
+           Format: StrLen [data]
+
+Left       A$=LEFT$(B$,I), gets I left-most chars
+           Format: Left [from-data],I,[to-data]
+
+Mid        A$=MID$(A$,I,J), gets I middle chars from position J
+           Format: Mid [from-data],I,J,[to-data]
+
+Right      A$=RIGHT$(A$,I), gets I right-most chars
+           Format: Right [from-data],I,[to-data]
+
+ItoA       A$=STR$(I), converts a long integer to an ASCII string
+           Format: ItoA I,[data]
+
+AtoI       I=VAL(A$), converts an ASCII string to a long integer
+           Format: AtoI [data],I
+
+HAtoI      I=HEX$(A$), converts a string of hex ASCII chars to an integer
+           Format: HAtoI [data],I
+
+ItoHA8     A$=HEX8$(I), converts a 4-byte integer
+              to a string of 8 hex-ASCII chars
+           Format: ItoHA8 I,[data]
+
+ItoHA4     A$=HEX4$(I), converts a 2-byte integer
+              to a string of 4 hex-ASCII chars
+           Format: ItoHA4 I,[data]
+
+ItoHA2     A$=HEX2$(I), converts a 1-byte integer
+              to a string of 2 hex-ASCII chars
+           Format: ItoHA2 I,[data]
+
+ItoHA1     A$=HEX1$(I), converts a 4-bit integer
+              to a string of 1 hex-ASCII char
+           Format: ItoHA1 I,[data]
+
+
+These functions create string buffers:
+
+StrBuf     Directs the assembler to define an uninitialized string buffer
+           Format: StrBuf [label],[length]
+
+String     Directs the assembler to define an initialized string buffer
+           Format: String [label],<[text]>
+
+
+                              General Notes
+
+Notice that in the test programs, arguments that reference string buffers
+are generally IMMEDIATE, shown with a pound sign before the label.  Arguments
+that are integers are generally DIRECT, shown simply as a label.  Depending
+on what you want to do, there may be exceptions to this rule.
+
+Included in this package are 6 example programs.  They should help you see
+how these functions are invoked.
+
+
+                              How to Invoke
+
+I use the Metacomco assembler.  You can get it, and the Metascope debugger
+from Abel Supply in Sevierville, Tennessee.  You call up their modem number
+at (615) 453-0643, peruse or download their list of literally hundreds of
+Amiga items, enter your VISA or MasterCard number, and in a few days, your
+order shows up on your door step.  Their voice number is (615) 428-5100.  You
+can get the Metacomco assembler for $54.75, and the MetaScope debugger for
+$54.68, a discount form list of about 40%.  
+
+To assemble your program, enter the following:
+
+   assem test.asm -o test.o -l test.lst
+
+This produces object file "test.o" and list file "test.lst".  Assuming you
+have no errors, you copy the "amiga.lib" file from the Metacomco disk to the
+directory you have assigned to libs:, and enter:
+
+   alink test.o to test library libs:amiga.lib
+
+
+                          Seeking in Disk Files
+
+Some background on how the AmigaDOS disk I/O calls work is in order here. 
+AmigaDOS correctly assumes that most files read or written are "sequential"
+files, meaning you either read an existing file from beginning to end, or you
+create a file and write sequentially until you close it.  Each file has a
+position marker, or "cursor" associated with it that indicates where in the
+file (how many bytes into the file) the next read or write is to take place. 
+Each time you read or write in a file, AmigaDOS automatically moves this
+cursor to the end of the record you just read or wrote, making the assumption
+that you wish to read or write the following record in the file.  If you wish
+read or write in another place in the file, you must use the Seek command to
+change the cursor position.  
+
+The figure AmigaDOS will accept can be relative to the beginning of the file,
+current position, or end of file.  In this toolbox, we make all cursor
+positioning arguments relative to the beginning of the file.
+
+String buffers are used as disk I/O buffers as well as text buffers.  When
+you write to disk, the current useage of the string buffer is the number of
+bytes to be written to disk.  Conversely, when we read from disk, the maximum
+length of the string buffer is the number of bytes that we wish to read from
+disk, and the read routine sets the current useage of the string buffer to
+the actual number of bytes read from disk.  Thus, AmigaDOS tries to fill the
+string buffer, and the string buffer's current useage is set to the correct
+value.  
+
+
+                             Reference Works
+
+I recommend you get "Programmer's Guide to the Amiga" by Robert Peck (Sybex).
+I have gotten a copy of this book, and noticed that although it is written
+primarily for C users, it has much that applies to ALL users.  It tells WHY
+you perform certain procedures, as well as how.  I also strongly recommend
+the book "68000 Assembly Language Techniques for Building Programs" by Donald
+Krantz and James Stanley (Addison-Wesley).  This book you tells everything
+you want to know about generic 68000 programming, including what addressing
+modes are legal for each instruction, and why the special instructions and
+address modes are so great.  
+
+
+                             How to Reach Me
+
+If you have questions or comments, you may contact me at either of two BBS
+systems I regularly visit: the Los Angeles Amiga User's Group BBS (LAAUG
+Line) at (213) 559-7367, and the "1939" BBS at (818) 368-4248.
+

@@ -1,0 +1,159 @@
+                                                     Mark Meany,
+                                                     12 Hinkler Road,
+                                                     Thornhill,
+                                                     Southampton,
+                                                     Hant's.
+                                                     SO2 6FT
+
+
+ Hi Dac,
+
+ This letter is going to be reproduced on issue 26, so I am going to cover the 
+basics first for everyone's benefit.
+
+ Well the solution to your problem may  be  very simple, it's a little hard to
+say since you never sent any  source  for  me  to check. I will assume you are
+using audio DMA to play samples as  direct  programming is to CPU intensive to
+use in a game.
+
+ 
+ Tone Production (playing a sample )
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ So you want to add sound effect to  your  latest  progam. How do you go about
+it? I will now try to cover  the  basics  of  playing a sample using the audio
+DMA.
+
+ I assume you know what a sample is  and  how  to ' incbin ' one into a source
+file. If not, look at the example  source  provided. Remember that sample data
+must be located in CHIP memory.
+
+ As always in my code, I am referencing the hardware registers as offsets from
+$dff00 using the file ' hardware.i '.  In  the  examples register a5 points to
+$dff000 at all times.
+
+ The Amiga has four audio channels, so  the  first thing to do is decide which
+channel to use. For no particular  reason  I  have opted for channel 0, though
+you could alter the code quite simply to use one of the other three.
+
+ To play a sample, the appropriate DMA  channel  must  be initialised and then
+enabled. To initialise a channel, you need to do the following:
+
+       Write the sample address into AUD0LCH
+       Write the sample length into AUD0LEN
+       Write the replay volume into AUD0VOL ( 0<= volume <= 64 )
+       Write the sample period into AUD0PER
+
+ The sample length required is  the  word  length,  not the byte length of the
+sample. The volume can range between 0 ( silent ) and 64 ( loud ).
+
+ The sample period will depend on the sampling  frequency. As a last resort it
+can be determined by trial and error,a reasonable value to start with is $12c.
+
+ Once these values have been set,  enable  the appropriate DMA channel for the
+sound to start. To stop a sample playing disable the DMA channel.
+
+ Example 1 starts a sample  playing,  waits  for  the  left mouse button to be
+pressed and then stops the  sample.  You  will  notice  straight away that the
+sound repeats forever once started.  What  is  needed is a method of playing a
+sample only once.
+
+ Playing A Sample Only Once
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~
+ This is not as difficult as it sounds ( no pun intended ). When a DMA channel 
+has copied the address and length of a sample from the hardware registers into
+it's internal registers, it requests a level  4 interrupt. We can check to see
+when an audio interrupt has been requested  by monitoring the appropriate bits
+in the interrupt request register,  INTREQR.  Once an audio channel signals an
+interrupt request, it is ready  to  accept  the  address and length of another
+sample that it will start playing  when  the  current sample has completed one
+cycle. So as soon as the DMA channel requests  an interrupt, write the address
+and length of a quiet sound into it's hardware registers. A quiet sound is one 
+in which all samples are 0.  Doing  this  will  ensure  the required sample is
+played once and then the channel will go quiet!
+
+ If level 4 interrupts  are  disabled,  which  they  usually  are  unless your
+running a tracker replayer, you cannot assume anything about the initial state
+of the audio interrupt request bits. The best solution is to clear the bit you
+are checking before entering the check loop.
+
+ An example then. Assume you want to play  the sample stored at label Fire and
+it's word length is FireLen.  Also  assume  you  have a quiet sample stored at
+label NullSound and it's length is  NullLen.  The following fragment will play
+this sample once only  (  assume  the  DMA  channel  is  disabled  before this
+fragment is executed ).
+
+               ************************************
+
+               move.w          #64,AUD0VOL(a5)          set maximum volume
+               move.w          #$12a,AUD0PER(a5)        set period
+               move.l          #Fire,AUD0LCH(a5)        sample address
+               move.w          #FireLen,AUD0LEN(a5)     sample length
+               move.w          #SETIT!AUD0EN,DMACON(a5) enable audio DMA
+
+; Clear channel 0 interrupt request bit
+
+               move.w          #AUD0,INTREQ(a5)         clear bit
+
+; Now wait for DMA channel to signal an interrupt
+
+WaitAud0       btst            #7,INTREQR+1(a5)         check bit
+               beq.s           WaitAud0                 loop 'till set
+
+; Now safe to write address of quiet sound
+
+               move.l          #NullSound,AUD0LCH(a5)   sample address
+               move.w          #NullLen,AUD0LEN(a5)     sample length
+
+               **************************************
+
+ NOTE: Even though level 4 interrupts are  disabled, requests for an interrupt
+still occur, they are just ignored by ' Paula ', the chip which interrupts the
+68000.
+
+ If you examine the line of code at the label ' WaitAud0 ' you will see that I 
+am testing memory at an odd address, INTREQR+1.  This is because btst can only
+check bytes when  operating  on  memory.  The  AUD0  interrupt bit is bit 7 of
+INTREQR, which is bit 7 of the byte INTREQR+1.
+
+ You can see this fragment in action in  Example  2. To exit the example press
+the left mouse button.
+
+ Interrupting A Sample
+ ~~~~~~~~~~~~~~~~~~~~~
+
+ To interrupt a sample that  is  playing,  simply  disable the DMA channel. To
+ensure there is a suitable  delay  between  stopping  an audio DMA channel and
+then restarting it, I use two routines placed in a level 3 interrupt handler ( 
+yep, the good old vertical blank again! ). According to the Hardware Reference 
+Manual, there should be a delay of  at  least  2  two sampling periods between
+stopping and restarting the audio DMA channel.
+
+ The first routine checks to see  if  it  should  start  a sample playing on a
+channel. If it should, it executes  a  fragment  similar  to  that shown above
+except the address and length of the  required  sample  are passed in a simple
+structure to allow different samples to be played by the same routine.
+
+ The second routine is responsible for  requesting  a new sample to be played.
+It is not called directly by the level 3  handler, but from some other routine
+that has decided a sample needs  playing,  for instance a joystick fire button
+routine. When a sample is requested, the appropriate audio channel is disabled 
+to stop any sample that may be playing  and  a structure is prepared that will
+be examined by the actual sample  launcher.  The net result of this routine is
+to stop any sample playing and prepare a  new sample to be launched during the
+next level 3 interrupt.
+
+ If all this sounds complicated, look  at  Example 3. Just a few lines of code
+is all that is required. Example 3 will  play the required sample whenever the
+joystick's fire button is  pressed.  The  example  has  been kept as simple as
+possible and is heavily commented.
+
+ Well I hope this has been of some help.  I must now point out that you owe me
+one floppy disk. When returning this,  why  not  put something on it for me to
+include on an ACC disk. This could be  just  a letter if you wish, though some
+source is always preferred. Contributors  get a copy of the next disk as it is
+finished!
+
+ Take care,
+
+		Mark.
+

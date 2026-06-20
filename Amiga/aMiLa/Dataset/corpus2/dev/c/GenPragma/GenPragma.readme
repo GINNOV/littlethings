@@ -1,0 +1,10 @@
+Short:        Generate pragma files for PDC or SAS
+Author:       David Kinder
+Uploader:     d kinder btinternet com
+Type:         dev/c
+Version:      1.0
+Architecture: m68k-amigaos
+Distribution: Aminet
+
+Given an FD file, GenPragma will generate a suitable pragma file for SAS/C or
+PDC (from the Fish disks).

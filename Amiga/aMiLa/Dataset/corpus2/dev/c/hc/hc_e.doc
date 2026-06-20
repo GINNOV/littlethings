@@ -1,0 +1,74 @@
+Header-Creator V1.0 (Developement tool for C programming)
+=========================================================
+
+
+Description
+-----------
+
+Header-Creator is a tool for developing C programmes. It
+is supposed to help commentating source codes, by inserting
+a programme head as well as function heads.
+
+Thus it is possible to keep concentration on developing the
+actual programme code. The Header-Creator adds standard
+heads to a source code which is able to be compiled. Those
+heads already include the author's name and the date. Now
+you just have to insert further information into the heads.
+
+The original source file remains as a backup.
+
+
+Installation
+------------
+
+Just copy the file 'hc' to your drawer c or any other drawer
+you would like it to be.
+
+
+Usage
+-----
+
+Open a shell and type the command 'hc' followed by the name
+of the source file.
+
+
+Example:
+
+Ram:> hc test.c
+
+In your current directory there will be created the file test.c
+containing the heads and the source code. The original file
+remains as test.c.bak .
+
+
+Copyright
+---------
+
+Header-Creator V1.0 is FREEWARE. It may be used without any
+restrictions. You are also allowed to spread the programme if
+you spread the whole archive including following files:
+
+ hc            -> programme
+ hc.readme     -> readme file
+ hc_d.doc      -> documentation (german)
+ hc_e.doc      -> documentation (english)
+
+I just ask users to drop me a mail so that I come to know how
+many people are using Header-Creator. Information about bugs
+and new ideas are very welcome.
+
+email: Dirk.Matiack@gmx.de
+
+
+Enjoy the Header-Creator !
+
+
+KEEP ON DEVELOPING - KEEP THE AMIGA ALIVE !!!
+
+
+
+Dirk Matiack
+
+
+
+

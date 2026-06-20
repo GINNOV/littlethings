@@ -1,0 +1,50 @@
+//////////////////////////////////////////////////////////////////////////////
+// node.cpp
+//
+// Jeffry A Worth
+// November 10, 1995
+//////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////
+// INCLUDES
+#include "aframe:include/node.hpp"
+
+//////////////////////////////////////////////////////////////////////////////
+// AFNode Class
+
+AFNode::AFNode(AFObject* ptr)
+	:m_prev(0),
+	m_next(0)
+{
+	m_object=ptr;
+}
+
+AFObject*
+AFNode::object()
+{
+	return m_object;
+}
+
+AFNode*
+AFNode::prev()
+{
+	return m_prev;
+}
+
+void
+AFNode::prev(AFNode* ptr)
+{
+	m_prev = ptr;
+}
+
+AFNode*
+AFNode::next()
+{
+	return m_next;
+}
+
+void
+AFNode::next(AFNode* ptr)
+{
+	m_next = ptr;
+}

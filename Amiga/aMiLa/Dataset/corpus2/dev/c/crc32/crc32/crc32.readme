@@ -1,0 +1,7 @@
+Short: Implementation of CRC32
+Type: dev/c
+Uploader: ARK@News.wwbnet.de
+Author: Patrick Persson, Teracom Nu
+
+ An implementation of a CRC32 calculation
+ algorithm and checking code.

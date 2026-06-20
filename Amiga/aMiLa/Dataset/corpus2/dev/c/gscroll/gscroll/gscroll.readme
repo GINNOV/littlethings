@@ -1,0 +1,72 @@
+Short: Program to scroll Texts with (Color-)IFF-Fonts in a Window
+Type: dev/c
+Author: Reinhard Katzmann
+Uploader: Reinhard Katzmann
+
+GScroll - A program which scrolls a text in a window
+====================================================
+
+(C) 1995 Reinhard Katzmann. All rights reserved.
+
+Introduction
+------------
+
+I've written this program as I got a CD with many colour fonts and IFF Fonts
+on it and thought one some so calles "Intros" which are mostly written in
+Assembler and not very system friendly.
+
+This program uses only system functions (for scrolling, blitting and remapping.)
+In the current form, remapping is only done under OS3.x and higher.
+The program should also work on OS2.x but I could not test this.
+
+One example font is included and also an example usage with topaz/11. This
+only works, if you have installed the Font Datatype (can be found on aminet).
+
+I cannot make clear statements on the speed of the program. On my A4000/040
+it is quite a smooth scrolling. At least it should not flicker somehow.
+Also the speed much depends on the size of the font. While topaz/11 is so fast
+that you cannot read it, with the font14 color font it is acceptable.
+
+Disclaimer & Copyright
+----------------------
+
+GScroll is (C) 1995 Reinhard Katzmann. All rights reserved.
+GScroll is Public Domain in this Version (actually no version). I've included
+the source code which you are allowed to use in your own applications. The
+only condition is that you add to you documentation:
+This program is based/uses parts of GScroll (C) 1995 Reinhard Katzmann.
+
+I keep the right to change all the above conditions of the program.
+
+There is no guarantee in the usage of the program and/or sourcecode. Use
+it at your own risk!
+
+Author Address
+--------------
+
+E-MAIL (prefered):
+------------------
+
+  suamor@student.uni-tuebingen.de
+  katzmann@gemmi.informatik.uni-tuebingen.de
+
+SnailMail:
+----------
+
+  Reinhard Katzmann
+  Schellingstraße 41
+
+  D - 72072 Tübingen
+
+BBS'es
+------
+
+You can try to reach me through BBS'es near Tübingen. Some of the Sysops
+might know me or have contact to the Internet. I'm only User of one BBS:
+
+Onkel Helmut's Hütte
+
+Line 1: (0049) +7157/64546 (28800 Baud)
+Line 2: (0049) +7157/65428 (14400 Baud)
+
+My usual Nickname on the internet or at this BBS is Suamor.

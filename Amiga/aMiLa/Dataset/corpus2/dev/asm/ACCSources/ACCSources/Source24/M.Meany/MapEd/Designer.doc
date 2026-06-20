@@ -1,0 +1,236 @@
+
+			Screen Designer
+			~~~~~~~~~~~~~~~
+				© M.Meany, 1992
+
+ What is it?
+ ~~~~~~~~~~~
+ This utility is intended for programmers designing games/demos that use a
+map to build screens up from a predefined set of block graphics. Consider
+the following map:
+
+	00,05,07
+
+ This would be interpreted as 'Block 0', 'Block 5', 'Block 7'.
+
+ The reason for using such a technique is that using 16x16 pixel blocks, or
+tiles as they are often refered to as, a 320x256 screen can be represented
+by just 20x16 bytes. The memory savings are tremendous.
+
+ The problems arise when putting a map together. A program such as Deluxe
+Paint can be used to design the tiles, but what about the map? Enter this
+utility.....
+
+ This utility allows you to design maps and save them to disk, but thats
+not all there is to it! There are facilities for grabbing the tiles from an
+IFF ILBM file created with a paint package, designing collision masks and
+saving the tiles out in a variety of formats.
+
+ The designer is not limited to only 320x256 screens. When first run, you
+specify the dimensions of the screen you wish to work on. This means
+entering the Width ( in tiles ), the Height ( in tiles ) and the Depth. The
+program will adjust itself accordingly. From then on you can move around
+the map plonking tiles down wherever you so please.
+
+ Once a map has been designed, you can save it. The program can load back
+maps created previously to allow further editing.
+
+ The Designer Screen
+ ~~~~~~~~~~~~~~~~~~~
+ Once the dimensions of the screen you wish to work on have been entered,
+the main editing screen opens. This screen is split vertically into two
+sections. the top section is where you place tiles and so build the map.
+The bottom section allows access to all the programs facilities. As this is
+only a beta version of the program, not all facilities are yet implemented
+as will be explained shortly.
+
+ Use the mouse to select the section of the screen you wish to work in.
+
+ Gadgets In The Bottom Section
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ All facilities are accessed by clicking on the appropriate gadget in the
+bottom section of the screen. Here is an outline of what is available:
+
+ File -	Opens a window that allows you to access all load/save options
+	available. Those currently implemented are:
+
+	- Blocks: Retrievable Load & Save
+	- Blocks: Raw Save in any of the following formats:
+			Consecutive Bitplanes, no Mask bitplane
+			Consecutive Bitplanes, with Mask bitplane
+			Interleaved Bitplanes, no Mask bitplane
+			Interleaved Bitplanes, with Mask bitplane    
+	- Blocks: Grab from IFF. This will take an IFF ILBM file of the same
+		  depth as the screen you are working with and cut it up
+		  into tiles, working left->right then top->bottom. The
+		  colour palette is also loaded and used.
+
+	- Screen: Load & Save. Saves each block number as 1 byte of data.
+		  Map is saved working left->right then top->bottom.
+
+ Block - NOT YET IMPLEMENTED. Will be a tile editor soon!
+
+ Mask - Fully functional mask editor. The current tile is displayed along
+	with its mask. You can edit this mask and see the difference. There
+	is also a store where one mask can be saved if you need the same mask
+	over and over! There is also a quick fill and clear option.
+	The mask you create will only be assigned to the block if you exit
+	by selecting the 'Use' gadget.
+
+ CMAP -	NOT YET IMPLEMENTED. Will soon be a palette editor.
+
+ About- NOT YET IMPLEMENTED. Obvious what this will be..
+
+ CLR  - NOT YET IMPLEMENTED. Will allow the map to be cleared, each cell
+	will be assigned the currently active tile.
+
+ Quit - Obvious!
+
+ Selecting A Tile
+ ~~~~~~~~~~~~~~~~
+ The designer can cope with 250 tiles. At any one time 30 of these are
+visible in the bottom left corner of the display. To the right of the tiles
+are two scroll gadgets to scroll the tile display up and down so that you
+can access the other tiles.
+
+ Clicking on a tile will select it. The currently selected tile is displayed
+between the up and down scroll gadgets so you can see at a glance which one
+you are using.
+
+ Putting A Tile Into The Map
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ Once a tile has been selected, you can start plonking it into the map.
+This is done by first selecting the top section where a large white cursor
+awaits. To move the cursor around the map, move the mouse pointer to a the
+desired position and click the left mouse button. Holding this button down
+and moving the mouse will cause the cursor to follow the mouse pointer.
+
+ Pressing the right mouse button will plonk the tile into the map. Holding
+this button down and moving the mouse will cause the tile to be drawn into
+all cells entered.
+
+ If your map is larger than the display area can accomodate, there are four
+scroll gadgets to the right of the tile up/down gadgets. Clicking on one of
+these will scroll the display allowing you to access the whole map.
+
+ The Raw File Formats
+ ~~~~~~~~~~~~~~~~~~~~
+Screen Map File
+---------------
+ When you save a screen, one byte is saved for each tile in the map. The 
+tiles are saved from left to right, then from top to bottom. This is the
+only format supported at this time.
+
+Block File - Consecutive
+------------------------
+ In order to use a map, you need the tile data to rebuild the screen. This
+option saves the tiles one after the other, ie 
+
+ block1, block2, block3, ..... , block255
+
+ The individual bitplanes of the tile are saved one after the other, hence
+consecutive save. You may also wish to save the tiles collision mask data,
+if so it will follow the tiles bitplanes.
+
+ Eg. 1st 3 Tiles for a display of depth 2, no mask data:
+
+	tile1 bitplane1, bitplane2, bitplane3
+	tile2 bitplane1, bitplane2, bitplane3
+	tile2 bitplane1, bitplane2, bitplane3
+	tile3 bitplane1, bitplane2, bitplane3
+	tile3 bitplane1, bitplane2, bitplane3
+
+ Eg. 1st 3 Tiles for a display of depth 2, with mask data included:
+
+	tile1 bitplane1, bitplane2, bitplane3, mask bitplane
+	tile2 bitplane1, bitplane2, bitplane3, mask bitplane
+	tile2 bitplane1, bitplane2, bitplane3, mask bitplane
+	tile3 bitplane1, bitplane2, bitplane3, mask bitplane
+	tile3 bitplane1, bitplane2, bitplane3, mask bitplane
+
+Block File - Interleaved
+------------------------
+ Choosing interleaved format will cause the tiles bitplane data to be saved
+in a similar format to that used for sprite bitplanes:
+
+	line 1 plane 1
+	line 1 plane 2
+	line 1 plane 3
+	  "      "
+	line 2 plane 1
+	line 2 plane 2
+	line 2 plane 3
+	  "      "
+	line 3 plane 1
+	line 3 plane 2
+	line 3 plane 3
+	  "      "
+	  "      "
+	  "      "
+	line 16 plane 1		<< all tiles are 16 lines high >> 
+	line 16 plane 2
+	line 16 plane 3
+	  "      "
+
+ If you do not opt for mask data to be save with a tile, you will get a file
+with the following format:
+
+	interleaved tile 1
+	interleaved tile 2
+	interleaved tile 3
+	   "	     "
+	   "         "
+	interleaved tile 256
+
+ If you do opt for mask data to be saved with a tile, the following format
+is used:
+
+	interleaved tile 1
+	mask bitplane for tile 1
+	interleaved tile 2
+	mask bitplane for tile 2
+	interleaved tile 3
+	mask bitplane for tile 3
+
+	   "	     "
+	   "         "
+	interleaved tile 256
+	mask bitplane for tile 256
+
+ Comments
+ ~~~~~~~~
+ I have used this editor to design screens, terrible they may be, for my
+own game development source and also Paul Kents 'Tanx' game previewed on
+last months disk ( I admit that Pauls code took some persuading to accept
+a map in byte format instead of words, but there you go ... ).
+
+ Is there a format I've completely overlooked in my ignorance? If so please
+tell me.
+
+ What other features could be added? For example, the option to append a
+custom file header to a screen map file. This could be entered as hex or
+loaded from a file --- just an idea, but may be worth it!
+
+ I will be changing all event loops that use INTUITICKS to monitor drawing
+routines to run off MOUSEMOVES instead, this should speed things up a bit.
+I wrote this code in two days, my main objective was that it worked!
+
+ I will add a sleeping pointer ( yes, the same one I always use! ) that
+will be displayed while the program is preforming prolonged operations,
+such as loading/saving files and building the screen.
+
+ I will also try to address the filerequester so that it 'remembers' the
+last directory visited and also looks a little tidyer.
+
+ Was it worth the effort?
+
+			 Mark.
+
+..... Anyone interested in writing a proper doc file for it?
+
+ 
+
+ 
+
+
+

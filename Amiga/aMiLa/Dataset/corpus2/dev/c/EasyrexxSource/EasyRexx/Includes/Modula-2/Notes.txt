@@ -1,0 +1,79 @@
+
+---------------------------------------------
+EasyRexx Benchmark Modula-2 Translation Notes
+11/5/95
+---------------------------------------------
+
+REQUIREMENTS
+
+   > Benchmark M2 compiler v1 or higher
+   > Benchmark M2 Interface for AmigaDOS v2.04 or higher
+
+Interface Definition Translation
+
+   > Removed underscores from identifiers.
+
+   > ARexxContext and ARexxCommandShell are hidden types. Fields accessed only
+     via functions from this interface.
+
+   > C macros are procedures.
+
+   > C static initialization of recording pointer is a pair
+     of Create/Free procedures.
+
+   > No variable-number-of-parameters procedures.
+
+Interface Implementation
+
+   > Resident library link via stub routines.
+
+Protos Translation
+
+   > Define an additional identifier, AREXXENDTABLE, the index of the
+     last entry in the command table.
+
+   > The main program needs a name.
+
+   > Command table's initialization is done by a call to an initializier
+     procedure.
+
+   > Utilizes library base from implementation, and relies on that module's
+     initialization to start it out at NIL.
+
+M2 Syntax Notes
+
+   > CASE (switch) statement case separation marker is "|". Put one after each case as you
+     would a break;
+
+     eg,    CASE i OF
+               0: a := b+1;
+                  c := d+2;
+                  |
+               1: a := d+1;
+                  |
+               2: a := d+2;
+                  c := b+1;
+            END;
+
+
+Files
+
+   > EasyRexx.def  - definition module for EasyRexx library.
+   > EasyRexx.mod  - implementation module for calling EasyRexx library.
+
+   > Funcs.mod     - template of procedure variable processing code generation
+   > IDS.mod       - template of case statement processing code generation
+
+   > TstFuncs      - program using procedure variable processing
+   > TstMacros     - program using case statement processing
+   > TstShell      - program opening an arexx console
+   > TstPointer    - program displaying "recording" pointer
+
+   > Assembly3.def/mod   - support module for EasyRexx.mod
+
+   > Assertions0.def/mod - support module for some of the test programs
+   > Str0.def/mod        - support module for some of the test programs
+   > Str1.def/mod        - support module for some of the test programs
+   > TagsUtils.def/mod   - support module for some of the test programs
+
+   > Notes.txt     - this file

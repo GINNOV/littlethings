@@ -1,0 +1,47 @@
+Short:		a very short operating system : SUMOS
+Uploader:	tcheko at no-log dot org (Antoine Dubourg)
+Author:		tcheko at no-log dot org (Antoine Dubourg)
+Type:		dev/asm
+Version:	0.0
+Architecture:	m68k-amigaos >= 1.1
+
+
+This is a 236 bytes Suboptimal Useless Minimalistic Operating System.
+
+SUMOS features :
+
+- Keyboard I/O managment
+
+SUMOS doesn't feature :
+
+- Interrupt handling
+- Inter Processus Communication
+- Memory protection, allocation or whatever who seems mandatory nowdays
+- ...
+
+But.
+
+Theoricaly, you can do whatever you want with.
+
+How it works ? 
+
+The OS is a simple loop which read keystroke. Valid keys are :
+
+- 0 to 9
+- A B C D E and F
+
+Every time you hit a valid key (0..F), the HEX value is written after
+the last OS instruction.
+
+When ESC key is stroke, the processor runs what you typed. Carefully
+keystroke sequence may work.
+
+Simplest, shortest and working program :
+
+4EFAFF66
+
+which means : JMP -152(PC) (back to start)
+
+No warranty for whatever. This program can crash your computer. You are
+warned. =)
+

@@ -1,0 +1,86 @@
+
+To OS4 users
+
+Ok, I finally manage to compile the MUI examples of my 7-part tutorial (unfortunately in french only, at http://www.guru-meditation.net). As I want to keep them as standard as possible for compilation with AmigaOS 3.x, MorphOS, AmigaOS4 and AROS, I put most of the changes in the makefile (not in the sources).
+
+I suppose information here will contain all that is needed by an OS4 developer that want to compile its stuff from AmigaOS or MorphOS, especially MUI sources. I found information in the forums, in the SDI_headers files, in the YAM sources, ... I would like to group advices here.
+
+
+Basic changes
+
+So, I don't want to add the interface pointers in the source. This is why I have to add -D__USE_INLINE__ at compilation and to declare manually the interface definition at the top of the source :
+
+struct MUIMasterIFace *IMUIMaster;
+
+Then the interface has to be obtained :
+
+#ifdef __amigaos4__
+	IMUIMaster = (struct MUIMasterIFace *)GetInterface(MUIMasterBase, "main", 1, NULL);
+#endif
+
+... and dropped :
+
+#ifdef __amigaos4__
+	if (IMUIMaster) {
+		DropInterface((struct Interface *)IMUIMaster);
+	}
+#endif
+
+For a IntuitionBase type conveniance, I added -D__USE_BASETYPE__ at compilation too.
+
+The linking step is not so hard as I opened the libraries manually. But ... yes but ... the Intuition interface is not known if we don't add the "-lauto" flag at the end of the link command. The other choice would be to declare the interface as we did for the MUI one.
+
+
+The hook case
+
+Some changes have to be done about hooks. Before the OS4 experience, I prefered the HookEntry way for its common declaration for the various OS. The problem is that OS4 doesn't use HookEntry at all. But the SDI header files (SDI_compiler, SDI_hook, ... get the SDI_headers archive on Aminet) guarantee that your program will be portable.
+This is why I changed all my hooks using these macros from SDI_hook : HOOKPROTONH() and MakeStaticHook.
+The hook calls don't change and still requires to be preceding by '&', for example :
+
+		DoMethod(sl_volume, MUIM_Notify, MUIA_Numeric_Value, MUIV_EveryTime,
+					sl_volume, 2, MUIM_CallHook, &hook_ChangeVolume);
+
+About the dispatcher (when you create your custom class), its function just has to be like that :
+
+DISPATCHERPROTO(DisKoDispatcher)
+{
+	struct DisKoData *data = (struct DisKoData *)INST_DATA(cl, obj);
+
+	switch(msg->MethodID){
+		case OM_NEW :						return DisKoNew(cl, obj, (APTR)msg); break;
+		case OM_DISPOSE :					return DisKoDispose(cl, obj, (APTR)msg); break;
+		case OM_SET:						return DisKoSet(cl, obj, (APTR)msg); break;
+
+		case MUIM_DisKo_Play :			return DisKoPlay(data); break;
+		case MUIM_DisKo_Stop :			return DisKoStop(data); break;
+		case MUIM_DisKo_Previous :		return DisKoPrevious(data); break;
+		case MUIM_DisKo_Next :			return DisKoNext(data); break;
+	}
+
+	return DoSuperMethodA(cl, obj, msg);
+}
+
+The DISPATCHERPROTO macro is used with the ENTRY macro to assign the dispatcher when creating the class :
+
+cl_disko = MUI_CreateCustomClass(NULL, MUIC_Group, NULL, sizeof(struct DisKoData),  ENTRY(DisKoDispatcher));
+
+
+The last trick
+
+Another important thing to know concerns inheritage again. There are some changes to do if we want the program runs correctly. As DoSuperNew was not known by OS4, I add a "defined(__amigaos4__)" to my "#if defined(__SASC)" but ... what a mistake ! Even if it compiles, it won't run correctly.
+This needs to support VARARGS68K stuff (see 'OS4_migration_guide.pdf"). Having a look at the YAM sources, I found how I had to declare DoSuperNew (check you include SDI_stdarg.h) :
+
+Object * STDARGS VARARGS68K DoSuperNew(struct IClass *cl, APTR obj, ...)
+{
+	Object *rc;
+	VA_LIST args;
+
+	VA_START(args, obj);
+	rc = (Object *)DoSuperMethod(cl, obj, OM_NEW, VA_ARG(args, ULONG), NULL);
+	VA_END(args);
+
+	return rc;
+}
+
+
+Please, feel free to comment this text, I will update it for the next release of the tutorial.

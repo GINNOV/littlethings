@@ -1,0 +1,21 @@
+Short:        ASAP Update
+Author:       hfx@fox.nstn.ca
+Uploader:     hfx fox nstn ca
+Type:         dev/c
+Replaces:     dev/c/ASAPUpd.lha
+Requires:     One of Storm or SAS or GNU C++
+Architecture: m68k-amigaos
+
+Small Update Update :)
+
+ June 22th '98: Somehow, in my rush, I included the 
+                wrong FileLock, FileHandle, and RastPort
+                (which were the only updates) files in my
+		last ASAP.lha upload about a week ago. The
+                original ASAPUpd.lha did not include the
+                RastPort.h, and the other header names
+                weren't correct.
+
+                I'm sending this along to avoid any problems
+                and confusion. Very sorry, everyone! (I won't
+                rush my next upload, I promise :)

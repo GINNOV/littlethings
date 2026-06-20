@@ -1,0 +1,26 @@
+Short:        Experimental SAS/C++ PPC
+Author:       Steve Krueger
+Uploader:     Adam Markiewicz <23user wp pl>
+Type:         dev/c
+Replaces:     scppc_beta17.lha
+Requires:     SAS/C with all patches, including expsascxx.lha
+Architecture: m68k-amigaos; ppc-powerup
+
+The archive contains a set of patches to create a PowerPC
+compiler and debugger from the SAS/C 6.5x Developement system. 
+You must have SAS/C 6.5x installed on your machine to use this 
+archive. Also, you must have the original 6.50 disks.
+
+To create ELF executables, you will also need the linker (ld) from
+the GCC archive. If you plan to make link libraries, you will
+also need the ELF libraries (ar). These tools can be found on
+the Phase 5 CD, or on ftp.ninemoons.com in the 'binutils'
+archive.
+
+Since the patches are labeled as freely redistributable,
+I don't see any problem in uploading it to Aminet.
+
+Please put a note in there that neither I nor SAS are
+supporting it though.
+
+Steve Krueger

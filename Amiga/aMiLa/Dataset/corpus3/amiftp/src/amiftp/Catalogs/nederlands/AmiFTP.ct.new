@@ -1,0 +1,433 @@
+## version $VER: AmiFTP.catalog 2.0 (01.12.95)
+## language nederlands
+## codeset 0
+; Catalog descriptor file for AmiFTP 
+; Copyright (C) 1995 by Magnus Lilja, All Rights Reserved.
+;
+; e-mail: lilja@lysator.liu.se
+;
+; Some notes for translators:
+;
+; In order to create a hotkey to activate a gadget insert
+; a _ in the string before the character that should be
+; the hotkey. ('Te_st' would result in 's' being the hotkey
+; for that particular gadget).
+;
+;
+; Note that menu shortcuts are defined differently:
+; A correct menu entry for 'Quit' with Amiga-Q as the
+; shortcut should look like this:
+; Q\000Quit
+;
+;
+;
+;
+; SiteList window
+;
+SLW_SiteListWindow
+AmiFTP Sitelijst
+;AmiFTP Sitelist
+SLW_SiteList
+FTP Sites
+;FTP Sites
+SLW_Connect
+Maak _verbinding
+;_Connect
+SLW_New
+_Nieuwe
+;_New
+SLW_Edit
+V_erander
+;_Edit
+SLW_Remove
+_Verwijder
+;_Remove
+SLW_Cancel
+_Annuleer
+;C_ancel
+SLW_OK
+OK
+;_OK
+SLW_Up
+Omhoog
+;Up
+SLW_Down
+Omlaag
+;Down
+SLW_Top
+Eerste
+;Top
+SLW_Bottom
+Laatste
+;Bottom
+SLW_Newstring
+(Nieuwe)
+;(New)
+SLW_Sort
+_Sorteer
+;_Sort
+;
+; SiteConfiguration Window
+;
+SCW_SiteConfigurationWindow
+AmiFTP Site Instellingen
+;AmiFTP Site Configuration
+SCW_Name
+Naa_m
+;Na_me
+SCW_Site
+_Site
+;_Site
+SCW_Port
+_Port
+;_Port
+SCW_RemDir
+_Auto-cd naar directory
+;_Auto-cd to directory
+SCW_LocDir
+_Lokale directory
+;_Download path
+SCW_Anonymous
+A_nonieme login?
+;A_nonymous login?
+SCW_LoginName
+_Login naam
+;_Login name
+SCW_Password
+_Wachtwoord
+;Pass_word
+SCW_OK
+_OK
+;_OK
+SCW_Cancel
+Annu_leer
+;Ca_ncel
+SCW_OS
+_Besturings Systeem
+;Operating S_ystem
+SCW_Proxy
+Pro_xy
+;Pro_xy
+SCW_HotList
+_Hotlist
+;_HotList
+;
+; Transfer window
+;
+TW_WinTitle
+AmiFTP Transfer window
+;AmiFTP Transfer window
+TW_RemoteFile
+Naam daar
+;Remote file
+TW_LocalFile
+Naam hier
+;Local file
+TW_Size
+Grootte
+;Size
+TW_Cps
+CPS
+;CPS
+TW_DataTransferred
+Data verstuurd
+;Data transferred
+TW_Abort
+Annuleer
+;Abort transfer
+TW_FileExists
+Bestand '%s' bestaat reeds.\n Oude grootte is: %ld ( nieuwe %ld bytes).\n
+;File '%s' already exists.\nOld filesize is: %ld bytes (new %ld bytes).\n
+TW_Overwrite
+Overschrijf
+;Overwrite
+TW_Resume
+Hervat
+;Resume transfer
+TW_CancelTransfer
+Annuleer overdracht
+;Cancel transfer
+TW_DownloadDir
+Je wilt een hele directory boom downloaden.\n Ben je zeker?
+;You are about to download a directory tree.\nAre you sure you want to do this?
+TW_GetDir
+Ja, download de directory|Sla deze entry over
+;Yes, download it!|Skip this entry
+;
+; Main preferences window
+;
+MPW_WinTitle
+AmiFTP Algemene Instellingen
+;AmiFTP Global Preferences
+MPW_Password
+_Anonieme wachtwoord
+;_Anonymous password
+MPW_ViewCommand
+_Viewer commando
+;_View command
+MPW_ProxyHost
+Proxy _host
+;Proxy _host
+MPW_ProxyPort
+Proxy _port
+;Proxy _port
+MPW_ProxyDefault
+Pro_xy standaard gebruiken?
+;Use pro_xy per default?
+MPW_DefDownloadDir
+Standaard download directory
+;Default download directory
+MPW_IgnoreCase
+_Niet case-sensitive
+;_Ignore case?
+;
+; Main window
+;
+MW_SiteName
+H_uidige site
+;Current _site:
+MW_DirName
+D_irectory
+;D_irectory
+MW_DownloadDir
+D_ownload padnaam
+;D_ownload path
+MW_Parent
+_Terug
+;_Parent
+MW_Get
+_Haal
+;_Get
+MW_Put
+_Stuur
+;P_ut
+MW_View
+_Bekijk
+;_View
+MW_Connect
+_Maak verbinding...
+;_Connect to...
+MW_Disconnect
+_Verbreek  verbinding
+;_Disconnect
+MW_DeleteRequest
+Wil je echt deze files wissen?
+;Are you sure you want to\ndelete these files?
+MW_DeleteCancel
+Verwijder|Annuleer
+;Delete|Cancel
+MW_Reload
+_Herlaad
+;_Reload
+;
+; Connect window
+;
+CW_WinTitle
+AmiFTP Verbinding window
+;AmiFTP Connect window
+CW_Abort
+Annuleer
+;Abort
+CW_Site
+Site
+;Site:
+CW_Status
+Status
+;Status:
+CW_Connecting
+Bezig verbinden...
+;Connecting...
+CW_ReadingDir
+Bezig lezen...
+;Reading directory...
+CW_SendingLogin
+Sturen login...
+;Sending login...
+CW_SendingPassword
+Sturen wachtwoord...
+;Sending password...
+CW_ChangingDirectory
+Veranderen directory...
+;Changing directory...
+;
+; Main menus
+;
+MENU_Project
+Project
+;Project
+MENU_AddToSiteList
+Voeg huidige site toe
+;Add current to sitelist
+MENU_Reconnect
+Opnieuw
+;Reconnect
+MENU_Iconify
+I\000Iconificeer
+;I\000Iconify
+MENU_About
+?\000Over
+;?\000About
+MENU_Quit
+Q\000Einde
+;Q\000Quit
+MENU_Files
+Bestanden
+;Files
+MENU_TagAll
+A\000Selecteer alles
+;A\000Tag all
+MENU_UntagAll
+D\000De-selecteer alles
+;U\000Untag all
+MENU_TransferMode
+Overdracht mode
+;Transfer mode
+MENU_Binary
+Binair
+;Binary
+MENU_ASCII
+ASCII
+;ASCII
+MENU_ClearCache
+Wis dir-cache
+;Clear dir-cache
+MENU_Delete
+V\000Verwijder
+;D\000Delete
+MENU_Move
+r\000Verplaats
+;M\000Move
+MENU_Sort
+Sorteer
+;Sort
+MENU_SortbyName
+op naam
+;by name
+MENU_SortbyDate
+op datum
+;by date
+MENU_Settings
+Instellingen
+;Settings
+MENU_Global
+l\000Algemeen
+;1\000Global...
+MENU_Hostlist
+2\000Hostlist
+;2\000Hostlist...
+MENU_LogWindow
+Log window?
+;Log window?
+MENU_ToggleDotFiles
+punt-files laten zien?
+;Show dot-files?
+MENU_LoadSettings
+Laad instellingen
+;Load settings...
+MENU_SaveSettings
+Bewaar instellingen
+;Save settings
+MENU_SaveSettingsAs
+Bewaar instellingen als...
+;Save settings as...
+MENU_HotList
+Hotlist
+;Hotlist
+;
+; Other strings
+;
+Str_ErrorReadingDir
+Fout bij lezen directory\n
+;Error reading dir\n
+Str_CannotDLDirs
+Kan niet gehele directories halen!\n
+;Cannot download entire directories!\n
+Str_SelectDLPath
+Selecteer download padnaam
+;Select download path
+Str_SelectULFiles
+Selecteer te versturen files
+;Select file(s) to upload
+Str_CDFailedTimedout
+Fout trad op bij CD:\n Connectie is timed out
+;Remote CD failed:\nConnection timed out
+Str_CDFailed
+Fout trad of bij CD
+;Remote CD failed.
+Str_AmiFTPError
+AmiFTP fout
+;AmiFTP error
+Str_OK
+OK
+;OK
+Str_CANCEL
+Annuleer
+;Cancel
+Str_PasswordRequest
+AmiFTP Wachtwoord verzoek
+;AmiFTP Password request
+Str_PasswordEntry
+Geef wachtwoord voor gebruiker:\n%s
+;Enter password for user:\n%s
+Str_ServiceNotAvail
+Dienst is niet beschikbaar
+;Service not available.
+Str_ConnectFailed
+Fout bij verbinden
+;Connect failed.
+Str_ConnectLoginFailed
+Geen verbinding, naam onbekend
+;Connect failed, login unknown.
+Str_Putfailed
+Fout bij sturen van %s 
+;Put of %s failed
+Str_RemoteWriteFailed
+Sturen ging niet ( file systeem vol ?).
+;Write failed (remote file system full?).
+Str_GetFailed
+Fout bij halen van %s
+;Get %s failed.
+Str_LocalfileError
+Fout bij openen %s
+;Error opening %s.
+Str_LocalWriteFailed
+Fout bij schrijven %s
+;Write failed: %s
+Str_NoSuchDir
+%s: onbekende file of directory
+;%s: No such file or directory.
+Str_DisconnectedTimeout
+Verbinding verbroken (timeout)
+;Disconnected (timeout).
+Str_Outofmem
+Onvoldoende geheugen vrij
+;Out of memory
+Str_SelectSettingsFile
+Selecteer instellingen...
+;Select settings file...
+Str_NoRestart
+Hervatten ging niet
+;Resume command failed.
+Str_ConnectionTimedOut
+Verbinding timed out
+;Connection timed out
+Str_AmiFTPRequest
+AmiFTP verzoek
+;AmiFTP Request
+Str_AboutAmiFTP
+Over AmiFTP...
+;About AmiFTP...
+Str_UnknownHost
+Onbekende host
+;Unknown host
+Str_ErrorBuildingDirList
+Fout bij maken filelijst
+;Error building filelist.
+Str_Translator
+Nederlandse vertaling door\nArno van Wouwe\napwouwe@cs.vu.nl\n
+;
+; This string will show up in the about window telling the user who made 
+; the translation. I suggest the string should look like this:
+; 'English translation by\nMagnus Lilja\n' (and perhaps your emailaddress
+; too). Ofcourse the above string should be in the same language as
+; the rest of the translation.

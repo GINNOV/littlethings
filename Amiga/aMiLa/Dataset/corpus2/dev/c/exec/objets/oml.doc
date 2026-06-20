@@ -1,0 +1,24 @@
+Lattice Amiga Format Librarian  Version 5.05
+Copyright © 1988  Lattice, Inc.
+usage:  OML [-s] [-x] [-o] library command files command files ...
+ 
+where:    [-s]     option to include symbols in listing
+          [-x]     option to include xref in listing
+          [-o]     option specifying path for extracted files
+          [-t]     option specifying path for temporary library
+          [-v]     option specifying verbose operation
+          [-b]     option specifying batch mode (no user interaction
+         'library' is the name of the library to manipulate
+         'command' is one of the following commands:
+             A|Add    add object file if it isn't already
+                      in the library
+             D|Delete delete one or more object files
+                      from library
+             L|List   list library contents
+             R|Replace replace object file, or add if it
+                       isn't in library
+             X|eXtract extract one or more object files
+                       from library
+     and 'files'   is a list of object files
+     (an asterisk '*' may be used to specify 'all files' with
+      the extract command only: e.g., 'oml library X *')

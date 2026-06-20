@@ -1,0 +1,18 @@
+Short:        Game development link library with demo
+Author:       robert.szacki@gmail.com (Robert Szacki)
+Uploader:     robert szacki gmail com (Robert Szacki)
+Type:         dev/c
+Version:      1.1
+Replaces:     dev/c/GameX.lha
+Architecture: m68k-amigaos >= 3.0.0
+Distribution: Aminet
+
+This is the second release of my game development library called GameX. It consists
+of several game developing resources like:
+
+- Screen management, 
+- IFF file format management,
+- Windows/Layers management,
+- Animation system.
+
+The source code is included along with the first Demonstration executable. Requires an Amiga with OS Release 3.0+.

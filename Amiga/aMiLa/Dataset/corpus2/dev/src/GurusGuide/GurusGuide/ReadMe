@@ -1,0 +1,36 @@
+DIRECTORY CONTENTS
+------------------
+
+This directory contains the source files for
+all examples published in the "Guru's Guide,
+Meditation #1: Interrupts".  These examples
+(and the Guru's Guide itself) were written
+by Carl Sassenrath, the master architect of
+the Amiga's low-level multitasking operating
+system and designer of Exec.
+
+If you would like to learn more about these
+examples, or more about Amiga interrupts in
+general, you may obtain a copy of the Guide
+from your local Amiga Dealer or directly
+from:
+
+        GURU'S GUIDE
+        P.O. BOX 1510
+        UKIAH, CA  95482
+
+Each guide costs $14.95.  If you send for
+one, please include $1.50 for postage ($4
+if outside North America).  CA residents
+include %6 sales tax.
+
+We sincerely hope that these examples will
+help increase the knowledge of programmers
+and improve the general quality of programs
+written for the Commodore Amiga.
+
+
+April 24, 1989
+
+Carl Sassenrath
+Sassenrath Research

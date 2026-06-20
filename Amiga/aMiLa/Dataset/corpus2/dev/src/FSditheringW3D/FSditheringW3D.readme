@@ -1,0 +1,31 @@
+Short: Source for Floyd Steinberg dithering for Warp3D
+Author: thellier@free.fr (Alain Thellier) 
+Uploader: thellier@free.fr 
+Type: dev/src 
+Version: 1 
+Requires: Warp3D or Wazp3D library,68020+881 
+Architecture: m68k-amigaos >= 3.0.0; 
+http://aminet.net/package/dev/src/FSditheringW3D     
+
+DESCRIPTION 
+Sources for doing Floyd Steinberg dithering 
+
+1) Implement the Floyd Steinberg dithering (Alain Thellier)
+From a 24 bits picture can convert to W3D_A4R4G4B4,W3D_A1R5G5B5,W3D_R5G6B5,W3D_CHUNKY
+Features: 
+	Floyd Steinberg algo error diffusion to the five currents 'neighbors' pixels
+	Smart float rounding to nearer color
+	Manage the special case 'neighbors' pixels are out of screen
+	Manage color overflow to next error diffusion
+	Change coefs for odd/even lines = serpentine method
+So this implementation give certainly the better possible result 
+
+2) Demonstrate how to use Floyd Steinberg dithering with Warp3D's textures (Kas1e)
+Load a Limodorum (European Orchid) 24bits picture and dither it nicely to 16 bits
+
+Only usefull for programmers that want high quality textures
+
+LICENSE 
+GNU General Public License (GNU GPL) 
+Alain Thellier & Kas1e - 2008
+

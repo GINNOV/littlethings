@@ -1,0 +1,146 @@
+
+       The compiler supports the following:
+
+         1.  Data type declarations:
+
+               char            8-bits
+               int             32-bits
+               extern char     external 8-bits
+               extern int      external 32-bits
+
+               A pointer to either of these types is declared by placing an
+               asterisk "*" before the pointer name.  A pointer is a 32-bit
+               stack offset.
+
+         2.  Arrays must be single dimension (vector) structures of type
+             char or int.
+
+         3.  Expressions:
+               unary operators:
+                 "-"     minus
+                 "*"     indirection
+                 "&"     address of scalar
+                 "++"    increment, either prefix or postfix
+                 "--"    decrement, either prefix or postfix
+
+               binary operators:
+                 "+"     addition
+                 "-"     subtraction
+                 "*"     multiplication
+                 "/"     division
+                 "%"     mod, i.e. remainder from division
+                 "|"     inclusive or
+                 "^"     exclusive or
+                 "&"     logical and
+                 "=="    test for equality
+                 "!="    test for inequality
+                 "<"     test for less than
+                 "<="    test for less or equal
+                 ">"     test for greater than
+                 ">="    test for greater or equal
+                 "<<"    arithmetic shift left
+                 ">>"    arithmetic shift right
+                 "="     assignment
+
+               primaries:
+                 array[expression]
+                 function(arg1,...,argn)
+                 constants:
+                   decimal number
+                   quoted string ("sample")
+                   primed string ('a' or '10')
+                 local variable (or pointer)
+                 global (static) variable (or pointer)
+
+         4.  Program control:
+               if(expression) statement;
+               if(expression) statement;
+                   else statement;
+               while (expression) statement;
+               break;
+               continue;
+               return;
+               return expression;
+               ; (null statement)
+               compound statement:
+               {statement1; statement2;...;statementn;}
+
+         5.  Pointers
+               local and static pointers can contain the
+               address of "char" or "int" data items.
+
+         6.  Compiler commands:
+               #define name string
+                 (preprocessor will replace name by string
+                  throughout the program text)
+               #include filename
+                 (Input is suspended from the input filename and
+                  text is read from the file named in the include
+                  statement.  When end-of-file is detected, input
+                  is resumed from the input filename.  A separate
+                  output file is not created for the #include file
+                  Its output is directed to the currently open
+                  output file.)
+               #asm
+               #endasm
+
+         7.  Miscellaneous notes:
+
+               Expression evaluation maintains the same hierarchy as
+               standard C.
+
+               Function calls are defined as any primary followed by
+               an open parenthesis.  Legal forms include:
+                 variable();
+                 array[expression]();
+                 constant();
+                 function() ();
+
+               NOTE:  the various function call forms are not supported
+                      in standard C.
+
+               Pointer arithmetic takes into account the data type the
+               pointer was declared for (e.g. ptr++ will increment by 4
+               if declared "int *ptr;").
+
+               Pointers are compared as unsigned 32-bit values.
+
+               The generated code is reentrant.  Since local variables are
+               allocated on the stack, each new invocation of a function
+               generates a new copy of local variables.
+
+       The compiler does not support:
+
+         1.  Structures and unions
+
+         2.  Multi-dimensional arrays
+
+         3.  Floating point data
+
+         4.  Long integers
+
+         5.  Functions that return anything but "int" values
+
+         6.  Unary operators:
+               "!"
+               "~"
+               "sizeof"
+               casts
+
+         7.  The operators:
+               "&&"
+               "||"
+               "?:"
+               ","
+
+         8.  Assignment operators:
+               +=
+               -=
+               *=
+               /=
+               %=
+               >>=
+               <<=
+               &=
+               ^=
+               |=

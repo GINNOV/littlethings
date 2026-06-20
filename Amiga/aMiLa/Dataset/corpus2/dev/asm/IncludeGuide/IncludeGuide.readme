@@ -1,0 +1,10 @@
+Short:        Guide with links to all asm includes
+Author:       P-O Yliniemi
+Uploader:     P-O Yliniemi
+Type:         dev/asm
+Version:      1.0
+Architecture: m68k-amigaos
+
+Include: has to be assigned to the main include directory, containing
+all include files (the directory containing the "exec", "dos" and all
+the other drawers).

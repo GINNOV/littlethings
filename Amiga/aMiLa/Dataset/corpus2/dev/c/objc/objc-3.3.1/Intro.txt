@@ -1,0 +1,42 @@
+Portable Object Compiler (c) 1997,98,2002,2003,2004.  All Rights Reserved.
+
+
+                                       +-- NotFound
+                                       |
+                        +- Exception --+-- OutOfMemory
+			|              |
+			|              +-- OutOfBounds
+                        |
+                        |          +-- IdArray
+                        |          |
+                        +- Array --+-- String
+			|          |
+			|          +-- IntArray
+			|
+                        +- Rectangle        +- Stack
+                        |                   |
+                  +-----+- Point            +- Set
+                  |     |                   |
+                  |     +- Cltn ----------- +- OrdCltn
+                  |     |                   |
+                  |     +- Dictionary       +- SortCltn
+                  |     
+        Object -- +    
+                  |                          +- BigInt
+                  |                          |
+                  |                          +- IntegerModp
+                  |                          |
+                  +----------+ CAObject +----+- Float
+                                             |
+                                             +- Symbol
+                                             |
+                                             +- Term
+                                             |
+                                             +- Monomial
+                                             |
+                                             +- Polynomial
+                                             |
+                                             +- Vector
+                                             |
+                                             +- Matrix
+

@@ -1,0 +1,20 @@
+Short:        GUI "DMakefile maker" for DICE. V1.0
+Author:       David Lübbren
+Version:      1.0
+Requires:     Requires  OS 2.0+
+Architecture: m68k-amigaos
+Source:       Fish collection
+Tested:       Amiga 500 (accelerated)
+
+A Tool for automatically generating a 'DMakefile' for DiCe's Make utility.
+Features include a fully graphical user interface, automatic scanning of
+source files for headerfile dependancies and handling of precompiled 
+header dependancies.  Supports all DiCe compiler options and uses symbol
+names and variable assignments in the output file, grouping all files
+with the same options together.  Takes into account the environment
+variable DCCOPTS.
+
+David Lübbren
+Leopoldstr. 3
+76133 Karlsruhe
+Germany

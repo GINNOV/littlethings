@@ -1,0 +1,100 @@
+#define TRANSFERGUI \
+	LayoutObject, \
+		GA_DrawInfo, DrawInfo, \
+		GA_TextAttr, AmiFTPAttrF, \
+		LAYOUT_DeferLayout, TRUE, \
+		LAYOUT_SpaceOuter, TRUE, \
+		LAYOUT_Orientation, LAYOUT_ORIENT_VERT, \
+		LAYOUT_HorizAlignment, LALIGN_CENTRE, \
+\
+		StartHGroup, \
+			StartVGroup, \
+				StartVGroup, \
+					LAYOUT_BevelStyle, BVS_GROUP, \
+					LAYOUT_SpaceOuter, TRUE, \
+					LOffset(2), ROffset(2), TOffset(1), BOffset(1), \
+\
+					StartMember, TG_List[TG_RemoteFile]=ButtonObject, \
+						GA_ID, TG_RemoteFile, \
+						GA_RelVerify, TRUE, \
+						GA_ReadOnly, TRUE, \
+						CLASSACT_Underscore, 0, \
+						GA_Text, " ", \
+						BUTTON_Justification, BCJ_LEFT, \
+					ButtonEnd, \
+					CHILD_MinWidth, PropFont->tf_XSize*35, \
+					Label(GetAmiFTPString(TW_RemoteFile)), \
+\
+					StartMember, TG_List[TG_LocalFile]=ButtonObject, \
+						GA_ID, TG_LocalFile, \
+						GA_RelVerify, TRUE, \
+						GA_ReadOnly, TRUE, \
+						CLASSACT_Underscore, 0, \
+						GA_Text, " ", \
+						BUTTON_Justification, BCJ_LEFT, \
+					ButtonEnd, \
+					CHILD_MinWidth, PropFont->tf_XSize*35, \
+					Label(GetAmiFTPString(TW_LocalFile)), \
+				EndGroup, \
+\
+				StartVGroup, EvenSized, \
+					LAYOUT_BevelStyle, BVS_GROUP, \
+					LAYOUT_SpaceOuter, TRUE, \
+\
+					StartMember, g1=LayoutObject, LAYOUT_Orientation, LAYOUT_ORIENT_HORIZ, EvenSized, \
+\
+					StartMember, TG_List[TG_ETA]=ButtonObject, \
+						GA_ID, TG_ETA, \
+						GA_RelVerify, TRUE, \
+						GA_ReadOnly, TRUE, \
+						GA_Text, "00:00:00", \
+						BUTTON_Justification, BCJ_RIGHT, \
+					ButtonEnd, \
+					CHILD_MinWidth, len*9, \
+					Label(GetAmiFTPString(TW_TimeLeft)),\
+\
+					StartMember, TG_List[TG_CPS]=ButtonObject, \
+						GA_ID, TG_CPS, \
+						GA_RelVerify, TRUE, \
+						GA_ReadOnly, TRUE, \
+						GA_Text, " ", \
+						BUTTON_Justification, BCJ_RIGHT, \
+					ButtonEnd, \
+					CHILD_MinWidth, len*10, \
+					Label(GetAmiFTPString(TW_Cps)), \
+				EndGroup, \
+\
+				StartMember, g2=LayoutObject, LAYOUT_Orientation, LAYOUT_ORIENT_VERT,\
+				StartMember, TG_List[TG_Gauge]=FuelGaugeObject, \
+					FUELGAUGE_Orientation, FUELGAUGE_HORIZONTAL, \
+					FUELGAUGE_Justification, FGJ_CENTER, \
+					FUELGAUGE_Percent, FALSE, \
+					FUELGAUGE_Min, 0, \
+					FUELGAUGE_Max, 100, \
+					FUELGAUGE_Level, 0, \
+	           		FUELGAUGE_Ticks, 0, \
+					GA_Text, "%ld/%ld", \
+					FUELGAUGE_VarArgs, &fuelargs, \
+				FuelGaugeEnd, \
+		 		CHILD_MinHeight, len*3, \
+	            CHILD_MinWidth, len*18, \
+				CHILD_WeightedHeight, 0, \
+				Label(GetAmiFTPString(TW_DataTransferred)), \
+	            EndGroup, \	
+			EndGroup, \
+			EndGroup, \
+		EndGroup, \
+\
+		StartMember, TG_List[TG_Abort]=ButtonObject, \
+			GA_ID, TG_Abort, \
+			GA_RelVerify, TRUE, \
+			GA_Text, GetAmiFTPString(TW_Abort), \
+		ButtonEnd, \
+		CHILD_WeightedWidth, 0, \
+		CHILD_NominalSize, TRUE, \
+	LayoutEnd
+/*
+Local Variables:
+tab-width:4
+tab-stop-list:(4 8 12 16 20 24 28 32 36 40 44 48 52 56 60 64 68 72 76 80)
+*/

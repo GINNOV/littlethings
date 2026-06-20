@@ -1,0 +1,141 @@
+
+DISCLAMER AT THE END OF THIS FILE....
+
+
+                                                                               July 1997,
+
+Well, about one year ago, I desided to release the sources of my attempt to make an
+IFF ILBM Converter, see text below. So, I released it on a BBS of a friend of mine.
+Wondering through old suorces, I came across this piece of programming. Realizing that
+there's a lot of new addition to the AmiNet on a weekly basis, I thought it would be
+a good idea to release the sources on AmiNet as well. Even though it's a year later.
+The Amiga community has not parished :). This is my little gift to all of you.
+
+
+
+                                                                               September 1996,
+
+
+Historical overview
+-------------------
+
+This package is a give away. Use it the way you see fit. I started this program sometime in
+1993, I think. Anyway, I started to code the whole lot in assembler. This turned out to be
+a pain. You don't need great speed to use a GUI. Most of the time the program is idle, waiting
+for you to do something. So, after a long time I diceded that C might be a good alternative.
+One problem though, I didn't know how to program in the beautiful language of C. So, the challenge
+was to teach myself the beautiful language, C. The program grew and grew and got just too big
+to be in one module. So a redesign was in order. This was more or less the thrid attempt to
+write an IFF ILBM Converter. By now, Commodore got into trouble :( and the will to continue was
+laking. So, little work was done in last 1 to 1.5 years. Now that I see absolutly no hope that
+the Amiga will ever be anything I decided to give away all my sources for free. My first intention
+was to make the finished version shareware, but since I will not finish the program and it is just
+no good sitting on my hard disk, I thought by giving it away I might do some good.
+
+The sources are developed with SASC 6.50 C Compiler from SAS Institute, Inc. and with
+Devpac Macro Assembler 3.04 from HiSoft.
+
+ONE BIG NOTE!!!
+---------------
+
+The save function can be dangerous to use. It has *not* been tested. The save copper option
+should work fine, but the save structure has been changed and I do not know what the
+consequences are for saving the copper lists. BE WARNED!!!
+
+So, take a look at the source, learn from it or use the code. It is yours to use. If you like
+it and use it in anyway, please send me a postcard or an e-mail. This way I know someone made
+good use of it.
+
+address:                          e-mail (valid until around June/July 1998)
+   Gerben Venekamp                   venekamp@wins.uva.nl
+   Nuyenburglaan 9
+   1701 AJ  Heerhugowaard
+   The Netherland
+
+
+
+Included files:
+---------------
+
+AslManagement.c                  2728 ----rw-d 07-Jan-97 22:12:36
+AslManagement.c.info             1573 ----rw-d 07-Jan-97 22:12:36
+Build.info                       1740 ----rw-d 07-Jan-97 22:12:36
+Debug                            2632 ----rwed 07-Jan-97 22:12:37
+Debug.info                       1347 ----rw-d 07-Jan-97 22:12:37
+DecomPic.a                       2232 ----rwed 07-Jan-97 22:12:37
+DecomPic.a.bak                   2340 ----rwed 07-Jan-97 22:12:37
+DecomPic.a.info                  1778 ----rw-d 07-Jan-97 22:12:37
+DiskFonts.c                      1142 ----rw-d 07-Jan-97 22:12:37
+DiskFonts.c.info                 1573 ----rw-d 07-Jan-97 22:12:37
+Edit.info                        1737 ----rw-d 07-Jan-97 22:12:37
+ErrorText.h                      1898 ----rwed 07-Jan-97 22:12:37
+ErrorText.h.info                 1613 ----rw-d 07-Jan-97 22:12:38
+Find.info                        1741 ----rw-d 07-Jan-97 22:12:38
+Gadgets.c                        2909 ----rw-d 07-Jan-97 22:12:38
+Gadgets.c.info                   1573 ----rw-d 07-Jan-97 22:12:38
+Gadgets.h                        6084 ----rw-d 07-Jan-97 22:12:38
+Gadgets.h.info                   1613 ----rw-d 07-Jan-97 22:12:38
+Gadgets_enum.h                    642 ----rw-d 07-Jan-97 22:12:38
+Gadgets_enum.h.info              1613 ----rw-d 07-Jan-97 22:12:38
+Gadgets_enum.i                    209 ----rwed 07-Jan-97 22:12:38
+Gadgets_enum.i.bak                160 ----rwed 07-Jan-97 22:12:38
+Gadgets_enum.i.info              1563 ----rw-d 07-Jan-97 22:12:38
+GenAm.opts                         66 ----rwed 07-Jan-97 22:12:39
+GenAm.opts.info                  1623 ----rw-d 07-Jan-97 22:12:39
+HandleIntuiMessages.c           18531 ----rwed 07-Jan-97 22:12:39
+HandleIntuiMessages.c.info       1573 ----rw-d 07-Jan-97 22:12:39
+IFFConverter                    23940 ----rwed Today     18:44:25
+IFFConverter.c                  14888 ----rw-d 07-Jan-97 22:12:39
+IFFConverter.c.info              1573 ----rw-d 07-Jan-97 22:12:39
+IFFConverter.h                   5897 ----rw-d 07-Jan-97 22:12:39
+IFFConverter.h.info              1613 ----rw-d 07-Jan-97 22:12:39
+IFFConverter.info                1548 ----rw-d 07-Jan-97 22:12:40
+IFFConverter.lnk                  121 ----rwed 07-Jan-97 22:12:40
+IFFStartup.a                     2766 ----rwed 07-Jan-97 22:12:40
+IFFStartup.a.bak                 2766 ----rwed 07-Jan-97 22:12:40
+IFFStartup.a.info                1778 ----rw-d 07-Jan-97 22:12:40
+LoadSavePicture.c               22988 ----rwed 07-Jan-97 22:12:40
+LoadSavePicture.c.bak           13774 ----rwed 07-Jan-97 22:12:41
+LoadSavePicture.c.info           1573 ----rw-d 07-Jan-97 22:12:41
+Manual.info                      1922 ----rw-d 07-Jan-97 22:12:41
+MemoryManagement.c               4436 ----rw-d 07-Jan-97 22:12:41
+MemoryManagement.c.info          1573 ----rw-d 07-Jan-97 22:12:41
+Misc.c                           4384 ----rw-d 07-Jan-97 22:12:41
+Misc.c.info                      1573 ----rw-d 07-Jan-97 22:12:41
+OpenCloseLibs.c                  3906 ----rwed 07-Jan-97 22:12:41
+OpenCloseLibs.c.info             1573 ----rw-d 07-Jan-97 22:12:42
+PaletteMaintenance.c             5335 ----rw-d 07-Jan-97 22:12:42
+PaletteMaintenance.c.info        1573 ----rw-d 07-Jan-97 22:12:42
+README                           7679 ----rwed Today     19:13:39
+README.dvi                      10940 ----rwed Today     21:07:13
+README.info                      1154 ----rw-d Today     19:13:39
+README.ps                      158624 ----rwed Today     21:11:30
+README.tex                      10135 ----rwed Today     21:17:55
+README.tex.info                  1159 ----rw-d Today     21:17:55
+SavePicture.a                   17463 ----rwed 07-Jan-97 22:12:42
+SavePicture.a.bak               17459 ----rwed 07-Jan-97 22:12:43
+SavePicture.a.info               1788 ----rw-d 07-Jan-97 22:12:43
+ShowDVI.log                     20480 ----rwed Today     19:21:32
+SCoptions                         164 ----rwed Today     18:41:55
+SCoptions.info                   1621 ----rw-d 07-Jan-97 22:12:43
+smakefile                        3043 ----rw-d 07-Jan-97 22:12:43
+smakefile.info                   1617 ----rw-d 07-Jan-97 22:12:43
+WindowScreenMaintenace.c        20661 ----rw-d 07-Jan-97 22:12:43
+WindowScreenMaintenace.c.info    1573 ----rw-d 07-Jan-97 22:12:43
+Manual                            Dir ----rwed 07-Jan-97 22:12:44
+64 files - 1 directory - 968 blocks used
+
+Directory "Manual" on Wednesday 16-Jul-97
+Manual.guide                    30104 ----rwed 07-Jan-97 22:12:44
+Manual.guide.info                1796 ----rw-d 07-Jan-97 22:12:44
+2 files - 65 blocks used
+
+TOTAL: 66 files - 1 directory - 1033 blocks used
+
+DISCLAMER:   
+----------   
+   
+This software pakage is provided AS IS and is free of any charge. No liability is taken. Any
+damage by this software or use of this software is yours. No problems have occoured on my
+system. This software has been developed with KS3.0 or higher in mind.
+

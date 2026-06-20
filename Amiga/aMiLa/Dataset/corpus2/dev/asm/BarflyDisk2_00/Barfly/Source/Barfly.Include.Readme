@@ -1,0 +1,12 @@
+
+
+The Barfly.Include.S contains the Source for the Debugger.Include file.
+The first part of the file contains the new macros that build the needed
+data structures. The second part contains the structures to build the
+Include directory structure and the last part contains the includes with
+some changes. If you take a deep look into the source and the macros
+you will learn how to create your own file or to add your needed entries.
+
+
+P.S. I think this is the biggest Macro file ever created on the Amiga:-)
+P.S. Try to assemble this file with another assembler and begin to wonder:-)

@@ -1,0 +1,36 @@
+GIMP Palette
+Name: aminer main 32c
+Columns: 4
+#
+ 34  17   0 Index 0
+ 51  85   0 Index 1
+102 136  51 Index 2
+153 187 102 Index 3
+204 238 153 Index 4
+  0  34  51 Index 5
+ 51  85 102 Index 6
+102 136 153 Index 7
+153 187 204 Index 8
+204 238 255 Index 9
+ 51   0   0 Index 10
+102  34   0 Index 11
+153  68  17 Index 12
+204 102  34 Index 13
+255 136  51 Index 14
+255 170  68 Index 15
+255 204  85 Index 16
+255  51   0 Index 17
+204  34   0 Index 18
+170  17   0 Index 19
+119   0   0 Index 20
+  0  85 119 Index 21
+ 34 119 153 Index 22
+ 68 153 187 Index 23
+102 187 221 Index 24
+136 221 255 Index 25
+ 17   0   0 Index 26
+ 51   0   0 Index 27
+102  34   0 Index 28
+153  68  17 Index 29
+204 102  34 Index 30
+255 136  51 Index 31

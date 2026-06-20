@@ -1,0 +1,682 @@
+#language english
+#version 2
+;
+; $Id: DiskMaster2.cd,v 2.3 2007-01-20
+;
+; DiskMaster2 - calling it a file-manager is pure understatement
+;
+; Copyright (C) 1997-2007 Rudolph Riedel
+;
+; MSG_STRING_NAME (num/minlen/maxlen)
+; text
+;
+; where:
+;
+; MSG_STRING_NAME is the name of the macro-definition, that will be used
+;                 to get the string.
+; num             is the number, which MSG_STRING_NAME will stand for
+; minlen          is the minimum length of "text" (this may be missing)
+; maxlen          is the maximum length of "text" (this may be missing
+;                 too)
+; text            is the text, the string will contain
+;
+; a single "\" means that the text is continued on the next line
+;
+;
+; With 2.0 this is completely re-organised.
+;
+; The strings are now sorted in blocks of ID's,
+; new strings will be added to the end of a block
+; and when a string becomes obsolete the ID is not re-used.
+;
+; This makes it a requirement though to give each string an ID
+; or at least start each block with an ID.
+;
+; This way new versions of DiskMaster2 will still work with the old
+; DiskMaster2.catalog files except for missing the latest additions.
+;
+;
+; !note! Flexcat does not like empty lines at the end of this file!!
+;
+; ----
+; 2.3
+;
+; Corrected a few keyboard-shortcuts for the prefs-requester
+; ----
+;
+;
+;
+; Error-messages, ID's 0...999
+;
+;
+; Error message: Due to alien windows DM2 can't close it's screen
+msgErrorVisitorWindows (0//)
+Close all visitor windows!
+;
+; Error message: Due to low memory buffer couldn't get allocated
+msgErrorNoMemory (//)
+Out of memory!
+;
+; Error message: File could not be moved
+msgErrorMoving (//)
+File move error!
+;
+; Error message: Font is proportional
+msgErrorPropFont (//)
+Font is proportional!
+;
+; Error message: 'Check' returns that there is too less space on dest-drive
+msgErrorCheckSpace (//)
+Total: %s - Not enough room!
+;
+; Error message: 'Delete' failed
+msgErrorDelete (//)
+Delete Failed
+;
+; Error message: 'Quit' refused because of running ARexx scripts
+msgErrorArexx (//)
+Can`t Quit! %ld Arexx-Script(s) still running!
+;
+; Error message: 'Pack' - Unable to compress file
+msgErrorCompress (//)
+Unable to compress %s !
+;
+; Error message: 'UnPack' - Unable to decompress file
+msgErrorDecompress (//)
+Unable to decompress %s !
+;
+; Error message: '(Un)Pack' Unable to open (something)
+msgErrorFileOpen (//)
+Unable to open: %s !
+;
+; Error message: 'Read' error during initialization.
+msgErrorReadInit (//)
+Error initializing reader!
+;
+; Error message: 'Read' error viewing (file)
+msgErrorReadView (//)
+Error viewing file: %s !
+;
+; Error message: due to windows opened in async mode DM2 can't close it's screen
+msgErrorAsyncWindows (//)
+Close all Info, View and Help windows!
+;
+;
+;
+; Requester-messages, ID's 1000...1999
+;
+;
+; Requester message: volume rename requester
+msgReqRelabel (1000//)
+Enter new name for %s:
+;
+; Requester message: file rename requester
+msgReqRename (//)
+Enter new filename:
+;
+; Requester message: file comment requester
+msgReqComment (//)
+Enter comment for %s:
+;
+; Requester message: file protection requester
+msgReqProtect (//)
+Enter protection mask for:\n%s
+;
+; Requester message: 'Makedir'
+msgReqMakeDir (//)
+Enter new directory name:
+;
+; Requester message: DOS execute
+msgReqDOSExec (//)
+Enter command string:
+;
+; Requester message: SendRexx()
+msgReqSendRexx (//)
+Enter ARexx string:
+;
+; Requester message: 'Archive'
+msgReqArchive (//)
+Enter new archive name:
+;
+; Requester message: 'Select'
+msgReqSelect (//)
+Enter select-pattern:
+;
+; Requester message: 'ReqPattern'
+msgReqPattern (//)
+Directories selected. Specify pattern:
+;
+; Requester message: 'SetFormat'
+msgReqFormat (//)
+Enter new display-format:
+;
+; Requester message: 'AddAutoCmd'
+msgReqAddAuto (//)
+Auto Command: data,pattern,<command string>
+;
+; Requester message: 'AddCmd', 'ChangeCmd'
+msgReqCmd (//)
+Command template: Title,##,##,<command string>
+;
+; Requester message: 'SaveConfig'
+msgReqSave (//)
+Enter filename to save:
+;
+; Requester message: 'AddKeyCmd'
+msgReqAddKey (//)
+Key Command: C,<command string>
+;
+; Requester message: 'AddMenuCmd'
+msgReqAddMenu (//)
+Command template: Menu,Title,A,<command string>
+;
+; Requester message: 'Copy', 'Move', 'Unpack'
+msgReqDestPath (//)
+Enter destination path:
+;
+; Requester message: 'Find'
+msgReqFind (//)
+Found: %s\nOpen New Window?
+;
+; Requester message: 'Button'
+msgReqButton (//)
+Enter new button command string:
+;
+; Requester message: 'Copy', 'Move' warning that file exists
+msgReqFileExists (//)
+%s exists:\n\
+  Source: %ld bytes - %s %s\n\
+  Dest:   %ld bytes - %s %s\n\
+Okay to overwrite?
+;
+; example: "  Source: 1234 bytes - 09-Sep-01 04:10:20\n"
+;
+; Requester message: 'Read' Go to line
+msgReqGotoLine (//)
+Go to line:
+;
+; Requester message: 'Read' Enter search pattern
+msgReqSearchPat (//)
+Enter search pattern:
+;
+; Requester message: bottom lines in about-requester
+msgReqAbout (//)
+Built-in english catalog in use.
+;
+;This is for translation-credits, please don't use
+;more than three lines of 34 chars each:
+;
+;Deutsche Übersetzung von:\n\
+;Rudolph Riedel\n\
+;you.know@see.above
+;
+; Requester message: 'CmdReq' Enter DiskMaster2 command
+msgReqCmdReq (//)
+Enter DiskMaster2 command:
+;
+;
+; Requester gadget labels, ID's 2000-2999
+;
+;
+; Gadgets message: Okay
+msgGadOkay (2000//)
+_Okay
+;
+; Gadgets message: Cancel
+msgGadCancel (//)
+_Cancel
+;
+; Gadgets message: Skip
+msgGadSkip (//)
+_Skip
+;
+; Gadgets message: Icon
+msgGadIcon (//)
+_Icon
+;
+; Gadgets message: 'Copy', 'Move' file-exists warning requester
+msgGadOARSC (//)
+_Yes|_All|_Rename...|N_one|_No|_Cancel
+;
+; Gadgets message: Okay Skip Cancel
+msgGadOkSkipCan (//)
+_Okay|_Skip|_Cancel
+;
+; Gadgets message: Okay All Skip Cancel
+msgGadProtect (//)
+_Okay|A_ll|S_kip|_Cancel
+; *note - HSPARWED are in use for keyboard-shortcuts.
+;
+;
+; Status-messages, ID's 3000...3999
+;
+;
+; Status message: moving file
+msgStatMoving (3000//)
+Moving %s
+;
+; Status message: copying file
+msgStatCopying (//)
+Copying %s
+;
+; Status message: 'Check' - "Total: 1234 K Leaving 123 M free."
+msgStatCheckSpace (//)
+Total: %s - Leaving %s free.
+;
+; Status message: 'PrintDir'
+msgStatPrintDir (//)
+Listing of %s\n\n
+;
+; Status message: file/dir deleted
+msgStatDeleted (//)
+Deleted %s
+;
+; Status message: ChangeCmd
+msgStatChgCmd (//)
+Select Command to Edit
+;
+; Status message: 'Wait'
+msgStatWait (//)
+Press RETURN to continue...\n
+;
+; Status message: operation aborted
+msgStatAborted (//)
+Operation canceled
+;
+; Status message: 'Pack' compressed
+msgStatCompressed (//)
+compressed
+;
+; Status message: 'Unpack' decompressed
+msgStatDecompressed (//)
+decompressed
+;
+; Status message: 'Read' pattern not found
+msgStatNoMatch (//)
+Pattern Not Found
+;
+; Status message: 'Read' no search pattern
+msgStatNoPattern (//)
+No Search Pattern
+;
+; Status message: 'Read' Searching (file)
+msgStatSearching (//)
+Searching %s...
+;
+;
+; used in listers, other strings, ID's 4000...4999
+;
+;
+; Units message: Bytes
+msgUnitBytes (4000/1/1)
+B
+;
+; Units message: KBytes
+msgUnitKiloB (/1/1)
+K
+;
+; Units message: MBytes
+msgUnitMegB (/1/1)
+M
+;
+; Units message: GBytes
+msgUnitGigB (/1/1)
+G
+;
+;
+;Units message: TBytes
+msgUnitTerB (/1/1)
+T
+;
+; file-comment automatically inserted for detected broken soft-links.
+msgBrokenLink (/1/80)
+Broken Link!
+;
+msgListerName (//)
+Name
+;
+msgListerSize (//)
+Size
+;
+msgListerDate (//)
+Date
+;
+msgListerComment (//)
+Comment
+;
+msgListerTime (//)
+Time
+;
+msgListerFlags (//)
+Flags
+;
+;
+; Preferences-Requester-messages, ID's 5000...
+;
+; window-title
+msgPrefsTitle (5000//)
+DiskMaster2 Preferences
+;
+msgPrefsHelpDetails (//)
+Press HELP for details
+;
+msgPrefsHelpChanged (//)
+Changed
+;
+msgPrefsHelpUnchanged (//)
+Unchanged
+;
+msgPrefsHelpAddNode (//)
+Add a new entry
+;
+msgPrefsHelpRemNode (//)
+Remove the selected entry
+;
+; 2.2 rri - corrected
+msgPrefsHelpMoveUp (//)
+Move selected item up
+;
+msgPrefsHelpMoveDown (//)
+Move selected item down
+;
+msgPrefsHelpDiscard (//)
+Discard changes
+;
+msgPrefsHelpUse (//)
+Use these settings
+;
+msgPrefsHelpSave (//)
+Save settings
+;
+msgPrefsHelpScreenType (//)
+Use HostScreen or NewScreen
+;
+msgPrefsHelpWinScale (//)
+Use SetX DefX & DefY
+;
+msgPrefsHelpSortReverse (//)
+Reverse sort order
+;
+msgPrefsHelpSortGlobal (//)
+All windows, or Source only?
+;
+msgPrefsHelpPaletteCopy (//)
+Copy current color to another cell
+;
+msgPrefsHelpPaletteSwap (//)
+Swap current color with another cell
+;
+msgPrefsHelpPaletteReset (//)
+Reset the current
+;
+msgPrefsHelpPaletteResetAll (//)
+Reset the palette
+;
+msgPrefsHelpPenSelect (//)
+Select the Pen to change
+;
+msgPrefsHelpCmdWin (//)
+Command window to edit
+;
+msgPrefsHelpForeground (//)
+Foreground color
+;
+msgPrefsHelpBackground (//)
+Background color
+;
+msgPrefsHelpChoosePen (//)
+Choose pen color (0-28) from palette
+;
+;
+; tab-label
+msgPrefsTabMain (5100//)
+_Main
+;
+; tab-label
+msgPrefsTabWindows (//)
+_Windows
+;
+; tab-label
+msgPrefsTabFonts (//)
+_Fonts
+;
+; tab-label
+msgPrefsTabColors (//)
+C_olors
+;
+; tab-label
+msgPrefsTabCommands (//)
+Comman_ds
+;
+; 2.3 rri
+; tab-label
+msgPrefsTabMenus (//)
+M_enus
+;
+; 2.3 rri
+; tab-label
+msgPrefsTabAutoCnds (//)
+_Auto-Commands
+;
+; 2.3 rri
+; tab-label
+msgPrefsTabKeys (//)
+_Keyboard-Commands
+;
+;
+;
+msgPrefsMainPublicScreen (5200//)
+Public screen
+;
+msgPrefsMainCustomScreen (//)
+Custom screen
+;
+msgPrefsMainLabelScreen (//)
+Screen
+;
+; despite it's name used on main-tab and windows-tab...
+msgPrefsMainLabelTitle (//)
+Title format:
+;
+msgPrefsMainLabelScale (//)
+Scale windows to fit screen?
+;
+msgPrefsMainLabelAppIcon (//)
+AppIcon
+;
+msgPrefsMainLabelDigits (//)
+Digits:
+;
+msgPrefsMainLabelGuide (//)
+Guide:
+;
+msgPrefsMainLabelHelp (//)
+Help button in requesters?
+;
+;
+;
+msgPrefsWindowsTimeA (5300//)
+hh:mm
+;
+msgPrefsWindowsTimeB (//)
+hh:mm:ss:tt
+;
+;
+msgPrefsWindowsSizeA (//)
+1234567
+;
+msgPrefsWindowsSizeB (//)
+1205 K
+;
+msgPrefsWindowsSizeC (//)
+1,234,567
+;
+;
+msgPrefsWindowsSortA (//)
+Name
+;
+msgPrefsWindowsSortB (//)
+Size
+;
+msgPrefsWindowsSortC (//)
+Date
+;
+msgPrefsWindowsSortD (//)
+Comment
+;
+msgPrefsWindowsSortE (//)
+Extension
+;
+msgPrefsWindowsSortF (//)
+Name length
+;
+;
+msgPrefsWindowsSeparatorA (//)
+dot
+;
+msgPrefsWindowsSeparatorB (//)
+comma
+;
+msgPrefsWindowsSeparatorC (//)
+space
+;
+;
+msgPrefsWindowsHideVol (//)
+Volume
+;
+;
+msgPrefsWindowsLabelDisplay (//)
+Display format:
+;
+msgPrefsWindowsLabelButton (//)
+Button:
+;
+msgPrefsWindowsLabelReverse (//)
+Reverse
+;
+msgPrefsWindowsLabelGlobal (//)
+Global
+;
+msgPrefsWindowsLabelSort (//)
+Sort by:
+;
+msgPrefsWindowsLabelTimestamp (//)
+Timestamp:
+;
+msgPrefsWindowsLabelSeparator (//)
+Separator:
+;
+msgPrefsWindowsLabelSizes (//)
+Size style:
+;
+msgPrefsWindowsLabelMultiplier (//)
+Wheel multiplier:
+;
+msgPrefsWindowsLabelHide (//)
+Hide Dev:
+;
+;
+; 2.3 rri
+msgPrefsFontsLabelScreen (5400//)
+Sc_reen:
+;
+msgPrefsFontsLabelDirEntries (//)
+Directory _entries:
+;
+msgPrefsFontsLabelPaths (//)
+Directory _paths:
+;
+; 2.3 rri
+msgPrefsFontsLabelCommands (//)
+C_MD-window entries:
+;
+msgPrefsFontsLabelReader (//)
+_Reader:
+;
+msgPrefsFontsLabelMenu (//)
+_Menus:
+;
+msgPrefsFontsLabelReqText (//)
+Requester _text:
+;
+msgPrefsFontsLabelReqButtons (//)
+Requester _buttons:
+;
+;
+msgPrefsColorsLabelTitle (5500//)
+Colors
+;
+msgPrefsColorsLabelCopy (//)
+Copy
+;
+msgPrefsColorsLabelSwap (//)
+Swap
+;
+msgPrefsColorsLabelReset (//)
+Reset
+;
+msgPrefsColorsLabelResetAll (//)
+Reset All
+;
+msgPrefsColorsLabelUserCol (//)
+User colors:
+;
+msgPrefsColorsLabelPens (//)
+Pens
+;
+msgPrefsColorsHelpSelectPen (//)
+Select the Pen to change
+;
+;
+msgPrefsCommandsColLabelTitle (5600//)
+Title
+;
+msgPrefsCommandsColLabelCommand (//)
+Command
+;
+msgPrefsCommandsColLabelMenu (//)
+Menu Name
+;
+msgPrefsCommandsColLabelKey (//)
+Key
+;
+msgPrefsCommandsColLabelFData (//)
+File Data
+;
+msgPrefsCommandsColLabelFName (//)
+Filename Pattern
+;
+msgPrefsCommandsLabelForeground (//)
+Foreground
+;
+msgPrefsCommandsLabelBackground (//)
+Background
+;
+msgPrefsCommandsLabelCmdWin (//)
+Command Window
+;
+msgPrefsCommandsLabelNoCmdWin (//)
+No Command Windows
+;
+;
+msgPrefsButtonsSave (5700//)
+_Save...
+;
+msgPrefsButtonsUse (//)
+_Use
+;
+msgPrefsButtonsCancel (//)
+_Cancel
+;
+msgPrefsButtonsAdd (//)
+Add
+;
+msgPrefsButtonsRemove (//)
+Remove
+;
+msgPrefsButtonsMoveUp (//)
+Move Up
+;
+msgPrefsButtonsMoveDown (//)
+Move Down
+;

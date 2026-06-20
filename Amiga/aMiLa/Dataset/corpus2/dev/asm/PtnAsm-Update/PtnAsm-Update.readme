@@ -1,0 +1,31 @@
+Short:    Best PowerPC assembler - bugfixed
+Author:   Rafal Grembowski (diamond@go2.pl)
+Uploader: skipp@vividdesign.pl
+Type:     dev/asm
+
+About the Update:
+
+- fixed some macro-related problems
+
+Description:
+
+
+PtnAsm is a PowerPC assembler for Amiga. It requies a ppc processor
+and a WarpOS installed. Most important features:
+
+- creates objects in EHF format
+- 603 and 604 instructions and all 32-bit extended mnemonics are
+  supported
+- complete floating-point support
+- uses the same syntax as PowerASM
+- support for most of the popular directives
+
+Extended Features:
+
+With PtnAsm it's posible to write a code as a sequence of equations. What
+does it mean? Instead of writting  addi r3,r4,3 you can write r3 = r4 + 3.
+This gives the same resoult. It's possible to acces almost all instructions
+in this way. The general format is:
+
+  destination [.][o][s] = source1[operator source2 ...]
+

@@ -1,0 +1,25 @@
+
+This example demonstrates a simple one-way communication path
+between a client and a server.
+
+It uses UDP protocol - which is unreliable but fast - don't
+use it for messages that utterly must get there!
+
+The client program can be told to send to the server on any port number of
+any host computer - by default it uses 'localhost'.
+
+The server program can be told to listen out on any port number
+and to either listen to just one specific client - or to accept
+messages from any client.
+
+Usage:
+
+    net_udp_client [-p port] [servername]
+    net_udp_server [-p port] [clientname]
+
+The default for the client is to use port 5501 on 'localhost'.
+The default to the server is to listen on port 5501 and to allow anyone
+to send to it.  The name "<broadcast>" refers to the broadcast address.
+(To enter it on the command line, you'll need to escape the < and >
+symbols like this:   \<broadcast\>  )
+

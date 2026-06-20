@@ -1,0 +1,209 @@
+short: Shared Library to do ressource tracking
+type: dev/c
+uploader: pburnand@yahoo.com
+author: BURNAND Patrick pburnand@yahoo.com
+
+
+
+GOALS OF THIS LIBRARY
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+
+   One of the major problem when you are developping software for the Amiga is
+   the lack of some kind of automation to manage ressources.  The programmer
+   must do all the work «manually» and even the smallest error could lead to a
+   system crash.  (In some error condition, you can easily free a memory-block
+   twice...)
+
+   This project is an attempt to implement ressource tracking on the Amiga.
+
+
+
+FEATURES OF THE PACKAGE
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+
+   Fast:
+      A stack of ressource tracking records is allocated only once.  So
+      creating a new record is basically only some pointer manipulations...
+      See the simple benchmarks below.  It was one of my main goal not to slow
+      down the Amiga too much...
+
+   Programs becomes shorter:
+      Because there is no need to free the ressources and the management of
+      allocations fails becomes really simpler.
+
+   Easy to use:
+      You only need to call one function to create the ressource tracking
+      stack, and then another one to free all ressources and to delete the
+      stack.
+      The system calls remain exactly the sames.  Only the name is different:
+      AllocMem becomes rt_AllocMem and has the same parameters.
+
+   Suitable even for small projects:
+      This isen't implemented as a link library like others ressource tracking
+      systems you can find on Aminet.  This is a small (4kb) shared library.
+
+   Totally automatic ressource liberation:
+      At the end of your program you only need to call one function to free all
+      the ressources that are still allocated.
+
+   Custom liberation functions:
+      You can tell the library to call functions of your program when it's time
+      to deallocate ressources.  This is very similar to ansi c atexit()
+      function.  (It seems to only work with the c language)
+
+   Secure:
+      If the allocation fails, the ressource won't be deallocated.
+      You can call the functions to allocate and deallocate the ressource
+      tracking stack several times. This can greatly simplify the termination
+      of your program.
+
+   Easier shared library management:
+      To do the allocation and deallocation you only use RessourceTrackingBase.
+      And if you want to short-circuit the ressource tracking mechanism, you
+      can find the DosBase, IntuitionBase, ... in RessourceTrackingBase.
+
+   Not only for c programmers:
+      As this is a standard shared library, you have the standard FD file.  So
+      it's very easy to adapt the package to every programming language.
+
+
+
+LIMITATIONS OF THE PACKAGE
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+
+   As this package is not terminated at all, only a few exec function are
+   traced.  But there should be no bug.
+
+   If you are interested in expanding this package simply get in touch with me.
+   Most of the work is already done and the remaining is very symetric.
+
+
+
+BENCHMARKS
+¯¯¯¯¯¯¯¯¯¯
+
+   I've done simple benchmarks to see how much the ressource tracking system
+   slows down the computer.
+
+   It consists of an huge number of memory allocation and liberation and a huge
+   number of library opens and closes.  I always have run the benchmark 5 times
+   and I took the minimal time.
+
+ Test conditions:
+ ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+   Amiga 1200, Blizzard 1230/IV, 50 MHz, AmigaOS 3.1.
+   Test code and library compiled with vbcc 0.6 with all optimisations on.
+
+
+ BenchMark 1:  Memory allocation tests:
+ ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+
+  Test code:
+  ¯¯¯¯¯¯¯¯¯¯
+   /*  Code used to measure the time needed to allocate memory WITHOUT the
+   **  ressourcetracking.library.  It means 409600 memory allocations and
+   **  liberations.  */
+
+   int i, j;
+   APTR mem[4096];
+
+   for (i=0;i<100;i++) {               /* do 100 times: */
+      for (j=0;j<4096;j++)
+         mem[j]=AllocMem(16,MEMF_ANY);   /* do 4096 allocations of 16 bytes */
+      for (j=4095;j>=0;j--)
+         if (mem[j])                     /* do 4096 pointer tests and */
+            FreeMem(mem[j],16);          /* 4096 liberations */
+   }
+
+   /*  Code used to measure the time needed to allocate memory WITH the
+   **  ressourcetracking.library.  It means 409600 memory allocations and
+   **  liberations.  */
+
+   int i, j;
+   APTR mem[4096];
+
+   for (i=0;i<100;i++) {               /* do 100 times: */
+      for (j=0;j<4096;j++)
+         mem[j]=rt_AllocMem(16,MEMF_ANY); /* do 4096 allocations of 16 bytes */
+      rt_UnsetMarker();                   /* free all the memory blocks */
+   }
+
+
+  Results:
+  ¯¯¯¯¯¯¯¯
+   +-------------------------------------------------------------------------+
+   |                             MEASURED TIMES                              |
+   +------------------------------------+------------------------------------+
+   |  WITH  MemPools 1.22, a patch to   |                                    |
+   |    optimize memory allocations     |          WITHOUT MemPools          |
+   |        (found on Aminet)           |                                    |
+   +----------------+-------------------+----------------+-------------------+
+   |  WITH library  |  WITHOUT library  |  WITH library  |  WITHOUT library  |
+   +----------------+-------------------+----------------+-------------------+
+   |  00:00:28.72   |    00:00:19.08    |  00:01:59.59   |    00:01:29.41    |
+   +----------------+-------------------+----------------+-------------------+
+
+   +-------------------------------------------------------------------------+
+   |                            LIBRARY OVERHEAD                             |
+   +------------------------------------+------------------------------------+
+   |        WITH  MemPools 1.22         |          WITHOUT MemPools          |
+   +------------------------------------+------------------------------------+
+   |              50.5 %                |              33.7 %                |
+   +------------------------------------+------------------------------------+
+
+
+ BenchMark 2:  Library opening tests:
+ ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+
+  Test code:
+  ¯¯¯¯¯¯¯¯¯¯
+   /*  Code used to measure the time needed to open the reqtools.library
+   **  WITHOUT the ressourcetracking.library.  It means 409600 library
+   **  opens and closes.  Note: the library is loaded before the tests is
+   **  started. */
+
+   int i, j;
+   APTR lib[4096];
+
+      for (i=0;i<100;i++) {            /* do 100 times: */
+         for (j=0;j<4096;j++)            /* open reqtools 4096 times */
+            lib[j]=OpenLibrary("reqtools.library", 37);
+         for (j=4095;j>=0;j--)
+            if (lib[j])                  /* do 4096 pointer tests and */
+               CloseLibrary(lib[j]);     /* 4096 library closes */
+      }
+
+   /*  Code used to measure the time needed to open the reqtools.library WITH
+   **  the ressourcetracking.library.  It means 409600 library opens and
+   **  closes.  Note: the library is loaded before the tests is started. */
+
+   int i, j;
+   APTR mem[4096];
+
+   for (i=0;i<100;i++) {               /* do 100 times: */
+      for (j=0;j<4096;j++)               /* open reqtools 4096 times */
+         lib[j]=rt_OpenLibrary("reqtools.library", 37);
+      rt_UnsetMarker();                  /* 4096 library closes */
+   }
+
+
+  Results:
+  ¯¯¯¯¯¯¯¯
+   +-------------------------------------------------------------------------+
+   |                             MEASURED TIMES                              |
+   +-------------------------------------------------------------------------+
+   |           WITH library            |           WITHOUT library           |
+   +-----------------------------------+-------------------------------------+
+   |            00:00:56.24            |             00:00:44.53             |
+   +-----------------------------------+-------------------------------------+
+
+   +-------------------------------------------------------------------------+
+   |                            LIBRARY OVERHEAD                             |
+   +-------------------------------------------------------------------------+
+   |                                 26.3 %                                  |
+   +-------------------------------------------------------------------------+
+
+
+
+
+

@@ -1,0 +1,39 @@
+
+Format:        MYUPDATE [-C][-I][-S][-V] <source> <destination>
+
+Template:      MYUPDATE "-C/S,-I/S,-S/S,-V/S,SOURCE/A,DESTINATION/A"
+
+Purpose:       To update workbench disks with system software
+
+
+Specification:
+
+MYUPDATE without any switches will copy a file from the source directory
+to the destination directory only if the file exists in the destination
+directory. It is designed to update software within a workbench disk without
+increasing the number of existing files on customized workbench disks. If
+the -C switch is used, the command will copy files from the source to
+the destination directories without checking for the existence of the
+destination file. If the -I switch is used, the command will run in
+interactive mode and query you before each file is updated. If the
+-S switch is used the file will be stripped of unnecessary whitespace
+as it is copied to the destination directory. Its primary use is for
+updating and stripping C language include files. The -V switch is used to
+put the command into verbose mode and notify you as each file is updated.
+All the switches may be used together or separately to achieve the desired
+effects.
+
+
+Examples:
+
+MYUPDATE df1:c df0:c
+
+updates files that exist in df0:c with files from df1:c.
+
+MYUPDATE -c -s -v df1:include df0:include
+      or
+MYUPDATE -csv df1:include df0:include
+
+copies and strips files from df1:include to df0:include without checking for
+the existence of the destination file. The command will notify you as each
+file is processed.

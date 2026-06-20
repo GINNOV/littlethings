@@ -1,0 +1,49 @@
+short: Blank screenborder at bootup
+type: util/boot
+author: Ketil Hunn (Ketil.Hunn@hiMolde.no)
+uploader: Ketil Hunn (Ketil.Hunn@hiMolde.no)
+
+
+TITLE
+
+  Blackborder
+
+VERSION
+
+  1.1   (08.12.95)
+
+AUTHOR
+
+  Ketil Hunn
+  Nabbetorpveien 35B
+  N-1632 Gamle Fredrikstad
+  Norway
+
+  E-Mail: Ketil.Hunn@hiMolde.no
+
+  http://www.himolde.no/~ketil/
+
+DESCRIPTION
+
+  Small utility to make screenborders black.  Makes your Workbench look
+  better when using overscan mode.
+
+NEW FEATURES
+
+  o Running Blackborder again will toggle the border on/off.
+
+SPECIAL REQUIREMENTS
+
+  OS 3.0 or higher.
+
+AVAILABILITY
+
+  ftp://ftp.wustl.edu/pub/aminet/util/boot/BlackborderV11.lha (1243)
+
+PRICE
+
+  Free.
+
+DISTRIBUTABILITY
+
+  Freeware.  Do with it as you please.

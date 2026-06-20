@@ -1,0 +1,8 @@
+Short:        Four small useful C functions.
+Author:       Lars Thuring
+Architecture: m68k-amigaos
+Source:       Fish collection
+
+A group of four little C-functions to add to your library to make your
+programming life a little easier.  And a small demo program showing some of
+the results.  

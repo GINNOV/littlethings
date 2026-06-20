@@ -1,0 +1,63 @@
+| The most downloaded files from Aminet during the week until 25-Mar-96
+| Updated weekly. Most popular file on top.
+|
+|File              Dir        Size Age Description
+|----------------- ---        ---- --- -----------
+AWeb.lha           comm/tcp   253K   0+New fast non-MUI WWW browser. V 1.0a
+aweblogo.lha       comm/tcp     6K   0+Fix crashes in AWeb 1.0 (AWebIP)
+term-030.lha       comm/term  655K   0+V4.6, MC68020/030/040/060 version
+ar404.lha          docs/mags   85K   0+Amiga Report 4.04, March 14, 1996
+telser140.lha      comm/tcp   251K   0+Telnet(d)/rlogin(d) device/handler for T
+AWebdoc_ps.lha     comm/tcp    87K   0+Documentation for AWeb 1.0 in PS format
+term-doc.lha       comm/term  226K   0+V4.6, AmigaGuide format and library docu
+AmiFTP-1.264.lha   comm/tcp   211K   1+Easy to use GUI FTP client for OS 2.0+
+term-libs.lha      comm/term  127K   0+V4.6, XPR and XEM libs
+term-extras.lha    comm/term  242K   0+V4.6, HydraCom, ARexx scripts, sound fil
+mcx246.lha         util/cdity  54K   0+Multi Function Commodity
+Iconian2_97.lha    gfx/edit   315K   1+OS3.0 icon editor, NewIcon support.
+CA30.lha           util/wb     96K   0+ClassAction 3.0 (needs MUI)
+cp6.lha            comm/tcp   465K   0+Amitcp4/PPP14 Installer, Dialler and CP6
+xpkelzx.lha        util/pack   13K   0+LZX xpk libraries
+AT_FAQ1_1.txt      docs/anno    6K   1+A FAQ about the exciting new Walker mach
+mcxp304.lha        util/cdity  69K   0+MUI Preferences for MultiCX
+RadarGlobe.lha     comm/net    17K   0+IBrowse Replacement Transfer Anim
+Colorado.lha       util/wb    194K   0+Replaces the MagicWB-Demon.
+
+| The highest rated programs during the week until 25-Mar-96
+| Updated weekly. Best program on top. Please rate all the programs you
+| download. To do so, send to aminet-server@wuarchive.wustl.edu :
+| RATE <path> <num>
+| where <path> is the file you want to judge and <num> is a mark from 0..10
+| with 10 being the best. You can rate several programs in one mail, but
+| don't rate your own programs. Example: RATE dev/gui/mui23usr.lha 8
+|
+|File              Dir        Size Age Description
+|----------------- ---        ---- --- -----------
+MagicMenu_1.29.lha util/cdity 106K 121+PopUp menus for OS 2.x and newer
+VoxelEngine25.lha  gfx/aga     71K   1+Landscape routine. V2.5
+AWeb.lha           comm/tcp   253K   0+New fast non-MUI WWW browser. V 1.0a
+thor222_main.lha   comm/mail  790K  12+Offline reader, main archive (required)
+FTPMaker.lha       comm/misc   40K   8+Help you to configure your ftpaccess fil
+AmiPOP118.lha      comm/net    98K  26+Amiga POP3 Client V1.18
+AmiTCP-demo-40.lha comm/tcp   738K  73+TCP/IP protocol stack
+ass_gfx.lha        demo/euro  579K 137 Top 10 pics from Asm93 gfx compo
+Odyssey.lha        demo/file  3.3M  39 Demo by Alcatraz, ECS, 1st at TP91
+IdodDisk1.lha      demo/sound 594K   2+A MeTaL MuSiC DiSk By DeGeNeRaTiOn
+IdodDisk2.lha      demo/sound 641K   2+A MeTaL MuSiC DiSk By DeGeNeRaTiOn
+Angband-279v5.lha  game/role  688K   0+Angband 2.7.9 (v5)
+amiwm0.19pl29.lha  gfx/x11     56K   0+X window manager WB like.
+FastECS040.lha     misc/emu     2K   3+FastECS for 68040 based Amigas
+VWorlds.lha        misc/sci   732K   0+Images of sky from any planet or comet.
+BlacksEditor.lha   text/edit  204K   2+Wonderful Text Editor (Version 1.0)
+lzx121.lha         util/arc   161K   2+The Ultimate Archiver V1.21 Fixes/+Speed
+lzx121r.lha        util/arc   193K   2+The Ultimate Archiver V1.21R Registered
+MCP110.lha         util/cdity 395K   7+MAJOR UPDATE! The mother of the WB-Utils
+DragIt4.lha        util/wb     48K 115+Move and size a window from anywhere.
+Dogfight11.lha     game/2play 136K   2+2-player scrolling WWI dogfight game
+sfx-bin_30m.lha    mus/edit   285K   2+V 3.31 Binary for 68030+FPU
+YAM12.lha          comm/mail  135K   1+MUI Internet mailer for AmiTCP
+sfx-bin_20.lha     mus/edit   300K   2+V 3.31 Binary for 68020
+SwazInfo18b.lha    util/wb     73K  40+Patches workbench icon information
+AmigaBase22.lha    biz/dbase  462K  17+Powerful programmable database with GUI
+IPDial20.lha       comm/tcp    55K   2+SLIP/PPP dialer with shell terminal
+cdguide_200.lha    docs/hyper 154K   2+List of AMIGA-CDROM`s V2.00 (German Only

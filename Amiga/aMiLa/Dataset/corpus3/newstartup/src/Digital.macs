@@ -1,0 +1,132 @@
+*	MACROS for sources by Kenneth C. Nilsen / Digital Surface
+
+OpenLib	MACRO			OpenLib	Library,Version
+	lea	\1N(pc),a1
+	moveq	#\2,d0
+	jsr	-552(a6)
+	move.l	d0,\1B
+	ENDM
+
+CloseLib	MACRO		CloseLib Library
+	move.l	\1B(pc),d0
+	beq.b	*+8
+	move.l	d0,a1
+	jsr	-414(a6)
+	ENDM
+
+CloseWin	Macro		CloseWin <WinBase>
+	move.l	\1(pc),d0
+	beq.b	*+8
+	move.l	d0,a0
+	jsr	_LVOCloseWindow(a6)
+	EndM
+
+CloseScr	Macro		CloseScr <ScrBase>
+	move.l	\1(pc),d0
+	beq.b	*+8
+	move.l	d0,a0
+	jsr	_LVOCloseScreen(a6)
+	EndM
+
+Base	MACRO			Base LibN
+	move.l	\1B(pc),a6
+	ENDM
+
+ExecB	MACRO			move Execbase to a6
+	move.l	$4.w,a6
+	ENDM
+
+Pen	MACRO
+	moveq	#\1,d0
+	jsr	-78(a6)
+	ENDM
+
+StackOn	MACRO
+	movem.l	d2-d7/a2-a6,-(sp)
+	ENDM
+
+StackOff MACRO
+	movem.l	(sp)+,d2-d7/a2-a6
+	ENDM
+
+SetPen	MACRO			SetPen Color
+	move.l	a5,a1
+	moveq	#\1,d0
+	jsr	-342(a6)
+	ENDM
+
+Box	MACRO			Box X1,Y1,X2,Y2
+	move.l	a5,a1
+	move.l	\1,d0
+	move.l	\2,d1
+	move.l	\3,d2
+	move.l	\4,d3
+	jsr	-306(a6)
+	ENDM
+
+LineC	MACRO			LineC X1,Y1,X2,Y2,Color
+	move.l	a5,a1
+	moveq	#\5,d0
+	jsr	-342(a6)
+	move.l	a5,a1
+	move.l	\1,d0
+	move.l	\2,d1
+	jsr	-240(a6)
+	move.l	a5,a1
+	move.l	\3,d0
+	move.l	\4,d1
+	jsr	-246(a6)
+	ENDM
+
+Line	MACRO			Line X1,Y1,X2,Y2
+	move.l	a5,a1
+	move.l	\1,d0
+	move.l	\2,d1
+	jsr	-240(a6)
+	move.l	a5,a1
+	move.l	\3,d0
+	move.l	\4,d1
+	jsr	-246(a6)
+	ENDM
+
+LineW	MACRO			LineW X1,Y1,X2,Y2
+	move.l	a5,a1
+	move.w	\1,d0
+	move.w	\2,d1
+	jsr	-240(a6)
+	move.l	a5,a1
+	move.w	\3,d0
+	move.w	\4,d1
+	jsr	-246(a6)
+	ENDM
+
+DCall	MACRO
+	jsr	_LVODF\1(a6)
+	ENDM
+
+Call	MACRO
+	jsr	_LVO\1(a6)
+	ENDM
+
+PrtCmd	MACRO
+	move.l	#PRTCMD_\1,d0
+;	jsr	LVODF_PrintComand(a6)
+	ENDM
+
+;These macros will make BarFly sources compatible wih other assemblers:
+
+MB	MACRO
+	move.b	\1,\2
+	ENDM
+
+MW	MACRO
+	move.w	\1,\2
+	ENDM
+
+ML	MACRO
+	move.l	\1,\2
+	ENDM
+
+MQ	MACRO
+	moveq	\1,\2
+	ENDM

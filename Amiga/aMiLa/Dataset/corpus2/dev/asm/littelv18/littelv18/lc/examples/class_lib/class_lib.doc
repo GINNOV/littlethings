@@ -1,0 +1,339 @@
+TABLE OF CONTENTS
+
+class.library/--background--
+class.library/Cl_NewClass
+class.library/Cl_EndClass
+class.library/Cl_AddClass
+class.library/Cl_FindClass
+class.library/Cl_RemClass
+class.library/Cl_NewObject
+class.library/Cl_EndObject
+class.library/Cl_AddMethod
+class.library/Cl_RemMethod
+class.library/Cl_DoMethod
+class.library/Cl_DoSMethod
+class.library/Cl_GetOCName
+class.library/Cl_GetOCData
+class.library/Cl_GetHData
+
+
+class.library/--background--
+
+        FUNCTION
+           Lets any languages that can call libraryfunctions
+           to use and share code for advanced OO programming.
+
+        SEE ALSO
+           Aminet:??/??/ooplib.lha
+           For an example of similar work. (not mine)
+
+        AUTHOR
+           leif_salomonsson@swipnet.se
+
+        000712
+
+
+class.library/Cl_NewClass
+
+        NAME
+           Cl_NewClass -- Create a new class
+        SYNOPSIS
+           Cl_NewClass(name,size,maxmid,super,user)(a0/d0/d1/a1/a2)
+        FUNCTION
+           Allocates memory for the class and other
+           stuff related to the class.
+        INPUTS
+           name     -   Name of class, a null-terminated string
+
+           size     -   Size of class data-size in bytes, MUST be >= 4
+
+           maxmid   -   Maximum methodID to use, keep as low as possible
+
+           super    -   A ptr to a class to use as superclass, or NIL
+
+           user     -   Anything goes, can be reached from a method
+                        later by using Cl_GetOCData()
+
+        RESULTS
+           class    -   A ptr to class
+
+        EXAMPLE
+        NOTES
+        BUGS
+        SEE ALSO
+           Cl_EndClass(), Cl_GetOCData()
+
+
+class.library/Cl_EndClass
+
+        NAME
+           Cl_EndClass -- End a class
+        SYNOPSIS
+           Cl_EndClass(class)(a0)
+        FUNCTION
+           Deallocates all classrelated stuff.
+        INPUTS
+           class    -   What you got from Cl_NewClass()
+        RESULTS
+        EXAMPLE
+        NOTES
+        BUGS
+        SEE ALSO
+           Cl_NewClass()
+
+
+class.library/Cl_AddClass
+
+        NAME
+           Cl_AddClass -- Add class to public classlist
+        SYNOPSIS
+           Cl_AddClass(class)(a0)
+        FUNCTION
+           Makes class reachable for others
+        INPUTS
+           class    -   What you got from Cl_NweClass()
+        RESULTS
+           D0           class for success, NIL for failure
+        EXAMPLE
+        NOTES
+        BUGS
+        SEE ALSO
+           Cl_FindClass(), Cl_RemClass()
+
+
+class.library/Cl_FindClass
+
+        NAME
+           Cl_FindClass -- Find a class in public classlist
+        SYNOPSIS
+           Cl_FindClass(name)(a0)
+        FUNCTION
+        INPUTS
+           name     -   name of class, a null-terminated string
+        RESULTS
+           D0           class for success, NIL for failure
+        EXAMPLE
+        NOTES
+        BUGS
+        SEE ALSO
+           Cl_AddClass(), Cl_RemClass()
+
+
+class.library/Cl_RemClass
+
+        NAME
+           Cl_RemClass -- Remove a class from public classlist
+        SYNOPSIS
+           Cl_RemClass(class)(a0)
+        FUNCTION
+        INPUTS
+           class    -   What you got from Cl_NweClass()
+        RESULTS
+        EXAMPLE
+        NOTES
+        BUGS
+        SEE ALSO
+           Cl_AddClass(), Cl_FindClass()
+
+
+class.library/Cl_NewObject
+
+        NAME
+           Cl_NewObject -- Create a new object
+        SYNOPSIS
+           Cl_NewObject(class)(a0)
+        FUNCTION
+        INPUTS
+        RESULTS
+           D0           A ptr to object, or NIL for failure
+        EXAMPLE
+        NOTES
+           This function does NOT call the objects CLM_NEW method!
+           If this behaviour is desired, make a macro or wrapper for it.
+           This MAY change in future.
+        BUGS
+        SEE ALSO
+           Cl_EndObject()
+
+
+class.library/Cl_EndObject
+
+        NAME
+           Cl_EndObject -- Dispose an object
+        SYNOPSIS
+           Cl_EndObject(object)(a0)
+        FUNCTION
+        INPUTS
+           object   -   Ptr to object
+        RESULTS
+        EXAMPLE
+        NOTES
+           This function does NOT call the objects CLM_END method!
+           If this behaviour is desired, make a macro or wrapper for it.
+           This MAY change in future.
+        BUGS
+        SEE ALSO
+           Cl_NewObject()
+
+
+class.library/Cl_AddMethod
+
+        NAME
+           Cl_AddMethod -- Add a method to a class
+        SYNOPSIS
+           Cl_AddMethod(class,mid,entry,subentry,data)(a0/d0/a1/a2/d1)
+        FUNCTION
+        INPUTS
+           class    -   The classPtr
+           mid      -   methiodID for this method
+           entry    -   A hook.h_Entry kinda ptr
+           subentry -   A hook.h_SubEntry kinda ptr
+           data     -   A hook.h_Data kinda value
+        RESULTS
+        EXAMPLE
+        NOTES
+           Objects of this class WILL receive theese changes,
+           even if they are already Cl_NewObject()ed!
+           (its dynamic :))
+
+           Theres no need to mess with hook-structures!
+           entry, subentry and data is copied to an internal
+           hook-structure by this function.
+
+           Your entry routine(s) could work as any
+           other hook.entry routine. Only Difference
+           is that ALL registers can be altered without
+           the need of saving/restoring them!
+           See below...
+
+; *********************************************************************
+; * The assembly language stub for "vanilla" C parameter conventions
+; * could be:  (snipped from includes/hooks.h)
+; *
+; * _hookEntry:
+; *      move.l  a1,-(sp)                ; push message packet pointer
+; *      move.l  a2,-(sp)                ; push object pointer
+; *      move.l  a0,-(sp)                ; push hook ptr
+; *      move.l  h_SubEntry(a0),a0       ; fetch C entry point ...
+; *      jsr     (a0)                    ; ... and call it
+; *      lea     12(sp),sp               ; fix stack
+; *      rts
+; *********************************************************************
+; ** another example entry                     **
+; ***********************************************
+; * entry:                                      *
+; *   move.l a1, -(a7)          ; push arglist  *
+; *   move.l a2, -(a7)          ; push object   *
+; *   move.l h_SubEntry(a0), a3 ; get subentry  *
+; *   jsr (a3)                  ; call subentry *
+; *   addq.l #8, a7             ; fix stack     *
+; *   rts                       ; return        *
+; *                                             *
+; *   hook.data can now be reach from within    *
+; *   your method with Cl_GetHData()            *
+; *   (if needed)                               *
+; ***********************************************
+
+        BUGS
+        SEE ALSO
+           Cl_RemMethod()
+
+
+class.library/Cl_RemMethod
+
+        NAME
+           Cl_RemMethod -- Remove a method from a class
+        SYNOPSIS
+           Cl_RemMethod(class,mid)(a0/d0)
+        FUNCTION
+        INPUTS
+           class    -   ClassPtr
+           mid      -   MethodID to be removed
+        RESULTS
+        EXAMPLE
+        NOTES
+        BUGS
+        SEE ALSO
+           Cl_AddMethod()
+
+
+class.library/Cl_DoMethod
+
+        NAME
+           Cl_DoMethod -- Call an objects method
+        SYNOPSIS
+           Cl_DoMethod(object,mid,args)(a2/d1/a1)
+        FUNCTION
+        INPUTS
+           object   -   ObjectPtr
+           mid      -   MethodID
+           args     -   ArgList
+        RESULTS
+        EXAMPLE
+        NOTES
+        BUGS
+        SEE ALSO
+           Cl_DoSMethod(), Cl_AddMethod()
+
+
+class.library/Cl_DoSMethod
+
+        NAME
+           Cl_DoSMethod -
+        SYNOPSIS
+           Cl_DoSMethod(object,mid,args)(a2/d1/a1)
+        FUNCTION
+        INPUTS
+        RESULTS
+        EXAMPLE
+        NOTES
+        BUGS
+        SEE ALSO
+
+class.library/Cl_GetOCName
+
+        NAME
+           Cl_GetOCName -
+        SYNOPSIS
+           Cl_GetOCName(object)(a0)
+        FUNCTION
+        INPUTS
+        RESULTS
+        EXAMPLE
+        NOTES
+        BUGS
+        SEE ALSO
+
+class.library/Cl_GetOCData
+
+        NAME
+           Cl_GetOCData -
+        SYNOPSIS
+           Cl_GetOCData(object)(a0)
+        FUNCTION
+        INPUTS
+        RESULTS
+        EXAMPLE
+        NOTES
+        BUGS
+        SEE ALSO
+
+class.library/Cl_GetHData
+
+        NAME
+           Cl_GetHData -- Get hook.h_Data from hook
+        SYNOPSIS
+           Cl_GetHData(hook)(a0)
+        FUNCTION
+           Use this one in your method for
+           fetching hook.data.
+        INPUTS
+           hook     -   Standard Hook Ptr
+        RESULTS
+           D0           hook.h_data
+        EXAMPLE
+        NOTES
+        BUGS
+        SEE ALSO
+           Cl_AddMethod()
+

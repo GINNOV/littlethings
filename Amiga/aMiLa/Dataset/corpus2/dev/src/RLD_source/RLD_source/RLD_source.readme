@@ -1,0 +1,16 @@
+Short:        Source for util/rexx/RexxLocalDates.lha
+Uploader:     wegge@wegge.dk
+Author:       wegge@wegge.dk
+Type:         dev/src
+Requires:     WB2.1 (locale.library)
+Distribution: GPL
+Version:      2.14
+
+locale.library provides an ARexx host, which can be used for localizing ARexx
+scripts. This host does not provide access to all functions of locale.library,
+however. This library provides the missing functions, but is not intended as
+an replacement for the ARexx host of locale.library.
+
+ This archive contains the source for RexxLocalDates.library. The
+source is released under the GNU General Public License, version 2,
+which is described in the file COPYING.

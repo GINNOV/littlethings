@@ -1,0 +1,41 @@
+Short:    Get information about mounted DOS device
+Author:   Thomas Aglassinger <agi@sbox.tu-graz.ac.at>
+Uploader: Thomas Aglassinger <agi@sbox.tu-graz.ac.at>
+Type:     dev/src
+Kurz:     Erfrage Information über DOS Gerät
+
+TITLE
+
+  device_info
+
+AUTHOR
+
+  Thomas Aglassinger <agi@sbox.tu-graz.ac.at>
+
+DESCRIPTION
+
+  The C source codes in this archive show how to find out information
+  about a device just by the name it is mounted with.
+
+  You can use it for increase the usability of your programs. For
+  example, don't expect the user to enter DEVICE="scsi.device" and
+  UNIT=3, but instead let him simply specify DRIVE=CD0:. The latter
+  one will even work if the user switched to a new SCSI-controller.
+
+SPECIAL REQUIREMENTS
+
+  You need a C compiler to compile the sources. For SAS/c and GCC,
+  ready made Makefiles are already included. As the code does not use
+  any special features, compiling it with others should be strait
+  forward.
+
+AVAILABILITY
+
+  Every Aminet mirror, file "dev/src/device_info.lha", for example:
+
+  ftp://wuarchive.wustl.edu/pub/aminet/dev/src/device_info.lha
+
+DISTRIBUTABILITY
+
+  Public domain.
+

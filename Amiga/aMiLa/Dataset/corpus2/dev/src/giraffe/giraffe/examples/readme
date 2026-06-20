@@ -1,0 +1,70 @@
+  Before we get started, I must tell you about how to get
+the proper screen mode working.  All the examples are set
+to the EGS-DEFAULT screen mode.  However, since that is 
+quite boring, you can change it in two ways:
+  1. workbench users-  Modify the icons tool types to 
+                       MODE=name of mode.
+	               e.g.  "MODE=LEGSa:SVGA 800x600"
+  2. shell users need to give the mode as an argument.
+     e.g. "example1 LEGSa:SVGA 800x600"
+ Ok, on to the more interesting stuff.
+
+  So far I have written a total of five examples.  The source
+code is in the source directory (appropriately enough) while
+the executable is in bin.  Go ahead and try them.  If you want
+to know how they work, then read the source in order since
+each tends to build on the previous.
+
+  These are all self-contained, so if you recompile them
+you just need to link in startup code, standard C link 
+library, and Amiga.lib.
+
+
+example1 -- "Layers for you and me."
+
+  This program just creates three layers and draws different
+colors in each.  The left button pulls them to the front and
+drags them around the screen.  The right button just pushes
+them to the back.  To exit the program just hold down the right
+mouse button and press the left.
+
+example2 -- "Keep your children in order"
+
+  This program demonstrates how to arrange layers.  It creates
+a group like those in MUI and also creates an Intuition like
+window using relative placement of layers.  The layers can be
+resized, moved, and depth arranged.  To quit just use the 
+close gadget of either window.
+
+example3 -- "Some layers are smarter than others"
+
+  This program just opens two windows and demonstrates a smart
+refresh layer vs. simple refresh.
+
+example4 -- "pixels, lines, and rectangles"
+
+  This example opens three windows and draws junk into them.  
+Notice the thick and curved primitives.  Not really fast, but
+that's what hardware is for.
+
+example5 -- "Side effects can be good"
+
+  Since groups are arranged in the order that the layers appear
+in their respective lists, then they can be rearranged using
+the G_PushLayer() and G_PullLayer().  Press the left and right
+buttons on the five layers in the horizontal group to change
+their order.  Hey, no closing the window and recreating a 
+gadget list  It's as easy as depth arranging a layer!!
+
+
+
+That's all for now.  I'll try to add more in the future.  I
+will be working on a more ambitios example of a window server
+that should demonstrate how to use layers in a multi-tasking
+environment.  It will also give a better method for refreshing
+layers that is more generic.
+
+  Please send comments to: luke@raj2.tn.cornell.edu
+or if that doesn't work, try lemming@cmpm.mst.lanl.gov
+
+-luke

@@ -1,0 +1,27 @@
+
+Cette archive a été constituée suite à l'abandon de la cdda.library.
+
+L'accès au device se trouve dans cdmanager.o, fichier propre à chaque compilateur.
+C'est pourquoi on retrouve un répertoire par compilateur.
+
+La compilation est facilitée avec les différents makefile. Tapez dans le shell :
+
+* pour SAS/C :
+smakefile
+
+* pour VBCC 68k
+make -f makefile.vbcc.amigaos
+
+* pour VBCC MorphOS
+make -f makefile.vbcc.morphos
+
+* pour GCC 68k
+make -f makefile.gcc.amigaos
+
+* pour GCC MorphOS
+make -f makefile.gcc.morphos
+
+L'exécutable généré a été testé sur MorphOS dans tous les cas cités ci-dessus.
+
+Pensez à adapter le device et l'unité dans le source de DisKo6.c, en fonction
+de votre configuration.

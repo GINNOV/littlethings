@@ -1,0 +1,205 @@
+
+                             Join.rexx Usage.
+                             ----------------
+
+  Minimum Requirements Are:-
+  --------------------------
+
+           Any Classic Amiga, including WinUAE.
+           FULL, standard Kickstart 3.0x and Workbench 3.0x or better.
+           RexxMast running, and RX in the path.
+
+----------------------------------------------------------------------------
+
+  Join.rexx Usage:-
+  -----------------
+
+  IMPORTANT NOTE:- There is NO error detection OR correction in this code.
+
+  On program startup a default window is opened. Two lines are printed to
+  this window, (not inclding the line numbers)...
+
+  1) $VER: Join.rexx_Version_00-00-22_Public_Domain_13-06-2009_B.Walker_G0LCU.
+  2) Double click on the first file to join...
+
+  A file requester is opened to the default S: VOLUME with the file
+  Startup-Sequence ready to be OK'd if required.
+
+  Double clicking on ANY file at all will automatically save it to the S:
+  VOLUME as S:TEMPFILE. If you click 'Cancel' the the script WILL generate
+  an error BUT WILL carry on... Irrespective however the next lines printed
+  are...
+
+  3) File saved as S:TEMPFILE...
+
+  4) Double click on the next file to join...
+
+  Another file requester is opened for the next file to join to S:TEMPFILE.
+  Again double clicking on ANY file at all will join that file in FRONT of
+  S:TEMPFILE and is saved to the S: VOLUME as S:BINARY.BIN. Also again
+  clicking on 'Cancel' WILL generate an error as before.
+
+  The next two lines printed are...
+
+  5) File saved as S:BINARY.BIN...
+
+  6) Press <RETURN/ENTER> to CONTINUE, or, Q<RETURN/ENTER> to QUIT:-
+
+  Pressing <RETURN/ENTER> will cycle through this code again BUT IF you
+  want to add to the BINARY.BIN file during the CURRENT session, just
+  double click on S:BINARY.BIN as the FIRST file and for the SECOND file
+  that you want in FRONT of the BINARY.BIN, (now a new S:TEMPFILE), just
+  double click on that too.
+  Pressing Q<RETURN/ENTER> starts the Quitting proceedure...
+
+  The window is cleared and the lines printed are...
+
+  7) Files now joined as T:BINARY.BIN...
+
+  8) Delete the S:TEMPFILE file...
+  9) Delete the S:BINARY.BIN file...
+
+ 10) Quitting...
+
+  After a few seconds the window closes down.
+
+  There is now a copy of S:BINARY.BIN in the T: VOLUME as T:BINARY.BIN
+  so that you can save it elsewhere and/or rename it your leisure.
+
+  In the 'S' drawer of this archive is a file 1KB.BIN. This is a joining
+  of the files 00F80300, 00F80200, 00F80100 and 00F80000 in three loops.
+  This was saved as T:BINARY.BIN, renamed to T:1KB.BIN and copied to the
+  above drawer to view. It is obviously the first 1KB of the ROM 3.1x image.
+
+  The default tool inside the 'Join.rexx' project icon is More. Just change
+  the default tool to suit your needs, for example RX to run the srcipt.
+
+  Below is the ORIGINAL ARexx code so that there is a reference to look back
+  at when viewing any current versions that may appear... :)
+
+----------------------------------------------------------------------------
+
+  Join.rexx, Dated 01-06-2009:-
+  -----------------------------
+
+/* A DEMO simple file joining utility to join at least two files together. */
+/* Original idea copyright, (C)2009, B.Walker. G0LCU. */
+/* Issued as Public Domain and you can do as you please with this code. */
+
+/* To join addresses together start with the highest HEX dump */
+/* first and work downwards. */
+
+/* Similarly with textfiles 'Last In First Out'... :) */
+
+/* Pick the last, (address?), file needed from the S: VOLUME... */
+/* IMPORTANT!!! DURING THE CURRENT SESION IF 'S:BINARY.BIN' EXISTS THEN */
+/* THIS BECOMES THE NEW LAST ADDRESS/FILE!!! */
+
+/* Set up any variables... */
+  quitkey = ''
+
+/* Use default window for prompts... */
+/* This will loop to generate a manual binary dump... */
+  DO FOREVER
+    ECHO 'c'x
+    ECHO '$VER: Join.rexx_Version_00-00-20_Public_Domain_01-06-2009_B.Walker_G0LCU.'
+    ECHO 'Double click on the first file to join...'
+    ADDRESS COMMAND 'C:Join `C:RequestFile DRAWER S: FILE Startup-Sequence` AS S:TEMPFILE'
+    ECHO 'File saved as S:TEMPFILE...'
+/* Now pick the next lower or earlier, (address?), file from the S: VOLUME... */
+    ECHO 'Double click on the next file to join...'
+    ADDRESS COMMAND 'C:Join `C:RequestFile DRAWER S: FILE Startup-Sequence` S:TEMPFILE AS S:BINARY.BIN'
+    ECHO 'File saved as S:BINARY.BIN...'
+    ECHO 'Press <RETURN/ENTER> to CONTINUE, or, Q<RETURN/ENTER> to QUIT:-'
+    ECHO''
+    PULL quitkey
+    IF quitkey = 'Q' THEN CALL getout
+  END
+
+getout:
+  ECHO 'c'x
+/* Copy the file 'S:BINARY.BIN' to the 'T:' VOLUME as 'T:BINARY.BIN'... */
+  ADDRESS COMMAND 'C:Copy S:BINARY.BIN TO T:BINARY.BIN'
+  ECHO 'Files now joined as T:BINARY.BIN...'
+  ECHO ''
+  ECHO 'Delete the S:TEMPFILE file...'
+/* Delete the temporary file 'S:TEMPFILE'... */
+  ADDRESS COMMAND 'C:Delete S:TEMPFILE QUIET'
+  ECHO 'Delete the S:BINARY.BIN file...'
+/* Delete the temporary file 'S:BINARY.BIN'... */
+  ADDRESS COMMAND 'C:Delete S:BINARY.BIN QUIET'
+  ECHO ''
+  ECHO 'Quitting...'
+/* Clean exit... */
+  EXIT(0)
+
+----------------------------------------------------------------------------
+
+  The archive is Public Domain/Emailware and you may modify it/them as you
+  please for your OWN experiments.
+
+----------------------------------------------------------------------------
+
+                                IMPORTANT:-
+                                -----------
+
+    The Legal Stuff:-
+    -----------------
+
+    These programs are Public Domain and no profit will be made from them,
+    also all of the files must remain unaltered and intact including this
+    one. The author is not responsible for any damage to, or loss of, or
+    failure of equipment or data caused in any way by the use of these
+    programs. There is NO warranty with the use of these software releases
+    and YOU USE THEM AT YOUR OWN RISK.
+
+----------------------------------------------------------------------------
+
+    Testing Evaluation:-
+    --------------------
+
+    An A1200 in 2MB, 6MB and 10MB modes using trapdoor memory AND/Or PCMCIA
+    memory expansions. WinUAE version 1.5.3 in classic Workbench 3.0x mode. 
+
+    All test conditions were/are running STANDARD OS3.0x, and using standard
+    ~topaz 8~ fonts throughout.
+
+    I have no idea what a strange configuration setup will create so refer
+    to the ~The Legal Stuff~ above.
+
+----------------------------------------------------------------------------
+
+                                 WARNING.
+                                 --------
+
+  1) DISCONNECT any faulty equipment under test from the MAINS supply.
+  2) If a DC supply is used do NOT reverse polarity the connections.
+  3) Do NOT power up any electronic item until it is safe to do so.
+  4) CHECK and RECHECK all of your construction and repair work thoroughly.
+  5) Handle ALL tools used with care.
+  6) Beware of ALL types of solvents, glues and etching fluids.
+  7) NEVER leave a soldering iron switched on unattended.
+  8) KEEP everything OUT of the reach of small children.
+  9) Switch OFF the AMIGA before disconnecting or connecting any hardware.
+ 10) And finally read 1) to 9) again.
+
+----------------------------------------------------------------------------
+
+   Contact:-
+   ---------
+
+   Mr Barry Walker, G0LCU,
+
+   Email:-     wisecracker@tesco.net
+   URL:-       http://homepages.tesco.net/wisecracker/G0LCU.HTM
+
+   Author of the ~TestGear?~ projects in the ~docs/hard~ drawer of AMINET.
+
+----------------------------------------------------------------------------
+
+   A very useful HardWare related site, (C) Anthony Hoffman, for
+   modifications, schematics, repairs and the like is:-
+
+                          http://amiga.serveftp.net/
+
+============================================================================

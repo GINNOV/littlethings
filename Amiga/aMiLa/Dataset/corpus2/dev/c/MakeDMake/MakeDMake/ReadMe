@@ -1,0 +1,77 @@
+ReadMe for MakeDMake v0.22
+
+I guess that in 70 percent it is still Tim McGrath's 'MakeMake' from Fish 74.
+But MakeDMake is much more enterprising at the price of being DICE-specific.
+And from time to time I still get ideas of how to make it more useful,
+without not losing its (charming) simplicity, as well as the quick'n'dirty
+appeal...
+
+
+USAGE:
+
+You give it the names of all the C-files that are to produce your executable
+(but NOT #include'd .c or .h files!), and it will automatically scan them to
+find all dependencies, and produce a ready to use (in many cases) DMakeFile
+calling DCC with options you will need for normal compilation and linking.
+Other things can be added if needed by editing that file. In most cases it
+should be enough to give MakeDMake '#? or '*' on command-line.  You will be
+than asked about the name of the executable, if you just press RETURN -- you
+will get the default name, being either the NAME of the input file with no
+extension (if it was the only name MakeDMake got), or 'main' (without
+quotes).  Since version 0.21 you will be asked to input the compilation and
+linking OPTIONS; if you just press <RETURN>, there will be no options
+generated -- you can always put them there afterwards
+ with your editor.
+
+For exemple, if you call it with the command-line like this:
+
+MakeDMake file1.c file2.c file3.c ... filen.c
+
+choose 'ex_file' as the name for the executable, and ignore the
+options, you will get something like that in your DMakeFile:
+
+OPT1 =
+OPT2 =
+
+ex_file         : file1.o file2.o file3.o ... filen.o
+    dcc $(OPT1) -o ex_file  file1.o file2.o file3.o ... filen.o
+
+filex.o :   filex.c ... header file list ...
+    dcc $(OPT1) filex.c
+
+where the header file list is the transitive closure of all files #included
+in filex.c (i.e. if filex.c #includes "header.h", and "header.h" #includes
+"subheader.h", both "header.h" and "subheader.h" appear in the list of header
+files). MakeDMake only examines header files delimited by double quotes (").
+System header files enclosed in angle brackets (< and >) are not examined.
+(That last bit of beautiful native-speaker English was almost literally taken
+from Tim's original comment. Now, back to my own personal variant...)
+
+As you probably know, the dmake program called with no parameters, will look
+for the file called 'DMakeFile' in current directory and use its information
+to update/recompile etc. your files.  And it can be made even easier with
+aliases. I use, for instance, two csh aliases like that:
+
+ 	alias mdm "MakeDMake *.c"   ## for all C files in current dir
+    alias go "DMake"            ## not so much, but...
+
+    ## alternatively -- if you may have 'unique' makefile names
+	## in the form <something>.make, you may use:
+
+	alias go DMake -f *make
+
+whith which I can compile most of the C programs with no effort whatsoever.
+The DCC options I need use are already set in the ENV:DCCOPTS anyway. The
+beauty of this stuff is that it only takes a few minutes to recompile it with
+your own standard set of options.  You kan even have different MakeDMake's
+with different hardwired set of options and names! You may try to do adjust
+the #defines first.
+
+The original 'MakeMake' was in Public Domain, and this stuff here also is.
+
+
+                                		Piotr Obminski
+
+										Flogstav. 43C
+										752 63 Uppsala/Sweden
+

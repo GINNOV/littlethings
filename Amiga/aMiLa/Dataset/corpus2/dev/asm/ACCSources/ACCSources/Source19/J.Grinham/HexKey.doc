@@ -1,0 +1,63 @@
+                    HexKey
+
+        Learning MC68000 assembly language is not an easy task.
+The following is a description of a program I wrote in order to
+help me understand how the hardware register 'BFEC01' worked.
+In my 'AMIGA Machine Language' book it is described as the
+register where the last special key pressed is saved. But this
+program demonstrates that it does much more than that. It is
+not limited to the special keys at all, each key on the keyboard
+has not one, but two unique values that can be interpreted
+by your programs. As you press the key, one value is stored in
+'BFEC01', and as you release the key, a different value is stored
+in 'BFEC01'. The following table shows the values for PRESSing
+keys, simply subtract 1 to get the RELEASE value for that key.
+
+                   Important!
+
+        To run this program properly, after the window appears
+click the left mouse button in some other window or on a disk
+icon, or keyboard entries will have a double effect which will
+make reading the values difficult.
+
+
+    HardWare Register 'BFEC01'
+
+  |     1 |     3 |     5 |     7 |     9 |     B |     D |     F |
+--+-------+-------+-------+-------+-------+-------+-------+-------+
+ 3|R Amiga|L Amiga|R Alt  |L Alt  |Control|Caps LK|R Shift|L Shift|
+--+-------+-------+-------+-------+-------+-------+-------+-------+
+ 4|Help   | +   k | *   k | /   k | )   k | (   k | F10   | F9    |
+--+-------+-------+-------+-------+-------+-------+-------+-------+
+ 5| F8    | F7    | F6    | F5    | F4    | F3    | F2    | F1    |
+--+-------+-------+-------+-------+-------+-------+-------+-------+
+ 6| Left  | Right | Down  | Up    |       | -   k |       |       |
+--+-------+-------+-------+-------+-------+-------+-------+-------+
+ 7|       | Delete| Esc   | Return| Enter | Tab   | BS    | Space |
+--+-------+-------+-------+-------+-------+-------+-------+-------+
+ 8| 9   k | 8   k | 7   k | .   k |       | /     | .     | ,     |
+--+-------+-------+-------+-------+-------+-------+-------+-------+
+ 9| m     | n     | b     | v     | c     | x     | z     |       |
+--+-------+-------+-------+-------+-------+-------+-------+-------+
+ A| 6   k | 5   k | 4   k |       |       | '     | ;     | l     |
+--+-------+-------+-------+-------+-------+-------+-------+-------+
+ B| k     | j     | h     | g     | f     | d     | s     | a     |
+--+-------+-------+-------+-------+-------+-------+-------+-------+
+ C| 3   k | 2   k | 1   k |       | ]     | [     | p     | o     |
+--+-------+-------+-------+-------+-------+-------+-------+-------+
+ D| i     | u     | y     | t     | r     | e     | w     | q     |
+--+-------+-------+-------+-------+-------+-------+-------+-------+
+ E| 0   k |       | \     | =     | -     | 0     | 9     | 8     |
+--+-------+-------+-------+-------+-------+-------+-------+-------+
+ F| 7     | 6     | 5     | 4     | 3     | 2     | 1     | `     |
+--+-------+-------+-------+-------+-------+-------+-------+-------+
+
+
+John Grinham
+266 Tor st
+Toowoomba, Qld
+Australia
+
+Released through the Amiga Coders Club.
+
+

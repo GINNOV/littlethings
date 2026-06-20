@@ -1,0 +1,11 @@
+
+Here is an Oberon module for Oberon-A 1.6.
+
+Note that the functions rt_SetCustomF0(), rt_SetCustomF1(), rt_SetCustomF2() do
+not work with Oberon-A.  An Oberon-A program seems no to put the same thing on
+the stack as a c program.
+But the function rt_SetCustomF0() can be replaced by Kernel.SetCleanup().
+
+
+
+BURNAND Patrick

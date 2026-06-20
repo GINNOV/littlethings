@@ -1,0 +1,543 @@
+****************************************************************************
+*                                                                          *
+*  VisualMaker V1.00 (first release, internal V5.3) by David Lübbren       *
+*  24-May-1994                                                             *
+*                                                                          *
+*  Copyright (C) 1994 by David Lübbren. All rights reserved.               *
+*                                                                          *
+*  Written in C with Dice 2.07.54 and MG3a on an Amiga 500 (accelerated).  *
+*                                                                          *
+*  David Lübbren                                                           *
+*  Leopoldstr. 3                                                           *
+*  76133 Karlsruhe                                                         *
+*  Germany                                                                 *
+*                                                                          *
+*                                                                          *
+****************************************************************************
+
+                 VisualMaker V1.0 © David Lübbren
+
+
+                    
+
+                             CONTENTS
+
+
+                        I.    Legal Stuff
+                        II.   Introduction
+                        III.  Usage
+                        IV.   Gadgets
+                        V.    Local compiler options
+                        VI.   Global compiler options
+                        VII.  The backpanel
+                        VIII. The menues
+                        IX.   Using the DMakefile
+                        X.    Making Protos
+                        XI.   Timer problems
+                        XII.  Make primer
+
+
+
+
+
+                            I.  LEGAL STUFF
+
+
+      VisualMaker is SHAREWARE, and may be distributed in a non-commercial 
+      way (you may copy, spread, and use it but don't make money out of it).
+
+      If you like VisualMaker and regularly use it, I would appreciate being 
+      sent a $10 contribution to the above address.  Contributors will 
+      receive the complete copyrighted source in C. 
+
+       Suggestions, comments and criticisms are also welcome at the above 
+       address. If any problems are encountered, PLEASE report them! 
+
+
+                                DISCLAIMER
+
+      DAVID LÜBBREN MAKES NO WARRANTIES EITHER EXPRESSED OR IMPLIED, WITH 
+      RESPECT TO THIS SOFTWARE, ITS QUALITY, PERFORMANCE OR FITNESS FOR ANY 
+      PARTICULAR PURPOSE.  THIS SOFTWARE IS PROVIDED "AS IS." THE ENTIRE 
+      RISK AS TO QUALITY AND PERFORMANCE OF THE SOFTWARE IS WITH THE USER.  
+      IN NO EVENT WILL DAVID LÜBBREN BE LIABLE FOR DIRECT, INDIRECT, INCI-
+      DENTAL OR CONSEQUENTIAL DAMAGES RESULTING FROM ANY DEFECT IN THE 
+      SOFTWARE. 
+
+
+
+
+                          II. INTRODUCTION
+
+      VisualMaker is a 'MakeFile' generator for the DiCe compiler package.
+      The program is fully controlled through an Intuition interface and 
+      allows compiler options to be set for individual files with just a
+      couple of mouse clicks. All compiler options are supported. The gen-
+      erated 'DMakefile' includes the basic object->source, executable->
+      object dependancies as well as dependancies for all included headers,
+      precompiled headers and errorfile deletion prior to a new run. The 
+      output format is such that all files with the same options and head-
+      ers are arranged in groups and referenced through symbolic names 
+      where possible. VisualMaker reads your DCCOPTS environment variable
+      and shows them on the GUI. An option is included for setting this
+      variable.   
+
+      Header dependancies are obtained through scanning of the source files
+      recursively, so even deeply nested subheaders are found. Every time a 
+      headerfile is edited the corresponding source gets recompiled. If the 
+      precompile option is selected, precompiled headers will be deleted if 
+      any of their dependancies are altered, thus causing DiCe to precompile 
+      anew. If compiler error output is redirected to a file, this errorfile
+      will be deleted prior to every new compile run.
+      
+        Only headers included in double quotes (e.g. #include "defs.h") will
+      be searched for (angle brackets should be reserved for system headers).
+      Headers included inside of plain C comments (/*...*/) will be ignored,
+      nested comments are not supported.
+
+        The 'DMakefile' itself includes a list of dependancies and commands
+      necessary for creating the executable, the object files, disassembled 
+      files, automatic deletion of the Errorfile on startup, and for dele-
+      tion of objects and preprocessed files.
+
+
+
+                               III. USAGE
+
+      Invoke VisualMaker from the directory where you would like the 
+      'DMakefile' to be written to.  This is usually the directory 
+      containing the brunch of your source files and from where the 
+      compiler is started.
+      The first thing 'VisualMaker' will do after invocation is to read 
+      your DCCOPTS environment variable, if found, and activate the cor-
+      responding gadgets to reflect your default settings. 
+      Choose all the files for your project with the GetFile Gadget in 
+      the upper left corner (underneath the 'Generate' Button). This will 
+      bring up an ASL FileRequester. You can multiselect files by simul-
+      taneously pressing the SHIFT key. Alternatively you can use the 'A' 
+      Button (All) to choose all the files in your current directory in 
+      one go. The files will show up in the 'Source List' ListviewGadget. 
+      (All files without a '.c', '.a' or '.o' extension will be filtered 
+      out, as well as object files which have a corresponding source). 
+      To remove files from the list, select them and press the 'R' Button 
+      (Remove). Now you can select your compiler options. The options are 
+      divided into two classes, the global compiler options, which are 
+      located underneath the 'Source List' Listview gadget, apply to all 
+      files in your project (e.g. Resident, Small/Large-Data model), and 
+      the local compiler option, above the 'Source List' (proto, -H, Stack, 
+      NoProf). These may apply to only particular files (e.g. profiling of 
+      only the time critical routines) as well as to all files. To turn on 
+      local options select the files in question. To select a single file, 
+      press the left mousebutton (LMB) over the file name. To select seve-
+      ral files, drag the mouse while keeping the LMB pressed. To select 
+      (or unselect) files which are momentarily not in the visible region, 
+      drag the mouse over the rim of the gadget while keeping the button 
+      pressed. Pressing a local option button now will effect the selected 
+      files, showing the option behind the file name. For a comprehensive 
+      explanation of the individual compiler options see the DiCe documen-
+      tation (dcc.doc).
+        The Program Name defaults to one of the source filenames in the
+      Source List (minus the extension). The name can be easily changed to
+      another source filname by selecting that particular file in the Source
+      List, or of course by typing it into the string gadget.
+        The 'Errorfile' StringGadget specifies the output of compiler
+      (Error)messages which is by default STDOUT.
+        The 'Output Dir' StringGadget determines where the object files 
+      are written to. If not specified they are written into the same di-
+      rectory as the source files.
+        The 'Temporary Dir' StringGadget specifies the directory for pre-
+      processed files.
+      
+        To generate the 'DMakefile' press the 'Generate' Button. All Files 
+      will now be scanned, searching for any included headers in double 
+      quotes (e.g. #include "defs.h") and, if found, these will be scanned 
+      as well searching for subheaders and so on. Note: headers inside of 
+      comments will not be searched. After the file has been written into 
+      the current directory the program will exit.
+        To leave the program without writing the 'DMakefile', press the
+      Close-Window gadget, or select 'Exit' in the menu.
+
+      
+
+
+                              IV.  GADGETS   
+
+    CloseWindow
+      terminates the program WITHOUT writing the 'DMakefile'.
+
+    Generate
+      The 'DMakefile' will be written, and 'VisualMaker' will terminate.
+
+    GetFileGadget 
+      Pressing the GetFileGadget brings up either a file- or directory
+      requester. Some of the Requesters allow  multiselection  by hold- 
+      ding down the SHIFT key. After selection, files/directories will 
+      be listed in the corresponding listview-gadget.
+    
+    Source List (ListviewGadget)
+      Here all Sourcefiles chosen with the FileRequester or 'A' button 
+      are listed. Any '.o' or '.a' files which also have a corresponding 
+      '*.c' file will NOT be listed. When a particular file is selected 
+      the local compiler options apply to this file. (De-)Selection is 
+      simply done by pressing the nouse button over a particular source 
+      name. Keeping the button pressed and dragging, allows multiselec-
+      tion. The name of the executable is automatically set to the last 
+      selected file.
+
+    R   (Remove)
+      Removes a selected file/Directory/Path from a Listview Gadget.
+
+    A   (All)
+      This is a convenience button to select all files in the current di-
+      rectory, bypassing the filerequester. Only files with a '.c', '.a' 
+      or '.o' extension are selected and shown in the listviewgadget. If 
+      a source and object file of the same name exist, only the source 
+      file will be shown.
+
+        e.g.   CURRENT DIR      Source List
+             main.c main.o  ->     main.c
+             main.a main.o  ->     main.a
+             main.o         ->     main.o
+
+      In other words, object files will only be shown if they are 'extra 
+      objects'.
+      
+    Program Name
+      Name of the executable program. If you select a filename from the
+      Source List the extension will automatically be truncated and the
+      rest placed into this string gadget. If this mechanism annoys you,
+      just simpy type something into this Gadget manualy (a 'RETURN' will
+      do) and the name will be "frozen".
+      
+    Errorfile
+      Compiler error messages can be diverted to a particular file instead
+      of STDOUT. Useful if you have a means of proccessing these from your
+      Editor with say an AREXX-script.
+      
+    Output Dir
+      The Directory where all object files ('.o') will be written to. If 
+      not specified, each objectfile will be written into the same direc-
+      tory its source resides in.
+
+    Temporary Dir
+      The Directory where preprocessed files are written to.      
+
+
+
+                        V. LOCAL COMPILER OPTIONS
+
+    -proto
+      Sets the "-proto" compiler option, enabling prototype checking. All 
+      functions not prototyped will cause an error during compilation. For 
+      the amiga library functions, the corresponding '*_protos.h' files in 
+      the 'clib' direrctory have to be included. When compiling with regis-
+      tered arguments (-mr/-mR/-mRR) prototyping is mandatory.
+      
+    -H
+      Any header files referenced in the source file with #include "name.h" 
+      (NOTICE: Header file in Quotes, NOT angle brackets) will be precom-
+      piled and placed into the temporary directory (Default: 'T:') with 
+      the name 'name.m'. This can speed up compilation time tremendously. 
+        In the DMakefile a dependancy will be created, deleting the pre-
+      compiled file whenever the corresponding headerfile or any subheaders 
+      included in it are changed causing the compiler to generate a new 
+      precompiled file. To precompile system headers e.g. '<stdio.h>' or  
+      '<intuition/intuition.h>', just include them in a header- or sub-
+      headerfile, not in the source files or replace the angle brackets 
+      with double quotes, but you'll probably have to add an absolute path.
+      
+    Stack/-mr/-mR/-mRR
+      Handling of function arguments.
+
+      Stack -  allows normal passing of function arguments via the stack.
+      -mr   -  cause the compiler to create both a stack and registered 
+               argument entry point for functions.
+      -mR   -  cause the compiler to generate a single registered argument 
+               entry point for each function.
+      -mRR  -  as above, but extends registration to indirect function 
+               calls.
+                             
+               The registered argument options switch on prototyping auto-
+               matically, as this is mandatory.
+
+
+    NoProf/-prof1/-prof2/-prof3
+      En-/Disable profiling of either only the source (-prof1), source
+      and clib functions (-prof2) or source, clib and amigalib functions
+      (-prof3). With the latter two options, objects have to be linked 
+      with the corresponding profiling libraries.
+
+      
+   
+                      VI. GLOBAL COMPILER OPTIONS
+
+    Resident
+      Sets the "-r" compiler option, or if  'No Reloc Hunk' is enabled 
+      the "-pr" compiler option. This makes the code resident. 
+
+    Dynamic Stack
+      Sets the "-gs" compiler option, adding code for automatic stack 
+      allocation if stack falls below a certain limit. (I have encountered
+      some problems with this option).
+
+    No Reloc Hunk
+      Sets either "-pi", or "-pr" if 'Resident' is also enabled, causing
+      the compiler NOT to generate a relocation hunk.
+                
+    Small Data / Large Data
+      Sets the "-md" / "-mD" compiler options to create either a small 
+      (PC-relative) data model, or a large (absolute) data model.
+
+    OS 2.0 / OS 3.0 / OS 1.3
+      Sets the "-2.0"/"-3.0"/"-1.3" compiler options, telling the linker
+      with which amiga library to link with.
+      
+    C++ Comments
+      Sets the "-//" comiler option, letting the compiler recognize
+      C++ style comments.
+
+    Verbose
+      Sets the "-v" compiler option which will show all 'dcc' commands
+      in STDOUT while executing.
+        
+    68000 / 68020 / 68030
+      Sets the "-020"/"-030" options, specifing the processor for which 
+      the executable is written. (Default 68000)
+      
+    Small Code / Large Code
+      Sets the "-mc" / "-mC" compiler options for either small code
+      (Default) or large code model.
+      
+    -ms0 / -ms1 / -ms2
+      ms0  -  only 'const' data is put in code-hunk.
+      ms1  -  string constants are also placed in code-hunk.
+      ms2  -  as above, but all external 'const' references use near
+              addressing.
+
+    -unix
+      Objects are linked with the unix libraries.
+      
+    -chip
+      Force all hunks into chip memory.
+      
+    NoCoPro / -881 / -882
+      Tells the compiler to produce floatpoint code for corresponding
+      co-processor.
+      
+    -lm
+      Objects are linked with the maths library for floatpoint output
+      e.g. printf("%lf", ...). By default this is turned on whenever
+      VisualMaker encounters an "%*lf" in the source code. See also
+      the menu options.  
+
+    -s
+      Add symbolic debugging information in the executable.
+
+    -I0
+      Remove default include paths.
+      
+    -L0
+      Remove default library paths.
+
+
+      
+                              VII. THE BACKPANEL
+
+    As you've probably noticed, you access this second panel of gadgets 
+    by pressing the LMB anywhere inside the window outside of gadget
+    activation areas. The top row of gadgets activates more esoteric
+    options of the compiler and I will not go into these (see dcc.doc).
+      The listview gadgets underneath allow you to specify additional
+    link libraries, library- and include paths. Their functionality is
+    the same as with the 'Source List'.
+    
+  Link Library
+    You may specify additional libraries you want to link your code with.
+    Only files with a ".lib" extension are accessible through the library-
+    requester. It is generally not necessary to add a particular model of 
+    the standard c-, amiga-, or maths-library here since these are auto-
+    matically dealt with. 
+      (e.g. muis.lib - if you're working on a MUI project).
+    
+  Library Paths
+    Specify additional paths (directories) where the compiler should look
+    for libraries if they are not located in the standard DLIB: directory.
+    
+  Include Paths
+    Specify additional paths where the compiler should look for include
+    files not found in the standard DINCLUDE: directory. The specified
+    path will also be searched by VisualMaker if it can't find one of your
+    header files either in the current directory or the one the corres-
+    ponding source file is located in. 
+
+    
+      
+                            VIII. THE MENUES    
+              
+  DCCOPTS
+    This will pop up a requester allowing you to save the currently set 
+    compiler options in VisualMaker to the DCCOPTS environment variable.
+    Three options are available:
+      SAVE
+        Options are saved permanently in ENVARC:DCCOPTS.
+      USE
+        Options are saved in ENV:DCCOPTS and will be gone when computer 
+        is turned off (provided your ENV: directory is in ram:).
+      CANCEL
+        Self-explanatory.
+        
+
+  check %lf
+    This option causes VisualMaker to search for any output of float-point 
+    numbers in the source code and if found automatically set the "-lm"
+    option in the DMakefile which causes the compiler to link with math 
+    library enabling output of 'float' and 'double' numbers (if not used
+    float numbers are literally ouput as "<float>"). The program does not 
+    actually look for a 
+
+                    '(s|f|v)printf("%...f")' 
+
+    command but rather just the format string 
+
+                   "%[0-9.l+-\*]*(E|e|f|F|g|G)",
+
+    that is it does not know whether the expression is inside a printf-
+    family type of command or just a simple string. The option is on by
+    default but if it causes any problems due to the above mentioned,
+    just turn it off (the -lm option increases the executable size).
+
+  EXIT
+    Leave program without writing the DMakefile.        
+
+
+
+        
+                        IX. USING THE DMAKEFILE
+
+    'DMake can be called with several keywords, which determine what
+    it does. These are:
+
+    DMake all         
+     or
+    DMake <executable>
+        -generates the executable (Program Name), recompiling every-
+         thing that's necessary. The previous errofile (if specified 
+         in 'VisualMaker') is deleted prior to compilation. Note, if 
+         a full pathname was specified for the executable in 
+         'VisualMaker' it should also be input here. This is case 
+         sensitive.
+        
+    DMake <file>.o
+        -generates only the specified object file. Note, if an
+         output directory was given this will have to be included,
+         and is also case sensitive.
+            e.g.  OUTDIR = dtmp: , OBJ = main.o 
+                 ==> DMake dtmp:main.o    and not  DTMP:main.o
+        
+    DMake <file>.a
+        -generates only the specified disassembled file. The same
+         applies as above.
+                
+    DMake clean
+        -deletes all object-, precompiled- and error- files.
+
+    DMake cleano
+        -only deletes all objectfiles.
+
+
+
+
+                         X. MAKING PROTOS
+
+    If you want a dependancy for the automatic creation of a prototypes 
+    file (e.g. 'protos.h') then create an environment variable called 
+    'MAKEPROTO'. Place a string with your 'makeproto' calling format fol-
+    lowed by a blank and then the prototype filename.
+      Example1: 
+        If you use Matt Dillon's 'makeproto' and your prototype file is
+        called 'protos.h' use the following command;
+
+            Setenv MAKEPROTO "makeproto -o protos.h protos.h"
+      
+
+      Example2:
+        If you use Eric Smith's Public Domain 'mkproto' utility (my choice,
+        since it extracts the prototypes directly out of the declared func-
+        tions) use the following command:
+
+            Setenv MAKEPROTO "mkproto >protos.h protos.h"
+            
+
+    To make this setting permanent copy 'env:MAKEPROTO' into the 'envarc:'
+    directory.
+
+
+    
+
+                          XI. TIMER PROBLEMS 
+
+    DMake uses the time-stamp of the files to determine whether a re-
+    compilation is neccessary. If you do not have a clock, or it doesn't
+    always function properly (mine sometimes sets itself back to Jan-78)
+    in an unlucky case it could happen that a freshly edited dependent
+    file has an older time stamp than its target file, causing DMake
+    not to resolve the dependency (and your bug-fix or added feature
+    not showing up). 
+
+       e.g. having the following dependancy,
+       
+       main.o : main.c
+         dcc main.c -o main.o
+        
+      say the target 'main.o' already exists from a previous session,
+      in this session your timer misbehaves (setting itself back to the
+      70's) and you edited 'main.c', the new file won't be recompiled.
+
+      The solution is either 
+        a) to always check and set the timer before starting a session, 
+        b) to manually set the date of 'main.c' with 'Date' or 'touch' 
+           to something newer than 'main.o', 
+        c) just simply by deleting the target 'main.o'.
+
+
+
+                            XII. MAKE PRIMER      
+
+      Make is a utility program included in all serious compiler-packages 
+      that automates the recompilation  process for large programs made up 
+      of several  files.  When  making  changes to a particular file only 
+      those files which are directly influenced by these changes (i.e. which 
+      are dependant ) are recompiled, usually not all of them, which can 
+      result in tremendous time savings as well as relieving the programer 
+      from the burden of remembering and typing endless lines of compiler 
+      commands.   
+        Make uses  the file  time-stamp in its considerations. The Make 
+      program is driven by a Makefile  which consists of a list of file 
+      dependancies and command lines. Consider the following simple example:
+      
+        main.o : main.c
+          dcc -c  main.c -o  main.o
+
+      Here 'main.o' (target file) depends on 'main.c' (dependant file). If 
+      the dependant file is newer than the target file or the target does 
+      not exist, the dependancy is resolved, that is the command below is 
+      executed. Several other forms of declaring dependancies are available. 
+      Furthermore commands may be AmigaDOS commands such as 'Delete' etc. 
+      For details of the syntax see the DMake manual.
+      (A feature not documented is the prefixing of commands with a minus
+      sign which will inhibit premature termination of DMake if a command
+      returns an error or warning). 
+      
+      Anyway, with VisualMaker you should not have to worry about this!!
+      Even if you are just compiling a single file, a DMakefile can still
+      be of use. Your particular compiler options are saved and you don't
+      have to worry about deleting the 'errorfile' (if redirected) prior
+      to a new run (remember, the errors and warnings are always appended).
+      
+      An option I particularly recommend is the precompilation of header
+      files. If you have enough memory, all headers, including the system
+      headers (e.g. <intuition/intuition.h>) may be precompiled. Since the
+      compiler will then only have to read them ONCE from your diskdrive,
+      this saves a lot of time. To do this put all your definitions and 
+      (system) include files in one header, say 'defs.h', and reference 
+      them with #include "defs.h" from every source file which needs them.

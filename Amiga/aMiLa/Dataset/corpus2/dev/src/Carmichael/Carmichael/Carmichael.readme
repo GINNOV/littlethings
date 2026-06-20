@@ -1,0 +1,52 @@
+Short:    Search for Carmichael Numbers
+Uploader: walternn@rupert.informatik.uni-stuttgart.de (Norman Walter)
+Author:   walternn@rupert.informatik.uni-stuttgart.de (Norman Walter)
+Type:     dev/src
+Version:  2.0
+Requires: Scheme Interpreter (e.g. guile)
+
+Scheme program for finding Carmichael Numbers.
+Carmichael Numbers are numbers, which cheat the Fermat Test.
+
+Usage:
+======
+
+Step 1: cd into the directority where the file Carmichael.SCM
+        is located.
+
+Step 2: Call Guile with
+
+        guile -l Carmichael.SCM
+
+Step 3: Enter
+
+        (carmichael-bis <integer-number>)
+
+        Place a integer number for <integer-number>.
+        The program will compute all Carmichael Numbers
+        up to this Integer.
+
+        Example:
+
+        (carmichael-bis 1800)
+
+        This will produce the output:
+
+        561
+        1105
+        1729
+
+        These are all Carmichael Numbers up to 1800.
+
+
+A German manual is also included.
+
+
+
+World Wide Web:
+
+http://www.norman-interactive.com (my Homepage)
+
+http://www.informatik.uni-stuttgart.de (University Stuttgart, Dept. of Computer Science)
+
+

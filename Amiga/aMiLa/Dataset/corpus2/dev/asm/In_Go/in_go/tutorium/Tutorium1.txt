@@ -1,0 +1,147 @@
+Tutorium1 zum In_Go Reassembler
+ - Starten Sie In_Go
+ - Mit Amiga+"l" den Laderequester aufrufen
+   Als Quelle sollte  File eingeschaltet sein.
+ - Klicken Sie `Lade...` an
+   Es erscheint ein Requester `Lade ausführbares File/Objectfile`
+ - Klicken Sie Das Fileauswahl-Gadget hinter Lade an und wählen Sie Tutorium1 an
+   Bestätigen Sie den Asl Requester mit `Ok`
+   Als Projectname sollte nun Tutorium1 erscheinen
+ - Bestätigen Sie mit `Ok`
+   Der `Lade ausführbares File/Objectfile` Requester verschwindet, der Ladevorgang hat begonnen,
+   und ist sehr schnell beendet.
+   Die Quell-Auswahl Gadgets und das `Lade...` Gadget werden nun Ghosted dargestellt.
+  -Zur Übung Klicken Sie auf Data in Der Scroll-Box
+   Es erscheint ein Requester der Sie auffordert das Segment zu definieren.
+  -Sie Ändern jedoch nichts und klicken Cancel an
+   Der Requester verschwindet
+  -Klicken Sie nun `Ok` im Laderequester an
+   Der Lade- Requester verschwindet.
+   Es erscheint nun unaufgefordert der `Reassembler preferences` Requester
+  -Klicken Sie `Suche indirekte Basen` an
+   Es erscheint eine Zeile in der Scrollbox
+  -Klicken Sie nun `Suche Link-Module` an
+   Der Anzeigemodus hat sich automatisch geändert er ist nun `Pseudo a0-a6`
+   Es erscheint wiederum eine Zeile in der Scrollbox, die aber einen anderen Aufbau hat
+   als die Zeile vorher.
+  -Verlassen Sie den Requester mit `Ok`
+   Der Requester verschwindet, die Hauptanzeige wird voll sichtbar.
+   Der Text ist nun überwiegend gelb es sind keine Library-aufrufe dekodiert
+  -Drücken Sie nun `d`
+   Die Code-interpretation verschwindet es wird nun ein Data-ähnlicher Text gezeigt.
+   Dieser Text entspricht dem vorher gesehenen Code diesmal nur als Data interpretiert.
+  -Drücken Sie nochmals `d`
+   Nun erscheint der vorher gesehene Assemblertext wieder.
+  -Drücken Sie nun `p` einmal.
+   Auf der linken Seite erscheint nun die absolute Adresse der geladenen Quelle
+  -Drücken Sie nun `p` nocheinmal
+   Auf der linken Seite erscheint nun die relative Adresse der geladenen Quelle
+  -Drücken Sie nun `p` nocheinmal
+   Jegliche Adressangabe auf der linken Seite verschwindet wieder.
+  -Starten Sie nun den Reassembler mit `Space` also der Leertaste.
+   Die ersten beiden Zeilen erscheinen nun Schwarz und B=1 also 1 Codebereich ist entdeckt.
+  -Drücken Sie nun wieder `d`
+   Die ersten beiden Zeilen sind unverändert der Rest wird wiederum zu Data
+  -Mit Hilfe der Kursortaste bewegen Sie die aktuelle Zeile, auf AL_0_4
+  -Drücken Sie nun Taste `Amiga`+`j`
+   Fast der gesammte Inhalt von Segment 0 ist reassembliert worden.
+   die Aktuelle Zeile bleibt hinter dem reassemblierten Bereich stehen
+  -Drücken Sie nun `0`
+   Hier wird Marke `0` aufgerufen, da Sie aber bisher unbelegt ist wird der Anfang
+   von Segment 0 angezeigt.
+   Die absoluten Adressen im Operandenfeld sind nun verschwunden
+  -Drücken Sie nun Amiga+shift+`$`
+   In_Go liest nun alle amigatypischen Namen des Programmes ein..
+   In der neunten Zeile erscheint nun `lea dosname(A4),D1`
+  -Sehen Sie Sich die ersten Zeilen an. .
+  -Schalten Sie mit `p` auf relative Zeilenadressanzeige (zweimal drücken !)
+   Jetzt sollte die Zeilenadressanzeige `+$xxx` sichtbar sein.
+   In Zeile `+$E` wird die ExecBase in eine Variable geschoben,
+   soviel sollten Sie erkennen ...
+  -Klicken Sie die Variable `L_1_86(A4)` an . . .
+   Es erscheint der `Reassembler Hilfe` Requester
+  -Klicken Sie das Stringgadget im Bereich `Gewähltes Label` an.
+  -Geben Sie `ExecBase` in genau dieser schreibweise ein, mit Return abschliesen.
+   Stringgadgets in In_Go müssen immer mit Return verlassen werden !
+  -Klicken Sie `Ok` an
+   Jetzt erscheint die Hauptanzeige wieder, der symbolische Processor kann nun
+   einige Library-Aufrufe erkennen.
+  -Mit Hilfe der Kursortasten gehen Sie nun  nach unten in Zeile `+$64`
+   In Zeile `+$5C` - `+$68` kann man das Öffnen der Utility Library erkennen
+   In Zeile `+$6C` wird die UtilityBase in eine lokale Variable abgespeichert.
+  -Klicken Sie pS0_0(A5) an
+   Es erscheint der `Reassembler Hilfe` Requester
+  -Klicken Sie das Stringgadget im Bereich `Gewähltes Label` an.
+  -Geben Sie `UtilityBase` in genau dieser schreibweise ein, mit Return abschliesen.
+  -Verlassen Sie den Reassemblerhilferequester mit der `Esc` Taste
+   Nun kann der symbolische Processor auch diesen Aufruf dekodieren.
+   An der Zeilenfärbung kann man erkennen Das es sich um einen Aufruf ab Kick 3.0 handelt.
+  -Fahren Sie nun mit der Kursortaste bis ans Segmentende
+   sie erkennen anhand der grün-schwarzen Zeile das hier eine Tabellen existiert
+   Da sie noch nicht automatisch eingelesen ist vermuten Sie richtig
+   >Es handelt sich hier um eine Tabelle die In_Go nicht automatisch einliest<
+  -Fahren Sie mit dem Zeilenkursor auf Label `L_0_A4:`
+  -Drücken Sie jetzt `t`
+   Jetzt erscheint ein Requester mit vielen Einstell-Möglichkeiten
+  -Klicken Sie Schalter `Der Tabellen Start` an
+   In dem Stringausgabegadget dahinter sollte jetzt `L_0_A4` erscheinen.
+  -Verlassen Sie den Requester mit `Ok`
+
+Den Folgenden Vorgang eventuell wiederhohlen !
+  -Fahren Sie nun mit dem Zeilenkursor auf `+$AC`
+   Wenn sie `+$AC` nicht finden nehmen Sie den naechsten kleineren Wert !
+  -Drücken Sie jetzt `t`
+   Jetzt erscheint der Tabelleneinleserequester wieder
+  -Klicken Sie Schalter `Das Tabellen Ende` an
+   In dem Stringausgabegadget dahinter erscheint jetzt die Absolute Adresse.
+   An dieser Stelle befindet sich ja noch kein Label.
+  -Stellen Sie am Gadget links oben "(@):   {start+word[@]}: @+@+distance" ein
+   Die  Distanz sollte bereits auf 2 , "{}=" sollte `Sprunglabel` zeigen
+  -Starten Sie das Einlesen der Tabelle mit `Lese Tabelle ein`
+  -Verlassen Sie den Requester mit `Ok`
+   in der Hauptanzeige erscheint nun die Tabelle
+Wenn Sie vorher +$AC` nicht gefunden haben Zurück zum Absatz
+  -Drücken Sie nun `Space` (Leertaste)
+   Es ertönnt mehrfach `Beep` das deutet auf einen Fehler hin !
+  -Drücken Sie darum Taste `e`
+   Taste `e` zeigt die Fehler einige dc.w s
+  -Schalten sie im Processormenu auf 68020.
+   Unsere Vermutung war richtig der Fehler war gar kein Fehler es handelte
+   sich um nur für den 68020 er Processor lauffähigen Code
+   Da In_Go beim `Fehler` die Reassemblierung an dieser Stelle abbricht haben wir dort
+   jetzt unerkannter Code
+  -Fahren Sie mit dem Zeilenkursor auf das Zeilenlabel darüber (+$B8)
+  -Wählen Sie im Edit-Menü `Mache Code zu Data von AL an`
+   Jetzt werden 3 Zeilen wieder überwiegend Gelb, Sie sind In_Go intern `DATA`
+   Darum müssen wir erneut an dieser Stelle reassemblieren.
+  -Gehen Sie Mit dem Zeilenkursor auf (+$B8)
+  -Drücken Sie Amiga + `j`
+   Nun hat In_Go diese Stelle bearbeitet, Sie ist als Code richtig erkannt
+  -Bringen Sie Nun Zeile  `+$9A` -`$A2 in die Anzeige (durch Kursor oder Scrollbalken )
+  -Drücken Sie nun Shift + `L`
+   Mit dieser Tastenfolge können Libraryaufrufe im sichtbaren Bereich automatisch benannt
+   werden.
+   In Zeile `+$9A` erscheint der Name `CloseLibrary_I`  er wurde gelernt !
+  -Bringen Sie Zeile  +$BA bis +$B6 in die Anzeige
+  -Wählen Sie `F10` (Die Funktionstaste)
+  -Klicken Sie alle Möglichkeiten ein
+  -Verlassen Sie den Requester mit OK
+   Nun können wir einige Optimierungen richtung 68020 betrachten.
+  -Durch drücken von `o` kann die Optimierung `getoggled` werden.
+  -Wählen Sie nun `Erzeuge lokale Label` im Edit-Menu an.
+  -Es erscheint ein roter Hinweis der jedoch bald wieder verschwindet.
+   Es werden nun lokale Label angezeigt;
+   Warum  sind die Label ab Zeile +$C4 nicht lokal geworden ?
+   Ein kleiner Trick von mir: in Segment 1 befindet sich ein Verweis
+   auf Label +$C4 ;dies wurde von In_Go richtig erkannt.
+  -Erzeugen Sie Nun durch Anwahl von `Speichere Textfile` im
+   Aktion-Menü ein Assembler-Textfile
+  - Erzeugen Sie Durch Anwahl von `Speichere Amigaguidefile` im
+   Aktion-Menü ein Amigaguidefile des Tutoriums
+  -Wählen Sie `Speichere ausführbares File`
+   Hier können Sie je nach Wunsch das File ausführbar, mit Dreloc_32 Units.
+   und oder mit den gefundenen Namen abspeichern.
+   der Name wird mit `q` erweitert.
+
+   Ende von Tutorium1    
+

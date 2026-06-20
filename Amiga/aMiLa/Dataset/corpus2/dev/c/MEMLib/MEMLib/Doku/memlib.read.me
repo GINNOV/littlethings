@@ -1,0 +1,25 @@
+To see MemLib in action, do the following:
+
+1. Compile and link the example program:
+
+      sc example.c link
+      
+2. Run the example program:
+
+      example
+      
+   Note that nothing seems to happen.  The program has several bugs, but
+   they don't get caught!
+
+3. Recompile, but this time enable memory debugging:
+
+      sc example.c link define MWDEBUG=1 lib memwatch.lib
+
+4. Run the program again:
+
+      example
+
+   This time the MemWatch library caught the errors and told you
+   exactly where they occurred.
+
+See the file "memlib.doc" for information on using memlib.

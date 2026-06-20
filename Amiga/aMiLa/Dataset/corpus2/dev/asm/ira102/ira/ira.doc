@@ -1,0 +1,325 @@
+
+
+
+
+                     ________________
+                    /   /         /  \
+                   /   /  ____   /    \
+                  /   /  /   /  /  /\  \
+                 /   /  /   /  /  /  \  \
+                 \   \  \  /  /  /    \  \
+                  \   \  \/  /   \/\/\/   \
+                   \   \     \             \
+                    \   \     \    /\/\/\   \
+                    /   /  /\  \   \     \   \
+                   /   /  /  \  \   \     \   \
+                  /   /  /    \  \   \     \   \
+                  ¯¯¯¯¯¯¯      ¯¯¯¯¯¯¯      ¯¯¯¯
+
+
+
+                      IRA  V1.02  9/93
+
+                    Shareware reassembler
+
+                    (C) 1993 Tim Ruehsen
+
+                  SHAREWARE 15US$/20DM CASH
+
+
+
+FORWORD
+¯¯¯¯¯¯¯
+Sorry, this is not the final doc-file and this is not the final IRA !!!
+I was in a hurry, when I wrote this doc. Next one is better.
+The future will bring you 6888x (FPU) and MMU commands, perhaps the IRA
+will get interactive. That depends on your comments and letters.
+If you find any errors, send me a disk with the program that causes trouble
+and tell me what command line you used. The disk will be returned with the
+newest version of IRA and some PD stuff.
+
+
+DESCRIPTION
+¯¯¯¯¯¯¯¯¯¯¯
+IRA102 is version V1.02 of my reassembler IRA (Where the 'I' comes from shows
+the future). Reassembler means that IRA translates any executable or binary
+file into an assembler sourcecode that might immediately be translated back by
+an assembler. E.g., you can do that with a debugging option. After that you
+can examine that program with any debugger. That's fine for finding and 
+analysing viruses, repairing old programs, even optimising alien programs.
+
+When translating back with an assembler, switch optimising off,except you know
+exactly what you're doing !!!
+
+IRA is for use from CLI/SHELL.
+
+IRA has some command line options. Just type 'ira' to get a short description.
+
+This version works fine with the MC68000 and the MC68010 processor.
+FPU and MMU commands are not implemented yet.
+Reassembling programs for 68020+ processors may cause trouble with some
+addressing modes.
+For example: (0,A0) and (0,A0) seems to be the same, but the first may be
+(d16,An) and the second (bd,An,Xn) with Xn suppressed (and bd might be 16
+or 32 bit). There are other ambiguous addressing modes.
+
+
+DESCRIPTION OF THE COMMAND-LINE OPTIONS
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+The default values are in brackets.
+
+-M680x0 (-M68000)
+        This specifies the type of processor for which the program should
+        be reassembled. This doesn't has anything to do with the machine
+        you're running IRA on. Most programs are written for 68000 CPUs.
+        If anything other than -M68000 is specified a MACHINE statement
+        in the .ASM file is created. This works fine with the PhxAss
+        assembler (see below). For any other assembler this statement
+        possibly has to be changed.
+
+-BINARY (off)
+        IRA automatically recognises if the sourcefile is an executable,
+        an object file or any other (binary). It may happen that some
+        kind of binary data is recognised as an executable. To avoid this
+        make use of the -BINARY option.
+
+-a      (off)
+        This option makes IRA append the address and data of an instruction
+        to every line. That is pretty useful to me. E.g. when code and data
+        is mixed, you can manually delete some instructions to replace them
+        by DC.x directives.
+
+-i      (off)
+        Use this option to get some information about the hunk structure of
+        your sourcefile.
+
+-OFFSET=<OFFSET> (-OFFSET=0)
+        When the sourcefile is relocated by IRA the offset value is added to
+        the relocation. Why should I do that ?
+        If you want to run an executable at a specific location in memory
+        you specify the address of that location with the -OFFSET option
+        in combination with the -KEEPBIN option. After running IRA you can
+        load the .BIN file to the specific location and execute it. You just
+        have to know what you're doing (e.g. contents of registers and so on).
+        The second, more useful application is to write a part of memory to a
+        file, then create a .ASM file with the -OFFSET option. You have to take
+        the address of the memory location as offset. E.g. you can create your
+        own kickfile with your own modifications (is it legal ?), of course
+        some additional work on the .ASM file has to be done.
+        OFFSET can be decimal or hexadecimal (e.g. -OFFSET=$4FF0).
+
+-CACHE=x (-CACHE=10)
+        Before a WRITE command is executed the cache has to be filled with
+        data. That increases speed, especially on disk-based 68000 systems.
+        I never use this option so it might vanish with the next version of
+        IRA.
+
+-TEXT=x (off)
+        There are two implemented methods of searching for text. So x can be
+        1 or 2. The text that is found is printed out to <stdout>. It may
+        happen that some stupid text lines show up, so you have to decide
+        individually about every line to include into the .ASM file.
+        Method 1 works better if code and data is mixed. Method 2 works
+        better if it is not mixed.
+
+-KEEPZH (off)
+        There are files that have hunks with a length of zero. By default
+        these hunks don't appear in the .ASM file. If you want them to see
+        just use this option. There are executables where you have to use
+        this option because they work with there own SEGMENT structure.
+
+-KEEPBIN (off)
+        Before the first pass an executable is relocated by IRA and written
+        to a .BIN file. Normally, this file is deleted at some point but if
+        you want to keep it for some purpose use the -KEEPBIN option.
+        E.g. for a <type >x.hex x.bin opt h>.
+
+-OLDSTYLE (depends on the -M680x0 option)
+        This option forces IRA to use the old Motorola syntax like D16(PC)
+        instead of (D16,PC). By default this option is used for 68000 and
+        68010 processors.
+
+-NEWSTYLE (depends on the -M680x0 option)
+        This option forces IRA to use the new Motorola syntax like (D16,PC)
+        instead of D16(PC). By default this option is used for 68020, 68030
+        and 68040 processors.
+
+-SPLITFILE (off)
+        With this option the .ASM file is split up. Every section is put into
+        an own file. One 'main' file is created to include these files via
+        INCLUDE statements. What is it for ? I don't know. I was asked for
+        this option.
+
+-BASEREG[=x,adr,sec]
+        You can use this option if the program uses the smalldata model. It
+        will provide you with a more readable .ASM file.
+        Smalldata model means the access to data is made by D16(An), and the
+        register An has to be preloaded by the SMALLDATABASE value. A lot of
+        compilers use A4 as baseregister and the address of the datasection
+        plus 32766 as the SMALLDATABASE.
+        A good way to find out if a program makes use of the smalldata model
+        is the following:
+        1. Type <IRA >x -a -i -basereg test>
+        2. Look at the file test.asm and x with an editor.
+           If there are memory accesses by D16(An) (e.g. move.l -32754(A4),D0)
+           look at the file x. There may be lines like BASEREG 00000008: A4.
+           The first number is the hexadecimal address of an instruction that
+           has A4 as destination register. Look at this address in the file
+           test.asm. You may find a line like LEA SECSTRT_1,A4. Perhabs, A4
+           is the baseregister and SECSTRT_1 the SMALLDATABASE. Now memo the
+           address of SECSTRT_1 (=adr).
+        3. Type <IRA -a -i -basereg=4,adr,1 test>
+        4. Look at test.asm and you will see LAB_xxxx instead of D16(A4).
+        5. The line NEAR A4,1 in test.asm tells the assembler to use the
+           smalldata model. This directive may differ from assembler to 
+           assembler.
+
+        As always, be careful when modifying a program. Often code and data
+        is mixed or there are some program protection technics that makes it
+        hard to modify and run a program.
+
+        
+HOW TO REASSEMBLE A PROGRAM
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+First, you have to be sure that your Assembler, Linker and IRA work fine.
+That goes like follows:
+  (Let's assume the linker is called LN, the ASSEMBLER is called AS and the
+   program is called TEST.)
+
+  1. Type <IRA -a TEST TEST1.S>
+  2. Type <AS -n TEST1.S>           (assume -n to be the NO_OPTIMISE flag)
+  3. Type <LN TEST1.O>
+  4. Type <IRA -a TEST1 TEST2.S>
+  5. Type <FDIFF TEST1.S TEST2.S RESYNC 1>
+
+If no error pops up until now it's very likely that TEST1 will work. (Try it).
+If FDIFF tells you that there are differences between TEST1.S and TEST2.S you
+have to be careful with running TEST1 because there is at least one bug in
+IRA (I don't think so!) or in your assembler. Try to reproduce the error in
+a small file and tell me about it. I could provide an assembler buglist here.
+
+If you got no problems with the five points above you can start with editing
+TEST1.S. First, try to find all data that is hidden in code sections and
+replace the instructions with DC.W directives. If you have done so try
+assembling TEST1.S with an optimising assembler (should work).
+To find parts of text use the -TEXT option. Or use the -KEEPBIN option and
+type <type >test.hex TEST.BIN opt h> and look at TEST.HEX for text.
+
+To collect some experience it'll be better to begin with short programs.
+
+
+To reassemble bootblocks, disktracks or memory take a monitor program and these
+to a file. Then invoke IRA.
+
+
+WHAT ASSEMBLER CAN I USE ?
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+You can use any assembler you want, but minor problems may occur:
+
+  - There may be problems with the SECTION, MACHINE and NEAR directives.
+    Change these lines by hand or tell me the name and version of your
+    assembler and the syntax of the above directives. So I could build a
+    command-line option to switch between different assemblers.
+  - Some assemblers can't handle more than 2^16-1 (65535) lines. Get the
+    GigaPhxAss from Frank Wille (see below) for the big programs.
+  - If code and data is mixed in a code hunk you have to switch optimising
+    off when you run the assembler. Else the chance of having a damaged
+    program is very high. Some assemblers have problems with that. I call
+    that 'fodder for the garbage can'.
+
+Tell me about any problems !!!
+
+I use PHXASS from Frank Wille, a fast and excellent 680x0, FPU and MMU
+assembler. You can get it on AMINET somewhere.
+Or send a disk (with PD stuff, of course) and a self addressed envelope
+to:
+       Frank Wille
+       Auf dem Dreische 45
+       32049 Herford
+       GERMANY
+
+Thanks a lot, Frank !
+
+
+CONDITIONS
+¯¯¯¯¯¯¯¯¯¯
+IRA is shareware. The program may be freely distributed
+and copied, as long as the following conditions are
+fulfilled:
+
+- The sales price must not be higher than the cost of
+  an (empty) disk plus a nominal copying fee plus
+  costs for shipping. The total price must not be higher
+  than 6 US$ or 10 DM.
+- All parts of the program and the documentation must
+  be complete. The distribution of single parts is not
+  allowed.
+- IRA or parts of it must not be sold in combination with
+  or as part of commercial software.
+- Program and documentation must not be changed in any way.
+  Exception is the use of archivers such as LHArc and packers
+  like "Imploder" or "Powerpacker", as long as it is possible
+  to retrieve the original program/data.
+
+
+I explicitly do not guarantee for the correct functioning of IRA.
+I explicitly reject any responsibility for any consequences from the use
+of IRA whatsoever. This includes, but is not limited to, secondary 
+consequences, personal injuries or other kinds of side effects.
+
+
+
+I want to ask everybody, who uses IRA to send the amount of
+
+     15 US$  or  20 DM
+
+to the following address:
+
+   Tim Ruehsen
+   Johannes-Rabe-Stieg 8
+   21033 Hamburg
+   Germany
+
+Please send only cash.
+
+
+
+ERROR REPORTS
+¯¯¯¯¯¯¯¯¯¯¯¯¯
+If you find any errors, send me a disk with the program that causes trouble
+and tell me what command line you used. The disk will be returned with the
+newest version of IRA and some PD stuff.
+If you have questions or ideas about IRA send me a letter,
+
+phone me (GERMANY 040-7216995) or
+EMAIL me (ruehsen@ifm.uni-hamburg.de).
+
+
+
+HISTORY
+¯¯¯¯¯¯¯
+V1.01    First released version.
+
+V1.02
+       o CHIP and FAST hunks are now recognised.
+       o Addressing mode D8(PC,An) is now used with a label.
+       o Removed a never-ending-loop problem that came up with a special
+         program protection (a hack in the hunk structure).
+       o Removed the multiple-label problem.
+       o The MACHINE directive is no longer used in 68000 programs.
+       o Some of the command-line options changed.
+
+
+BETA-TESTERS
+¯¯¯¯¯¯¯¯¯¯¯¯
+Thanks to all the testers of IRA (poor number):
+
+Crisi, Torben, anonymous guy from Darmstadt and me, myself and I.
+
+
+
+
+Good Night, 'till next version.
+
+
+                     TIM RUEHSEN

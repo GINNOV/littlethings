@@ -1,0 +1,211 @@
+
+
+LOADERS
+=======
+
+
+
+IFF ILBM
+
+Interchange File Format
+InterLeaved BitMap loader
+
+Loads any IFF ILBM picture. The first frame
+of IFF ANIMs is read as well.
+24Bit is not supported.
+
+
+DATATYPE
+
+OS3.x system datatype loader
+
+Uses the OS3.x system datatypes for loading
+alien file formats. Only picture class datatypes
+are supported.
+
+
+SCREEN
+
+Screen grabber
+
+This loader is a screen grabber that allows you
+to fetch any screen that is open on your system.
+
+
+RAW
+
+raw bitplane loader
+
+Tries to load raw bitplane data. Be prepared to
+specify width, height, and the number of bitplanes.
+
+
+RAW INTERLEAVED
+
+raw interleaved bitplane loader
+
+Tries to load raw interleaved bitplane data. Be
+prepared to specify width, height, and the number
+of bitplanes.
+
+
+PALETTE RAW
+
+raw color information loader
+
+Loads raw palette data over a previously
+loaded picture. The raw data will be interpreted
+according to your preferred color settings.
+
+
+PALETTE IFF
+
+IFF CMAP loader
+
+Loads the palette out of an IFF picture
+or a plain IFF palette over a previously loaded
+picture.
+
+
+BMP
+
+Windows bitmap loader
+
+Loads Windows Bitmaps and OS/2 Bitmaps. RLE4 and
+RLE8 are supported, but not really tested.
+24Bit is not supported.
+
+
+PCX
+
+PCX loader
+
+Loads PCX pictures from 1 to 8 bit. 24Bit is not
+supported.
+
+
+
+SAVERS
+======
+
+
+IFF ILBM
+
+Interchange File Format
+InterLeaved BitMap saver
+
+Saves an image as compressed IFF ILBM.
+
+
+RAW
+
+raw bitplane saver
+
+Saves an image or brush as raw bitplanes.
+The width is aligned to words (multiples of 16 pixels).
+
+
+RAW INTERLEAVED
+
+raw interleaved bitplane saver
+
+Saves an image or brush as raw interleaved bitplanes.
+The width is aligned to words (multiples of 16 pixels).
+
+
+SPRITE
+
+sprite(s) saver
+
+Saves an image or brush as raw sprite data. The width,
+the number of colors, and many additional details
+can be specified in the settings window.
+
+
+PALETTE
+
+palette saver
+
+Saves an image's palette according to the color settings.
+
+
+MASK
+
+raw bitplane mask saver
+
+Saves a raw single-bitplaned mask for an image or a
+brush. Either this applies to all non-transparent
+pixels (different from color zero), or to a single,
+specific color that you'll be prompted for.
+
+
+MASK INTERLEAVED
+
+raw interleaved bitplane mask saver
+
+Saves a raw multi-bitplaned mask for an image or a
+brush. Either this applies to all non-transparent
+pixels (different from color zero), or to a single,
+specific color that you'll be prompted for. The
+masking bits appear identical for each bitplane.
+
+
+CHUNKY LEFT
+
+raw one-byte-per-pixel saver (left aligned)
+
+Saves an image or brush as left-aligned chunkies.
+Each pixel is represented by a byte that informs
+about the pen number. This saver mirrors the
+byte so that the lowest bitplane appears at the
+most significant bit and vice versa:
+
+        Chunky Byte: %76543210
+        Bitplane:    %12345678
+
+
+CHUNKY RIGHT
+
+raw one-byte-per-pixel saver (right aligned)
+
+Saves an image or brush as left-aligned chunkies.
+Each pixel is represented by a byte that informs
+about the pen number:
+
+        Chunky Byte: %76543210
+        Bitplane:    %87654321
+
+
+RGB CHUNKY 12
+
+raw 4-bit-per-gun chunky saver
+
+Saves an image or brush in 12Bit truecolor, with
+each gun represented by 4 Bit. Each pixel appears
+as a word in the format $0RGB. The highest nibble
+is unused.
+
+
+RGB CHUNKY 24
+
+raw 8-bit-per-gun chunky saver
+
+Saves an image or brush in 24Bit truecolor, with
+each gun represented by 8 Bit. Each pixel appears
+as a longword in the format $00RRGGBB. The highest
+byte is unused.
+
+
+BMP
+
+Windows bitmap saver
+
+Saves an image as BMP (Windows Bitmaps) from 1
+to 24Bit.
+
+
+PCX
+
+PCX saver
+
+Saves an image as PCX from 1 to 24Bit.

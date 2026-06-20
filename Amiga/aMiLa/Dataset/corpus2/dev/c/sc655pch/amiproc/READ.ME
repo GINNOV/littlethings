@@ -1,0 +1,122 @@
+AMIPROC Copyright (c) 1989-1995 Steve Krueger and Doug Walker, 
+Raleigh, NC, USA.  All Rights Reserved.
+
+Send any correspondance to:
+
+    walker@unx.sas.com
+    sassek@unx.sas.com
+
+This distribution is freely redistributable provided that you do not 
+modify the contents of the files, and that all files are kept together.
+You may use this code freely in your commercial and noncommercial
+projects.  
+
+The programs and documentation in this distribution are provided on an
+AS-IS basis only.  No warranty is expressed or implied, including the
+warranty of fitness for a particular purpose.  Use this code at your
+own risk.  By your use of this code, you agree that the authors will
+not be responsible for any consequences of its use.
+
+AMIPROC: Spawn a new process with its own near data section.
+Requires the SAS/C® Development System Version 6.50 or higher 
+(Some features might work with Version 6.0).
+
+SAS/C is a registered trademark of SAS Institute, Inc, Cary, NC, USA.
+
+AMIPROC consists of a couple of small functions that will start a new
+process, initialize a near data section for it, and run the SAS/C
+autoinit and autoterm functions.  The autoinit/autoterm functions
+give you the ability to use virtually the entire SAS/C link library
+in your new process, as well as running C++ constructors and 
+destructors and user-written autoinit/autoterm functions.
+
+***HOW TO USE AMIPROC
+
+   1. Include the file "amiproc.h" in your C source file.
+
+   2. When you want to start your new process, call the function
+      AmiProc_Start():
+      
+         res = AmiProc_Start(func, userdata);
+         
+            struct AmiProcMsg *res;
+               The return value is a pointer to a private data structure.
+               You need to keep track of it and pass it to AmiProc_Wait()
+               when you're ready to exit.  Do not attempt to read the
+               contents of this data structure.  If res is NULL, the
+               attempt to create a new process failed.
+
+            int (*func)(void *userdata);
+               This parameter is a pointer to a function in your code.
+               The function should return "int" and take a "void *"
+               as its parameter.  The parameter will be the data pointer
+               passed as AmiProc_Start's second parameter.
+
+            void *userdata;
+               This parameter is a pointer to data that you supply.  It
+               will be passed to your function as its argument when the 
+               subprocess has been created.  This data must not be
+               reused or freed until after the subprocess exits!
+
+   3. Sometime before your main program exits, call AmiProc_Wait(),
+      passing it the pointer returned by AmiProc_Start().  AmiProc_Wait()
+      will wait until the subprocess exits, free some resources, then
+      return the subprocess's return code to you.  Do not attempt to use
+      the AmiProcMsg pointer after this.
+
+   4. Make sure your subprocess does not call exit(), __exit(), abort(),
+      _XCEXIT(), or any other function that would cause your program
+      to exit (EVEN INDIRECTLY!).  If it does, the program will attempt
+      to free some resources belonging to the parent, which will cause 
+      other resources not to be freed.  Always exit by a simple return()
+      from your entry point function.
+
+   5. Make sure your program is linked with the SAS/C-supplied cres.o
+      startup, that it is compiled with the NOSTACKCHECK and NOSTACKEXT
+      options, and that CTRL-C checking has been disabled.  See below 
+      for more explanation.
+
+   6. Link with the object file amiproc.o (provided).
+
+***WARNINGS/POSSIBLE PROBLEMS
+
+   Remember that although you have your own NEAR data section in the
+   subprocess, FAR and CHIP data will still be shared with the parent
+   process.  Either reserve FAR and CHIP for read-only data or use 
+   semaphores to protect any read/write FAR or CHIP data. 
+
+   String literals ("the ones in double quotes") count as external data,
+   too.  If you do not specify the STRSECT or STRMERGE options, they
+   will go whereever your external data goes.  Since you probably don't
+   modify string literals, STRSECT=CODE or STRSECT=FAR will save your
+   program some space in the near section.  STRMERGE will also save
+   some space.  Use these options if you have a lot of near data and 
+   need to make room, or if you want to minimize the amount of data that 
+   gets duplicated each time you create a new subprocess
+
+   Make sure your program is compiled with NOSTACKCHECK and NOSTACKEXT.
+   (NOSTACKEXT is the default).  These options rely on the values of
+   certain external variables, which are not set up for the new 
+   subprocess.  (This could probably be made to work, but we haven't 
+   done it.  If you want to try, you'd need to duplicate the code in 
+   c.a that deals with setting the stack up.)
+
+   Make sure that CTRL-C checking is disabled in your subprocess.
+   The easiest way to do this is to disable the __chkabort function.
+   See your SAS/C V6.50 User's Guide, page 220, for a description
+   of how to disable CTRL-C checking.  If you link with the SC
+   command, you can use the NOCHKABORT option described in the
+   User's Guide instead.
+
+   Make sure your program is linked with the cres.o startup.  Programs
+   linked with cres.o have a read-only copy of their initialized near
+   data that these macros access.  Programs linked with c.o or cback.o
+   do not have this extra copy.  Even if these programs link correctly,
+   which may or may not be true, they won't work as expected since
+   external variables used by library functions will be initialized
+   incorrectly.  (For example, the malloc() memory pools in both 
+   processes will be pointing to the same memory blocks...)
+
+   Remember that the __saveds keyword and the geta4() function do not 
+   work in code linked with cres.o.  This is described in your SAS/C
+   manual.

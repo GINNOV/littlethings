@@ -1,0 +1,22 @@
+ ifnd DEVICES_KEYBOARD_I
+DEVICES_KEYBOARD_I set 1
+*
+*  devices/keyboard.i
+*  Release 2.0
+*  for PhxAss
+*
+*  © copyright by F.Wille in 1994
+*
+
+ ifnd EXEC_IO_I
+ include "exec/io.i"
+ endc
+
+ DEVINIT
+ DEVCMD KBD_READEVENT
+ DEVCMD KBD_READMATRIX
+ DEVCMD KBD_ADDRESETHANDLER
+ DEVCMD KBD_REMRESETHANDLER
+ DEVCMD KBD_RESETHANDLERDONE
+
+ endc

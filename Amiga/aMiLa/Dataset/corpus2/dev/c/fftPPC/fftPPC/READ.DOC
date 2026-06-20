@@ -1,0 +1,179 @@
+
+
+			     FFT Program for Turbo-C
+
+				       By
+
+			         Steve Sampson
+
+
+			   Version 2.6, November 1988
+
+
+   The FFT program and test signal generators included in the archive, can be
+used to perform signal analysis in the frequency domain, using samples in the
+time domain.  Historically the applications have ranged from music to radar.
+I recently have been doing some research in the radar field using this FFT to
+perform relative velocity measurements.  This program can be further refined
+to meet your needs.
+
+   I initially uploaded a fairly basic program, and through feedback have
+made some improvements.  It's pretty complete now as far as a start for making
+your own specific version.  Earlier Unix compatability has been removed in
+favor of IBM graphics adaptors.
+
+   This program uses graphics to present a 256 filter window.  My current
+application required complex data and resulted in 256 complex points.  You may
+use this with real data which results in 128 significant points.  If you feed
+the FFT real data only (Imaginary data set to zero), then the output will be a
+mirror image, and you can ignore the left side.
+
+Some papers I found on the subject of FFTs are included at the end.  There are
+several books devoted to the subject also.
+
+For an example try:
+
+	sine in
+	1000
+	3000
+
+Which will sample the 1 Khz data every 333 microseconds (1 / 3 Khz).  Note: The
+sample frequency should be greater than 2 times the input frequency (Nyquist
+and all that...).
+
+Then run fft like so:
+
+	fft in
+
+And you should see a graphics display which has filters 0 through 255 on the
+X axis, and power on the Y axis.  All DC power in the time samples will appear
+in filter 128.  The fundamental display frequency is shown in filter 129 and
+can be computed as follows:
+
+	T  = Time Increment Between Samples
+	N  = Number Of Samples (256)
+	Tp = N * T
+
+	Then F = 1 / Tp
+
+	In the example above, the time increment between samples is
+	1 / 3000 or 333 microseconds.  N = 256, so Tp = 85 milliseconds
+	and 1 / .005333 is 11.7 Hz per filter.
+
+	Therefore each filter is a multiple of 11.7 Hertz.
+
+	Filter 126			-23.4 Hz
+	Filter 127			-11.7 Hz
+	Filter 128	DC		 00.0 Hz
+	Filter 129	Fundamental	 11.7 Hz
+	Filter 130	Second Harmonic  23.4 Hz
+
+In this case you'll find the sampling interval didn't work very well for the
+input frequency.  The display shows the power spread out over several filters.
+This is a limitation of the Discrete Fourier Transform in representing a
+continuous signal.
+
+A better sample rate for 1000 Hz would be 4000 Hz, in which case T = 250 ms,
+Tp = 64 milliseconds, and F = 15.625 Hz.  1000 / 15.625 = 64.  All of the
+power should then appear in filter 192 (128 + 64) in this example.
+
+Run it and see using:
+
+	sine in
+	1000
+	4000
+
+	fft in
+
+By using negative frequencies in 'sine' you can generate opening targets:
+
+	sine in
+	-1000
+	3000
+
+	fft in
+
+You can see in these examples where weighting functions would be useful.  For
+instance using weighting you could greatly attenuate the sidebands.  Usually
+the main lobe becomes a little wider however.  The current version does not
+perform any weighting.
+
+For generating pulses, a second program 'pulse' is provided.  It pre-loads
+imaginary data with zeros.   For example:
+
+	pulse in
+	.000006
+	.0000008
+
+	fft in
+
+Simulates a radar with a 6 microsecond pulse and 800 nanosecond range gates,
+and produces the typical pulse spectrum display.
+
+
+How to run the FFT program
+--------------------------
+
+The program auto-detects CGA, EGA, and VGA graphics adaptors.  The CGA version
+cursor line is hard to see though.  VGA is untested.
+
+When the program is run, a ruler line is drawn with tick marks every 5 filters.
+Also "Computing FFT" is displayed at the top of the screen.  The program is now
+busy computing the FFT and will not do anything useful until finished.
+
+When the FFT computation is complete, the power plot will be performed and a
+verticle cursor line will appear.  "Computing FFT" will be replaced with
+"Filter # 128".  The program is then ready for input of commands.
+
+The commands are:
+
+	ESC		Escapes back to MS-DOS
+	LEFT		Moves the cursor left
+	RIGHT		Moves the cursor right
+	CTRLLEFT	Moves the cursor 10 filters left
+	CTRLRIGHT	Moves the cursor 10 filters right
+	HOME		Moves the cursor to filter 0
+	END		Moves the cursor to filter 255
+	F1		Prints the display on an Epson/IBM Compatable printer
+
+A bee-bop when F1 is pressed means the printer has a problem (paper, power...).
+
+
+How to compile the programs
+---------------------------
+
+I use a Hard Disk configured per the Borland Manuals.  If this is your settup
+also; do this:
+
+	1.  Copy the archive contents into any directory.
+	2.  Run \TURBOC\MAKE
+	3.  Three programs are made: fft.exe, sine.exe, and pulse.exe.
+
+If you have any other system specific changes, then consult the makefile and
+Borland manuals.  I can also be reached at the address below.
+
+
+FFT References
+--------------
+
+1.	Fast Fourier Transforms On Your Home Computer, William D. Stanley,
+	Steven J. Peterson, BYTE Magazine, December 1978.  Basic idea comes
+	from this program.
+
+2.	8052 Microcomputer simplifies FFT Design, Arnold Rosenberg,
+	Electronics, May 5, 1983.  Used a bit reverse table based on the
+	routine in this program.
+
+3.	A Fast Fourier Transform for the 8080, Robert D. Fusfeld,
+	Dr. Dobbs, Number 44.  Gave me some ideas.
+
+4.	A Guided Tour of the Fast Fourier Transform, G. D. Bergland,
+	IEEE Spectrum, July 1969.
+
+5.	FFT - Shortcut to Fourier Analysis, Richard Klahn, Richard R. Shively,
+	Electronics, April 15 1968.
+
+---
+All programs are entered into the Public Domain, No rights reserved.
+Steve Sampson, Box 45668, Tinker AFB, OK, 73145
+75136,626

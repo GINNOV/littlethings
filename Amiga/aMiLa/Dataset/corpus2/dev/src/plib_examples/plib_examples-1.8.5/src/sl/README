@@ -1,0 +1,18 @@
+
+The music 'tuxr.mod' was composed by Matt Thomas
+specificially for the TuxKart game - it is used here
+for demonstration purposes only.  Please don't use
+it in your applications.
+
+
+example -- Plays a variety of sounds read from samples on disk plus
+           it generates a sound in-situ in memory.  A good general
+           sound sample replay example.
+
+playsound -- Plays any sound sample file that you enter on it's
+           command line.  Much simpler than 'example'.
+
+mod_demo -- Plays a '.mod' music file.
+
+                             -- Steve Baker.
+

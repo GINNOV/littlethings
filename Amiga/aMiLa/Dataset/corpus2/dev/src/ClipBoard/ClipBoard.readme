@@ -1,0 +1,7 @@
+Short:        Clipboard device interface routines.
+Author:       Andy Finkel
+Architecture: m68k-amigaos
+Source:       Fish collection
+
+Clipboard device interface routines to provide a standard interface, such
+as Open, Close, Post, Read, Write, etc.  

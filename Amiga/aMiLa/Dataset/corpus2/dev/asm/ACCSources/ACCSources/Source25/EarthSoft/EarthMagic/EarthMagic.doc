@@ -1,0 +1,905 @@
+
+EarthMagic
+~~~~~~~~~~
+$VER: EarthMagic_documentation 3.2 (19.06.92)
+
+EarthMagic is a special feature of PPLink which is ONLY available to
+assembler programmers, so if you only ever program in 'C' then you
+might as well stop reading here.
+
+EarthMagic allows you to have multiple initialised and uninitialised
+data segments, complete with pointers from any segment to any other,
+WHILE STILL REMAINING PURE!
+
+It will also automatically open (and close) all libraries required by
+your program, thereby saving you the bother of doing it yourself.
+
+Before I go on to explain exactly how to use EarthMagic, I'd like to
+briefly summarise the traditional way of doing these things, for
+purposes of comparison. Bear with me, it's an interesting read...
+
+The OLD way of doing things
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Traditionally, your application would need to arrange all of your
+variables into a structure, for example like this:
+
+	STRUCTURE MyPrivateData,0
+	APTR	MyPointer		; Whatever
+	ULONG	MyVariable		; Whatever
+	...
+	LABEL	MPD_SIZE		; Size of this structure
+
+If you're using the Devpac assembler, then you can do the same thing
+using assembler directives, thus:
+
+		rsreset			; struct MyPrivateData
+MyPointer	rs.l	1		; Whatever
+MyVariable	rs.l	1		; Whatever
+...
+MPD_SIZE	rs.w	0		; Size of this structure
+
+All of your variables would need to be defined in this way. If your
+program was split across several source files then your private data
+structure would need to be declared in an include file which was then
+included by each source file in the project.
+
+At run-time, you allocate enough memory for one instance of the
+structure, and then place a pointer to the allocated block into one
+of the machine code registers - traditionally either a4, a5 or a6.
+From then on, you must refer to your variables as offsets from this
+register, for example:
+
+	move.l	MyVariable(a5),d0
+
+When your program terminates, you deallocate the structure before you
+exit.
+
+What's wrong with this?
+~~~~~~~~~~~~~~~~~~~~~~~
+
+There are several disadvantages to this approach. These are:
+
+(1)	No initialised data.
+
+	Since your structure was obtained at run-time using AllocMem
+	it will initially contain rubbish (or all zeroes if you used
+	MEMF_CLEAR). There is no way that you can force (for example)
+	MyVariable to contain a value of 42, other than by manually
+	assigning it AFTER the AllocMem() call.
+
+(2)	32K limit.
+
+	The addressing capabilities of the 68000 limit you to an
+	offset of plus or minus 32K from any address register. Since
+	all of your variables are at positive offsets from the
+	register this means that you can only have 32K of data which
+	are accessed in this way.
+
+(3)	Include file dependency.
+
+	Suppose that after having assembled and linked every source
+	file in your project, you decide that the next version will
+	need an addition variable. You must therefore modify the
+	include file which contains you private data structure
+	definition. Now, since every source file depends on the
+	include file, you must now reassemble every file in the
+	project! You can make things slightly easier for yourself by
+	placing the new variable at the end, but even then you will
+	still have to assemble both the file(s) which reference the
+	new variable and the file which allocates and deallocates the
+	structure (since the size has changed). That's a lot of
+	reassembling.
+
+Tradition methods of overcoming the above disadvantages.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You could partially get round the problem of initialised data by
+having an instance of the structure in the source code, and then
+copying from the original into the allocated memory. That way, each
+process gets its own private data, properly initialised. This does
+solve the problem in part, but you still CANNOT have pointers to
+private data variables in the mastercopy (since the actual addresses
+which the pointers must point to will not be known until run-time).
+This means you can't have pre-initialised exec List structures, or
+intuition Menu structures, or indeed ANY structure which needs a
+pointer from data to data.
+
+You could increase the 32K limit to a 64K limit by declaring your
+structure to start at -$8000 instead of zero, but to increase it
+beyond that you would have to allocate additional memory blocks, and
+track the additional blocks using pointers in the main block. This
+works perfectly well, but doing it manually is fiddly.
+
+There would appear to be no way to overcome the include file dependency
+problem.
+
+The EarthMagic Solution
+~~~~~~~~~~~~~~~~~~~~~~~
+
+The solution provided by PPLink is simple. Instead of declaring your
+variables in an include file shared by all source files, you declare
+them in source files, something like this:
+
+		BSS
+MyVariable	ds.l	1
+
+To access the variable in a source file other than the one in which
+it was defined, you simply XDEF it in one file and XREF it in another.
+
+Under normal circumstances, this wouldn't work, since BSS data is
+normally GLOBAL data - shared by all processes which are running
+your application. EarthMagic transforms it into private data, and
+(of course) adjusts all references to the variables so that they
+actually work.
+
+Initialised data is just as easy. Here is a simple, but elegant
+example:
+
+		DATA
+MyListHeader	dc.l	MyListHeader+4
+		dc.l	0
+		dc.l	MyListHeader
+
+Believe it or not - a pre-initialised exec list header (stricly speaking,
+a MinList).
+
+You still need to refer to your variables as offsets from a reserved
+address register, but the limit is automatically 64K rather than
+32K. To read MyVariable you do this:
+
+	move.l	MyVariable(a5),d0
+
+(Of course, you could use any address register - it doesn't have to be a5).
+
+EarthMagic also allows you to have separate pre-initialised structures
+in addition to the main one. This removes all limits (other than
+available memory) on how much data you can access. These additional
+structures (called "remote" structures) will be allocated, initialised,
+and deallocated automatically, and pointers to the remote structures
+will automatically exist in the main structure. And, yes, you can have
+pre-initialised pointers from any such structure into any other.
+
+How to use EarthMagic
+~~~~~~~~~~~~~~~~~~~~~
+
+EarthMagic is performed by a combination of two programs working
+together. PPLink does as much as it can possibly do at link-time,
+and the startup-file "EStartA.o" does the rest.
+
+Thus, to create a program which makes use of EarthMagic, you only
+have to link it in the right way, like this:
+
+	PPLink EStartA.o <remaining files, etc> TO <dest> PURE
+
+When PPLink detects that EStartA is being linked with the application,
+it starts doing EarthMagic. It knows that EStartA is there because
+EStartA contain a special (ie. reserved) module name, "¡EARTHMAGIC!".
+
+Then when the program runs, EStartA does all the initialisation for
+you (and deallocation, etc. on exit) by taking advantage of the work
+previously done by PPLink.
+
+When EStartA has finished its initialisation, control is then passed
+to your code, at label _main (so you MUST label the first executable
+location of your program "_main", and XDEF it).
+
+Entry conditions to your code (at _main) are as follows:
+	d0 = length of command line arguments, as normal.
+	a0 = address of command line arguments, as normal.
+	a4 = private data pointer.
+	a5 = private data pointer.
+	a6 = private data pointer.
+
+Exit requirements of your code are:
+	All registers may be corrupted.
+
+Taking advantage of the startup code.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The startup code in EStartA.o does a few other useful things, in
+addition to completing the EarthMagic started by PPLink. It opens
+"dos.library" and "intuition.library" for you, sets up I/O streams,
+and allows you to be launched from the workbench, all at no extra
+charge.
+
+(EarthMagic can be made to open ANY library for you, but we'll come
+to that later).
+
+To access these features, you simply XREF one or more EStartA-defined
+variables, and read them. For example, to read the base address of
+"dos.library" you do this:
+
+	XREF	_DOSBase
+	move.l	_DOSBase(a5),a6
+
+The complete list of variables you can access in this way is as follows:
+
+	_DOSBase		Base of "dos.library", any version.
+	_IntuitionBase		Base of "intuition.library", any version.
+
+	_StdIn			Standard input stream.
+	_StdOut			Standard output stream.
+	_StdErr			Standard error output stream.
+
+	_Task			Address of your Process structure.
+
+	_WBMessage		Workbench startup message
+				(if launched from workbench, else 0).
+
+	_Result			For you to store return value.
+
+The variable _Result is an interesting one. It is always initialised
+with zero. You are allowed to write into this variable, and the value
+you place there will be used as the return value of your application.
+
+Under the old way of doing things, you would place the return value in
+register d0. Under EarthMagic the protocol is different. This is
+because my experience has led me to believe that getting a return code
+into a scratch register whilst doing all sorts of shutdown proceedures
+is more trouble than it's worth, and its all to easy to leave d0 in an
+undefined state on exit. It's FAR easier to just place your return
+code somewhere where it won't get corrupted and leave it there.
+
+You should still follow the standard Amiga scheme of returning 0 for
+success, 5 for warnings, 10 for errors, and 20 for fatal errors.
+Intermediate values can be used for failures of intermediate severity.
+-1 is also allowed - this means "unknown" error. The only difference
+is that your return code goes in _Result now, not d0. Like this:
+
+	XREF	_Result
+	move.l	#10,_Result(a5)		; Set a return code of 10.
+
+The include file macros
+~~~~~~~~~~~~~~~~~~~~~~~
+
+With EStartA.o, you also get an include file, called "earth/earth.i".
+This is the standard "EarthSoft" include file, and is used for many
+other things apart from just EarthMagic. It does, however, contain much
+of interest to us in this context.
+
+(There are actually two versions of this include file - a Devpac
+version which takes advantage of the Devpac assembler, and a non-
+Devpac version for those of you without Devpac). If you have Devpac,
+use the Devpac version - it's faster.
+
+Declaring the data register
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+As you are aware, when dealing with private data you need a register
+to point to that data. The question is WHICH register. On entry to
+your code (at _main) you will find that pointer in three different
+places - a4, a5 and a6. Since you are not required to preserve any
+register you can simply use one of those registers and disregard the
+others.
+
+However, some of the macros in "earth/earth.i" need to know WHICH
+register is the data pointer. To keep the macros happy you must
+declare your data register in each source file (or, alternatively,
+in an include file of your own which is included by every source file).
+You use a macro to make your declaration, like this:
+
+	SETDATA	<register>
+
+For instance:
+
+	SETDATA	a5	; declare a5 as my data register.
+
+You MUST declare your data register, or things will go badly astray!
+You have been warned.
+
+If you are assembling with the Devpac assembler, then the macro will
+define a "register equate", called _data, which you can use thereafter
+if you so desire. For example:
+
+	move.l	MyVariable(_data),d0
+
+The advantage of doing this is that if you change your mind about
+which is to be the data register you can simply change the SETDATA
+line and reassemble the file, instead of having to do a find and
+replace.
+
+If you don't have Devpac then you won't get _data defined. You will,
+however, get a "normal" equate called _data_h. This will contain the
+numerical value corresponding to the data register, ie. $D0 to $D7
+for registers d0-d7, and $A0 to $A7 for registers a0-a7. This is
+somewhat less useful, but can still be useful in macros.
+
+Declaring the behaviour of a6
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Another useful "declaration" type macro is called SETA6. This allows
+you to declare to the remaining macros how you'd like register a6 to
+behave. There are two possiblities here:
+
+	SETA6	SCRATCH		; don't preserve a6 around library calls
+	SETA6	KEEP		; preserve a6 around library calls
+
+If you use this macro then, as with SETDATA, you should place it in
+every source file, or in an include file which is included by every
+source file. You won't actually need to use this macro unless you
+want to override the default behaviour.
+
+The default behaviour is as follows:
+
+	If data register is a6 then default is KEEP;
+	else default is SCRATCH.
+
+Calling library routines
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Devpac provides a set of macros to simplify the calling of functions in
+Amiga libraries. Unfortunately, these are unusable in a PURE program,
+since they assume that the library base is stored in a global variable.
+
+To make up for this, EarthSoft have provided a set of library calling
+macros of our own. The EarthSoft macros are more powerful than the
+Devpac ones, in that their behaviour can be modified by the SETDATA
+and SETA6 declarations.
+
+Here is an example - to delay for fifty frames:
+
+	move.l	#50,d1
+	BSRDOS	Delay
+
+This calls the "dos.library" vector _LVODelay in a manner compatable
+with a PURE program. If the data register were a5 and the a6 mode was
+SCRATCH then this would expand as follows:
+
+	move.l	#50,d1
+	move.l	_DOSBase(a5),a6
+	jsr	_LVODelay(a6)
+
+EarthSoft library calling macros all begin with BSR (as opposed to CALL
+which is used by Devpac's macros). Note that if you omit SETDATA and
+SETA6 then BSRDOS will behave exactly like CALLDOS (ie. it will expect
+global data). For a complete list of the EarthSoft library calling
+macros, please read "earth/earth.i". You can also create similar
+macros of your own for any libraries we may have forgotten by following
+our examples.
+
+One last thing on this subject, however. There is a difference between
+BSREXEC and BSRSYS, even though both of them will call a function in
+the "exec.library". You will have to choose between them - each has
+its advantages and disadvantages.
+
+BSREXEC reads the exec.library base address from absolute address 4.
+The advantage of doing this is that you don't need to reserve a
+variable for the library base. The disadvantage (or possibly advantage,
+depending on your point of view) is that the macro will deliberately
+reject any function call not available under Workbench 1.2. This is
+so that your code will run on all Amigas. It means that if you try
+the following, it will not assemble, since the function AllocVec() is
+not available on 1.2 or 1.3 Amigas:
+
+	BSREXEC	AllocVec	; This will FAIL to assemble
+
+BSRSYS, on the other hand, reads the exec.library base address from
+a private variable called _SysBase. If you actually go to the trouble
+of opening "exec.library" using OpenLibrary() (or by letting EarthMagic
+do it for you - but more of that later) then you can ask for a specific
+version number, and store the result in _SysBase (or fail if that
+version is unavailable). You can now call ALL exec.library functions,
+like so:
+
+	BSRSYS	AllocVec	; This WILL assemble
+
+Automatic opening and closing of libraries
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This is a feature almost guaranteed to make you smile. Virtually every
+program I have ever seen starts with a sequence of OpenLibrary() calls,
+and ends with a reverse sequence of CloseLibrary() calls. EarthMagic
+can save you a lot of trouble.
+
+How it's done is perhaps best demonstrated by example.
+Suppose you want to open any version of "graphics.library", version 34
+of "arp.library", and optionally version 37 of "workbench.library".
+(Optionally, in this context, means we do not abort if the library
+fails to open). We simply place the following lines anywhere in any
+source file:
+
+	LIBRARY	_GfxBase,graphics.library
+	LIBRARY	_ArpBase,arp.library,34
+	LIBRARY	_WorkbenchBase,workbench.library,37,OPT
+
+	CODE
+
+One word of warning though, the LIBRARY macro changes the current
+SECTION, so you will need to follow LIBRARY declarations with either
+a SECTION direction, a CODE, DATA or BSS directive, or one of the
+following EarthSoft macros: IREMOTE, UREMOTE, CONSTANT, CONSTANT_C,
+CONSTANT_F or LIBRARY.
+
+You can see from the above examples that the first parameter is the
+name of the library base, the second parameter is the library name
+(NOT surrounded by quotes), and the (optional) third parameter is the
+version number required. The fourth parameter, itself optional, is
+the special keyword OPT, which indicates that we do not wish to abort
+if the library can't open.
+
+There are tremendous advantages to declaring libraries in this way,
+in addition to the simplicity and ease of use. EStartA handles
+all failures for you - control won't even reach your entry point
+(_main) if a non-optional library failed to open.
+
+EStartA processes all library failures in the Amiga-standard manner
+suggested in the Amiga User Interface Style Guide. This means that the
+user will get a requester informing her of (a) the name of your program
+(in the requester title bar) and (b) a message such as "arp.library
+version 34 not found". The requester will have RETRY and CANCEL
+gadgets, so the user can locate the appropriate library (if possible)
+and copy it into LIBS: before clicking on retry.
+
+Unfortunately, this requester is only available under Workbench 2.0+.
+Never mind - EStartA will still behave sensibly under Workbench 1.2 and
+1.3. Your program will end up being "enhanced" on a 2.0+ machine.
+
+To access the library base variables in a file other than that in which
+the library macro appears you must XREF it in that file.
+
+DOS and Intuition libraries
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+It is FORBIDDEN to apply the LIBRARY macro to the _DOSBase and/or
+_IntuitionBase variables. DOS and Intuition libraries are opened
+automatically by EStartA whether you ask for them or not (since EStartA
+itself needs them), and their base addresses will be placed in the
+variables _DOSBase and _IntuitionBase respectively. You can call
+functions in these libraries using the BSRDOS and BSRINT macros as
+normal.
+
+There are circumstances, however, when you might want your program to
+fail if a particular version number of dos.library or intuition.library
+is unavailable. You will, I'm afraid, need to do this manually, like
+this:
+
+	XREF	_IntuitionBase
+
+_main	move.l	_IntuitionBase(_data),a1
+	cmp.w	#36,LIB_VERSION(a1)
+	bhs.b	.ok
+	rts
+
+.ok	;
+
+Of course, you won't get the pretty failure requester if you do this,
+but if the V36 libraries are unavailable then you are running on a
+WB1.3 machine or earlier, and so you wouldn't have got the requester
+anyway.
+
+To access the _DOSBase and _IntuitionBase variables in any file you
+must XREF them.
+
+EarthMagic proper
+~~~~~~~~~~~~~~~~~
+
+The proper use and techniques of EarthMagic are explained here. You
+already know enough to use plain initialised and uninitialised data
+(which is more often than not all you actually need), but here we
+explain the different types of data which PPLink/EStartA recognise,
+and how to use them. We start with the simplest.
+
+CONSTANT data
+~~~~~~~~~~~~~
+
+Constant data is read-only data which will never change. Examples are
+tables of floating point constants, strings, image data etc. I'm sure
+you can add a few examples of your own.
+
+It is not actually NECCESARY to declare constant data. A reasonable
+alternative is to keep constant data in CODE sections, however, for
+neatness, you can use special sections if you so desire.
+
+In your source code, you must introduce a constant data section using
+either the CONSTANT macro, or else the CONSTANT_C or CONSTANT_F macros.
+CONSTANT_C and CONSTANT_F are used to force the constant data to load
+into chip ram and fast ram respectively.
+
+The CONSTANT macros act like SECTION directives. This means that all
+data following the macro is considered to be constant data, until you
+change section using a SECTION direction, a CODE, DATA or BSS directive,
+or one of the following EarthSoft macros: CONSTANT, CONSTANT_C,
+CONSTANT_F, IREMOTE, UREMOTE or LIBRARY.
+
+As usual, I'll explain by example.
+
+	CONSTANT	; an unnamed constant data section
+	CONSTANT Fred	; a constant data section named Fred
+	CONSTANT_C Joe	; a chip-memory constant data section named Joe
+	CONSTANT_F	; an unnamed fast-memory constant data section
+
+I'm sure you've got the idea. The single (optional) parameter is the
+name of the section.
+
+PPLink treats constant data almost exactly like CODE sections. This
+means that only one copy of the data will exist in memory - each
+process will NOT get a separate copy.
+
+You refer to constant variables by absolute address, NOT as an offset
+from your data register. For example:
+
+	movem.l	IEEEDPpi,d0-d1		; d0/d1 = PI, represented as
+					; a double precision float
+
+To access constant data in any file other than the file in which it
+was defined you must XDEF it in one file and XREF it in the other.
+
+Remote data
+~~~~~~~~~~~
+
+Remote data is data which is not part of your main private data structure.
+There are at least two reasons I can think of why you might want to use
+remote data: (1) to provide a way of forcing data to load into chip or
+fast memory, (2) to overcome the normal 64K limit on data size.
+
+Remote sections fall into two categories - initialised and uninitialised.
+These are introduced using the EarthSoft macros IREMOTE and UREMOTE
+respectively. You also need a macro to terminate an IREMOTE section.
+The macro for this purpose is ENDREM.
+
+This is an example of an uninitialised remote section containing an
+array of 100000 bytes:
+
+	UREMOTE	MyLargeArray,10000
+
+"Uninitialised" data can also be created cleared to all zeroes.
+This is the same array, but filled with zeroes.
+
+	UREMOTE	MyLargeArray,10000,MEMF_CLEAR
+
+This is an example of an initialised remote section which contains
+a structure with four variables, and which loads into chip ram:
+
+	IREMOTE	MyChipStruct,MEMF_CHIP
+Var1	dc.l	1
+Var2	dc.l	2
+Var3	dc.l	3
+Var4	dc.l	4
+	ENDREM	MyChipStruct
+
+One word of warning though, the IREMOTE/UREMOTE/ENDREM macros change
+the current SECTION, so you will need to follow ENDREM declarations
+with either a SECTION direction, a CODE, DATA or BSS directive, or one
+of the following EarthSoft macros: IREMOTE, UREMOTE, CONSTANT,
+CONSTANT_C, CONSTANT_F or LIBRARY.
+
+Explicitly, then, UREMOTE takes either two or three parameters.
+The first is the name of a pointer variable which will point to the
+remote section, and the second is the size of this section in bytes.
+The optional third parameter is the memory requirements for the remote
+section.
+
+IREMOTE takes only one or two parameters. As with UREMOTE, the first
+parameter is the name of a pointer variable which will point to the
+remote section. The optional second parameter is the memory requirements
+for the remote section. Unlike UREMOTE, an IREMOTE section must be
+terminated by an ENDREM macro.
+
+Your program can access remote variables via a pointer variable in the
+main data section. For the above examples you would access the
+structures like this:
+
+	move.l	MyLargeArray(_data),a0	; a0 now points to the first
+					; byte of the large array
+
+	move.l	MyChipStruct(_data),a0	; a0 points to structure
+	move.l	Var1(a0),d0		; d0 = value of Var1
+	move.l	Var2(a0),d1		; d1 = value of Var2
+
+
+et cetera. The pointer variable is initialised for you automatically
+by EarthMagic.
+
+To access remote data in any file other than the file in which it
+was defined you must XDEF it in one file and XREF it in the other.
+
+Automatic variables
+~~~~~~~~~~~~~~~~~~~
+
+Automatic variables are variables which you keep on the stack. These
+variables are created when a function is entered, and destroyed when
+that function returns. While not strictly speaking a feature of
+EarthMagic, the include file earth/earth.i does include macros to
+assist you in using automatic variables.
+
+The principle difficulty in using automatic variables is the neccesity
+of having to keep track of how many things get pushed onto the stack.
+EarthSoft macros can assist you in this.
+
+What you do is this. At the start of a function you issue the macro
+SPRESET, like so:
+
+	SPRESET
+
+Then, every time you push information onto the stack you use a SPADD
+macro, and every time you pull information back off the stack you use
+a SPSUB macro.
+
+Here is an example which creates four automatic variables and references
+them:
+
+;
+; Declare a structure to define the automatic variables.
+; Note how the first line is formed.
+; In Devpac RS directives this would be replaced by RSSET -MFAV_SIZE.
+;
+	STRUCTURE MyFunctionAVs,-MFAV_SIZE
+	ULONG	AV1
+	ULONG	AV2
+	ULONG	AV3
+	ULONG	AV4
+	LABEL	MFAV_SIZE
+;
+; Now here comes the function.
+;
+MyFunction
+	SPRESET
+	lea.l	-MFAV_SIZE		; Create the auto variables
+	SPADD.L	4			; Count four longwords
+	movem.w	a0-a5,-(sp)		; Stick more things on the stack
+	SPADD.W	6			; Count them too
+;
+; You can add more things onto the stack throughout your function as
+; the need arises, but each push must be followed by a SPADD macro,
+; and each pull by a SPSUB.
+;
+; Now to access the variables.
+;
+	move.l	d0,SPCOUNT+AV1(sp)	; Assign AV1
+	move.l	SPCOUNT+AV3(sp),d0	; Read AV3
+;
+; Eventually, you will reduce the stack to zero and RTS normally. You
+; can clear the stack in one go, if you like, like this.
+;
+	lea.l	SPCOUNT(sp),sp
+	rts
+
+Formal parameters passed on the stack
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can also directly access function arguments which were passed on
+the stack, as 'C' function do. Again, I'll give you an example.
+
+;
+; Declare a structure to define the formal parameters.
+; Note the neccesary "4" on the first line.
+; In Devpac RS directives this would be replaced by RSSET 4.
+;
+	STRUCTURE MyFunctionFPs,4
+	ULONG	FP1
+	ULONG	FP2
+	ULONG	FP3
+	ULONG	FP4
+	LABEL	MFFP_SIZE
+;
+; Now here comes the function.
+;
+MyFunction
+	SPRESET
+	movem.w	a0-a5,-(sp)		; Stick a few things on the stack
+	SPADD.W	6			; Count them
+;
+; You can add more things onto the stack throughout your function as
+; the need arises, but each push must be followed by a SPADD macro,
+; and each pull by a SPSUB.
+;
+; Now to access the variables.
+;
+	move.l	d0,SPCOUNT+FP1(sp)	; Reassign FP1
+	move.l	SPCOUNT+FP3(sp),d0	; Read FP3
+;
+; Eventually, you will reduce the stack to zero and RTS normally. You
+; can clear the stack in one go, if you like, like this.
+;
+	lea.l	SPCOUNT(sp),sp
+	rts
+
+Assembler restrictions
+~~~~~~~~~~~~~~~~~~~~~~
+
+Not all assemblers will allow you to perform the address register
+relative addressing modes when the "offset" is actually a label.
+Devpac2 will not, but the superior Devpac3 will. This is because
+Devpac2 (and probably many other assemblers) don't know about the
+new HUNK_DREL32, HUNK_DREL16 or HUNK_DREL8 hunks.
+
+If you use Devpac2, or an assembler which will not allow you to do,
+for instance, this:
+
+	DATA
+Fred	dc.l	42
+
+	CODE
+	move.l	Fred(a5),d0
+
+then you will need to cheat a bit, in order to fool the assembler into
+assembling something it thinks is illegal. To achieve this, you must
+put the declarations into a separate file, like so:
+
+	XDEF	Fred
+
+	DATA
+Fred	dc.l	42
+
+Then, in a separate file, you can refer to the variable, like this:
+
+	XREF.L	Fred
+
+	CODE
+	move.l	Fred(a5),d0
+
+Note that Devpac2 requires you to use "XREF.L" instead of "XREF" in
+order to fool the assembler into thinking that this is an absolute
+value instead of a relative one. This notation may not be the same for
+all assemblers, so check your manual.
+
+Debugging Workbench programs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you write in assembler, then the chances are you use a monitor
+program. Devpac includes a monitor called MonAm, which is excellent.
+
+However, every monitor program that I know of simulates a CLI
+environment for your program, not a Workbench environment. This makes
+it almost impossible to debug a program which is intended to be
+launched from the Workbench.
+
+EarthSoft provide a solution, and a magic one at that.
+(Unfortunately, this will only work for Workbench 2.0+ users).
+
+The file "EStartF.o" (which should be included on the same disc as this
+file) is a startup file very similar to EStartA.o. Linking with EITHER
+EStartF or EStartA will initiate EarthMagic.
+
+The difference is that if you link with EStartF.o instead of EStartA.o
+then what you end up with is a program which can be launched from the
+CLI, but which THINKS it was launched from the Workbench. Now you can
+debug it properly. Type MonAm <filename> (or whatever your debugger is
+called), set a breakpoint at label _main, run the program as far as
+the breakpoint, and by the time you get there you'll have a Workbench
+environment.
+
+(The "F" stands for Fake, by the way, as in Fake Workbench).
+
+Linking with EStartF.o, your program acquires a DOS template to
+allow you to simulate additional workbench arguments and a toolwindow.
+The template is "PROJECTS/M,WINDOW/K". For instance:
+
+	MyProgram file1 file2 file3
+
+will simulate shift-clicking on project icons for file1, file2 and
+file3, then double-shift-clicking on MyProject. When control reaches
+_main, there will be a workbench argument for each file.
+
+You can simulate a toolwindow like this, for example:
+
+	MyProgram WINDOW=CON:10/50/620/150/MyProgram
+
+WINDOW is a keyword which must be followed by a window specification.
+The keyword WINDOW does not have to be in upper case. Now, when control
+reaches _main a console window will exist for your I/O, and _StdIn,
+_StdOut and _StdErr will be set up to use that window.
+
+WARNING: Never run a program which has been linked with EStartF from
+the Workbench! It provides a simulation ONLY.
+
+When you run your program (from the CLI) a message will appear on the
+command line saying something like:
+
+    EStartF: "MyProgram" launched from simulated Workbench environment
+
+(The exact wording of this message may vary according to the version of
+EStartF). This is a reminder that you are running a development version
+of the program. When you are happy that your program is fully debugged
+then you simply re-link it using EStartA.o instead of EStartF.o and you
+automatically have a releasable version, which is known to work from
+the Workbench.
+
+If you ever obtain a PD program which prints this message on the
+command line then it means that the silly bugger who wrote it forgot
+to re-link it with EStartA.o instead of EStartF.o before releasing it!
+Please try not to make this mistake.
+
+===============================================================================
+EXTREMELY SEVERE WARNING !!!
+===============================================================================
+
+You must NEVER call either the dos.library function Exit(), or the
+arp.library function ArpExit(), when you link with either EStarA.o or
+EStartF.o. Using either of these functions is bad practice at the
+best of times...
+
+To quote from "The Amiga ROM Kernel Reference Manual: Includes and
+Autodocs (edition 3)", from the documentation on the Exit() function:
+"In general, therefore, please DO NOT CALL THIS FUNCTION!".
+
+...so even Commodore agree with me. You have been warned! The correct
+way to exit is to close down all resources which you have opened and
+return normally with an RTS instruction. EStartA (or EStartF) will
+then close down ITS resources, and pass the value of the variable
+_Result to DOS as a final return code.
+
+If you violate this rule, then AT BEST you will leave unclosable
+libraries and unfreeable memory lying around. At worst, (under EStartF)
+you will leave the CLI disguised as a workbench, which WILL crash the
+system the next time you want to use the CLI.
+
+===============================================================================
+PUBLIC DOMAIN NOTICE
+===============================================================================
+
+EStartA/F are public domain, not shareware. There is no fee. Just send a
+blank disc and a stamped self-addressed envelope (enclose an
+international reply coupon if writing from outside the UK) and we will
+fill your disc full of goodies and post it back to you. If you forget
+the stamped envelope (or international reply coupon) then we shall keep
+your disc - you have been warned.
+
+EStartA/F were written by Arcane Jill.
+Copyright 1992, EarthSoft.
+
+This program is PUBLIC DOMAIN.
+It is NOT shareware.
+
+     +------------------------------------------------------------------+
+     |									|
+     |	EStartA/F version 3.2 may be reproduced as many times as you	|
+     |	like, supplied with any application, and distributed with	|
+     |	no restrictions whatsoever, PROVIDED that the following 	|
+     |	condition is adhered to:					|
+     |									|
+     |	THE FOLLOWING FILES MUST BE SUPPLIED TOGETHER ON ONE DISC:	|
+     |	For EarthMagic...						|
+     |		EStartA.o						|
+     |		EStartF.o						|
+     |		EartMagic.doc						|
+     |		earth/earth.i	(Devpac version)			|
+     |		earth/earth.i	(non-Devpac version)			|
+     |	For PPLink...							|
+     |		PPLink							|
+     |		PPLink.doc						|
+     |		arp.library						|
+     |		powerpacker.library					|
+     |									|
+     |	Note: It is not permissable to distribute EStartA/F without	|
+     |	also distributing PPLink.					|
+     |									|
+     +------------------------------------------------------------------+
+
+You can even use the program in commerical applications, free of charge.
+No further permission is required, but you absoultely MUST include the
+above-listed documents with the application.
+
+WHO ARE EARTHSOFT?
+
+    EarthSoft are a group of Amiga enthusiasts who believe wholeheartedly
+    in the principle of PUBLIC DOMAIN. You should never have to pay
+    money for an EARTHSOFT product. Our aim is to provide high quality
+    software, fully documented, and absolutely free of charge.
+
+    Please support us in our beliefs by distributing our products
+    far and wide across the globe, sticking them on BBs and in PD
+    libraries, etc.
+
+    Our address is:
+
+	EarthSoft
+	5 Dumergue Avenue
+	Queenborough
+	Kent
+	ME11 5BJ
+	England
+
+===============================================================================
+BUGS
+===============================================================================
+
+There are no KNOWN bugs in EStartA/F (-obviously, otherwise I would have
+fixed them), but of course there MAY be bugs I don't know about, so...
+
+If you find any, please write to me at the above address, telling me
+exactly how to reproduce the symptoms of the bug. I will then produce
+a new version of EStartA/F which does not contain the bug AND SEND YOU A
+FREE COPY OF THE UPDATED VERSION (supply own disc and postage)
+

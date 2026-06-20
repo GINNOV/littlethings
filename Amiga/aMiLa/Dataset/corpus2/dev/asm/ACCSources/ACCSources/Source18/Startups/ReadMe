@@ -1,0 +1,178 @@
+
+				Start Up Routines
+				~~~~~~~~~~~~~~~~~
+
+ Anyone who has read through my code over the past few months will notice I
+always use the same basic structure. There is a good reason for this, I
+don't have time to start each program from scratch. For this reason I have
+a set of four routines, one of which will usually suffice for any
+applicatiomn.
+
+ For instance, if I was working on a routine to convert all $0a bytes in a
+file into spaces ( yes, I find this useful sometimes! ), I would write the
+routine itself and then tag it onto the DOS_Start.s routine. This would
+mean I only have to add the code to open a file and save a converted file.
+
+ When you consider this option to the task of writing the code to open all
+required libraries, subroutines to support io with dos ( cli ) and also a
+usage text feature, you can see why these routines save so much time.
+
+ To use these routines you need to know what they do! For this reason the
+code is well commented. To be honest, I don't remember what the startups
+do, I always ' speed read ' them first and make small changes to suit the
+application.
+
+ As most of my time is spent ' system ' programming, I tend to use
+Int_Start.s most frequently. For this reason it has two subroutines, Init
+and DeInit, that do nothing at all. They are there when needed! I add code
+specific to an application to these routines, for instance you set any
+program variables in this section.
+
+ To give you a quick overview of each startup routine and what applications
+it can be used for I have summarised the function of each below. If you
+would like to use these routines, but have problems following them, please
+write.
+
+ Hard_Start.s
+ ~~~~~~~~~~~~
+ Use this module to get any hardware programs off the ground. The module
+structure is very simple, consisting of only three parts:
+
+		SysOff Subroutine
+
+		Main ( Where your code starts )
+
+		SysOn Subroutine
+
+ 
+ The SysOff routine does the following tasks:
+
+	1/ Saves systems DMA setting, disables ALL DMA and calls Forbid().
+
+	2/ Saves the address of the systems copper list.
+
+	3/ Gets ownership of the Blitter.
+
+	4/ Waits for the vertical blanking period and sets required DMA.
+
+	5/ Sets up a very basic copper list - 1 bitplane.
+
+	6/ Turns the drive motor off.
+
+ Items 4 and 5 should be modified to suit requirements. For instance, if
+your program was using a 640x256x4 display then set the copper list up at
+stage 5 by altering the startup code.
+
+ The main routine does nothing of any value, it just waits for the left
+mouse button to be pressed before finishing. This is where you enter your
+program.
+
+ The SysOn routine basically undoes the damage caused by the SysOff
+routine. To outlimne the steps:
+
+	1/ Reset DMA to systems settings.
+
+	2/ Releases the Blitter.
+
+	3/ Calls Permit().
+
+	4/ Closes the graphics library.
+
+ DOS_Start.s
+ ~~~~~~~~~~~
+ This is the lowest entry into a system enviroment and is intended for
+programs that are launched from the CLI only. It serves another useful
+purpose, to test out routines by providing a quick io with the CLI without
+having to wade through Intuitions dreaded structures.
+
+ If a program created using this startup code is run from the Workbench, it
+does not crash, just quits straight away. This saves the programmer from
+worrying about compatability problems.
+
+ Here is the basic structure of this code:
+
+	1/ Opens the DOS library and saves the base pointer.
+
+	2/ Saves the CLI output handle in a variable labelled STD_OUT.
+
+	3/ Checks CLI parameters for a ?, if present displays usage
+	  instructions and quits. You should alter the text displayed
+	  accordingly.
+
+	4/ calls Main, where you enter your code.
+
+	5/ Calls DeInit, where you can release any resources your code
+	  calls upon.
+
+	6/ Closes the DOS library and exits.
+
+ Error checking is carried out an all supplied routines.
+
+ There a couple of subroutines embedded in the source for applications to
+call upon, these are:
+
+	LoadFile	Loads a file into a block of memory. The memory is
+			dynamically allocated, its size being determined by
+			the size of the file being loaded. It is left to
+			the application to release this memory when no
+			longer required.
+
+	SaveFile	Saves a block of memory to a specified file. The
+			file is created at the time of execution.
+
+	FileLen		Returns the length of a specified file in bytes.
+
+	DosMsg		Displays a NULL terminated text string in the CLI
+			window.
+
+	ucase		Converts a text string to upper case characters.
+
+ These subroutines are supplied since I normally use this code for utils
+that preform some token disk io and it is handy having load and save
+routines at hand.
+
+ The usage text that can be called up by the user entering a ? as a
+parameter can be located at line 365, as I said earlier, alter this to suit
+the particular application.
+
+ Int_Start.s
+ ~~~~~~~~~~~
+ This is the biggest of the supplied startup modules, but this is due to a
+number of subroutines being tagged onto the actual startup code.
+
+ All the features of DOS_Start.s are built into Int_Start.s, such as usage
+text if launched from the CLI, but Int_Start.s also opens an Intuition
+window for io.
+
+ It is possible to specify a line of text to be displayed in the window
+when it first opens, to explain what the program does. The other reason for
+embedding this IText structure was so I had one at hand for cut 'n' pasting
+when required.
+
+ Once the Intuition window has been opened, the code waits for the windows
+close gadget to be clicked on ( in the WaitForMsg subroutine ). The
+WaitForMsg subroutine has been designed with gadgets in mind, to add a
+gadget to the window, link it's structure to the windows and place the
+address of the subroutine to call when this gadget is activated into the
+gg_UserData field of the gadget structure.
+
+ The modules outline is the same as DOS_Start.s with extra calls added to
+open and close the Intuition window and deal with user interaction. See any
+of my code for examples of application.
+
+ ARP_Start.s
+ ~~~~~~~~~~~
+ This is a variation of Int_Start.s, the biggest difference being the use
+of the ARP library. This allows the use of a standard file requester when
+required as well as a number of DOS replacement routines and Amiga.lib
+cribs.
+
+ Once you are familiar with Int_Start.s, try moving on to Arp_Start.s. It
+can be used to add the finishing touches to a utility.
+
+ If you have any suggestions for improvement for any of these routines,
+then please send them to me. One I know of is setting register a4 to point
+to a block of memory to be used for variables storage, but I wanted a
+simple and flexible starting point. Modifications such as these can be made
+once a utility has been completed.
+

@@ -1,0 +1,26 @@
+Short:        filehandler example, creates empty files
+Author:       Oliver Wagner
+Uploader:     Ilkka Lehtoranta (ilkleht@isoveli.org)
+Type:         dev/c
+Version:      1.0
+Architecture: ppc-morphos
+
+Little filehandler for creating empty files of any given length. 
+Just mount it via the provided mountlist:
+
+   mount empty: from empty.mountlist
+
+Then you can use an Open("EMPTY:<filelength_in_bytes>",...) to get a file
+of length <filelength_in_bytes> filled up with lots of zeros.
+
+e.g.
+
+   copy empty:424242 ram:x
+
+will create a empty file of 424242 bytes in your ram-disk.
+
+Written by Oliver Wagner, hereby declared as public domain.
+
+--
+
+Recompiled for MorphOS by Ilkka Lehtoranta.

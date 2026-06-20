@@ -1,0 +1,22 @@
+#include <intuition/intuitionbase.h>
+#include <intuition/intuition.h>
+#include "debug.h"
+#include "displist.h"
+#include "scheduler.h"
+#include "wave.h"
+#include "iff.h"
+#include "collision.h"
+#include "game.h"
+#include "view.h"
+#include "displist.h"
+#include "scheduler.h"
+#include "blits.h"
+#include "bullets.h"
+#include "interrupts.h"
+#include "sound.h"
+#include <clib/macros.h>
+#include <hardware/blit.h>
+#include <graphics/gfx.h>
+#include <hardware/custom.h>
+#include <graphics/sprite.h>
+

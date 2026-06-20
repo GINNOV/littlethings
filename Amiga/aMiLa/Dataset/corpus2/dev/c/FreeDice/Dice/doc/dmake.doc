@@ -1,0 +1,385 @@
+
+				 DMAKE.DOC
+
+			  RELEASE V1.0 3-Feb-1989
+
+	DMake (c)Copyright 1989 by Matthew Dillon, All Rights Reserved
+
+	Matthew Dillon
+	891 Regal Rd.
+	Berkeley, Ca. 94708
+	USA
+
+	dillon@postgres.berkeley.edu
+	..!ucbvax!dillon
+
+	You MUST be familar with 'make' to understand these instructions.
+	Please read the bug list at the end.
+
+	The default file is 'DMakefile'.  Options are:
+
+	-a		    force all time comparisons to fail
+	-f filename	    use this instead of DMakefile
+	-n		    don't actually execute the lines
+	-v	(debugging, have fun)
+	-d	(debugging, have lots of fun)
+	-s		    silent .. don't display startup copyright notice
+
+
+			    CONTROL FILE
+
+    The control file, DMakefile by default, is made up of macros,
+    dependancies, and comments.  A macro looks like this:
+
+	<macroname> = <string>
+	CFLAGS = +L
+
+    A dependancy looks like this:  Note that commands may have an
+    optional '-' in front of them telling DMake to ignore the exit
+    code.
+
+	<left1> <left2> <left3> .. : <right1> <right2> <right3>
+	    [-]<command>
+	    [-]<command>
+	blank-line
+
+	a.o b.o c.o : a.c b.c c.c
+	    cc $(CFLAGS) %(right) -o %(left)
+	    Echo "hi!"
+
+	d.o e.o f.o : d.x e.x f.x
+	    ...
+
+    Any line may be 'continued' onto the next line by specifying a backslash
+    at the end of the line:
+
+    a.o b.o c.o : \
+    a.c b.c c.c
+	Echo "ha %(left) %(right)"
+    #	Echo "this line commented out"
+
+    Any line my be commented out with a # at the beginning (The hash must
+    occur at the beginning of a line and will not work in the middle of
+    a continued line).
+
+    #	This is a comment
+
+		      SPECIFICATIONS OF DEPENDANCIES
+
+    A dependancy consists of one or more left-hand-sides and zero or more
+    right-hand-sides.  Each element on the left is matched to an associated
+    element on the right singly.  that is:
+
+	a.o b.o c.o : a.c b.c c.c
+	    <cmdlist>
+
+    Is equivalent to:
+
+	a.o : a.c
+	    <cmdlist>
+
+	b.o : b.c
+	    <cmdlist>
+
+	c.o : c.c
+	    <cmdlist>
+
+    Extra elements on the left are disallowed except for the special case
+    where there are NO elements on the right (i.e.  all :   ).  Each extra
+    element on the right is applied to EVERY element on the left.  That is:
+
+	a.o b.o c.o : a.c b.c c.c x.h y.h
+	    <cmdlist>
+
+    is equivalent to:
+
+	a.o : a.c x.h y.h
+	    <cmdlist>
+
+	b.o : b.c x.h y.h
+	    <cmdlist>
+
+	...
+
+			   WILDCARDS IN SPECIFICATION
+
+    You may specify wildcards for dependancies:
+
+	*.o x.o y.o : *.c x.q y.q
+	    <cmdlist>
+
+    equivalent to:
+	*.o : *.c
+	    <cmdlist>
+
+	x.o : x.q
+	    <cmdlist>
+
+	y.o : y.q
+	    <cmdlist>
+
+    expanded to: (assume a.c, b.c, and c.c exist).  Note that the .o's are
+    not scanned for, just the .c's, and then a reverse mapping is applied
+    to generate the .o's.  For this reason, any *'s and ?'s in the right
+    hand side wildcard must have associated *'s and ?'s in the left hand
+    side wildcard.
+
+	a.o : a.c
+	    <cmdlist>
+
+	b.o : b.c
+	    <cmdlist>
+
+	c.o : c.c
+	    <cmdlist>
+
+	...
+
+
+    When these dependancies are executed by DMake, each right hand side
+    wildcard will be directory-scanned for and the associated left hand
+    side wildcard will be GENERATED.  THE LEFT HAND SIDE WILDCARD IS NOT
+    SEARCHED FOR BY A DIRECTORY SCAN, BUT GENERATED FROM THE RESULTS OF THE
+    RIGHT HAND SIDE.  There are several exceptions to the general case
+    mentioned above:
+
+    <nonwildcard> : <wildcard>	    Right hand side expanded and results
+				    all applied to the left hand side element.
+
+	all : *.c   ->	all : a.c b.c c.c
+
+    <wildcard> : <nonwildcard>	    Left hand side expanded (the only time
+				    the left hand side is ever expanded,
+				    and then only if there is no right hand
+				    side in that wildcard) and the results
+				    applied to the right hand side element.
+
+	*.c : syms  -> a.c : syms, b.c : syms, c.c : syms
+
+    To be more specific, the moment some wildcard is expanded, ALL other
+    occurances of that wildcard will be expanded.
+
+
+			     MACROS AND COLLECTIONS
+
+    Macros are referenced like this:  $(MACNAME).  Usage is straight
+    forward.  Note that ENV: will be searched if a macro name could not
+    be found otherwise.
+
+    Collections are a different matter entirely.  Collections are a means
+    of accessing the left hand side and elements in the right hand side of
+    dependancies at command-execution time.  A collection reference is
+    specified with a % instead of a $.	There are two predefined collection
+    variables called %(left) and %(right).  %(left) references the left
+    hand side (there is always only one element on the left hand side), and
+    %(right) references the right hand side:
+
+    all : *.o symbols libs
+	Echo %(left)                Echo all
+	Echo "%(right)"             Echo "a.o b.o c.o symbols libs"
+
+    Individual wildcarded elements on the right can be referenced in the
+    same way:
+
+	Echo "%(*.o)"               Echo "a.o b.o c.o"
+
+    Additionaly, you can specify a collection reference wildcard and if
+    that collection doesn't exist under that exact wildcard, the entire
+    right hand side collection will be searched for elements that match the
+    wildcard:
+
+	a.o b.o c.o : a.c b.c c.c *.h
+	    Echo "%(right)"
+	    cc %(*.c) -o %(left)
+
+    Results in (at execution time):
+
+	Echo "a.c x.h y.h"
+	cc a.c -o a.o
+	Echo "b.c x.h y.h"
+	cc b.c -o b.o
+	Echo "c.c x.h y.h"
+	cc c.c -o c.o
+
+    Unlike the ALL: line in the previous example, where *.o was an actual
+    collection variable, here *.c is NOT a collection variable (unless you
+    had specified *.o : *.c, which you didn't), so the right hand side
+    is searched for elements matching the wildcard.
+
+    Now pay careful attention:
+
+	SRCS = *.c
+	OBJS = T:*.o
+
+	all: $(OBJS)
+	    ln %(OBJS) -o executable        (ln a.o b.o c.o -o executable)
+	    Echo "$(OBJS)"                  (Echo "*.o"                  )
+	    Echo "%(OBJS)"                  (Echo "a.o b.o c.o"          )
+
+	$(OBJS): $(SRCS)
+	    cc %(right) -o %(left)
+
+    Note that $(MacName) results in the exact macro string, wildcard or not,
+    while %(MacName) find the macro and then finds the collection associated
+    with the macro's name.
+
+		    MULTIPLE DEPENDANCIES W/ SAME LEFT HAND SIDE
+
+	all: *.o
+	    ln %(*.o) -o executable
+
+	*.o : *.c
+	    cc $(CFLAGS) %(right) -o %(left)
+
+	*.o : *.asm
+	    as $(CFLAGS) %(right) -o %(left)
+
+    Now, recall that the right hand side wildcards are scanned for and the
+    left hand side generated.
+
+    *.o : *.c  -> the .C's are scanned for, say, a.c b.c c.c, and
+		  a.o b.o c.o are placed in the *.o collection
+
+    *.o : *.asm -> the .ASM's are scanned for, say, i.asm j.asm, and
+		  i.o j.o are placed in the *.o collection
+
+    all: *.o	-> The *.o's are NOT scanned for because they have already
+		  been generated by the other two dependancies.  The
+		  collection consists of:
+
+		  a.o b.o c.o i.o j.o
+
+    The fact that the left hand side is not scanned for except for the
+    case <wildcard> : <nonwildcard>, plus the fact that any wildcard
+    that is already a collection (*.o in the above example) will not be
+    scanned for (all : *.o in the above example) has many advantages, the
+    least of which is that DMake will not get confused by extra object files
+    in whatever directory you choose to place the objects.
+
+
+			  VARIABLE MODIFICATION
+
+    Both macro and collection specs may be modified with a reference of
+    the following form:
+
+    %/$(NAME:"srcwc":"destwc")
+
+	SRCS = a.c b.c c.c		    -> a.c b.c c.c
+	OBJS = $(SRCS:"*.c":"ram:*.o")      -> ram:a.o ram:b.o ram:c.o
+
+	SRCPAT = *.c
+	DSTPAT = ram:*.o
+	OBJS = $(SRCS:"$(SRCPAT)":"$(DSTPAT)")      (equivalent)
+
+	SRCPAT = "*.c"
+	DSTPAT = "ram:*.o"
+	OBJS = $(SRCS:$(SRCPAT):$(DSTPAT))          (equivalent)
+
+	CONVPAT = "*.c":"ram:*.o"
+	OBJS = $(SRCS:$(CONVPAT))                   (equivalent)
+
+    Whether you use % or $ depends on whether you want an explicit
+    replacement or a collection replacement.  Again, refer to a
+    couple of examples back where we had:
+
+	all: $(OBJS)            -> all: *.o
+	    ln %(OBJS)          -> ln %(*.o) -> ln a.o b.o c.o
+
+
+			    ORDER OF EXECUTION
+
+    Execution order is based on precedence.  Theoretically a Depth-First
+    order beginning at the leaf of each tree and then running backwards.
+    If you have :
+
+	all: symbols $(OBJS)
+
+    Dependancies associated with 'symbols' will be executed before those
+    associated with $(OBJS).  Directory-Searching for wildcards in
+    dependancies is done in execution order as well, so you could easily
+    have this:
+
+	all: arced* *.o
+	    ln %(*.o) -o ram:file
+
+	*.o : *.c
+	    cc $(CFLAGS) %(right) -o %(left)
+
+	*.o : *.asm
+	    as $(AFLAGS) %(right) -o %(left)
+
+	#   Note here that arced* is a wildcard dummy.	If we had just
+	#   used 'arced', the 'arc' command would have been executed once
+	#   with ALL the .arc files as arguments instead of being executed
+	#   once for each .arc file.
+
+	arced* : *.arc
+	    arc x %(*.arc)
+
+    In anycase, the assumption that the arc files may contain .C and .ASM
+    files and these will be included in the *.o : *.c and *.o : *.asm
+    dependancies is absolutely correct.
+
+
+				COMMON MISTAKES
+
+
+	ram:*.o ram:library.o : /dir2/*.c library.c		RIGHT
+		cc %(right) -o %(left)
+
+	ram:*.o ram:*.o : /dir2/*.c library.c			WRONG
+		cc %(right) -o %(left)
+
+    The dependancy labeled WRONG should be quite apparent if you break it
+    up manually:
+
+	ram:*.o : /dir2/*.c
+	    <commands>
+
+	ram:*.o : library.c
+	    <commands>
+
+    The problem is the last one ... here you are saying that ALL the object
+    files depend on a single source file, which is wrong.
+
+
+			     COMMAND EXECUTION
+
+    The CD command is an internal command.  Specifying CD with no arguments
+    returns you to the initial directory that DMake was run from.  This
+    is incredibly useful:
+
+	OBJS = ram:*.o
+	SRCS = *.c
+
+	$(EXE): $(OBJS)
+	    cd ram:
+	    ln %(right:"ram:*":"*") -lc32 -o $(EXE)
+	    cd
+
+	$(OBJS): $(SRCS)
+	    cc %(right) -o %(left)
+
+
+    Commands are limited to ~200 chars in length (BCPL limitation) when
+    executed.  DMake has an internal limit of 4K long command command/
+    dependancy lines.
+
+    There are two solutions to the problem.  (1) If your object list isn't
+    too big you can use the CD trick to CD into the object directory and
+    then remove the directory prefix for the object files on the link line.
+    (2) You can use a shell or equivalent and have it generate a file of
+    the expanded names, and then use the common -f option for the linker
+    (link from file list).
+
+	all: $(OBJS)
+	    shell -c "echo $(OBJS) >ram:linktmp"
+	    ln -f ram:linktmp $(LINKLIBS) -o executable
+	    Delete ram:linktmp
+
+    Note that in running the shell command (dillon/drew shell), I specified
+    $(OBJS) instead of %(OBJS) ... passed the shell the explicit wildcard
+    instead of the over-long collection list.
+
+
+

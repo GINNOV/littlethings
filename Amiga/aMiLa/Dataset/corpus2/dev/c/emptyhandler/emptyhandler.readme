@@ -1,0 +1,12 @@
+Short:        filehandler ex., make empty files
+Uploader:     BIRJT cc newcastle edu au
+Architecture: m68k-amigaos
+
+Type: dev/c
+
+Uploader: BIRJT@cc.newcastle.edu.au
+
+Author: Oliver Wagner
+
+Another example of a filehandler.  This one creates empty
+files of any given length.  Includes source in C.

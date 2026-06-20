@@ -1,0 +1,61 @@
+Short:        Compile for HighLanguageCode into asm
+Author:       Cyborg@eanet.de
+Version:      1.4 Full DISK Release
+Replaces:     Preass130.lha
+Requires:     68020+ and Asmone 1.2x +
+Architecture: m68k-amigaos
+
+Find Updates here: http://www.geocities.com/SiliconValley/Brigde/5737
+
+Have you ever wondered about C ? Why you are not allowed to use your vars as you
+want? Do you want to write your code as short as possible but as fast as
+possible too? 
+
+Here is your answere...Preass lets you write your code as YOU WANT!
+
+Docs are in german but don`t worry, all funktions are explained with an example.
+The rest need not to be explained ( trust me )
+
+History (german):
+
+    Noch etwas zum Schluss, das Update-Info :
+    
+    V1.39  --> V1.40
+
+    Bugfixed in IF(While) OR-Funktion
+
+    Strukturen
+
+    C-Referenzierte Funktionen 
+
+    V1.38  --> V1.39
+
+    ReturnVar und ReturnNoVar
+
+    Zeigeroptimierung von MOVE.L # auf LEA.
+
+    Mathematik macht das Leben schwer.
+
+    V1.37  --> V1.38
+
+    While-Schleife eingeführt
+
+    BugFix: Abgleich der Parameter mit den Argumenten einer Funktion 
+            jetzt "immer" korrekt: 
+
+            vorher war Zeiger=Weiter, weil beide auf `ER` enden.
+
+    V1.36  --> V1.37
+
+    IF (Funktion)=X or/and .... eingeführt.
+
+    If Delta/2*4+Rechts>Links ..... {[(Delta/2)*4]+Rechts}>Links
+    
+    Es können beliebig viele Operationen verwendet werden. Wie aus dem
+    Beispiel ersichtlich ist, gibts KEINE Klammerung oder Punkt-vor-
+    Strich-Regel.
+
+    Fehler in der DO Funktion der IF-Anweisungen behoben.Es können nun
+    wieder Blöcke und DO Funktionen gemischt werden!
+
+                                                        Cyborg

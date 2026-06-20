@@ -1,0 +1,218 @@
+This archive contains a number of fixes for the 6.55 version 
+of the SAS/C Development System. You MUST have 6.55 installed 
+to use this patch. This patch does not use the original 6.50 
+production disks, but rather just patches the 6.55 images in 
+place in the SC: directory.
+
+This patch is mainly to clean up a few problems that were
+introduced in version 6.55, but it also contains several fixes 
+to older bugs. See below for a list of fixes.
+
+To install this patch, type
+
+   execute install
+
+
+
+Fixed Bugs in SAS/C 6.56.
+
+   Description                               Modules      Comment
+
+1) PROGDIR and Cli_CommandName not set       cpr,cprk     New in 6.55. Fixed.
+   up properly in CPR.
+
+2) Build Project and Save All Files          se           New in 6.55. Fixed.
+   missing in SE.
+
+3) Inheritance of Virtual functions          sccxx        New in 6.55. Fixed.
+   gives compiler error.
+   
+4) Peephole bug in opt4, opt20 (LEA          scpeep       Old bug. Fixed.
+   elimination).
+
+5) Tail recursion bug if doubles are         sc2          Old bug. Fixed.
+   used.
+
+6) Cast to __asm, __regargs, etc doesn't     sc1          New in 6.55. Fixed.
+   if original pointer is not a function
+   pointer.
+
+7) Equr doesn't work if size is not          asm          New in 6.55. Fixed.
+   specified on instruction.
+
+8) Dense switch with > 4096 cases may        sc2          Old bug. Fixed.
+   generate bad code or CXERR. 
+
+9) Passing structures by value to a          sc2          Old bug. Fixed.
+   function pointer may result in a 
+   bad flush to the stack.
+
+10) Conflict between enum and formals in     sc1          Old bug. Fixed.
+    prototype when makeing a GST caused a
+    CXERR.
+  
+11) Asm files with ABS symbols can't be      asm          ABS symbols were not 
+    put in link libraries.                                supported prior to 6.55. 
+                                                          Fixed.
+
+12) Wrong reloc type was used for some       sc2          Old bug. Fixed.
+    const chip references causes linker
+    warnings that should have been
+    suppressed.
+
+13) Fill values used in builtin memset()     sc2          New in 6.55. Fixed
+    was uninitialized if non-constant and
+    destination was aligned.
+
+14) Covutil.c was not patched in 6.55 patch. covutil.c    Patch added.
+
+15) SLINK was not changed to use the proper  slink        New in 6.55. Fixed.
+    coverage AUTOINITIALER.
+
+16) Debug side file is not closed if         sc1,sc       Old bug. Fixed.
+    noobjname is specified, and multiple
+    files are compiled in single command.
+
+17) UNDO in SE sometimes replaced the line   se           Old bug. Fixed.
+    in the wrong place.
+
+18) Function pointers to varargs functions   sc1          Old bug. Fixed.
+    were not forced to stdargs if the 
+    __regargs keyword is used. C++ relies 
+    on this.
+
+19) Copying a one line block to the same     se           Old bug. Fixed.
+    caused SE to lose track of the original
+    block.
+
+20) The compiler generated tst.b n(pc) in    sc2          Old bug. Fixed.
+    68000 mode for  if (*"abc"). 
+
+21) SE's config screen won't open in WB 1.3  sekeymap     New in 6.55. Fixed.
+    beacuse of autoinit for Gadtools. The
+    only part that shouldn't work in 1.3 is
+    the Colorized C prefs.
+
+22) Improve __asm function pointer calls to  sc2          Old problem. Situation
+    reduce possibility of "out of regs"                   improved.
+    CXERR.
+
+23) Compiler didn't write complete debug     scdebug      Old bug. Fixed.
+    information if a GST was used.
+
+24) SE didn't update cursor position if      se           New in 6.55. Fixed.
+    in OVERWRITE, NO COLUMN DISPLAY and
+    COLORIZE C mode.
+
+25) Builtin memcpy() and memset() will       sc2          New in 6.55. Fixed.
+    copy one byte to many if the length
+    is constant and >32k, and the destination
+    is non-aligned.
+
+26) Asm doesn't generate a reloc for a       asm          Old bug. Fixed.
+    BRA to a symbol in a previous section
+    in the same file.
+
+27) Compiler could still abort if too many   sc1          Old bug. Fixed.
+    errors were found in PPONLY mode.
+
+28) The SEARCH command caused enforcer hits  cpr,cprx     Old bug. Fixed.
+    if no previous search string was 
+    specified.
+    
+29) The ENV +n command didn't work.          cpr, cprx    Old bug. Fixed.
+
+30) This format string caused enforcer       All libs.    Old bug. Fixed.
+    in scanf routines: "%*[x]"
+
+31) tagcall was limited to 200 parameters.   sc2          Increases limit to
+                                                          32k parms.
+                                                          
+32) CPR would crash if a caught task was     cpr, cprk    Old bug. Fixed.
+    was allowed to exit before being detached.
+    
+33) SC could generate code that would test   sc2          Old bug. Fixed.
+    the wrong condition code for complex
+    IF statements if the COVERAGE option was 
+    used.
+
+34) CXX was not outputing enough #line       sccxx        Old bug. Fixed.
+    statements in some cases, causing the
+    debug information to be inaccurate.
+
+35) Fixed problem with debug info preventing sc2          Old bug. Fixed.
+    env -1 from working with parm=reg, __asm
+    or C++ files.
+    
+36) fdopen() would fail if no other level 2  Non Math     Old bug. Fixed.
+    file handles have been used.             libs.
+
+37) ASM was not generating line number debug ASM          Old bug. Fixed. 
+    info for non-instructions (ie DC.L)
+   
+38) ASM did not handle labels on XREF/XDEF   ASM          Old bug. Fixed.
+    lines
+
+39) ASM will now default a forward ref to    ASM          This behavior of this
+    a symbol for the mode  'foo(pc,d0)' to                has been different in
+    a byte if generating code for 68000.                  just about every release.
+                                                          Hopefully, it consistant
+                                                          now.
+
+40) Increased the MAX line length from 256   SE
+    bytes to 2K.
+
+41) Block prints now go to PRT:, not PRT:RAW SE           Old bug. Fixed.
+
+42) CPR will now call Exit() on the quit     CPR, CPRK    Symptom first seen in
+    command if exit() is not available.                   6.55. A side effect of
+    This insures that the command line                    of using CreateNewProc
+    buffer is flushed properly.                           I beleive. Fixed.
+
+43) The STDIO autoinitializer allocated a    Libs         Old bug that caused no
+    length that was 1 byte to small.                      visable problem, because
+                                                          them memory was immediatly
+                                                          free'd. Fixed.
+
+44) Fixed problem with BF instructions.      Asm          New in 6.55. Fixed.
+
+45) The peephole optimizer would wrongly     scpeep       Partially fixed in 6.55.
+    use an autoincrement mode in BF                       Fully fixed in 6.56.
+    instructions.
+
+46) Compiler would reference global data     sc2          Old bug. Fixed.
+    relative to A4 in rare situations after
+    A4 was loaded for a #pragma call.
+
+
+Below is a list of bugs in the source examples and extras that we ship.
+A patch has not been included, but you can make the fix to the
+source from the information below.
+
+1) In MEMLIB, sc:extras/memlib/mwgetenv.c line 11 should be:
+
+   mem = MWStrDup(var, file, line);
+  
+   instead of    
+   
+   mem = MWStrDup(name, file, line);
+
+
+2) In the example device, sc:examples/example_device/serial.c line 117-118
+   should be:
+   
+   msg.msg.mn_Length = sizeof(struct START_MSG);
+   
+   instead of:
+   
+   msg.msg.mn_Length = sizeof(struct START_MSG) - 
+                       sizeof (struct Message);
+
+3) In sc:source/_iob.c, line 87 should be:
+
+   window = malloc(len+1);
+ 
+   instead of:
+
+   window = malloc(len);
+

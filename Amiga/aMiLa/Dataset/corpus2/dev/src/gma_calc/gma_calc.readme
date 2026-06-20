@@ -1,0 +1,41 @@
+Short:        Calculator, includes full source
+Author:       galbrech@csmd.cs.uni-magdeburg.de (Gerrit M. Albrecht)
+Uploader:     galbrech csmd cs uni-magdeburg de (Gerrit M  Albrecht)
+Type:         dev/src
+Version:      1.0
+Architecture: m68k-amigaos
+Www:          http://www.cs.uni-magdeburg.de/~galbrech/galbrech.html
+Tested:       A4000/40, 2 MB CHIP, 4 MB FAST
+
+              A1200,    2 MB CHIP, 0 MB FAST
+              HP 715, HP-UX v9
+Source:       C++
+Date:         1996.03.15
+Distribution: Cardware, CD
+
+IMPORTANT NOTE:
+
+You can include this archive in Computer Magazines if you:
+Send me a free copy of the magazine in question or
+You send me a resonable fee for my work.
+This program can go into Aminet with no restrictions!
+Other Disk's/CD's compilations shall send me a copy of the media
+where my archive is put! Many thanks in advance.
+
+
+Description:
+
+Das ist eines meiner Testate, welche ich im Laufe meines
+Studentenlebens anfertigen musste. Die Belegarbeit beschaeftigt sich
+mit der Funktionsweise und der Programmierung eines einfachen
+Taschenrechners in C++.
+
+Das Programm liegt nur in einer Shell-Version vor. Der Quellcode kann
+auf allen Systemen mit einem Standard-C++-Compiler (GNU-C) uebersetzt
+werden. Hoffe ich zumindest :)
+
+Im Archiv koennen Sie Beispiel-Executables fuer folgende Systeme
+finden: Amiga, HP-UX (v9), MS-DOS. Desweiteren wird der vollstaendige
+Quellcode mit Beschreibung (WinWord-6-Format) mitgeliefert.
+
+Gerrit.

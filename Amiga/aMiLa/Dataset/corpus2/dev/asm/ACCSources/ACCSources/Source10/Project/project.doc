@@ -1,0 +1,71 @@
+
+
+			A68K Front End Project
+			======================
+
+ Well, yet again this report has been typed using ACC.
+
+ Last month I said I would corret the bugs causing the cursor to vanish off
+the right hand side of the display. This has been done. Also I have stopped
+the printing routine from trashing the right hand window border, though this
+does occasionally cause a letter to get 'stuck' in the border.
+
+ As well as correcting the above two bugs I have also added requesters to
+prevent the accidental trashing of data when Load or Quit are selected. As
+the code has changed quite considerably since it's last appearence on the 
+disc I have included it this month.
+
+ If you make any improvements/addittions please send them to me.
+
+ It is almost time to unvail the front end on an unsuspecting public, I intend
+to do this before the end of March. The disc will contain everything needed
+to get started: ConvertFD, a manual and example source.
+
+ I also intend to keep improving the program ( there are lots of areas that
+could be improved, such as my latest annoyance, the screen flash every time
+the return key is pressed ).
+
+ If you have anything to contribute towards the PD release disc, please get
+it to me as soon as possible. If it is source, make sure it assembles using
+ACC first. 
+
+ A copy of the Workdisc is available from me as it stands already. This
+contains ACC, ConvertFD, all their source, example source that assembles
+using ACC and the start of the documentation on how to use ACC. Send a
+disc and sae as per usual. Please put your name on the disc and mark it as
+ACC Workdisc. This saves me a lot of time and confusion.
+
+ Have now added Helper ( Raistlin ) to the Workdisc, will fix the bugs in
+it later ( ie it tests for the function keys even when it is supposed to be
+inactive ).
+
+ Here stands a list of bugs and work still outstanding:
+
+ BUGS
+ ----
+ 1/ The screen flashes when RETURN key pressed.
+ 2/ The Print Page option prints one line to many.
+ 3/ The Print File option misses the last line of the program off.
+ 4/ Moving off a line that has been shifted by pressing a cursor key 
+    temporarily corrupts that line.<<<< Fixed M.M 8/3/91
+ 5/ Save routine is not loaded with the name of a source file loaded from
+    disc using the Load option.
+
+ Still To Be Done.
+ -----------------
+ 1/ Write the Search/Replace routines.
+ 2/ Write the Preferences routine.
+ 3/ Write the Help routine.
+ 4/ Expand on the assembly options, allowing the user more freedom in the
+    use of A68K, ie selecting other A68K switches, producing Linkable files
+    and giving the option of linking other files to the one being assembled
+    ( using a parameter list that will be passed to Blink ).
+ 5/ Block editing routines need to be added.
+ 6/ Requesters could all be made more presentable.
+ 7/ Add a disassembler, as soon as a PD symbolic one becomes available.
+
+ Well that should give you something to think about. Until next month then,
+	
+							Mark.
+
+

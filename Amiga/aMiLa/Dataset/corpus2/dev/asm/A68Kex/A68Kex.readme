@@ -1,0 +1,7 @@
+Short:        Over .25M of example source for A68K
+Author:       E Lenz
+Architecture: m68k-amigaos
+Source:       Fish collection
+
+Twelve examples demonstrating the use of Charlie Gibbs A68K assembler.
+Over a quarter megabyte of assembly source code.  

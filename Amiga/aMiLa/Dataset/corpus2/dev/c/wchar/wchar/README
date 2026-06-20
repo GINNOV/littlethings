@@ -1,0 +1,10 @@
+This is a subset of the wide character library, which is used to build
+the Jikes Java compiler and the ICU (International Classes for Unicode)
+package, which Jikes requires.  The code is derived from the Jike source,
+and is therefore governed by the IBM public license, which can be found
+in jikes.html, under which the Jikes is distributed.
+
+To install for use with gcc, copy wchar.h to GG:include and libw.a
+to GG:lib.
+
+Kriton Kyrimis (kyrimis@cti.gr)

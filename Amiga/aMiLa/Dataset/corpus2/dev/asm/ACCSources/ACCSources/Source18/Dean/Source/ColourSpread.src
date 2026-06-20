@@ -1,0 +1,94 @@
+********************************************************************
+* ColourSpread.src :- Used to create an even colour spread between *
+*                     two colours. Adapted from a source that      *
+*                     appeared on 'Newsflash' disk magazine. This  *
+*                     version is smaller and more readable though! *
+*                     Credits to the original author, whose name I *
+*                     can't remember! Bye!                         *
+********************************************************************
+* Example code.
+*	MOVEQ	#16,D0		; Spread over 16 values
+* 	MOVE.W	#$000,D1		; Source colour is BLACK
+*	MOVE.W	#$FFF,D1		; Destination colour is WHITE
+*	LEA	COLORTAB(PC),A0	; Pointer to our table 
+*	BSR	COLSPREAD		; Spread between colours
+*	RTS
+*COLORTAB	DCB.W	16,0		; A table that is large enough
+*				; to hold 16 colour values.
+*
+********************************************************************
+* Entry Params are D0=Steps,D1=Source,D2=Dest,A0=Table Pointer     *
+********************************************************************
+
+COLSPREAD	MOVEM.L	D0-D5/A0-A2,-(A7)	; Stack Registers
+	AND.L	#$FFF,D1		; Mask duff bits from Source Colour
+	AND.L	#$FFF,D2		; Mask duff bits from Dest Colour
+	LEA	RGBTABLE(PC),A1	; Pointer to RGB counters
+	LEA	INCTABLE(PC),A2	; Pointer to RGB counter INC-table
+
+CALCCOLS	MOVE.L	D1,D3		; Get Source Colour
+	MOVE.L	D2,D4		; Get Destination Colour
+	AND.L	#$0F00,D3		; Get red nibble of Source
+	AND.L	#$0F00,D4		; Get red nibble of Destination
+	MOVE.W	D3,(A1)		; Start value of red*256
+	SUB.L	D3,D4		
+	DIVS.W	D0,D4		
+	MOVE.W	D4,(A2)		; Red INC Value*256  
+
+	MOVE.L	D1,D3		; Get Source Colour
+	MOVE.L	D2,D4		; Get Destination Colour
+	AND.L	#$00F0,D3	 	; Get green nibble of Source
+	AND.L	#$00F0,D4	 	; Get green nibble of Destination
+	LSL.L	#4,D3		; Shift nibble one nibble to left
+	LSL.L	#4,D4		;   "     "    "     "    "   "  
+	MOVE.W	D3,2(A1)		; Start value of green*256
+	SUB.L	D3,D4		
+	DIVS.W	D0,D4		
+	MOVE.W	D4,2(A2)		; Green INC Value*256
+
+	MOVE.L	D1,D3		; Get Source Colour
+	MOVE.L	D2,D4		; Get Destination Colour
+	AND.L	#$000F,D3		; Get blue nibble of Source
+	AND.L	#$000F,D4		; Get blue nibble of Destination
+	LSL.L	#8,D3		; Shift nibble 2 nibbles to left
+	LSL.L	#8,D4		;   "     "    "   "      "   "
+	MOVE.W	D3,4(A1)		; Start value of blue*256
+	SUB.L	D3,D4		
+	DIVS.W	D0,D4		
+	MOVE.W	D4,4(A2)		; Blue INC Value*256
+
+STORECOLS	LEA	INCTABLE(PC),A1	; Pointer to RGB Counter INC-table
+	LEA	RGBTABLE(PC),A2	; Pointer to RGB counters
+	
+	SUBQ	#1,D0		; Subtract 1 to prepare for DBF loop
+	
+	MOVEM.W	(A1),D1-D3	
+	
+COLORLOOP	BSR	NEXTCOLOR
+	MOVE.W	D4,(A0)+	
+	DBF	D0,COLORLOOP	; Loop for number of steps
+	
+	MOVEM.L	(A7)+,D0-D5/A0-A2	; Restore registers		
+	RTS
+
+NEXTCOLOR	ADD.W	D1,(A2)		; Increase red counter
+	ADD.W	D2,2(A2)		; Increase green counter
+	ADD.W	D3,4(A2)		; Increase blue counter
+
+GETRED	MOVE.W	(A2),D4		; Get Red Counter from Table
+	AND.W	#$F00,D4		; D4 holds Red Component
+	
+GETGREEN	MOVE.W	2(A2),D5		; Get Green Counter from Table
+	AND.W	#$F00,D5	
+	LSR.W	#4,D5		; Shift into correct place
+	ADD.W	D5,D4		; D4 holds Red and Green Components
+	
+GETBLUE	MOVE.W	4(A2),D5		; Get Blue Counter from Table
+	AND.W	#$F00,D5	
+	LSR.W	#8,D5		; Shift into correct place
+	ADD.W	D5,D4		; D4 is complete word ($0RGB)
+	RTS	
+	
+INCTABLE	DCB.W	3,0
+RGBTABLE	DCB.W	3,0						
+

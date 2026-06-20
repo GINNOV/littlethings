@@ -1,0 +1,580 @@
+
+
+		      65c02 Cross Assembler for Amiga
+		     =================================
+
+			 Supervisor Software 1989
+			       Jukka  Marin
+
+			       Version 2.352
+
+
+
+	Freely distributable as long as all the files are kept
+	   together and the copyright notice is not changed.
+
+
+
+
+Asm65 is a macro assembler running under AmigaDOS.  It was completely
+written in assembly language to make the executable small (and because
+I *love* machine language!).
+
+I suggest that you would read through this manual.  I know that all the
+topics are not explained exactly where they should be.  I'll improve this
+document sometimes...
+
+
+
+			 Command line parameters
+			=========================
+
+
+Command line syntax is as follows:
+
+Asm65 <sourcefile> [-opt]
+
+where <sourcefile> is a standard AmigaDOS filename WITHOUT the .asm
+extension.  Asm65 will automatically add the extensions needed to
+generate the source and list file names.
+
+[-opt] may contain one or more of the following options:
+
+-l	produce a list file (uses name <filename>.lst)
+-h	destination file in hex dump
+-s	dump symbol values after assembling
+-c	enable 65c02 extended addressing modes and instructions
+
+Example:
+
+Asm65 test -s-l
+
+will assemble a file called 'test.asm' in current directory and produce
+an binary file 'test' as well as a list file 'test.lst' with a symbol
+table.
+
+
+
+			 Source line syntax
+			====================
+
+
+The source lines should follow the following format:
+
+[label]		[mnemonic  [operands]]		[;comment]
+
+
+The label, if present, must start at the column 1.  The first character
+of a symbol must be i) an alphabetic character (a...z, A...Z) OR ii)
+an underscore (_) OR iii) a period (.).  The rest of the characters
+can be any of these characters or also numeric (0...9).
+The symbol names are case-sensitive, so 'test' is different from 'TEST'
+and 'Test'.
+
+The line may or may not contain a mnemonic and its operands.  Comments
+are also optional.  The comments must begin with a ';'.
+
+Mnemonics may *never* start at column 1.  They must always be preceded
+by at least one blank (a space character or a tabulator).
+
+
+An example listing follows:
+
+
+zpl		equ	251		; free ZP storage on a C-64
+zph		equ	252
+chrout		equ	$ffd2		; used to output a char on a C-64
+
+text		macro
+		jmp	text\@z		; causes a jump over the text
+		db \1
+		db 13,0
+text\@z
+		endm
+
+
+sjmp		macro			; short jump
+		ifne	@MODE&1
+		bra	\1		; on a 65c02 bra will be used
+		endc
+		ifeq	@MODE&1
+		jmp	\1		; on a 6502 jmp will be used
+		endc
+		endm
+
+
+
+*		equ	$c000		; sets the destination address
+
+		ldx	#<string	; set the string address
+		ldy	#>string
+		stx	zpl
+		sty	zph
+		ldy	#0		; reset index
+loop		lda	(zpl),y		; get a char
+		beq	exit		; NULL -> exit
+		jsr	chrout		; print it
+		iny
+		bne	loop
+		inc	zph		; incr. high byte of addr
+		sjmp	loop		; get next char
+
+exit		rts
+
+string		text	'This is a test!'
+
+
+
+
+
+
+
+			 Symbols
+			=========
+
+
+The symbols can be defined in three ways:
+i)   using a symbol as a label
+ii)  by the SET directive
+iii) by the EQU directive
+
+If a symbol is defined using the SET directive it may be re-defined using
+another SET.  Labels and EQUated symbols may not be re-defined.
+
+* is a special symbol:  It must be EQUated to the start address of the
+compiled code before any code producing lines.  That is to tell the
+assembler where the compiled code will be located in the 6502 address
+space.
+Later, the 'asterisk' symbol contains the start address of each line
+(ie. jmp *  will produce an endless loop because it causes a jump to
+the start of line which in this case is the JMP instruction).
+
+All symbols that will be used to address the page zero must be defined
+*before* they are used.  Otherwise the assembler will take the symbols
+as absolute ones during the first pass until it reads the definition
+statement.  During the second pass the assembler knows that the symbol
+is a page zero value and a phasing difference will occur.
+It is recommended to define *all* page zero symbols at the beginning of
+the source code to avoid any problems.
+
+If you use the -s option during assembly the symbol table will be listed
+after the assembly is completed.  The symbol table contains the following
+fields:
+
+symbol_name	value type usage
+
+Symbol name fields contain the symbol names in alphabetical order.  Value
+is the symbol value in hexadecimal.  Type indicates the way in which the
+symbol was defined: S means it was SET, E that it was EQUated, and Z means
+that the value is a page zero address.
+
+The assembler creates page zero references always when it is possible to
+use page zero addressing instead of absolute addressing.  If the page zero
+addressing mode is not available the absolute addressing will be used
+instead.
+
+
+
+			 Numbers
+			=========
+
+
+The assembler accepts numbers in decimal (default), hexadecimal (preceded
+by '$'), octal (preceded by '&'), in quinary (preceded by '^') and in
+binary (preceded by '%').  An ASCII character can also be used but it
+must be enclosed in single quotes (eg. 'A' = 65 = $41 = %1000001 = &101).
+
+
+
+			 Expression evaluation
+			=======================
+
+
+All expressions are evaluated from left to right BUT the *, /, and \
+operators have higher priority than the others and will be handled
+before addition and subtraction, for example.  The expressions
+enclosed in [] will be evaluated first.  The assembler knows the
+following operators:
+
+oper.	operation			example
+
++	addition			symbol+5
+-	subtraction			78-43
+*	multiplication			10*length
+/	division			buffer/8
+\	modulo operation		length\4
+&	logical AND			address&7
+!	logical OR			bit!1
+^	logical Exclusive OR		bit^1
+<	logical shift left		bit<5
+>	logical shift right		number>2
+-	negation (2's compelment)	-332
+~	logical NOT (1's complement)	~10
+<	get low byte only		<address
+>	get high byte only		>address
+@MODE	gets the current MODE value	@MODE
+$	a hex number			$ffd2
+&	an octal number			&777
+^	a quinary number		^0123
+%	a binary number			%10111010101
+''	ASCII code conversion		'J'
+
+
+With < and > you can separate the high and low bytes of an absolute
+address.  For example:
+
+pointerlow	equ	251
+pointerhigh	equ	252
+
+		...
+
+		ldx	#<TABLE
+		ldy	#>TABLE
+		stx	pointerlow
+		sty	pointerhigh
+
+		ldy	#0
+loop		lda	(pointerlow),y
+		adc	temp
+
+		...
+
+TABLE		db	0,5,2,7,3,8,4,9,-1
+
+
+The system variable @MODE contains some information about the options
+used when starting the assembler.  Currently only the lowest five
+bits of the variable are used:
+
+bit#	meaning
+
+0	if '1' the assembler operates in 65c02 mode (otherwise in 6502 mode)
+1	if '1' the assembler is producing a hex object file (not binary)
+2	if '1' the assembler will produce a symbol table after assembly
+3	if '1' the assembler is producing a list file
+4	if '1' the assembler is compiling an include file
+
+This way you can make 'intelligent' macros that will utilize the extra
+addressing modes and instructions of the 65c02 when the compiler is
+operating in 65c02 mode.  Otherwise you could write your own code to
+achieve the same function using only 6502 instructions.
+You can check the @MODE variable with the conditional assembly direc-
+tives:
+
+sjmp		macro			;short jump
+		ifne	@MODE&1
+		bra	\1		; on a 65c02 bra will be used
+		endc
+		ifeq	@MODE&1
+		jmp	\1		; on a 6502 jmp will be used
+		endc
+		endm
+
+
+
+
+			 Conditional assembly
+			======================
+			(and other directives)
+
+The Asm65 cross assembler supports conditional assembly.  The conditional
+blocks may be nested; maximum nesting level is currently set to 16.
+The conditional assembly directives are listed below:
+
+dir.	operation			example
+
+IFEQ	assemble if expression = 0	IFEQ version-5
+IFNE	assemble if expression <> 0	IFNE debug
+IFGT	assemble if expression > 0	IFGT version-4
+IFLT	assemble if expression < 0	IFLT test
+IFGE	assemble if expression >= 0
+IFLE	assemble if expression =< 0
+IFD	assemble if symbol defined	IFD debug
+IFND	assemble if symbol not defined	IFND debug
+IFC	assemble if strings identical	IFC '\1','test'
+IFNC	assemble if strings not ident.	IFNC '\1',''
+IFI	assemble if the second string contains the first string
+IFNI	assemble if the second string does not contain the first string
+ENDC	end of conditional assembly block
+FAIL	cause assembly to fail
+PAGE	inserts a page break into the list file
+
+With IFI and IFNI you can test if a macro parameter contains a specific
+character, for example.
+
+
+
+			 Macros
+			========
+
+Any macros must be defined before they are used in the program code.
+The macro definitions may not be nested but it is allowed to call
+another macro from within a macro.  The maximum macro nesting level
+is currently set to 8.
+The first four parameters are passed to the macro while the rest are
+discarded.  You can handle the parameters within a macro by using a
+backslash followed with the parameter number (eg. \3 is the third
+parameter of the macro).  If no parameter is given to the macro the
+parameters will be NULL (ie. '').
+You can use the conditional assembly directives to analyse the macro
+parameters (you can check if the parameter is empty with IFC '\1',''
+or see whether it contains a known string with IFI 'reg','\2').
+
+The macro definition is done as follows:
+
+text		macro		; create a macro called 'text'
+		db	\1	; stores the first param. into memory
+		db	13,0	; adds CR and NULL to the end of string
+		endm		; ends the macro definition
+
+NOTE: No label is allowed on the ENDM line.
+
+The macro can be called later using the macro name as a directive:
+
+		...
+		text	'Test string for a macro!'
+		text	'Another line of text.'
+		...
+
+If a macro parameter like 10,13,34 is needed it must be enclosed in
+< and > characters.  Otherwise each individual number will be taken
+as a separate macro parameter.
+
+		...
+		text	<'This',32,'is only',32,'a single parameter!'>
+		...
+
+
+Within macros you may use special labels whose names start with '\@'
+to generate unique label names.  The '\@' will be converted into a
+four character hexadecimal number (0001...ffff).  This number is
+incremented each time a symbol with '\@' is defined.
+Example:
+
+test		macro
+		jmp	test\@
+		db	\1
+test\@					; Note: the ENDM line may NOT
+		endm			; contain a label.
+
+
+
+
+			 Storage allocation:
+			=====================
+
+To allocate storage for variables you can use the define directive:
+
+counter		db	4	; allocates one byte and sets it to 4.
+
+jumpaddr	dw	routine	; allocates two bytes and store the
+				; value of 'routine' into memory (low
+				; byte first).
+
+hugevalue	dl	$654312	; allocates four bytes and writes the
+				; number into them (the least significant
+				; byte is stored at the lowest address)
+
+Other examples:
+
+text		db	'This is a string!',13,'Another line.',13,0
+adrtable	dw	load,save,help,quit
+
+
+
+
+			 Including other files
+			=======================
+
+You can include additional header files using the INCLUDE directive.
+The syntax is
+
+		INCLUDE	'filename'
+
+where filename is a standard AmigaDOS filename with an optional path.
+The maximum nesting level of nested include files is currently set
+to 8.
+
+
+
+			 The MODE directive
+			====================
+
+You can set or change several assembler parameters using the MODE
+directive.
+The syntax is MODE <let>[<let>[<let>...]]
+A lower case character turns an option OFF and an upper case character
+turns the option ON.  The options currently supported are listed below:
+
+C	65c02 mode
+L	start/stop writing to list file
+S	produce the symbol table
+H	produce a hex object file (NOTE: No .hex extension is added to
+	the filename when using the MODE H directive instead of the -h
+	option on the command line)
+
+You may, for example, prevent the included files to be written into the
+list file using the command 'MODE l' at the first line of the include
+file and the command 'MODE L' on the last line.  If the list file was
+not enabled using the -l option on the command line the 'MODE L' command
+will have no effect.
+
+
+
+			 The output file formats
+			=========================
+
+The binary object file
+
+When no -h option or MODE H command is used the assembler will produce
+a pure binary object file which can be executed by the 65(c)02 as it
+is.  No extra bytes are added to the compiled data.
+
+
+The hex object file
+
+If the option -h is used the compiler will replace all bytes of the object
+code with two ASCII hex characters (ie. 00...FF).  There will be no spaces
+or line feeds between the hex numbers (the file will only contain one
+string).  At the end of the file a CTRL+Z character is added.
+
+
+The list file
+
+When the option -l is used on the command line the compiler will write
+a list file on the disk.  The list file is divided into pages by FF (12)
+characters.  A title and a page number will be written at the top of each
+page.
+
+The rows of the list file contain several fields:
+
+line#  addr bytes     symbol          mnem    operands        comments
+=====  ==== =====     ======          ====    ========        ========
+
+ 65c02 Cross Assembler v2.34  (c) J. & T. Marin 1988                  --  Page #    1  --
+
+00001                 
+00002  =00fb          zpl             equ     251             ; free ZP storage on a C-64
+00003  =00fc          zph             equ     252
+00004  =ffd2          chrout          equ     $ffd2           ; used to output a char on a C-64
+00005                 
+00006                 text            macro
+00007                                 jmp     text\@z         ; causes a jump over the text
+00008                                 db \1
+00009                                 db 13,0
+00010                 text\@z
+00011                                 endm
+00012                 
+00013                 
+00014                 sjmp            macro                   ; short jump
+00015                                 ifne    @MODE&1
+00016                                 bra     \1              ; on a 65c02 bra will be used
+00017                                 endc
+00018                                 ifeq    @MODE&1
+00019                                 jmp     \1              ; on a 6502 jmp will be used
+00020                                 endc
+00021                                 endm
+00022                 
+00023                 
+00024                 
+00025  =c000          *               equ     $c000           ; sets the destination address
+00026                 
+00027  c000 a2 19                     ldx     #<string        ; set the string address
+00028  c002 a0 c0                     ldy     #>string
+00029  c004 86 fb                     stx     zpl
+00030  c006 84 fc                     sty     zph
+00031  c008 a0 00                     ldy     #0              ; reset index
+00032  c00a b1 fb     loop            lda     (zpl),y         ; get a char
+00033  c00c f0 0a                     beq     exit            ; NULL -> exit
+00034  c00e 20 d2 ff                  jsr     chrout          ; print it
+00035  c011 c8                        iny
+00036  c012 d0 f6                     bne     loop
+00037  c014 e6 fc                     inc     zph             ; incr. high byte of addr
+00038M                                sjmp    loop            ; get next char
+00038M TRUE                           ifne    @MODE&1
+00038M c016 80 f2                     bra     loop            ; on a 65c02 bra will be used
+00038M                                endc
+00038M FALSE                          ifeq    @MODE&1
+00038M                                jmp     loop            ; on a 6502 jmp will be used
+00038M                                endc
+00039                 
+00040  c018 60        exit            rts
+00041                 
+00042M                string          text    'This is a test!'
+00042M c019 4c 2d c0                  jmp     text0002z               ; causes a jump over the text
+00042M c01c 54 68 69                  db 'This is a test!'
+00042M c02b 0d 00                     db 13,0
+00042M                text0002z
+00043                 
+00044                 
+
+
+ 65c02 Cross Assembler v2.34  (c) J. & T. Marin 1988                  --  Page #    2  --
+
+
+symbol_name      value type usage           symbol_name      value type usage
+chrout            ffd2   e      1           exit              c018          1
+loop              c00a          2           string            c019          2
+text0002z         c02d          1           zph               00fc  ze      2
+zpl               00fb  ze      2           
+
+
+
+The leftmost field shows the source line number.  If the line is generated
+by macro expansion an 'M' will be added to the line number.  Lines derived
+from included files are marked with 'I'.
+
+The next field contains the destination address in hexadecimal, or the
+value SET or EQUated to a symbol.  If SET was used the value is preceded
+with a '>' and if EQU was used by a '='.
+If the line contained a conditional assembly directive the address field
+will be replaced with 'TRUE' or 'FALSE' depending on the result on the
+condition test.
+
+The third field contains the first three object bytes generated from this
+line.
+
+The fourth field contains the symbol name, fifth the mnemonic and sixth
+the operands.  The last field contains the comments.
+
+The columns of the fields depend on the number of tabulators being used in
+the source file.
+
+
+
+-------------------------------------------------------------------------
+
+Known bugs:
+
+- lda #-1-8 causes an error message although it shouldn't.
+
+- Strange line numbers in some error messages (in errors with macros
+  and include files).
+
+
+-------------------------------------------------------------------------
+
+
+
+
+Send all flames/thanks/bug_reports/whatever to:
+
+MAIL:	Jukka Marin
+	Ruskeisentie 24
+	70900 Toivala
+	FINLAND
+
+E-MAIL:	jmarin@finkuo.bitnet
+
+
+If you like this program I would appreciate a small donation from you.
+You know, it takes some time to write a macro assembler...  The source
+code is now included with the executables.  To compile the source you
+need special macro libraries, however.
+I know the source is *terrible* and not suitable to be used as an example
+of assembly language programming.
+
+Thanks!
+
+	-jm
+

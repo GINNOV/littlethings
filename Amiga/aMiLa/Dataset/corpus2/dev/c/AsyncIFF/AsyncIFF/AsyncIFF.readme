@@ -1,0 +1,31 @@
+Short:    Asyncronous IFFParse operations
+Author:   azummo@ita.flashnet.it
+Uploader: azummo@ita.flashnet.it
+Type:     dev/c
+Version:  1.0
+
+/*
+
+   AsyncIFF.c - This piece of code is Copyright 1997 by Alessandro Zummo,
+                and can be freely used as long as you send me an email.
+
+
+   Instructions:
+
+   You should #define a macro for ASM, SAVEDS and REG(x) and include this 
+   piece of code in your source and then:
+
+    1) AllocIFF()
+	2) OpenAsync()
+	3) InitIFF(IFFHandle, IFFF_FSEEK|IFFF_RSEEK, &IFFHook); instead of InitIFFasDOS
+    4) OpenIFF(IFFHandle,IFFREAD) or OpenIFF(IFFHandle,IFFWRITE)
+	5) Do your stuff
+	6) CloseIFF()
+	7) CloseAsync()
+	8) FreeIFF()
+
+    Don't forget to open the asyncio.library v38.0
+
+	Comments to azummo@ita.flashnet.it
+*/
+

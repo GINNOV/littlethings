@@ -1,0 +1,136 @@
+TABLE OF CONTENTS
+
+uuid/main/FreeUuid
+uuid/main/UuidA
+uuid/main/UuidToText
+
+
+uuid/main/FreeUuid                                         uuid/main/FreeUuid
+
+   NAME
+      FreeUuid -- Free a UUID object
+
+   SYNOPSIS
+      void FreeUuid(void * uuid);
+
+   FUNCTION
+
+   INPUTS
+       uuid - UUID object to free
+
+   RESULT
+       This function does not return a result
+
+   EXAMPLE
+
+   NOTES
+
+   BUGS
+
+   SEE ALSO
+
+uuid/main/UuidA                                               uuid/main/UuidA
+
+   NAME
+      UuidA -- Ceate a UUID object
+      Uuid -- Vararg stub
+
+   SYNOPSIS
+      void * UuidA(const struct TagItem * taglist);
+      void * Uuid(...);
+
+   FUNCTION
+       Creates a UUID as per RFC4122
+
+   INPUTS
+       taglist - see below
+
+   TAGS
+       UUID_Version (ULONG)
+       Version of UUID to create.
+       Currently supported versions are 1, 4 and 5.
+       Defaults to 1.
+
+       UUID_Namespace (void *)
+       A UUID object to use as a namspace.
+       This is only used when creating v5 UUIDs, and
+       is REQUIRED to create a v5 UUID.
+
+       UUID_Name (char *)
+       A string to use as a name within a namespace.
+       This is only used when creating v5 UUIDs, and
+       is REQUIRED to create a v5 UUID.
+
+       UUID_Preset (ULONG)
+       A predefined UUID to return. These are usually
+       used as namespaces when creating v5 UUIDs.
+       If UUID_Preset is provided, no other tags should
+       be specified.
+       Choices are:
+         UUID_NULL    - NULL UUID
+         UUID_NS_DNS  - DNS namespace
+         UUID_NS_URL  - URL namespace
+         UUID_NS_OID  - OID namespace
+         UUID_NS_X500 - X500 namespace
+
+       UUID_String (char *)
+       A UUID string to convert to a UUID object.
+       This is the opposite of UuidToText()
+       If UUID_String is provided, no other tags should
+       be specified.
+
+   RESULT
+       A UUID object which must be freed with FreeUuid(),
+       or NULL on error.
+
+   EXAMPLE
+       Create and print a v4 UUID:
+
+       void *uuid = IUuid->Uuid(UUID_Version, 4, TAG_DONE);
+       if(uuid != NULL) {
+         char uuid_s[37];
+         IUuid->UuidToText(uuid, uuid_s);
+         printf("%s\n", uuid_s);
+         IUuid->FreeUuid(uuid);
+       }
+
+   NOTES
+       If tags UUID_Preset or UUID_String are provided
+       along with other tags, the behaviour is undefined.
+
+       This library can currently generate a maximum of
+       ten UUIDs per microsecond.  If this limit is reached,
+       NULL will be returned. Be prepared to handle this!
+
+   BUGS
+
+   SEE ALSO
+       FreeUuid(), UuidToText()
+
+uuid/main/UuidToText                                     uuid/main/UuidToText
+
+   NAME
+      UuidToText -- Convert a private UUID object to a string
+
+   SYNOPSIS
+      void UuidToText(void * uuid, char * text);
+
+   FUNCTION
+
+   INPUTS
+       uuid - Pointer to a UUID object
+       text - Pointer to a buffer of 37 bytes to hold the string representati
+on
+
+   RESULT
+       This function does not return a result
+
+   EXAMPLE
+
+   NOTES
+
+   BUGS
+
+   SEE ALSO
+
+

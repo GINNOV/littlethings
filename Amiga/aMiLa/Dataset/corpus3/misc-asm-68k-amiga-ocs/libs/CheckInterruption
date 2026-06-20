@@ -1,0 +1,7 @@
+	btst	#6,$bfe001
+	beq	Unterbruch
+	btst	#7,$bfe001
+	beq	Unterbruch
+	btst	#2,$DFF016
+	beq	Unterbruch
+

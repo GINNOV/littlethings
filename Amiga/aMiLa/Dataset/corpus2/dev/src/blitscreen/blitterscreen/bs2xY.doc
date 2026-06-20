@@ -1,0 +1,12 @@
+
+bs2xY.s is example source to show usage of routines in bltscr.s
+To get sources in normal format use prec2.
+
+running bs2xY you will see someting boring, cpu storing continuous colors
+chunky-bytewise. Only interesting for coders (and for THEM not boring
+at all ;)
+For having an impression what the 2x2 mode looks like when treated
+with bitmap gfx, look at our intro EXCESS (note: it's same screenmode
+but does different blitteraction. if your A1200 got fastmem it does
+2x2 fullscreen rotzooming in 50Hz, 256 colors of course :)
+

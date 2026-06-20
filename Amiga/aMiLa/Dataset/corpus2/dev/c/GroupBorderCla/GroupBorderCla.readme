@@ -1,0 +1,58 @@
+Short:        BOOPSI groupframe class
+Author:       Ketil Hunn (ketil@sis.pitt.edu)
+Uploader:     Ketil Hunn (ketil sis pitt edu)
+Type:         dev/c
+Architecture: m68k-amigaos
+
+TITLE
+
+  GroupFrameClass
+
+VERSION
+
+  1.0
+
+AUTHOR
+
+  Ketil Hunn
+
+  Nabbetorpveien 35B
+  N-1632 Gamle Fredrikstad
+  NORWAY
+
+  E-Mail: ketil@sis.pitt.edu
+
+  http://www.sis.pitt.edu/~ketil/
+
+DESCRIPTION
+
+  A very simple and small BOOPSI class which creates a framed groupborder
+  visual image.
+
+  The source is just grabbed from a program of mine and may contain custom
+  functions.  It should however be easy enough to figure out how this
+  class works and make the small adjustments necessary before including
+  it in your own code.
+  
+FEATURES
+
+  o Group frame title which may be aligned left, centre or right.
+  o May use own font in group frame title.
+  o Built on the BUTTON class so that it is refreshed as normal
+    gadgets.
+
+REQUIREMENTS
+
+  OS 2.04 or higher.
+
+AVAILABILITY
+
+  ftp://ftp.wustl.edu/pub/aminet/dev/c/GroupFrameClass.lha (2.714)
+
+PRICE
+
+  Free.
+
+DISTRIBUTABILITY
+
+  Freeware.

@@ -1,0 +1,24 @@
+Short:        Composite Proof Of Concept
+Author:       thellier@free.fr (Alain Thellier)
+Uploader:     thellier free fr
+Type:         dev/src
+Version:      1.0
+Requires:     OS4, PowerPC
+Architecture: ppc-amigaos
+
+DESCRIPTION 
+Demonstrate how to use the OS function CompositeTags() to make a game				
+CompositeTags() is an OS4 function that add blitter-like hardware accelerated functions
+										
+WARNING: This program is NOT a  full game but only a Proof Of Concept
+                                                                                 
+LICENSE 
+CompositePOC.c: Composite Proof Of Concept - July 2012 				
+Author: Alain Thellier - Paris - France .
+GNU General Public License (GNU GPL) 
+
+------------------------------------------------------------------------------------------------
+If you enjoyed CompositePOC send me a postcard at: Thellier. 43 Rue Ordener. 75018 PARIS. FRANCE
+------------------------------------------------------------------------------------------------
+
+	

@@ -1,0 +1,350 @@
+Unix compatibility library for SAS C 5.10b
+------------------------------------------
+
+Introduction
+------------
+
+This library provides 80 odd functions which are useful for porting
+Unix programs to the Amiga running AmigaDOS 2.04 or higher. It is thus
+similar to Markus Wild's ixemul.library, but has more restricted aims:
+
+a) It is written specifically for SAS C 5.10b.
+
+b) It isn't a complete C library, it requires the SAS C library to function.
+It adds some routines, and replaces others that were deficient, out of date,
+or that didn't provide adequate functionality.
+
+c) It isn't a complete Unix emulation library, it only contains those functions
+that I needed while porting various utilities (mainly from GNU) to the Amiga.
+
+d) It is a traditional C link library, not an Amiga library. This produces 
+bigger executables.
+
+Considering the above points, you might ask why I wrote it ... There are several
+good answers:
+
+a) I started it before I was aware of ixemul.library.
+
+b) ixemul.library didn't provide the features I needed for Emacs (support for
+select).
+
+c) It is easier for me to maintain when I find I need to support another Unix
+feature (eg deleting open files).
+
+Copying
+-------
+
+The library includes code that I have written, which I place in the public domain.
+This is found in all the files that don't have a Copyright notice.
+
+It also includes code which is (inclusive of my modifications)
+
+ Copyright (c) 1982, 1986, 1991 The Regents of the University of California.
+ All rights reserved.
+
+This code is freely redistributable (see the copyright notices in the source
+and include files).
+
+Finally it includes Doug Gwyn's public domain alloca implementation.
+
+Installation & Use
+------------------
+
+To use this library, you must compile with the include directory in your include
+search path, and link with the unix.lib library (which must be specified before
+lc.lib). For example, if you extract this archive in a directory called src:, you
+could compile the following program:
+
+echo.c:
+
+#include <sys/unistd.h>
+
+void main(int argc, char **argv)
+{
+  int i;
+
+  for (i = 1; i < argc; i++)
+    {
+      if (i != 1) write(1, " ", 1);
+      write(1, argv[i], strlen(argv[i]));
+    }
+  write(1, "\n", 1);
+}
+
+with the command
+
+  lc -isrc:unix/include/ -L+src:unix/src/unix.lib echo.c
+
+to produce a simple unix-like echo command.
+
+You should define the following environment variables:
+
+USER - A user name for the sole Amiga user (default "user").
+USERNAME - The full name of the sole Amiga user (default $USER).
+HOME - A "home" directory (default "s:") for programs that want one. Configuration
+       files will probably end up here ...
+SHELL - A program which behaves reasonably like a Unix shell (default "bin:sh").
+	You should copy the sh executable there if you don't have a Unix-like shell.
+HOSTNAME - The name of your machine (default "amiga").
+
+If you are going to be using pipes, you will require Matt Dillon's fifo.library
+and fifo: device. This can be found on the Fish disks, with his UUCP distribution
+and on many FTP sites.
+
+If you want to install the timezone information (see the discussion below on
+Unix vs Amiga time), do the following:
+
+  a) change to the zoneinfo directory
+  b) compile the zic problem by running lmk.
+  c) change to the datfiles directory.
+  d) edit lmkfile and choose your timezone (you can look at the data files
+     to see the ones available). If you get this wrong, you can always change
+     it later with the zic program.
+  e) type 'lmk install'. This will compile the timezones, and setup the one
+     you chose as the default. The default can be changed with
+       zic -l <timezone name>
+
+     or by defining the environment variable TZ.
+
+Functionality
+-------------
+
+While this library aims to hide the differences between AmigaDOS & Unix, 
+it also aims to provide support for Amiga specific features. This sometimes
+produces strange compromises.
+
+This library provides two things to programs linked with it:
+
+a) A Unix-like environment:
+
+This includes:
+
+- Unix-like command line parsing, with wildcard expansion. These
+wildcards are however specified with the Amiga syntax. 
+
+Arguments which are unquoted or surround with single quotes are
+handled like Unix shells. Those surrounded with double quotes are
+handled in the Amiga fashion, but with wildcard expansion (this is
+done to avoid problems with the way the exec function works).
+
+Here is a summary of argument splitting:
+
+Arguments can be enclosed in single quotes, (') double quotes ("), or 
+separated by spaces.
+
+Arguments enclosed by single quotes never suffer wildcard expansion, and
+no character is significant inside them (not even \). Given the echo program
+given above,
+
+  echo 'f*un\'
+
+simply displays
+
+  f*un\
+
+Within double quotes, * is the standard Amiga escape character. \ is
+handled just like any other character. Wildcards are expanded. So,
+assuming the current directory contains only echo.c and echo,
+
+  echo "#?.c" "*.c" "\mad"
+
+displays
+
+  echo.c .c \mad
+
+(* escapes the following character, except that *N is newline and *E is 
+escape. Wildcard characters still behave as usual (' is the standard
+Amiga wildcard escape character)).
+
+If an argument is unquoted, \ acts as an escape character (removing
+special significance from the next character, be it a wildcard, a space, 
+a \, ...). So
+
+  echo \*.c \\ \n
+
+displays
+
+  *.c \ n
+
+- When a program is run from the Workbench, stdin, stdout & stderr are opened 
+on NIL:, and the icons selected are converted to file names and passed as the
+argc,argv to main.
+
+- The standard variable environ is defined and contains all the local environment
+variables. This is passed as the envp parameter to main.
+
+- The program is led to believe that all files belong to $USER (uid 1), group
+wheel (gid 0).
+
+- Amiga protection flags are mapped onto the standard 12 Unix protection bits
+(and back when necessary). This can be overridden (dynamically) by changing the
+value of use_amiga_flags. Eg:
+
+  extern int use_amiga_flags;
+
+  ...
+
+
+  main()
+  {
+    use_amiga_flags = 1;
+
+    ... some code using stat or chmod or ...
+  }
+
+In this case, the Amiga protection bits are left untouched. Otherwise the
+mapping is as follows (note that the archive bit is lost):
+
+Unix -> Amiga
+
+Amiga read: if user, group or world read.
+Amiga write: if user or group write.
+Amiga delete: if user or world write.
+Amiga execute: if group execute or only user execute.
+Amiga script: if world execute or only user execute.
+Amiga pure: if sticky.
+
+Amiga -> Unix
+
+user, group, world read: if amiga read.
+user write: if amiga write and delete.
+group write: if amiga write.
+world write: if amiga delete.
+user execute: if amiga execute or amiga script.
+group execute: if amiga execute.
+world execute: if amiga script.
+sticky: if amiga pure.
+
+- Unix-like time. time is expressed in seconds since 1-Jan-1970 00:00 GMT. 
+This is the format used by the time(), stat() and utime() functions. The
+library uses the BSD time functions which properly handle timezones, 
+daylight savings time, etc. 
+
+On Unix systems, time is generally stored as GMT, while the Amiga stores
+local time. These times are visible in two places: the time stored in the
+system clock and the creation, modification or access dates for files (only
+the modification date is available on the Amiga). There are 3 ways to resolve
+this conflict:
+
+1) Ignore timezones (you can choose this option by not installing the
+timezone information). The library will then assume that system time
+and file times are expressed in GMT and will never apply any
+corrections. All will work well (except maybe on a global network).
+This is the simplest solution.
+
+2) System & file time are assumed to be local times. The time() & stat()
+functions convert local time to GMT, the utime() call converts GMT to
+local time. This allows you to keep the system clock on local time, which
+is compatible with most (all?) Amiga applications. However, nearly every
+program will be bigger because they will need the timezone information and
+timezone conversion code (approximately 7k). The library can be recompiled
+if you prefer to have things this way by adding -dUSE_LOCAL to the CFLAGS
+variable in lmkfile.
+
+3) System & file time are stored in GMT. Times are converted to local time
+only when they are displayed to the user, who must of course choose the 
+correct timezone. This entails changing your system clock to GMT, which means
+that most programs will display an incorrect time. However, you won't have
+to change your system clock when daylight savings time ends ... The library
+comes compiled this way (But you can still choose option 1, no timezone
+information, and avoid the potential confusion).
+
+- BSD-like signals. Signal handlers stay enabled after a signal occurs
+(that particular signal is simply masked for the duration of the handler).
+setjmp & longjmp preserve the signal mask (the functions _setjmp & _longjmp
+don't). You may receive any signal with kill(getpid(), sig). Otherwise only
+the following occur:
+
+  SIGINT: user typed ctrl-c
+  SIGQUIT: user typed ctrl-d
+  SIGALRM: alarm() expired
+  SIGCHLD: a child process died
+
+When using kill to signal another process, only SIGHUP, SIGINT, SIGQUIT & 
+SIGKILL do anything. They all send SIGBREAKF_CTRL_C | D to the process (and
+hopefully its children). See the discussion under the exec function.
+
+
+b) A large number of unix C library calls:
+
+_exit, _setjmp, _longjmp, abort, access, alloca, gettimeofday, ftime, 
+bcmp, bcopy, bzero, chmod, chown, fchown, close, creat, tzset, tzsetwall,
+localtime, gmtime, asctime, ctime, mktime, opendir, closedir, readdir, 
+telldir, seekdir, fchmod, fcntl, fstat, ftruncate, getenv, gethostname,
+getpid, getwd, getgid, getegid, getgrgid, getgrnam, index, ioctl, isatty,
+kill, link, lseek, mkdir, mkfifo, mknod, mktemp, open, perror, pipe, sktpair, 
+getpwuid, getpwnam, getlogin, read, rename, rindex, rmdir, select, setjmp, 
+longjmp, signal, sigpause, sigsetmask, sleep, stat, strftime, time, truncate,
+getuid, geteuid, umask, unlink, utime, wait, waitpid, wait3, wait4, write
+
+These functions aim to be BSD compatible, however I based myself on descriptions
+in the SunOS 4 man pages. Their behaviour is sometimes strange or incomplete.
+
+Here is a summary of the differences with the standard Unix functions:
+
+alloca - This is Doug Gwyn's portable alloca. Memory allocated is freed
+later than with a true alloca.
+
+gettimeofday - The dst field of the timezone is a (not very good) guess. It
+shouldn't be used anyway.
+
+chown, fchown - These are do-nothing routines.
+
+opendir, closedir, ... - These interact with stat to avoid having to read
+each directory entry twice when doing a readdir + stat loop.
+
+fchmod - The protection is only set when the file is closed. See also the
+discussion of protection modes above.
+
+fcntl - Only the F_GETFL & F_SETFL operations are supported.
+
+truncate, ftruncate - These will not necessarily work with all filing systems.
+See the discussion of the AmigaDOS SetFileSize function.
+
+getenv - This checks local environment variables and then global ones. It 
+allocates memory for the variables value each time. This memory is never freed
+(till the program exits).
+
+gethostname - This is obtained from the HOSTNAME environment variable at startup.
+
+getuid, geteuid, getgid, getegid, getpwuid, getpwnam, getgrgid, getgrnam, getlogin -
+These function only know about one user. He/She is:
+
+  name: $USER (default "user")
+  home directory: $HOME (default "s:")
+  shell: $SHELL (default "bin:sh")
+  uid: 1, gid: 0
+
+ioctl - Only FIONBIO & TIOCGWINSZ are known, plus a number of amiga specific
+ioctls (for internal use). These are documented in include/amiga/ioctl.h.
+
+lseek - Seeks beyond the end of a file are not implemented.
+
+mkfifo, mknod - These are 'do-nothing' routines.
+
+select - This implementation only works with pipes & sktpairs, and cannot
+detect 'exceptional' conditions.
+
+umask - This is a 'do-nothing' routine.
+
+unlink - You can unlink a file that your program has opened before you close
+it. At that point, the AmigaDOS file is closed & deleted, though it still
+appears open to read (it returns EOF), write, close, etc. Also you can unlink
+a file even if it is protected from deletion (the protection mode is changed
+first ...).
+
+utime - Only the modification time can be changed (the others don't exist).
+
+wait3, wait4 - Resource usage is never returned.
+
+Recompiling
+-----------
+
+To recompile, simply run lmk in the src directory. You can add the -dUSE_LOCAL
+flag to CFLAGS in lmkfile if you want the system clock to store local time 
+instead of GMT.
+
+If you add modules, you can use the mkmkf to remake the makefile dependencies
+(it generates lmkfile from lmkfile.base and the dependencies for all the .c
+files in the current directory). This program requires perl (available from
+ftp sites).

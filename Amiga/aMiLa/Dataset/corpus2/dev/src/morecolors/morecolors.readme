@@ -1,0 +1,10 @@
+Short:        x>100 colors per line with AGA copper list
+Type:         dev/src
+Architecture: m68k-amigaos
+
+Long: 
+
+This is a example copper list that allows you to change
+more than 100 colours per line with the copper only.
+This could be useful for writing a "chunky" copper display
+or other complex copper list tricks.

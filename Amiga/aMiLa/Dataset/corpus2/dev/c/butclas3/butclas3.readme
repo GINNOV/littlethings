@@ -1,0 +1,24 @@
+Short:        Boopsi Button Class v37.3. GadTools buttons with extras
+Uploader:     dkeller vnet ibm com
+Type:         dev/c
+Architecture: m68k-amigaos
+
+
+                Boopsi Button and Progress Class 37.3
+
+                           February 6, 1994
+
+                      Written by Douglas Keller
+
+
+Buttonclass is a boopsi custom gadget which looks like a standard
+gadtools button gadget.  The buttonclass supports a couple of things
+gadtools does not, the foreground and background color of the gadget
+can be changed, and the gadget can be put into the selected state so
+the gadget looks depressed.
+
+ButtonClass is based on the example in the RKM Libraries manual.
+
+Version 37.3 adds a drawer image option and a progress indicator
+class.
+

@@ -1,0 +1,32 @@
+Short:        Gauge-progres indicator, easy for use
+Author:       Andreas Bednarek
+Uploader:     cyber mail cybernet cz
+Type:         dev/asm
+Version:      0.1
+Architecture: m68k-amigaos
+
+    
+DESCRIPTION
+The idea came from Olaf `Olsen' Barthel and his implementation of
+a gauge, but his solution was not acceptable for me. Source in C,
+too big compiled size (for a gauge at least), comunicating via message
+ports (slower than just passing parameters in registers
+and a gauge should not take too much CPU time...).
+This is why I decided to make this code as it is.
+(Still thanks for some tips Olaf..)
+
+I tried to make it as simple as possible but still usable (you may think
+that's because I'm too lazy. Well, you're right.. :-).
+It was made for all coders (not hackers!) and all users of Amiga.
+
+
+REVISION HISTORY:
+version 0.1 (24.9.1997)  -  first public release
+
+
+AUTHOR:
+s-mail: Andreas Bednarek, Tyrsova 4, 751 24, PREROV, CZECH REP.
+        (tel: +420-641-68284)
+e-mail: hanza@cbnet.cz (not PEGAS software mail, but you may
+        use it - try set subject to
+        Amiga/Nezhyba - name of my friend...)

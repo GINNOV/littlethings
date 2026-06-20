@@ -1,0 +1,117 @@
+Short: Standard Template Library for StormC v4
+Uploader: Raymond Zarling (rayz@cs.csustan.edu)
+Type: dev/c
+
+Since it took me several days to configure a port of the Standard
+Template Library (STL) for StormC version 4, I thought I'd publish
+what I came up with.
+
+The STL is a terrific set of algorithms and data structures which
+enable a C++ programmer to more quickly implement programs.  Although
+the STL is part of the most recent C++ standard, to date only the
+Gnu compiler gcc implements it on the Amiga.
+
+The latest release of StormC from Haage and Partner (www.haage-partner.com)
+does not include the STL as shipped, but is a sufficiently powerful and
+complete compiler that it can be augmented with an STL obtained elsewhere.
+This file describes how you may do that.
+
+This project is based on the code provided at www.stlport.org, a
+freely redistributable port of the STL which works on a wide variety
+of computers and compilers.  Until now, nobody had evidently customized
+the port for the Amiga, however.  When you go to the stlport web site
+they ask you to register so they know who is using their code.  In order
+not to subvert their procedure, this archive contains only the Amiga-
+specific configuration files (and one header file that needed to be
+modified for the Amiga).  You will need to download the bulk of the
+STL port from stlport's web site.
+
+
+--STL References--
+
+For more information on the STL see:
+
+http://www.sgi.com/Technology/STL
+Austern, Matthew H., _Generic Programming and the STL_, Addison Wesley 1999.
+Robson, Robert, _Using the STL_, Springer Verlag (2nd ed, 2000).
+
+
+--Procedure To Install the STL--
+
+Download StlPort version 4 (the tar gnuzipped archive format) from
+www.stlport.org and uncompress and unpack it.  This will create a
+directory STLport-4.0 which contains several subdirectories.  The
+only subdirectory that is really needed to get things working is
+stlport, though you may find some of the others interesting as well.
+
+Copy the stlport directory to StormC:.  Do whatever you wish with the
+other directories from the archive.
+
+Replace the following files in StormC:stlport with the ones in this archive:
+
+	stl_user_config.h
+	stdexcept
+	config/stl_stormgcc.h (new file)
+	config/stlcomp.h
+	stl/_site_config.h
+
+
+--Using the STL--
+
+For any project which will use the STL, add StormC:stlport as the first
+include path (before StormC:include) in the Environment Settings list of
+include paths.  In your program, include whichever pieces of the STL your
+code requires, e.g. #include <string> or #include <algorithm>.  Under
+Compiler Settings, you will of course need to use C++ as your language.
+Some parts of the STL use exceptions, so you may need to enable them.
+
+In addition to the STL component, you also get the new-style system
+header files whose names do not end in .h; e.g. <iostream> instead of
+<iostream.h> and <cctype> instead of <ctype.h>.  Technically, if you use
+these new-style headers, you are also supposed to enable the std::
+namespace with the line "using namespace std;".  With the StormC compiler
+(and with gcc) this line is currently optional, although for forward
+compatability it is probably wise to include it.
+
+
+That's it!  Enjoy!
+
+
+--Disclaimer--
+
+I have tested the STL configuration in this archive fairly broadly, including
+string, list, vector, map, iterator, input_ and output_iterator, valarray,
+exception, find, sort, rel_op, ptr_fun, etc. on small and large programs,
+including several feature interactions.  It has not however been tested
+deeply--to date I have only tried a few dozen programs altogether, and with
+only a few compiler settings.  It is entirely possible I have not yet gotten
+all of the dozens of STL settings quite right.  Most of what I did was found
+by trial and error; it could be that more trials will find more errors...
+
+The stlport distribution includes some non-standard extensions; I have
+disabled those in my configuration files because I want to keep my code
+portable.  I have also not tried features like the STL debug modes or
+multiple threads.
+
+If your usage leads you to make futher configuration changes, please let
+me know what problem occurred and how you resolved it so I may consider
+it for a future release.
+
+
+--Original STLport Copyright Notice--
+
+From the www.stlport.org web site, the port available there is
+
+	Copyright © 1999,2000 Boris Fomitchev
+
+	This material is provided "as is", with absolutely no warranty
+	expressed or implied. Any use is at your own risk. Permission to
+	use or copy this software for any purpose is hereby granted
+	without fee, provided the above notices are retained on all
+	copies. Permission to modify the code and to distribute modified
+	code is granted, provided the above notices are retained, and a
+	notice that the code was modified is included with the above
+	copyright notice.
+
+This modification is distributed under the above license, and any use or
+redistribution is governed by the same limitations, freedoms and restrictions.

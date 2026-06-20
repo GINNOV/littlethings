@@ -1,0 +1,47 @@
+Hi!
+
+It's been a while since the last new strings but now I have some new 
+strings that I would like to have translated:
+
+The first string will be in a button below 'Bottom' in the SiteList-Window
+and when pressing it AmiFTP will sort the sites alphabetically.
+
+SLW_Sort
+
+;_Sort
+
+The second string will be next to the 'Directory' stringgadget in the mainwindow
+when pressing it AmiFTP will reload the current directory and update the cache.
+
+MW_Reload
+
+; _Reload
+
+I have also added some more status-strings when connecting to a site:
+
+CW_SendingLogin
+
+;Sending login...
+CW_SendingPassword
+
+;Sending password...
+CW_ChangingDirectory
+
+;Changing directory...
+
+Also, as some of you know know I'm planning to make AmiFTP a 
+shareware program when I release the first version on Aminet.
+The first version will not be crippled in any way (don't know
+about later versions), and the shareware fee will be something
+like $10 to $15. Since nothing is crippled there's no need for
+keyfiles either (and if I added keyfiles someone would either
+crack the keyfile or patch AmiFTP).
+
+You, as a translator, are already a registered user, that means
+you don't have to pay any registration fee.
+
+Since I'm making AmiFTP into a shareware program I want your
+approval of including your translation(s) in the archive.
+
+Regards/
+

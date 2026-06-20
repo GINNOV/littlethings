@@ -1,0 +1,282 @@
+#
+# $Id: GNUmakefile.os4,v 1.116 2008-11-06 14:44:07 obarthel Exp $
+#
+# :ts=8
+#
+# -*- mode: makefile; -*-
+
+##############################################################################
+
+.PHONY : all all-targets clean version cvs-tag
+
+# You may have to change the following sets of macro definitions which will
+# be used throughout the build makefile. These definitions cover the paths
+# to look into for the operating system and networking header files, and
+# the names and parameters passed to the program which actually do the
+# compilation, library building and cleanup work.
+#
+# Note that for either set you still need the GNU make utility to build the
+# library!
+
+# These are for the cross compiler, with the operating system header files
+# stored in "/V/include" and the network header files in a local directory
+# called "netinclude".
+SDK_INCLUDE := /V/include
+NET_INCLUDE := netinclude
+CC := ppc-amigaos-gcc
+AR := ppc-amigaos-ar -q
+RANLIB := ppc-amigaos-ranlib
+COPY := cp -p
+DELETE := rm -rf
+MAKEDIR := mkdir -p
+# Enabling the LOG_COMMAND has the consequence that a rule will not
+# fail on an error because only the exit status from the tee command
+# will be considered
+#LOG_COMMAND := 2>&1 | tee -a compiler.log
+LOG_COMMAND :=
+# You may need to request a specific compiler version in order to
+# build the baserel versions of the library. At this time of
+# writing (2008-11-06) GCC 4.0.4 and below support the -mbaserel
+# feature, but more recent versions, including GCC 4.2.4, do not.
+#COMPILER_VERSION := -V4.0.2
+
+# The following are for the native OS4 compiler; note that the
+# LOG_COMMAND should not be enabled unless you have a shell
+# installed which supports it.
+#SDK_INCLUDE := /SDK/Include/include_h
+#NET_INCLUDE := /SDK/Include/netinclude
+#CC := distcc gcc
+#AR := ar -q
+#RANLIB := ranlib
+#COPY := copy
+#DELETE := delete all quiet force
+#MAKEDIR := makedir all force
+#COMPILER_VERSION := -V4.0.2
+#LOG_COMMAND := *>< | tee >>compiler.log
+
+##############################################################################
+
+WARNINGS := \
+	-Wall -W -Wpointer-arith -Wsign-compare -Wmissing-prototypes \
+	-Wundef -Wmissing-declarations -Wunused -Wwrite-strings \
+	-Wno-deprecated-declarations -Wno-unused-label \
+
+#	-Wconversion -Wshadow -Wbad-function-cast
+
+INCLUDES   := -Iinclude -I. -I$(SDK_INCLUDE)
+ OPTIONS   := -DUSE_64_BIT_INTS -D__USE_INLINE__ -Wa,-mregnames -fno-builtin -fno-common -std=c99 -nostdlib
+OPTIMIZE   := -DNDEBUG -O3
+
+#DEBUG     := -ggdb
+#MEMDEBUG  := -D__USE_MEM_TREES -D__MEM_DEBUG
+
+CFLAGS     := $(COMPILER_VERSION) $(WARNINGS) $(OPTIMIZE) $(DEBUG) $(MEMDEBUG) $(OPTIONS) $(INCLUDES)
+AFLAGS     := $(COMPILER_VERSION) -Wa,-mregnames
+
+LARGEDATA  := -msdata=data
+SOFTFLOAT  := -msdata=data -msoft-float
+SMALLDATA  := -msdata=sysv -DSMALL_DATA
+BASEREL    := -mbaserel -DBASEREL_DATA
+THREADSAFE := -D__THREAD_SAFE
+
+##############################################################################
+
+# This is the first target: it depends on all the targets
+
+all: all-targets
+
+##############################################################################
+
+# The LIBS variable is updated by each of the included library makefiles.
+
+LIBS :=
+
+include libc.gmk
+include libunix.gmk
+include libm.gmk
+include libnet.gmk
+include libdebug.gmk
+include libamiga.gmk
+include libprofile.gmk
+
+all-targets: \
+	lib/crt0.o \
+	lib/small-data/crt0.o \
+	lib/soft-float/crt0.o \
+	lib/baserel/crt0.o \
+	lib/crtbegin.o \
+	lib/soft-float/crtbegin.o \
+	lib/small-data/crtbegin.o \
+	lib/baserel/crtbegin.o \
+	lib/crtend.o \
+	lib/soft-float/crtend.o \
+	lib/small-data/crtend.o \
+	lib/baserel/crtend.o \
+	lib.threadsafe/crt0.o \
+	lib.threadsafe/small-data/crt0.o \
+	lib.threadsafe/soft-float/crt0.o \
+	lib.threadsafe/baserel/crt0.o \
+	lib.threadsafe/crtbegin.o \
+	lib.threadsafe/soft-float/crtbegin.o \
+	lib.threadsafe/small-data/crtbegin.o \
+	lib.threadsafe/baserel/crtbegin.o \
+	lib.threadsafe/crtend.o \
+	lib.threadsafe/soft-float/crtend.o \
+	lib.threadsafe/small-data/crtend.o \
+	lib.threadsafe/baserel/crtend.o \
+	$(LIBS)
+
+##############################################################################
+
+# Delete all object files and libraries
+clean:
+	-$(DELETE) obj
+	-$(DELETE) obj.threadsafe
+	-$(DELETE) lib
+	-$(DELETE) lib.threadsafe
+	-$(DELETE) compiler.log
+
+##############################################################################
+
+# Update the version numbers bound to the individual libraries
+version:
+	$(COPY) c.lib_rev.rev amiga.lib_rev.rev
+	$(COPY) c.lib_rev.rev debug.lib_rev.rev
+	$(COPY) c.lib_rev.rev m.lib_rev.rev
+	$(COPY) c.lib_rev.rev net.lib_rev.rev
+	$(COPY) c.lib_rev.rev unix.lib_rev.rev
+	$(COPY) c.lib_rev.rev profile.lib_rev.rev
+	bumprev 1 amiga.lib
+	bumprev 1 c.lib
+	bumprev 1 debug.lib
+	bumprev 1 m.lib
+	bumprev 1 net.lib
+	bumprev 1 unix.lib
+	bumprev 1 profile.lib
+
+##############################################################################
+
+# Tag all files with a certain version number
+cvs-tag:
+	cvs -q tag V1_`cat c.lib_rev.rev`
+
+##############################################################################
+
+# General build rules for all object files and the individual libraries
+
+lib/crtbegin.o : CFLAGS += -fno-aggressive-loop-optimizations
+lib/crtbegin.o : crtbegin.c
+	@$(COMPILE)
+
+lib/%.o : AFLAGS += $(LARGEDATA)
+lib/%.o : %.S
+	@$(ASSEMBLE)
+
+lib/%.o : %.c
+	@$(COMPILE)
+
+lib/small-data/%.o : AFLAGS += $(SMALLDATA)
+lib/small-data/%.o : %.S
+	@$(ASSEMBLE)
+
+lib/small-data/crtbegin.o : CFLAGS += $(SMALLDATA) -fno-aggressive-loop-optimizations
+lib/small-data/crtbegin.o : crtbegin.c
+	@$(COMPILE)
+
+lib/small-data/%.o : CFLAGS += $(SMALLDATA)
+lib/small-data/%.o : %.c
+	@$(COMPILE)
+
+lib/soft-float/%.o : AFLAGS += $(SOFTFLOAT)
+lib/soft-float/%.o : %.S
+	@$(ASSEMBLE)
+
+lib/soft-float/crtbegin.o : CFLAGS += $(SOFTFLOAT) -fno-aggressive-loop-optimizations
+lib/soft-float/crtbegin.o : crtbegin.c
+	@$(COMPILE)
+
+lib/soft-float/%.o : CFLAGS += $(SOFTFLOAT)
+lib/soft-float/%.o : %.c
+	@$(COMPILE)
+
+lib/baserel/%.o : AFLAGS += $(BASEREL)
+lib/baserel/%.o : %.S
+	@$(ASSEMBLE)
+
+lib/baserel/crtbegin.o : CFLAGS += $(BASEREL) -fno-aggressive-loop-optimizations
+lib/baserel/crtbegin.o : crtbegin.c
+	@$(COMPILE)
+
+lib/baserel/%.o : CFLAGS += $(BASEREL)
+lib/baserel/%.o : %.c
+	@$(COMPILE)
+
+lib.threadsafe/%.o : AFLAGS += $(LARGEDATA) $(THREADSAFE)
+lib.threadsafe/%.o : %.S
+	@$(ASSEMBLE)
+
+lib.threadsafe/crtbegin.o : CFLAGS += $(THREADSAFE) $(LARGEDATA) -fno-aggressive-loop-optimizations
+lib.threadsafe/crtbegin.o : crtbegin.c
+	@$(COMPILE)
+
+lib.threadsafe/%.o : CFLAGS += $(THREADSAFE) $(LARGEDATA)
+lib.threadsafe/%.o : %.c
+	@$(COMPILE)
+
+lib.threadsafe/small-data/%.o : AFLAGS += $(SMALLDATA) $(THREADSAFE)
+lib.threadsafe/small-data/%.o : %.S
+	@$(ASSEMBLE)
+
+lib.threadsafe/small-data/crtbegin.o : CFLAGS += $(THREADSAFE) $(SMALLDATA) -fno-aggressive-loop-optimizations
+lib.threadsafe/small-data/crtbegin.o : crtbegin.c
+	@$(COMPILE)
+
+lib.threadsafe/small-data/%.o : CFLAGS += $(THREADSAFE) $(SMALLDATA)
+lib.threadsafe/small-data/%.o : %.c
+	@$(COMPILE)
+
+lib.threadsafe/soft-float/%.o : AFLAGS += $(SOFTFLOAT) $(THREADSAFE)
+lib.threadsafe/soft-float/%.o : %.S
+	@$(ASSEMBLE)
+
+lib.threadsafe/soft-float/crtbegin.o : CFLAGS += $(THREADSAFE) $(SOFTFLOAT) -fno-aggressive-loop-optimizations
+lib.threadsafe/soft-float/crtbegin.o : crtbegin.c
+	@$(COMPILE)
+
+lib.threadsafe/soft-float/%.o : CFLAGS += $(THREADSAFE) $(SOFTFLOAT)
+lib.threadsafe/soft-float/%.o : %.c
+	@$(COMPILE)
+
+lib.threadsafe/baserel/%.o : AFLAGS += $(BASEREL) $(THREADSAFE)
+lib.threadsafe/baserel/%.o : %.S
+	@$(ASSEMBLE)
+
+lib.threadsafe/baserel/crtbegin.o : CFLAGS += $(THREADSAFE) $(BASEREL) -fno-aggressive-loop-optimizations
+lib.threadsafe/baserel/crtbegin.o : crtbegin.c
+	@$(COMPILE)
+
+lib.threadsafe/baserel/%.o : CFLAGS += $(THREADSAFE) $(BASEREL)
+lib.threadsafe/baserel/%.o : %.c
+	@$(COMPILE)
+
+##############################################################################
+
+define COMPILE
+-$(MAKEDIR) $(@D)
+echo "Compiling $< [$(@D)]"
+$(CC) $(CFLAGS) -o $@ -c $< $(LOG_COMMAND)
+endef
+
+define ASSEMBLE
+-$(MAKEDIR) $(@D)
+echo "Assembling $< [$(@D)]"
+$(CC) $(AFLAGS) -o $@ -c $< $(LOG_COMMAND)
+endef
+
+define MAKELIB
+-$(MAKEDIR) $(@D)
+$(DELETE) $@
+echo "Making $@"
+$(AR) $@ $^ $(LOG_COMMAND)
+$(RANLIB) $@ $(LOG_COMMAND)
+endef

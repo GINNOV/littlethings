@@ -1,0 +1,215 @@
+Short:        Poking memory, using Python V1.4+.
+Author:       wisecracker@tesco.net (Barry Walker)
+Uploader:     wisecracker@tesco.net (Barry Walker)
+Type:         dev/src
+Version:      0.20.00
+Architecture: m68k-amigaos
+
+Distribution: Public Domain, Emailware.
+
+============================================================================
+
+  Minimum Requirements Are:-
+  --------------------------
+
+         Stock AMIGA A1200(HD), 68EC020 and upwards.
+
+         A FULL, standard, OS3.0x+ installation.
+
+         A FULL, Python Version 1.4x minimum installation, available on
+         AMINET at:-
+
+                 http://main.aminet.net/dev/lang/Python_14.lha
+
+----------------------------------------------------------------------------
+
+                            OPTIONAL COMPONENTS.
+                            --------------------
+
+         AF2005/WinUAE along with 'Python Version 2.0x'. :)
+
+                 http://main.aminet.net/dev/lang/Python20.lha
+
+         'Peek-Mem.lha' can be found at:-
+
+                 http://main.aminet.net/dev/src/Peek-Mem.lha
+
+         'ACE-Basic Compiler' is not required as the compiled executable(s)
+         IS/ARE supplied. It can be found, IF required, on AMINET at:-
+
+                 http://main.aminet.net/dev/basic/ace24dist.lha
+
+============================================================================
+
+  Preface:-
+  ---------
+
+          THIS LUNATIC IDEA IS COPYRIGHT (C)2007, B.Walker, G0LCU.
+
+  As an addendum to my 'Peek-Mem.lha' I decided to release this version of
+  poking classic AMIGA memory locations using Python Version 1.4x minimum.
+
+  I will NOT be releasing the ~ANSI C~ version of the source code BUT my
+  ACE-Basic compiler version instead. SORRY... :(
+
+  This makes the idea purely AMIGA specific so if you want to 'TRY' and
+  port this idea to other platforms then you will HAVE write your own ~C~
+  source and compile it to do this task, assuming that it will work!!!
+
+  I HOLD NO RESPONSIBILITY FOR WHAT MIGHT HAPPEN!!!
+
+  This is VERY, VERY dangerous computer wise so be VERY, VERY careful when
+  using it.
+
+  REMEMBER!!! Python IS NOT AWARE OF SUCH THINGS AS 'ENFORCER HITS' SO BE
+  VERY AWARE YOURSELF BEFORE POKING RANDOM MEMORY LOCATIONS ON HIGH END
+  AMIGAS; READ 'The Legal Stuff:-' BELOW...
+
+  Now having said that I needed this for classic AMIGA hardware access using
+  Python to try and integrate it with some of my simple projects for the
+  classic AMIGA range of computers. These Python programs will be released
+  in due course.
+
+  Enjoy... :)
+
+----------------------------------------------------------------------------
+
+  The Archive:-
+  -------------
+
+  In the archive are three items from 'Peek-Mem.lha' along with the POKEB
+  and POKEW requirements.
+
+  The archive is as follows:-
+
+  mempoke.py - 'pokemem.py' WITHOUT all of the comments.
+  mempokeb.b - 'pokeb.b' WITHOUT all of the comments.
+  peek - A compiled version of 'print-peek.c' from 'Peek-Mem.lha'.
+  peekb - Exactly the same as 'peek'.
+  peekmem.py - The DEFAULT Python code for memory peeking from the above.
+  peekw - A compiled version of 'print-peekw.c' from 'Peek-Mem.lha'.
+  poke - A universal method of poking byte OR word values.
+  Poke-Mem.Manual - The main manual in standard ASCII text format.
+  Poke-Mem.readme - The AMINET readme file.
+  poke.b - The ACE Basic Compiler source written in 'baby BASIC'... :)
+  pokeb - The executable code of 'pokeb.b' for byte values ONLY.
+  pokeb.b - The ACE Basic Compiler source written in 'baby BASIC'... :)
+  pokemem-word.py - Python code to poke word values to memory addresses.
+  pokemem.py - The DEFAULT Python code to poke byte values to memory addresses.
+  pokew - The executable code for word values only.
+  pokew.b - The ACE Basic Compiler source written in 'baby BASIC'... :)
+
+  NOTE:- I have NOT included 'pokel' and 'pokel.b' the executable and
+  ACE Basic source for longword values as a simple set of changes to the
+  childishly simple 'pokew.b' and re-compiling is enough to get you there.
+
+  Have fun and enjoy finding simple solutions to often difficult problems
+  involving computers AND programming in Python... :)
+
+============================================================================
+
+  General Assumptions:-
+  ---------------------
+
+  That You Should Have A Basic Knowledge Of:-
+  -------------------------------------------
+
+  1) How to set up the AMIGA.
+  2) How to BOOT up the AMIGA into either a CLI, (Command Line Interface),
+     or a WorkBench screen.
+  3) How to use the Keyboard.
+  4) How to use the Mouse.
+  5) How to start programs from the CLI or WorkBench.
+  6) The general operation of WorkBench, windows and requesters etc...
+  7) How to format a floppy disk.
+  8) How to create a BOOTABLE floppy disk.
+  9) Safely connecting ANY external equipment to the AMIGA.
+
+============================================================================
+
+  History:-
+  ---------
+
+  14-01-2007.
+  -----------
+  Version 0.20.00. Added the 'pokew.b' and 'pokemem-word.py' sources to
+  poke word values into memory. Also 'poke' and 'poke.b' for a universal
+  method of poking byte OR word values into memory.
+
+  01-01-2007.
+  -----------
+  Version 0.10.00. First upload to AMINET... :)
+
+----------------------------------------------------------------------------
+
+                                IMPORTANT:-
+                                -----------
+
+
+    The Legal Stuff:-
+    -----------------
+
+    These programs are Public Domain and no profit will be made from them,
+    also all of the files must remain unaltered and intact including this
+    one. The author is not responsible for any damage to, or loss of, or
+    failure of equipment or data caused in any way by the use of these
+    programs. There is NO warranty with the use of these software releases
+    and YOU USE THEM AT YOUR OWN RISK.
+
+----------------------------------------------------------------------------
+
+    Testing Evaluation:-
+    --------------------
+
+    An A1200(HD) in 2MB, 6MB and 10MB modes using trapdoor memory AND/OR
+    PCMCIA memory expansions and OS3.0x+.
+
+    Also tested on a(n) HP Pavillion Notebook, model number dv2036ea,
+    running AF2005/WinUAE AND Python Version 2.0x.
+
+    All test conditions WERE/ARE using standard ~topaz 8~ fonts throughout.
+
+    I have no idea what a strange configuration setup will create so refer
+    to the ~The Legal Stuff~ above.
+
+----------------------------------------------------------------------------
+
+                                 WARNING.
+                                 --------
+
+  1) DISCONNECT any faulty equipment under test from the MAINS supply.
+  2) If a DC supply is used do NOT reverse polarity the connections.
+  3) Do NOT power up any electronic item until it is safe to do so.
+  4) CHECK and RECHECK all of your construction and repair work thoroughly.
+  5) Handle ALL tools used with care.
+  6) Beware of ALL types of solvents, glues and etching fluids.
+  7) NEVER leave a soldering iron switched on unattended.
+  8) KEEP everything OUT of the reach of small children.
+  9) Switch OFF the AMIGA before disconnecting or connecting any hardware.
+ 10) And finally read 1) to 9) again.
+
+----------------------------------------------------------------------------
+
+   Contact:-
+   ---------
+
+   Mr Barry Walker, G0LCU,
+   70 King George Road,
+   Loughborough,
+   Leicestershire,
+   LE11 2PA,
+   England.
+
+   Email:-     wisecracker@tesco.net
+   URL:-       http://homepages.tesco.net/wisecracker/G0LCU.HTM
+
+   Author of the ~TestGear?~ projects in the ~hard/hack~ drawer of AMINET.
+
+----------------------------------------------------------------------------
+
+   A very useful HardWare related site, (C) Anthony Hoffman, for
+   modifications, schematics, repairs and the like is:-
+
+                          http://amiga.serveftp.net/
+
+============================================================================

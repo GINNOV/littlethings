@@ -1,0 +1,184 @@
+
+
+
+
+
+
+				MakeGraf
+				========
+
+			A Small Utility Program
+			=======================
+
+			    By Dave Edwards
+			    ===============
+
+
+
+Introduction
+------------
+
+	This little utility was born as a result of Mark Meany's complaints
+with respect to the (large!) number of include files that I have supplied as
+part of the Defender project. Since most of these are tiny sprite-type files
+(some of them are only 6 bytes, and yes, Mark, you're right-it's a waste of
+directory space!), and since it also chews up assembly time accessing all of
+these files, it made sense to pack all of the graphics files into one large
+graphics file.
+
+
+	However, this is where I hit a snag. The CLI Copy command DOES allow
+file concatenation (nice long word which means 'join up lots of files into a
+single big one') BUT, and for my needs this was a big BUT, it does NOT allow
+the user to specify in which order these files are copied across!
+
+
+	Since I wanted the files to be copied in a specific order, so that I
+didn't have to rearrange lots of source code, I decided that the best way of
+solving the problem was to write a utility to do this. Hence the existence of
+MakeGraf.
+
+
+First Version
+-------------
+
+	The first version of MakeGraf was a bit crude, to say the least. All
+I did was open a DOS CON: window, write various prompts to it, and read in a
+collection of file names, typed in by the user. After using it to create the
+big Defender graphics file, typing in about thirty full pathnames in the pro-
+cess, I came to the conclusion that it was time to use a file requester!
+
+
+	The next question was WHICH file requester to use? Although the ARP
+requester is quite nice (and gadgets can be added to it), the coding for the
+ARP library was a bit too messy for my liking and in any case, I didn't fancy
+rewriting the ARP library include files to suit my prejudices.
+
+
+	So, what other libraries did I have? I have the req.library, but no
+DOCS for it, and the reqtools.library, and some DOCS thanks to Mark. So, thus
+it came to pass that reqtools.library was used in the rewriting.
+
+
+How To Use MakeGraf
+-------------------
+
+	Since reqtools.library makes popping up information requesters nice
+and easy, I built into the enhanced version of MakeGraf a help facility. The
+program pops up a CON: window (a bit easier than an Intuition window, and it
+still works under WorkBench!) to provide progress reports while the program
+is running. Then, it pops up a requester asking if the user requires help. If
+so, some help requesters are popped up in sequence describing how to use the
+program.
+
+
+	Once the help requesters are out of the way (or bypassed by selecting
+'No' when asked for help), a file requester pops up. Since the gadgets coup-
+led to the file requester cannot be changed (a pity, this), I decided upon a
+set of conventions as follows:
+
+
+	1) The file name box is ALWAYS cleared upon entry. File
+	   names are NOT remembered (the user will almost cer-
+	   tainly change it in any case).
+
+	2) If a file name is selected and the OK gadget pressed,
+	   then the full pathname is obtained from the requester
+	   and used to decide what file is to be referenced.
+
+	3) If no file name is selected when OK is pressed, OR the
+	   CANCEL gadget is pressed, this is taken to mean that
+	   the program is to finish.
+
+
+Also, various requesters are popped up should any files be unreadable, or if
+the program can't gain locks on files (for finding the file size among other
+reasons). System requesters should only occur if you're using a bad disc or
+you've changed discs too fast for the reqtools file requester to keep up with
+your movements (so if you don't like system requesters, refrain from gymnas-
+tic disc swapping feats!).
+
+
+	Once a destination file is open and ready, and requesters asking for
+source files pop up, just point and click. For each file that is copied, the
+file size is examined, and transfer is performed in 64K chunks for files of
+greater than 64K. Since I intended this program primarily to be used for the
+creation of large binary graphics data files (e.g., for games such as the ACC
+Defender project) where lots of sprite graphics data files are bolted toget-
+her into one big file, I reasoned that it would be unusual for such files to
+be larger than 64K and hence decided to use a 64K file transfer buffer.
+
+
+	Of course, someone might decide to use this program to concatenate a
+collection of text files into one unit, in which case be prepared for a fair
+amount of disc swapping if the files are large! But since the source code is
+available to ACC disc users, changing this is a simple matter.
+
+
+	MakeGraf tries to keep the user informed about what's going on. If a
+weird situation is encountered (e.g., user inserts an ST disc into the drive)
+then it's system requester time (in this case, 'Not A DOS Disc' time). There
+should NOT be any Gurus (the code has been pretty well checked, and every one
+of the stupid bugs are now out of it) or any strange occurrences.
+
+
+	MakeGraf is compatible with both the CLI and with WorkBench (at least
+in its 1.3 incarnation!). I have tested the program within both environments
+and it works. To ensure that there is a window for text messages, MakeGraf is
+designed to open a CON: window from early on in its execution, which has the
+beneficial side effect of giving the reqtools.library functions a window to
+latch on to when deciding where to position its requesters regardless of the
+chosen operating environment. The early version NEEDED a CON: window in order
+to work both on the CLI and on WorkBench, because WorkBench doesn't supply a
+window to an application (in the 1.3 incarnation anyway:if things are differ-
+ent on WorkBench 2.x, this program should still work). Now the CON: window is
+a hang-on from those days that is relegated to the role of providing progress
+reports on the copy operations.
+
+
+The Source Code
+---------------
+
+	MakeGrafRT.s (the reqtools version of the MakeGraf source) contains a
+fair amount of stuff that has been commented out from the early days of the
+program's development, when ALL interaction was conducted via the CON: window
+which I called up. If you wish, get rid of it altogether. 
+
+
+	The important routine is PipeFile(), which performs the actual trans-
+fer of data. The rest of the program is given the job of setting up the vari-
+ables for this routine and awaiting user input. I didn't use RawDoFmt() but a
+custom-written LtoA() to perform conversion of long integers to ASCII strings
+in the early versions. Since reqtools.library uses RawDoFmt() to perform some
+of its functions, it made sense once the reqtools.library was used to abandon
+the LtoA() routine (although the complete code for it is still present-if you
+have a use for it in environments where RawDoFmt() and friends are denied to
+you, then lift LtoA() out as one of the routines you'll need).
+
+
+	As may be expected, the source is fully commented, and ACC users will
+(hopefully!) be able to make sense of it fairly quickly. However, users that
+are unfamiliar with the reqtools.library will need a bit of hand-holding. I
+will be providing some DOC files of my own on reqtools in the near future but
+until then, do yourself a favour and get hold of the new uprated DOC DISCS...
+
+
+	The source uses eight include files, all of which are mutated to suit
+my own prejudices. After all, it's MY Amiga, and I'M writing this software,
+so why can't I have things the way I want them?
+
+
+	Anyway, this should be enough for everyone to digest along with the
+latest work on Defender, so until next time,
+
+
+
+		Live fast, code hard & die in a beautiful way
+
+
+
+
+				Dave.
+
+
+

@@ -1,0 +1,27 @@
+MACHINE:AGA only (uses 64 wide 16colour sprites and own cmap)
+CODE:Andyrew
+GFX:OJ
+LEFT SHIFT EXIT		 
+
+This is a really smart program i wrote a while back.
+It started as just a test to see if i could program AGA.
+The main ship is 2 64wide sprites.
+It uses 2 16 colour dual playfields
+and my favourite routine is the bullet and collision routines.
+
+The bullets use the same sprite as the ship! so there is a lot of shuffling
+of data.
+
+The collision routine which suprised me is done with interupts.
+How can you get the same sprite to detect a collision if its either
+1 of many bullets or the player?
+
+See all the colour bars up the screen.
+They are ALL interupts. on the 1st irq (decide which object we are checking)
+		   2nd irq (read collision register and store)
+		   
+This simple thing is done for every sprite.
+
+BUGS:NONE except there is not enough level data.
+
+

@@ -1,0 +1,812 @@
+
+			Intuition - Screens
+			-------------------
+
+
+1~Introduction
+--------------
+ As you should be aware, the Amiga is capable of forming displays of various
+resolutions, sizes and colour attributes. A Screen is a portion of the
+display controlled by Intuition. It can be given any combination of
+resolution, size and colour supported.
+
+ Intuition is not limited to one screen. As many may be open as memory
+allows. Each screen can be moved up and down by the user, resulting in a
+display split into regions that may have different resolutions. Also a
+program may open more than one screen if it wishes to have different
+regions of the display to be of different resolutions.
+
+ All Intuition Objects rendered into a screen are tied to that screen and
+inherit it's attributes. When a screen is moved, all objects on the screen
+move with it.
+
+ From the programmers viewpoint, the upper-left corner of a screen is (0,0),
+no matter where on the display the screen is positioned.
+
+ All examples refered to below call the RightMouse subroutine in Int_Start.i
+which waits for the right mouse button to be pressed and released before
+continuing. This allows you to move the screen around and play with the depth
+gadgets, if visible.
+
+2~ WorkBench And Custom Screens
+-------------------------------
+ When possible, an application should open onto the WorkBench screen. This
+will allow the user to multi-task the application with minimum of effort.
+
+ Some applications must open their own screens, such as a paint program.
+Having a paint program retricted to the 640x256, four colour display of the
+WorkBench screen would be a bad move!
+
+ One other point to consider is that a custom screen will require a large
+memory overhead. WorkBench on the other hand is open most of the time and
+so requires no addittional memory overhead.
+
+3~ The WorkBench Screen
+-----------------------
+ As stated above, the WorkBench screen is normally open. As with all things
+on the Amiga, you should not assume this is the case! There exsists two
+functions, one for opening the WorkBench screen and one for closing it.
+
+ You should only close the workbench screen if there is insufficient memory
+available for your program to run with it open, see the chapter 'Exec - An 
+Introduction' for more information on memory availability.
+
+ You should attempt to open the WorkBench screen if your application is
+going to use this for rendering ( see later ). You should also attempt to
+open the WorkBench screen if your application has been using a custom
+screen. In this case, attempt to open WorkBench as your application is
+finishing - another application may have closed the WorkBench because of a
+shortage of memory, as your custom screen is no longer 'hogging' memory the
+WorkBench may now be able to open!
+
+ Screen = OpenWorkBench()
+   d0
+
+ Function:	Attempt to open the WorkBench screen.
+ Inputs:	None.
+ Results:  d0-	Pointer to Screen structure if WorkBench was opened or was
+		already open. NULL if WorkBench could not be opened for some
+		reason.
+
+ success = CloseWorkBench()
+
+ Function:	Attempt to close the WorkBench screen.
+ Inputs:	None.
+ Results:  d0-	NULL if WorkBench was already closed or if it contains any
+		applications windows. A non-zero signafies closure.
+
+
+4~ Custom Screens
+-----------------
+ Opening a Custom screen is not as simple as opening the WorkBench. There
+is a good reason for this, the system knows all the attributes of the
+WorkBench screen, it hasn't got a clue what you require.
+
+ So a structure is required! In this structure you must define the attributes
+of the screen you want Intuition to open for you. This structure is called a
+NewScreen structure. Intuition uses the values supplied in this structure to
+open a screen, also a Screen structure is created which will contain all the
+information in the NewScreen structure you supplied plus more fields that are
+maintained by Intuition. Some of the fields in the Screen structure created
+are of interest to the programmer and I will cover these shortly, first the
+NewScreen structure:
+
+NewScreen structure 
+===================
+ns_LeftEdge          WORD           x origin 
+ns_TopEdge           WORD           y origin 
+ns_Width             WORD           width in pixels 
+ns_Height            WORD           height in lines ( pixels ) 
+ns_Depth             WORD           number of bitplanes 
+ns_DetailPen         BYTE           foreground pen 
+ns_BlockPen          BYTE           background pen 
+ns_ViewMode          LONG           display modes flags 
+ns_Type              LONG           screen type flags 
+ns_Font              LONG           pointer to TextAttr, NULL for default 
+ns_DefaultTitle      LONG           pointer to title string 
+ns_Gadget            LONG           pointer to gadget list 
+ns_BitMap            LONG           pointer to CustomBitMap, NULL default 
+ 
+ I will now explain each field in a little more detail. 
+ 
+ LeftEdge 
+ ~~~~~~~~ 
+    Not implemented in kickstart 1.3 or lower, set to zero. 
+ 
+ TopEdge 
+ ~~~~~~~ 
+    Number of scan lines from top of display  before the start of the screen. 
+This will normally be set to zero and  leave  it up to the user to reposition 
+the screen. 
+ 
+ Width 
+ ~~~~~ 
+    The pixel width of  the  screen. The recommended values are: 320 for low
+resolution, 640 for high resolution. Other values can be used to produce an
+'Overscanned' display, this will be covered in a following example. 
+ 
+ Height 
+ ~~~~~~ 
+    The height in scan lines of your display. Again recommended values are 256
+( 200 ) for non-interlaced and 512 ( 400 ) for interlaced displays. 
+ 
+ Depth 
+ ~~~~~ 
+    Number of bitplanes to use for the screen, may take a value from 1 to 6. 
+The Depth of the display governs how many colours are available, in general:
+
+   Number of Colours = 2 ^ Depth
+   
+   There are exceptions to this rule which come into play when using either
+HAM ( Hold And Modify ) mode and ExtraHalfBright mode. Both these modes use
+a different algorithm for computing what colour to display from the bitplane
+contents and will be covered shortly.
+ 
+ DetailPen 
+ ~~~~~~~~~ 
+    The colour to use for foreground drawing/text printing. 
+ 
+ BlockPen 
+ ~~~~~~~~ 
+    The colour to use for background drawing/text printing. 
+ 
+ ViewModes 
+ ~~~~~~~~~ 
+    The fun bit. Tells Intuition what display  mode to use. A particular mode 
+is defined by setting the appropriate bits  in this long word flag. Each flag 
+should be referred to by name: 
+ 
+    V_HIRES            hi resolution mode ( 640 width ) 
+    V_LACE             interlace mode on 
+    V_SPRITES          enable sprites in this display 
+    V_DUALPF           dual playfield mode 
+    V_HAM              hold and modify mode 
+    V_EXTRA_HALFBRITE  64 colour mode 
+    GENLOCK_VIDEO      this allows normal display mode. 
+ 
+    Note that some modes are best set up by  altering a screen once opened in 
+a lesser mode, for example  dual  playfield.  First  open a normal screen and 
+then switch it into dual playfield mode, this is demonstrated in a following
+example. 
+ 
+ Type 
+ ~~~~ 
+    Defines the type of screen. Those I know about are: 
+ 
+    CUSTOMSCREEN       all screens you open will be custom screens, so set 
+                       this bit. 
+    SCREENBEHIND       opens the screen behind all other screens. 
+    SCREENQUIET        screen will not have a title bar or gadgets visible. 
+    CUSTOMBITMAP       set this if you are using your own bitplanes. 
+ 
+ Font 
+ ~~~~ 
+    A pointer to a TextAttr structure that defines the font to be used in all 
+window title bars and menu entries. For the present, set this to zero for the 
+default Intuition font. 
+ 
+ DefaultTitle 
+ ~~~~~~~~~~~~ 
+    A pointer to the title to  be  displayed  in  the screens title bar. Note 
+that the title text must be null terminated. 
+ 
+ Gadgets 
+ ~~~~~~~ 
+    Not implemented on kickstart 1.3 or lower. Set to zero. 
+ 
+ CustomBitMap 
+ ~~~~~~~~~~~~ 
+    Pointer to a BitMap structure if you are supplying your own bitplanes for 
+the screen display. Will cover this shortly.
+
+ Explaining various combinations of the above attributes would lead to a
+horrendous amount of typing on my part and reading on yours. For this reason
+I am now going to present examples that demonstrate various combinations and
+support these with an explanation.
+
+5~ Opening And Closing Screens
+------------------------------
+ Once you have decided on a screen format and prepared a NewScreen structure
+you have to instruct Intuition to open it for you. This is done by calling
+the function OpenScreen(). This function returns a pointer to the Screen
+structure that Intuition creates and maintains for the screen and you should
+store this somewhere as you will need it to close the screen when you have
+finished with it.
+
+ To close a screen, call the function CloseScreen(). This will release all
+memory tied up by the screen and remove it from the display. The templates
+for these functions now follow:
+
+ Screen = OpenScreen( NewScreen )
+   d0			 a0
+ 
+ Function:	Create and display a custom screen.
+ Inputs:   a0-	Address of an initialised NewScreen structure.
+ Results:  d0-	Address of the Screen structure created by Intuition if the
+ 		screen was opened. NULL if Intuition could not open the
+ 		screen.
+ 
+ CloseScreen( Screen )
+ 		a0
+ 
+ Function:	Close a custom screen and release all related memory.
+ Inputs:   a0-	Address of Screen structure as returned by OpenScreen().
+ Results:	The screen will be removed from the display.
+ 
+ In the following example a HiRes screen with 16 colours will be opened. It
+will be positioned at the top of the display. Below is the NewScreen structure
+used to open the screen:
+
+		***********************************
+; Static Intuition structure
+
+MyScreen
+	dc.w	0,0		;screen XY origin relative to View
+	dc.w	640,256		;screen width and height
+	dc.w	4		;screen depth (number of bitplanes)
+	dc.b	3,8		;detail and block pens
+	dc.w	V_HIRES		;display modes for this screen
+	dc.w	CUSTOMSCREEN	;screen type
+	dc.l	0		;pointer to default screen font
+	dc.l	.Title		;pointer to screen title
+	dc.l	0		;first in list of custom screen gadgets
+	dc.l	0		;pointer to custom BitMap structure
+
+.Title	dc.b	'This is a sixteen colour screen',0
+	even
+
+		***********************************
+
+ Note that the screen depth is set to 4, this allows 2^4 or 16 colours. To
+demonstrate this the BlockPen and Detail pen entries use colour registers not
+available on the standard WorkBench screen.
+
+ Outline of Example 1:
+ 
+ 1/ Open a custom screen by calling OpenScreen().
+ 2/ Save Screen pointer returned, skip to step 5 if this is NULL.
+ 3/ Wait for the user to press the right mouse button.
+ 4/ Close the screen.
+ 5/ Exit.
+
+ You should now load, examine and run Example 1. Points to note about this
+example are:
+
+ 1/ All libraries are opened and closed by Int_Start.i
+ 2/ The example starts at the label 'Main' as required by Int_Start.i
+ 3/ The return from OpenScreen() is checked for NULL value and aborts if
+    this is the case.
+ 4/ The NewScreen structure is declared and initialised using DC.s assembler
+    directives, known as static allocation.
+ 5/ The screen is closed when no longer required.
+ 6/ The screen can be 'dragged' up and down and the depth gadgets work - try
+    it and see!
+
+6~ Screen Position
+------------------
+ You can specify an x,y coordinate at which your screen is displayed from.
+At present, x positions are ignored and should be set to zero effectively
+resulting in the ability to specify any vertical starting position for your
+screen.
+
+ Above the y position you specify, the view visible before your screen was
+opened will still be visible and available to the user. If your screen does
+not fill the display from this position ( see Width & Height below ) then
+the remaining area will be filled with the background colour of your screen
+ie. it will be blank.
+
+ If your screen extends below the visible display, obviously the user will
+not be able to see it. You should supply some method of making this
+invisible area visible.
+
+ All coordinates use an origin 0,0 for the upper-left corner of the display.
+
+ To see this in action load, examine and run Example 2. This opens a screen 
+identical to that used in Example 1, but with the TopEdge field set to 50
+causing the screen to start 50 lines from the top of the display. Points to
+note are:
+
+ 1/ WorkBench is visible above the custom screen.
+ 2/ You can still 'drag' the screen up so it covers the whole display.
+
+~7 Width & Height
+-------------------
+ There are two horizontal resolutions supported by the Amiga. LoRes, the
+Intuition default, which gives a screen width of 32O pixels and HiRes, set
+using the V_HIRES mode flag, which gives a screen width of 640 pixels.
+
+ Obviously then, if setting V_HIRES, set a screen width of 640 else set the
+width to 320. We have already seen a V_HIRES example, so Example 3 opens a
+LoRes screen 50 pixels down the display. This has been done to allow you to
+compare text size on a LoRes screen compared to that on a HiRes screen, the
+WorkBench. Load, examine and run Example 3 now, as you will see the only
+differences between this and earlier examples is in the NewScreen structure.
+
+ Vertically there are also two resolutions available. So far all examples
+have used a non-interlaced display. Interlaced displays really require a
+special monitor ( Multi-Sync or High-Persistance ) to display them, normal
+monitors and TV's tend to flicker when in Interlaced display. Using Interlace
+effectively doubles the vertical resolution from the standard 256 ( 200 NTSC )
+lines to 512 ( 400 NTSC ) lines. I have supplied two examples of Interlaced
+screens, Example 4 displays a HiRes Interlaced screen and Example 5 a LoRes
+one. Again these examples are almost identical to previous ones, the
+differences being in the NewScreen structure. Load, examine and run both of
+these examples.
+
+ Points to note:
+ 
+ 1/ Both examples cause the display to 'flicker' ( unless you own a suitable
+    monitor ).
+ 2/ In Example 4, the two modes V_HIRES and V_LACE are combined together
+    using the ! ( OR ) assembler operator. This selects both modes!
+ 3/ In Example 5, only the mode V_LACE is specified. Intuition defaults to
+    LoRes if the V_HIRES flag is not set.
+
+8~ Hold And Modify
+------------------
+ Hold And Modify mode , or HAM, is one of two special modes available to the
+Amiga. The screen must be LoRes and have a depth of 6. This mode relies on
+colour changes along a scan line being smooth, one pixel not being that
+different to the one that follows/preceeds it.
+
+ HAM mode uses a special algorithm and encodes colour changes into the screen
+bitplanes. Normally, the bit components of a pixel in each plane are combined
+to select a colour register to use for that pixel. In HAM, the following
+method is adopted:
+
+ The colour for a pixel can be obtained in two ways, either by using a colour
+register in the normal way or by modifying the colour used for the pixel that
+preceeded it. In the case of the first pixel on a line, colour register 0 is
+assumed to preceed it.
+
+ Planes 5 and 6 form a control pattern. If both are zero, then planes 1 to 4
+are used to obtain a colour from a colour register in the normal way. If either
+or both of the bits are one, then one of the components in the previous pixel
+will be replaced by the value in planes 1 to 4.
+
+ So for any 1 pixel you have a choice of selecting a colour from a pallete of
+16 ( only 4 planes ) or modifying one of the RGB components of the previous
+pixel. To summarise:
+
+ 1/ All 6 planes are used to encode data for a pixel.
+ 2/ The bits in planes 5 and 6 determine the interpretation of the bits in
+    planes 1 to 4:
+    		   Plane6  Plane5
+    		     0       0    -> Planes 1 to 4 point to a colour register
+    				     in the normal way.
+    		     0       1	  -> Planes 1 to 4 contain new Blue component
+    		     1       0    -> Planes 1 to 4 contain new Red component
+    		     1       1    -> Planes 1 to 4 contain new Green component
+ 3/ The first pixel on a line has colour 0 assumed as it's predecessor.
+ 
+ HAM mode is difficult to use and requires a lot of memory. For this reason
+you do not often see it except for displaying slide shows or in art packages.
+
+ Example 6 opens a HAM screen, but no attempt is made at displaying anything
+in it! I leave this to you if you are determined enough.
+
+9~ Extra Half Bright
+--------------------
+ This is the other special mode available. Again a LoRes screen with depth 6
+must be used. In this case, planes 1 to 5 are used to form a pointer to a
+colour register in the normal way thus allowing a selection from 32 possible
+colours. Plane 6 is used to control how the colour from the register is
+displayed. If the bit is set ( 1 ) in plane 6, then the colour obtained from
+the colour register is displayed at half intensity. If the bit in plane 6 is
+not set ( 0 ) the colour is displayed in the normal way. This gives a total
+of 64 possible colours or shades even though there are only 32 colour
+registers available.
+
+ As for HAM, I have included an example that shows how to open an EHB screen,
+but have not attempted to display anything in it. Load, examine and run
+Example 7.
+
+10~ Dual Playfield
+------------------
+ A dual playfield screen consists of two independant display areas, one ontop
+of the other. Any region of the top display area set to background colour will
+allow the region from the lower display area to show through. Thus a backdrop
+could be displayed in the lower region while a program only affects the top
+region - the backdrop will be unaffected.
+
+ It is not recommended to open a screen in this mode. Rather open a screen
+containing only one region of the display, the top region. Then you would
+need to modify the Screen structure created by Intuition and supply more
+information yourself. Because this involves knowledge of the graphics.library
+and display primitives, I have left an example for that section.
+
+11~ Overscanned Displays
+------------------------
+ So far all displays have used recommended widths and heights. The reason for
+this is to allow them to be completely visible on all monitors. The Amiga can
+utalise a larger area of the display, but there is no gaurntee that it will be
+visible on all monitors. Using a screen that may be larger than the display
+area can support is called 'Overscan'.
+
+ How much wider or taller you can make your screen depends on the monitor
+being used to view it. In the following example I have opted for screens 1
+word wider than would normally be used, ie 16 pixels, and 10 lines taller.
+
+ Example 8 shows how to modify a NewScreen structure before giving it to
+Intuition. It opens two screens, both overscanned. One screen is HiRes, the
+other is LoRes. Load, examine and run this example.
+
+ Points to note about this example are:
+ 
+ 1/ The NewScreen structure is reusable.
+ 2/ Both overscanned screens are wider than WorkBench
+ 3/ Bringing WorkBench to the front completely covers the overscanned
+    screens.
+ 4/ The mouse pointer can be moved further down the monitor than on the
+    WorkBench screen - off the bottom of the display. This verifies the
+    screens are taller than WorkBench.
+ 
+10~ The Screen Structure
+------------------------
+ As stated above, OpenScreen() returns a pointer to the Screen structure
+created and maintained by Intuition. There are a number of useful entries
+in this structure that you may wish to examine from time to time or use.
+
+Screen Structure
+================
+sc_NextScreen		LONG		pointer to next screen structure
+sc_FirstWindow		LONG		pointer to first window on screen
+sc_LeftEdge		WORD		x position of screen
+sc_TopEdge		WORD		y position of screen
+sc_Width		WORD		screens width
+sc_Height		WORD		screens height
+sc_MouseY		WORD		y coordinate of mouse rel to (0,0)
+sc_MouseX		WORD		x coordinate of mouse rel to (0,0)
+sc_Flags		WORD		Intuition maintained flags
+sc_Title		LONG		pointer to current title
+sc_DefaultTitle		LONG		pointer to default title
+sc_BarHeight		BYTE		|
+sc_BarVBorder		BYTE		|
+sc_BarHBorder		BYTE		|
+sc_MenuVBorder		BYTE		|-Bars sizes for screen and all the
+sc_MenuHBorder		BYTE		|-windows it contains
+sc_WBorTop		BYTE		|
+sc_WBorLeft		BYTE		|
+sc_WBorRight		BYTE		|
+sc_WBorBottom		BYTE		|
+sc_KludgeFill00		BYTE		for even alignment only!
+sc_Font			LONG		pointer to screens default font
+sc_ViewPort		vp_SIZEOF	a ViewPort structure for this screen
+sc_RastPort		rp_SIZEOF	a RastPort structure for this screen
+sc_BitMap		bm_SIZEOF	a BitMap structure for this screen
+sc_LayerInfo		li_SIZEOF	a LayerInfo structure for this screen
+sc_FirstGadget		LONG		pointer to your gadgets, not supported
+sc_DetailPen		BYTE		current Detail drawing colour
+sc_BlockPen		BYTE		current Block drawing colour
+sc_SaveColor0		WORD		used by DisplayBeep()
+sc_BarLayer		LONG		Layer for screen and menu bars
+sc_ExtData		LONG
+sc_UserData		LONG		For use by your application
+sc_SIZEOF		346 BYTES
+
+ You may never have any need to use some of the fields in the above structure,
+but others are essential if you wish to render graphics straight into the
+screen.
+
+ Example 9 is a simple demonstration of how to access a field from the Screen
+structure. It waits for you to move the mouse pointer into the top line of
+the screen before closing! Load, examine and run the example.
+
+11~ Accessing The Screens BitPlanes
+-----------------------------------
+ When you specify a Depth for a screen, you are telling Intuition how many
+BitPlanes to use for your screen. A BitPlane is a block of memory that 
+contains graphical information for your display.
+
+ The BitPlanes should be visualised as being stacked one ontop of another.
+The corresponding bits in each BitPlane are used to reference a colour
+register for the pixel that will be displayed.
+
+ The address of the BitPlane memory blocks is stored in a BitMap structure.
+This BitMap structure has the following form:
+
+BitMap Structure
+================
+bm_BytesPerRow		WORD		byte width of each bitplane
+bm_Rows			WORD		height of each bitplane
+bm_Flags		BYTE		assosiated flags
+bm_Depth		BYTE		number of bitplanes
+bm_Pad			WORD		longword allignment only
+bm_Planes		8 LONGS		pointers to bitplane blocks
+bm_SIZEOF		32 BYTES
+
+ The field of interest in this case is the bm_Planes. This consists of upto 8
+pointers to bitplane memory blocks. So if we new the address of the BitMap
+structure, we could obtain the address of all the bitplanes used to form the
+screens display.
+
+ Well the BitMap structure is contained within the Screen structure, so
+locating it should be easy enough! To demonstrate how to write data straight
+into a bitplane, see Example 10. First though a quick explanation!
+
+ A bitplane is a continuous memory block, each bit in it represents one pixel
+in the screen display. Corresponding bits in each bitplane are combined to
+form a reference to a colour register. An example, suppose you have a screen
+of depth 4. There will be four pointers in the bm_Planes field, each pointing
+to a bitplane memory block. The colour of any pixel is formed as follows:
+
+ b1 = bit in plane 1 ( 1st pointer in bm_Planes list )
+ b2 = bit in plane 2 ( 2nd pointer in bm_Planes list )
+ b3 = bit in plane 3 ( 3rd pointer in bm_Planes list )
+ b4 = pit in plane 4 ( 4th pointer in bm_Planes list )
+ 
+ colour for pixel is contained in colour register b4b3b2b1.
+ 
+ eg1. b1=0, b2=1, b3=1, b4=0
+ 
+      this pixels colour is located in colour register 0110 ( 6 in decimal )
+
+ eg2. b1=1, b2=0, b3=1, b4=0
+ 
+      this pixels colour is located in colour register 0101 ( 5 in decimal )
+
+ Use the following formula to locate the bit that represents a pixel at
+position (x,y) in a bitplane with width=w pixels:
+
+ Address of Byte containing pixel = start of bitplane + y*(w/8) + (x/8)
+ 
+ offset into byte = MOD (x/8)
+ 
+ A fragment that will preform this function is given below
+ 
+ 		********************************
+
+; Entry:	a0->start address of bitplane
+;		d0=x coordinate of pixel
+;		d1=y coordinate of pixel
+;		d2=width in pixels of bitplane
+
+; Exit:		a0->byte containing pixel
+;		d0=offset into byte to required bit representing pixel
+
+; Corrupt:	d0-d3,a0
+
+		asr.l		#3,d2		w/8
+		mulu		d1,d2		y*(w/8)
+		
+		divu		#8,d0
+		swap		d0
+		move.w		d0,d3		d3=MOD (x/8)
+		move.w		#0,d0
+		swap		d0		d0=(x/8)
+		add.l		d0,d2		d2= y*(w/8) + (x/8)
+		adda.l		d2,a0		a0->byte containing pixel
+		
+		moveq.l		#7,d0
+		sub.w		d3,d0		d0=offset to required bit
+		
+		********************************
+ The above fragment is used in Example 10 to set pixels in the display as the
+mouse is moved about. Load, examine and run this example.
+
+12~ Supplying Your Own Bitplane Memory
+--------------------------------------
+ To supply bitplane memory for Intuition to attach to a screen it is necessary
+to initialise a BitMap structure and write it's address into the
+ns_CustomBitMap field of the NewScreen structure. Intuition will do the rest.
+
+ Though it is possible to use dynamic memory allocation to obtain memory for
+a BitMap structure and the bitplane memory blocks ( graphics.library has
+functions to deal with this ), I am using static allocations that will be
+resolved at assembly time - it's easier and shortens the examples somewhat!
+
+ The steps required to supply a BitMap structure are:
+ 
+ 1/ Call the graphics.library function InitBitMap().
+ 2/ Fill in the bm_Planes pointers.
+ 3/ Attach BitMap structure to NewScreen structure.
+ 4/ Set the CUSTOMBITMAP flag in the nw_Type field.
+ 4/ Call OpenScreen()
+
+ Before proceeding, you need to know the template for InitBitMap(), which is
+a function from the graphics.library:
+
+ InitBitMap( BitMap, Depth, Width, Height )
+ 	       a0     d0      d1     d2
+ 
+ Function:	Initialises a BitMap structure prior to use.
+ Inputs:   a0-	Pointer to BitMap structure to initialise.
+ 	   d0-	Number of bitplanes.
+ 	   d1-	Width of bitplane in pixels.
+ 	   d2-	Height of bitplane in lines.
+ Results:	The structure is initialised, all that remains is to fill
+ 		in the bitplane pointers.
+
+ Example 11 demonstrates the technique. Points to note are:
+ 
+ 1/ The memory for the bitplanes is allocated as 1 block of memory in a BSS
+    section, this keeps the program small on disk.
+ 2/ The address of each bitplane in the block is computed and written into
+    the BitMap structure.
+
+ Example 12 is an amalgamation of Examples 10 and 11 that plots pixels in
+the bitplane memory. Note how there is no need to examine the BitMap structure
+to locate the bitplane memory as it's address is already know!
+
+13~ Importing Graphics Data Into A Screen
+-----------------------------------------
+ You have created a picture using a paint package such as Deluxe Paint and
+saved it to disk. Now you wish to display the piucture in a screen of your
+own design. A number of problems exsist, namely:
+
+ 1/ The paint package saves pictures as IFF ILBM files.
+ 2/ How to get the bitplane data into your program.
+ 3/ How to get the correct colours into your screen.
+ 4/ Decide wether to use CustomBitMap or copy the RAW data into the planes
+    supplied by Intuition.
+    
+ Step 1 is not as difficult to get over as it may seem. I have supplied on
+this disk an IFF converter utility. This will read an IFF ILBM file and save
+the data in RAW format, the bitplanes are save one after the other. At the
+end of the RAW file the colour table is written.
+
+ Step 2 can be overcome in a number of ways:
+ 
+ 1/ Use your assemblers 'incbin' directive to read the RAW data in at the
+    time the program is assembled.
+ 2/ Reserve memory for the bitplanes and read the raw data in using functions
+    from the dos.library when the program is running.
+ 3/ Use exec.library's memory allocation functions to obtain memory for the
+    RAW data, the read the RAW data in using dos.library functions.
+ 
+ Each method has it's own advantages and disadvantages. I am opting for the
+first method as it is easiest to program!
+
+ Step 3 requires knowledge of yet another graphics.library function,
+LoadRGB4(). This takes a block of word values and stuffs them into a ViewPort.
+As you may recall, there is a ViewPort structure contained within a Screen
+structure. Here is the template for LoadRGB4():
+
+ LoadRGB4( ViewPort, Colours, Count )
+	      a0	a1	d0
+
+ Function:	Set the colours in a ViewPort to those specified.
+ Inputs:   a0-	Pointer to a ViewPort structure.
+ 	   a1-	Pointer to a block of word length colour values.
+ 	   d0-	Number of colours to change.
+ Results:	For this ViewPort, colour registers 1 to Count are given
+ 		values from the block of colours supplied.
+ 
+ The IFF converter utility saves the required colour information after the
+bitplane data, so locating it is fairly simple.
+
+ Step 4 is entirely up to you. However, loading in a copy of the RAW data
+will occupy the same memory as that used to display it - don't waste memory
+holding onto two copies of such large data areas!
+
+ Example 13 demonstrates the use of 'incbin' to load in RAW graphics data for
+a picture with the following dimensions: 320x200x4. The program itself creates
+a BitMap structure, linkes this to a NewScreen structure and proceeds to
+open the screen. Note that the bitplanes memory MUST be CHIP memory ( see the
+chapter 'Exec - An Introduction' for more information on memory types ). Load,
+examine and run this example. The raw data file is in the Screens directory
+should you wish to assemble it yourself! You will see that this example is
+very similar to Example 11.
+
+14~ Miscellaneous Screen Functions
+----------------------------------
+ Intuition supplies a few functions that support screen manipulation. Below
+is a brief explanation of each, though no examples are given as the functions
+are self explanatory or beyond the scope of this chapter!
+
+			--------
+
+ MoveScreen( Screen, dX, dY )
+ 		a0   d0  d1
+ 
+ Function:	At present used to move a screen in a vertical direction.
+ Inputs:   a0-	Pointer to Screen structure.
+ 	   d0-	x distance to move, not supported in v1.3 or below so set to
+ 	   	NULL.
+ 	   d1-	y distance to move the screen. Should be posotive to move
+ 	   	screen down, negative to move screen up.
+ Results:	Screen is moved up or down the number of lines specified.
+
+			--------
+
+ ScreenToBack( Screen )
+ 		 a0
+ 
+ Function:	Moves a screen behind all other open screens.
+ Inputs:   a0-	Pointer to Screen structure.
+ Results:	Screen is moved to back of display.
+
+			--------
+
+ ScreenToFront( Screen )
+ 		 a0
+ 
+ Function:	Moves a screen infront of all other open screens.
+ Inputs:   a0-	Pointer to Screen structure.
+ Results:	Screen is moved to front of display.
+
+			--------
+
+ ShowTitle( Screen, ShowIt )
+	      a0      d0
+
+ Function:	Specifies if a screens title appears infront of or behind the
+ 		title of any backdrop windows that are open on this screen.
+ Inputs:   a0-	Pointer to Screen structure.
+ 	   d0-	0 if screen title is to go behind backdrop window title.
+ 	        Non-zero if it is to go infront.
+ Results:	Will affect the screen title as explained above.
+
+			--------
+ RethinkDisplay()
+ 
+ Function:	Causes Intuition to rethink all screen ViewPorts and their
+ 		relationships to each other. Reconstructs the Intuition View
+ 		and calls MrgCop() then LoadView().
+ Inputs:	None.
+ Results:	Intuition display is updated.
+ 
+ 			-------
+ RemakeDisplay()
+ 
+ Function:	Completely remakes the Intuition display. First preforms a
+ 		MakeVPort() on every Screen, then calls RethinkDisplay().
+ 		This takes some time to do!
+ Inputs:	None.
+ Results:	Intuition Display is completely rebuilt.
+
+ The last two functions are of use when you have been playing with the low
+level graphics structures of an Intuition screen and want Intuition to know
+about it. Until one of these functions are called, your alterations will not
+come into effect.
+
+ You will also require the use of these functions if you start using VSprites
+in an Intuition display - Spave Invaders on an Intuition screen!
+
+15~ A Last Example
+------------------
+ Nothing spectacular here I'm afraid. This last example is a very primitive
+game, infact I can remember programming it on a Sinclair ZX81 ??? It makes no
+use of the Amigas complex graphics interface, interrupts or the Blitter. It
+does show how to get graphics into a screen and still multi-task though. The
+ZX81 version could not do that.
+
+ One more graphics.library function needs to be introduced, WaitTOF(). This
+sends a program to sleep until the video beam enters the vertical blanking
+gap, a period where it is safe to update the video display without causing
+'flicker':
+
+ WaitTOF()
+ 
+ Function:	Send task to sleep until the video beam reaches the blanking
+ 		gap.
+ Inputs:	None.
+ Results:	as explained in Function!
+ 
+ The game works as follows:
+ 
+ 1/ Wait for blanking gap.
+ 2/ bump a counter, if less than 8 skip to step 4.
+ 3/ Draw a new 'asteroid' at a random position along the top of the screen.
+ 4/ Check joystick movement, update ship coords accordingly.
+ 5/ Scroll display down 1 line.
+ 6/ See if ship is going to crash - ie be drawn over an asteroid.
+ 7/ Draw ship.
+ 8/ If ship never crashed, loop to step 1.
+ 9/ Ship crashed, exit!
+
+ I am not going to explain the subroutines here. The code has not been
+optimised in any way, infact just the opposite for clarity. There are two
+subroutines that you may wish to extract and use as-is in your own programs:
+
+	TestJoy		- Returns direction of joystick movement.
+	Random		- Generates random numbers.
+
+ The scroll routine is VERY crude, the Amiga supports much more suitable
+techniques than this, which should be reserved for use on Atari ST's!
+
+ This example demonstrates that with little understanding of Intuition and
+the graphics.library, things can still be done.
+
+- End Of File.
+

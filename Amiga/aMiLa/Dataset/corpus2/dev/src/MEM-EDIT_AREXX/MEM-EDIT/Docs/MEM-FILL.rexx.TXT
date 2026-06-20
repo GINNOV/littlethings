@@ -1,0 +1,586 @@
+
+
+
+                           (MEM-EDIT.JPG here.)
+
+
+
+     Hardware Access Using ARexx - Memory Editing - A Bonus Edition 3.
+     -----------------------------------------------------------------
+
+  Hi there readers, it's that AMIGA lunatic again... :)
+
+  Here is yet another addition to the MEM-EDIT.rexx suite this time to
+  include another task, a block of memory filled with a predetermined
+  value, MEM-FILL.rexx.
+
+  I didn't bother using AmigaBASIC for this task as this can be done easily
+  using that interpreter. Plus, it is much easier to make it look prettier
+  on screen using AmigaBASIC as opposed to ARexx.
+
+  As the MEM-FILL.rexx code is fully Public Domain I have limited it to a
+  MAXIMUM of 16 bytes but is easily changeable.
+
+  There is now a considerable amount of error correction in MEM-EDIT.rexx
+  and a considerable amount in MEM-FILL.rexx. Any error to MEM-FILL.rexx
+  exits this code and returns to the calling code, MEM-EDIT.rexx, main
+  window. MEM-EDIT.rexx will have the facility to go forwards/up and
+  backwards/down reading 256 bytes of memory at a time. It will not be
+  for a while yet though.
+
+  Just follow the on screen prompts for usage on MEM-FILL.rexx. It can
+  be used stand alone and requires a minimum of OS2.0x NOT OS3.0x that
+  Join.rexx requires.
+
+
+
+                           (MEM-FILL.JPG here.)
+
+
+
+  The image above shows a memory fill of 11 bytes of 0x7F at a known clear
+  area of my WinUAE setup, (that is WinUAE memory address 0x70000)...
+
+  For any code in this article just copy and paste as reuired.
+  REMEMBER! Watch out for strange characters from the copying and pasting
+  routine especially the 'GREATER THAN' and 'LESS THAN' characters.
+
+  Also any added hidden characters that are used by browsers...
+
+  As all the code is Public Domain then many lines can be removed to make
+  everything smaller, faster and easier to use.
+
+----------------------------------------------------------------------------
+
+  There is now a substantial amount of error correction in this version and
+  any error will put you back into the start up window for another attempt
+  at what you want to do...
+
+  The MEM-EDIT.rexx ARexx Code:-
+  ------------------------------
+
+/* ($VER: MEM-EDIT.rexx_Version_00-00-10_Public_Domain_May_2009_B_Walker_G0LCU.) */
+
+/* $VER: MEM-EDIT.rexx_Version_00-00-35_Public_Domain_August_2009_B_Walker_G0LCU. */
+
+/* IMPORTANT! THIS IS DEMO CODE ONLY AND THERE IS LITTLE ERROR CORRECTION! */
+
+/* This script works on OS2.0x too, NOT just OS3.xx. */
+
+/* This is a DEMO only and dumps a 256 byte dump to 'S:<ADDRESS_TYPED_IN>'. */
+/* A FULL standard AMIGA OS 3.0x install IS required for maximum usage. */
+
+/* The 'T:' VOLUME MUST be assigned to a VALID 'VOLUME:Drawer', ('RAM:T'). */
+
+/* It will also WRITE a single byte to a valid memory location, SO BEWARE!!! */
+
+/* There ARE confirmation prompts to act as basic error checks throughout. */
+
+/* Coded by Barry Walker, G0LCU. No copyright as it is offered as PD. */
+/* Use ECHO for ordinary strings, and SAY for strings with variables inside. */
+
+/* ---------------------------------------- */
+
+/* Set up a basic startup screen... */
+ECHO 'c'x
+ECHO '$VER: MEM-EDIT.rexx_Version_00-00-35_PD_August_2009_B_Walker_G0LCU.'
+ECHO ''
+ECHO 'A simple hexadecimal memory EDITOR using standard ARexx for classic AMIGAs.'
+ECHO 'SAVED memory dumps are to S:<ADDRESS_TYPED_IN> and of 256 bytes in size!'
+ECHO ''
+ECHO 'This is issued as Public Domain and donated by B.Walker, G0LCU...'
+ECHO ''
+ECHO 'The characters must be in the range 0123456789ABCDEF and there MUST be two or'
+ECHO 'eight of them. Addresses and byte values are in hexadecimal AND leading zeros'
+ECHO 'ARE important!!!'
+ECHO ''
+ECHO '!!!WARNING!!!'
+ECHO '-------------'
+ECHO ''
+ECHO 'THERE IS LITTLE ERROR CORRECTION!!! THEREFORE ANY INPUTTING TYPOS MAY CAUSE'
+ECHO 'AREXX TO STOP WITH AN ERROR REPORT _OR_ GENERATE A SERIOUS SYSTEM CRASH!!!'
+ECHO ''
+ECHO 'BE VERY AWARE OF THIS!!!'
+CALL keyboardhold
+
+/* ---------------------------------------- */
+
+/* Set up general variables. */
+checkforerror = 1
+checkstring = ''
+bytevalue = '00'
+dumpstartaddress = '00FC0000'
+dumpstring = ''
+jobtodo = '0'
+savefile = 'myfile'
+simplecheck = 'Y'
+
+/* Note the variable, <dumpstartaddresshex>, below, MUST be a string */
+/* representation of a hexadecimal, preferably, EVEN address. */
+/* The leading zero(s) and trailing 'x' ARE BOTH IMPORTANT!!! */
+/* The DEMO address, '00FC0000', is inside the classic AMIGA ROM area. */
+dumpstartaddresshex = '00FC0000'x
+
+/* Similarly for the byte variable, <realbytehex>, below. */
+realbytehex = '00'x
+
+/* ---------------------------------------- */
+
+/* Enter a hexadecimal address from '00000000' to '00FFFF00'. */
+DO FOREVER
+ECHO 'c'x
+ECHO 'Hexadecimal memory reader and writer...'
+ECHO ''
+ECHO 'Type a number then <RETURN/ENTER>:-'
+ECHO '-----------------------------------'
+ECHO ''
+ECHO '              (1) for a 256 byte memory dump to disk.'
+ECHO '              (2) for a 256 byte memory read only.'
+ECHO '              (3) for a SINGLE BYTE WRITE to memory.'
+ECHO '              (4) for joining 2 or more binary files together.'
+ECHO '              (5) for block clearing of memory to zeros, (NULLs).'
+ECHO '              (6) for block filling of memory using values 00h to FFh.'
+ECHO ''
+OPTIONS PROMPT '              (0) to QUIT:- '
+PARSE UPPER PULL jobtodo
+IF jobtodo = '0' THEN CALL getout
+IF jobtodo = '1' THEN CALL saveandread
+IF jobtodo = '2' THEN CALL readonly
+IF jobtodo = '3' THEN CALL writebyte
+/* Use ADDRESS COMMAND 'RX ?.rexx' instead of CALL '?.rexx'. */
+IF jobtodo = '4' THEN ADDRESS COMMAND 'RX Join.rexx'
+IF jobtodo = '5' THEN ADDRESS COMMAND 'RX MEM-CLEAR.rexx'
+IF jobtodo = '6' THEN ADDRESS COMMAND 'RX MEM-FILL.rexx'
+END
+
+/* ---------------------------------------- */
+
+/* Read a memory dump and auto-save to S:<ADDRESS_TYPED_IN>... */
+saveandread:
+CALL enteraddress
+IF simplecheck ~= 'Y' THEN RETURN
+
+/* Open up a filename to save to. */
+OPEN(savefile, 'S:'||dumpstartaddress, 'W')
+/* Save the filename... */
+WRITECH(savefile, dumpstring)
+/* Immediately close the file when dumped. */
+CLOSE(savefile)
+
+/* ---------------------------------------- */
+
+/* Do a simple print to the screen of what is saved in hexadecimal */
+/* ASCII readable format using AMIGADOS command 'Type'. */
+readonly:
+IF jobtodo = '2' THEN CALL enteraddress
+IF simplecheck ~= 'Y' THEN RETURN
+ECHO 'c'x
+IF jobtodo = '1' THEN SAY 'File saved to the S: VOLUME as "[S:]'||dumpstartaddress||'"...'
+IF jobtodo = '2' THEN SAY 'Memory start address is at $'||dumpstartaddress||', plus offset shown.'
+ECHO ''
+ECHO 'ASCII display of the hexadecimal dump of a 256 byte string...'
+ECHO ''
+IF jobtodo = '1' THEN ADDRESS COMMAND 'C:Type S:'||dumpstartaddress||' HEX'
+IF jobtodo = '2' THEN CALL temporaryread
+CALL keyboardhold
+RETURN
+
+/* ---------------------------------------- */
+
+/* Do a temporary save to T: and read the contents... */
+temporaryread:
+/* Open up a temporary filename to save to... */
+OPEN(savefile, 'T:'||dumpstartaddress, 'W')
+/* Save the filename... */
+WRITECH(savefile, dumpstring)
+/* Immediately close the file when dumped. */
+CLOSE(savefile)
+
+/* Display contents of dump saved to T:. */
+ADDRESS COMMAND 'C:Type T:'||dumpstartaddress||' HEX'
+/* Delete the file when displayed. */
+ADDRESS COMMAND 'C:Delete T:'||dumpstartaddress||' QUIET'
+RETURN
+
+/* ---------------------------------------- */
+
+/* Manual hexadecimal memory address entry point... */
+enteraddress:
+ECHO 'c'x
+OPTIONS PROMPT 'Enter a VALID hexadecimal address, (00FC0000<RETURN/ENTER>):- '
+PARSE UPPER PULL dumpstartaddress
+/* Do error checks on the hexadecimal string and CORRECT if ANY. */
+IF LENGTH(dumpstartaddress) ~= 8 THEN dumpstartaddress = '00FC0000'
+checkstring = ''
+DO checkforerror = 1 TO 8
+  IF SUBSTR(dumpstartaddress, checkforerror, 1) = "0" THEN checkstring = checkstring||"0"
+  IF SUBSTR(dumpstartaddress, checkforerror, 1) = "1" THEN checkstring = checkstring||"1"
+  IF SUBSTR(dumpstartaddress, checkforerror, 1) = "2" THEN checkstring = checkstring||"2"
+  IF SUBSTR(dumpstartaddress, checkforerror, 1) = "3" THEN checkstring = checkstring||"3"
+  IF SUBSTR(dumpstartaddress, checkforerror, 1) = "4" THEN checkstring = checkstring||"4"
+  IF SUBSTR(dumpstartaddress, checkforerror, 1) = "5" THEN checkstring = checkstring||"5"
+  IF SUBSTR(dumpstartaddress, checkforerror, 1) = "6" THEN checkstring = checkstring||"6"
+  IF SUBSTR(dumpstartaddress, checkforerror, 1) = "7" THEN checkstring = checkstring||"7"
+  IF SUBSTR(dumpstartaddress, checkforerror, 1) = "8" THEN checkstring = checkstring||"8"
+  IF SUBSTR(dumpstartaddress, checkforerror, 1) = "9" THEN checkstring = checkstring||"9"
+  IF SUBSTR(dumpstartaddress, checkforerror, 1) = "A" THEN checkstring = checkstring||"A"
+  IF SUBSTR(dumpstartaddress, checkforerror, 1) = "B" THEN checkstring = checkstring||"B"
+  IF SUBSTR(dumpstartaddress, checkforerror, 1) = "C" THEN checkstring = checkstring||"C"
+  IF SUBSTR(dumpstartaddress, checkforerror, 1) = "D" THEN checkstring = checkstring||"D"
+  IF SUBSTR(dumpstartaddress, checkforerror, 1) = "E" THEN checkstring = checkstring||"E"
+  IF SUBSTR(dumpstartaddress, checkforerror, 1) = "F" THEN checkstring = checkstring||"F"
+END
+IF dumpstartaddress ~= checkstring THEN dumpstartaddress = '00FC0000'
+ECHO ''
+OPTIONS PROMPT 'Is "'||dumpstartaddress||'" correct? (Y/N<RETURN/ENTER>):- '
+PARSE UPPER PULL simplecheck
+IF simplecheck = 'Y' THEN CALL enteraddresscont
+RETURN
+
+/* If typed value is correct then carry on. */
+enteraddresscont:
+/* Convert the value to the contents of the address pointer... */
+dumpstartaddresshex = X2C(dumpstartaddress)
+
+/* Fetch the 256 byte binary string. */
+dumpstring = IMPORT(dumpstartaddresshex, 256)
+RETURN
+
+/* ---------------------------------------- */
+
+/* Write a single byte to memory. */
+/* Ask for confirmation first! */
+writebyte:
+ECHO 'c'x
+ECHO '!!!WARNING!!!'
+ECHO ''
+ECHO 'WRITING TO MEMORY CAN CAUSE A SERIOUS SYSTEM FALIURE!!!'
+ECHO ''
+OPTIONS PROMPT 'ARE YOU SURE YOU WANT TO CONTINUE?, (Y/N<RETURN/ENTER>):- '
+PARSE UPPER PULL simplecheck
+IF simplecheck = 'Y' THEN CALL writebytecont
+RETURN
+
+/* Continue after confirmation... */
+writebytecont:
+CALL enteraddress
+IF simplecheck ~= 'Y' THEN RETURN
+
+/* Display where the memory write will be. */
+ECHO 'c'x
+SAY 'Memory address to write to is $'||dumpstartaddress||'.'
+ECHO ''
+OPTIONS PROMPT 'Enter byte value in hexadecimal, for example, 7F<RETURN/ENTER>:- '
+PARSE UPPER PULL bytevalue
+/* Do error checks on the hexadecimal string and CORRECT if ANY. */
+IF LENGTH(bytevalue) ~= 2 THEN bytevalue = 'FF'
+checkstring = ''
+DO checkforerror = 1 TO 2
+  IF SUBSTR(bytevalue, checkforerror, 1) = "0" THEN checkstring = checkstring||"0"
+  IF SUBSTR(bytevalue, checkforerror, 1) = "1" THEN checkstring = checkstring||"1"
+  IF SUBSTR(bytevalue, checkforerror, 1) = "2" THEN checkstring = checkstring||"2"
+  IF SUBSTR(bytevalue, checkforerror, 1) = "3" THEN checkstring = checkstring||"3"
+  IF SUBSTR(bytevalue, checkforerror, 1) = "4" THEN checkstring = checkstring||"4"
+  IF SUBSTR(bytevalue, checkforerror, 1) = "5" THEN checkstring = checkstring||"5"
+  IF SUBSTR(bytevalue, checkforerror, 1) = "6" THEN checkstring = checkstring||"6"
+  IF SUBSTR(bytevalue, checkforerror, 1) = "7" THEN checkstring = checkstring||"7"
+  IF SUBSTR(bytevalue, checkforerror, 1) = "8" THEN checkstring = checkstring||"8"
+  IF SUBSTR(bytevalue, checkforerror, 1) = "9" THEN checkstring = checkstring||"9"
+  IF SUBSTR(bytevalue, checkforerror, 1) = "A" THEN checkstring = checkstring||"A"
+  IF SUBSTR(bytevalue, checkforerror, 1) = "B" THEN checkstring = checkstring||"B"
+  IF SUBSTR(bytevalue, checkforerror, 1) = "C" THEN checkstring = checkstring||"C"
+  IF SUBSTR(bytevalue, checkforerror, 1) = "D" THEN checkstring = checkstring||"D"
+  IF SUBSTR(bytevalue, checkforerror, 1) = "E" THEN checkstring = checkstring||"E"
+  IF SUBSTR(bytevalue, checkforerror, 1) = "F" THEN checkstring = checkstring||"F"
+END
+IF bytevalue ~= checkstring THEN bytevalue = 'FF'
+ECHO ''
+OPTIONS PROMPT 'Is "'||bytevalue||'" correct? (Y/N<RETURN/ENTER>):- '
+PARSE UPPER PULL simplecheck
+IF simplecheck = 'Y' THEN CALL dowritebyte
+RETURN
+
+/* Do the write to memory!!! */
+dowritebyte:
+/* Convert the ASCII byte to the real HEX value. */
+realbytehex = X2C(bytevalue)
+
+/* Write a single hexadecimal byte to memory. */
+EXPORT(dumpstartaddresshex, realbytehex, 1)
+
+/* Read the BYTE, in LONGWORD form, from the changed address. */
+dumpstring = IMPORT(dumpstartaddresshex, 4)
+
+/* Display on screen the four contiguous bytes. */
+ECHO 'c'x
+SAY 'Address changed is $'||dumpstartaddress||', plus offset shown...'
+ECHO ''
+SAY '0000:  '||C2X(dumpstring)||'  for four bytes, (longword), only!'
+CALL keyboardhold
+RETURN
+
+/* ---------------------------------------- */
+
+/* Stop the display until the <RETURN/ENTER> key is pressed... */
+keyboardhold:
+ECHO ''
+OPTIONS PROMPT 'Press <RETURN/ENTER> to continue:- '
+PARSE UPPER PULL jobtodo
+RETURN
+
+/* ---------------------------------------- */
+
+/* Clean exit... */
+getout:
+OPTIONS PROMPT ''
+ECHO 'c'x
+ECHO 'Click the CLOSE gadget to QUIT...'
+ECHO ''
+EXIT(0)
+/* Program end. */
+
+----------------------------------------------------------------------------
+
+  This code is near fully error corrected or detected.
+  All errors 'crash' out, back to the calling program in question.
+  Read all the comments inside the code for more information...
+
+  The MEM-FILL.rexx ARexx Code:-
+  ------------------------------
+
+/* DEMO ARexx script to fill a block of memory with values from 00h to FFh. */
+/* As part of the MEM-DEIT_AREXX.lha archive. Issued as Public Domain */
+/* August 2009, B.Walker, G0LCU. */
+/* $VER: MEM-FILL.rexx_Version_00-00-40_Public_Domain_August_2009_B.Walker_G0LCU. */
+
+/* !!!WARNING!!! */
+
+/* THERE IS SOME ERROR DETECTION IN THIS CODE - HOWEVER BEWARE!!! */
+
+/* It is deliberately limited to a maximum of 16 bytes for this DEMO but it */
+/* can easily be changed as required as this code is Public Domain. */
+
+/* Use ECHO for normal printing and SAY for printing with variables inside. */
+
+/* Set up required variables... */
+checkforerror = 1
+checkstring = ''
+nothing = ''
+numberofbytes = 1
+fillstartaddress = '00070000'
+fillvalue = '00'
+
+/* Note the variable, <fillstartaddresshex>, below, MUST be a string */
+/* representation of a hexadecimal, preferably, EVEN address. */
+/* The leading zero(s) and trailing 'x' ARE BOTH IMPORTANT!!! */
+/* !!!The DEMO address, '00070000', is inside the classic AMIGA RAM area!!! */
+fillstartaddresshex = '00070000'x
+
+/* Similarly for the byte <fillvaluehex> below. */
+fillvaluehex = '00'x
+
+/* Use the default window. */
+ECHO 'c'x
+ECHO 'This DEMO script will WRITE a series of bytes to a VALID RAM address.'
+ECHO 'It is LIMITED to a maximum of 16 bytes but as the code IS Public Domain it'
+ECHO 'is simple to make it much larger.'
+ECHO ''
+ECHO '!!!WARNING!!!'
+ECHO ''
+ECHO 'THIS IS A DANGEROUS TOOL, SO YOU USE IT AT YOUR OWN RISK. THERE IS LITTLE'
+ECHO 'ERROR DETECTION OR CORRECTION SO AN INCORRECT TYPO MAY GENERATE AN ERROR'
+ECHO 'AND _STOP_ THE SCRIPT AT BEST OR CAUSE A SERIOUS SYSTEM CRASH AT WORST!!!'
+ECHO 'SO BE VERY AWARE OF THIS...'
+ECHO ''
+OPTIONS PROMPT 'Press <RETURN/ENTER> to continue:- '
+PARSE UPPER PULL nothing
+
+/* Ask for confirmation first! */
+ECHO 'c'x
+ECHO '!!!WARNING!!!'
+ECHO ''
+ECHO 'WRITING TO MEMORY CAN CAUSE A SERIOUS SYSTEM FALIURE!!!'
+ECHO ''
+OPTIONS PROMPT 'ARE YOU SURE YOU WANT TO CONTINUE?, (Y/N<RETURN/ENTER>):- '
+PARSE UPPER PULL nothing
+IF nothing ~= 'Y' THEN CALL getout
+
+/* Manual hexadecimal memory address entry point... */
+ECHO 'c'x
+OPTIONS PROMPT 'Enter a VALID hexadecimal address, (00FC0000<RETURN/ENTER>):- '
+PARSE UPPER PULL fillstartaddress
+/* Do error checks on the hexadecimal string and QUIT if ANY. */
+IF LENGTH(fillstartaddress) ~= 8 THEN CALL getout
+DO checkforerror = 1 TO 8
+  IF SUBSTR(fillstartaddress, checkforerror, 1) = "0" THEN checkstring = checkstring||"0"
+  IF SUBSTR(fillstartaddress, checkforerror, 1) = "1" THEN checkstring = checkstring||"1"
+  IF SUBSTR(fillstartaddress, checkforerror, 1) = "2" THEN checkstring = checkstring||"2"
+  IF SUBSTR(fillstartaddress, checkforerror, 1) = "3" THEN checkstring = checkstring||"3"
+  IF SUBSTR(fillstartaddress, checkforerror, 1) = "4" THEN checkstring = checkstring||"4"
+  IF SUBSTR(fillstartaddress, checkforerror, 1) = "5" THEN checkstring = checkstring||"5"
+  IF SUBSTR(fillstartaddress, checkforerror, 1) = "6" THEN checkstring = checkstring||"6"
+  IF SUBSTR(fillstartaddress, checkforerror, 1) = "7" THEN checkstring = checkstring||"7"
+  IF SUBSTR(fillstartaddress, checkforerror, 1) = "8" THEN checkstring = checkstring||"8"
+  IF SUBSTR(fillstartaddress, checkforerror, 1) = "9" THEN checkstring = checkstring||"9"
+  IF SUBSTR(fillstartaddress, checkforerror, 1) = "A" THEN checkstring = checkstring||"A"
+  IF SUBSTR(fillstartaddress, checkforerror, 1) = "B" THEN checkstring = checkstring||"B"
+  IF SUBSTR(fillstartaddress, checkforerror, 1) = "C" THEN checkstring = checkstring||"C"
+  IF SUBSTR(fillstartaddress, checkforerror, 1) = "D" THEN checkstring = checkstring||"D"
+  IF SUBSTR(fillstartaddress, checkforerror, 1) = "E" THEN checkstring = checkstring||"E"
+  IF SUBSTR(fillstartaddress, checkforerror, 1) = "F" THEN checkstring = checkstring||"F"
+END
+IF fillstartaddress ~= checkstring THEN CALL getout
+ECHO ''
+OPTIONS PROMPT 'Is "'||fillstartaddress||'" correct? (Y/N<RETURN/ENTER>):- '
+PARSE UPPER PULL nothing
+IF nothing ~= 'Y' THEN CALL getout
+
+/* Input the byte value to be used to fill. */
+checkstring = ''
+ECHO 'c'x
+OPTIONS PROMPT 'Enter byte value in hexadecimal, for example, 7F<RETURN/ENTER>:- '
+PARSE UPPER PULL fillvalue
+/* Do error checks on the hexadecimal string and QUIT if ANY. */
+IF LENGTH(fillvalue) ~= 2 THEN CALL getout
+DO checkforerror = 1 TO 2
+  IF SUBSTR(fillvalue, checkforerror, 1) = "0" THEN checkstring = checkstring||"0"
+  IF SUBSTR(fillvalue, checkforerror, 1) = "1" THEN checkstring = checkstring||"1"
+  IF SUBSTR(fillvalue, checkforerror, 1) = "2" THEN checkstring = checkstring||"2"
+  IF SUBSTR(fillvalue, checkforerror, 1) = "3" THEN checkstring = checkstring||"3"
+  IF SUBSTR(fillvalue, checkforerror, 1) = "4" THEN checkstring = checkstring||"4"
+  IF SUBSTR(fillvalue, checkforerror, 1) = "5" THEN checkstring = checkstring||"5"
+  IF SUBSTR(fillvalue, checkforerror, 1) = "6" THEN checkstring = checkstring||"6"
+  IF SUBSTR(fillvalue, checkforerror, 1) = "7" THEN checkstring = checkstring||"7"
+  IF SUBSTR(fillvalue, checkforerror, 1) = "8" THEN checkstring = checkstring||"8"
+  IF SUBSTR(fillvalue, checkforerror, 1) = "9" THEN checkstring = checkstring||"9"
+  IF SUBSTR(fillvalue, checkforerror, 1) = "A" THEN checkstring = checkstring||"A"
+  IF SUBSTR(fillvalue, checkforerror, 1) = "B" THEN checkstring = checkstring||"B"
+  IF SUBSTR(fillvalue, checkforerror, 1) = "C" THEN checkstring = checkstring||"C"
+  IF SUBSTR(fillvalue, checkforerror, 1) = "D" THEN checkstring = checkstring||"D"
+  IF SUBSTR(fillvalue, checkforerror, 1) = "E" THEN checkstring = checkstring||"E"
+  IF SUBSTR(fillvalue, checkforerror, 1) = "F" THEN checkstring = checkstring||"F"
+END
+IF fillvalue ~= checkstring THEN CALL getout
+ECHO ''
+OPTIONS PROMPT 'Is "'||fillvalue||'" correct? (Y/N<RETURN/ENTER>):- '
+PARSE UPPER PULL nothing
+IF nothing ~= 'Y' THEN CALL getout
+
+/* Convert the ASCII byte to the real HEX value. */
+fillvaluehex = X2C(fillvalue)
+
+/* Display where the memory write will be. */
+ECHO 'c'x
+SAY 'Memory start address to write to is $'||fillstartaddress||', byte value '||fillvalue||'h.'
+ECHO ''
+OPTIONS PROMPT 'Enter number of bytes to fill, for example, 13<RETURN/ENTER>:- '
+PARSE UPPER PULL numberofbytes
+ECHO ''
+IF numberofbytes < 1 THEN CALL getout
+IF numberofbytes > 16 THEN CALL getout
+OPTIONS PROMPT 'Is "'||numberofbytes||'" correct? (Y/N<RETURN/ENTER>):- '
+PARSE UPPER PULL nothing
+IF nothing ~= 'Y' THEN CALL getout
+
+/* Convert the string to a hexadecimal address... */
+fillstartaddresshex = X2C(fillstartaddress)
+
+/* Do the write to valid RAM memory... */
+EXPORT(fillstartaddresshex, fillvaluehex, numberofbytes, fillvaluehex)
+
+ECHO 'c'x
+SAY numberofbytes||' byte(s), (value '||fillvalue||'h), of memory filled, starting at address $'||fillstartaddress||'.'
+ECHO ''
+OPTIONS PROMPT 'Press <RETURN/ENTER> to continue:- '
+PARSE UPPER PULL nothing
+ECHO 'c'x
+
+/* Clean exit. */
+getout:
+OPTIONS PROMPT ''
+ECHO 'c'x
+ECHO 'Closing down...'
+ECHO ''
+ECHO 'Left click on the CLOSE gadget if required!'
+EXIT(0)
+/* Program End. */
+
+----------------------------------------------------------------------------
+
+  I will attempt a 68000 disassembler in ARexx but I'm not going to promise
+  anything. However MEM-FILL.rexx is the last ADD-ON of this series so far.
+
+  I am working on a better version of MEM-EDIT at the moment...
+
+  Enjoy finding simple solutions to often very difficult problems... :)
+
+----------------------------------------------------------------------------
+
+  The archive is Public Domain/Emailware and you may modify it/them as you
+  please for your OWN experiments.
+
+----------------------------------------------------------------------------
+
+                                IMPORTANT:-
+                                -----------
+
+    The Legal Stuff:-
+    -----------------
+
+    These programs are Public Domain and no profit will be made from them,
+    also all of the files must remain unaltered and intact including this
+    one. The author is not responsible for any damage to, or loss of, or
+    failure of equipment or data caused in any way by the use of these
+    programs. There is NO warranty with the use of these software releases
+    and YOU USE THEM AT YOUR OWN RISK.
+
+----------------------------------------------------------------------------
+
+    Testing Evaluation:-
+    --------------------
+
+    An A1200 in 2MB, 6MB and 10MB modes using trapdoor memory AND/Or PCMCIA
+    memory expansions. WinUAE version 1.5.3 in classic Workbench 3.0x mode. 
+
+    All test conditions were/are running STANDARD 3.0x, and using standard
+    ~topaz 8~ fonts throughout.
+
+    I have no idea what a strange configuration setup will create so refer
+    to the ~The Legal Stuff~ above.
+
+----------------------------------------------------------------------------
+
+                                 WARNING.
+                                 --------
+
+  1) DISCONNECT any faulty equipment under test from the MAINS supply.
+  2) If a DC supply is used do NOT reverse polarity the connections.
+  3) Do NOT power up any electronic item until it is safe to do so.
+  4) CHECK and RECHECK all of your construction and repair work thoroughly.
+  5) Handle ALL tools used with care.
+  6) Beware of ALL types of solvents, glues and etching fluids.
+  7) NEVER leave a soldering iron switched on unattended.
+  8) KEEP everything OUT of the reach of small children.
+  9) Switch OFF the AMIGA before disconnecting or connecting any hardware.
+ 10) And finally read 1) to 9) again.
+
+----------------------------------------------------------------------------
+
+   Contact:-
+   ---------
+
+   Mr Barry Walker, G0LCU,
+
+   Email:-     wisecracker@tesco.net
+   URL:-       http://homepages.tesco.net/wisecracker/G0LCU.HTM
+
+   Author of the ~TestGear?~ projects in the ~docs/hard~ drawer of AMINET.
+
+----------------------------------------------------------------------------
+
+   A very useful HardWare related site, (C) Anthony Hoffman, for
+   modifications, schematics, repairs and the like is:-
+
+                          http://amiga.serveftp.net/
+
+============================================================================

@@ -1,0 +1,7 @@
+Short:        Linked list library for SAS
+Author:       johnb@scinter.aftac.gov
+Uploader:     johnb scinter aftac gov
+Type:         dev/c
+Architecture: m68k-amigaos
+
+Linked list library developed on SAS/C 6.3

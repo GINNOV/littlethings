@@ -1,0 +1,10 @@
+Short:        Asm source for Gfx40 Chunky Features
+Author:       szolim@dragon.klte.hu (Imre Szollosi)
+Uploader:     szolim dragon klte hu (Imre Szollosi)
+Type:         dev/asm
+Architecture: m68k-amigaos
+
+This source shows you, how you can use
+Graphics/WriteChunkyPixels instead of
+Graphics/WritePixelLine8 or
+Graphics/WritePixelArray8 if possible.

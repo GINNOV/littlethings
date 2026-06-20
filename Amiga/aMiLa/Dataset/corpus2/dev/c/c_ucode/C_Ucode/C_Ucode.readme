@@ -1,0 +1,47 @@
+Short:        C_Ucode 0.01
+Author:       Gilles Pelletier
+Uploader:     gilles.pelletier@voila.fr (Gilles Pelletier)
+Type:         dev/c
+Version:      0.01 (20-Oct-2008)
+Requires:     Ucode package
+Architecture: m68k-amigaos
+
+Introduction
+~~~~~~~~~~~~
+Download Ucode.lha and read Ucode.Readme by Ken Shillito before start.
+
+
+Copy the include files into the appropriate location (i.e. include: directory)
+copy includes/clib/ucode_proto.h include:clib/ucode_proto.h
+copy includes/pragmas/ucode_lib.h include:pragmas/icode_lib.h
+copy includes/proto/ucode.h include:proto/ucode.h
+copy includes/libraries/ucode.h include:libraries/ucode.h
+
+see and activate copyinc.sh shell for short install.
+
+
+The present package is intend to fill the C_Stuff directory
+of the package Ucode.lha .
+It is not finished, but it compile nicely with SASC 6.0
+
+Demo01.c, same things as Demo01.a, but in C.
+
+Demo02.c, same things as Demo02.a, but in C.
+
+Demo03.c, same things as Demo03.a, but in C.
+
+Demo04.c, same things as Demo04.a, but in C.
+
+Demo05.c, same things as Demo05.a, but in C.
+
+Babylone.c, some unicode strings in bulgarian, chinese, arabic
+and russian.
+
+
+Steps
+~~~~~
+V0.01 20-Oct-2008 first release for universe.
+      01-Sep-2008 start.
+
+
+Enjoy Unicode on Amiga.!

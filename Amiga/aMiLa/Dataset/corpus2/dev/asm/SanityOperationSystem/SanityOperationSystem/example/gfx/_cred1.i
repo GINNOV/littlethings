@@ -1,0 +1,8 @@
+PICDATA		MACRO
+		incbin	'_cred1.raw'
+		ENDM
+COLORS		equ	32
+MODE		equ	$6000
+XSIZE		equ	320
+YSIZE		equ	256
+FADETIME	EQU	16

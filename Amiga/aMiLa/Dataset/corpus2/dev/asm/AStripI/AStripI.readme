@@ -1,0 +1,23 @@
+Short:        Asm lang include file optimizer.
+Author:       cee@voyager.co.nz (Cliff Earl)
+Uploader:     cee voyager co nz (Cliff Earl)
+Type:         dev/asm
+Version:      V2.0
+Replaces:     dev/asm/AStripI*
+Architecture: m68k-amigaos
+Keywords:     asm include optimize antix
+
+Description:
+
+  AStripI  optimizes  assembly language include files.  It makes
+  them faster to assemble and greatly reduces their size.
+
+Requirements:
+
+  - Any Amiga with V37+ (tested on 68000 ECS V37 A2000)
+
+Features:
+
+  - It's FreeWare.
+  - Programmed in 100% assembly language
+  - Full sourcecode included.

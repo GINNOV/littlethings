@@ -1,0 +1,255 @@
+
+ 
+                            Source Notes 
+                            ~~~~~~~~~~~~ 
+ 
+    Below is an outline of the source I have supplied this month. As you will  
+see nearly all the examples are variations on the Int_Start.s startup routine 
+supplied last month ( and the one before, and before that, and ... ). 
+ 
+ BackDrop 
+ ~~~~~~~~ 
+    This code shows how to set up a  backdrop  screen  for the WorkBench. The 
+theory is quite simple: switch Workbench  into Dual Playfield mode and supply 
+a bitplane with the backdrop  picture  in.  Putting  this  into practise is a 
+little more involved. 
+ 
+    First thing to remember is that WorkBench is running under the system. If 
+you intend to play with it`s display  you  must  do so through the system. No 
+direct altering of Copper lists  or the like. 
+ 
+    Using the system means setting up loads of structures. So here we go: 
+ 
+    We will need to supply a RasInfo structure  to attach the bitplane to the 
+ViewPort ( and hence the View ) of the WorkBench  screen. The bitplane is not 
+directly accessed through a RasInfo,  but  through  a BitMap structure. So we 
+need to supply a RasInfo structure, linked  to a Bitmap structure that points 
+to our bitplane. 
+ 
+    When the program finishes, we  want  the  backdrop  to  stay. For this to 
+happen we need to allocate some chip memory  and copy the graphics into this. 
+Using a bitplane stored as  part  of  the  program  would  not work, when the 
+program finished the memory is  released  and free for use by the rest of the 
+system ( random graphics mode is enabled! ). 
+ 
+    The memory for the RasInfo structure is  obtained using AllocMem(), as is 
+that for the BitMap structure. The  BitMap  structure needs to be initialised 
+before linking the  bitplane  pointer  to  it,  this  is  achieved by calling 
+InitBitMap(). The width and height of the bitplane are required as parameters 
+for this function. To ensure the correct  screen width and height are used, I 
+have read them from the  screen  structure  pointed  to  from within a window 
+structure, I opened the window on the WorkBench screen so I know it points to 
+the correct screen structure. 
+ 
+    To allocate memory for the bitplane  use  AllocRaster()  or AllocMem(). I 
+have opted for AllocRaster() supplying the width and height obtained from the 
+screen structure. 
+ 
+*****   If you have no idea what all  these  structures are that I`m waffling 
+*****  on about, you need a copy of  Dave  Edwards docs disc. I cannot supply 
+*****  this at present as my  copy  has  gone  missing, but Dave will be most 
+*****  happy to oblige you if you  write  to him. His address is elsewhere on 
+*****  this disc.  MM 
+ 
+    Once the bitplane memory has been  obtained,  the Bitmap initialised, and 
+the RasInfo setup, the three can be linked.  Put a pointer to the bitplane in 
+the bm_Planes field  of  the  BitMap  and  a  pointer  to  the  BitMap in the 
+ri_BitMap field of the RasInfo. 
+ 
+    Most graphics routines require a RastPort  structure which also points to 
+the bitplanes BitMap structure,  so  we  need  to set up a RastPort structure 
+also. Allocate memory  for  this  using  AllocMem(),  then  initialise  it by 
+calling  InitRastPort().  Once  initialised,  put  a  pointer  to  the BitMap 
+structure in the rp_BitMap field. 
+ 
+    That`s the structures up and ready,  what  next?  Well you can now modify 
+the WorkBench! Before  messing  with  system  structures  it  is necessary to 
+disable multi-tasking,  call  Forbid().  Now,  attach  the new RasInfo to the 
+Workbenches RasInfo and set the  V_DUALPF  flag  in the screens display modes 
+field. 
+ 
+    Simply linking the structures in is not sufficient to make things happen. 
+Intuition has to be told to rebuild  the  display,  this is achieved by first 
+calling MakeScreen() and then RethinkDisplay(). 
+ 
+    The backdrop is now displayed. 
+ 
+    Note that I have only linked a single bitplane,  you could have linked in 
+two bitplanes and so display  a  four  colour  backdrop.  Also  I have called 
+SetRast() to switch the screens colour. 
+ 
+    Try and convert the program to display a  four colour pic. If successful, 
+send the finished version in. If  you  are  feeling  really enthusiastic, add 
+Steve Marshalls ILBM.code and a support  routine that will allow any 4 colour 
+( or less ) picture to be loaded as a backdrop picture. The filename could be 
+supplied as a CLI parameter. 
+ 
+ WBScroller 
+ ~~~~~~~~~~ 
+    This is a variation on the above  program.  It  adds a backdrop screen to 
+the Workbench and then sets  up  a  CIA  interrupt  that  calls a scroll text 
+routine. The result is a  backdrop  scrolltext  that  does  not intefere with 
+normal operation, apart from a slight slowing of ye olde disc drives. 
+ 
+    This program accepts a filename as a  CLI  parameter,  loads the file and 
+converts all  non-alphanumeric  characters  to  spaces and uses the result as 
+it`s text to scroll. This means the  program  could be used on magazine discs 
+etc. but I recommend the code is tidied up a little first. 
+ 
+    If anyone want`s a more system  friendly  version  of this code write and 
+prompt me. I may do more work on it. 
+ 
+ DMRequest 
+ ~~~~~~~~~ 
+    I like this little feature of Intuition and can`t understand why it`s not 
+used more frequently. A DM Requester  is  a requester that will appear if the 
+user double-clicks the right mouse  button.  It can be made to appear as near 
+the mouse pointer as possible. 
+ 
+    Once a DMRequester has been  initialised  and added to the system, forget 
+about it! It will remain dormant until the user double-clicks. 
+ 
+    This could be an ideal way of implementing a help facility! 
+ 
+    Not much I can say really, the  requester  is  defined in the normal way, 
+but is initialised by a call to  SetDMRequest().  There  is no need to remove 
+it, it is disposed of when the window is closed. 
+ 
+ Boxes 
+ ~~~~~ 
+    This program was an experiment. I was planning the MakeGadget utility and 
+decided I would write a routine  to  track  the  mouse  and allow the user to 
+stretch a gadget of any size at any position in a window. 
+ 
+    This program waits for a down mouse  button  event, listens to mousemoves 
+and redraws a box every time  one  arrives.  The  box  is drawn in COMPLEMENT 
+mode, so when drawn over itself,  it  removes  itself  from the display ( old 
+Spectrum users may recall using XOR to achieve the same result ). 
+ 
+    When the mousebutton is clicked a second  time, the program fixes the box 
+and draws it in permanently. The  principle  could  be applied in a number of 
+ways. 
+ 
+ ColourGadg 
+ ~~~~~~~~~~ 
+    Something I have neglected to cover,  gadgets  in more than four colours. 
+This program opens a custom  screen,  then  a  window  on this screen. In the 
+window an eight colour gadget is displayed. 
+ 
+    Intuition Images can have any  depth  less  than  or equal to that of the 
+screen they are displayed in. As the  gadget  simply renders an Image, it can 
+also have any depth. 
+ 
+    Note the use of LoadRGB4() to set up the colours for this screen. 
+ 
+    Next month I will look into screens more thoroughly. 
+ 
+    Apart  from  opening  the  screen,  there  is  nothing  new  in  the code 
+department of this program. See  the  gadget/image  structures  for the extra 
+depth info. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 

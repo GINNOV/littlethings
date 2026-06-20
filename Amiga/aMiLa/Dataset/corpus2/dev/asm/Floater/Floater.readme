@@ -1,0 +1,83 @@
+Short:    Small FPU assembler preprocessor
+Author:   Timo Savola (thain@netlife.fi)
+Uploader: Timo Savola (thain@netlife.fi)
+Type:     dev/asm
+
+
+FLOATER 1.0
+
+If you want to write a single precision floating point number into memory,
+the best way is to use the normal move instruction:
+
+        move.l  #$4048F5C3,(a0)
+
+Because it's not much fun to convert each real number into the floating point
+"format" using an external program (or in your head?), Floater converts them
+for you automagically. With it you would write the previous move like this:
+
+        move.l  #f3.14,(a0)
+
+Floater converts the source only if there's a "; FL" (or "; fl") statement
+in the very beginning of the file (otherwise it performs only a simple copy).
+Useful for projects with many non-FPU sources. With BIG files you might want
+to bypass the useless copy, but with smaller (1000 lines?) sources it is nice
+to be kept for transparency. My 030/40 & 882 converted a 306k file with 10800
+Floater expressions in 12 seconds.
+
+Floater requires AmigaOS 3.0+ and (naturally) an FPU. Memory usage depends on
+the source file size.
+
+
+COMMANDLINE USAGE
+
+Floater INFILE OUTFILE FORCE
+
+INFILE  - 68k assembler source file with Floater expressions (required)
+OUTFILE - 68k assembler source file ready to assemble (required)
+FORCE   - Force conversion (optional)
+
+Example: floater ms_windows.s ms_windows_temp.s
+         floater ms_windows.s t:ms_windows.s force
+
+
+USAGE IN CODE
+
+-- CUT --
+; NF
+        move.l  #f0.1234,label
+        move.l  #f-43.21,-(sp)
+        rts
+
+-- CUT --
+
+
+USAGE IN SCRIPTS
+
+Floater becomes transparent when using makefile or other script to assemble.
+Here's an example of a smakefile using Floater:
+
+-- CUT --
+
+OBJS =  main.o example.o
+
+.s.o:
+        floater $*.s t:$*.s
+        genam from t:$*.s to $*.o
+        delete t:$*.s quiet
+
+example: $(OBJS)
+        phxlnk from $(OBJS) to "example" smalldata smallcode noshortrelocs
+
+-- CUT --
+
+
+NOTES
+
+Floater is only 768 bytes long and can be made resident.
+
+If you need to convert only a normal number, you'd better leave the commonly
+used ".0" away, because real number conversion is a bit slower:
+
+        move.l  #f1.0,4.w  ->  move.l  #f1,4.w
+
+Don't use spaces in the filenames. (Who would?)

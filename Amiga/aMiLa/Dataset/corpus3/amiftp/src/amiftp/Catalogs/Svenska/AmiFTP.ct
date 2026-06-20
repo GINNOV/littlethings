@@ -1,0 +1,734 @@
+## version $VER: AmiFTP.catalog 2.4 (5.9.96)
+## language svenska
+## codeset 0
+; Catalog descriptor file for AmiFTP 
+; Copyright (C) 1995 by Magnus Lilja, All Rights Reserved.
+;
+; e-mail: lilja@lysator.liu.se
+;
+; Some notes for translators:
+;
+; In order to create a hotkey to activate a gadget insert
+; a _ in the string before the character that should be
+; the hotkey. ('Te_st' would result in 's' being the hotkey
+; for that particular gadget).
+;
+;
+; Note that menu shortcuts are defined differently:
+; A correct menu entry for 'Quit' with Amiga-Q as the
+; shortcut should look like this:
+; Q\000Quit
+;
+;
+;
+;
+; SiteList window
+;
+SLW_SiteListWindow
+AmiFTP - Arkivlista
+;AmiFTP Sitelist
+;
+SLW_SiteList
+FTP-adresser
+;FTP Sites
+;
+SLW_Connect
+_Koppla upp
+;_Connect
+;
+SLW_New
+_Ny
+;_New site
+;
+SLW_Edit
+Än_dra
+;_Edit
+;
+SLW_Remove
+_Radera
+;_Remove
+;
+SLW_Cancel
+A_vbryt
+;C_ancel
+;
+SLW_OK
+_OK
+;_OK
+;
+SLW_Up
+Upp
+;Up
+;
+SLW_Down
+Ner
+;Down
+;
+SLW_Top
+Överst
+;Top
+;
+SLW_Bottom
+Nederst
+;Bottom
+;
+SLW_Newstring
+(Ny)
+;(New)
+;
+SLW_Sort
+_Sortera
+;_Sort
+;
+; SiteConfiguration Window
+;
+SCW_SiteConfigurationWindow
+AmiFTP - Adressinställingar
+;AmiFTP Site Configuration
+;
+SCW_Name
+Na_mn
+;Na_me
+;
+SCW_Site
+_Adress
+;_Site
+;
+SCW_Port
+_Port
+;_Port
+;
+SCW_RemDir
+_Gå till låda
+;_Auto-cd to drawer
+;
+SCW_LocDir
+_Lokal låda
+;_Download path
+;
+SCW_Anonymous
+A_nonym inloggning
+;Anonymous lo_gin
+;
+SCW_LoginName
+Använ_darnamn
+;_Login name
+;
+SCW_Password
+Lös_enord
+;Pass_word
+;
+SCW_OK
+_OK
+;_OK
+;
+SCW_Cancel
+A_vbryt
+;Ca_ncel
+;
+SCW_OS
+Operativs_ystem
+;Operating S_ystem
+;
+SCW_Proxy
+Om_bud
+;Pro_xy
+;
+SCW_HotList
+_Snabbval
+;_HotList
+;
+; Transfer window
+;
+TW_WinTitle
+AmiFTP - %ld fil(er) kvar (%ld %s)
+;AmiFTP - %ld file(s) left (%ld %s)
+;
+TW_RemoteFile
+Fil
+;Remote file
+;
+TW_LocalFile
+Lokal fil
+;Local file
+;
+TW_Size
+Storlek
+;Size
+;
+TW_Cps
+CPS
+;CPS
+;
+TW_DataTransferred
+Data överfört
+;Data transferred
+;
+TW_Abort
+Avbryt
+;Abort transfer
+;
+TW_FileExists
+Filen "%s" finns redan.\nDen gamla filens storlek är %ld bytes\n(den nya är %ld bytes).\n
+;File '%s' already exists.\nOld filesize is: %ld bytes (new %ld bytes).\n
+;
+TW_Overwrite
+Skriv över
+;Overwrite
+;
+TW_Resume
+Återuppta överföring
+;Resume transfer
+;
+TW_CancelTransfer
+Avbryt överföring
+;Cancel transfer
+;
+TW_DownloadDir
+Vill du verkligen hämta ett helt lådträd?
+;You are about to download a directory tree.\nAre you sure you want to do this?
+;
+TW_GetDir
+Ja, hämta!|Hoppa över
+;Yes, download it!|Skip this entry
+;
+; Main preferences window
+;
+MPW_WinTitle
+AmiFTP - Inställningar
+;AmiFTP Global Preferences
+;
+MPW_Password
+_Anonymt lösenord
+;_Anonymous password
+;
+MPW_ViewCommand
+V_isa filer med
+;_View command
+;
+MPW_ProxyHost
+_Ombud
+;Proxy _host
+;
+MPW_ProxyPort
+Ombuds_port
+;Proxy _port
+;
+MPW_ProxyDefault
+_Förvalt att använda ombud
+;Use pro_xy per default
+;
+MPW_DefDownloadDir
+Förvald _lokal låda
+;Default local drawer
+;
+MPW_IgnoreCase
+Ignore case
+;_Ignore case
+;
+; Main window
+;
+MW_SiteName
+_Adress
+;_Site
+;
+MW_DirName
+Lå_da
+;Drawer
+;
+MW_DownloadDir
+Lokal låda
+;L_ocal drawer
+;
+MW_Parent
+_Moder
+;_Parent
+;
+MW_Get
+_Hämta
+;_Get
+;
+MW_Put
+_Lämna...
+;P_ut
+;
+MW_View
+_Visa
+;_View
+;
+MW_Connect
+_Koppla upp mot...
+;_Connect to...
+;
+MW_Disconnect
+Koppla ner
+;_Disconnect
+;
+MW_DeleteRequest
+Vill du verkligen radera filerna?
+;Are you sure you want to\ndelete these files?
+;
+MW_DeleteCancel
+Radera|Avbryt
+;Delete|Cancel
+;
+MW_Reload
+Läs _om
+;_Reload
+;
+; Connect window
+;
+CW_WinTitle
+AmiFTP - Uppkopplingsfönster
+;AmiFTP Connect window
+;
+CW_Abort
+Avbryt
+;Abort
+;
+CW_Site
+Arkiv:
+;Site:
+;
+CW_Status
+Status:
+;Status:
+;
+CW_Connecting
+Kopplar upp...
+;Connecting...
+;
+CW_ReadingDir
+Läser låda...
+;Reading drawer...
+;
+CW_SendingLogin
+Skickar login...
+;Sending login...
+;
+CW_SendingPassword
+Skickar lösenord...
+;Sending password...
+;
+CW_ChangingDirectory
+Byter låda...
+;Changing drawer...
+;
+; Main menus
+;
+MENU_Project
+Projekt
+;Project
+;
+MENU_AddToSiteList
+Addera till adresslistan
+;Add current to sitelist
+;
+MENU_Reconnect
+Koppla upp igen
+;Reconnect
+;
+MENU_Iconify
+I\000Ikonifiera
+;I\000Iconify
+;
+MENU_About
+?\000Om AmiFTP...
+;?\000About...
+;
+MENU_Quit
+Q\000Avsluta
+;Q\000Quit
+;
+MENU_Files
+Filer
+;Files
+;
+MENU_TagAll
+A\000Markera alla
+;A\000Tag all
+;
+MENU_UntagAll
+U\000Avmarkera alla
+;U\000Untag all
+;
+MENU_TransferMode
+Överföringsläge
+;Transfer mode
+;
+MENU_Binary
+Binärt
+;Binary
+;
+MENU_ASCII
+ASCII
+;ASCII
+;
+MENU_ClearCache
+Rensa cachen
+;Clear dir-cache
+;
+MENU_Delete
+R\000Radera
+;D\000Delete
+;
+MENU_Move
+Flytta
+;M\000Move
+;
+MENU_Sort
+Sortera
+;Sort
+;
+MENU_SortbyName
+efter namn
+;by name
+;
+MENU_SortbyDate
+efter datum
+;by date
+;
+MENU_Settings
+Inställningar
+;Settings
+;
+MENU_Global
+1\000Globala...
+;1\000Global...
+;
+MENU_Hostlist
+2\000Adresser...
+;2\000Sitelist...
+;
+MENU_LogWindow
+Loggfönster
+;Log window
+;
+MENU_ToggleDotFiles
+Visa punktfiler
+;Show dot-files
+;
+MENU_LoadSettings
+Ladda inställningar...
+;Load settings...
+;
+MENU_SaveSettings
+Spara inställningar
+;Save settings
+;
+MENU_SaveSettingsAs
+Spara inställningar som...
+;Save settings as...
+;
+MENU_HotList
+Snabbval
+;Hotlist
+;
+; Other strings
+;
+Str_ErrorReadingDir
+Kunde inte läsa låda!
+;Error reading drawer!\n
+;
+Str_CannotDLDirs
+Kan inte hämta hela bibliotek!
+;Cannot download entire directories!\n
+;
+Str_SelectDLPath
+Välj låda för hämtade filer
+;Select download path
+;
+Str_SelectULFiles
+Välj filer att skicka
+;Select file(s) to upload
+;
+Str_CDFailedTimedout
+Kunde inte byta aktuell låda!\nUppkopplingen avbröts.
+;Remote CD failed:\nConnection timed out
+;
+Str_CDFailed
+Kunde inte byta aktuell låda!
+;Remote CD failed.
+;
+Str_AmiFTPError
+AmiFTP - Fel
+;AmiFTP error
+;
+Str_OK
+OK
+;OK
+;
+Str_CANCEL
+Avbryt
+;Cancel
+;
+Str_PasswordRequest
+AmiFTP - Lösenordsbegäran
+;AmiFTP Password request
+;
+Str_PasswordEntry
+Lösenord för användaren:\n%s
+;Enter password for user:\n%s
+;
+Str_ServiceNotAvail
+Tjänsten finns inte!
+;Service not available.
+;
+Str_ConnectFailed
+Uppkopplingen misslyckades!
+;Connect failed.
+;
+Str_ConnectLoginFailed
+Uppkopplingen misslyckades, okänt användarnamn!
+;Connect failed, login unknown.
+;
+Str_Putfailed
+Kunde inte lämna "%s"!
+;Put of %s failed
+;
+Str_RemoteWriteFailed
+Kunde inte skriva (full volym?)!
+;Write failed (remote file system full?).
+;
+Str_GetFailed
+Kunde inte hämta "%s"!
+;Get %s failed.
+;
+Str_LocalfileError
+Kunde inte öppna "%s"!
+;Error opening %s.
+;
+Str_LocalWriteFailed
+Kunde inte skriva till "%s"!
+;Write failed: %s
+;
+Str_NoSuchDir
+Kunde inte hitta filen/lådan "%s"!
+;%s: No such file or directory.
+;
+Str_DisconnectedTimeout
+Nerkopplad (timeout).
+;Disconnected (timeout).
+;
+Str_Outofmem
+Ej tillräckligt med minne!
+;Out of memory
+;
+Str_SelectSettingsFile
+Välj inställningsfil...
+;Select settings file...
+;
+Str_NoRestart
+Återupptagning misslyckades!
+;Resume command failed.
+;
+Str_ConnectionTimedOut
+Uppkopplingen avbröts!
+;Connection timed out
+;
+Str_AmiFTPRequest
+AmiFTP - Begäran
+;AmiFTP Request
+;
+Str_AboutAmiFTP
+Om AmiFTP...
+;About AmiFTP...
+;
+Str_UnknownHost
+Okänd adress!
+;Unknown host
+;
+Str_ErrorBuildingDirList
+Kunde inte skapa fillista!
+;Error building filelist.
+;
+Str_Translator
+Svensk översättning av\nMagnus Lilja\n
+;
+; This string will show up in the about window telling the user who made 
+; the translation. I suggest the string should look like this:
+; 'English translation by\nMagnus Lilja\n' (and perhaps your emailaddress
+; too). Ofcourse the above string should be in the same language as
+; the rest of the translation.
+SLW_NewGroup
+Ny _grupp
+;New _group
+;
+SLW_AddBar
+Avdelare
+;Add bar
+;
+MENU_ToggleADTFiles
+Visa hela RECENT-listan
+;Show entire RECENT
+;
+MENU_ResetADT
+Nollställ Aminet-datum
+;Reset Aminet-date
+;
+MW_ViewReadme
+Visa readme
+;View readme
+;
+MPW_General
+Allmänt
+;General
+;
+MPW_ADT
+Aminet
+;Aminet
+;
+MPW_Proxy
+Ombud
+;Proxy
+;
+MPW_BufferSize
+Bufferstorlek
+;Buffer size
+;
+MPW_DirCacheSize
+Cachestorlek
+;Directory cache size
+;
+MPW_DeleteViewed
+Radera visade filer
+;Delete viewed files
+;
+MPW_Beep
+Pip efter överföring
+;Beep after transfer
+;
+MPW_HideDirectories
+Göm lådor
+;Hide drawers
+;
+MPW_PreservePath
+Bevara sökväg
+;Preserve filepath
+;
+MPW_ShowMOTD
+Visa MOTD-fil
+;Show MOTD-file
+;
+MPW_GetReadme
+Hämta readme
+;Download readme
+;
+SCW_AminetMode
+Aminet-läge
+;Aminet-mode
+;
+MPW_OK
+_OK
+;_OK
+;
+MPW_Cancel
+A_vbryt
+;C_ancel
+;
+TW_TimeLeft
+Tid kvar
+;Time left
+;
+Str_NoNewAminetFiles
+Inga nya filer sedan senaste Aminet-besöket
+;No new files since last Aminet visit
+;
+Str_WindowTitle
+AmiFTP - %ld filer valda (%ld %s) %ld %s ledigt på disk
+;AmiFTP - %ld files selected (%ld %s) %ld %s free on disk
+; This might look a bit strange, but when the fields are filled the
+; string looks like:
+; AmiFTP - 10 files selected (4 MB) 15 MB free on disk
+MENU_Connect
+K\000Koppla upp mot...
+;C\000Connect...
+;
+MENU_Disconnect
+Koppla ner
+;Disconnect
+;
+MENU_Get
+H\000Hämta
+;G\000Get
+;
+MENU_Put
+L\000Lämna
+;U\000Put
+;
+MENU_View
+V\000Visa
+;V\000View
+;
+MENU_PatternSelect
+Välj filer
+;Select by pattern...
+;
+MPW_Display
+Utseende
+;Display
+;
+Str_PatternRequest
+AmiFTP begäran
+;AmiFTP request
+;
+Str_SelectPattern
+Skriv in AmigaDOS-mönstret
+;Enter AmigaDOS pattern:
+;
+MENU_Parent
+M\000Moder
+;P\000Parent
+;
+MPW_PublicScreen
+Allmän skärm
+;Public screen
+;
+MPW_SystemFonts
+Använd system-typsnitt
+;Use system fonts
+;
+MPW_InterfaceFont
+Gränssnittstypsnitt
+;Interface font
+;
+MPW_FilelistFont
+Fillisttypsnitt
+;Filelist font
+;
+MPW_ShowButtons
+Visa knappar
+;Show buttons
+;
+MPW_ShowToolbar
+Visa ikonrad
+;Show toolbar
+;
+MENU_ViewReadme
+Visa readme
+;View readme
+;
+MPW_DefaultScreen
+Öppna på standard allmän skärm
+;Open on default public screen
+;
+TW_OverwriteAll
+Skriv över allt
+;Overwrite all
+;
+MENU_CreateDir
+Skapa låda
+;Create directory
+;
+Str_RemoteDir
+Namn på lådan
+;Enter name of directory
+;
+MENU_RawCommand
+Skicka FTP kommando
+;Send FTP command
+;
+MENU_Rename
+Döp om
+;Rename
+;

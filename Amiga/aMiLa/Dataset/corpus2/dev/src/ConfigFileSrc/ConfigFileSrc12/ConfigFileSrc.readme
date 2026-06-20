@@ -1,0 +1,57 @@
+Short:    Sources of ConfigFile.lha V1.2
+Type:     dev/src
+Author:   MKS@Allgaeu.org (Marcel Karas)
+Uploader: MKS@Allgaeu.org (Marcel Karas)
+Version:  1.0
+Replaces: dev/src/ConfigFileSrc.lha
+
+TITLE
+
+   Sources of ConfigFile.lha V1.2
+
+VERSION
+
+   Release 1.0
+
+DESCRIPTION
+
+   This archive contains the complete sources of the ConfigFile.lha V1.2
+   archive at the Aminet.
+
+   ConfigFile.library     V 2.19
+   RexxConfigFile.library V 1.0
+   ToggleFormat           V 2.5
+   ClearUpFile            V 2.4
+
+AUTHOR
+
+   Email:
+   
+   MKS@Allgaeu.org or
+   MKS@AG-Trek.Allgaeu.org
+
+   FidoNet:
+
+   Marcel Karas 2:2487/2982.39
+
+   Snail-Mail:
+
+   Marcel Karas
+   Str. d. Chemiearbeiter 47
+   06766 Wolfen Nord
+   Germany 
+
+SUPPORT BBS
+
+   AG-Trek ( SYSOP: Andreas Kerber )
+
+   +49(0)8386 -   7862  USR Sportster V34/VFast    28.8k
+   +49(0)8386 - 961150  USR Sportster VI V34+      33.6k 
+   +49(0)8386 - 961151  Elsa Microlink ISDN/TL-V34 28.8.k/64.0k
+   +49(0)8386 - 961152  Elsa Microlink ISDN/pro    64.0k  
+
+DISTRIBUTABILITY 
+
+   The archive and its contents are freely distributable.   
+  
+   The package is (c) 1997 Marcel Karas

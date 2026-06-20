@@ -1,0 +1,1087 @@
+
+
+
+			  Fractals : An Update
+			  ====================
+
+			    By Dave Edwards
+			    ===============
+
+
+
+Introduction
+------------
+
+Having covered the topic of fractals in an earlier article, where I presented
+several of the simpler and better-known fractal constructs and some assembly
+language source for generating them, I thought that the time had come to move
+on, and cover some more difficult fractal systems.
+
+
+	Many of the systems that follow (but not all-to the relief of every-
+one concerned!) rely upon differential equations. I do not wish this to be a
+source of concern for either the novice mathematician or the novice coder. I
+will explain what is going on where necessary, and leave it up to the reader
+to explore further (see the bibliography at the end of the article for more
+material).
+
+
+	I shall need to explain a few concepts before moving on to the actual
+fractal systems themselves. Also, bear in mind that I shall be using code ex-
+amples that have not yet been exhaustively tested, so be prepared for a fair
+amount of debugging if things go wrong! Part of the reason for this is time:
+many fractal systems require that a coder tie up the Amiga for several hours
+at a time in order to reproduce the required results, and hence exhaustively
+testing code of this sort results in a development timescale of many months!
+However, the code will be liberally annotated with the necessary comments, so
+if anything DOES go wrong, it won't be too hard to pin down the source of the
+error.
+
+
+	Note also that I shall be using 68000 assembler throughout! This is a
+little ambitious, but since the readership I am aiming at consists primarily
+of assembler coders, this is necessary. For the record, I shall be using the
+Amiga mathieeedoubbas.library and friends (for accuracy):coders with the re-
+quired experience can speed things up (at the loss of some precision) by re-
+writing the code to use mathffp.library and mathtrans.library.
+
+
+	That should be sufficient preamble for now. Time to move on!
+
+
+Phase Spaces
+------------
+
+	What is a phase space? This is best illustrated using an example. I
+shall take for my example the one used in the book 'The Chaos Cookbook' (see
+bibliography below), which uses a swinging pendulum and the mathematics that
+describe its motion.
+
+
+	I shall assume here that I have access to some sophisticated measur-
+ing apparatus, that allows me to take lots of measurements of such things as
+the speed of the pendulum and the position of the pendulum. Furthermore, I'll
+assume that I can take these measurements simultaneously and many times per
+second, and thus build up a large table of data about the behaviour of this
+pendulum.
+
+
+	Now before some clever person writes to me to lecture me about the
+Uncertainty Principle and quantum mechanics, I know about it and how it aff-
+ects such systems. But the number of assembler coders who wish to get stuck
+into coding tensors using 68000 assembler is almost certainly very few, and
+there will be those who will have enough trouble with classical mechanics, so
+please give the lesser mortals among us a break!
+
+
+	So, assuming that the reader is NOT Stephen Hawking, and is therefore
+quite happy enough with classical mechanics, I shall continue. So, I set up a
+pendulum and gather in lots of data about its behaviour when I set it swing-
+ing, using my fantastic (and purely imaginary!) data logging apparatus. What
+do I do then?
+
+
+	Well, it might be nice to try drawing some graphs. I have the data, I
+have a nice Amiga A500 and a copy of AmigaBASIC (yeuk!) to do a quick & dirty
+job until I can be bothered to dig out DevPac, and so I set about plotting a
+few graphs.
+
+
+	This is where it gets interesting. Instead of plotting the usual and
+boring graphs of distance against time, velocity against time, etc., I plot
+a graph of distance against velocity, using these axes:
+
+
+				^ Velocity
+				|
+				|
+				|
+				|
+			<-------+-------> Distance
+				|
+				|
+				|
+				|
+				V
+
+What do I get? Well, according to the Chaos Cookbook, I get a spiral shaped
+curve that slowly spirals in toward the origin. The direction of the spiral
+will depend upon what I mean by positive velocity (whether I mean, 'pendulum
+swinging to left' or 'pendulum swinging to right') or positive distance, but
+once I have made my decision, the spiral will take a specific form.
+
+
+	Now this is a good example of a Phase Space. Actually, a phase space
+consists simply of a geometric region which is used to represent those varia-
+bles of interest to whoever is investigating the system. As such, it is ac-
+tually an invention of mathematicians and engineers, but it is a very useful
+invention nevertheless. Here, our phase space is a two-dimensional one, with
+the space dimensions being used to represent displacement from rest and vel-
+ocity respectively.
+
+
+	Now just what variables are chosen to form the phase space is gener-
+ally a free choice. One can choose to create a two-dimensional phase space,
+as above, or introduce another variable and create a three-dimensional phase
+space. It is even possible to create four- and higher-dimensional phase spa-
+ces, but then the problem of representing them graphically arises! Basically,
+what constitutes one's particular phase space of interest depends upon what
+one is interested in observing (and will the same clever person please re-
+frain from reminding me about quantum mechanics at this point...), although
+when used to investigate REAL physical systems, there tends to be some rest-
+riction upon what variables end up in the phase space.
+
+
+Why Phase Spaces?
+-----------------
+
+	I said that phase spaces were useful. Why?
+
+
+	Well, it transpires that phase spaces are the IDEAL tool to use when
+looking for ordered versus chaotic behaviour! Let me elaborate...
+
+
+	The example above (our pendulum) falls into the category of what is
+known as 'dissipative' systems. Basically, our pendulum loses energy (due to
+friction, air resistance etc) and eventually slows to a halt. This is shown
+by the spiral curling in toward the origin of the graph. Well, there are many
+such 'dissipative' systems, which betray themselves by having a graph of the
+above sort that eventually 'homes in' on a particular point in the space. The
+point where this happens (representing a stable, unchanging state or equilib-
+rium that the system settles down to) is known as an 'attractor'.
+
+
+	There are other 'attractors' possible for such systems, one being the
+point at infinity (representing unstable systems-if the graph shoots off to a
+point at infinity, then the system is unstable, the classic example being the
+Tacoma Narrows Bridge, which was filmed collapsing spectacularly in a gale as
+the oscillations hit the resonant frequency of the bridge!) and finite points
+representing points of stable equilibrium. However, this does not exhaust the
+full list of possibilities for attractors!
+
+
+	Just to illustrate this, let me modify my example pendulum (just as
+the author of The Chaos Cookbook did). Let us provide it with a forcing mech-
+anism, to ensure that its oscillations do not die down. Now let us take the
+same sets of measurements, and plot a new graph using the same phase space
+diagram. This time the resulting graph consists of a closed loop (as might be
+expected with such a system). Now the closed loop graph will probably NOT be
+a perfect circle (with a real-life pendulum, subject to many external real-
+life influences, it would be remarkable if it DID match the mathematically
+ideal simple pendulum!), but it will be a closed loop nevertheless. Now, in
+this case, we have an INFINITE NUMBER of attractors - namely, every point on
+the curve! Furthermore, because the system follows the same closed loop path
+ad infinitum, the system is said to exhibit 'periodic' behaviour.
+
+
+	Now many systems APPEAR to be periodic (and of those, a fair number
+are TRULY periodic) but there are also systems whose apparent periodicity (I
+say, what a wonderful word!) is just that-apparent. Incidentally, it was the
+sudden loss of periodic behaviour by some satellite orbits, and the investi-
+gation of them by the French astronomer Michel Henon that led to the creation
+of the Henon Attractor that I covered in the earlier article.
+
+
+	This brings me nicely to the most interesting type of attractor-the
+'strange attractor'. This type of attractor is characterised by a curve that
+appears to loop back upon itself (but I hasten to add, only APPEARS to!). In
+close-up, however, the curve does NOT return to a previously visited point in
+the phase space, but exhibits ever finer detail where the parts of the curve
+approach ever more closely yet never touch, as is the case for the Henon At-
+tractor.
+
+
+	Now there are other key features to phase diagrams (for example, it
+is possible to have what are termed 'saddle points'), but they are better ex-
+plained in The Chaos Cookbook (along with diagrams, which I can't include in
+this article, sad to say!), so I shall leave it to the reader to obtain this
+book and cover the matter in more detail.
+
+
+	And now, a light introduction - Martin's Mappings...
+
+
+Martin's Mappings
+-----------------
+
+	There are many of these (hence the title), and for once it is easy to
+define the entire class of them in one set of equations. The defining equa-
+tions are:
+
+
+			x = y + f(x)
+
+			y = a - x
+
+
+To use them, the following are required:
+
+
+		1) Some function of x for f(x), e.g., f(x)=sin(x)
+
+		2) A constant value for a
+
+
+Pick some starting values of x and y, and feed them into the equation. Then,
+having obtained new values of x and y, feed them back in (this process I in-
+troduced in the previous article as 'iteration'). So the procedure actually
+consists of:
+
+
+		1) Compute x	= y + f(x )
+			    n+1	   n	 n
+
+			   y	= a - x
+			    n+1        n
+
+		2) Plot the computed point (x	,y   ) ;
+					     n+1  n+1
+
+		3) Feed x    and y    back into the equation
+			 n+1	  n+1
+
+		   and repeat ad infinitum...
+
+
+Having picked the function f(x) and value of a desired, the proedure above
+will yield a whole range of interesting images. These images were covered in
+Scientific American under the name "Hopalong" (which just happens to describe
+how the program draws the images).
+
+
+	The following code will iterate through the mapping, given some val-
+ues to start with (and a function to iterate with) and plot the points on the
+screen. The requirements for this code are:
+
+
+	1) A variable block referenced via A6;
+
+	2) A macro to call a mathieeedoubbas.library function and
+	   another for a mathieeedoubtrans.library function if
+	   needed;
+
+
+plus some preliminary code to calculate some initial values for the routine
+in the variables marked '*' in the definitions below.
+
+
+* Main variable definitions:reference these off A6
+
+
+X_SCALE		equ	25	;change these as needed
+Y_SCALE		equ	25
+
+X_ORIGIN	equ	160	;change for 640x256 screen
+Y_ORIGIN	equ	128
+
+
+		rsreset
+
+GrafBase	rs.l	1	;for graphics library
+MathBase1	rs.l	1	;for mathieeedoubbas.library
+MathBase2	rs.l	1	;for mathieeedoubtrans.library
+
+RastPort	rs.l	1	;RastPort for window
+
+MySigMask	rs.l	1	;signals to look for
+
+* All of this next lot should be in IEEE format. Use IEEEFix() and
+* IEEEFlt() to convert from signed long integer to IEEE and
+* vice versa! Those marked (*) should be initialised BEFORE calling
+* the DoMartin() routine!
+
+AValue		rs.l	2	;(*)
+
+OldXValue	rs.l	2	;(*)
+OldYValue	rs.l	2	;(*)
+
+NewXValue	rs.l	2
+NewYValue	rs.l	2
+
+FunctionValue	rs.l	2
+
+* This lot are simple word integers.
+
+ScreenX		rs.w	1
+ScreenY		rs.w	1
+
+
+* DoMartinMap(a6)
+* a6 = ptr to main variable block
+
+* Perform Martin's Mapping routine
+
+* User will need to write DoFunction(a6), a routine
+* to evaluate the function of choice. I provide an example
+* that uses f(x) = sin(x) to show how it's done for more
+* complex ones...
+
+* Below, the macros used are:
+
+* CALLM1 : call a mathieeedoubbas.library function
+
+* CALLM2 : call a mathieeedoubtrans.library function
+
+* CALLGRAF : call a graphics.library function
+
+* CALLEXEC : call an Exec function
+
+* d0-d3/a0 corrupt
+
+
+DoMartin	bsr	DoFunction		;compute f(x)
+
+		movem.l	OldYValue(a6),d0-d1
+		movem.l	FunctionValue(a6),d2-d3
+		CALLM1	IEEEAdd			;do y+f(x)
+
+		movem.l	d0-d1,NewXValue(a6)	;save new x value
+
+		movem.l	AValue(a6),d0-d1
+		movem.l	OldXValue(a6),d2-d3
+		CALLM1	IEEESub			;do a-x
+
+		movem.l	d0-d1,NewYValue(a6)	;save new y value
+
+		CALLM1	IEEEFix			;convert to integer
+
+		move.w	d0,ScreenY(a6)		;save screen y coord
+
+		movem.l	NewXValue(a6),d0-d1
+
+		CALLM1	IEEEFix			;convert to integer
+
+		move.w	d0,ScreenX(a6)		;save screen x coord
+		mulu	#X_SCALE,d0		;scale it for plotting
+		add.w	#X_ORIGIN,d0
+		move.w	ScreenY(a6),d1		;get screen y coord
+		mulu	#Y_SCALE,d1		;scale it for plotting
+		add.w	#Y_ORIGIN,d1
+		move.l	RastPort(a6),a0		;and rastport for plotting
+
+		CALLGRAF	WritePixel	;plot the point!
+
+		movem.l	NewXValue(a6),d0-d3	;copy new x/y values
+		movem.l	d0-d3,OldXValue(a6)	;to old x/y values
+
+
+* This next lot of code is to obtain signals. If you're using an Intuition
+* IDCMP or a console, get the mp_SigBit from your message port, create a
+* signal mask, and save it in MySigMask(a6) above. Then, use SetSignals()
+* to get the current signal state, and if your IDCMP or console is woken
+* up, then you can leave the routine...
+
+
+		moveq	#0,d0
+		moveq	#0,d0
+
+		CALLEXEC	SetSignals	;what signals are active?
+
+		move.l	MySigMask(a6),d1	;get my signals
+		and.l	d0,d1			;one of my ports woken up?
+		beq	DoMartin		;back for more if not
+
+
+* Here, you can decide simply to leave the routine or do something
+* more complicated of your own devising. Modify this part at your
+* own discretion.
+
+
+		rts
+
+
+* DoFunction(a6)
+* a6 = ptr to main program variables
+
+* Take the value in OldXValue(a6), and use it
+* to compute FunctionValue(a6).
+
+* This simply computes sin(x). You can change this to compute
+* any function you like!
+
+* d0-d3 corrupt
+
+
+DoFunction	movem.l	OldXValue(a6),d0-d1
+		CALLM2	IEEESine
+		movem.l	d0-d1,FunctionValue(a6)
+		rts
+
+
+This looks fairly unpleasant at first sight, but don't be put off by the code
+above (which you can lift out and use freely, or even edit to suit your own
+preferences!), as the comments explain fully what's going on. Furthermore, a
+coder blessed with a reasonably recent copy of DevPac, with its lovely MonAm
+debugger/monitor program, can trace this lot and find out exactly how each of
+the routines work. Oh, and the equates X_SCALE and Y_SCALE can be changed at
+the programmer's discretion to alter the scale of the image (increase if the
+image is too small, decrease if it risks going off the screen).
+
+
+	Note that to initialise some of the variables with decimal values, it
+may be necessary either to initialise with integer values and then divide by
+a suitable power of ten, or even (for the experienced coder) write a routine
+to convert a string of the form "+1.02E-4" to an IEEE floating-point number.
+Whatever approach is chosen is entirely at the coder's discretion.
+
+
+	Once the programmer has copied the above routines and variable def-
+initions to a suitable source file, and then linked them to a suitable driver
+program, the fun can begin-literally! At this point, the programmer can edit
+the DoFunction() routine to test any desired function, from simple functions
+such as sin(x) (supplied above) to functions such as:
+
+
+			sgn(x)*abs(bx+c)
+
+
+where b and c are yet more constants (that can furthermore be varied to seek
+out more chaotic regimes for the function). DO NOT FORGET, however, to add to
+the variable table entries for the extra constants in the function definition
+and initialise them before calling DoMartin()! Also, note that ALL IEEE vari-
+ables MUST be two words long!
+
+
+Differential Equations
+----------------------
+
+	This is where life becomes a little harder. Although, to the relief
+of assembler coders everywhere, I will try to make it easier.
+
+
+	First, I shall explain what a differential equation is, and then how
+to manipulate them on a computer (or at least, some of the easier ways that
+are available).
+
+
+	A differential equation describes a relationship between the RATE OF
+CHANGE of a variable (e.g., distance) and one or more other variables. Some
+differential equations relate the rate of change of a variable to the self-
+same variable (and consequently the solutions are a little harder to find).
+For example, the following are all differential equations, where the main
+variable is considered to change with respect to time:
+
+
+				dx
+				-- = kx
+				dt
+
+		dx			dx	2
+		-- = ax + b + ct	-- =  ax + bx + c
+		dt			dt
+
+
+In the above, a, b, c and k are all constants. Now for the simpler differen-
+tial equations, there are algebraic methods of obtaining solutions, which re-
+sult in a function of the form x=f(t) for each of the above equations. But in
+the case of the differential equations that are the most fertile ground for
+chaos, which are most often linked SYSTEMS of differential equations, then a
+simple solution of the form x=f(t) for each of the equations concerned tends
+to be difficult or even impossible to obtain.
+
+
+	Handling differential equations on a computer tends to throw up its
+own problems too-even the ones that are algebraically simple. The difficulty
+arises from having to represent the RATE OF CHANGE of a variable.
+
+
+	Let's have a quick look at how a mathematician defines this rate of
+change. If we have a function x=f(t), and draw its graph, then we can obtain
+an approximate measure of the rate of change of x at a particular point in
+time by drawing a tangent to the curve (a straight line that has an identical
+slope to the curve where the tangent touches the curve). Now the formula for
+the tangent is:
+
+
+		slope = (y2-y1)/(x2-x1)
+
+
+where the points (x1,y1) and (x2,y2) are two points on the tangent. Now, for
+our function x=f(t), one of those points is already known-the point where the
+tangent touches the curve. For the other point, we let h be a small increment
+and use the values of t+h and f(t+h). So, we end up with:
+
+
+		slope = f(t+h) - f(t)	= f(t+h)-f(t)
+			-------------	  -----------
+			  (t+h) - t		h
+
+
+Now, as we let h shrink in value, the approximation to the slope of the curve
+by our tangent will get better as h becomes smaller. What mathematicians do
+is to apply a limiting process, and DEFINE our rate of change as:
+
+
+		dx   lim  f(t+h)-f(t)
+		-- =	  -----------
+		dt   h->0	h
+
+
+Now for many functions this can be worked out directly, and there are alge-
+braic rules that allow us to work out a vast range of others, given several
+basic results to start off with. But we are interested in computing x=f(t)
+for graph plotting.
+
+
+	Well, we can start by allowing h to equal a small value, say 0.005,
+and then using the initial values of x and t to get to the rest. We can do
+this, even if our differential equation is one of the nastier ones. To ill-
+ustrate the method, let us use a general differential equation:
+
+
+			dx
+			-- = g(x,t)
+			dt
+
+
+where g(x,t) is some function of x and t (which we can calculate). We start
+at t=0 (naturally) and require that the value of x at t=0 be known. If we are
+starting with a general equation, and are not given a value of x to work with
+from the start, then we can simply pick an arbitrary value. The method then
+becomes:
+
+
+		1) Calculate g(x,t) * d with the current values
+		   of x and t. Save this value (call it, for ex-
+		   ample, xinc).
+
+		2) Plot our point (x,t).
+
+		3) Now compute x = x + xinc.
+
+		4) Now compute t = t + d.
+
+		5) Go back to step 1).
+
+
+This method is known as Euler's Method after the mathematician who invented
+it. It works, and is reasonably accurate for most purposes, but sometimes the
+many thousands of calculations that tend to be performed when investigating a
+differential equation (or set of differential equations) accumulate rounding
+errors, and when this happens, a better method is required to handle numeri-
+cal handling of differential equations when precision is important. But for
+now, let's stick with Euler's Method and make life simple. Of course, if the
+differential equations contain other variables, for example y and z, then the
+above applies equally, except that this time we compute g(x,y,z,t)*d instead
+of g(x,t), where g(x,y,z,t) is whatever function of all of the variables is
+equal to dx/dt. Also, where we have several linked differential equations,
+the above procedure is applied to each.
+
+
+	So, we can now play with differential equations. But why bother, if
+they require so much effort?
+
+
+Chaos And Differential Equations
+--------------------------------
+
+	We have the mathematician Edward Lorenz to thank for the answer to
+the 'why?' question. He was working upon a mathematical model of weather sys-
+tems, and unfortunately for Ian McCaskill and friends at the BBC, produced a
+depressing result.
+
+
+	Lorenz basically said that forecasting weather to an arbitrary degree
+of precision using mathematical models and fast computers couldn't be done! A
+forecast of future weather patterns COULD be made, but the idea that a fore-
+cast could be 100% precise was a non-starter.
+
+
+	What Lorenz chose to do was to use the equations of fluid mechanics,
+and apply them to the atmosphere. These equations are differential equations,
+and three of them in particular, which have come to be known as the Lorenz
+Equations, deal with convection. He investigated three possible scenarios:1)
+insufficient temperature difference to set up convection (a temperature gra-
+dient); 2) steady, stable convection (warm air rises in a well-behaved, stea-
+dy stream), and 3) turbulent convection (the sort that gives rise to pheno-
+mena such as Hurricane Gilbert, and is consequently of great interest).
+
+
+	The Lorenz Equations turned out to be a very fertile area for chaos
+seekers, as Lorenz himself soon found out. In fact, the whole idea of Chaos
+Theory can be traced back to his original paper in 1963!
+
+
+	Without a little bit of foresight by Lorenz, who decided to pass on
+the donkey work of computing to an available mainframe computer and used it
+to plot graphs as well, this discovery might have remained hidden to this day
+so we have a lot to thank Lorenz for! Briefly, Lorenz wrote some programs to
+perform a more sophisticated version of the above method to his equations, &
+plot the results graphically. The result?
+
+
+	Remembering that there are three Lorenz equations, using three varia-
+bles, we require a three-dimensional phase space. Now plotting this is going
+to be a bit of a headache, so what Lorenz did was to create three 2D plots,
+each being a 'slice' through the three-dimensional whole (mathematicians call
+this a Poincare section, after the French mathematician Henri Poincare). The
+plots produced an image that looked like two connected whirlpools when plot-
+ted. Remembering that the object is in reality a 3D object, what we have is a
+path that winds itself around two regions of space, first drawing loops about
+one region, and then about another. One description I have heard used for it
+is 'the flight path of a drunken and indecisive bluebottle around two honey-
+pots' which sums it up quite nicely. Furthermore, the loops NEVER intersect!
+We have...wait for it...a STRANGE ATTRACTOR!
+
+
+The Lorenz Equations
+--------------------
+
+	To save space, I shall use the following notation:
+
+
+		dx	     dy		dz
+		-- = x'	     -- = y'	-- = z'
+		dt	     dt		dt
+
+
+instead of keep typing out all of those dx/dt's etc. This notation has a pre-
+cedent:Newton used an identical notation himself when devising the calculus.
+So, keeping the above notation in mind, the Lorenz Equations are:
+
+
+		x' = a(y-x)
+
+		y' = rx - y -xz
+
+		z' = xy + bz
+
+
+where a, b and r are constants. Now before plotting a phase space diagram, it
+is instructive to plot simple graphs of each of x, y and z against time, and
+compare the results when tiny changes are made in the initial conditions. The
+Lorenz Equations are VERY sensitive to tiny changes in the initial conditions
+and the graphs of x, y and z against time should show large differences after
+making said tiny changes in initial conditions.
+
+
+	Anyway, I digress. Let a phase space diagram be plotted in two dimen-
+sions. Any pair of variables from the three can be chosen, so three plots are
+possible: an x-y plot, a y-z plot and an x-z plot. It matters not which plot
+is chosen ultimately, as the result bears similar characteristics in each of
+the three cases. However, of more importance to the reader is some code for
+generating the curves for the plots, which now follows (but don't forget to
+read the notes afterwards!):
+
+
+* Again, some variables referenced off A6...
+
+X_SCALE		equ	25	;change these as needed
+Y_SCALE		equ	25
+
+X_ORIGIN	equ	160	;change for 640x256 screen
+Y_ORIGIN	equ	128
+
+
+		rsreset
+
+GrafBase	rs.l	1		;for graphics.library
+IEEEBase1	rs.l	1		;for mathieeedoubbas.library
+IEEEBase2	rs.l	1		;for mathieeedoubtrans.library
+
+RastPort	rs.l	1		;rastport of plotting window
+
+MySigMask	rs.l	1		;signal mask to look for
+
+* The following are 2-longword IEEE variables. Those marked (*) need
+* to be pre-computed.
+
+OldXValue	rs.l	2		;(*)
+OldYValue	rs.l	2		;(*)
+OldZValue	rs.l	2		;(*)
+
+NewXValue	rs.l	2
+NewYValue	rs.l	2
+NewZValue	rs.l	2
+
+AValue		rs.l	2		;(*)
+BValue		rs.l	2		;(*)
+RValue		rs.l	2		;(*)
+
+DValue		rs.l	2		;(*) set to something small!
+
+* The following are word-sized coordinate variables for the
+* graphics library
+
+ScreenX		rs.w	1
+ScreenY		rs.w	1
+
+
+* DoLorenz(a6)
+* a6 = ptr to main program variables as defined above
+
+* Generate the curves for the Lorenz Equations.
+
+* d0-d3/a0 corrupt
+
+
+DoLorenz	movem.l	OldXValue(a6),d0-d1	;first compute
+		movem.l	OldYValue(a6),d2-d3	;a(y-x)
+		CALLM1	IEEESub
+		movem.l	AValue(a6),d2-d3
+		CALLM1	IEEEMul
+		movem.l	DValue(a6),d2-d3	;g(x,y,z,t)*d
+		CALLM1	IEEEMul
+		movem.l	d0-d1,NewXValue(a6)	;save for now
+
+		movem.l	OldXValue(a6),d0-d1	;now compute
+		movem.l	RValue(a6),d2-d3	;rx - y -xz
+		CALLM1	IEEEMul
+		movem.l	OldYValue(a6),d2-d3
+		CALLM1	IEEESub
+		movem.l	d0-d1,-(sp)		;save rx-y
+		movem.l	OldXValue(a6),d0-d1
+		movem.l	OldZValue(a6),d2-d3	;compute xz
+		CALLM1	IEEEMul
+		move.l	d0,d2
+		move.l	d1,d3
+		movem.l	(sp)+,d0-d1
+		CALLM1	IEEESub			;all done
+		movem.l	DValue(a6),d2-d3	;again g(x,y,z,t)*d
+		CALLM1	IEEEMul
+		movem.l	d0-d1,NewYValue(a6)	;save it
+
+		movem.l	OldXValue(a6),d0-d1	;now compute xy + bz
+		movem.l	OldYValue(a6),d2-d3
+		CALLM1	IEEEMul
+		movem.l	d0-d1,-(sp)
+		movem.l	BValue(a6),d0-d1
+		movem.l	OldZValue(a6),d2-d3
+		CALLM1	IEEEMul
+		movem.l	(sp)+,d2-d3
+		CALLM1	IEEEMul
+		movem.l	DValue(a6),d2-d3	;again g(x,y,z,t)*d
+		CALLM1	IEEEMul
+		movem.l	d0-d1,NewZValue(a6)	;save it
+
+
+* Now use Old coordinates for plotting. This is an x-y plot. Change
+* the code for a different plot.
+
+
+		movem.l	OldXValue(a6),d0-d1
+		CALLM1	IEEEFix
+		move.w	d0,-(sp)
+		movem.l	OldYValue(a6),d0-d1
+		CALLM1	IEEEFix
+		move.w	d0,d1
+		move.w	(sp)+,d0
+		move.l	RastPort(a6),a0
+
+		mulu	#X_SCALE,d0		;scale coords for plotting
+		mulu	#Y_SCALE,d1
+
+		add.w	#X_ORIGIN,d0		;change origin for plotting
+		add.w	#Y_ORIGIN,d1
+
+		CALLGRAF	WritePixel
+
+
+* Now update the new coordinates
+
+
+		movem.l	OldXValue(a6),d0-d1
+		movem.l	NewXValue(a6),d2-d3
+		CALLM1	IEEEAdd
+		movem.l	d0-d1,OldXValue(a6)
+
+		movem.l	OldYValue(a6),d0-d1
+		movem.l	NewYValue(a6),d2-d3
+		CALLM1	IEEEAdd
+		movem.l	d0-d1,OldYValue(a6)
+
+		movem.l	OldZValue(a6),d0-d1
+		movem.l	NewZValue(a6),d2-d3
+		CALLM1	IEEEAdd
+		movem.l	d0-d1,OldZValue(a6)
+
+
+
+* Now check for signals from your IDCMP or Console MsgPort, and if
+* you get some, finish the routine else carry on...
+
+
+		moveq	#0,d0
+		moveq	#0,d1
+
+		CALLEXEC	SetSignals
+
+		move.l	d0,d1
+		and.l	MySignalSet(a6),d1	;IDCMP woken up etc?
+		beq	DoLorenz		;nope-continue
+
+
+* Here, I'll just exit the routine. You can do something more sophisticated
+* if you like...
+
+
+		rts
+
+
+Now, a few notes. In his original work, Lorenz used the values:
+
+
+		a = 10, b = 8/3, r = 28
+
+
+Now it turns out that for the given values of a and b, the system entered the
+chaotic regime if r exceeded approximately 24.74. Also, when phase space dia-
+grams are plotted using r>24.74 (try r=28 above) the diagrams are sensitive
+to the initial conditions (the initial chosen values of x, y and z). Try us-
+ing the values:
+
+
+			x = y = z = 1
+
+
+to start with, and then try changing one or more of these variables by tiny
+amounts. Watch the results!
+
+
+	Using values of r less than the critical value above, it is possible
+to discover values of a and b that lead to stable systems. Above this value,
+the chaotic regime returns. In both cases, the initial values of x, y and z
+can have a profound effect upon the result, but the results are FAR more in-
+teresting in the chaotic case. What appears on the display is a 2D slice (or
+more correctly, a Poincare Section) through a three-dimensional whole, within
+which it is possible to discern several key features. Principal among these
+is the non-intersection of the curves - they only appear to intersect after
+a time because the display becomes rather crowded. Magnifying the viewing re-
+gion (which sadly requires scaling the plotting coordinates accordingly AND
+replotting the curve from scratch-sorry!) shows ever finer detail, the diff-
+erent sections of the curve approaching ever closer to each other but never
+actually intersecting or touching each other. Furthermore, two different but
+closely adjacent points might not even lie on the same plot-they might lie
+on two different plots performed using two different sets of initial condi-
+tions! And to make matters worse, there is NO way of predicting in advance
+the final outcome...
+
+
+Other Differential Systems
+--------------------------
+
+	Having enjoyed plotting the Lorenz Equations, how about some other
+systems of equations (which can be treated in the same way)?
+
+
+	The Rossler Equations are (with typical starting values):
+
+
+		x' = -(y+x)		Initial conditions:
+
+		y' = ay + x		x = y = z = 1
+
+		z' = b + z(x-r)		a = b = 0.2, r = 8
+
+
+and if that isn't interesting enough (these equations generate the so-called
+Rossler Funnel when r is increased), then how about some equations that des-
+cribe a real-life system:the Forced Duffing Oscillator:
+
+
+		x' = y
+			    3
+		y' = -ay - x + b cos(ct)  (a, b, c constants)
+
+
+which describes how oscillating systems behave when forced (the forcing term
+is the b cos(ct) term) and have some bearing on the behaviour of the Tacoma
+Narrows Suspension Bridge...
+
+
+	Also, the Chillingworth-Holmes Equations describing the behaviour of
+the Earth's magnetic field (derived, surprise, surprise, from the Lorenz Eq-
+uations):
+
+
+		x' = a(y-x)
+
+		y' = zx - y
+
+		z' = b - xy -zr
+
+
+and which produce an image similar to the Lorenz Attractor when a yz plot is
+made. Then, there is the Van Der Pohl Oscillator (an electronic system):
+
+				2
+		x' = -ay + x(1-r )
+
+			       2
+		y' = ax + y(1-r ) + f
+
+
+Here, f is NOT a constant, but a forcing function of x, y and t. What func-
+tion is chosen is entirely at the programmer's discretion. Try using:
+
+
+		f(x,y,t) = b cos(ct)
+
+
+where c is a constant, as for the Duffing Equations.
+
+
+	And, finally, some doomsday strange attractors. First, the SIR model
+of disease epidemics:
+
+
+		S' = -rSI
+
+		I' = rSI -aR
+
+		R' = aI
+
+
+Here, S' = dS/dt etc., and S, I and R are all functions of t. S is the number
+of susceptible people in the population, I is the number of infectives (those
+who can carry the disease and spread it to others), and R is the number of
+people removed from the scenario (either dead, recovered & immune, in isola-
+tion hospitals or naturally immune). The constant r is the infection rate, &
+the constant a is the removal rate (rate at which people either die or reco-
+ver etc). There are more sophisticated models, but this illustrates the basic
+principles, and for some values of a and r exhibits chaotic behaviour. An im-
+portant question is this:does this model apply to HIV infection?
+
+
+	Should that be insufficiently depressing, how about an arms race? The
+following equations are a simple model of an arms race between two major pow-
+ers:
+
+
+		x' = k y - c x + g
+		      1     1	  1
+
+		y' = k x - c y + g
+		      2     2	  2
+
+
+In this model, the 'k' constants represent the perceived threat from the ad-
+versary (here, k1 is how country 1 perceives the threat from country 2), the
+'c' constants represent the fraction of Gross Domestic Product spent on arms
+in each country, and the 'g' constants represent the long-term grievance felt
+by each country against the other.
+
+
+	This model is incomplete:you are free to add, for example, terms to
+represent deterrence effects from possession of new weapons by one side or
+the other, and terms to indicate the willingness of the population to fight
+(in this case, negative values indicate varying degrees of pacifism, posi-
+tive values varying degrees of aggression, in order to fit with the rest of
+the equations).
+
+
+	What makes this model depressing for many is that it is all too easy
+to hit upon values that make this model blast off to the attractor at infin-
+ity. This attractor represents ever-escalating rearmament and eventual war. A
+set of parameters that produces a 'strange attractor' is far harder to find!
+
+
+	Well, that just about wraps up fractals via differential equations
+for now, other than to mention a better method of iterating them, with much
+improved accuracy, called the Runge-Kutta method. This method is covered in
+The Chaos Cookbook (see bibliography below) and includes BBC BASIC and Turbo
+Pascal listings containing the method. I won't bother doing it in assembler
+using mathieeedoubbas.library here (although I'm capable of doing it) because
+the above is enough for now!
+
+
+Bibliography
+------------
+
+	The following books are of major interest to coders wishing to in-
+vestigate feactals. Many include program listings (but sadly, either in BBC
+BASIC, Turbo Pascal or Pascal for the Apple Macintosh, which are of rather
+limited use to assembly language coders!) which illustrate the algorithms
+used.
+
+	The numbers in square brackets are my own rough guide to the level
+of the material covered. A [0] indicates a book for the complete novice, and
+a [10] indicates material for the already knowledgeable (or the brave!). This
+assumes that the reader has already digested the material in my previous ar-
+ticle, and has therefore gained some bare minimum of grounding from which to
+explore further. Even so, some of the books contain advanced material, most
+advanced of which being the definitive treatise by Mandelbrot below. Regard-
+less of this, however, I advise the reader to throw caution to the winds, and
+go forth and explore, even if the journey grinds to a shuddering halt at page
+7 of 'Form, Chance And Dimension'!
+
+
+	Also supplied are ISBN numbers where available, and prices for both
+hardback (HB) and paperpack (PB) editions where available. A word of warning:
+some of the hardback editions are MONSTROUSLY expensive! Incidentally, the
+book "Chaos:Making A New Science" is better known as the W.H.Smith fractal
+book, it having been on sale there for some time!
+
+
+The Chaos Cookbook							[2]
+By Joe Pritchard
+Publisher:Butterworth/Heinemann
+ISBN 0 7506 0304 6 £9.95 PB
+
+Dynamical Systems And Fractals						[5]
+By Karl-Heinz Becker and Manfred Dorfler
+Publisher:Cambridge University Press
+ISBN 0 521 36025 0 £7.95 PB
+
+Universality In Chaos							[10]
+Edited By P. Cvitanovic
+Publisher:Adam Hilger
+ISBN 0 85274 259 2 £49.50 HB
+ISBN 0 85274 260 6 £15.00 PB
+
+An Introduction To Chaotic Dynamical Systems				[8]
+By R. L Devaney
+Publisher:Addison-Wesley
+ISBN 0 201 13406 7 £38.95 HB
+
+The Armchair Universe:An Exploration Of Computer Worlds			[4]
+By A.K. Dewdney
+Publisher:W.H. Freeman
+ISBN ???
+
+Chaos:Making A New Science						[0]
+By Joseph Gleick
+Publisher:Sphere Books
+ISBN 0 7474 0413 5 £7.99 PB
+
+The Fractal Geometry Of Nature						[6]
+By Benoit Mandelbrot
+Publisher:W.H. Freeman
+ISBN 07167 1186 9 £39.95 HB
+
+Fractals:Form, Chance And Dimension					[10]
+By Benoit Mandelbrot
+Publisher:
+ISBN ???
+
+Computers, Pattern, Chaos & Beauty:Graphics From An Unseen World	[4]
+By C.A. Pickover
+Publisher:Alan Sutton
+ISBN 0 86299 792 5 £24.00 HB
+
+Does God Play Dice? The Mathematics Of Chaos				[10]
+By I. Stewart
+Publisher:Penguin
+ISBN 0 14 012501 9 £6.99 PB
+
+Godel, Escher, Bach:An Eternal Golden Braid				[0]
+By Douglas R. Hofstadter
+Publisher:
+ISBN 0 85527 757 2 £50.00 HB
+ISBN 0 14 005579 7 £14.99 PB
+
+Metamagical Themas							[0]
+By Douglas R. Hofstadter
+Publisher:
+ISBN 0 14 008534 3 £14.99 PB
+
+A Random Walk Through Fractal Dimensions				[4]
+By B.H. Kaye
+Publisher:VCH
+ISBN 3 527 27876 1 £27.00 PB
+
+
+
+
+

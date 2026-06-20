@@ -1,0 +1,177 @@
+***************************************************************************
+            C O L O R S   3 9 . X   D O C U M E N T A T I O N
+***************************************************************************
+
+REQUIRES:  Workbench 3.0+, mouse, ability to see color, I.Q. > 10
+
+THE EASIEST WAY to learn this program is TO JUST RUN IT!!!  It is so easy.
+These docs are only for piece of mind, they will probably be totally useless
+to you.
+
+Add a hotkey to this program with FKey, and it will allow you to edit the
+colors of any screen by pressing a button.
+
+-------------------------------------------------------------------------
+
+Colors 39 is simply a palette editor; a replacement for the "Colors" tool
+that comes with your computer.  It has a few more features, however.
+
+* Access a potential of one million colors (with AGA chips)
+
+* Uses new graphics.library v39 colormaps (Kickstart 3) 
+
+* Faster, smaller, 100% assembly language
+
+* Hue/Saturation/Intensity and Cyan/Magenta/Yellow mixing in addition to
+  Red/Green/Blue (now uses colorwheel.gadget for conversions)
+
+* Copy and exchange colors easily
+
+* Spread from one color to another smoothly and easily
+
+* Undo feature (a must have!!)
+
+In addition to these features, Colors still has the same features it has
+always:  It will open its palette editor on the front screen, and allow you
+to edit the colors of that screen.
+
+-------------------------------------------------------------------------
+
+INSTRUCTIONS
+
+How to use......
+
+Palette:
+
+Click on the color you wish to edit.  (be sure to write this down :-)
+
+
+Percent Sliders:
+
+There are 3 percentage sliders that specify the percent of each component.
+In RGB mode, for example, 100% red, 0% green, and 50% blue is a bright pink.
+I feel percentages are less cryptic for users than hexadecimal or decimal
+powers of two.  50% red is 50% red no matter whether red has 16 possible
+values, 64 possible values, or 256 possible values.  This is an easier way to
+learn color mixing than "9 red, 9 green, 4 blue" (which is an UGLY color by
+the way).  The latest version allows you to type in numbers into integer gadgets.
+
+In HSI mode the top slider (HUE) is in degrees (0-360) around a colorwheel.
+0 = Red, 120 = Green, 240 = Blue, 360 = Red again, like a circle.
+
+
+Button Gadgets:
+
+OK:  Select when you are done and colors are OK.
+CANCEL:  Select if your colors are barfy and you give up trying to make
+them look better.  Will set them back to where you started and quit.
+UNDO:  Select to undo the color you are editing.  This will also undo swaps,
+copies, and spreads.
+RESET:  Reset to palette effective when program was loaded.  Note that CANCEL
+is the same as hitting RESET and then OK.
+
+
+Color Mode:
+
+RGB:  Additive colors - Components are Red, Green, and Blue.
+CMY:  Subtractive colors - Components are Cyan, Magenta, and Yellow
+      This is sort of like printing ink, but there is no black component.
+HSI:  Hue, Saturation, and Intensity.
+      Hue is the color you want (RED, YELLOW, PURPLE).
+      Saturation is how "pure" that color is.  Low saturation has less color
+        (greys, pastels) and High saturation is purer color.
+      Brightness is how bright the color is.  Experiment with HSB, it is the
+        easiest mode to learn.
+
+Edit Mode:
+
+EDIT:  Edit current color.
+COPY:  Will copy the current color to a new location.  Hold SHIFT
+       to select a new color to copy from without copying to it.
+EXCHANGE:  Swap two colors.  Hold SHIFT to select a new color without
+           exchanging it.
+SPREAD:  Spread from one color to another.  Hold SHIFT when selecting a new
+         color if you want a new starting point but don't want to spread to it.
+
+PLEASE SEND ME COMMENTS about this interface, I've had ideas to change it
+but want input from you (I have to change it to add my new features)
+
+----------------------------------------------------------------------------
+
+** Note: this program (and docs) were actually written before AGA came out
+with pre-release Kickstart 3.0.  Please excuse any future tense that I have
+not changed in the docs, like "when newer graphics chips are released" etc.
+
+Colors actually was developed on an A3000 with ECS, but has been tested on
+AGA (a year after it was written).  AGA people like this program, so I'm
+giving it to you.
+
+FUTURE ENHANCEMENTS:
+
+* Global changes: the ability to adjust RGB/Contrast/Brightness of all colors
+  at once, perhaps only selected colors (though this would require either a
+  custom palette gadget or an improvemeny to gadtools.library)
+
+* Load/save ILBM CMAP, to allow storage of palettes, use of Colors 39 as a
+  replacement Palette Prefs editor, and import of IFF pictures' colors.
+
+* Ability to deactivate certain features to allow a smaller window, as well
+  as optional additional features,
+
+* Menus with additional features.
+
+* Color presets, to allow quickly setting a color to black or red, possibly
+  defined.  Each color may have a name, and colors could be accessed from
+  a listview rather than sliders if desired.
+
+----------------------------------------------------------------------------
+
+* 030's rule!                                      7/17/92 1:09 PST (WA)
+
+Till later ----
+            /-
+          ----  Ian Einman  -/-  Master of Machine Language
+
+
+
+
+----------------------------------------------------------------------------
+
+Copyright Info:
+
+FREE to copy but...
+
+I "retain" copyright privileges over this program in the following manner:
+If this program is altered (my name removed, etc.) in any way I will get mad
+and pursue you with packs of lawyers but as long as only the executable code
+is distributed AS IS....
+
+You may give it around.  You may even include it in commercial packages as you
+see fit, no licence fee, although you may send me a modest contribution ($15?)
+and I will give you the latest version, even with your company/product name
+in the screen title bar:
+
+"MegaBase v1.2 ©1994 Hard Software - Color Editor 39.14"
+
+REGISTRATION????
+
+Nah.  Just use this program.  If you want "service" send me money... or programs
+you have written.  Register me for one of your nifty programs and I'll send you
+a bunch of junk.  Also, if your from a different country, send me cool stamps,
+currency, postcards, unrecognizable objects inscribed with languages I do not
+understand etc. and I will be impressed and send you junk.
+
+Have comments?  SASE envelopes will get some sort of half-cracked reply if
+you write to me in English.  You can write to me in another language if you
+want, I will drink beer then I will understand.  My answers may seem incoherent.
+
+Anyone who sends any money will always get the latest versions of my programs.
+Send me lots of money and I will send you programs, and even updates later.
+Send me even more money and I will heal you......
+
+Ian J. Einman
+P.O. Box 5711
+Bellingham, WA 98227
+U.S.A.
+
+AAAAAAAAAAAAAAAAAAAAAAAAAAAHHHH! AAAAAAAMIGAHHHHHHHHHHHHHHH!

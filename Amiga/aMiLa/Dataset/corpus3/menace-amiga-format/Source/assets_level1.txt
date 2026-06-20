@@ -1,0 +1,8 @@
+0,C,spice.mod
+1,C,panel
+2,C,guardian
+3,C,jester_-_1990_does_it_matter.mod
+4,C,ALIENS
+5,C,foregrounds
+6,F,map
+

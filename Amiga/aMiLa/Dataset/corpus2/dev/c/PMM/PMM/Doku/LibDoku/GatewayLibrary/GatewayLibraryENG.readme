@@ -1,0 +1,621 @@
+Sorry, a full english version of the guide not exists.
+My english isn't good enough to create a guide or doc.
+
+But I will do this shot readme to give a litte help and hope
+you understand it:
+
+At first, a lot of backgroundinformation's are in the german document.
+A typical copyright with full permission to use. The archive must been
+original if you give the archive to another person. Commercial use is
+forbidden.
+And, a very importand information: Gateway-5 is a BBS-Programm, based
+on Gateway-IV and so on. The first program only called Gateway. For over
+10 Years! Now, the owner of the Amiga call Gateway, too. But, my program
+and "Gateway 2000" have only the same name, not more!
+
+
+The functions in this library are created in the last 10 years. For
+different programs and differnt usage. So the names of the variables
+are very differnt.
+All functions are everytime backward compatible. And so the one or
+another is not perfect or locks very fine. But, all functions work
+correct and the functions that use they often long time not changed.
+The program was written on Aztec-C in the past and as I changed the old
+compiler to vbcc there are not all functions available. Functions that
+be used in gateway or gateway-tools an missed on vbcc are rebuild and
+all that functions includes in this library. Only the functions that
+use directly DOS-functions are in an external link-library (like unlink).
+
+
+The library.functions:
+__________________________________________________________________________
+
+ULONG GateRequest(UBYTE *title_d1,UBYTE *body,UBYTE *gadgets);
+
+Testfunction, work the library? Link to EasyRequest.
+
+in:
+---
+UBYTE *title_d1  - headline requester
+UBYTE *body      - body of requester
+UBYTE *gadgets   - text for gadgets
+
+
+back:
+-----
+ULONG            - the gadgetnumber
+
+__________________________________________________________________________
+
+char *ltofa(char *tx_d1,ULONG l);
+
+(Long TO formatted ascii)
+
+Function to format a ULONG like this:
+
+1234567890 => '1.234.567.890'
+482        => '          482'
+48526      => '       48.526'
+
+
+in:
+---
+char  *tx_d1      - pointer to string (min. 14 chars)
+ULONG  l          - the ulong to format
+
+
+back:
+-----
+char  *           - pointer to tx_d1
+
+__________________________________________________________________________
+
+void trim(UBYTE *trptr);
+
+strip all blank's left and right on the string.
+
+in:
+---
+UBYTE  *trtpr     - string to be cleared
+
+
+back:
+-----
+N/A
+
+__________________________________________________________________________
+
+void trim_cr(UBYTE *trptr);
+
+strip all blank's, CTRL-n, CR and LF left and right on the string.
+
+in:
+---
+UBYTE  *trtpr     - string to be cleared
+
+
+back:
+-----
+N/A
+
+__________________________________________________________________________
+
+void rtrim(UBYTE *trptr);" @{uu}@{LINDENT 6}
+
+same as trim, but clear only the right side of the string.
+
+in:
+---
+UBYTE  *trtpr     - Pointer auf den String der bereinigt wird. Nach dem Funktionsaufruf ist der String bereinigt.
+
+
+back:
+-----
+N/A
+
+__________________________________________________________________________
+
+void lset(UBYTE *lbuff, long slen);
+
+format a string to slen-chars.
+if the string is smaller: fill at left side with spaces.
+if the string is greater: cut right side
+
+in:
+---
+UBYTE  *lbuff    - pointer to string
+long    slen     - len the string have on return
+
+
+back:
+-----
+N/A
+
+__________________________________________________________________________
+
+void lsetmin(UBYTE *lbuff, long slen);
+
+same as lset, but fill only the string, don't cut!
+
+in:
+---
+UBYTE  *lbuff    - pointer to string
+long    slen     - minimal len of string
+
+
+back:
+-----
+N/A
+
+__________________________________________________________________________
+
+void string(UBYTE *spstr, long num, long ch);
+
+fill string *spstr with character ch at a len of num bytes.
+
+in:
+---
+UBYTE  *spstr    - pointer of string to be filled
+long    num      - len of string to be filled
+long    ch       - the character that will be used to fill
+
+
+back:
+-----
+N/A
+
+__________________________________________________________________________
+
+long instr(UBYTE *sa, UBYTE *sb);
+
+search sb in sa and give back the position where sb found in sa.
+The position is 0 upto strlen(sa)-strlen(sb).
+-1 if not found.
+The case of the chars is not relevant (both strings will test uppercase or
+lowercase). The function do that for german chars, also ä, ö and ü will
+same as Ä, Ö and Ü.
+
+in:
+---
+UBYTE  *sa       - big string to search on
+UBYTE  *sb       - the searched string
+
+
+back:
+-----
+long             - positionwhre sb found or -1 if not
+
+__________________________________________________________________________
+
+long instr_pat(UBYTE *sa, UBYTE *sb);
+
+same as instr but also pattern matching. * for any string and ? for any
+character.
+
+in:
+---
+UBYTE  *sa       - big string to search on
+UBYTE  *sb       - the searched string
+
+
+back:
+-----
+long             - positionwhre sb found or -1 if not
+
+__________________________________________________________________________
+
+void upstr(UBYTE *trptr);
+
+make string uppercase including ä -> Ä, ö -> Ö and ü -> Ü
+
+in:
+---
+UBYTE  *trptr   - pointer to string
+
+
+back:
+-----
+N/A
+
+__________________________________________________________________________
+
+void lowstr(UBYTE *trptr);
+
+make string lowercase including Ä -> ä, Ö -> ö and Ü -> ü
+
+in:
+---
+UBYTE  *trptr   - pointer to string
+
+back:
+-----
+N/A
+
+__________________________________________________________________________
+
+void set(UBYTE *lbuff, long slen);
+
+string will be return with len = slen.
+if the string is longer than slen, it will be cut
+if the string is to short blanks will be add at the end of string
+
+
+in:
+---
+UBYTE  *lbuff   - pointer to string
+long    slen    - len for the string when returns
+
+
+back:
+-----
+N/A
+
+__________________________________________________________________________
+
+void midstr(UBYTE *mstr, long pos, long laenge);
+
+cut a part (substring) from the string.
+pos is the beginning position ( 0-(strlen-1) ) and laenge means how many
+bytes will be cut. laenge=-1 means, from pos to end of string.
+
+
+in:
+---
+UBYTE  *mstr    - pointer of string
+long    pos     - begin of substring
+long    laenge  - len for the substring or -1
+
+
+back:
+-----
+N/A
+__________________________________________________________________________
+
+ULONG date_to_day(ULONG date);
+
+Give the day in the year (1-365) for 'date'.
+This function isn't exact, it will only +/- 2 day's near the right,
+because it is only used for a cruncherfunction in the bbs-system that
+killed to old things.
+
+
+
+in:
+---
+ULONG date      - Date as ULONG in format ttmmjjjj
+
+
+back:
+-----
+ULONG           - day in year (1-365 +/-2 days)
+
+__________________________________________________________________________
+
+ULONG date_to_zahl(UBYTE *da);
+
+Date from string to ULONG.
+Stringformat = TT.MM.JJJJ
+ULONG        = TTMMJJJJ
+
+
+in:
+---
+UBYTE *da       - Date in format tt.mm.jjjj (the points can be any char)
+                  example: tt-mm-jjjj is also correct
+
+
+back:
+-----
+ULONG           - Date as ULONG=ttmmjjjj
+
+__________________________________________________________________________
+
+ULONG time_to_zahl(UBYTE *ti);
+
+Time from string to ULONG
+A time in form SS:mm:ss will be returned as ULONG.
+The returned time can betwen 1 and 6 digits
+00:00:07 = one, 10:10:05 = six
+
+
+in:
+---
+UBYTE  *ti      - Time in SS:mm:ss (: can by any char)
+                  example: SS/mm/ss is also correct
+
+
+back:
+-----
+ULONG           - time as ULONG=SSmmss
+
+__________________________________________________________________________
+
+void kill_ansi(UBYTE *buffer);
+
+delete most ansi-sequences from a string. Because this finction only need
+to delete cursor-functions and colors it search a character as end for a
+ansi-sequence. ansi-codes that end with special-characters are cut to
+many chars.
+
+
+in:
+---
+UBYTE  *buffer  - pointer of string
+
+
+back:
+-----
+N/A
+
+@ENDNODE
+
+@NODE "newer" "newer"
+@{LINDENT 3}
+BOOL newer(UBYTE *d1, UBYTE *t1, UBYTE *d2, UBYTE *t2);
+
+Is date d1 and time t1 NEWER than date d2 and time t2
+
+
+in:
+---
+UBYTE  *d1     - 1. date in format tt.mm.jjjj
+UBYTE  *t1     - 1. time in format SS:mm:ss
+UBYTE  *d2     - 2. date in format tt.mm.jjjj
+UBYTE  *t2     - 2. time in format SS:mm:ss
+
+
+back:
+-----
+BOOL           - TRUE if the first set is newer as the second
+
+__________________________________________________________________________
+
+void swapmem(char *src, char *dst, long n);
+
+swap a memoryblock of n bytes.
+
+
+in:
+---
+char   *src    - pointer to first memoryblock.
+char   *dst    - pointer to second memoryblock.
+long    n      - how many bytes to be swapped
+
+
+back:
+-----
+N/A
+
+__________________________________________________________________________
+
+long memncmp(char *a, char *b, long length);
+
+Compare to memoryblock's of n bytes
+
+
+in:
+---
+char   *a      - pointer auf 1. memoryblock
+char   *b      - pointer auf 2. momoryblock
+long    lenght - how many bytes to be compare
+
+
+back:
+-----
+long           -  0 if equal
+                  1 if a > b
+                 -1 if a < b
+
+__________________________________________________________________________
+
+long StrCaseCmp(char *s1, char *s2);
+
+Compare two strings (both as lower or upper). But german characters NOT
+convert, also ä not equal Ä.
+
+
+in:
+---
+char   *s1     - pointer of 1. string
+char   *s2     - pointer of 2. String.
+
+
+back:
+-----
+long           -  0 if equal
+                  1 if not equal
+__________________________________________________________________________
+
+void trim_includes(UBYTE *trptr);
+
+see trim.
+this is a special-version that delete all what not be a part of a filename
+at begin and end of the string.
+pmm use this to isolate the includepath- and filename
+
+
+in:
+---
+UBYTE  *trtpr     - pointer of string
+
+
+back:
+-----
+N/A
+
+__________________________________________________________________________
+
+void trim_includes(UBYTE *trptr, long fkt);
+
+see trim.
+this specail-version delete all, what not be part of an emailadress
+
+
+in:
+---
+UBYTE  *trtpr     - pointer of string
+long    fkt       - 1, if < and > will deleted
+                    0, if < and > not deleted
+
+back:
+----
+N/A
+
+__________________________________________________________________________
+
+void newstr(UBYTE *istr, UBYE *nstr, long pos, long len);
+
+
+that is the point who my english will be a problem. anyway:
+a part of istr will be cut. the same place will be filled with nstr.
+the len of nstr can be smaller, equal or greater than the part that
+will cut.
+the part to cut begin at 'pos' and has 'len' bytes.
+
+The name istr come from the function that first use this function.
+It was the interpreter in the bbs-software.
+
+
+
+
+in:
+---
+UBYTE  *istr      - pointer of string that will be changed
+UBYTE  *nstr      - pointer of new substring ("" will only cut)
+long    pos       - position to begin change
+long	len       - how many bytes changed (0 will only insert nstr)
+
+
+
+back:
+-----
+N/A
+
+__________________________________________________________________________
+
+longwordwrp(UBYTE *line, UBYTE *rest, long len);
+
+edit-sub-function
+
+if line len or more bytes the function look for a blank in line[len] to
+line[len-20]. If a blank found, line will be cut at the blank an the
+right part is put to rest. If line shorter than len or not blank is
+found nothing happend with line and rest is return as char zero.
+
+
+in:
+---
+UBYTE  *line      - string to check
+UBYTE  *rest      - if line cut the cutted-part is returned here. Else a
+                    char zero.
+long    len       - maximum len of line
+
+
+back:
+-----
+long              - 0 = if nothing done
+                    1 = if cut and rest is filled
+__________________________________________________________________________
+
+void fn_splitt(char *src, char *drive, char *path, char *name, char *ext);
+
+Spliting the string src (a filename with full path) in the parts
+drive
+path
+filename (without extension)
+extension of filename
+All parts that not exits will be returned als char zero.
+
+
+
+in:
+---
+char   *src       - pointer of source-string
+char   *drive     - back drive
+char   *path      - back path
+char   *name      - back filename
+char   *ext       - back extension of filename
+
+
+back:
+-----
+char   *          - pointer to src
+
+__________________________________________________________________________
+
+void fn_build(char *dst, char *drive, char *path, char *name, char *ext);
+
+cat all part's to a filename with full path.
+
+drive must be end with :
+path can be end with or wthout /, if not, it will inserted
+name
+extension (beginning with a point, if not, it will be inserted.
+
+If any part is empty, it will skip. If path empty no / inserted and if
+extension empty no point inserted.
+
+
+in:
+---
+char   *dst       - the completed filename
+char   *drive     - drive:
+char   *path      - path[/]
+char   *name      - filename
+char   *ext       - [.]extension
+
+
+back:
+-----
+char   *          - pointer to dst
+
+__________________________________________________________________________
+
+void addval(UBYTE *str, ULONG n);
+
+add the ULONG n to str (formatted 10 digits, left side filled with blank
+
+
+in:
+---
+char   *addval    - string (10 bytes), numeric chars
+                    formatstring is %10lu
+ULONG   n         - value that add to the value in the string.
+
+
+back:
+-----
+N/A
+
+__________________________________________________________________________
+
+char *strdup(char *s);
+
+return a duplicate of string s
+
+
+in:
+---
+char   *s         - pointer to string
+
+
+Rückgabe:
+---------
+char   *          - pointer of the copy from s
+
+__________________________________________________________________________
+
+char *index(const char *str, long c);
+
+search the first char that is identical to char c
+
+
+in:
+---
+const char *s     - pointer of searchable string
+long        c     - ascii-vaalue of char that will be searched
+
+back:
+-----
+char   *          - pointer to position of c, if not found 0 returned
+

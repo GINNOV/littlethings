@@ -1,0 +1,50 @@
+Short: R250 Random number library V1.0 & source
+Uploader: agmsmith@achilles.net
+Author: agmsmith@bix.com
+Type: dev/asm
+Requires: AmigaDOS 2.00 (V36) or later.
+Version: 1.0
+
+This is an implementation of the R250 pseudo-random number generator as
+an Amiga library file, random250.library.  The generator is known for
+it's good repetition length (10E75 numbers before it repeats) and fast
+number generation speed (4 instructions for each number including the
+loop overhead).  This version can return either one 32 bit number or
+fill an array with any number of 32 bit random numbers.
+
+The assembler source code is included.  Examples of using it in GNU C
+and M2Sprint Modula-2 are also included.  You can easily add it to other
+languages just like you add other Amiga libraries.  The two functions it
+exports are:
+
+unsigned long GenerateRandomNumber (void)
+     D0
+/* Returns a random number in register D0.  Follows the usual rules of
+   registers a0,a1,d0,d1 being changed while the rest are preserved,
+   assumes a6 points to the library base you got from calling
+   OpenLibrary ("random250.library", 0).  The library offset for this
+   function is -30 (decimal). */
+
+
+void GenerateRandomArray (unsigned long N, unsigned long *Array)
+                                 D0                A0
+/* Fills the given array with N random numbers, each taking 4 bytes,
+   so it fills 4*N bytes.  N in D0, array start address in A0.
+   Library offset -36. */
+
+Because it is in a library, it handles initialisation automatically
+(using the current date and time, state of the Exec variables and some
+other stuff to seed the generator) when opened.  It has semaphores
+guarding its global seed variable so that multiple programs can use it
+simultaneously.  Unfortunately, this means that there is a lot of
+overhead for getting just one random number.  Instead of calling it for
+each number, you should use the function that fills an array with random
+numbers.
+
+Random250.library is released to the public domain.  That means you can
+hack it up.  Or just strip out the code and include it in your own
+program directly for extra speed.  That also means I'm not responsible
+for it running amuck.  But if you do find bugs, please let me know
+because I'm using it for certain other things (like skip lists).
+
+- Alex

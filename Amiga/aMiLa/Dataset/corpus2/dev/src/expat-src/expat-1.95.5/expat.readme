@@ -1,0 +1,48 @@
+Short: Shared library to parse XML
+Uploader: James S.Perrin <james.perrin@ntlworld.com>
+Author: James S.Perrin <james.perrin@ntlworld.com>
+Type: util/libs
+Requires: m68020+
+Version: 1.2 (1.95.5)
+
+Expat is a shared library which is based on the opensource project
+http://expat.sourceforge.net and is used to parse XML (eXetendable
+Markup Language) documents. XML is the basis of the majority of the
+new web technologies being developed by the World Wide Web Consortium
+but is also used in business for easy document/data exchange. Since
+XML is a can be easily parsed it makes an ideal format for process
+communication and configuration/preferance files for applications.
+The library itself does NOT require ixemul but some of the examples
+may.
+
+There are three related archives:
+
+util/lib/expat-usr.lha - just the shared library 
+dev/c/expat-dev.lha - the library, the header files docs and examples
+dev/src/exapt-src.lha - all that's in expat-dev.lha plus the
+                        modifed source files and test suite
+
+The original source is quite mature now, is used in many projects and
+is the XML parser used in the Mozilla browser. For more information on
+XML look at http://www.xml.com and http://www.w3.org .
+
+As of version 1.1 (1.95.3/4) expat comes with a rudimentary test suite.
+This is included in the src archive. See the README's in tests/.
+
+This is my first attempt at creating a shared library and in most part
+used CLib37x.lha by Andreas R. Kleinert.
+
+History
+1.0  - first release based on expat 1.95.2 src
+1.0b - xmlwf documentation added to -dev -src
+     - added missing config.h to -src
+1.0c - fixed example/elements.c -dev -src, I must remember to test everything!
+1.1  - updated base to expat 1.95.4. No 1.95.3? Well they was a major bug
+       in it and 1.95.4 was out two weeks later
+     - reorganised makefiles
+     - compiled for m68020+
+1.2  - updated base to 1.95.5
+      - library version as tested by exec wasn't set correctly (was 37.32)
+        this release is 12.0 since there are API additions being made to point
+        releases upstream
+      - removed extraneous win32 files from -src

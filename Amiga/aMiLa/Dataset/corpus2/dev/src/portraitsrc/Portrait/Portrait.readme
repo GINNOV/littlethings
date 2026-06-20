@@ -1,0 +1,54 @@
+THIS 'README' IS OUT OF DATE. NO INFORMATION IN THIS 'README' FILE
+MAY BE TAKEN AS CORRECT. IS IT FOR EXAMPLE PURPOSES ONLY AND DOES
+NOT FORM ANY PART OF THE DOCUMENTATION FOR THIS PROGRAM OR ITS SOURCES.
+
+Aminet readme follows:
+
+Short: 24-bit paint package
+Type: pix/edit
+Uploader: EvieBarker@aol.com
+Author: Christopher January (See guide for mail)
+                            ^Please do not send me mail
+                             without reading the guide first^
+
+NOTE: The E-mail address has changed, please read the guide.
+      If you sent a mail to the previous address and did not
+      receive a reply, try again with this new address.
+
+Work-in-progress of a 24 bit paint package.
+
+Requirements:
+030+ recommended (but not required)
+Lots of memory (virtual memory is implemented, but very slow)
+AGA? (I haven't tested Portrait with a graphics card yet - but will do soon)
+
+Bug fixes:
+
+Fixed a bug on "Initialising..." (BltClear() was passed the wrong length)
+Since when has temprp:=AllocVec(MEMF_CLEAR,0) made sense?
+Preferences didn't set CF_USEVMEM as well as CF_FORCEVMEM, hence whenver
+"Always use VMEM" was selected, the program bombed out when allocating
+the 24-bit buffer.
+After allocating VMEM on the initial creation of the canvas, the file
+handle was set to NIL, hence Portrait crashed when it tried to clear
+the canvas.
+
+New in this version:
+
+Extended VMEM support. You can now save work buffers held in virtual memory.
+Now uses guigfx.library for rendering (supports improved zoom handling,
+dithering, etc.)
+Various other misc. changes
+24-bit buffer is now ARGB instead of RGB.
+Changes to work buffer file format. (The format WILL change in the future.)
+New Datatype for Portrait work buffer files. (In the absence of
+                                              external savers/loaders -
+                                              coming soon)
+JPEG loader (will turn into an external loader+saver in future versions.)
+
+Sorry, I haven't had time to update Portrait for quite a while, so I'm
+looking for anyone who would be willing to help with development.
+
+Mail me if you want to be involved with development (or if you wish to do a
+non-English locale for Portrait).
+(Please see guide for E-mail address, and notes.)

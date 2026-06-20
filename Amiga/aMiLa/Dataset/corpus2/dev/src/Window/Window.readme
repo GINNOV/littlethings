@@ -1,0 +1,89 @@
+Short:    Attach CON: to existing window on Kickstart 1.x
+Author:   Tim King and Andy Finkel of Commodore-Amiga Inc.
+Source:   Fish disk 38 (originally posted to net.micro.amiga)
+Uploader: markk@clara.co.uk
+Type:     dev/src
+
+C and assembly language source code to "attach" a CON: handler to an existing
+window, possibly on a custom screen. This technique only works under Kickstart
+1.x. Metacomco's ABasiC, supplied with version 1.0 of the Amiga OS, uses the
+same code.
+
+Despite having released this example and ABasiC using it, Commodore removed
+support for this technique in Kickstart 2.0 (V36). Under V36 and later there
+is a new way to achieve the same result: Open("CON://///WINDOW0xwindaddr")
+where windaddr is the address of your Window structure in ASCII hexadecimal.
+RAW: can be used instead of CON:.
+
+It is quite simple to conditionally use the old or new method if your program
+needs to run on any Kickstart version. My patch to ABasiC allowing it to work
+on later Kickstarts does that (see dev/basic/ABasiC_patch.lha on Aminet).
+Conditional example code can be found in the second edition of The Amiga Guru
+Book by Ralph Babel.
+
+
+This archive contains a fixed window executable. It seems the original one on
+Fish disk 38 was broken, perhaps due to a linker bug? Thanks to Toni Wilen for
+pointing that out. For completeness the original broken executable is still
+present, named window_orig_broken.
+
+The fixed executable is confirmed to work under Kickstart 1.3. It executes the
+Format command to format the disk in DF1:. If you don't have a second floppy
+drive you may see the custom screen and window open then immediately close.
+
+
+-- Mark
+
+
+Excerpted from the POSTER file in the archive:
+---
+Article 5072 of net.micro.amiga:
+From: andy@cbmvax.cbm.UUCP (Andy Finkel)
+Newsgroups: net.micro.amiga
+Subject: Creating a DOS Window in a Custom Screen
+Message-ID: <901@cbmvax.cbmvax.cbm.UUCP>
+Date: 15 Oct 86 17:04:17 GMT
+Organization: Commodore Technology, West Chester, PA
+
+Tricks with AmigaDOS, part II.
+
+As you may recall, part one was all about finding the window pointer and
+console.device IO Request Block from a DOS window.  Part II is about how
+to go the other way: make an Intuition window into a DOS window.  
+
+Specifically, this is used to get a DOS window to open in a custom
+screen. There are reasons why this is something you might want to do...
+like, oh, using the Execute command to initialize a new disk in a program
+that doesn't use the Workbench screen.
+
+We all knew it was possible...remember the first ABasic ? (by MetaCompCo)
+
+
+For those of you writing shells...under V1.2 the ability to switch a
+window in or out of RAW mode via an AmigaDOS packet can be used to
+good advantage when combined with this.
+
+
+There are 3 files:  window.c which contains most of the program, console.asm
+which contains the assembler interface calls to the BCPL routines of 
+AmigaDOS, and window.i, the include file I use when I am doing tricks
+like this.
+
+Break up the file into its component parts, compile, assemble, and link.
+
+Two warning...under the pressure of 1.2 I've only compiled it under the
+Greenhills C cross compiler running on the Sun...so some slight changes
+may be needed for other compilers.  I'm only linking with the amiga.lib 
+on this one.
+
+The other warning...to finish this quickly (as some people need it now)
+I used 3 of the BCPL global routines.  (Sorry).  Actually, I
+only had to use 2 (finddevice and loaddevice) but as long as I
+was doing it, I went ahead and used the DOS sendpacket).  Assembler versions
+of those functions are possible (I think, sigh).
+
+Anyway, another completed chapter in the mysteries of AmigaDos.
+
+				andy finkel
+				Commodore-Amiga
+---

@@ -1,0 +1,50 @@
+;		 0123456789012345678901234567890123456789
+Menustrt dc.l	-1
+	dc.b	'                                        '
+	dc.l	0
+MenuS	
+	dc.b	'     ALLIANCE  PROUDLY PRESENTS         '
+	dc.l	0
+	dc.b	'    VOLUME 3 OF THE ABACUS BOOKS        '
+	dc.l	0
+	dc.b	'                                        '
+	dc.l	0
+	dc.b	'             CREDITS                    '
+	dc.l	credits
+	dc.b	'                                        '
+	dc.l	0
+	dc.b	'        CHAPTER 1: INTRODUCTION         '
+	dc.l	0
+	dc.b	'           WHAT IS ASSEMBLY ?           '
+	dc.l	Whatis
+	dc.b	'          WHY LEARN ASSEBLER ?          '
+	dc.l	Whylearn
+	dc.b	'              FIRST STERPS              '
+	dc.l	First
+	dc.b	'                                        '
+	dc.l	0
+	dc.b	'         CHAPTER 2: THE 68000           '
+	dc.l	0
+	dc.b	'      THE 68000 INSTRUCTION SET         '
+	dc.l	iset
+	dc.b	'           HOW THE OS WORKS             '
+	dc.l	os
+MenuE	dc.b	'        THE HARDWARE REGISTERS          '
+	dc.l	hardware
+	dc.b	'       INTERFACING THE HARDWARE         '
+	dc.l	inter
+	dc.b	'                                        '
+	dc.l	0
+	dc.b	'          CHAPTER 3: INTUITION          '
+	dc.l	0
+	dc.b	'           SETTING-UP SCREENS           '
+	dc.l	setS
+	dc.b	'           SETTING-UP WINDOWS           '
+	dc.l	SetW
+	dc.b	'             CUSTOM SCREENS             '
+	dc.l	cs
+	dc.b	'             CUSTOM WINDOWS             '
+	dc.l	cw
+	dc.b	'                                        '
+	dc.l	0
+menuend	dc.l	-1

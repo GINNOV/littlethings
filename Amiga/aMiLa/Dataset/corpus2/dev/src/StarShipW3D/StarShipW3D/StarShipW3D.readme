@@ -1,0 +1,46 @@
+Short: Draw a textured 3D starship with 900 lines of code
+Author: thellier@free.fr (Alain Thellier) 
+Uploader: thellier@free.fr 
+Type: dev/src 
+Version: 1 
+Requires: Warp3D or Wazp3D library,68020-40+881
+Architecture: m68k-amigaos >= 3.0.0; 
+http://aminet.net/package/dev/src/StarShipW3D   
+
+DESCRIPTION 
+Draw a textured 3D starship with 900 lines of code
+Compiled with GCC. Use Warp3D library (needed)
+If Warp3D was too difficult for you this example will change your mind 
+French: Trace un vaiseau spatial en 3D texturee en 900 lignes de code
+Compile avec GCC. Bibliotheque Warp3D necessaire
+Si Warp3D etait trop complique pour toi Tu changera d'avis avec cet exemple
+
+LICENSE 
+GNU General Public License (GNU GPL) 
+Author: Alain THELLIER - Paris - FRANCE - 2010
+
+INSTALLATION 
+Install Warp3D or Wazp3D library
+copy StarShipW3D and the texture StarShip_256X256X24.RAW where you want
+
+USAGE
+This program is used to test Warp3D speed, states, functionnalities & zbuffer
+	'f'	showfps=!showfps;		
+	'o'	optimroty=!optimroty;	
+
+	'z'	zbuffer=!zbuffer;		
+	'1' 	zmode=W3D_Z_NEVER; 	
+	'2' 	zmode=W3D_Z_LESS; 	
+	'3' 	zmode=W3D_Z_GEQUAL; 	
+	'4' 	zmode=W3D_Z_LEQUAL; 	
+	'5' 	zmode=W3D_Z_GREATER; 	
+	'6' 	zmode=W3D_Z_NOTEQUAL; 	
+	'7' 	zmode=W3D_Z_EQUAL; 	
+	'8' 	zmode=W3D_Z_ALWAYS; 	
+	'u'	zupdate=!zupdate;		
+	't'	tridraw=!tridraw;		
+	'c'	colored=!colored;		
+	'h'	hideface=!hideface;	
+	'r'	rotate=!rotate;		
+	ESC	closed=TRUE;
+

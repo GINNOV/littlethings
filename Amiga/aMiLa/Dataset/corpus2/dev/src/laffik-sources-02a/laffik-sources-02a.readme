@@ -1,0 +1,19 @@
+Short:        Laffik's works on vector players.
+Author:       laffik@laffik.com
+Uploader:     laffik laffik com
+Type:         dev/src
+Version:      1.2
+Architecture: m68k-amigaos >= 2.0.4
+Distribution: Aminet
+Kurz:         Laffik's arbeiten an Vector Player.
+
+- = Exctract all the archives of this serie to the one HD folder = -
+
+Set of source codes for AsmOne Motorolla 680x0 asembler and for AMOS Pro.
+Generators of coordinate sets for spheres and variety of polygons and shapes.
+Converter of three dimensional sets of polygons into two dimensional vector
+graphics.
+Players for two dimensional graphics with source codes for Blitter and
+asembler.
+Laffik's essays on fastest way to find octants, exact drawing lines with
+Blitter and finding minterms.

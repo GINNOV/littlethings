@@ -1,0 +1,40 @@
+Short:        Exception handling interface for ANSI C
+Author:       amc@cs.berkeley.edu (Adam M. Costello)
+Uploader:     polluks sdf lonestar org (Stefan Haubenthal)
+Type:         dev/src
+Version:      2.0.0
+Architecture: m68k-amigaos
+
+cexcept (pronounced "see except" in English) is a package providing
+a Try/Catch/Throw exception handling interface for ANSI C (C89 and
+subsequent ISO standards).  It does not attempt to handle "real"
+exceptions like floating-point exceptions or addressing exceptions; it
+is intended as an enhanced user-friendly alternative to setjmp() and
+longjmp().
+
+enter foo(0)
+enter demo_throw(0)
+return from demo_throw(0)
+return from foo(0)
+enter foo(1)
+enter demo_throw(1)
+exception 42
+enter foo(3)
+enter demo_throw(3)
+anonymous exception
+
+enter bar
+enter foo
+enter demo_throw
+return from demo_throw
+return from foo
+return from bar
+enter bar
+enter foo
+enter demo_throw
+bar caught oops (info == 17): demo oops message
+return from bar
+enter bar
+enter foo
+enter demo_throw
+main caught barf (info == ABCDEFG): demo barf message

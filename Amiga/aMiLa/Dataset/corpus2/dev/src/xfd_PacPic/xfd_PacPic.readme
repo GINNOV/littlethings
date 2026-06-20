@@ -1,0 +1,22 @@
+Short: sources of Pac.Pic. xfdmaster client
+Author: Kyzer/CSG <kyzer@4u.net>, François Lionet
+Uploader: Kyzer/CSG <kyzer@4u.net>
+Type: dev/src
+Requires: util/pack/xfdmaster.lha
+
+This is the source code of XFD's Pac.Pic. slave, for the curious.
+
+Pac.Pic. is an Amiga picture compression module used in AMOS Basic. It was
+created by François Lionet. The code for this slave is based on the
+original source code for the picture compactor extension, which came
+bundled with AMOS 1.3 all those years ago.
+
+Pac.Pic. is simply an RLE compressor, that re-orders the screen before
+compression in a way which favours large vertical lumps of colour. It
+RLE-encodes the reordered screen without using a special marker code,
+but rather one bit for every byte on the screen to say if it's a repeat
+or not. This large list of bits is then itself RLE encoded, which brings
+down the size quite a lot.
+
+This XFD slave 'decrunches' the picture to the uncompressed IFF ILBM
+picture format.

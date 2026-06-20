@@ -1,0 +1,175 @@
+Short:        Sanity Operation System S.O.S. (for Demo Coders)
+Author:       SANITY/Chaos aka Dierk Ohlerich
+Uploader:     anonymous
+Version:      2.6
+Type:         disk/misc
+Architecture: m68k-amigaos
+
+
+SOS - Sanity Operating System Version 2.6 (1994)
+------------------------------------------------
+
+SOS  is  an  operating  system  for  demo  coders that want to hit the
+hardware  as  directly  as  possible without loosing a microsecond for
+system overhead, but still try to be as compatible as possible.
+
+SOS  is not public domain.  See all details about my conditions in the
+file  docs/sos.copyright.   You  should  register  because I will only
+release  important updates if I get a good response.
+
+
+SOS  tries  very  hard  to  be as compatible as possible, but it still
+gives  you  full  access  to the hardware.
+
+It  was  used in well known demos from Sanity like Yesterday, World of
+Commodore,  Arte  and Roots.  It has proven a high compatibility rate,
+and  it  is even more compatible now because of a few, small bugfixes.
+You woun't have an easy job if you try to write something like this by
+yourself.
+
+SOS  features  some  very  powerfull  debugging features, like testing
+trackmos  from  harddisk and the complete monitor/debugger "MOD3" that
+comes with some features you have never seen before.
+
+After  I told you how great this system is in my eyes you should check
+for  yourself.   There  are a few important things SOS can't do yet or
+will never to do, but apart from these limitations it's quite complete
+and  well  tested.  More then 3 years of development and many high end
+productions made using this system proove how well tested it is.  Many
+big  changes  lie between my first try and this Version 2.6, more then
+once I completely rewrote important parts and gave up all compatiblity
+to  older  versions  (which  woun't happen any more).  The result is a
+small and handy system without too much ballast.
+
+SOS  supports  only  one  disk trackmos and simple Filedemos.  But the
+system   is   prepared   for  multi  disk  trackmos  as  well  as  for
+HD-installable  Demos.  All in all this limitation is the reason why I
+held  back this System for such a long time, I thought it would not be
+up  to date.  But some people convinced me that there is still lots of
+use for systems like this, and therefore I release it anyway.
+
+
+SOS can
+
+- handle all CPU's from 68000 to 68040 correctly
+- find all autoconfig memory expansions
+- handle Genlocks correctly (with a little help from the application
+  code)
+- debug trackmos from harddisk
+- write trackmos to disk in a very comfortable way
+- write filedemos with simplified Memory managment
+- help you debugging A LOT
+- memory managment that allows to allocate 64k blocks in 64k
+  alignement
+- Very usefull memory managment for background effect loading
+  and initialisation
+- avoid memory fragmentation totally
+- kill and restore the operating system totally
+- handle chip and fastmemory correctly
+- load and relocate segments with respect to chip and fast memory
+- support different crunchers
+- can load and relocate crunched segments without memory overhead
+- longtack support for games (contact me)
+- supply an optional system that helps creating a complex trackmo
+  from normed components. (Environment System)
+- very easy to join effect to a trackmo
+- automatic disk caching and prefetching (as Jesterday Musicdisk)
+- a fast and awfull replay (in the environment handler example)
+- the final demo will run with any operating system version.
+- In some cases possible incompatibilities that are my fault can
+  be fixed by an SOS-update that is easy to apply to the final demo.
+
+SOS
+
+- can't be bugfree
+- can't handle pathnames
+- can't work with absolute adresses (useless anyway)
+- developers need Kickstart 2.0
+- might be SLIGHTLY incompatible to old versions when updates come
+- can't be frendly to the operating system and respect RTG
+- can't make multi disk trackmos (planned)
+- has limited memory managment for Filedemos. (better systen planned)
+- doesn't yet support 68060 CPU's (give me a chance to test it and
+  you get it!)
+
+
+---------------------------------------------------------------------
+
+Message to all fans of the Amiga Operating System:
+--------------------------------------------------
+
+I  guess  most "OSlamic fundamentalists" will cry if they see this:  A
+system  that  totally knoks out Kickstart.  No way to be compatible to
+RTG, no way of harddisk instalation, no way to multitask.
+
+SOS  was  created  to  pull the last out of an A500 with 512K ram.  On
+such  a system killing Kickstart is the only way.  Today we can assume
+the  68020 with 2MB RAM as a minimal configuration for high end demos.
+On  such systems it is possible to write demos that keep the Kickstart
+living,  but Multitasking, Intuition or even RTG are far away.  So the
+only problem of SOS is that you can't install it on harddisk.  Perhaps
+the next release of this system can be harddisk installed.
+
+Well,  some  of  you  prefer  the  Commodore  WB 1.2 demos before Arte
+because  they run in a window.  But I guess some of you lost any sence
+for proportions.
+
+SOS  woun't  run  together  with  the  enforcer.  It does a lot of low
+memory  accesses.   Please  note that all low memory accesses are done
+while  SOS is running.  SOS is a complete operating system that ALLOWS
+low  memory  accesses.   Therefore  there  is nothing wrong with them.
+While  switching  from  Kickstart  to  SOS, the VBR is changed and the
+complete  low  memory area is saved.  When switching back, the VBR and
+the  low  memory  area  are  restored.  I call this compatible coding,
+because  it  is.  I wrote my own operating system, therefore I can set
+my own rules.
+
+I would really like to code a demo running in an intuition screen, but
+it  is impossible.  I would need Kickstart 3.1 as minimum, and that is
+not  possible  today  because most A1200 computers have only Kickstart
+3.0.  Under Kickstart 3.1, commodore has introduces many changes (like
+an optimised blitter queue) that make OS friendly demos possible.  But
+before  Kickstart  3.1  it is very hard and before Kickstart 3.0 it is
+allmost impossible.  Please not that it is almost impossible to create
+a  good  looking  design  even with Kickstart 3.1.  I don't care a lot
+about  this,  but  I  want  my  demos  to  be successfull, and that is
+impossible  without  a  good design.  Please note that Amiga demos are
+more then simple texture and vector demos.  Demos like you see them on
+PC  (mostly  vector and texture stuff without any design) are possible
+on an intuition screen with Kickstart 1.2.
+
+
+Thanks:
+-------
+
+must  go  to  Mr.  Pet/Sanity and McDeal because they used this system
+quite  a  lot  and  helped  me  finding  many program and design bugs.
+Without  Mr.   Pet's constant critic, this system would not be half as
+usefull as it is now.
+
+----------------------------------------------------------------------
+
+Installation Problems:
+----------------------
+
+Before you start crying: If SOS woun't run, check if 
+
+- s:sosdirs is present (If not -> crash!)
+- sosbin: contains all libraries and kernal-files
+- libs: contains the sos.library
+
+If  there are still problems, you may curse me.  But usually it's only
+a missing assign or file.
+
+All  these  problems  apply  for the SOS development system, the final
+demo will not need any assigns, libs or special files.
+
+
++-------------------------+------------------------------------------+
+|   __ _ _ __    ___      R                                          |
+|  /_//_/// //\ /__/      T If you can't do it better why do it?     |
+| // /_ //O//O/_\\        F                                          |
+| _//////// \//__/        M                             Demo or die! |
+|                         !                                          |
++-------------------------+------------------------------------------+
+

@@ -1,0 +1,133 @@
+TABLE OF CONTENTS
+
+pbar.lib/ClearPBar
+pbar.lib/CreatePBar
+pbar.lib/FreePBar
+pbar.lib/RefreshPBar
+pbar.lib/UpdatePBar
+pbar.lib/ClearPBar                                         pbar.lib/ClearPBar
+
+   NAME    
+        ClearPBar -- Clears a progress bar
+
+   SYNOPSIS
+        void ClearPBar(pbar)
+        void ClearPBar(APTR)
+        
+   FUNCTION
+        Clears the progress bar.
+
+   INPUTS
+        pbar        - pointer to pbar as returned by CreatePBarA()
+
+   BUGS
+        None known
+
+   SEE ALSO
+        CreatePBar() UpdatePBar() RefreshPBar()
+pbar.lib/CreatePBar                                       pbar.lib/CreatePBar
+
+   NAME    
+        CreatePBarA -- Create a new progress bar
+        CreatePBar -- Varargs stub for CreatePBarA()
+
+   SYNOPSIS
+        pbar = CreatePBarA(taglist)
+        APTR CreatePBarA(struct TagList *)
+
+        pbar = CreatePBar(firsttag, ...)
+        APTR CreatePBar(Tag *, ...)
+        
+   FUNCTION
+        Creates a new progress bar. You _MUST_ specify _ALL_ the tags.
+
+   INPUTS
+        taglist        - pointer to a tag list.
+            PB_VisualInfo        Visual Info (see gadtools.library/GetVisualI
+            PB_LeftEdge            X position of progress bar
+            PB_TopEdge            Y position of progress bar
+            PB_Width            Width of progress bar
+            PB_Height            Height of progress bar
+            PB_BarColour        Progress bar colour
+            PB_Window            Window for progress bar
+
+   RESULT
+        Pointer to a progress bar. NULL if failed.
+
+   BUGS
+        None known
+
+   SEE ALSO
+        gadtools.library/GetVisualInfo() intuition.library/OpenWindow()
+pbar.lib/FreePBar                                           pbar.lib/FreePBar
+
+   NAME    
+        FreePBar -- Free a progress bar
+
+   SYNOPSIS
+        void FreePBar(pbar)
+        void FreePBar(APTR)
+        
+   FUNCTION
+        Frees memory taken by a progress bar.
+
+   INPUTS
+        pbar        - pointer to pbar as returned by CreatePBarA()
+
+   BUGS
+        None known
+
+   SEE ALSO
+        CreatePBar() UpdatePBar() RefreshPBar()
+pbar.lib/RefreshPBar                                     pbar.lib/RefreshPBar
+
+   NAME    
+        RefreshPBar -- Refresh a progress bar
+
+   SYNOPSIS
+        void RefreshPBar(pbar)
+        void RefreshPBar(APTR)
+        
+   FUNCTION
+        Refreshes a progress bar's imagery.
+
+   INPUTS
+        pbar        - pointer to pbar as returned by CreatePBarA()
+
+   BUGS
+        None known
+
+   SEE ALSO
+        CreatePBar() UpdatePBar()
+pbar.lib/UpdatePBar                                       pbar.lib/UpdatePBar
+
+   NAME    
+        UpdatePBarA -- Update a progress bar
+        UpdatePBar -- Varargs stub for UpdatePBarA()
+
+   SYNOPSIS
+        void UpdatePBarA(pbar, taglist)
+        void CreatePBarA(APTR, struct TagList *)
+
+        void UpdatePBar(pbar, firsttag, ...)
+        void UpdatePBar(APTR, Tag *, ...)
+        
+   FUNCTION
+        Updates the progress bar, changing its current value. 
+
+   INPUTS
+        pbar        - pointer to pbar as returned by CreatePBarA()
+        taglist        - pointer to a tag list.
+            PB_NewValue            New value for progress bar (in percent)
+            PB_NewColour        New colour for progress bar
+
+    NOTES
+        No range checking is done on the value you supply. if its over 100
+       or less then 0 the display will look wrong.
+
+   BUGS
+        None known
+
+   SEE ALSO
+        CreatePBar() RefreshPBar()
+

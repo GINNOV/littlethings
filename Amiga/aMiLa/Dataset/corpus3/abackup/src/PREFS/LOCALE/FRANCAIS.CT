@@ -1,0 +1,823 @@
+## version $VER: abackupprefs.catalog 38.4 (18.1.98)
+## codeset 0
+## language français
+;
+MSG_RIGHTS
+Tous droits réservés
+; All Rights Reserved
+;
+MSG_TRANSLATION
+Traduction française par\nDenis Gounelle & Reza Elghazi
+; English built-in strings by Reza Elghazi
+;
+MSG_WARNING
+ABackup : Avertissement
+; ABackup Prefs Warning
+;
+MSG_ERROR
+ABackup : Erreur
+; ABackup Prefs Error
+;
+MSG_RESUME
+Ok
+; Ok
+;
+MSG_WARN_MEMORY
+Mémoire insuffisante !
+; Not enough memory!
+;
+MSG_WARN_CREATE_MENUS
+Impossible de créer les menus !
+; Unable to create menus!
+;
+MSG_WARN_LOCK_PUBSCREEN
+Impossible de bloquer l'écran public !
+; Unable to lock public screen!
+;
+MSG_WARN_FIND_PUBSCREEN
+Impossible de trouver l'écran public\n%s
+; Unable to find public screen\n%s
+;
+MSG_WARN_CREATE_GADGETS
+Impossible de créer les gadgets !
+; Unable to create gadgets!
+;
+MSG_WARN_WINDOW_BACKFILL
+Impossible de créer le fond de la fenêtre !
+; Unable to set window backfill!
+;
+MSG_WARN_OPEN_WINDOW
+Impossible d'ouvrir la fenêtre !
+; Unable to open window!
+;
+MSG_WARN_LAYOUT_MENUS
+Impossible de tracer les menus !
+; Unable to layout menus!
+;
+MSG_WARN_CREATE_CONTEXT
+Impossible de créer le contexte\nde données de la GadTools !
+; Unable to create a place for GadTools context data!
+;
+MSG_WARN_OPEN_DISKFONT
+A besoin de la bibliothèque diskfont.library V36+
+; Requires diskfont.library V36+
+;
+MSG_WARN_OPEN_FONT
+Impossible d'ouvrir la police\n%s
+; Unable to open font\n%s
+;
+MSG_WARN_FONT_TOO_SHORT
+La police est trop petite !
+; Font is too short!
+;
+MSG_WARN_FONT_TOO_WIDE
+La police est trop grande pour le mode d'écran choisi !
+; Font is too wide for selected screen mode!
+;
+MSG_WARN_INEFFECTIVE
+(désactivé)
+; ineffective
+;
+MSG_CX_TITLE
+Programme de paramétrage de ABackup
+; ABackup Preferences Program
+;
+MSG_CX_DESCR
+Change les paramètres de ABackup V5.0+
+; Setup ABackup V5.0+ User Preferences
+;
+MSG_TITLE_MAIN
+Préférences : ABackup
+; ABackup Preferences
+;
+MSG_TITLE_BACKUP
+Options de sauvegarde
+; Backup Options
+;
+MSG_TITLE_RESTORE
+Options de restauration
+; Restore Options
+;
+MSG_TITLE_VERIFY
+Options de vérification
+; Verify Options
+;
+MSG_TITLE_COMPRESS
+Options de compression
+; Compression Options
+;
+MSG_TITLE_TAPE
+Options du dérouleur de bandes
+; Tape Options
+;
+MSG_TITLE_GUI
+Options de l'interface
+; GUI Options
+;
+MSG_TITLE_EXTERNAL
+Programmes externes
+; External Programs
+;
+MSG_TITLE_MISC
+Options diverses
+; Miscellaneous Options
+;
+MSG_PROJECT
+Projet
+; Project
+;
+MSG_PROJECT_OPEN
+Ouvrir...
+; Open...
+;
+MSG_PROJECT_SAVEAS
+Sauver en...
+; Save As...
+;
+MSG_PROJECT_ABOUT
+A propos...
+; About...
+;
+MSG_PROJECT_HIDE
+Cacher
+; Hide
+;
+MSG_PROJECT_QUIT
+Quitter
+; Quit
+;
+MSG_EDIT
+Editer
+; Edit
+;
+MSG_EDIT_DEFAULT
+Valeurs par défaut
+; Reset To Defaults
+;
+MSG_EDIT_LASTSAVED
+Dernières valeurs sauvées
+; Last Saved
+;
+MSG_EDIT_RESTORE
+Reprendre
+; Restore
+;
+MSG_SETTINGS
+Options
+; Settings
+;
+MSG_SETTINGS_ICONS
+Créer icônes ?
+; Create Icons?
+;
+MSG_CK_OPEN
+O
+; O
+;
+MSG_CK_SAVEAS
+A
+; A
+;
+MSG_CK_ABOUT
+?
+; ?
+;
+MSG_CK_HIDE
+H
+; H
+;
+MSG_CK_QUIT
+Q
+; Q
+;
+MSG_CK_DEFAULT
+D
+; D
+;
+MSG_CK_LASTSAVED
+L
+; L
+;
+MSG_CK_RESTORE
+R
+; R
+;
+MSG_CK_ICONS
+I
+; I
+;
+MSG_OK
+_Ok
+; _Ok
+;
+MSG_CANCEL
+_Annuler
+; _Cancel
+;
+MSG_REPORT
+_Rapport
+; _Report
+;
+MSG_PRINTER
+Imprimante
+; Printer
+;
+MSG_FILE
+Fichier
+; File
+;
+MSG_SHORT
+Bref
+; Brief
+;
+MSG_LONG
+Détaillé
+; Detailled
+;
+MSG_BUFFER_SIZE
+_Taille tampon:
+; _Buffer Size:
+;
+MSG_BACKUP
+Sauve_garde
+; _Backup
+;
+MSG_RESTORE
+_Restauration
+; _Restore
+;
+MSG_VERIFY
+_Vérification
+; _Verify
+;
+MSG_COMPRESSION
+Com_pression
+; Com_pression
+;
+MSG_TAPE
+Dérouleur de _bandes
+; _Tape
+;
+MSG_GUI
+_Interface
+; _GUI
+;
+MSG_EXTERNAL_PROGS
+Programmes _externes
+; _External
+;
+MSG_MISCELLANEOUS
+_Divers
+; _Miscellaneous
+;
+MSG_SAVE
+_Sauver
+; _Save
+;
+MSG_USE
+_Utiliser
+; _Use
+;
+MSG_BACKUP_TO
+_Sauver vers:
+; Backup _To:
+;
+MSG_TO_DEVICE
+Unité
+; Device
+;
+MSG_TO_FILE
+Fichier
+; File
+;
+MSG_TO_TAPE
+Dérouleur
+; Tape
+;
+MSG_DEVICES
+Unités:
+; Devices:
+;
+MSG_ARCHIVE_FILE
+_Fichier archive:
+; Archive _File:
+;
+MSG_BUFFER_LEVEL_FORMAT
+%5lu K-octets
+; %5lu kBytes
+;
+MSG_LOG_FILE
+Fichier _journal:
+; _Log File:
+;
+MSG_DEFAULT_COMMENT
+_Commentaire:
+; Defa_ult Comment:
+;
+MSG_BACKUP_VERIFY
+_Vérifier
+; _Verify
+;
+MSG_CHILD_TASK
+_Utiliser tâche fille
+; Use Child Tas_k
+;
+MSG_BACKUP_LINKS
+Sauver les _liens
+; Backup Li_nks
+;
+MSG_ADD_COMMENT
+Ajouter co_mmentaire
+; A_dd Comment
+;
+MSG_ADD_ICON
+Ajouter _icône
+; Add _Icon
+;
+MSG_COMPRESS
+Compresser _données
+; Co_mpress Data
+;
+MSG_COMPRESS_CAT
+Compresser catalo_gue
+; Compre_ss Catalog
+;
+MSG_ENCRYPT
+Cr_ypter
+; _Encrypt Data
+;
+MSG_SET_ARCHIVE_BIT
+Changer _bit archive
+; Set _Archive Bit
+;
+MSG_DUP_CATALOG
+Du_pliquer catalogue
+; Du_plicate Catalog
+;
+MSG_IGNORE_SKIPME
+Ig_norer SKIPME
+; Ig_nore SKIPME
+;
+MSG_RESTORE_FROM
+Restaure _depuis:
+; Restore _From:
+;
+MSG_RESTORE_TO
+Restaurer _vers:
+; Restore _To:
+;
+MSG_EXISTING_FILES
+Si e_xiste déjà:
+; E_xisting Files:
+;
+MSG_ALWAYS_REPLACE
+Toujours remplacer
+; Always Replace
+;
+MSG_NEVER_REPLACE
+Ne jamais remplacer
+; Never Replace
+;
+MSG_ASK_REPLACE
+Demander si remplacer
+; Ask Before Replacing
+;
+MSG_REPLACE_OLDEST
+Remplacer si plus ancien
+; Replace Oldest Version
+;
+MSG_RENAME_FILE
+Renommer fichier
+; Rename File
+;
+MSG_BAD_FILES
+Si _Echoue:
+; _Bad Files:
+;
+MSG_ALWAYS_DELETE
+Toujours détruire
+; Always Delete
+;
+MSG_NEVER_DELETE
+Ne jamais détruire
+; Never Delete
+;
+MSG_ASK_DELETE
+Demander si détruire
+; Ask Before Deleting
+;
+MSG_TREE
+Avec ar_borescence
+; D_irectory Tree
+;
+MSG_RESTORE_DATE
+Restaurer la da_te
+; Restore _Date
+;
+MSG_RESTORE_LINKS
+Restaurer les _liens
+; Restore _Links
+;
+MSG_EMPTY_DIRS
+Répertoires v_ides
+; _Empty Directories
+;
+MSG_USE_CAT_FILE
+Fichier _catalogue
+; _Use Catalog File
+;
+MSG_COMPARE_DATA
+_Comparer les données
+; Compare _Data
+;
+MSG_SELECT_FILES
+Choisir les _fichiers
+; _Select Files
+;
+MSG_IGNORE_DATE
+Ignorer la _date
+; _Ignore Files Date
+;
+MSG_COMPRESS_METHOD
+_Méthode:
+; _Method:
+;
+MSG_INTERNAL
+Interne
+; Internal
+;
+MSG_EXTERNAL
+Externe
+; External
+;
+MSG_XPK_LIBRARY
+Bibliothèque XPK
+; Xpk library
+;
+MSG_XPK_LIBS
+Méthode XPK:
+; Xpk Libs:
+;
+MSG_XPK_MODE
+Mode _XPK:
+; _Xpk Mode:
+;
+MSG_COMPRESS_RATIO
+Taux compression :
+; Compression Ratio:
+;
+MSG_PACKING_SPEED
+Vitesse compression :
+; Packing Speed:
+;
+MSG_UNPACKING_SPEED
+Vitesse décompr. :
+; Unpacking Speed:
+;
+MSG_XPK_SPEED
+%5lu Ko/s
+; %5lu kB/s
+;
+MSG_EXTERNAL_COMP
+_Compresse:
+; Com_pressor:
+;
+MSG_EXTERNAL_DECOMP
+_Décompresse:
+; D_ecompressor:
+;
+MSG_FILTER
+_Filtre :
+; _Filter:
+;
+MSG_DELETE
+_Effacer
+; _Delete
+;
+MSG_DEVICE_DRIVER
+_Pilote :
+; _Device Driver:
+;
+MSG_SCSI_PORT
+Port _SCSI :
+; SCSI _Port:
+;
+MSG_BLOCK_SIZE
+Taille de _bloc :
+; Block _Size:
+;
+MSG_REWIND
+_Rembobiner
+; _Rewind
+;
+MSG_EJECT
+_Ejecter
+; _Eject
+;
+MSG_AUTO_RETENTION
+Tendre auto.
+; Au_to Retension
+;
+MSG_FASTMEM_TBUFFER
+buffer en _FAST mem
+;
+MSG_SCSI_INQUIRY
+_Interrogation
+; SCSI _Inquiry
+;
+MSG_SCREEN_TYPE
+_Type d'écran :
+; Screen _Type:
+;
+MSG_CUSTOM
+Personnalisé
+; Custom
+;
+MSG_WORKBENCH
+Workbench
+; Workbench
+;
+MSG_PUBLIC
+Public
+; Public
+;
+MSG_PUBSCREEN_NAME
+_Nom écran public :
+; Public Screen _Name:
+;
+MSG_SCREENFONT_NAME
+Police de l'_Ecran :
+; _Screen Font:
+;
+MSG_TEXTFONT_NAME
+Police du te_xte :
+; T_ext Font:
+;
+MSG_PALETTE
+_Couleurs
+; _Palette
+;
+MSG_ASCII
+A_SCII :
+; _ASCII:
+;
+MSG_ILBM
+_ILBM :
+; _ILBM:
+;
+MSG_OTHERS
+A_utres :
+; O_thers:
+;
+MSG_ASYNCHRO
+_Lancer en arrière plan
+; _Run Asynchronously
+;
+MSG_CONFIRM
+_Confirmer la visualisation
+; Confirm _Each Visualization
+;
+MSG_ALERT
+A_lerte :
+; _Alert:
+;
+MSG_BEEP
+Bip sonore
+; Beep
+;
+MSG_FLASH
+Signal visuel
+; Flash screen
+;
+MSG_BOTH
+Bip & Signal
+; Beep & Flash
+;
+MSG_NONE
+Aucune
+; None
+;
+MSG_FILES_SIZE
+Taille des _fichiers :
+; _Files Size:
+;
+MSG_AUTOMATIC
+Automatique
+; Automatic
+;
+MSG_BYTES
+Octets
+; Bytes
+;
+MSG_KILOBYTES
+Kilo-octets
+; Kilo-Bytes
+;
+MSG_MEGABYTES
+Méga-octets
+; Mega-Bytes
+;
+MSG_TEMP_DIRECTORY
+Répertoire _temporaire :
+; _Temporary Directory:
+;
+MSG_SELECTION_PATH
+Rép. des _Sélections :
+; _Default Selection Path:
+;
+MSG_PRINT_LABELS
+_Imprimer étiquettes
+; _Print Disk Labels
+;
+MSG_LABELS_LENGTH
+Lignes par _Etiquette :
+; _Labels Length (lines):
+;
+MSG_WARN_OPEN_ASLV36
+A besoin de la bibliothèque asl.library version 36+
+; Requires asl.library V36+
+;
+MSG_WARN_OPEN_ASLV38
+A besoin de la bibliothèque asl.library version 38+
+; Requires asl.library V38+
+;
+MSG_SELECT_FILE
+Choisir fichier
+; Select File
+;
+MSG_SELECT_DIRECTORY
+Choisir répertoire
+; Select Directory
+;
+MSG_SELECT_FONT
+Choisir police
+; Select Font
+;
+MSG_SELECT_SCREEN_MODE
+Choisir mode écran
+; Select Screen Mode
+;
+MSG_LOAD_PREFS
+Charger les paramètres
+; Load ABackup Preferences
+;
+MSG_SAVE_PREFS
+Sauver les paramètres
+; Save ABackup Preferences
+;
+MSG_SELECT_BACKUP_DESTINATION
+Choisir la destination
+; Select Backup destination
+;
+MSG_SELECT_LOG_FILE
+Choisir le fichier journal
+; Select Log File
+;
+MSG_SELECT_RESTORE_SOURCE
+Choisir la source
+; Select Restore source
+;
+MSG_SELECT_RESTORE_DESTINATION
+Choisir la destination
+; Select Restore destination
+;
+MSG_WARN_OPEN_REQTOOLS
+A besoin de la bibliothèque reqtools.library version 38+
+; Requires reqtools.library V38+
+;
+MSG_SELECT_PALETTE
+Choisir les couleurs
+; Select Palette
+;
+MSG_WARN_OPEN_IFFPARSE
+A besoin de la bibliothèque iffparse.library version 36+
+; Requires iffparse.library V36+
+;
+MSG_WARN_PREFS_VERSION
+Version du fichier de Prefs inconnue !
+; Unknown prefs file version!
+;
+MSG_WARN_PROCESS_FILE
+Erreur de traitement du fichier IFF !
+; Error processing IFF file!
+;
+MSG_ERR_ACCESS_FILE
+Erreur en accédant au fichier
+; Error accessing file
+;
+MSG_REQUEST
+ABackup : Requête
+; ABackup Prefs Request
+;
+MSG_CREATEDIR
+Le répertoire\n%s\nn'existe pas.\nVoulez-vous le créer ?
+; %s\ndoes not exist.\nwould you like to create it?
+;
+MSG_YES_NO
+Oui|Non
+; Yes|No
+;
+MSG_RETRY_CANCEL
+Ré-essayer|Annuler
+; Retry|Cancel
+;
+MSG_SCSI_INFOS
+Informations SCSI
+; SCSI Information
+;
+MSG_DIRECT_ACCESS
+Accès direct
+; Direct-access
+;
+MSG_SEQUENTIAL_ACCESS
+Accès séquentiel
+; Sequential-access
+;
+MSG_PROCESSOR
+Processeur
+; Processor
+;
+MSG_WORM
+WORM
+; WORM
+;
+MSG_CDROM
+CD-ROM
+; CD-ROM
+;
+MSG_SCANNER
+Scanner
+; Scanner
+;
+MSG_OPTICAL_DISK
+Disque optique
+; Optical disk
+;
+MSG_MEDIUM_CHANGER
+Medium changer
+; Medium Changer
+;
+MSG_COMMUNICATION
+Communication
+; Communication
+;
+MSG_UNKNOWN
+Inconnu
+; Unknown
+;
+MSG_NOT_ANSI
+Pas approuvé ANSI
+; Not ANSI-approved
+;
+MSG_SCSI1
+SCSI-1
+; SCSI-1
+;
+MSG_SCSI2
+SCSI-2
+; SCSI-2
+;
+MSG_VENDOR_ID
+Identification du vendeur
+; Vendor identification
+;
+MSG_PRODUCT_ID
+Identification du produit
+; Product identification
+;
+MSG_PRODUCT_REVISION
+Version du produit
+; Product revision level
+;
+MSG_DEVICE_TYPE
+Type d'unité
+; Peripherial device type
+;
+MSG_REMOVABLE_MEDIUM
+Amovible
+; Removable medium
+;
+MSG_YES
+Oui
+; Yes
+;
+MSG_NO
+Non
+; No
+;
+MSG_ISO_VERSION
+Version ISO
+; ISO version
+;
+MSG_ECMA_VERSION
+Version ECMA
+; ECMA version
+;
+MSG_ANSI_VERSION
+Version ANSI
+; ANSI-Approved version
+;
+MSG_DATA_TRANSFERS
+Transfert de données
+; Data transfers
+;

@@ -1,0 +1,22 @@
+		
+			MASK MAKER
+		     ---------------
+
+their is alot of potential in being able to move bobs across a background.
+However if you wanted to move loads of different bobs (anims, etc) across
+a background you would need loads of different masks.  This would be tedious
+to do & would consume loads of memory.  With this routine you simply reserve
+a block of memory that will fit your largest bobs mask & then build every
+bobs mask into this memory area with the routine.  The memory area will need
+to be wiped after the mask has been used ready for the next mask to be built
+into it.  This should be done with a simple D blit with no miniterms set.
+The only problem with using this routine is that it takes time.  You should
+optimize the routine where necessary for speed.  I did it this way for 
+simplicity & because this routine fits all masks (I think).
+
+
+See the actual routine to see which reigsters need to be loaded with which
+values.
+
+
+				Raistlin '91

@@ -1,0 +1,203 @@
+
+                               [1mparse()[0m
+                           [4mversion 1.00[0m
+
+                      [3mpar Jean-Pierre Rivière[0m
+
+             (English reader : please see file parse.edoc)
+
+      RESUME : parcoureur ("parser") de ligne de commande facile
+               d'emploi et suivant totalement les conventions
+               du systeme V pour le passage des options.
+               copyright (c) 1992 par Jean-Pierre Rivière.
+               Librement redistribuable et gratuit ("freeware").
+               Toute utilisation dans tout programme libre et gratuite
+               pour peu que la source dudit programme, si elle est
+               distribuée, inclut le présent paquetage logiciel ou
+               à défaut indique ses références et le moyen de se le
+               procurer.
+               Toute utilisation de ce paquetage se fait aux seuls
+               risques et périls de l'utilisateur, l'auteur déclinant
+               par avance toute responsabilité.
+               Ça suffit comme ça, place à la suite !
+
+
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      Veille au respect scrupuleux des conventions Unix System V v4
+   Utilise pour cela une chaîne de formatage où toutes les options
+   sont indiquées dans un ordre quelconque mais avec un espace
+   derrière chaque option sans argument et un point-virgule derrière
+   chaque option avec un argument.
+
+      Si tout s'est bien passé, la valeur de retour est positive ou nulle,
+   égale au nombre d'options reconnues dans la ligne de commande.
+
+      Sinon elle est négative pour indiquer une erreur de syntaxe ou bien
+   que l'allocation dynamique de mémoire faite par la fonction n'a pas pû
+   être réalisée. Dans chacun de ces cas, il n'y a rien corespondant à la
+   description de ce qui a été éventuellement vu, et en conséquence il ne
+   faut pas essayer de le voir !
+
+      Si tout s'est bien passé, il faut désallouer manuellement la mémoire
+   allouée par la fonction parse() en appelant la fonction parse_cleanup().
+
+      Rappelons que toutes les options doivent précéder les éventuels
+   arguments, que leur ordre n'a aucune importance mais qu'elles ne doivent
+   pas être répétées, même si cela ne se fait pas de façon contradictoire.
+
+      parse() et parse_cleanup() sont deux fonctions que j'ai écrites sous
+   la forme d'un "module" C afin de faciliter la tâche du programmeur
+   quand il s'agit de gérer les multiples options que la ligne de commande
+   de son dernier utilitaire peut gérer. Mon but était puissance et ergo-
+   nomie et je peux dire qu'il est atteint.
+
+      Puissance car le respect strict des normes Open Software Foundation
+   est intégral. Puissance car simple à mettre en oeuvre et à faire évo-
+   luer. Le tout est donc ergonomique à la fois pour le programmeur et
+   pour l'utilisateur (uniformisation des interfaces sous shell rendue plus
+   facile donc plus répandue).
+
+      L'outil principal qui sert à ces deux fonctions est une bête chaîne
+   de caractères qui est une suite d'option et de type d'option : avec ou
+   sans argument.
+
+      Par exemple si votre programme s'emploie ainsi :
+
+      truc [-h] [-i] [-f <fichier>] [-o <dest>] [-v] [-R] <mode> [<type>]
+
+   alors le traitement automatique des options est réalisé grâce à la
+   chaine C suivante :
+
+      "h i f;o;v R "
+
+   ou encore, car l'ordre des options y est sans importance :
+
+      "R f;h i o;v "
+
+      Les caractères en position impaire sont les lettres des options. Un
+   point-virgule après une lettre indique que l'option prend un argument,
+   un espace qu'elle n'en prend pas. Attention, le caractère après la lettre
+   d'option est strictement obligatoire.
+
+      Attention aussi au fait que les options tiennent compte des majuscules
+   et des minuscules, et que normalement vous n'avez le droit qu'à des
+   lettres (ce dernier point n'est pas vérifiée mais c'est au programmeur
+   de décider ce qu'il fait en la matière).
+
+      En respect des conventions sus-citées, les lignes de commandes ci-
+   dessous sont acceptées (et correctement traitées ;-) (sous réserve bien
+   sûr que truc trouve que le nombre de ses arguments lui convienne) :
+
+      truc -i -hR -f merci mon gars
+
+      truc de_rien camarade
+
+      truc -o hara -hRi -f raime sapeur Camembert
+
+      truc -h -  ---> ici - signifie entrée standard et n'est pas une option
+
+      truc -h -o brien -- -i     --> -- indique la fin des options et donc
+                                     -i est le premier argument
+
+      truc -hi -o -i dabord    --> l'argument d'une option à argument est
+                                   entièrement libre. -i est ici l'argument
+                                   de l'option o.
+
+   Mais les suivantes ne le sont pas :
+
+      truc -hRo hara kiri  ---> les options à arguments doivent être isolées
+
+      truc -hRi -hv virus  ---> pas de répétition d'option
+
+      truc -ohara sant     ---> pas d'argument collé à l'option
+
+      truc -h - -i trema   ---> le - est considéré comme une option vide
+                                Ceci est peut-être hors-norme (je n'ai plus
+                                celles-ci sous les yeux) mais j'ai trouvé
+                                que si - est suivi d'un groupe commençant
+                                par -, alors le premier - résultait sans
+                                aucun doute d'une erreur de frappe (c'est
+                                en tous cas vrai pour - --). Ne pas faire
+                                cette hypothèse simplifierait le codage.
+                                J'attends vos réactions...
+
+      Allez, voici une grammaire formelle de la chaîne de desciption :
+                  descripteur ::= descripteur | option
+                  option ::= (lettre type)
+                  lettre ::= { a...z A...Z }
+                  type ::= ( <espace> ; )
+
+      Et pour exploiter tout ça ? Voyez le code source. En définissant TEST
+   sur la ligne de compilation, vous aurez un exécutable qui vous montrera
+   que je ne vous mentais pas. Comme le codage de la fonction main() le
+   montre, l'idée est de faire :
+
+      if (parse(...) < 0) {
+         /* traitement des erreurs de syntaxe */
+         exit(1);
+      }
+      /* traitement des erreurs de logique propre au programme */
+      ...
+      /* fin du programme */
+      parse_cleanup();
+      exit(0);
+
+      Pour plus de facilité, j'ai défini une structure regroupant les
+   données et permettant de déterminer précisément les erreurs éventuelles.
+
+      Je vous laisse voir le code, il est inutile que je le recopie, je
+   pense. Faites bien attention cependant aux remarques qui suivent :
+      - un appel à parse_cleanup() sans appel précédent à parse() est
+         illégal et retourne un code d'erreur. Sans danger cependant.
+      - un appel à parse_cleanup() suite à un appel précédent à parse() qui
+         a echoué est illégal car parse() à déjà tout nettoyé, et un code
+         d'erreur est renvoyé. Sans danger cependant.
+      - deux appels consécutifs à la même fonction parse() ou parse_cleanup()
+         sont interdits et le second appel renvoit un code d'erreur. Sans
+         danger cependant.
+      - l'appel à parse_cleanup() sert à libérer la mémoire allouée par
+         parse() dans le cas où celui-ci a réussi. N'oublier pas de
+         l'appeler, même si par exemple les options mises ne respectent pas
+         la logique de votre programme. Regardez le main() donné en exemple.
+
+      Pour utiliser ces deux fonctions, il est nécessaire qu'elles soient
+   compilées à part et de faire l'édition de lien avec le fichier objet
+   résultant, afin de garantir les procédés de vérification de séquence
+   d'appel indiqués précédemment.
+
+      J'ai défine plusieurs drapeaux pour la compilation du module parse.o :
+
+      NO_PARSE_ERR_MESS : s'il est défini, les messages d'erreur n'existent
+         pas. Vous n'aurez que les codes d'erreurs.
+      ENGLISH : s'il est défini et s'il y a des messages d'erreurs, ceux-ci
+         seront en anglais.
+      ERR_MESS_WITHOUT_LETTER : s'il est défini et qu'il y a des messages
+         d'erreurs, ceux-ci seront de simples chaînes de caractères à
+         imprimer directement. Par défault, ils comportent un %s pour
+         mettre à la bonne place l'option fautive et doivent donc être
+         utilisées avec une fonction du type printf.
+
+      Quand vous éditerez votre source, le seul drapeau à définir éven-
+   tuellement (et avant d'inclure parse.h) est NO_PARSE_ERR_MESS.
+
+      parse() et parse_cleanup() ne sont pas domaine public (car je ne veux
+   pas qu'un croquant m'en dépossède) mais sont librement redistribuables
+   et freeware. Leur emploi est encouragé chaque fois qu'une syntaxe de
+   type Unix est souhaitée (moi je n'ai jamais pu supporter getopt() car
+   il ne supporte pas bien les changement de syntaxe (ou alors je ne sais
+   pas m'en servir, mais de toute façon mon système est à la fois plus
+   simple, plus intuitif et plus performant.)). Il n'est pas autorisé de
+   le diffuser sans cette documentation ou pour un tarif excédant le prix
+   du support, la référence étant les disquettes AmigaLibDisk distribuées
+   par Fred Fish.
+
+      Allez, bonne programmation en C. Si c'est en autre chose, vous avez
+   toute latitude pour le faire. Envoyez moi alors votre traduction, ce
+   serait sympa de votre part. :^)
+
+   Mon adresse :
+
+      Jean-Pierre Rivière
+      13, rue Maison Dieu
+      75014 PARIS
+      FRANCE

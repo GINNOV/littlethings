@@ -1,0 +1,36 @@
+short: fix for ASMOne LinkObjects! to work with SAS-C-Linker
+author: Cyborg@eanet.de
+path: dev/ass
+
+This little programm changes ASMOne LOWERCASE references to SAS-C-UPPERCASE
+strings.
+
+Syntax: fxref ( or fixxref :-) ) linkobject.o
+
+Some words about ASMone, Assembler and C ( must not be correct written C ):
+
+SAS-C adds a "_" to the functionname.
+
+Ass:                                            Preass:
+
+    XREF _SASC_1                        {* NewCProc=_SASC_1[LONG,LONG]*}
+....                                    
+
+    move.l #String2,-(a7)
+    move.l #String1,-(a7)
+    jsr _SASC_1                         result=_sasc_1(&String2,&String1)
+    add.l #4,a7
+    move.l d0,Result
+
+....
+
+C:
+
+long __saveds sasc_1 ( char **dummy1 , char **dummy2) 
+{...};
+
+
+                                                                Cyborg
+
+
+              http://www.geocities.com/SiliconValley/Bridge/5737/

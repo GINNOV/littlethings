@@ -1,0 +1,8 @@
+Short:        C Interpreter.
+Architecture: m68k-amigaos
+From:         mpap@acrogate.ath.forthnet.gr
+
+      el93637@atlas.central.ntua.gr
+
+ A powerful C interpreter.
+Copyright (c) 1995, Manolis S Pappas/ XGI.

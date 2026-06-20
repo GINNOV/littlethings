@@ -1,0 +1,21 @@
+Short:        BGUI vbcc preferences editor
+Author:       Tony Jones (nova@nib.u-net.com)
+Uploader:     Tony Jones (nova nib u-net com)
+Type:         dev/c
+Requires:     vbcc 0.5
+Architecture: m68k-amigaos
+
+BGUI based vc.config editor for the vbcc C compiler. Can save or load
+vc.config files from the current directory or ENV:
+
+Most options available in the compiler are selectable:
+	CPU
+	FPU
+	Math link libraries
+	Small code/data
+	Optimisations
+	startup.o/minstart.o
+	amigados/ixemul.library
+	Use vcpp/dcpp
+	Choice of compilers/assemblers
+	.. and more :)

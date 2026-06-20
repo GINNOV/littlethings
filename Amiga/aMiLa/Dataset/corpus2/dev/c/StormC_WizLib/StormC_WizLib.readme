@@ -1,0 +1,21 @@
+Short:        WizardLibrary
+Author:       HAAGE & PARTNER Computer
+Uploader:     haage_partner compuserve com (Markus Nerding)
+Type:         dev/c
+Version:      2.0
+Requires:     StormC-Demo
+Architecture: m68k-amigaos
+Distribution: AmiNet
+
+
+Latest version of Wizard.library and other stuff for programming.
+It must be copied to "StormC-Demo/Libs".
+
+
+__________________________________________________________________________
+HAAGE & PARTNER Computer GmbH                   A M I G A  DEVELOPMENTS
+Mainzer Str. 10 A, 61191 Rosbach, Germany        for AmigaOS, PPC, pOS
+internet: haage_partner@compuserve.com          StormC - StormWIZARD
+fon: +49-6007 -93 00 50  fax: -75 43            ArtEfect - DrawStudio
+__________________________________________________________________________
+>> MORE INFO ->  http://ourworld.compuserve.com/homepages/HAAGE_PARTNER <<

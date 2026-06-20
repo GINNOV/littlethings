@@ -1,0 +1,15 @@
+Short:        Convert fonts -> C code structures
+Uploader:     BIRJT cc newcastle edu au
+Architecture: m68k-amigaos
+
+Type: dev/c
+
+Uploader: BIRJT@cc.newcastle.edu.au
+
+Author: Andreas Baum
+
+Converts standard font files into C code structures that
+can be included directly in your program.  Probably most
+useful for people writing programs that take over the machine
+and thus do not have access to the standard fonts directory.
+Includes source.

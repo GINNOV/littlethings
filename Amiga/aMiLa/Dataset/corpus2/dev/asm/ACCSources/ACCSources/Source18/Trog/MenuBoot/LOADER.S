@@ -1,0 +1,48 @@
+	OPT C-
+	INCLUDE DF0:INCLUDE/MISC/LIBOFFSETS.I
+*******************************************************************************
+*LOADER TO RUN CHOSEN PROGRAME FROM THE BOOT PRG INSTALLER
+*******************************************************************************
+START:	MOVEM.L D0-D7/A0-A6,-(SP)       * SAVE REGISTERS ON THE STACK
+	MOVE.L	$80,D0			* TRAP 0 EXCEPTION ADRESS
+	CMP.L	#$F,D0			* COMPARE $F ($F=NORMAL STARTUP)
+	BNE	LPRG			* IF N0 $F THEN LOAD PRG NUMBER
+	MOVEM.L (SP)+,D0-D7/A0-A6	* RESTORE REGISTERS FROM THE STACK
+	RTS				* NO MENU WAS SELECTED
+
+LPRG:	MOVE.L	$4,A6			* EXEC BASE ADRESSS
+	LEA	DOSNAME,A1		* DOS.LIBRARY
+	JSR	OPENLIBS(A6)		* OPENLIBRARY
+	MOVE.L	D0,A6			* SAVE DOS.LIBRARY POINTER
+	
+	MOVE.L	$80,D1			* TRAP 0 EXCEPTION START ADRESS
+	LEA	NAME,A0			* LOAD PRG NAME INTO A0
+FINDPRG:CMP.B	(A0)+,D1		* COMPARE EACH BYTE WITH THE ONE IN D1
+	BNE	FINDPRG			* BRANCH TO LOOP TILL IT IS FOUND
+	
+EXEPRG:	MOVE.L	A0,D1			* POINTER TO PROGRAME NAME
+	CLR.L	D2			* STANDARD CHANNEL USED
+	CLR.L	D3			* STANDARD CHANNEL USED
+	JSR	EXECUTE(A6)		* DOS.LIBRARY FUCNTION RUN FILE
+	MOVEM.L (SP)+,D0-D7/A0-A6       * RESTORE REGISTERS FROM THE STACK
+	RTS	
+*******************************************************************************
+NAME:	
+	DC.B	0,"BOOTFILES/PRGA",0		* DATA FOR PROGRAM NUMBERS
+	DC.B	1,"BOOTFILES/PRGB",0
+	DC.B	2,"BOOTFILES/PRGC",0
+	DC.B	3,"BOOTFILES/PRGD",0
+	DC.B	4,"BOOTFILES/PRGE",0
+	DC.B	5,"BOOTFILES/PRGF",0
+	DC.B	6,"BOOTFILES/PRGG",0
+	DC.B	7,"BOOTFILES/PRGH",0
+	DC.B	8,"BOOTFILES/PRGI",0
+	DC.B	9,"BOOTFILES/PRGJ",0
+	EVEN
+*******************************************************************************
+*LIBRARY NAMES INFO
+*******************************************************************************
+DOSNAME:DC.B	"dos.library",0		* DOS LIBRARY
+		EVEN
+*******************************************************************************
+

@@ -1,0 +1,53 @@
+
+			Macro Summary File
+			~~~~~~~~~~~~~~~~~~
+
+ General Macros
+ **************
+
+ CALLSYS	libroutine
+ OPENDOS	{version}
+ OPENINT	{version}
+ OPENGFX	{version}
+ CLEANUP	{error number}
+
+ String Handling Macros
+ **********************
+
+ STRLEN		string					d0=string length
+ STRCPY		string1,string2				none
+ TOUPPER	string
+ TOLOWER	string
+ STRCMP		string1,string2				d0= 0 if same
+ 							   +ve if 1>2
+ 							   -ve if 1<2
+ CASESTR	string,actiontable
+ FINDSAME	string,len,memory,len			d0=addr of match
+ STRSTR		string1,string2				d0=addr of match
+ 
+ DOS Library Macros
+ ******************
+ 
+ PUTSTR		string,{handle}
+ FILELEN	filename				d0=size of file
+ OFILELEN	handle					d0=size of file
+ LOADFILE	filename,{requirements}			d0=size of buffer
+ 							a0=addr of buffer
+
+ Intuition Library Macros
+ ************************
+ 
+ OPENWIN	NewWindow,{IText},{Image},{Border},{MenuStrip},{Screen}
+	d0=addr of Window or NULL
+OPENSBWIN      NewWindow,BitMap,{IText},{Image},{Border},{MenuStrip},{Screen}
+	d0=addr of Window or NULL
+ BITMAP		Width,Height,Depth			d0=addr of BitMap
+ FREEBITMAP	BitMap
+ HANDLEIDCMP	Window,{ServerRoutine}			d0=return value
+ CLOSEWIN	Window
+ OPENSCREEN	NewScreen,{Palette}			d0=addr of Screen
+ CLOSESCREEN	Screen
+ FADEOUT		Screen
+ FADEIN		Screen,Palette
+
+

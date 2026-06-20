@@ -1,0 +1,965 @@
+AMIGA CODERS CLUB DISKS / AMIGA CODERS MANUAL DISKS -- PRESERVATION PROJECT
+===========================================================================
+This is a preservation collection of Amiga Coders Club disks. They were imaged directly from
+the original disks as shipped by Amiganuts UK in the early 1990s.
+
+This preservation project originates from the English Amiga Board:  http://eab.abime.net
+The relevant thread is here: http://eab.abime.net/showthread.php?t=2831
+
+ACC was mainly geared towards Amiga 68k assembly language programming (both hardware and
+system code).
+
+Disks 1-4 were freely available (though not public domain) and were distributed separately
+on four different disks. When Amiganuts took over distribution after disk 4 they decided to
+merge the contents of the first four disks to create a "compact" disk (they didn't distribute
+the original 4 disks themselves). Maybe someone else can add the original first 4 full disks
+to the collection but the compact disk essentially has all the important files on it.
+
+After disk 4 ACC became a commercial product and was exclusively distributed by Amiganuts UK
+(and apparently later by an Australian office).
+
+This collection includes compact disks 1-4 (1 disk) and disks 5-32 of the commercial releases.
+Note that disks 12 and 29 came as two parts: disks 12A/B and 29A/B. 
+
+Amiganuts later released the "Amiga Coders Manual" (ACM) series which was designed to augment
+the ACC disks but was more entry-level oriented. These were created by the same people responsible
+for the ACC disks. This package includes ACM disks 1-3 and another non-exclusive ACM disk.
+
+
+FAQ
+===
+Q. How many ACC disks were produced?
+A. I have no idea. Disk 32 was the last one ordered from Amiganuts. Possibly there are more.
+   If so, please add them to this archive!
+
+
+Q. How many ACM disks were produced?
+A. I have no idea. Disk 4 was the last one ordered from Amiganuts. Possibly there are more.
+   If so, please add them to this archive!
+  
+
+USER PARTICIPATION
+==================
+If you have more information to add, please go to the EAB forum. Anyone can contribute to this
+preservation project -- this initial archive is just a seed archive based on the incomplete
+collection of one person who is not going to maintain this archive himself.
+
+* Add extra/updated/corrected info to this archive
+* Add missing disks
+* Add different versions of the disks (once verified that they are original variations)
+* Only add ORIGINAL disk images. This is after all a preservation project...
+
+   If you saved your first fumblings in 68k programming to disk 33, we really don't need it :-)
+   If you have a disk which is not represented here but you think might not be "prestine"
+   then add it to the collection but mark it as non-original. That way people will know that
+   it exists and can hopefully replace it with an original image.
+
+
+CATALOG
+=======
+Included is the Amiganuts catalog disk at the time ACC disk 32 was shipped. I'm sure this can
+be updated to a much later catalog.
+
+
+NOTES
+=====
+The following text is included for search engines. It is the contents list for disks 1-31
+which was taken from disk 32 (the contents lists always referred to PREVIOUS disks in the
+series).
+
+
+
+
+				ACC
+				~~~
+			 Amiga Coders Club
+			 ~~~~~~~~~~~~~~~~~
+   **********************************************************************
+   **								       **
+   ** Note: All ACC material is Licenced to Amiganuts for distribution **
+   ** This means it is illegal for:				       **
+   **				 other libraries to distribute it.     **
+   **				 you to distribute it.		       **
+   **********************************************************************
+
+ACC Disks £3.5O
+~~~~~~~~~~~~~~~
+ ACC is a monthly disk magazine for assembly language programmers. It started
+out as a means for beginners to swap ideas and help each other out. Advice
+is offered by the more experienced programmers and the disks are filled with
+source, tutorials, utilities and letters.
+
+ If you want to learn assembler, to kick ideas around with someone, or have
+experience that you want to pass on then take a look. The disk is released
+once a month.
+
+ACC Disk Contents To Date ( Back issues £3.5O )
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ The following summary of the ACC collection was compiled by one of the
+contributors and we have decided to leave in all his comments: honesty is
+the best policy!
+
+ ---------------------------------------------------------------------------
+
+ This file contains brief details of the contents of past ACC disks.
+
+ --------------------------------------------------------------------------
+
+  ACC 1		March 1990
+  -----		----------
+
+  NOTE:  This disk is NOT licensed to Amiganuts united and may be freely
+  distributed without fear of repacussions.  To obtain a copy of this
+  issue (but why?) contact Mark Meany at the address given below.
+
+  The first ACC disk was mainly a `taster' issue and did not contain
+  any tutorials or contributed source code.  The menu system used was
+  WorkBench.  The majority of the sources would not assemble as specialist
+  include file were not included (for legal reasons I think)  Also, Mark
+  had neglected to specify the data hunks as chip ram thus rendering
+  one Meg + users unable to view some of the `startup' examples.
+ 
+  Tutorials -»	None.
+
+  Source    -»  Various simple hardware, copper and bitplane routines
+  		from Mark Meany.  Also source from a Compute! book and
+  		a McGraw Hill book.  Mainly simple 68000 routines.
+
+  Utilities -»	Preferences!
+
+
+ --------------------------------------------------------------------------
+
+  ACC 2	
+  ------
+
+  NOTE:  This disk is NOT licensed to Amiganuts united and may be freely
+  distributed without fear of repacussions.  To obtain a copy of this
+  issue contact Mark Meany at the address given below.
+
+  This second issue of ACC features a `keymap' menu system.  This is
+  possibly the most awkward ACC menu of all time.
+
+  Tutorials -»	How to display a picture using copper lists by Mike Cross.
+
+  Source    -»	Mark Meany - Sprites, sprite intro, various copper bar
+		  routines, Memory scanner (lo res & hi res) plus the
+		  `fixed' source from ACC 1 :- Sine-trace, sine plot,
+		  stars, intro scroll.
+
+  Utilities -»	VirusX V3.2, BrushCon, Iconiser, QView, Iff Converter,
+  		PowerPacker V2.2a
+
+
+ --------------------------------------------------------------------------
+
+  ACC 3
+  -----
+
+  NOTE:  This disk is NOT licensed to Amiganuts united and may be freely
+  distributed without fear of repacussions.  To obtain a copy of this
+  issue contact Mark Meany at the address given below.
+
+  This was the first time that the Nico Francois menu program `Selector'
+  was ever used on an ACC disk.  This disk contains two intro`s.  The
+  first, a sine intro by Mike Cross, the other a scroll text intro by
+  Gary Wright.
+
+  Tutorials -»	First steps Part one, 68000 for beginners by Mark Meany.
+		Horizontal & vertical scrolling by Mike Cross.
+
+  Source    -»	Mike Cross - Scrolling examples (to accompany tutorial)
+  		Gary Wright - A simple scroll text intro.
+  		Mark Meany - 68000 helper and sources for New Computer
+  		  Express magazine.
+
+  Reference -»  The first two chapters of the Abacus book `Amiga Machine
+  		Language'  Later withdrawn due to copyright infringement.
+
+  Utilities -»  PopDir, PowerPacker and Seka to Devpac source converter.
+
+
+ --------------------------------------------------------------------------
+
+  ACC 4
+  -----
+
+  NOTE:  This disk is NOT licensed to Amiganuts united and may be freely
+  distributed without fear of repacussions.  To obtain a copy of this
+  issue contact Mark Meany at the address given below.
+
+  This is the first time that the familiar (and somewhat garish) grey and 
+  yellow preferences were used by Mark.  Hmmm yes.
+
+  Tutorials -»	Second Steps - Part 2 of learning the 68000 by Mark Meany.
+  		Intuition Gadgets by Steve Marshall.
+  		Interrupts (illegal) by Mike Cross.
+
+  Source    -»	Dave Edwards - Sorting directories, Blitter examples + doc.
+   		Simon Knipe (supplier) - Various music reply routines.
+   		Steve Marshall - 68000 helper updated, C Printf functions
+   		  in assembly.
+   		Misc - Reading the mouse, meteors game and scroll text
+   		  examples.
+
+  Reference -»	Dave Edwards extravaganza!  Huge doc files covering :-
+		  libraries: exec, intuition, graphics and maths 
+		  plus workbench, semaphore, interrupts and the 68020
+		  processor.		
+
+  Reviews   -»	Copier, X Copy II reviewed by Simon Knipe.
+
+ --------------------------------------------------------------------------
+
+ ACC 5		
+ -----		
+
+ See's introduction of A68K front end. Sectorama is reviewed. Simon Knipe
+presents his PD list.
+ 
+
+ Tutorials -»	Basic Copper lists by Mark Meany.
+		Third installment in beginners series.	
+
+ Source    -»	Dave Edwards - using viewports.
+		D.Owens - Random Numbers.
+		Mark Flemans - Madness Intro.
+		Mark Meany - DOS subroutine inc 2 simple utils. Reusing
+		  hardware sprite channels. Reading the CLI parameters.
+		Simon Knipe - Raw sample to Executable. Convert text into
+		  scroll text. 64 colour version of MJC's Zoolook code.
+		Steve Marshall - Using multiple ViewPorts. Using the ARP
+		  file requester.
+
+
+ --------------------------------------------------------------------------
+
+  ACC 6		November 1990
+  -----		-------------
+
+  Tutorials -»	Beginners guide to the 68000 Part four by Mark Meany.
+  		Intuition Menu programming by Steve Marshall.
+  		ARP File requesters by Steve Marshall.
+  		Programming the Blitter by Mike Cross.
+  		Guru codes and their meanings by Mike Cross.
+
+  Source   -»	Mike Cross - Devpac 2 mock screen.
+  		Mark Flemans - Screen printer, function key loader.
+  		Mark Meany - MyMore text viewer, sprite, file length.
+  		Simon Knipe - Read Cli Parameters, intuition routines.
+  		Jack Young - Sine bobs, dotty (plot routine), Spectrum
+  		  to Amiga screen transferer.
+  		PD Source - ARP File requester.
+
+  Reference -»	Exec and Hardware docs by Dave Edwards.
+
+  Project   -»  All the Assembler `include' files generated by ConvertFD,
+		plus some ACC source examples.
+
+  Utilities -»	PPMore V1.6a, Guru, Tetra Copy.
+
+  Reviews   -»  Copier: Tetra Copy reviewed by Simon Knipe.
+		Library: PowerPacker library reviewed by Mark Meany.
+
+
+ --------------------------------------------------------------------------
+
+  ACC 7		December 1990
+  -----		-------------
+
+  This disk includes a piece of GMC music playing along-side the Selector
+  menu.  Very annoying!
+
+  Tutorials -»	Intuition - Starting off by Mark Meany.
+
+  Source    -»	Simon Knipe - Misc 68000 routines.
+		Mark Flemans - Copper and blitter examples.
+		Sea Hawk - Scroller, boot loaders and code, intro.
+
+  Reference -»	Graphics library functions by Dave Edwards (3617 lines 
+                  long!)
+
+  Project   -»  ACC Assembler progress report.  
+		Source includes - Assembler editor, ConvertFD1.2, 1.3,
+		and miscellaneous intuition routines by Mark Meany.
+
+  Utilities -»	PPMore V1.6, ATool plus docs.
+
+  Misc      -»  A `Computing Guide' by Dave Edwards.
+
+
+ --------------------------------------------------------------------------
+
+  ACC 7 Extra	January 1991
+  -----------	------------
+
+  NOTE: This disk is not licensed to Amiganuts united and may be freely
+  distributed without fear of repacussions.  To obtain a copy of this
+  issue contact Mike Cross at the address given below.
+
+  ACC 7 Extra was an experimental supplement disk organised and compiled
+  by Mike Cross.  There was to be a follow up Extra disk to accompany
+  the release of disk twelve but due to lack of material being sent for
+  inclusion, the disk only ever got half full.
+
+  Tutorials -»	Text scrolling by Mike Cross.
+
+  Source    -»	Mike Cross - Sixteen colour scroller, graphics library
+		  scroller, dual font scroller, copper sine wiggle,
+		  mad sine intro, unroll screen, blitter animation.
+		Simon Knipe - Source from Amiga machine language, 
+		  SquidKick helper utility.
+		PD (Depvac) - Rotate starfield, bouncing copper intro,
+		  automation sine intro, rotating vector grid.
+		PD (Seka) - Sine sprites, copper demo, blitter line draw.
+
+  Reviews   -»	Hardware reference manual reviewed by Mike Cross.
+
+  Misc      -»	Cows 'jokes' and BBS quotes doc supplied by Simon Knipe.
+  		Link virus warning by Mike Cross.
+  		
+
+
+ --------------------------------------------------------------------------
+
+  ACC 8		January 1991
+  -----		------------
+
+  Tutorials -»	Programming the 68000 final part by Mark Meany.
+  		Intuition - Introduction to gadgets by Mark Meany.
+  		
+  Source    -»	Steve Marshall - Multiple viewports, CIA interrupts,
+  		  ARP requester patch, mutually exclusive gadgets
+  		Mark Meany - Match Word, match anagram and make words.
+  		Steve Windmill - Intro.
+  		Subroutines - UCase, bubble sort.
+
+  Utilities -»	PPMore V1.6a
+  
+  Reference -»	ARP old/new docs.
+
+  Project   -»  ACC Assembler, the source so far.
+  
+  Reviews   -»	PD: PCQ Pascal reviewed by Mark Meany.
+
+  Misc      -»	A competition that nobody bothered to enter.
+  
+
+ --------------------------------------------------------------------------
+
+  ACC 9		February 1991
+  -----		-------------
+
+  Tutorials -»	Introducing libraries `Exec & Dos' by Mark Meany.
+  
+  Source    -»	Blaine Evans - Sprites, moving, animating & colliding.
+  		Mark Meany - PowerPacker library examples, ARPDecrunch,
+  		  PPPlay.
+ 		Dave Edwards - Bob animation + doc, assembler amiga.lib,
+ 		  dead key convert, graphics functions.
+ 		Simon Windmill - Intro.
+ 		Leon Skeldon - Sprites, helper info utility.
+  		
+  Reference -»	PowerPacker library & routines - Public Domain.
+  		Boot blocks by Dave Edwards.
+  		Using `include' files by Mark Meany.
+  		 
+  Utilities -»	PPMore V1.7, FontMaster, FontConvert, ARPDecrunch,
+  		PPPlay, 68000 helper.
+  
+  Misc      -»	Introduction to comms.
+  		Example from ACC 7 Extra`s
+  			
+  
+ --------------------------------------------------------------------------
+
+  ACC 10	March 1991
+  -----		----------
+
+  Tutorials -»	The Dos library part two by Mark Meany.
+  		No Fast Reset by Mike Cross
+  		Hardware collision detection by Mike Cross.
+  		Fonts by Neil Johnston.
+  		
+  Source    -»	Neil Johnston - Text scroller, vertical scroller + Doc.
+		Blaine Evans - sixteen colour sprites, three layered ball
+		  stars, dual playfield scrolling.
+		Jack Young - Cli LPrint.
+		MegaBass - Monitor demo, two way scroller.
+		Mark Meany - Speech, amiganuts backdrop.
+		Mike Cross - Cli `CLS' command, graphics library text()
+		Dave Edwards - Animation + docs.
+		Leon Skeldon/Hearwig - Various simple blitter routines,
+		  dual playfields, sprite moving, menu.
+
+  Project   -»	ACC Assembler progress.
+  
+  Utilities -»	PPMore V1.7, ARPDecrunch.
+  
+  Misc      -»	PD reviews by Ronnie James.
+  
+  
+ --------------------------------------------------------------------------
+
+  ACC 11	April 1991
+  ------	----------
+
+  Tutorials -»	Dos Library Part 3 by Mark Meany.
+  		Using exec call `RawDoFmt()' by Mark Meany.
+
+  Source    -»  Blaine Evans - Demo, colour fading, parallax scrolling.
+  		Neil Johnston - Screen typer, scrollers, ascii encrypter.
+		Mark Meany - Boot block source, Speech and printer device
+		  examples, graphics library scroller, intuition window
+		  hack, PPMuchMore, prime and square number calculations,
+		  calculator (unfinished)
+		Simon Knipe - Noise & Delta tracker players, function
+		  key menu, text file displayer, mouse control, stop
+		  drive clicking source (PD)
+		Leon Skeldon - Dragon intro, dual playfields, double
+  		  buffering, mouse/joystick control and movement.
+	
+  Utilities -»	PPMore V1.7, ArpDecrunch, TXED Plus.
+
+  Misc      -»  Raw Key Codes, Iff diagram by Simon Knipe.
+
+
+ --------------------------------------------------------------------------
+
+  ACC 12	May 1991
+  ------	--------
+
+  Special `1st Birthday' 2 disk issue.
+
+  Tutorials -»	Intuition Part one by Mark Meany.
+  		Using amiga.lib by Steve Marshall.
+  		
+  Source    -»	Blaine Evans - Demo, galax game.
+		M.Meany - Source to A68K front End, Source to Words v3,
+		  Window Printing Utility, PPMuchMore utility.
+  		Neil Johnston - Gfx ripper, textMaster, sleeping window,
+  		  requester.
+  		Steve Marshall - Med Replayer, Ilbm routines + doc.
+  		Steve Sarrimond - Blitter animation, tiles, tiles editor.
+  		Steve Suitor - `King Tut' blitter example.
+  
+  Utilities -»	Iff Converter, Seka 2 Devpac converter, Minterm, Guru
+		analyzer, Data 2 Object, Copper Monitor, Brush to Source,
+		Sprite Editor, PowerPacker, ARPDecrunch, Crunch, Decrunch,
+		Sid V1.06, Xoper, TXEd, BlitzFonts.
+		 
+
+ --------------------------------------------------------------------------
+
+  ACC 13	June 1991
+  ------	---------
+
+  Tutorials -»	Intuition Part 2 by Mark Meany.
+  		RawDoFmt by Mark Meany.
+
+  Source    -»	Blaine Evans - Menus, two of them.
+  		Neil Johnston - TextMaster, Sprite examples and another
+  		  menu.
+  		Master Beat (supplier only) - 3D vector equalizers and
+  		  various other 3D vector routines, and a sine scroller.
+  		Mark Meany - Objector, TextMaster, ShowMem.
+		Leon Skeldon - Custom pointers, options screen, menu source.
+  	
+  Utilities -»	PPMuchMore V1.0, ARPDecrunch, Objector and TextMaster.
+
+  Reviews   -»	PD: Virus doc review and various PD disk reviews.
+
+
+ --------------------------------------------------------------------------
+
+  ACC 14	July 1991
+  ------	---------
+
+  Tutorials -»	Intuition Part three (gadgets) by Mark Meany.
+  		`C' Programming Guide parts one to three by Dave Edwards.
+
+  Source    -»	Blaine Evans - NoiseTracker equalizers, 68000 blit routine.
+  		Neil Johnston - LED glow, boot menu (pd), Dos `read' notes. 
+  		Steve Marshall - CloseWindowSafely() routine.
+  		Mark Meany -  Graphics library GEL`s - sprites & bobs,
+  		  Iff2Int, Text viewer, IffPic + Noisetracker slideshow.
+		Leon Skeldon - Graphics multi-loaders, slideshow, screen-
+  		  builder.
+  	
+  Utils     -»  ARPDecrunch,  PPMuchMore.
+
+  Reference -»	Area Fill Algorithms by Dave Edwards.
+  		Fractals by Dave Edwards.
+
+
+ --------------------------------------------------------------------------
+
+  ACC 15	August 1991
+  ------	-----------
+
+  At last ACC has its own new menu system!  Coded by Mark Meany, with
+  what is possibly the most garish colour palette ever used (Mark, do
+  you have colour on your TV/Monitor?)  The menu also requires the
+  user to be a tenth dan black belt mouse operator.
+
+  Tutorials -»	Beginners guide to hardware by Mark Meany. ( Hmmm, an 'at a 
+		glance' guide to the hardware ). Some misconceptions here
+		methinks. I'm allowd to 'methinks' like this because I edit
+		the disk! ). Covers hardware basics, Copper and bitplanes ).
+  		Optimising the blitter by Leon Skeldon.
+
+  Source    -»	Blaine Evans - two Equalizer routines.
+  		Mark Flemans - Mouse & F-Keys Menu routines, text displayer.
+  		Mark Meany - New ACC menu routines with docs, Centralising
+		 text on a line, ByteRun cruncher & decruncher source, Screen
+		 melt & unmelt routines, hardware text displayer, version of
+		 Leons game using ByteRun crunched gfx. 
+  		Simon Windmill - Unity disk mag, space panic game,
+  		  Fixed fast Noisetracker replayer
+  		Trevor Mensah - two hardware menu/mag routines, exec vector
+		  checker, re-route guru routine, hard reset, nofastmem.
+		TreeBeard - Bob reflections, vertical scrolling, bob
+		moving, 3D rotating vector bobs, `Join' utility.
+		Leon Skeldon - Cookie cut bobs, scrolling, mask maker,
+  		  Tron `light cycle' game.
+ 		
+  Utilities -»	FontMasterII and an Iff Converter (which guru`s on a V1.3)
+
+
+ --------------------------------------------------------------------------
+
+  ACC 16	September 1991
+  ------	--------------
+Still using that dreadful menu system!
+
+Tutorials
+---------
+M.Meany	Rotations, theory and practise.
+M.Cross	Hardware Sprites
+S.Marshall Devices - an introduction.
+
+Source
+------
+AXAL -- Various 'equaliser' routines. Colour fader, using predefined list.
+	ProTracker replayer.
+Blaine-	Hardware startup code for HiRes, HAM, Interlaced and PAL displays.
+	Timer routines.
+D.Barnard - Basic Dual Playfield scroller.
+M.Meany	Hardware bob routines using linked lists. SADDAM virus notes and very
+	basic protection code. A very simple shrink algorithm.
+M.Cross	Animated, 16 colour, sprites. Blitting into a Copper List ( Plasma
+	basics ). A stopwatch timer.
+Raistlin Make CoOrds, a utility that generates x,y coords for a bob moved
+	around a screen as dc.w's. Interleaved Bobs. Parallax copper bars
+S.Marshall Input Handaler example. Unrelocating a MED module.
+J.Kennedy Squamble - a complete Scramble clone.
+PD	Stand alone PowerPacker decrunch source, Nico Francois.
+
+ --------------------------------------------------------------------------
+
+  ACC 17	October 1991
+  ------	------------
+
+  At last; after seventeen issues ACC gets a decent menu system!  The new
+  ACC menu coded by Mark Meany, and utilising intuition gadgets/screens
+  makes ACC a joy to read.  It is a shame Mark has such a strange idea of
+  nice colours though!  The white text on a cyan background is a slight
+  strain on the eyes, even on a colour monitor.  Mark, please lower the
+  cyan to blue!
+
+  Tutorials -»	Exec vector info by Trevor Mensah.
+  		3D vector balls by Mark Meany.
+  		Screen Typer by Mike Cross.
+  		Blitter `line draw' mode by Treebeard (do you have a name?)
+  		`C' Programming Part four by Dave Edwards.
+  		Using the Dos library by Dave Edwards.
+		Negative blitter modulo`s by Leon Skeldon.
+  	
+  Source    -»	Axal - 60Hz mode, intro, `tracker players, colour fader.
+		Blaine Evans - Boot scroller, four blitter simulators.
+		Mike Cross - Virus killer, screen typer, typer with stars.
+		Mark Flemans - Show boot block utility, dos menu.
+		Neil Johnston - Colour fader.
+		Trevor Mensah - Avail chip memory, hex converter, dir,
+		  copper cycle, encrypter, unpacker, track loader, vector-
+		  line removal, MFM trackdisk reader, font displayer, disk
+		  installer.
+		Treebeard - Data file creator, hires/lores text displayer.
+
+  Reference -»	Full 68000 instruction set by Dave Edwards.
+
+  Project 2 -»	The `acc.library'  Mark Meany lays down the rules regarding
+  		library creation and requests ACC readers forward ideas
+  		and routines for inclusion in the acc library.
+  		  
+  Reviews   -»  Book: Mapping the Amiga, reviewed by Dave Edwards.
+
+  Misc      -»	`Useful Snippets' of code by Mark Meany.
+
+
+ --------------------------------------------------------------------------
+
+  ACC 18	November 1991
+  ------	-------------
+
+  Tutorials -»	Intuition Part four (Gadgets continued) by Mark Meany.
+  		Building Gadgets (using ImageMaker) by Mark Meany.
+  		Using `Linkable' files by Mark Meany.
+
+  Source    -»	Blaine Evans - 68000 Block blits (3)
+  		Dean - Disk coder/decoder, colour merging, hardware
+  		  disk reader.
+  		Mark Flemans - Fortune cookie, sine text, sine scroller.
+  		Mark Meany - Intuition clock, boxes, buildDCB utility,
+  		  ImageMaker utility, Follow2 (80 animated bobs), vilbm,
+  		  saddam virus checker.
+		P. Lisham - Keyboard interrupts.
+		Trog - Disk `cracking' routines, menu boot utility.
+		Music players - ProTracker (2), NoisePacker, JamCracker.
+
+  Utilities -»	M&M`s Virus Killer and ImageMaker.
+
+  Reviews   -»	PD: PowerPacker V4.0a reviewed by Mark Meany.
+
+
+ --------------------------------------------------------------------------
+
+  ACC 19	December 1991
+  ------	-------------
+
+  Tutorials -»	Intuition screens by Mark Meany (in MM directory)
+ 		There is an error on the tutorial menu.  None of the
+ 		tutorials displayed are actually on the disk.  Mark
+ 		neglected to alter the tutorials from ACC 17.
+ 		 
+  Source    -»	Dave Edwards - Numeric evaluator.
+  		Dave Shaw - Selector (menu).
+  		Blaine Evans - Blitter lines and bobs.	
+  		John Grinham - Key reader.
+  		Kevan Fitzakerley - Slim disk utility.
+  		Mark Meany - WorkBench backdrop, WorkBench scroller,
+  		  window maker,
+  		Mark Meany/Blaine Evans - CIA interrupt music loader,
+  		  Pendle Europa intro.
+  		Leon Skeldon - An intro.
+  
+  Utilities -»	PowerSource (intuition structure creator), ColourKwik.
+  
+
+ --------------------------------------------------------------------------
+
+  ACC 20	January 1992
+  ------	------------
+
+  Tutorials -»	Intuition continued - (Proportional, integer and string
+		  gadgets) by Mark Meany
+
+  Source    -»	Paul Kent - 3D rotating starfield, Screen typer, colour
+  		  fading, debug module.
+		Dave Shaw - Vector scanner, Intuition requesters.
+		Blaine Evans - Cookie cutting, line draw routines.
+		Mark Meany - Lib help utility, alarm clock, numeric
+		  evaluator,  vector checker, copper list builder, super-
+		  bitmap windows, MED replayer + official docs.
+		Axal - 60HZ screens, PAL startup test, reqtools lib example.
+ 
+  Utilities -»	LibHelp by Mark Meany, Converter, Colourkwik.
+  
+  Misc      -»	Hisoft Devpac 3 review by Mark Meany.
+  		Workbench V2.04 (A500 plus) review by Mark Meany.
+  		 		
+
+ --------------------------------------------------------------------------
+
+  ACC 21	February 1992
+  ------	-------------
+  
+  Now with new improved eight colour menu!
+
+  Tutorials -»	Intuition macros and subroutines by Mark Meany.
+  		Write your own assembler by Dave Edwards.
+  		Data encryption by Dave Edwards.
+  		Polygon clipping by Paul Kent.
+  
+  Source    -»	Dave Edwards - 6809 cross assembler + docs.
+  		Blaine Evans - Sine bobs, interleaved blitting.
+  		Mark Meany - Raw sample player, random number generator,
+  		  voice editor, encrypter (competition source),
+  		  proportional gadgets.
+  		Paul Kent - Julia set fractals, relocate routine, colour
+  		fader, hardware startup routine and macros file.
+  		Timespan - Programmers calculator.
+		TreeBeard - Disk sector control, 3D isometric landscape
+		  map, parallax scrolling, rotating vector bobs and
+		  rotating vector bob gun.
+		Sidder - 3D matrix vectors.
+		Leon Skeldon - Line draw, filled circle, rotate 2D square
+		  and 3D cube, 2D rotating bob.
+
+  Utilities -»	Libhelp by Mark Meany.  ProCalc (Programmers calculator)
+  		
+ --------------------------------------------------------------------------
+ ACC 22		March 1992
+ ------		----------
+
+ New look added to menu!
+
+ Tutorials -»	Hardware disk access by Dave Edwards.
+		Disk formatting & Subroutine by Dave Edwards.
+		Detaching from the CLI by Dave Edwards.
+		3D Filled Vectors by Paul Kent.
+		Writing Sine Scrollers by Mike Cross.
+		Exec Lists by Mark Meany.
+		DOS Lists, includintg mounted volumes, by Mark Meany.
+		Exec Interrupts, Vertical Blank the legal way, by Mark Meany.
+		Basic Blitter ( in Help ) by M.Meany.
+
+ Source    -»	Trog - Adding VBlank interrupt server. Creating a Task. Start
+		  of a boot-menu utility.
+		Blaine - Fully functional 'Invaders' game.
+		Mike Cross - Bubble sort. Pixel Plotter ( good example ).
+		  Starfield subroutine. Vertical copper bars. The biggest
+		  scroll text to appear yet.
+		Kevin Gardner - Rolling copper bars.
+		Mark Flemans - NT equaliser. Hardware mouse monitor. Boot
+		  loader.
+		Mark Meany - Stand alone powerpacker decrunch routine.
+		  Source & object files for current menu system.
+		Dave Edwards - New animation routine running off blitter
+		  interrupts. A new version of LibHelp with C variations.
+		Help - two fixed basic Blitter routines, includes a sprite
+		  mover by Marc Batteson.
+
+  Misc	   -»	ACC contents list by Mike Cross. Advertising Dave Edwards
+		latest docs disks, now on 2 disks.	
+ --------------------------------------------------------------------------
+
+ ACC 23		April 92
+ ------		--------
+
+ Tutorials -»	Blitter Shifting ( in Help ) by M.Meany.
+
+ Source	   -»	Axal - Cyclinder Scroller, Edited MED replay and example,
+		   Working 60Hz switcher for v2.0 machines.
+		Dave Shaw - Intuition based disk menu.
+		Marc Bateson - Horizontal & Vertical scrollers, colour cycle,
+		   Sprite star field, moving bobs ( fixed by MM ).
+		Mark Meany - Displayer a utility to display tutorials & eg's
+		   at the same time and also run the eg's, StructHelp a util
+		   that gives info on system structures, Slide a naff slide
+		   show proggy.
+		Paul Kent - Tanx game, or a least a development version.
+
+ Utils	   -»	Scrunch, a general purpose game coders tool.
+		LibHelp, displays entry parameters for library functions.
+		StructHelp, displays details on system structures.
+		ColourKwik, alter coulurs of any screen.
+ --------------------------------------------------------------------------
+
+ ACC 24		May 92
+ ------		------
+
+ Tutorials -»	Intuition Screens by M.Meany, presented using Displayer.
+		Interleave Bobs & Playfields by M.Meany.
+		Raw Fonts ( in Help ) by M.Meany.
+
+ Source	   -»	Marc Bateson - Rolling Copper Bars, Drawing Ellipses, A test
+		   proggy for playing with Preferences.
+		Mark Meany - Updated Displayer utility, MapEd a utility to
+		   design maps from tiles, Game bare guts of an 8 direction
+		   scrolling maze game.
+		Paul Kent - Tanx source repeated, hacked by MM to accept maps
+		   created using MapEd.
+		Raistlin - Two 'compact' menus
+
+ Utils	   -»	IFFConverter yet again to accompany tutorials.
+
+ --------------------------------------------------------------------------
+
+ ACC 25		July 92
+ ------		-------
+
+ To make room for everything on this disk, it was necessary to remove the
+printer driver. Hence, files cannot be printed from the menu displayer.
+
+ There was a one month interlude between issues 24 and 25.
+
+ Tutorials  -»	More Fractals by Dave Edwards
+
+ Source     -»	Marc Bateson - Amimated Bob, Interesting 'Screen Pour' effect
+		 using the Blitter, also ' Bob Pour ' effect.
+	    	Martin McKenzie - Joystick controlled animated bob, function
+		 key menu, vertical scrolling using 64x64 tiles from a map.
+		Mark Meany - Example of using ClipBlit() with a SuperBitMap
+		 window. Screen builder using 16x16 tiles, implements eight
+		 way scrolling around playfield.
+		Paul Kent - Direct disk access routines, Comprehensive
+		 textwriter routines, hardware trace routines, memory
+		 management routines, lh decrunch routine. Sample replayer
+		 routine ( interrupt driven ). All routines come with
+		 examples of implementation. Slideshow program.
+		Treebeard - Liquid Simulator ( novelty program ), FFP->ASCII.
+		Steve Marshall - ASL File & Font requesters. Identify DOS
+		 version. CLI parameter parsing under DOS 2.04. Patch routine
+		 for Platinum Scribble running on v2.04 machine. Startup
+		 routine for v2.04 machines. Attempt at making PPMMore v2.04
+		 compatible.
+
+ Misc      -»	PPLink - Linker that can handle PowerPacked files & Libs.
+		EarthMagic - Routines to use in conjunction with PPLink to
+			    make a file 'Pure'.
+		Dis - Powerful file disassembler, comes with a disassembler
+		     library that can be called used in your own code.
+		Lh - Crunch/Decrunch routines & library. More efficient than
+		    PowerPacker. 
+
+ --------------------------------------------------------------------------
+
+ ACC 26		August 92
+ ------		---------
+
+ Tutorials	Audio DMA ( including spot sound fx ) by M.Meany
+		IFF Files ( part 1 ) by M.Meany
+
+ Source     -»	Axal - Using sprites for screen backgrounds, paralax scroll
+		 example. Music fade code using power tracker replayer.
+		 Screen builder to accompany ExertMapper. Amiga to VAX util.
+		Dave Edwards - Start of 'Defender' game, employs a number of
+		 programming tricks in these early stages. Runs!
+		Dave Shaw - Gettin information about floppies from DOS.
+		EarthSoft - v1.3 -> v2.0 patch program for programs that try
+		 to get FAST memory when there isn't any. EarthRexx, a complete
+		 programmers interface to Rexx. EarthRexx comes with extensive
+		 documentation.
+		Martin McMkenzie - HAM (??) bob example. Beginning of a high
+		 score table routine.
+		Mark Meany - AvailMem utility. File O Fax utility for HD users.
+		 Pools random number generator ( not rich yet! ). Examples of
+		 conditional assembly, using DOS Seek() and VER$ in sources.
+		 Start of a powerpacker patch utility. Save IFF-ILBM routine.
+		 New set of system macros with documentation and examples.
+ 
+ --------------------------------------------------------------------------
+
+ ACC 27		September 92
+ ------		------------
+ Yet another variation of the ACC menu makes an appearence, this one coded
+in C??
+
+ Tutorials  -»	Collision Checking Using the Blitter by M.Meany
+
+ Source     -»	A.Gibson - A number of Copper routines with complementary
+		 text. Also Screen scroll and colour fades.
+		D.Edwards - Defender ... phase 2.
+		EarthSoft - ArpWild, a utility for WB2.0 that permits use of
+		 * as a CLI wildcard. UpDateCat, a disk catalogue program
+		 written in REXX.
+		M.Meany - Breakout, the worst version ever! Using Seek(). The
+		 C source for the new ACC menu. DateString subroutines. New
+		 version of file-o-fax utility, 1.3 compatible.
+		P.Kent - All Pauls include files for hardware bashing plus a
+		 slideshow program to test them.
+		S.Marshall - Application Icon example.
+		T.Champion - Swap, swaps file names. Pro, set file protection
+		 from WorkBench. Colour, save colour preferences as an icon.
+
+ Misc     -»	Devpac 3 bugs by Arcane Jill.
+		WhereIs a utility from EarthSoft, can be used with file
+		 catalogue program.
+
+ --------------------------------------------------------------------------
+ ACC 28		October 92
+ ------		----------
+
+ Due to amount of material on this disk, all source has been archived. It can
+still be reconstituted from the main menu onto separate disks though.
+
+ Tutorials  -»	Audio device, hardware & system, by S. Marshall
+		Split displays ( multi-resolution ) from hardware by M. Meany
+
+ Source     -»	Arcane Jill - Numbers Game, for solving criptics arithmetic
+		 puzzles from C4 game show.
+		Dave Edwards - Defender - phase 3.
+		EarthSoft - Earth.library, a feature packed run time library
+		 for C and assembly language programmers. Contains a number
+		 of useful IO routines.
+		Mark Meany - Split Display example. Background collision
+		 checking example missed from last month.
+		Paul Douglas - Dogs In Space 'Invaders' game, executable only!
+		 Defender skeleton source.
+		Paul Kent - Zoom, hardware shrink/enlarge code. Tank-Attack
+		 game, full version including level editor. Well worth looking
+		 at as this implements 4 player joystick control amongst other
+		 things.
+
+ Misc	     -»	ReSource review by D.Edwards.
+		DOS2 documentation by D.Edwards. This covers DOS packets and
+		 a number of low level DOS operations.
+		Guru Meditations by D.Edwards.
+
+ --------------------------------------------------------------------------
+ ACC 29		November/December 92
+ ------		--------------------
+
+ Now on two disks, so source is not crunched and can be assembled direct from
+the disk. Also, executables of most source can be run from the main menu:)
+
+ Tutorials   -»	Reqtools library by M.Meany ( consists mainly of examples )
+
+ Source	     -»	TreeBeard - Decrunch directory, a recursive utility that will
+		 decrunch all packed files from a directory ( and all nested
+		 subdirectories ) to a specified destination.
+		Martin McKenzie - Blitter collision checking, though slightly
+		 adrift horizontally.
+		Mark Meany - Serial device examples for pasing data between
+		 two Amigas using a NULL modem cable. Start of an Intro for
+		 Assassins games collections.
+		Dave Edwards - Defender, phase 4. At last looking like the
+		 real thing. I enjoyed it!
+		Steve Marshall - OctaMED 8 channel replayer. As requested by
+		 Axal on a previous disk, can be run from hardware bashing
+		 code. Also source to un-relocate an OctaMED module.
+		EarthSoft - Update to earth.library presented on Issue 28.
+
+ Misc       -»	The reqtool package in archived form.
+
+ --------------------------------------------------------------------------
+
+ ACC 31		September 93
+ ------		------------
+
+ Tutorials  -»	
+
+ Source     -»	M.Meany - Displayer, final version of the ACCM displayer
+		 program. HamLog, start of a simple database program that
+		 uses generic random access file routines. LabelPrint, a
+		 utility to print 3.5 inch disk labels from IFF files.
+		 MacMouse, a hardware utility that changes direction of
+		 mouse pointer according to dirn of motion. Generic random
+		 access file routines. Shopper Demo, source for the ACCM
+		 demo featured on Amiga Shopper cover disk. WinAnim, code
+		 to animate a logo in a window. IFF -> Sprite converter.
+		 FormFill source. Tracking mouse moves under hardware
+		 control.
+
+		C.Coleman - AGA Copper lists and an AGA mandel generator
+		 along with notes.
+
+		P.Mangan - Module player.
+
+		S.Davis - Number base converter. About Clock, a neat utility
+		 that comes up with expressions like 'it's about 5 to 4'.
+
+		
+ Utils      -»	BaseConverter, DumpSprite, DumpSource, MakeGraf.
+
+ --------------------------------------------------------------------------
+
+ ACC 32		December 93
+ ------		-----------
+
+
+ --------------------------------------------------------------------------
+ Index compiled by Mike Cross, January 1992.
+ Addittions by Mark Meany since then.
+ --------------------------------------------------------------------------

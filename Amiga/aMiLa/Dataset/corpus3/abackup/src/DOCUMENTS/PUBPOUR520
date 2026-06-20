@@ -1,0 +1,85 @@
+
+[********** TEXTE EN FRANCAIS CI-APRES ***********]
+
+If your Amiga has a hard-drive, and chances are that it does, then you may
+be interested to know that a new version of ABackup is available. The author
+of this powerful and full-featured backup utility has informed us that
+release 5.20 of the program has been uploaded to Aminet, on Valentine's Day.
+
+May we remind you that, in addition to a very clean interface which doesn't
+require any additional library or graphical system like MUI, ABackup offers
+the following features :
+
+- Both full and selective backup and restore operations. You can select
+  the files by name of pattern, by date, by protection bits, but also one
+  by one. You can also record a selection, and get it back later.
+- Backup to floppy disks (with support for High Density disks and for the
+  "diskspare.device"), to partitions (a SyQuest cartrige for example), to
+  an archive file, or to a SCSI tape drive. Optional data compression (using
+  the XPK system or via an external program), data encryption, verification,
+  and archive bit setting.
+- Restore to any directory, with or without restoring the original directory
+  tree. Handling of already existing files. Optional restoration of files
+  date and of empty directories.
+- Backup of non-AmigaDOS partitions (PC, Mac, UNIX, ...)
+- Allows full operation automatization : you can, for example, start a
+  backup just by a double-click over an icon.
+
+Although this already sounds quite good, these are only the main features
+of ABackup : you'd better take a look at the program, if you want to see
+how much it has to offer.
+
+This new ABackup version provides full support for removable disk systems,
+like SyQuest, ZIP and Jaz units. In these times when hard-drives are
+becoming larger and larger, this lets you use such systems as large floppy
+disks. So, your backup will only require a few removable disks instead of
+a huge pile of floppies. Of course, it will also be much faster. Before
+using them with ABackup, you will have to partition your removable disks
+with HDToolBox (in order to create the disk's RigidDiskBlock) but this
+is the only thing that may disturb ZIP and Jaz owners.
+WB_2.x
+
+[********** ENGLISH TEXT JUST ABOVE **********]
+
+Si vous avez un disque dur dans votre Amiga, ce qui est certainement le
+cas, vous serez sans doute intéressé d'apprendre qu'une nouvelle version
+de ABackup est disponible. L'auteur de cet utilitaire de sauvegarde puissant
+et complet nous a informé que la version 5.20 de ce programme avait été
+envoyée sur Aminet, le jour de la Saint-Valentin.
+
+Rappelons que, en plus d'une interface agréable et claire qui ne nécessite
+aucune bibliothèque additionnelle ni de systême comme MUI, ABackup offre
+les fonctionnalités suivantes :
+
+- Sauvegarde et restauration totales ou sélectives. Choix des fichiers
+  par nom ou motif, par date, par bits de protection, mais aussi de facon
+  individuelle. Possibilité de mémoriser une sélection et de la ré-utiliser
+  plus tard.
+- Sauvegarde sur disquettes (avec gestion des disquettes Haute Densités et
+  reconnaissance du "diskspare.device"), sur une partition (par exemple une
+  cartouche SyQuest), sous forme d'un fichier archive, ou sur un dérouleur
+  de bande SCSI. Compression des données (par le système XPK ou par un
+  programme externe), cryptage des données, vérification des écritures,
+  et positionnement du bit d'archive optionnels.
+- Restauration possible dans un autre répertoire, avec ou sans reprise de
+  l'arborescence originale, et choix du traitement des fichiers existants
+  déjà. Restauration de la date et des répertoires vides optionels.
+- Sauvegarde de partitions non-AmigaDOS (PC, Mac, UNIX, etc...).
+- Automatisation complête des opérations possible : permet par exemple le
+  démarrage d'une sauvegarde rien qu'en double-cliquant sur une icône.
+
+Bien que tout cela ne semble déjà pas inintéressant, il ne s'agit là que
+des caractéristiques principales de ABackup : jettez donc un coup d'oeil
+à ce programme, si vous voulez savoir ce qu'il a réellement à offrir.
+
+Cette nouvelle version de ABackup apporte la gestion des systèmes de disques
+amovibles, comme les unités SyQuest, ZIP et Jaz. Alors que les disques durs
+offrent de plus en plus de capacité, ceci vous permettra d'utiliser de telles
+unités de la même façon que des lecteurs de disquettes. Ainsi, vous n'aurez
+plus besoin que d'un petit nombre de disques amovibles pour vos sauvegardes,
+plutôt qu'une énorme pile de disquettes. Sans compter que la sauvegarde
+sera bien plus rapide. Avant d'utiliser vos disques amovibles avec ABackup,
+il vous faudra simplement les partitionner à l'aide de HDToolBox (pour créer
+le  RigidDiskBlock), ce qui est la seule chose qui pourra perturber les
+possesseurs de lecteurs ZIP ou Jaz.
+

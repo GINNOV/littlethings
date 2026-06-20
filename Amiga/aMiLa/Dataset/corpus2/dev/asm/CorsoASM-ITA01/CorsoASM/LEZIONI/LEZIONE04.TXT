@@ -1,0 +1,904 @@
+
+ CORSO DI ASSEMBLER - LEZIONE 4
+
+In questa lezione impareremo a visualizzare delle figure in varie risoluzioni
+tramite la copperlist. Fino ad ora abbiamo potuto cambiare solo il colore0,
+ossia il $dff180, con cui abbiamo fatto delle sfumature, ma chiaramente le
+figure non si fanno a forza di WAIT!!! Per visualizzare una normale figura IFF,
+creata col Deluxe Paint, Digitalizzata, scannerizzata o renderizzata con un
+programma di ray tracing quali Imagine o Real 3d non serve alcun WAIT!!!!
+Basta dire al copper che risoluzione grafica ha la figura (numero di colori,
+risoluzione hires o lowres, interlacciata o meno) tramite il registro BPLCON0,
+ossia il $dff100, che per ora abbiamo sempre mantenuto col valore $200, che
+indica: SOLO IL COLORE DI SFONDO SENZA IMMAGINI IN "SOVRAIMPRESSIONE".
+E' per questo che se in una copperlist del genere cambiamo ad esempio il
+color1, ossia $dff182, non accade nulla: perche' non e' abilitato nessun
+BITPLANE, ossia "piano di bit", ma solo lo "SFONDO", il cui colore puo' essere
+cambiato col $dff180. Dopo aver definito il numero di colori e la risoluzione
+grafica (ad esempio 320x200 pixel, dove per PIXEL si intende ognuno dei piccoli
+punti che compongono la figura), avendo indicato dove si trova la figura da
+visualizzare mettendo il suo indirizzo negli appositi PUNTATORI (registri come
+il $dff080 (COP1LC) dove invece viene messo l'indirizzo dei bitplane), bisogna
+definire i colori della figura, ossia la PALETTE ( cioe' la "TAVOLOZZA" dei
+colori definita dal programma di disegno (es. DeLuxe Paint) per la figura
+in questione), oppure la figura apparira' con i colori sbagliati.
+In pratica dobbiamo mettere in copperlist i registri colore necessari, se
+la figura e' a 4 colori dobbiamo definire i 4 colori:
+
+	dc.w	$180,$xxx	; color 0
+	dc.w	$182,$xxx	; color 1
+	dc.w	$184,$xxx	; color 2
+	dc.w	$186,$xxx	; color 3
+
+Questo pezzo di copperlist comunque lo salva direttamente il KEFCON
+
+Ci sono anche altri REGISTRI che regolano la dimensione della figura per
+farla di dimensioni "SPECIALI", come l'OVERSCAN che la rende piu' grande, o
+si puo' fare una "finestrella" che occupi solo una parte dello schermo.
+Altri registri speciali sono i MODULI, usati spesso per gli effetti di
+allungamento delle figure. Nei primi esempi comunque manterremo i registri
+speciali azzerati o comunque con i valori normali per visualizzare una
+figura. Innanzitutto deve essere chiaro che c'e' differenza tra un file IFF,
+ossia una figura nel formato standard caricabile dal DeLuxe Paint, e la
+figura REALE (detta RAW o BITMAP) che sta in memoria e viene visualizzata dal
+copper. Nel disco e' presente un programmino capace appunto di convertire
+figure in formato IFF nel formato RAW indispensabile per visualizzare le
+figure direttamente con il COPPER. Le figure in realta' sono composte di molti
+0 ed 1, come tutti i dati BINARI in memoria. Abbiamo gia' visto che ogni dato
+in memoria e' composto di BIT, ossia di zeri e di 1, che sono gli unici 2 stati
+possibili della memoria (essendo possibile solo PASSAGGIO DI CORRENTE e ASSENZA
+DI CORRENTE); per comodita' usiamo il sistema decimale e esadecimale, ma la
+realta' e' sempre quella dei BIT. Allora come e' possibile visualizzare una
+figura a 32 colori quando i bit possono essere solo 0 ed 1??? Se mettessimo in
+memoria una specie di foglio di carta a quadretti con dei quadretti anneriti
+(ossia 1) ed altri bianchi (ossia zero) potremmo solamente lavorare con 2
+colori, il nero e il bianco, come i vecchi computer con i monotor a fosfori
+verdi che potevano visualizzare solo il colore di sfondo (i bit a zero) e
+certi disegni o parole fatte di bit accesi (ad 1).
+Con il COPPER si puo' anche operare in questo modo, a 2 colori, basta ACCENDERE
+UN SOLO BITPLANE. In questo caso dovremo mettere in memoria la figura RAW,
+composta similmente al foglio di carta millimetrata descritto prima, con dei
+punti "accesi" e dei punti "spenti". Fino qui tutto dovrebbe essere chiaro:
+e' come fare la battaglia navale! Una nave sarebbe per esempio fatta di un
+certo numero di PIXEL (punti), allo stesso modo si puo' fare qualsiasi cosa:
+
+ UN UOMO:				  UN AEREO (ho risparmiato gli zeri!)
+						      11
+000011100000	      000001100000		     1111
+000001000000	      000010010000		     1111
+000111111000	      000010010000	     111111111111111111111
+000101101000	      000111111000	   1111111111111111111111111
+000101101000	      000100001000		     1111
+000011110000	      000100001000		     1111
+000010010000					    111111
+000010010000		 UNA "A"                   11111111
+000010010000
+000110011000
+
+Quando la figura e' grande conviene chiaramente farsela col programma di
+disegno o scannerizzarla, poi convertirla in RAW (0000110101...) col programma
+in questo disco (KEFCON). Per definire il colore di sfondo (gli zeri) bastera'
+mettere un dc.w $180,$000 (nero), per definire il colore degli 1 bastera'
+mettere un dc.w $182,$0f0 (verde).
+Per le figure a piu' colori il trucco e' questo: i vari BITPLANES, ossia PIANI
+di BIT (0001010 ecc.) vengono "SOVRAPPOSTI" in una specie di TRASPARENZA,
+per cui dove vengono sovrapposti due "1" appare un certo colore, dove sono
+sovrapposti tre "1" appare un altro colore eccetera. Tutto questo non va
+calcolato!!! Basta caricarsi la figura con l'Iffconverter e salvarla in RAW,
+poi mettere il numero dei colori e la risuluzione nel $dff100 (bplcon0), dire
+al copper dove abbiamo messo la figura RAW, mettere i colori giusti (che
+salva direttamente l'iffconverter separatamente), e la figura appare senza
+problemi. L'importante e' aver chiaro il procedimento, in pratica poi per
+convertire l'immagine IFF in RAW e modificare il sorgente ci vogliono due
+minuti.
+Innanzitutto chiariamo cosa fa l'iffconverter (nel nostro caso usiamo quello
+chiamato KEFCON, che potete caricare spostando la finestra dell'asmone e
+scrivendo nel MENU del DOS il suo nome; esistono iffconverters piu' recenti e
+con piu' opzioni, alcune delle quali spesso inutili, ma per ragioni di spazio
+e di compatibilita' con kickstart 1.3 ho deciso di mettere questo nel corso,
+poi c'e' anche il fatto che e' programmato usando i registri hardware anziche'
+il sistema operativo, dunque e' in linea col corso. Se volete usare altri
+iffconverters fate pure, ma prima imparate ad usare questo, che e' stato usato
+per fare giochi e demo gloriosi). Una immagine nella realta' abbiamo
+visto che e' un insieme di piani di bit, piu' piani per piu' colori, un piano
+solo per 2 colori. Abbiamo anche visto che per essere visualizzata servono
+i colori giusti (la palette) e la risoluzione giusta nel $dff100 (bplcon0); i
+programmatori dell'Amiga decisero di creare un formato particolare per
+memorizzare le figure e trasferirle da un programma all'altro: questo formato
+per l'Amiga e' l'IFF ILBM, ed e' in pratica composto da i bitplanes compattati
+con una certa routine per prendere meno spazio, con attaccata la palette e
+la risoluzione; un programma quando carica un immagine IFF scompatta i PIANI
+compattati, mette la palette a posto nei registri dei colori ($dff180,$dff182,
+$dff184 eccetera) e la risoluzione nel $dff100, il BPLCON0 (Sommariamente).
+Allo stesso modo quando ha una immagine in memoria, per salvarla in IFF deve
+comprimere i BITPLANES nel formato IFF, attaccarci la palette e il resto.
+L'Iffconverter fa queste operazioni: puo' caricare un RAW, e salvarlo in IFF,
+a patto che gli si dia la PALETTE e la RISOLUZIONE giusta, oppure puo'
+caricare un immagine IFF e salvarla in RAW, e puo' salvare la PALETTE gia
+nel formato dc.b $180,xxx,$182,xxx, ossia la PALETTE gia' da inserire nella
+copperlist. In altri computer si utilizzano diversi formati per le figure,
+ad esempio il GIF, il PCX e il TIFF sono usati dai PC MSDOS; oltre ad essere
+diversamente COMPRESSE le figure RAW+PALETTE, in questi computer e' diverso
+anche il sistema di visualizzazione, infatti hanno il sistema CHUNKY anziche'
+bitplane, un sistema utile quando si debbono gestire 256 colori, ma meno
+capace di quello Amiga per quanto riguarda gli SCROLL (scorrimenti) e senza
+possibilita' di cambiare la PALETTE come fa il COPPER con i WAIT.
+Le possibili risoluzioni grafiche dell'Amiga normale (non AGA) sono queste:
+
+320x256 PIXEL detta LOW RES (bassa risoluzione)
+640x256 PIXEL detta HIGH RES (alta risoluzione)
+
+L'immagine puo' essere anche piu' lunga (312 linee in overscan) oppure lunga
+il doppio (tramite l'interlace che pero' causa uno sfarfallamento).
+Anche la larghezza puo' essere leggermente aumentata con l'OVERSCAN.
+
+Le immagini in LOW RES (larghe 320 pixel) possono avere fino ad un massimo
+di 32 colori, ci sono poi 2 modi speciali detti EHB (Extra Half Bright) e
+HAM (Hold And Modify) che visualizzano rispettivamente 64 e 4096 colori, ma
+hanno delle limitazioni particolari che vedremo.
+Le immagini in HIGH RES (alta risoluzione) possono avere un massimo di 16
+colori e non dispongono di modi speciali.
+I giochi sono quasi tutti in LOW RES, per sfruttare il maggior numero di colori
+disponibili, per il risparmio di memoria (che purtroppo FINISCE!), e per la
+maggiore velocita' raggiungibile (infatti l'HIGH RES rallenta le operazioni
+maggiormente del LOW RES, inoltre bisognerebbe spostare pezzi piu' grandi di
+memoria essendo l'immagine larga il doppio!).
+Analizziamo la tecnica di visualizzazione dei colori: abbiamo detto che il
+massimo dei colori in lowres e' 32 (senza contare i modi speciali); e'
+possibile scegliere una risoluzione video con 2,4,8,16 o 32 colori. Questo
+perche' sono determinati dalla sovrapposizione di BIT, dunque ogni bitplane
+che "SOVRAPPONIAMO" aggiungiamo 2 bit ad ogni "PIXEL" che diventa "PIU'
+PROFONDO" di 2 bit: ora con 2 bit si puo' ottenere soltanto 0 ed 1, ossia
+2 colori, allora la risoluzione 320x200 a 2 colori avra' un solo BITPLANE,
+come abbiamo gia' detto. Aggiungendo un altro bitplane i colori possibili
+diventano 4, infatti si possono verificare 4 situazioni di sovrapposizione
+per ogni PIXEL: 00,01,10,11 ossia "entrambi i bit a zero", "primo bitplane a
+zero e secondo ad 1", "primo bitplane ad 1 e secondo a zero", "entrambi i
+bitplane ad 1". Aggiungendo un altro bitplane si possono verificare 8
+situazioni diverse (corrispondenti a 8 colori diversi):
+000,001,010,011,100,101,110,111   (3 bitbplanes=3 bit per PIXEL=8 possibilita')
+Aggiungendo un bitplane, il quarto, arriviamo ad 4 bit possibili per PIXEL,
+ossia 16 diverse possibilita' per 16 colori:
+0000,0001,0010,0011,0100,0101,0110,0111,1000,1001,1010,1011,1100,1101,1110,1111
+Lo stesso vale per il quinto bitplane, che porta a 5 il numero di bit per
+pixel, ossia 32 colori possibili. Dunque ogni bitplane eleva alla seconda il
+numero dei colori:
+
+0 bitplane = solo il colore di sfondo COLOR00 ($dff180), 1 COLORE
+1 bitplane = 2 COLORI
+2 bitplane = 4 COLORI (2*2, ossia 2 alla seconda)
+3 bitplane = 8 COLORI (2*2*2, ossia 2 alla terza)
+4 bitplane = 16 COLORI (2*2*2*2, ossia 2 alla quarta)
+5 bitplane = 32 COLORI (2*2*2*2*2, ossia 2 alla quinta)
+
+L'Amiga ha 32 registri per i 32 colori possibili in LOWRES, che partono dal
+COLOR0 per arrivare fino al COLOR31 (la numerazione parte contando lo zero come
+per i bit). Il color0 e' il $dff180, seguito dagli altri:
+
+$dff182 = COLOR1
+$dff184 = COLOR2
+$dff186 = COLOR3
+$dff188 = COLOR4
+$dff18a = COLOR5
+eccetera...
+
+per esempio se un pixel di una immagine lowres a 16 colori e' del colore
+dello "SFONDO", ossia del COLOR0, modificabile agendo sul $dff180, vuol dire
+che tutti e 4 i bitplanes sono a zero: 0000, mentre un pixel che ha il colore
+32, detto COLOR31, sara' il risultato di questa combinazione binaria: 1111.
+Gli altri colori sono il frutto delle altre combinazioni. L'amiga 1200 dispone
+di 8 bitplanes al massimo con il suo CHIPSET AGA, infatti puo' generare 256
+colori (2 all'ottava=256), infatti nei programmi grafici AGA si possono
+scegliere anche risoluzioni con 64 colori (6 planes), 128 colori (7 planes).
+Una schermata video e' detta anche PLAYFIELD.
+Vediamo di calcolare quanta memoria occupa una figura a 2 colori in 320*256:
+ogni linea ha 320 pixel, essendo un byte composto di otto bit, in una linea ci
+sono 40 byte (infatti 8*40=320). Allora bastera' moltiplicare 40, ossia il
+numero di byte per linea, per il numero delle linee, cioe' 256: 40*256=10240.
+Dunque un bitplane in lowres occupa 10240 bytes. Allora possiamo calcolare
+anche una figura con 4 colori, ossia 2 bitplanes: 40*256*2=20480.
+Dunque per una figura in LOWRES standard basta moltiplicare 40*256*bitplanes.
+Stabilito che in LOWRES ci sono 320 bit per linea, ossia 40 bytes, in HIRES
+essendo largo il doppio ci saranno 80 bytes per linea: 80*256*bitplanes.
+In definitiva, la formula generale per calcolare la grandezza e':
+
+	Byte per linea * linee del playfield * numero bitplane
+
+Analizziamo ora il BPLCON0, il registro dove va indicata la risoluzione e
+il numero dei colori:	( Potete leggere un riassunto scrivendo "=C 100" )
+
+	$dff100 - BPLCON0
+
+ Bit Plane Control Register 0	(1 word, ossia 16 bit, dallo 0 al 15)
+
+ NUMERO DEL BIT			(nota: bit ad 1 = ON, bit a 0 = OFF)
+
+	15	-	HIRES	Modo hires (1=640x256 , 0=320x256)
+	14	-	BPU2	\
+	13	-	BPU1	 ) 3 bit per scegliere il numero di bitplanes
+	12	-	BPU0	/
+	11	-	HOMOD	Hold And Modify mode (HAM 4096 colori)
+	10	-	DBLPF	Double playfield
+	09	-	COLOR	video composito (per il GENLOCK)
+	08	-	GAUD	Genlock audio
+	07	-	X
+	06	-	X
+	05	-	X
+	04	-	X
+	03	-	LPEN	Lightpen (Penna ottica)
+	02	-	LACE	Interlacciato (320x512 o 640x512)
+	01	-	ERSY	External resync (Per il GENLOCK)
+	00	-	X
+
+Questo registro e' BITMAPPED, ossia ogni suo bit ha una funzione:
+
+- Il bit 15 abilita il modo hires: questo modo grafico visualizza 640 pixel
+  per linea orizzontale invece di 320. Ricordatevi di mettere DDFSTART/STOP
+  a $003c e $00d4 anziche $0038 e $00d0, altrimenti non verranno visualizzate
+  le prime linee del bordo sinistro!
+- I bit 14-12 servono a stabilire il NUMERO di plane da accendere, NON quali
+  plane; infatti i bit sono 3 ed i plane possibili sono 6.
+  Qui bisogna scrivere QUANTI plane da accendere, proprio come un numero, NON
+  selezionando QUALI. Es.: '3', '0', '6'.
+  In 3 bit, infatti, sono esprimibili 8 numeri, dallo 0 al 7.
+  Ripeto: LAVORATE CON UN NUMERO VERO E PROPRIO IN BINARO A 3 BIT, NON CON
+  SINGOLI BIT DA ACCENDERE O SPENGERE, A DIFFERENZA DEGLI ALTRI BIT !
+N.B.: Scrivendo '0' (=%000) si spengono tutti i plane, scrivendo %101 se
+  ne accendono 5; con 6 plane si attiva l' HALF-BRIGHT mode a 64 colori.
+- Il bit 11 serve ad azionare il modo HAM (vanno accesi 6 plane)
+  L' HAM consente agli amiga normali di visualizzare 4096 colori, l' HAM8
+  permette agli Amiga 1200/4000 di visualizzarne 262144.
+- Il bit 10 consente di attivare il modo Dual PlayField, uno speciale modo
+  a 2, 4 o 6 plane che permette di creare due schermi da 1, 2 o 3 plane
+  ciascuna, chiamati PlayField1 e PlayField2, accavallati l' uno sull' altro
+  in trasparenza renedendo trasparente il colore 0 del PlayField sovrastante.
+  E' possibile creare, quindi, un effetto parallattico simile a quello presente
+  in molti giochi. Per esempio, si potrebbe utilizzare un PlayField a 3 plane
+  (8 colori) per l' area di gioco ed un altro PlayField di sfondo, che magari
+  scrolla (scorre) piu' lentamente per dare un maggiore senso di profondita',
+  raffigurante pianure e montagne.
+  Appena settato il bit i plane dispari (1,3,5) formano in playfield1, mentre
+  quelli pari (2,4,6) il secondo: l' hardware, appena attivato il bit DPF,
+  raggruppa cosi' i plane per poterli rendere indipendenti, dato che, come
+  vedremo, esistono registri di scroll ed altri che distinguono parametri
+  per plane pari e dispari, usati anche per controllare indipendentemente
+  due interi playfield in dual mode !
+N.B.: Il modo DualPlayField consente di sovrapporre solo 2 schermi e, comunque,
+      di analoga risoluzione grafica (es.: Hires+Hires, Lowres+Lowres, ecc...).
+- Il bit 9 serve ad attivare anche l' uscita videocomposita degli Amiga posta
+  accanto a quella RGB del monitor. Personalmente, la attivo sempre per
+  consentire di vedere qualcosa sul monitor durante i miei prodotti anche a
+  chi non possiede un monitor RGB standard. SETTATELO SEMPRE AD 1.
+- Il bit 8 attiva l' audio di un eventuale genlock collegato all' Amiga: non
+  serve praticamente a niente, sorvoliamo.
+- Il bit 7 e' usato solo dai chipset evoluti dell'A1200, su amiga normale non
+  ha funzioni. Ricordatevi comunque di lasciare sempre a zero questi bit
+  inutilizzati, altrimenti su a1200 rischiate di compromettere il funzionamento
+  del vostro demo/gioco/programma.
+- Il bit 6 non ha funzioni su amiga normale, lasciatelo a zero.
+- Il bit 5 lasciatelo a zero
+- Il bit 4 lasciatelo a zero
+- Il bit 3 serve a far ricevere le coordinate della penna ottica nei registri
+  VHPOS ($dff006) e VPOS ($dff004) del pennello elettronico. La penna ottica
+  su Amiga non e' utilizzata quasi mai, non interessa questa opzione.
+- Il bit 2 imposta il modo InterLace, che consente la visualizzazione di
+  una videata con doppia risoluzione verticale, ma interlacciata. (512 linee)
+  Vedremo in seguito come funziona questa modalita'
+- Il bit 1 serve a sincronizzare il movimento del pennello con la frequenza
+  di qualche apparecchio esterno all' Amiga, dunque lasciatelo sempre a zero.
+- Il bit 0 lasciatelo a zero
+
+Detto questo facciamo degli esempi sull' uso del $100 (BPLCON0) in copperlist:
+
+	  ; 5432109876543210
+ dc.w $100,%0100001000000000	; ---> 4 plane in Lowres (320x256)
+ dc.w $100,%1011001000000100	; ---> 3 plane in Hires+Interlace (640x512)
+ dc.w $100,%0110001000000100	; ---> 6 plane in HALF-BRIGHT Lowres+Lace
+ dc.w $100,%0110101000000000	; ---> 6 plane in HAM lowres (4096 colori)
+ dc.w $100,%0110011000000000	; ---> DualPlayField 3+3 plane in Lowres
+ dc.w $100,%1100011000000100	; ---> DualPlayField 2+2 in Hires+interlace
+
+Nella lezione 3 abbiamo usato il BPLCON0 nella copperlist dandogli valore $200:
+
+	dc.w	$100,$200
+
+Infatti abbiamo settato solo il bit 9, che serve per attivare il genlock:
+
+		    ; 5432109876543210
+	dc.w	$100,%0000001000000000
+
+Il genlock e' un apparecchio che serve per mettere in sovraimpressione
+titoli o grafica fatta con l'amiga su video televisivi, quindi chi non
+ha questo accessorio non vede cambiamenti tra una copperlist con il bit 9
+attivato ed una con il bit disattivato, ma conviene tenerlo sempre ad 1, per
+chi volesse usare il genlock con le nostre copperlist, e perche' il vecchio
+Amiga 1000 ha una uscita videocomposita per il monitor a colori.
+Dunque avremmo avuto lo stesso risultato in RGB anche con un dc.w $100,0.
+Come vedete, i bitplane sono ZERO, dunque c'e' solo il colore di sfondo senza
+figure in sovraimpressione. Per "ACCENDERE" dei bitplane basta mettere il
+numero di bitplanes che vogliamo, in binario, nei bit 12,13,14 del registro.
+
+Per esempio, per fare uno schermo con 1 bitplane (2 colori): (320x256!)
+
+		    ; 5432109876543210
+	dc.w	$100,%0001001000000000	; BPLCON0 - bit 12 acceso!! (1 = %001)
+
+				*
+
+Per uno schermo a 2 bitplanes: (4 colori)
+
+		    ; 5432109876543210
+	dc.w	$100,%0010001000000000	; BPLCON0 - bit 13 acceso!! (2 = %010)
+
+				*
+
+Per uno schermo a 3 bitplanes: (8 colori)
+
+		    ; 5432109876543210
+	dc.w	$100,%0011001000000000	; bits 13 e 12 accesi!! (3 = %011)
+
+				*
+
+Per uno schermo a 4 bitplanes: (16 colori)
+
+		    ; 5432109876543210
+	dc.w	$100,%0100001000000000	; BPLCON0 - bit 14 acceso!! (4 = %100)
+
+				*
+
+Per uno schermo a 5 bitplanes: (32 colori)
+
+		    ; 5432109876543210
+	dc.w	$100,%0101001000000000	; bits 14,12 accesi!! (5 = %101)
+
+				*
+
+Per uno schermo a 6 bitplanes: (per modi speciali EHB e HAM 4096 colori)
+
+		    ; 5432109876543210
+	dc.w	$100,%0110001000000000	; bits 14,13 accesi!! (6 = %110)
+
+(In questa modalita' se non si mette ad 1 il bit dell'HAM (11) lo schermo
+e' in Extra Half Bright, se il bit 11 invece e' settato lo schermo e' HAM.
+
+				*
+
+Dunque basta mettere il numero di bitplanes richiesto nei 3 bit 12,13,14
+del registro. Se si desidera uno schermo in hires, largo 640 pixel anziche'
+320, bastera' mettere ad 1 il bit 15, il primo a sinistra, RICORDANDOSI che
+il massimo numero di bitplanes in HIRES e' 4 (16 colori), e che bisogna
+cambiare il DFFSTART ($dff092) e il DFFSTOP ($dff094) rispetto al LOWRES:
+
+	dc.w	$92,$003c	; DdfStart HIRES normale
+	dc.w	$94,$00d4	; DdfStop HIRES normale
+
+Lo stesso vale per l'interlacciato (lunghezza 512 linee anziche' 256), basta
+mettere ad 1 il bit 2.
+
+Una volta impostato correttamente il BPLCON0, bisogna dire dove sono i bitplane
+che abbiamo "ATTIVATO". Per fare cio' basta mettere i loro indirizzi negli
+appositi registri, che sono:
+
+	$dff0e0	= BPL0PT (puntatore bitplane 1)
+	$dff0e4	= BPL1PT (puntatore bitplane 2)
+	$dff0e8	= BPL2PT (puntatore bitplane 3)
+	$dff0ec	= BPL3PT (puntatore bitplane 4)
+	$dff0f0	= BPL4PT (puntatore bitplane 5)
+	$dff0f4	= BPL5PT (puntatore bitplane 6)
+
+Anche qua si parte dallo zero, dunque si arriva al 5 per definire il sesto.
+Certe volte invece si puo' trovare indicato il $dff0e0 con BPL1PT, e di
+conseguenza si arriva al 6 per definire il sesto. L'help dell'Asmone parte
+da BPL0PT, potete verificare digitando "=c 0e0".
+Per visualizzare una figura dunque basta puntare una copperlist con il
+BPLCON0 giusto e i colori giusti, poi bisogna PUNTARE anche i bitplanes, ad
+esempio cosi':
+
+	MOVE.L	#BITPLANE0,$dff0e0	; indirizzo di BITPLANE0 in BPL0PT
+	MOVE.L	#BITPLANE1,$dff0e4	; BPL1PT
+	MOVE.L	#BITPLANE2,$dff0e8	; BPL2PT
+	...
+
+E la figura apparira' magicamente. I bitplanes comunque sono puntati nella
+copperlist direttamente, in quanto i puntatori devono essere riscritti ogni
+fotogramma.
+
+Non bisogna mai dimenticarsi di mettere nella copperlist i registri "speciali",
+che per ora useremo azzerati o comunque col valore normale, altrimenti
+rimangono con valore della copperlist del workbench e la visualizzazione puo'
+essere disturbata se questi registri non erano azzerati (per esempio il
+workbench del kickstart 1.3 ha i MODULI azzerati, mentre il kickstart 2.0
+li ha con valori diversi: i giochi e le demo grafiche che vanno sul kick 1.3
+e invece visualizzano male le figure sul kick 2.0 spesso sono state fatte
+con copperlist dove mancavano i registri dei moduli, il $dff108 e $dff10a,
+che su kick1.3 sono a zero, dunque funzionava al collaudo, ma su kick 2.0
+sballano la visualizzazione. Per evitare questi problemi dunque in ogni
+copperlist e' sempre bene definirsi tutti i registri, anche quelli che non
+usiamo; i registri in questione sono:
+
+	$dff08e - DIWSTRT, inizio finestra video - normalmente a $2c81
+	$dff090 - DIWSTOP, fine finestra video - normalmente a $2cc1
+	$dff092 - DDFSTRT, data fetch start - normalmente a $0038
+	$dff094 - DDFSTOP, data fetch stop - normalmente a $00d0
+	$dff102 - BPLCON1, Bitplane control 1 - normalmente a $0000
+	$dff104 - BPLCON2, Bitplane control 2 - normalmente a $0000
+	$dff108 - BPL1MOD, modulo bitplanes pari - normalmente a $0000
+	$dff10A - BPL2MOD, modulo bitplanes dispari - normalmente a $0000
+
+Parleremo di questi registri quando li useremo per creare effetti speciali,
+per ora basta ricordarsi di mettere sempre all'inizio della copperlist
+questi registri con i valori standard:
+
+COPPERLIST:
+	dc.w	$8e,$2c81	; DiwStrt
+	dc.w	$90,$2cc1	; DiwStop
+	dc.w	$92,$0038	; DdfStart * NOTA: per HIRES 640x256 $003c
+	dc.w	$94,$00d0	; DdfStop  * NOTA: per HIRES 640x256 $00d4
+	dc.w	$102,0		; BplCon1
+	dc.w	$104,0		; BplCon2
+	dc.w	$108,0		; Bpl1Mod
+	dc.w	$10a,0		; Bpl2Mod
+
+	dc.w	$100,xxxx	; Bplcon0 - Definiamo i colori e la risuluzione
+
+;	Qua possiamo mettere i colori della figura; questo pezzo di
+;	copperlist lo genera direttamente l'iffconverter KEFCON, la
+;	salva a parte con un nome a piacere, successivamente si puo'
+;	includere qua con l'opzione TAGLIA&INCOLLA dell'editor caricandolo
+;	in un altro buffer, ad esempio.
+
+	dc.w $0180,$0010,$0182,$0111,$0184,$0022,$0186,$0222
+	dc.w $0188,$0333,$018a,$0043,$018c,$0333,$018e,$0154
+	dc.w $0190,$0444,$0192,$0455,$0194,$0165,$0196,$0655
+	dc.w $0198,$0376,$019a,$0666,$019c,$0387,$019e,$0766
+	dc.w $01a0,$0777,$01a2,$0598,$01a4,$0498,$01a6,$0877
+	dc.w $01a8,$0888,$01aa,$05a9,$01ac,$0988,$01ae,$0999
+	dc.w $01b0,$06ba,$01b2,$0a9a,$01b4,$0baa,$01b6,$07cb
+	dc.w $01b8,$0bab,$01ba,$0cbc,$01bc,$0dcd,$01be,$0eef
+
+;	Come vedete qua sono definiti tutti i 32 registri colore dell'Amiga,
+;	infatti ho caricato col KEFCON una figura a 32 colori e questa e'
+;	la sua PALETTE generata assieme alla figura in RAW.
+
+;	Qua si possono fare eventuali effetti video con i WAIT....
+
+	dc.w	$FFFF,$FFFE	; Fine della copperlist
+
+
+Questa copperlist e' sufficiente per la visualizzazione di una figura.
+Procediamo dunque con il primo esempio di visualizzazione di un PLAYFIELD
+con 3 bitplanes, ossia 8 colori. Nel primo esempio di questa lezione,
+visualiziamo una figura gia' convertita in formato RAW, ed e' presente sul
+disco del corso: per "CARICARE" la figura in memoria esiste una direttiva
+dell'ASMONE, chiamata INCBIN, che permette appunto di caricare dal disco un
+certo file di dati e copiarlo nel punto del nostro programma dove sta
+l'incbin: se per esempio preparassimo una copperlist e la salvassimo come
+file, potremmo caricarcela cosi':
+
+COPPERLIST:
+	incbin	"copper1"
+
+Il risultato e' lo stesso che mettere tanti dc.w equivalenti alle word che
+stanno nel file copper1. Nel nostro caso carichiamo l'immagine sotto una
+label PIC:
+
+PIC:
+	incbin	"amiga.320*256*3"
+
+La figura comunque non e' in formato TESTO, ma proprio in byte che compongono
+i bitplane: provate a caricarla in un buffer di testo e noterete che non si
+tratta di un testo.
+
+Come notate il nome della figura e' dato secondo le caratteristiche della
+figura stessa; e' bene scegliere nomi per le figure che rispecchino le
+sue caratteristiche per non rischiare di dimenticarsi di che dimensione e
+quanti bitplanes hanno le figure RAW che convertite. Dalla lunghezza di
+questa immagine raw pero' si puo' dedurre la risoluzione e il numero di
+bitplanes: e' lunga 30720 bytes, ossia 40*256*3 (40 bytes per linea*256 linee,
+moltiplicato 3 bitplanes fa 30720). Bastera' dunque dire al COPPER che
+la figura si trova alla label PIC, e il gioco e' fatto.
+
+Comunque per puntare i bitplanes senza rischi di errore bisogna mettere i
+puntatori nella copperlist. Infatti i puntatori dei bitplanes possono
+contenere una word ciascuno, ossia la meta' di un indirizzo (infatti un
+indirizzo e' lungo una longword! es $00020000). Se usiamo il processore
+possiamo anche caricare 2 registri di una word con un solo move.l
+
+	MOVE.L	#BITPLANE00,$dff0e0	; BPL0PT
+	MOVE.L	#BITPLANE01,$dff0e4	; BPL1PT (2 word piu'avanti di $dff0e0)
+
+Ma nella copperlist come noto ogni move puo' essere di una WORD solamente:
+
+	MOVE.W	#$123,$dff180	diventa   dc.w	$180,$123
+
+Nel caso dei puntatori ai bitplanes allora dovremmo "SPEZZARE" ogni indirizzo
+lungo una LONGWORD in 2 words per poter fare cosi':
+
+	MOVE.W	#BITPL,$dff0e0	; BPL0PTH (H=word ALTA dell'indirizzo)
+	MOVE.W	#ANE00,$dff0e2	; BPL0PTL (L=word BASSA dell'indirizzo)
+	MOVE.W	#BITPL,$dff0e4	; BPL1PTH
+	MOVE.W	#ANE01,$dff0e6	; BPL1PTL
+
+ BPLxPTH	= BitPLane x PoinTer High word , puntatore word alta
+ BPLxPTL	= BitPLane x PoinTer Low word , puntatore word bassa
+
+Abbiamo spezzato BITPLANE00 (lungo una longword) in 2 words BITPL e ANE00, e
+abbiamo ottenunto lo stesso risultato del MOVE.L con 2 MOVE.W, adatti alla
+copperlist, dove tradurremmo cosi':
+
+	dc.w	$e0,BITPL	; BPL0PTH \primo bitplane
+	dc.w	$e2,ANE00	; BPL0PTL /
+
+	dc.w	$e4,BITPL	; BPL1PTH \secondo bitplane
+	dc.w	$e6,ANE01	; BPL1PTL /
+
+	(infatti $dff0e0 si traduce in copperlist in $e0, ecc.)
+
+Questa divisione si dice DIVISIONE DI UNA LONGWORD IN WORD ALTA E WORD BASSA,
+dove la word ALTA e' quella a sinistra, BITPL, quella bassa e' quella destra,
+qua ANE00. Facciamo un esempio con indirizzi veri:
+
+Il bitplane0 si trova a $23400, il bitplane1 a $25c00
+
+	dc.w	$e0,$0002	\primo bitplane (word alta)	\$00023400
+	dc.w	$e2,$3400	/		(word bassa)	/
+
+	dc.w	$e4,$0002	\secondo bitplane (word alta)	\$00025c00
+	dc.w	$e6,$5c00	/		  (word bassa)	/
+
+Vi starete gia' immaginando che per mettere gli indirizzi giusti nella
+copperlist sia necessario controllare a che indirizzo sta la figura e cambiare
+a mano le word in questione. Invece basta una piccola routine di una decina
+di istruzioni per risparmiarci il lavoro di "SPEZZARE" gli indirizzi e
+metterli nella copperlist al punto giusto. Questa routine si puo' usare per
+PUNTARE qualsiasi figura di qualsiasi dimensione con il numero di bitplanes
+che vogliamo, basta cambiare i parametri!!! Il trucco sta nell'uso di una
+istruzione particolare del 68000, lo SWAP, che in inglese significa SCAMBIA,
+ed in effetti SCAMBIA le 2 words di una longwords facendo diventare BASSA
+quella ALTA e viceversa:
+
+	MOVE.L	#CANETOPO,d0	; in d0 mettiamo la longword CANETOPO
+
+	SWAP	d0		; SCAMBIAMO LE WORDS: il risultato e' che
+				; in d0 abbiamo TOPOCANE!!!!
+
+Questo comando funziona solo sui registri DATI.
+Allo stesso modo $00023400 viene scambiato in 34000002.
+Vediamo la routine:
+
+
+	MOVE.L	#PIC,d0		; in d0 mettiamo l'indirizzo della PIC,
+				; ossia dove inizia il primo bitplane
+
+	LEA	BPLPOINTERS,A1	; in a1 mettiamo l'indirizzo dei
+				; puntatori ai planes della COPPERLIST
+	MOVEQ	#2,D1		; numero di bitplanes -1 (qua sono 3)
+				; per eseguire il ciclo col DBRA
+POINTBP:
+	move.w	d0,6(a1)	; copia la word BASSA dell'indirizzo del plane
+				; nella word giusta nella copperlist
+	swap	d0		; scambia le 2 word di d0 (es: 1234 > 3412)
+				; mettendo la word ALTA al posto di quella
+				; BASSA, permettendone la copia col move.w!!
+	move.w	d0,2(a1)	; copia la word ALTA dell'indirizzo del plane
+				; nella word giusta nella copperlist
+	swap	d0		; scambia le 2 word di d0 (es: 3412 > 1234)
+				; rimettendo a posto l'indirizzo.
+	ADD.L	#40*256,d0	; Aggiungiamo 10240 ad D0, facendolo puntare
+				; al secondo bitplane (si trova dopo il primo)
+				; (cioe' aggiungiamo la lunghezza di un plane)
+				; Nei cicli seguenti al primo faremo puntare
+				; al terzo, al quarto bitplane eccetera.
+
+	addq.w	#8,a1		; a1 ora contiene l'indirizzo dei prossimi
+				; bplpointers nella copperlist da scrivere.
+	dbra	d1,POINTBP	; Rifai D1 volte POINTBP (D1=num of bitplanes)
+
+dove cambiamo questa parte di copperlist:
+
+BPLPOINTERS:
+	dc.w $e0,$0000,$e2,$0000	;primo	 bitplane (BPL0PT)
+	dc.w $e4,$0000,$e6,$0000	;secondo bitplane (BPL1PT)
+	dc.w $e8,$0000,$ea,$0000	;terzo	 bitplane (BPL2PT)
+
+La routine non fa altro che prendere l'indirizzo del bitplane, copiarne la word
+BASSA nella copperlist alla word dopo il $e2, ossia il puntatore della word
+bassa dell'indirizzo (che si trova 6 bytes dopo BPLPOINTERS, infatti viene
+usato un move.w	d0,6(a1), dove in a1 c'e' l'indirizzo di BPLPOINTERS).
+Dopo aver sistemato la word bassa, con lo SWAP scambiamo word bassa con word
+alta, permettendo con un successivo  move.w d0,2(a1) di copiare la word ALTA,
+anziche' quella bassa, nella word dopo il $e0, ossia il puntatore della word
+alta del primo bitplane, che si trova, appunto, 2 bytes dopo BPLPOINTERS.
+A questo punto abbiamo PUNTATO il primo bitplane: (es. a $23400)
+
+
+BPLPOINTERS:
+	dc.w $00e0,$0002,$00e2,$3400	; BPL0PT - primo   bitplane * PUNTATO *
+	dc.w $00e4,$0000,$00e6,$0000	; BPL1PT - secondo bitplane
+	dc.w $00e8,$0000,$00ea,$0000	; BPL2PT - terzo   bitplane
+
+		    ^		^
+		    |		|
+		  2(a1)	      6(a1)	; notare l'uso degli offset per
+					; inserire le word nel punto
+					; giusto.
+
+NOTA: con il move.w d0,x(a1) copiamo la word bassa della long in d0 perche'
+la copia avviene in questo modo:
+
+	move.w	#CANETOPO,2(a1)	; in 2(a1) viene copiato TOPO
+
+Successivamente rimettiamo a posto l'indirizzo con un atro SWAP, per poter
+passare al bitplane successivo con un  ADD.L #LUNGHEZZABITPLANE,d0.
+Con un  addq.w #8,a1  passiamo a puntare il secondo bitplane, infatti se
+in a1 c'era l'indirizzo di BPLPOINTERS, aggiungendo 8 bytes (4 words) passiamo
+in questo punto:
+
+BPLPOINTERS:
+	dc.w $00e0,$0002,$00e2,$3400	; BPL0PT - primo   bitplane * PUNTATO *
+a1PUNTAQUA:
+	dc.w $00e4,$0000,$00e6,$0000	; BPL1PT - secondo bitplane
+	dc.w $00e8,$0000,$00ea,$0000	; BPL2PT - terzo   bitplane
+
+Ripetiamo quindi con un loop "DBRA d1,label" questa routine, in questo caso
+3 volte, per puntare 3 bitplanes. (Come ricorderete al loop DBRA bisogna
+mettere nel registro che conta i cicli il numero richiesto meno 1, che e'
+il primo che non viene contato: qua infatti in d1 viene messo il valore 2.
+
+Questa routine ha la struttura classica delle routines che generano effetti
+col copper, dunque capirla esattamente e' fondamentale. Una routine simile
+la avete gia' trovata in Lezione3h.s, in quel caso c'erano dei loop DBRA
+per cambiare 29 wait della copperlist.
+
+Caricate Lezione4a.s per vedere in pratica l'esecuzione di questa routine
+PUNTABITPLANES con il DEBUG.
+
+A questo punto mancano solo due "RIFINITURE" al nostro listato per evitare
+problemi nel visualizzare un'immagine: un paio di istruzioni per disabilitare
+il chipset AGA, che rende compatibile con l'Amiga 1200 e 4000 il nostro
+lavoro, e qualche altra linea nella copperlist per far sparire gli sprites,
+che altrimenti girovagherebbero a caso per il nostro disegno provocando
+disturbi intermittenti. Per diasbilitare l'AGA bastano queste 2 linee:
+
+	move.w	#0,$dff1fc		; FMODE - Disattiva l'AGA
+	move.w	#$c00,$dff106		; BPLCON3 - Disattiva l'AGA
+
+E se volete proprio essere sicuri potete aggiungere questa: (palette sprite)
+
+	move.w	#$11,$dff10c		; BPLCON4 - Resetta palette Sprite
+
+Basta eseguirle dopo aver puntato la nuova copperlist, mentre per fermare
+gli sprites ubriachi basta puntare i loro puntatori a ZERO:
+
+	dc.w	$120,$0000,$122,$0000,$124,$0000,$126,$0000,$128,$0000
+	dc.w	$12a,$0000,$12c,$0000,$12e,$0000,$130,$0000,$132,$0000
+	dc.w	$134,$0000,$136,$0000,$138,$0000,$13a,$0000,$13c,$0000
+	dc.w	$13e,$0000
+
+(Nota: I registri da $dff120 a $dff13e si chiamano SPR0PT,SPR1PT... SPR7PT.)
+
+Parleremo degli sprites in seguito, per ora basta che li togliate di mezzo
+aggiungendo con un semplice COPY+INSERT (Amiga+b+c+i) questo pezzo di
+testo alla vostra copperlist. Gli sprites non apparivano con i bitplanes
+azzerati, mentre accendendo anche un solo bitplane gli sprite si fanno vivi.
+
+Finalmente potete vedere in pratica come viene visualizzata una figura
+caricandovi Lezione4b.s in un buffer di testo Fx a piacere.
+
+Avete provato ad aggiungere effetti copper alla figura??? Caricate l'esempio
+Lezione4c.s per una fusione di alcuni degli effetti gia' visti.
+
+Avete capito ora l'importanza del WAIT in una copperlist con dei bitplane?
+Ci puo' far cambiare i colori (e non solo) anche ogni linea!
+Non ci resta che visualizzare un'immagine fatta da voi anziche' quella
+nel corso. Per fare cio' dovete disporre di una figura in 320x256 a 8 colori,
+se non la avete fatevela anche sommariamente con un programma di disegno,
+oppure convertite con ADPRO o altro programma una figura a piu' colori
+in quel formato. Disponendo di quella immagine in formato IFF (su un disco
+formattato) con il nome che preferite, immaginiamo che si chiami "FIGURA",
+bisogna convertirla in formato RAW, ossia nel formato REALE dei bitplanes
+leggibili dal Copper, caricandola con l'iffconverter in questo disco, il
+"KEFCON", che ha molte funzioni di cui pero' parleremo in seguito.
+Leggete queste istruzioni prima di caricarlo:
+Il converter e' programmato in assembler hardware, dunque non supporta il
+multitasking e non si puo' "spostare" la sua finestra per leggere la lezione,
+dato che la sua finestra e' una copperlist propria e non di sistema, che pero'
+e' compatibile AGA e non crea problemi (I buoni vecchi programmatori!).
+Preparatevi prima la figura in un disco formattato, che poi inserirete dopo
+aver caricato il KEFCON nel df0: (disk drive interno) o nel df1: (disk drive
+esterno) se lo avete.
+Una volta caricato, vi apparira' un quadro comandi in alto, con delle opzioni,
+quelle che ci interessano sono: (vi faccio uno schema dei "PULSANTI")
+
+	 ------	 	 ----------
+	| SAVE |	| IFF ILBM |
+	 ------ 	 ----------
+
+	 ------		 ----------
+	| LOAD |	| READ DIR |
+	 ------ 	 ----------
+
+	 ------
+	| QUIT |
+	 ------ 
+
+  ------------------------------------
+ | QUA C'E UNA FINESTRELLA A STRISCIA | -Dove si deve scrivere il nome del file
+  ------------------------------------
+
+LOAD, SAVE e QUIT significano naturalmente CARICA, SALVA ed ESCI DAL PROGRAMMA
+READ DIR serve a visualizzare nella finestra a destra la lista dei file che
+sono nel disco, ossia la sua directory.
+IFF ILBM e' un pulsante che indica il tipo di file che si puo' salvare o
+caricare, in questo caso e' giustamente ad IFF ILBM perche' dobbiamo caricare
+una figura iff; successivamente per salvarla in RAW bastera' clickare su
+quel pulsante, il quale si cambiera' in "RAW NORM", e la figura sara'
+salvata come RAW; tra i possibili formati ci sono anche SPRITE e RAW BLIT,
+quelli li useremo in seguito. Per ora ci interessano solo "RAW NORM" e "COPPER"
+dove con COPPER si salva la PALETTE dei colori direttamente in un file di
+testo con i DC.W da inserire nella nostra copperlist!
+Per fare la conversione, clickate sulla finestrella a striscia in basso a
+sinistra dove appare la scitta "allocated GFX-buffer" e si cambiera' in "df0:"
+ossia il drive interno. Se avete inserito il disco con la figura iff in df0:
+lasciatelo, oppure indicate il nome del drive dove avete messo il disco (ad
+esempio df1:, oppure dh0: per l'hardisk). Per leggere la lista dei file
+premete READ DIR, e potrete selezionare la vostra figura clickando col mouse
+sopra il suo nome e premendo il pulsante "LOAD".
+Vedrete a questo punto comparire la figura, che potete vedere per intero
+scorrendola in alto e basso con i tasti cursore.
+Notate che una volta caricata la figura appaiono le sue caratteristiche
+nella finestrella a striscia: "bitplane $2800, total $7800". Infatti ogni
+singolo bitplane e' lungo $2800 (ossia 10240 decimale, 40*256), e in totale
+la figura RAW e' lunga $7800, ossia 30720 (40*256*3).
+Sopra sono indicate anche le altre caratteristiche:
+
+ WIDTH: 320 (larghezza), HEIGHT 256 (LUNGHEZZA), DEPTH 3 (NUMERO BITPLANES)
+
+Ora clickate sul pulsante "IFF ILBM" facendolo cambiare in "RAW NORM"; per
+salvare la pic in RAW premete un'altra volta col tasto sinistro sulla
+finestrella a striscia e definite il nome, ad esempio "df0:FIGURA.RAW" e
+premete il pulsante "SAVE". Il RAW da includere con l'INCBIN e' salvato!
+Ora manca solo la palette dei colori per la nostra COPPERLIST; per selezionare
+il modo 'salvataggio palette' clickate 5 volte sul gadget "RAW NORM", ossia
+fino a che non si cambia in "COPPER". Per salvarla ripetete l'operazione di
+clickaggio della finestrella a striscia, dategli un nome, es: "df0:FIGURA.S",
+e premete il pulsante "SAVE". A questo punto potete anche uscire, perche'
+abbiamo salvato sia il .RAW che il testo della palette in dc.w da includere
+nella nostra copperlist.
+
+Per visualizzarvi la figura, caricate l'esempio "Lezione4b.s" e fate queste 2
+sostituzioni: cambiate il nome della figura da caricare mettendoci la vostra,
+e inserite la palette della vostra figura eliminando quella preesistente:
+
+PIC:
+	incbin	"amiga.320*256*3"
+
+lo potete cambiare in:
+
+PIC:
+	incbin	"df0:figura.raw"
+
+oppure, scrivendo "v df0:" dalla linea comandi basta un:
+
+PIC:
+	incbin	"figura.raw"
+
+Per la palette potete fare in 2 modi: o caricate "FIGURA.S" in un altro
+biffer e poi lo copiate con Amiga+b+c+i, oppure potete usare il comando
+dell'Asmone "I", ossia INSERT, che inserisce un testo nel punto in cui
+vi trovate col cursore prima di premere ESC per passare alla linea comandi.
+Comunque facciate, togliete la vecchia palette con il CUT (TAGLIA) dell'editor:
+Amiga+b per selezionare il blocco, Amiga+x per eliminarlo.
+
+Ha funzionato?? Spero di si, altrimenti significa che avete sbagliato qualche
+passaggio, pena la ripetizione di tutta l'operazione.
+
+Per continuare in bellezza ora proviamo a visualizzare una figura a 32 colori:
+basta che disponiate della consueta figura in 320x256, questa volta a 32
+colori (se proprio non la avete caricate il DeLuxe Paint e "schizzate" qualche
+oscenita'). Convertitela come avete fatto per la figura precedente, questa
+volta noterete che dopo il caricamento le caratteristiche cincideranno con le
+previsioni: "bitplane $2800, total $c800", infatti ogni bitplane e' sempre di
+$2800 bytes, mentre il totale e' $c800, ossia 51200 ($2800*5), essendo una
+figura a 32 colori composta di 5 bitplanes. Salvate il .RAW e la palette,
+ad esempio con nomi come FIGURA32.RAW e FIGURA32.s.
+
+Per visualizzarla dovrete fare al sorgente i due cambiamenti di prima, ossia
+far caricare la nuova figura dall'incbin e sostituire la vecchia palette con
+quella nuova (che come noterete e' piu' lunga coinvolgendo tutti i 32 registri
+colore). In piu' dovete cambiare il numero di bitplanes nella routine di
+puntamento e aggiungere i bitplanes mancanti alla copperlist:
+
+	MOVE.L	#PIC,d0		; in d0 mettiamo l'indirizzo della PIC,
+	LEA	BPLPOINTERS,A1	; in a1 i puntatori in COP
+**->	MOVEQ	#4,D1		; numero di bitplanes -1 (qua sono 5!!!!!)
+				; per eseguire il ciclo col DBRA
+POINTBP:
+	....
+
+1) Cambiate il MOVEQ #2,d1 in MOVEQ #4,d1, ossia mentre prima eseguivamo 3
+cicli DBRA per 3 bitplanes (3-1=2), ora eseguiamo 5 cicli (5-1=4) per 5
+bitplanes. Ma allora bisogna aggiungere i puntatori di bitplanes mancanti
+nella copperlist:
+
+BPLPOINTERS:
+	dc.w $e0,$0000,$e2,$0000	;primo	 bitplane - BPL0PT
+	dc.w $e4,$0000,$e6,$0000	;secondo bitplane - BPL1PT
+	dc.w $e8,$0000,$ea,$0000	;terzo	 bitplane - BPL2PT
+	dc.w $ec,$0000,$ee,$0000	;quarto	 bitplane (AGGIUNTO ORA!)
+	dc.w $f0,$0000,$f2,$0000	;quinto	 bitplane (AGGIUNTO ORA!)
+
+Ultima e piu' importante modifica bisogna "accendere" 5 bitplanes anziche' 3,
+questo lo si puo' fare modificando il $dff100 (bplcon0) nella copperlist:
+
+
+		    ; 5432109876543210
+	dc.w	$100,%0101001000000000	; bits 14,12 accesi!! (5 = %101)
+
+Assemblando il tutto dovrebbe apparire la figura a 32 colori.
+
+Da questi due esempi potete intuire facilmente come visualizzare immagini
+a 2,4 e 16 colori! basta cambiare il numero di loop nella routine che punta i
+bitplanes e sistemare i bit giusti in $dff100 (BPLCON0).
+
+Vediamo ora di visualizzare una figura in EHB a 64 colori e una in HAM a 4096
+colori, attivando i due modi grafici speciali.
+
+Partiamo da quella in HAM: fatevi una figura in 320x256 in HAM, oppure cercate
+una delle tante figure ham che si trovano spesso nei dischi di riviste o nei
+dischi di immagini "SEXY", che sono per lo piu' in HAM, dato che la fedelta'
+e' importantissima per l'immagine di una donna nuda. Credo anzi che sia piu'
+piacevole visualizzare una donna nuda che un cesto di frutta.
+Caricate come da copione la figura in HAM 320x256 col KEFCON e salvate il RAW
+e la COPPERLIST.
+Purtroppo il KEFCON ha un errore di programmazione per cui quando vengono
+caricate su A4000 figure a 6 bitplanes, siano HAM o EHB, si provoca una specie
+di "spappolamento" dei nueri e dei segni di punteggiatura (,.:) del quadro di
+comando, (sull'Amiga500/2000/600 funziona invece!) per cui potete vedere
+correttamente solo le parole, ma non e' certo un problema, in quanto basta
+clickare sulla finestrella a striscia ed aggiungere un .RAW, per esempio, al
+nome della PIC che e' visibile, poi un .s per salvare la copperlist.
+Le modifiche da fare sono l'aggiunta degli ultimi puntatori al bitplane 6
+in copperlist, la sostituzione della palette e il settaggio del numero di cicli
+della routine di puntamento a 6:
+
+
+BPLPOINTERS:
+	dc.w $e0,$0000,$e2,$0000	;primo	 bitplane - BPL0PT
+	dc.w $e4,$0000,$e6,$0000	;secondo bitplane - BPL1PT
+	dc.w $e8,$0000,$ea,$0000	;terzo	 bitplane - BPL2PT
+	dc.w $ec,$0000,$ee,$0000	;quarto	 bitplane - BPL3PT
+	dc.w $f0,$0000,$f2,$0000	;quinto	 bitplane - BPL4PT
+	dc.w $f4,$0000,$f6,$0000	;sesto	 bitplane (AGGIUNTO ORA!)
+
+
+**->	MOVEQ	#5,D1		; numero di bitplanes -1 (qua sono 6!!!!!)
+				; per eseguire il ciclo col DBRA
+POINTBP:
+	...
+
+Nonche' il BPLCON0:
+
+	  ; 5432109876543210
+ dc.w $100,%0110101000000000	; ---> 6 plane in HAM lowres (4096 colori)
+				; BIT 11 settato = HAM!
+
+Il funzionamento teorico dell'HAM sara' affrontato meglio in seguito.
+
+				*
+
+Per visualizzare una immagine in Extra Half Bright, invece, convertitene una
+col KEFCON, fatela caricare dall'incbin, sostituite la palette, lasciate
+puntare 6 bitplanes alla routine e azzerate il bit 11 del bplcon0:
+
+	  ; 5432109876543210
+ dc.w $100,%0110001000000000	; ---> 6 plane in EHB lowres (64 colori)
+				; BIT 11 azzerato = Extra Half Bright
+
+NOTA: Il modo EHB ha 64 colori, ma non sono tutti e 64 selezionabili
+liberamente, in quanto l'Amiga ha solo 32 registri colore; gli altri 32
+colori sono come i primi 32 ma piu' scuri, a "MEZZA LUCE", ossia "HALF BRIGHT".
+
+Ora che sappiamo visualizzare delle figure, vediamo che effetti si possono fare
+con i registri di scorrimento. Caricate la LEZIONE5.TXT con "r"
+

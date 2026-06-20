@@ -1,0 +1,3048 @@
+12    LOW LEVEL GRAPHICS ROUTINES
+
+12.1  INTRODUCTION
+
+In this chapter will we look at Amiga's low level graphics
+routines. As you saw in chapter 3 (GRAPHICS) the Amiga offers
+two different levels of graphics support. You can either use
+the high level graphics routines that use structures in order
+to give your program flexibility, or you can use the low level
+graphics routines that give your program total control over
+the graphics system. We will in this chapter look at the low
+level graphics routines.
+
+The low level graphics routines can be divided into two
+sections. The first section is about creating a display. We
+here describe how to chose the screen resolution, how many
+colours, interlaced or non interlaced, the size of the viewports
+etc. In the second section is about all different types of
+drawing tools the Amiga offers. We will here describe how to
+draw a single dot, lines, polygons, how to change colours, how
+to use patterns and masks, and look at different types of
+filling routines etc.
+
+
+
+12.2  CREATE A DISPLAY
+
+We will now take a look at how to create a display. However,
+before we start with that it is best to give some general
+information about computers and graphics.
+
+
+
+12.2.1  GENERAL INFORMATION
+
+We will here describe how a picture is generated on a display.
+We will also look at some special display modes such as
+"Interlaced", high respectively low resolution etc. Finally we
+will discuss what a pixel is and what Bitplanes are used for.
+
+
+
+12.2.1.1  HOW A MONITOR/TV WORK
+
+The video picture that is displayed on a monitor/TV is actually
+"painted" by a small video beam. The video beam starts at the
+top left corner of the screen. While it is moved to the right
+the intensity of the beam is varied so lighter and darker spots
+are drawn. Once the beam has reached the right side of the
+screen, it is moved back to the left side and positioned a bit
+further down. It is then moved once again to the right side, and
+so on.
+
+On an American display (NTSC) the beam is moved from the left to
+the right 262 times (On an European PAL display 312 times). The
+beam has now reached the bottom of the screen and is moved back
+to the top left corner where the process is repeated. The
+screen is painted like this 60 times a second on a NTSC monitor,
+and 50 times a second on a PAL monitor. 
+
+The video picture on an American (NTSC) monitor:
+
+    1  ->---->----> |
+    2  ->---->----> |
+    3  ->---->----> |
+    |  and so on... |
+  261  ->---->----> |
+  262  ->---->----> V
+
+As you can see you can have a display that is up to 262 (312)
+lines tall, but normally you do not use the very first and last
+lines since they can be hard to see. You are recommended to use
+a display of maximum 200 (256 PAL) lines. However, if you want
+to use special video effects, or make the screen to cover the
+whole display, all 262 (312) lines can be used. This special
+effect is normally referred as "Overscan".
+
+
+
+12.2.1.2  INTERLACED
+
+A full sized normal American (NTSC) display is 200 lines tall
+(PAL 256 lines). However, the Amiga has a unique feature that
+can double the amount of lines on the same display to 400 
+(PAL 512). This special mode is called Interlace.
+
+The first time the video beam is moved over the screen, all odd
+lines are drawn (1, 3, 5, 7 ... 397, 399), and the second time
+all even lines are drawn (2, 4, 6, 8 .. 398, 400). This special
+mode can cause the screen to "flicker" especially if the contrast
+is high. This is because all odd lines are drawn 30 (PAL 25)
+times a second, and all even lines 30 (25) times a second. If
+you have a high phosphor screen you will not have any problems,
+but on cheap normal monitors the flickering can be very annoying.
+
+First time      Second time
+     1 -------------
+       ------------- 2
+     3 -------------
+       ------------- 4
+     5 -------------
+       ------------- 6
+     7 -------------
+       ------------- 8
+       and so on ...  
+
+
+
+12.2.1.3  HIGH AND LOW RESOLUTION
+
+There exist two different types of horizontal resolution. Low
+resolution gives 320 pixels across each line, and high
+resolution doubles it to 640 pixels.
+
+There is an important difference between these two display
+modes. In low resolution you can have up to 32 colours or
+even use HAM or Extra Half Bright (explained later), but in
+high resolution you may only use 16 colours or less.  
+
+You may even here use the special display mode "Overscan".
+The display may then be up to 352 pixels wide in low resolution,
+and 704 pixels in high resolution.
+
+
+
+12.2.1.4  PIXELS
+
+The display is built up of small dots called "Pixels". As
+described above there may be either 320 or 640 pixels across
+each line, and 200 or 400 lines (PAL 256 or 512 lines).
+
+When you create a display you allocate rectangular memory areas
+that are called "Bitplanes". Each bit in that memory area
+represent one pixel.
+
+A high resolution non interlaced American display, 640 * 200
+pixels will need 16,000 bytes of memory for one bitplane.
+
+To create a very small screen (8 * 9 pixels) that will display
+an "A" the bitplane could look something like this: 
+
+  Line  Bitplane 1
+  ----------------
+     1  00000000
+     2  00111100
+     3  01000010
+     4  01000010
+     5  01111110
+     6  01000010
+     7  01000010
+     8  01000010
+     9  00000000
+
+
+
+12.2.1.5  COLOURS
+
+If you want to use several colours on the screen you need to
+use several bitplanes. All bits on the same location in each
+bitplane will then represent one pixel. With two bitplanes you
+can have four different combinations for every pixel. Three
+bitplanes gives eight combinations. Four bitplanes sixteen
+combinations, and finally five bitplanes thirty two
+combinations.
+
+Here is an example. We have reserved memory for two bitplanes
+that will build up a very small display of 10 pixels each line,
+and four lines.
+
+  Line  Bitplane 1  Bitplane 2  Display (Colour)
+  ----------------------------------------------
+     1  0000000000  0000000000  0000000000
+     2  1111111111  0000000000  1111111111
+     3  0000000000  1111111111  2222222222
+     4  1111111111  1111111111  3333333333
+
+The first line is made up of ten pixels in colour 0  (00[b]=0[d])
+The second line is made up of ten pixels in colour 1 (01[b]=1[d])
+The third line is made up of ten pixels in colour 2  (10[b]=2[d])
+The fourth line is made up of ten pixels in colour 3 (11[b]=3[d])
+
+The more bitplanes you have the more colours you can display.
+However, since you need more bitplanes you would need to
+allocate more memory.
+
+  Bitplanes  Colours
+  ------------------
+          1        2
+          2        4
+          3        8
+          4       16
+          5       32
+
+
+
+12.2.2  DISPLAY ELEMENTS
+
+12.2.2.1  RASTER
+
+The are which you may draw on is called Raster. It consists of
+several BitMaps on top of each other. The more Bitmaps the more
+colours may be used at the same time. The Raster may be up to
+1024 pixels wide (RWidth), and 1024 pixels high (RHeight).
+
+The part of the Raster that will be displayed is called
+ViewPort. A structure called RasInfo contains the RxOffset
+and RyOffset values which determines what part of the Raster
+should be displayed in the ViewPort. The ViewPort is DWide
+pixels wide, and DHeight pixels high. (Simple, isn't it?)
+
+  RASTER:
+ 
+    <- RxOffset ->
+    --------------------------- A
+    |          D   ViewPort   | | RyOffset
+    |          H ------------ | V
+  R |          e |XXXXXXXXXX| |
+  H |          i |XXXXXXXXXX|-+-- Display this part
+  e |          g |XXXXXXXXXX| |
+  i |          h ------------ |
+  g |          t    DWidth    |
+  h |                         |
+  t |                         | 
+    |                         |
+    |                         |
+    ---------------------------
+            RWidth         
+
+
+
+12.2.2.2  VIEW
+
+The video display has an are in which you may put one or
+more ViewPorts. That area is called View, and the DxOffset
+and DyOffset values in the View structure determines where
+on the video display the View should be positioned.
+
+You can set the DxOffset and DyOffset to negative values. The
+View will then be more to the left and higher up than normal.
+The top left part of the drawing can be hard to see and this
+mode is therefore not recommended for business programs.
+However, if you write games or video programs this special
+display mode can be very useful.
+
+  VIEW:
+
+  <--> DxOffset
+  ------------------------ A
+  |    VIDEO  DISPLAY    | | DyOffset
+  |  ------------------  | V
+  |  |                |  |
+  |  |                |  |
+  |  |                |  |
+  |  |      VIEW      |  |
+  |  |                |  |
+  |  |                |  |
+  |  |                |  |
+  |  ------------------  |
+  |                      |
+  ------------------------
+
+
+
+12.2.2.3  VIEWPORT
+
+The View may, as said above, contain one or more ViewPorts. The
+DxOffset and DyOffset values in the ViewPort structure
+determines where on the View the ViewPort should be positioned.
+
+  <--> DxOffset
+  ------------------ A
+  |      VIEW      | | DyOffset
+  |  ------------  | V
+  |  |          |  |
+  |  | VIEWPORT |  |
+  |  |          |  |
+  |  ------------  |
+  |                |
+  ------------------
+
+
+There are some important restriction on how you may place the
+ViewPorts. The ViewPorts must be placed under each other, with
+at least one or more lines apart. While the video beam has
+drawn the last line of one ViewPort, the Amiga needs some time
+to adjust to the new resolution etc in the next ViewPort. While
+the Amiga is working with the next screen, the video beam will
+have travelled down at least one line (maybe more).
+
+   The View (The Display)
+  ------------------------
+  |  Background colour   |
+  | --------------       |
+  | | ViewPort 1 |       |
+  | |            |       |
+  | --------------       | ==> At least one line must
+  |       -------------- |     separate the ViewPorts.
+  |       | ViewPort 2 | |
+  |       -------------- |
+  ------------------------
+
+The are around the ViewPorts are filled with the ViewPort's
+background colour.
+
+Here are three examples:
+
+  Correct! The ViewPorts do
+  not overlap each other,
+  and there is some space
+  between them:
+  ------------------------
+  | -------------------- |
+  | |                  | |
+  | -------------------- |
+  |    -------------     |
+  |    |           |     |
+  |    -------------     |
+  | -------------------- |
+  | |                  | |
+  | -------------------- |
+  ------------------------
+
+  Incorrect! The ViewPorts    Incorrect! There must be
+  must be placed under each   some space between ViewPorts.
+  other, not beside each      (At least one line, maybe
+  other.                      more.)
+  ------------------------    ------------------------
+  | ---------  --------- |    | -------------------- |
+  | |       |  |       | |    | |                  | |
+  | |       |  |       | |    | |                  | |
+  | |       |  |       | |    | |                  | |
+  | |       |  |       | |    | -------------------- |
+  | |       |  |       | |    | |                  | |
+  | |       |  |       | |    | |                  | |
+  | |       |  |       | |    | |                  | |
+  | ---------  --------- |    | -------------------- |
+  ------------------------    ------------------------
+
+
+
+12.2.2.4  BITMAP
+
+The area on which you may draw on is, as said above, called
+Raster. The Raster itself is built up of one or more BitMaps. 
+A BitMap is a rectangular memory area. Each bit in that area
+represent one small dot (pixel). You may use several BitMaps
+which means that each dot is built up of several bits (one bit
+for every BitMap), and the binary value of these bits
+determines what colour should be used.
+
+   BitMap 0    BitMap 1    BitMap 2        Colour
+  -------------------------------------------------
+  0000011111  0000000000  0000000000  |  0000011111
+  0000011111  1111111111  0000000000  |  2222233333
+  0000011111  0000000000  1111111111  |  4444455555
+  0000011111  1111100000  1111111111  |  6666677777
+
+
+     B I N A R Y   T O   D E C I M A L
+  ---------------------------------------
+  | Binary  Decimal  |  Binary  Decimal |
+  |------------------+------------------|
+  | 00000         0  |  10000        16 |
+  | 00001         1  |  10001        17 |
+  | 00010         2  |  10010        18 |
+  | 00011         3  |  10011        19 |
+  |                  |                  |
+  | 00100         4  |  10100        20 |
+  | 00101         5  |  10101        21 |
+  | 00110         6  |  10110        22 |
+  | 00111         7  |  10111        23 |
+  |                  |                  |
+  | 01000         8  |  11000        24 |
+  | 01001         9  |  11001        25 |
+  | 01010        10  |  11010        26 |
+  | 01011        11  |  11011        27 |
+  |                  |                  |
+  | 01000        12  |  11000        28 |
+  | 01101        13  |  11101        29 |
+  | 01110        14  |  11110        30 |
+  | 01111        15  |  11111        31 |
+  ---------------------------------------
+
+The more BitMaps the more colours can be used. The Amiga allows
+you to have up to six bitplanes with some restrictions:
+
+  BitMaps  Colours  Limitations
+  -------------------------------------------------------------
+        1        2
+        2        4
+        3        8
+        4       16  Single playfield
+        5       32         - " -     low resolution
+        6       64         - " -          - " -     Half bright
+        6     4096         -"-            - " -     HAM
+
+
+
+12.2.3  CREATE A DISPLAY
+
+When you create a display you first have to declare and
+initialize some important structures. These structures are:
+  1. View structure
+  2. ViewPort structure
+  3. ColourMap structure
+  4. BitMap structure
+  5. RasInfo structure
+
+Once these structures are initialized you call three functions
+[MakeVPort(), MrgCop() and LoadView() ] and your new display is
+on.
+
+
+
+12.2.3.1  VIEW
+
+A View can consist of one or more ViewPorts. You can also have
+several Views at the same time in the Amiga's memory, but only
+one View can be showed at one time. The advantage of several
+Views is that you can show the user one picture (one View)
+while the other picture is drawn (in the other View.)
+
+The View itself has some important variables that determines
+the position of the View, if the view should be interlaced or
+not, and pointers to the first ViewPort etc.
+
+
+
+12.2.3.1.1  VIEW STRUCTURE
+
+The View structure look like this: [Defined in file:
+"view.h"]
+
+struct View
+{
+  struct ViewPort *ViewPort;
+  struct cprlist *LOFCprList;
+  struct cprlist *SHFCprList;
+  short DyOffset, DxOffset;
+  UWORD Modes;
+};
+
+ViewPort:   Pointer to the first ViewPort in the display.
+
+LOFCprList: Pointer to a cprlist structure that is used
+            by the Copper (explained later).
+
+SHFCprList: Pointer to a cprlist structure that is used
+            by the Copper if the structure is interlaced.
+            (If the display is interlaced, both LOFCprList
+            and SHFCprList is used.)
+
+DyOffset:   Y position of the whole display.
+
+DxOffset:   X position of the whole display.
+
+Modes:      If the display should be interlaced set the flag
+            LACE. If the display should be merged together
+            with a external video signal with help of a Genlock
+            set the flag GENLOCK_VIDEO.
+
+
+
+12.2.3.1.2  PREPARE A VIEW STRUCTURE
+
+After you have declared a View structure you have to prepare
+it. To do it you call the InitView() function with a pointer
+to the View structure as the only parameter:
+
+struct View my_view;  /* Declare the View structure. */
+
+InitView( &my_view ); /* Prepare it. */
+
+If you want to position you View somewhere on the display you
+need to set the DxOffset and DyOffset accordingly. For example:
+my_view.DxOffset = 20; /* 20 pixels out. */
+my_view.DyOffset = 50; /* 50 lines down. */
+
+If you want to use an interlaced display you should also set
+the "LACE" flag. For example: my_view.Modes = LACE;
+
+
+
+12.2.3.2  VIEWPORTS
+
+As said above, each View can consists of one or more ViewPorts.
+Each ViewPort can have its own resolution, number of colours and
+size.
+
+
+
+12.2.3.2.1  VIEWPORT STRUCTURE
+
+The ViewPort structure look like this: [Defined in file:
+"view.h"]
+
+struct ViewPort
+{
+  struct ViewPort *Next;
+  struct ColorMap *ColorMap;
+  struct CopList *DspIns;
+  struct CopList *SprIns;
+  struct CopList *ClrIns;
+  struct UCopList *UCopIns;
+  SHORT DWidth, DHeight;
+  SHORT DxOffset, DyOffset;
+  UWORD Modes;
+  UBYTE SpritePriorities;
+  UBYTE reserved;
+  struct RasInfo *RasInfo;
+};
+
+Next:             Pointer to the next ViewPort in the View if
+                  there exist more, else NULL.
+
+ColorMap:         Pointer to a ColorMap structure used for this
+                  ViewPort. (See below for more information
+                  about the ColorMap structure.
+
+DspIns:           Used by the Copper.
+
+SprIns:           Special colour instructions for sprites.
+
+ClrIns:           Special colour instructions for sprites.
+
+UCopIns:          Used by the Copper.
+
+DWidth:           Horizontal size of the ViewPort.
+
+DHeight:          Vertical size of the ViewPort.
+
+DxOffset:         X position of the ViewPort inside the View.
+
+DyOffset:         Y position of the ViewPort inside the View.
+
+Modes:            This ViewPort's display mode. Following flags
+                  can be used:
+                  
+                  HIRES:           Set this flag if you want
+                                   to use a high resolution
+                                   ViewPort, else low resolution
+                                   will be used.
+
+                  LACE:            Set this flag if you want
+                                   the ViewPort to be
+                                   interlaced, else it will
+                                   be non interlaced.
+
+                  SPRITES:         Set this flag if you will
+                                   use sprites in this ViewPort.
+
+                  HAM:             Set this flag if you want to
+                                   use the special display mode
+                                   "Hold And Modify". The
+                                   display must be in low
+                                   resolution, and use six
+                                   bitplanes. Allows all 4096
+                                   colours to be displayed at
+                                   the same time.
+
+                  EXTRA_HALFBRITE: Set this flag if you want to
+                                   use the special display mode
+                                   "Extra Half Bright". The
+                                   display must be in low
+                                   resolution, and use six
+                                   bitplanes. Allows you to use
+                                   64 colours.
+
+                  DUALPF:          Set this flag if you want to
+                                   use dual playfields.
+
+                  PFBA:            Set this flag if you want
+                                   that playfield 1 should be
+                                   behind playfield 2. If this
+                                   flag is not set, the
+                                   priorities will be reversed.
+
+                  GENLOCK_VIDEO:   Set this flag if the display
+                                   should be mixed together with
+                                   a video signal with help of a
+                                   Genlock.
+                  
+                  Note! You can combine several of these modes
+                  if you like. Just remember to put a "|" between
+                  each flag. For example: To create a high
+                  resolution interlaced ViewPort you set the
+                  mode to "HIRES|LACE". 
+
+SpritePriorities: The priority of this ViewPort's sprites.
+
+reserved:         Which sprites are reserved, and can not be
+                  used. (See chapter SPRITES and VSPRITES for
+                  more information.)
+
+RasInfo:          Pointer to a RasInfo structure.
+
+
+
+12.2.3.2.2  PREPARE A VIEWPORT STRUCTURE
+
+After you have declared a ViewPort structure you have to
+prepare it. (Same as with all View structures.) To do it you
+call the InitVPort() function with a pointer to the ViewPort
+structure as the only parameter:
+
+/* Declare the View structure: */
+struct ViewPort my_view_port;
+
+/* Prepare it: */
+InitVPort( &my_view_port );
+ 
+
+After you have prepared it you set the desired values: (An example)
+
+my_view_port.Next = NULL;            If we have several ViewPorts
+                                     in the same View we link
+                                     them together, else NULL.
+
+my_view_port.DWidth = WIDTH;         Set the desired width.
+my_view_port.DHeight = HEIGHT;       Set the desired height.
+
+my_view_port.DxOffset = 0;           X and Y position of the
+my_view_port.DyOffset = 0;           ViewPort in the View.
+
+my_view_port.Modes = HIRES|LACE;     Set desired flags. (Eg
+                                     high resolution interlace)
+
+my_view_port.RasInfo = &my_ras_info; Pointer to this ViewPort's
+                                     RasInfo.
+
+
+
+12.2.3.3  COLORMAP
+
+Each ViewPort has a its own lists of colours. They are stored
+in a ColorMap structure which contains information like: how
+many colours this display use, what colours, and each colours
+individual RGB values. (Red + Green + Blue intensity)
+
+
+
+12.2.3.3.1  COLORMAP STRUCTURE
+
+The ColorMap structure look like this: [Defined in file:
+"view.h"]
+
+struct ColorMap
+{
+  UBYTE Flags;
+  UBYTE Type;
+  UWORD Count;
+  APTR ColorTable;
+};
+
+
+
+12.2.3.3.2  DECLARE AND INITIALIZE A COLORMAP STRUCTURE
+
+To declare and initialize a ColorMap structure you simply call
+the GetColorMap() function. It will take care of everything,
+and the only thing you need to tell the function is how many
+colours you want to use.
+
+Get a colour map, and link it to the ViewPort:
+
+my_view_port.ColorMap = GetColorMap( 32 );
+
+You should also remember to check if you have got the the colour
+map or not. For example:
+
+if( my_view_port.ColorMap == NULL )
+  clean_up(); /* leave */
+
+
+
+12.2.3.3.3  SET THE RGB VALUES
+
+Once you have got your ColorMap structure, you need to set
+the RGB (Red, Green, Blue) values for each colour. Each colour
+can have a mixture of red, green and blue, on a scale from 0
+to 15. Hexadecimal that would be from 0x0 to 0xF.
+
+Here are some examples:
+
+  RGB value  Colour
+  ---------------------
+  0xF00      Red
+  0x0F0      Green
+  0x00F      Blue
+  0x600      Dark red
+  0x060      Dark green
+  0x006      Dark blue
+  0xFF0      Yellow
+  0x000      Black
+  0x444      Dark grey
+  0x888      Light grey
+  0xFFF      White  
+
+Since each RGB values can have sixteen intensities, you can
+define up to 16 * 16 * 16 = 4096 different colours. 
+
+If you prepare a ColorMap structure to use four colours,
+you need to give it a colour table of RGB values.
+
+/* 1. Declare a RGB colour table: */ 
+UWORD my_color_table[] =
+{
+  0x000, /* Black */
+  0xF00, /* Red */
+  0x0F0, /* Green */
+  0x00F, /* Blue */
+};
+
+/* 2. Declare a pointer: */
+UWORD *pointer;
+
+/* 3. Set the pointer so it points to the colour table: */
+pointer = (UWORD *) my_view_port.ColorMap->ColorTable;
+
+/* 4. Set the colours: */
+for( loop = 0; loop < 4; loop++ )
+  *pointer++ = my_color_table[ loop ];
+
+
+
+12.2.3.3.4  DEALLOCATE THE COLOURMAP
+
+When your program closes a ViewPort you must remember to
+deallocate the memory used for the ColourMap. You deallocate
+a ColourMap with help of the FreeColorMap() function:
+
+FreeColorMap( my_view_port.ColorMap );
+
+
+
+12.2.3.4  BITMAP
+
+The BitMap is, as said above,  a rectangular memory are were
+each bit represents one pixel. By combining two or more BitMaps
+each pixel is represented by a combination of two or more bits
+which determines what colour should be used. A pointer to each
+BitMap, information about the size of the BitMaps etc are all
+stored in the BitMap structure.
+
+
+
+12.2.3.4.1  BITMAP STRUCTURE
+
+The BitMap structure look like this: [Defined in file: "gfx.h"]
+
+struct BitMap
+{
+  UWORD BytesPerRow;
+  UWORD Rows;
+  UBYTE Flags;
+  UBYTE Depth;
+  UWORD pad;
+  PLANEPTR Planes[ 8 ];
+};
+
+BytesPerRow: How many bytes are used on every row.
+
+Rows:        How many rows there are.
+
+Flags:       Special information about the BitMaps (for the
+             moment not used.)
+
+Depth:       How many BitPlanes.
+
+pad:         Extra space.
+
+Planes:      A list of eight pointers. (PLANEPTR is a pointer
+             to a BitMap.)
+
+
+
+
+12.2.3.4.2  DECLARE AND INITIALIZE A BITMAP STRUCTURE
+
+You declare the structure as normal, and initialize it with
+help of the function InitBitMap(). You need to give the function
+a pointer to your BitMap structure and information about the
+size and depth (how many BitPlanes used).
+
+Synopsis: InitBitMap( bitmap, depth, width, height );
+
+bitmap: (struct BitMap *) Pointer to the BitMap.
+
+depth:  (long) How many BitPlanes used.
+
+width:  (long) The width of the raster.
+
+height: (long) The height of the raster.
+
+Information about the size and depth of a BitMap etc is used
+in many places in a program and. I recommend you therefore to
+define some constants at the top of the program and use them
+rather than writing the values directly. This makes it much
+easier to change anything since you only need to change the
+code at one place, and many writing errors are avoided.
+
+Example:
+
+#define WIDTH  320 /* 320 pixels wide.              */
+#define HEIGHT 200 /* 200 lines tall.               */
+#define DEPTH    5 /* 5 BitPlanes gives 32 colours. */
+
+struct BitMap my_bit_map;
+
+InitBitMap( &my_bit_map, DEPTH, WIDTH, HEIGHT );
+
+
+
+12.2.3.4.3  ALLOCATE RASTER
+
+Once the BitMap structure has been initialized it is time to
+reserve memory for each BitPlane. You reserve display memory
+with help of the AllocRaster() function:
+
+Synopsis: pointer = AllocRaster( width, height );
+
+pointer   (PLANEPTR) Pointer to the allocated memory or NULL
+          if enough memory could not be reserved.
+
+width:    (long) The width of the BitMap.
+
+height:   (long) The height of the BitMap.
+
+
+Since you may need to reserve several BitPlanes it is best to
+include the AllocRaster() function in a loop. Remember to check
+that you have got the memory you asked for! Finally, the memory
+you get is probably filled with a lot of trash, and it is best
+to clear it before you start to use it. The fastest way to
+clear large rectangular memory areas is to use the Blitter,
+and you do it by calling the function BltClear():
+
+Synopsis: BltClear( pointer, bytes, flags );
+
+pointer   (char *) Pointer to the memory.
+
+bytes:    (long) The lower 16 bits tells the blitter how many
+          bytes per row, and the upper 16 bits how many rows.
+          This value is automatically calculated for you with
+          help of the macro RASSIZE(). Just give RASSIZE() the
+          correct width and height and it will return the
+          correct value. [RASSIZE() is defined in file
+          "gfx.h".]
+
+flags:    (long) Set bit 0 to force the function to wait until
+          the Blitter has finished with your request.
+
+Here is an example on how to allocate display memory, check it
+and clear it: (Remember that you muse deallocate ALL memory you
+have allocated! See below for more information.)
+
+for( loop = 0; loop < DEPTH; loop++ )
+{
+  my_bit_map.Planes[ loop ] = AllocRaster( WIDTH, HEIGHT );
+
+  if( my_bit_map.Planes[ loop ] == NULL )
+    clean_up(); /* Leave */
+
+  BltClear( my_bit_map.Planes[ loop ], RASSIZE( WIDTH, HEIGHT ), 0 );
+}
+
+
+
+12.2.3.5  RASINFO
+
+The RasInfo structure contains information like were the BitMap
+structure is, and the Raster's x/y offset. If you use the
+special display mode "Dual Playfields" it will also contain a
+pointer to the second Playfield.
+
+
+
+12.2.3.5.1  RASINFO STRUCTURE
+
+The RasInfo structure look like this: [Defined in file: "view.h"]
+
+struct RasInfo
+{
+  struct RasInfo *Next;
+  struct BitMap *BitMap;
+  SHORT RxOffset, RyOffset;
+};
+
+Next:     If you use the special display mode "Dual Playfields"
+          this pointer will contain the address to the second
+          playfield. (Playfield one RasInfo's structure will
+          have a pointer to the second Playfield's RasInfo
+          structure which pointer will point to NULL.)
+
+BitMap:   Pointer to the BitMap.
+
+RxOffset: X offset of the Raster. (By changing the RxOffset and
+          RyOffset values you can scroll the whole Raster very
+          fast.)
+
+RyOffset: Y offset of the Raster.
+
+
+
+12.2.3.5.2  DECLARE AND INITIALIZE A RASINFO STRUCTURE
+
+Here is an example on how to declare and initialize a RasInfo
+structure:
+
+/* Declare a RasInfo structure: */
+struct RasInfo my_ras_info;
+
+/* Prepare the RasInfo structure: */
+my_ras_info.BitMap = &my_bit_map; /* Pointer to the BitMap   */
+                                  /* structure.              */
+my_ras_info.RxOffset = 0;         /* The top left corner of  */
+my_ras_info.RyOffset = 0;         /* the Raster should be at */
+                                  /* the top left corner of  */
+                                  /* the display.            */
+my_ras_info.Next = NULL;          /* Single playfield - only */
+                                  /* one RasInfo structure   */
+                                  /* is necessary.           */
+
+
+
+12.2.3.6  MAKEVPORT()
+
+Once you have initialized all necessary structures you need to
+prepare the Amiga's hardware (especially the Copper) so they
+can create the display you have asked for. Each ViewPort can
+have its own resolution, size, colour list etc and you must
+therefore prepare every ViewPort by calling the MakeVPort()
+function.
+
+Synopsis: MakeVPort( view, viewport ); 
+
+view:     (struct View *) Pointer to the ViewPort's View.
+
+viewport: (struct ViewPort *) Pointer to the ViewPort.
+
+
+NOTE! You have to prepare EVERY ViewPort you are going to use!
+
+
+
+12.2.3.7  MRGCOP()
+
+All ViewPort's special display instructions together with other
+display instructions used by the Sprite hardware etc must be
+combined before you can show the display. All these instructions
+are combined with one single function call: MrgCop(). MrgCop()
+will merge all coprocessors' display instructions into one
+list.
+
+Synopsis: MrgCop( view );
+
+view:     (struct View *) Pointer to the View.
+
+
+
+12.2.3.8  LOADVIEW()
+
+You can now at last show the display. You do it by calling the
+LoadView() function:
+
+Synopsis: LoadView( view );
+
+view:     (struct View *) Pointer to the View.
+
+
+You have to remember that you have now created your own display
+and when your program terminates you MUST return the old
+display! You must therefore store a pointer to the old display
+before you turn on your own. You can find a pointer to the
+current View in the GfxBase structure.
+
+struct View *old_view;
+
+old_view = GfxBase->ActiView;
+
+
+
+12.2.4  CLOSE A DISPLAY
+
+When you close your display you have to remember to restore the
+old view by calling the LoadView() structure with a pointer to
+the old View structure: LoadView( old_view );
+
+You must also return some memory that was automatically
+reserved when you called the MakeVPort() and MrgCop() functions.
+You should therefore call the FreeVPortCopLists() function for
+every ViewPort you have created.
+
+Synopsis: FreeVPortCopLists( viewport );
+
+view:     (struct ViewPort *) Pointer to the ViewPort.
+
+
+You must also call the FreeCprList() function for every View
+you have created. You give the function a pointer to the cprlist
+structure (LOFCprList). If you have created an interlaced View
+you must also free a special cprlist structure (SHFCprList)
+which is only used for interlaced Views.
+
+Synopsis: FreeCprList( cprlist );
+
+cprlist:  (struct cprlist *) Pointer to the View's cprlist
+          (LOFCprList) structure. If the View was interlaced
+          you must also call the FreeCprList function with a
+          pointer to the SHFCprList.
+
+
+The display memory you have allocated for the Raster must also
+be deallocated. You deallocate the Raster by calling the
+FreeRaster() function with a pointer to one Bitplane. You must
+call this function for every Bitplane you have allocated!
+
+Synopsis: FreeRaster( bitplane, width, height );
+
+bitplane: (PLANEPTR) Pointer to a Bitplane.
+
+width:    (long) The Bitplane's width.
+
+height:   (long) The Bitplane's height.
+
+
+Finally you have to deallocate the ColorMap structure that was
+automatically allocated and initialized by the GetColorMap()
+function. You deallocate a colour map by calling the
+FreeColorMap() function.
+
+Synopsis: FreeColorMap( colormap );
+
+colormap: (struct ColorMap *) Pointer to the ColorMap structure.
+
+
+Here is an example on how to close a display:
+
+/* 1. Restore the old View: */
+LoadView( old_view );
+
+/* 2. Deallocate the ViewPort's display instructions: */
+FreeVPortCopLists( &my_view_port );
+
+/* 3. Deallocate the View's display instructions: */
+FreeCprList( my_view.LOFCprList );
+
+/* 4. Deallocate the display memory, BitPlane for BitPlane: */
+for( loop = 0; loop < DEPTH; loop++ )
+  FreeRaster( my_bit_map.Planes[ loop ], WIDTH, HEIGHT );
+
+/* 5. Deallocate the ColorMap: */
+FreeColorMap( my_view_port.ColorMap );
+
+
+12.2.5  EXAMPLE
+
+Here is an example on how to open a high resolution NTSC
+(American) display. This is what has to be done:
+
+ 1. Prepare the View.
+ 2.     - " -   ViewPort.
+ 3.     - " -   ColorMap.
+ 4.     - " -   BitMap.
+ 5.     - " -   RasInfo.
+ 6. Prepare the Amiga with MakeVPort() and MrgCop().
+ 8. Show the new View.
+ 9. The View is on and it is now up to you to do what you want.
+10. Restore the old View.
+11. Free all allocated resources and leave.
+
+
+#include <intuition/intuition.h>
+#include <graphics/gfxbase.h>
+
+
+#define WIDTH  640 /* 640 pixels wide (high resolution)    */
+#define HEIGHT 200 /* 200 lines high (non interlaced NTSC) */ 
+#define DEPTH    3 /* 3 BitPlanes, gives eight colours.    */
+#define COLOURS  8 /* 2^3 = 8                              */
+
+
+struct IntuitionBase *IntuitionBase;
+struct GfxBase *GfxBase;
+
+
+struct View my_view;
+struct View *my_old_view;
+struct ViewPort my_view_port;
+struct RasInfo my_ras_info;
+struct BitMap my_bit_map;
+struct RastPort my_rast_port;
+
+
+UWORD my_color_table[] =
+{
+  0x000, /* Colour 0, Black       */
+  0x800, /* Colour 1, Red         */
+  0xF00, /* Colour 2, Light red   */
+  0x080, /* Colour 3, Green       */
+  0x0F0, /* Colour 4, Light green */
+  0x008, /* Colour 5, Blue        */
+  0x00F, /* Colour 6, Light Blue  */
+  0xFFF, /* Colour 7, White       */
+};
+
+
+void clean_up();
+void main();
+
+
+void main()
+{
+  UWORD *pointer;
+  int loop;
+  
+
+  /* Open the Intuition library: */
+  IntuitionBase = (struct IntuitionBase *)
+    OpenLibrary( "intuition.library", 0 );
+  if( !IntuitionBase )
+    clean_up( "Could NOT open the Intuition library!" );
+
+  /* Open the Graphics library: */
+  GfxBase = (struct GfxBase *)
+    OpenLibrary( "graphics.library", 0 );
+  if( !GfxBase )
+    clean_up( "Could NOT open the Graphics library!" );
+
+
+  /* Save the current View, so we can restore it later: */
+  my_old_view = GfxBase->ActiView;
+
+
+  /* 1. Prepare the View structure, and give it a pointer to */
+  /*    the first ViewPort:                                  */
+  InitView( &my_view );
+  my_view.ViewPort = &my_view_port;
+
+
+  /* 2. Prepare the ViewPort structure, and set some important values: */
+  InitVPort( &my_view_port );
+  my_view_port.DWidth = WIDTH;         /* Set the width.                */
+  my_view_port.DHeight = HEIGHT;       /* Set the height.               */
+  my_view_port.RasInfo = &my_ras_info; /* Give it a pointer to RasInfo. */
+  my_view_port.Modes = HIRES;          /* High resolution.              */
+
+
+  /* 3. Get a colour map, link it to the ViewPort, and prepare it: */
+  my_view_port.ColorMap = (struct ColorMap *) GetColorMap( COLOURS );
+  if( my_view_port.ColorMap == NULL )
+    clean_up( "Could NOT get a ColorMap!" );
+
+  /* Get a pointer to the colour map: */
+  pointer = (UWORD *) my_view_port.ColorMap->ColorTable;
+
+  /* Set the colours: */
+  for( loop = 0; loop < COLOURS; loop++ )
+    *pointer++ = my_color_table[ loop ];
+
+
+  /* 4. Prepare the BitMap: */
+  InitBitMap( &my_bit_map, DEPTH, WIDTH, HEIGHT );
+
+  /* Allocate memory for the Raster: */ 
+  for( loop = 0; loop < DEPTH; loop++ )
+  {
+    my_bit_map.Planes[ loop ] = (PLANEPTR) AllocRaster( WIDTH, HEIGHT );
+    if( my_bit_map.Planes[ loop ] == NULL )
+      clean_up( "Could NOT allocate enough memory for the raster!" );
+
+    /* Clear the display memory with help of the Blitter: */
+    BltClear( my_bit_map.Planes[ loop ], RASSIZE( WIDTH, HEIGHT ), 0 );
+  }
+
+  
+  /* 5. Prepare the RasInfo structure: */
+  my_ras_info.BitMap = &my_bit_map; /* Pointer to the BitMap structure.  */
+  my_ras_info.RxOffset = 0;         /* The top left corner of the Raster */
+  my_ras_info.RyOffset = 0;         /* should be at the top left corner  */
+                                    /* of the display.                   */
+  my_ras_info.Next = NULL;          /* Single playfield - only one       */
+                                    /* RasInfo structure is necessary.   */
+
+  /* 6. Create the display: */
+  MakeVPort( &my_view, &my_view_port );
+  MrgCop( &my_view );
+
+
+  /* 7. Prepare the RastPort, and give it a pointer to the BitMap. */
+  InitRastPort( &my_rast_port );
+  my_rast_port.BitMap = &my_bit_map;
+  
+
+  /* 8. Show the new View: */
+  LoadView( &my_view );
+
+
+  /* 9. Your View is displayed and you can  */
+  /*    now do whatever you want with it.   */
+
+
+  /* 10. Restore the old View: */
+  LoadView( my_old_view );
+
+
+  /* 11. Free all allocated resources and leave. */
+  clean_up( "THE END" );
+}
+
+
+/* Returns all allocated resources: */
+void clean_up( message )
+STRPTR message;
+{
+  int loop;
+
+  /* Free automatically allocated display structures: */
+  FreeVPortCopLists( &my_view_port );
+  FreeCprList( my_view.LOFCprList );
+  
+  /* Deallocate the display memory, BitPlane for BitPlane: */
+  for( loop = 0; loop < DEPTH; loop++ )
+    if( my_bit_map.Planes[ loop ] )
+      FreeRaster( my_bit_map.Planes[ loop ], WIDTH, HEIGHT );
+
+  /* Deallocate the ColorMap: */
+  if( my_view_port.ColorMap ) FreeColorMap( my_view_port.ColorMap );
+
+  /* Close the Graphics library: */
+  if( GfxBase ) CloseLibrary( GfxBase );
+
+  /* Close the Intuition library: */
+  if( IntuitionBase ) CloseLibrary( IntuitionBase );
+
+  /* Print the message and leave: */
+  printf( "%s\n", message ); 
+  exit();
+}
+
+
+
+12.3  DRAW
+
+We have described how to create and open a display, and we will
+now look at all different drawing routines the Amiga offers.
+The Amiga allows you to draw single dots and lines as well as
+complex figures. These routines can be combined with masks and
+multicoloured patterns to great effect. The Amiga offers also
+three different ways of drawing filled objects. You can even
+scroll, copy and logically combine rectangular areas with
+help of the fast Blitter.
+
+
+
+12.3.1  RASTPORT
+
+Before you can start using the drawing routines you still need
+to declare and initialize one more structure. ("Not one more!"
+I can hear you say.) The reason why we need one more structure
+is that most of the drawing routines need to know what pen
+colour, pattern and mask (described later in this chapter) you
+have chosen. This kind of information is therefore stored in a
+structure called RastPort.
+
+
+
+12.3.1.1  RASTPORT STRUCTURE
+
+The RastPort structure look like this: [Defined in file:
+"rastport.h"] (Luckily you normally do not need to bother too
+much about this structure.)
+
+struct RastPort
+{
+  struct Layer *Layer;
+  struct BitMap *BitMap;
+  USHORT *AreaPtrn;
+  struct TmpRas *TmpRas;
+  struct AreaInfo *AreaInfo;
+  struct GelsInfo *GelsInfo;
+  UBYTE Mask;
+  BYTE FgPen;
+  BYTE BgPen;
+  BYTE AOlPen;
+  BYTE DrawMode;
+  BYTE AreaPtSz;
+  BYTE linpatcnt;
+  BYTE dummy;
+  USHORT Flags;
+  USHORT LinePtrn;
+  SHORT cp_x, cp_y;
+  UBYTE minterms[8];
+  SHORT PenWidth;
+  SHORT PenHeight;
+  struct TextFont *Font;
+  UBYTE AlgoStyle;
+  UBYTE TxFlags;
+  UWORD TxHeight;
+  UWORD TxWidth;
+  UWORD TxBaseline;
+  WORD TxSpacing;
+  APTR *RP_User;
+  ULONG longreserved[2];
+  UWORD wordreserved[7];
+  UBYTE reserved[8];
+};
+
+Layer:        Pointer to a Layer structure.
+
+BitMap:       Pointer to this RastPort's BitMap structure.
+
+AreaPtrn:     Pointer to an array of USHORTs that is used to
+              create the area fill pattern.
+
+TmpRas:       Pointer to a TmpRas structure. Used by the
+              AreaMove(), AreaDraw() and AreaEnd() functions.
+              (See below for more information.)
+
+AreaInfo:     Pointer to an AreaInfo structure. Also used by
+              the AreaMove(), AreaDraw() and AreaEnd()
+              functions.
+
+GelsInfo:     Pointer to a GelsInfo structure. Used by animation
+              routines (VSprites and BOSs).
+
+Mask:         This mask allows you determine which BitPlanes
+              should be affected by the drawing routines. The
+              first bit represents BitPlane zero, the second
+              bit represents BitPlane one and so on. If the bit
+              is on (1) that BitPlane will be affected. If the
+              bit is off (0) that BitPlane will not be affected
+              by the drawing routines.
+
+              For example, if the mask value is set to 0xFF
+              (0xFF hexadecimal = 11111111 binary) all
+              BitPlanes will be affected by the drawing
+              routines. If the mask value is set to 0xF6
+              (0xF6 hexadecimal = 11110110 binary) BitPlane
+              zero and three will not be affected.
+
+FgPen:        Foreground pen's colour.
+
+BgPen:        Backgrounds pen's colour.
+
+AOlPen:       Areaoutline pen's colour.
+
+DrawMode:     There exist four different types of drawing
+              modes:
+
+              JAM1       Where you write the foreground pen
+                         will be used to replace the old colour,
+                         and where you do not write the
+                         background is unchanged. For example,
+                         the FgPen is set to colour five and
+                         draw mode to JAM1. If you then write
+                         a pixel that pixel would be of colour
+                         five, if you write a character that
+                         character would be of colour five and
+                         the background unchanged. (One colour
+                         jammed into the Raster.) 
+
+              JAM2       Where you write the foreground pen will
+                         be used to replace the old colour,
+                         and where you do not write the back-
+                         ground pen will be used. For example,
+                         the FgPen is set to colour five BgPen
+                         to colour six and draw mode to JAM2.
+                         If you then write a pixel that pixel
+                         would be of colour five, if you write
+                         a character that character would be of
+                         colour five and the background colour
+                         would be six. (Two colour jammed into
+                         the raster.)
+
+              COMPLEMENT Each pixel you draw will be drawn with
+                         the binary complement colour. Where
+                         you write 1's the corresponding bit in
+                         the Raster will be reversed. The
+                         advantage with this drawing mode is
+                         that if you write twice on the same
+                         spot the old picture will be restored.
+
+              INVERSVID  This mode is only used for text and is
+                         either combined with JAM1 or JAM2.
+                         INVERSVID|JAM1 Only the background
+                                        is drawn with the FgPen.
+                         INVERSVID|JAM2 The background is drawn
+                                        with the FgPen, and the
+                                        characters with the
+                                        BgPen.
+
+AreaPtSz:     The height of a pattern (see below) must be a
+              power of two, and that value (2^x) is stored here.
+              If the AreaPtSz is set to 4, the pattern is 2^4 =
+              16 lines tall. (If you use multicoloured patterns
+              the AreaPtSz value should be negative. Set the
+              AreaPtSz to -3 if you will use an eight lines
+              tall multicoloured pattern. 2^3 = 8) 
+
+linpatcnt:    Used to create line pattern.
+
+dummy:        A trash are were dummy values are stored.
+
+Flags:        If the AREAOUTLINE flag is set all "AreaFill
+              routines" will draw a thin line around all areas
+              that are filled with help of the AOlPen.
+              
+              If the RastPort is double-buffered the DBUFFER
+              flag is set.
+
+LinePtrn:     16 bits used for the line pattern. A value of
+              0x9669 (hexadecimal) will create a pattern like
+              this: 1001011001101001.
+
+cp_x:         Current pen's X position.
+
+cp_y:         Current pen's Y position.
+
+minterms:     Extra memory space.
+
+PenWidth:     The width of the pen (not used by the drawing
+              routines).
+
+PenHeight:    The height of the pen (not used by the drawing
+              routines).
+
+Font:         Pointer to a TextFont structure.
+
+AlgoStyle:    The style that was algorithmically generated. (If
+              the font does not support for example Underline,
+              Bold or Italic the Amiga can generate them itself
+              with help of some algorythms.
+
+TxFlags:      Special text flags.
+
+TxHeight:     The height of the characters.
+
+TxWidth:      The nominal width of the characters.
+
+TxBaseline:   The position of the text's baseline.
+
+TxSpacing:    Spacing between each character.
+
+RP_User:      Special variables and memory areas that is of no
+              use for us. Used only by the Amiga and in future
+              versions of the Graphics system.
+
+longreserved:                 - " -
+
+wordreserved:                 - " -
+
+reserved:                     - " -
+
+
+NOTE! You very rarely need to change or examine these values
+directly. You normally use (and should use) functions which
+are described below in order to change any values.
+
+
+
+12.3.1.2  PREPARE A RASTPORT
+
+To prepare a RastPort you need to declare a RastPort structure
+and initialize it by calling the InitRastPort() function with
+a pointer to the RastPort as only parameter.
+
+Synopsis:  InitRastPort( rast_port );
+
+rast_port: (RastPort *) Pointer to the RastPort that should be
+           Initialized.
+
+
+The last thing you have to do is to give your RastPort a
+pointer to your BitMap structure. Here is a short example:
+
+/* 1. Declare a RastPort structure: */
+struct RastPort my_rast_port;
+
+/* 2. Initialize the RastPort with help of the */
+/* InitRastPort() function:                    */
+InitRastPort( &my_rast_port );
+
+/* 3. Give the RastPort a pointer to your BitMap structure: */
+/* [We assume that the BitMap structure have been correctly */
+/* declared and initialized as described above.]            */
+my_rast_port.BitMap = &my_bit_map;
+
+
+
+12.3.2  DRAWING PENS
+
+The low level graphics drawing routines use three different
+types of drawing pens:
+
+FgPen:  The foreground pen is the most commonly used pen.
+
+BgPen:  The background pen is normally used to draw the
+        background with, for example if you are writing text.
+
+AOlPen: The Areaoutline pen is used to outline areas that are
+        filled with any of the AreaFill routines.
+
+NOTE! The drawing mode will determine which pens will used.
+
+
+You use the SetAPen() function to change the FgPen's colour:
+
+Synopsis:   SetAPen( rast_port, new_colour );
+
+rast_port:  (struct RastPort *) Pointer to the RastPort that
+            should be affected.
+
+new_colour: (long) A new colour value.
+
+
+You use the SetBPen() function to change the BgPen's colour:
+
+Synopsis:   SetBPen( rast_port, new_colour );
+
+rast_port:  (struct RastPort *) Pointer to the RastPort that
+            should be affected.
+
+new_colour: (long) A new colour value.
+
+
+You use the SetOPen() macro to change the AOlPen's colour:
+Note! This is not a function. It is actually a macro that is
+defined in the header file "gfxmacros.h". If you want to use
+this function you have to remember to include this file.
+
+Synopsis:   SetOPen( rast_port, new_colour );
+
+rast_port:  (struct RastPort *) Pointer to the RastPort that
+            should be affected.
+
+new_colour: (long) A new colour value.
+
+
+
+12.3.3  DRAWING MODES
+
+Five different drawingmodes are supported by the Amiga:
+
+JAM1           The FgPen will be used, the background
+               unchanged. (One colour jammed into a Raster.)
+
+JAM2           The FgPen will be used as foreground pen while
+               the background (when you are writing text for
+               example) will be filled with the BgPen's colour.
+               (Two colours are jammed into a Raster.)
+
+COMPLEMENT     Each pixel affected will be drawn with the binary
+               complement colour. Where you write 1's the
+               corresponding bit in the Raster will be reversed.
+
+INVERSVID|JAM1 This mode is only use together with text. Only
+               the background of the text will be drawn with
+               the FgPen.
+
+INVERSVID|JAM2 This mode is only use together with text. The
+               background of the text will be drawn with the
+               FgPen, and the characters itself with the BgPen.
+
+
+To set the drawing mode you use the SetDrMd() function:
+
+Synopsis:  SetDrMd( rast_port, new_mode );
+
+rast_port: (struct RastPort *) Pointer to the RastPort that
+           should be affected.
+
+new_mode:  (long) The new drawing mode. Set one of the
+           following: JAM1, JAM2, COMPLEMENT, INVERSVID|JAM1
+           or INVERSVID|JAM2.
+
+
+
+12.3.4  PATTERNS
+
+Amiga's drawing routines allow you to use patterns. You may use
+both line pattern as well as area patterns which may be two or
+multicoloured. Line patterns are perfect when you are drawing
+diagrams, borders etc. Area pattern can be used to fill any
+type of object on the screen with help of the filling routines.
+Many colours and different patterns give you great flexibility
+to create interesting and good looking displays.
+
+
+
+12.3.4.1  LINE PATTERNS
+
+Line patterns are 16 bits wide and each bit represents one dot.
+The line pattern is initially set to 0xFFFF (1111111111111111)
+which generates solid lines. To create a pattern of two dots
+then two spaces then two dots again and so on you would set the
+line pattern to 0xCCCC (1100110011001100).
+
+You change the line pattern value with help of the SetDrPt()
+macro. Note! This is not a function. It is actually a macro
+that is defined in the header file "gfxmacros.h". If you want
+to use this function you have to remember to include this file.
+
+Synopsis:     SetDrPt( rast_port, line_pattern );
+
+rast_port:    (struct RastPort *) Pointer to the RastPort that
+              should be affected.
+
+line_pattern: (UWORD) The pattern. Each bit represents one dot.
+              To generate solid lines you set the pattern value
+              to 0xFFFF [hex] (1111111111111111 [bin]).
+
+
+Here are some commonly used pattern and the corresponding
+pattern values:
+
+  Description       Pattern [bin]     Pattern value [hex]
+  -------------------------------------------------------
+  solid line        1111111111111111  0xFFFF
+  large dotty line  1111000011110000  0xF0F0
+  medium dotty line 1100110011001100  0xCCCC
+  small dotty line  1000100010001000  0x8888
+  grey line         1010101010101010  0xAAAA
+
+
+
+12.3.4.2  AREA PATTERNS
+
+Area patterns are 16 bits wide and a power of two (1, 2, 4, 8,
+16, 32, ... ) lines tall. To generate an area pattern you must
+therefore declare and initialize an array of UWORDS. Each bit
+in the array represents one dot. To create a pattern with a lot
+of small squares you would declare and initialize the array
+something like this:
+
+UWORD area_pattern =
+{
+  0xF0F0, /* 1111000011110000 */
+  0xF0F0, /* 1111000011110000 */
+  0xF0F0, /* 1111000011110000 */
+  0xF0F0, /* 1111000011110000 */
+  0x0F0F, /* 0000111100001111 */
+  0x0F0F, /* 0000111100001111 */
+  0x0F0F, /* 0000111100001111 */
+  0x0F0F, /* 0000111100001111 */
+};
+
+To set the pattern you call the SetAfPt() macro with a pointer
+to your RastPort as well as you new pattern as parameters.
+Note! This is not a function. It is actually a macro that is
+defined in the header file "gfxmacros.h". If you want to use
+this function you have to remember to include this file.
+
+Synopsis:     SetAfPt( rast_port, area_pattern, pow2 );
+
+rast_port:    (struct RastPort *) Pointer to the RastPort that
+              should be affected.
+
+area_pattern: (UWORD) Pointer to an array of UWORDS that
+              generate the pattern. Each bit in the array
+              represents one dot.
+
+pow2:         (BYTE) The pattern must be two to the power of
+              pow2 lines tall. If the pattern is one line tall
+              pow2 should be set to 0, if the pattern is two
+              lines tall pow2 should be set to 1, if the
+              pattern is four lines tall pow2 should be set to
+              2, and so on. (If you use multicoloured patterns
+              the pow2 should be negative. A sixteen lines
+              tall multicoloured pattern should therefore have
+              the pow2 value set to -4 [2^4 = 16].)
+
+
+
+12.3.4.3  MULTICOLOURED PATTERNS
+
+You may even produce multicoloured patterns. You then need to
+declare an array with a depth of two or more. The larger depth
+the array have the more colours can be used. Each level
+represents one BitPlane.
+
+Here is an area pattern array that generates eight different
+coloured boxes. To get eight colours you need an array with a
+depth of three. The pattern will look like this: (The numbers
+are the colour registers that will be used.)
+
+  0123
+  0123
+  4567
+  4567
+
+UWORD area_pattern =
+{
+  {         /* Plane 0          */
+    0x0F0F, /* 0000111100001111 */
+    0x0F0F, /* 0000111100001111 */
+    0x0F0F, /* 0000111100001111 */
+    0x0F0F  /* 0000111100001111 */
+  },
+  {         /* Plane 1          */
+    0x00FF, /* 0000000011111111 */
+    0x00FF, /* 0000000011111111 */
+    0x00FF, /* 0000000011111111 */
+    0x00FF  /* 0000000011111111 */
+  },
+  {         /* Plane 2          */
+    0x0000, /* 0000000000000000 */
+    0x0000, /* 0000000000000000 */
+    0xFFFF, /* 1111111111111111 */
+    0xFFFF  /* 1111111111111111 */
+  }
+}; 
+
+
+When you use multicoloured patterns the pow2 value in the
+SetAfPt() macro should be negative. Simply put a minus in front
+of the value and the drawing routines will understand that you
+use multicoloured patterns.
+
+When using multicoloured patterns the drawing mode should be
+set to JAM2, FgPen to colour 255 and BgPen to colour 0:
+
+/* Prepare to draw with multicoloured pattern: */
+SetDrMd( &my_rast_port, JAM2 );
+SetAPen( &my_rast_port, 255 );
+SetBPen( &my_rast_port,   0 );
+
+/* Set pattern: (4 lines tall -> pow2 = 2 [2^2], multicol. -2)
+SetAfPt( &my_rast_port, area_pattern, -2 );
+
+
+
+12.3.5  BITPLANE MASK
+
+To create special effects you can turn off BitPlanes in your
+Raster so they will not be affected by the drawing routines.
+The first bit in the mask represents the first BitPlane, the
+second bit the second BitPlane and so on. A 1 means that the
+BitPlane may be affected, while a 0 means that the BitPlane
+will not be affected. To turn off BitPlane zero and two the
+mask value should be set to 0xFA [hex] = 11111010 [bin].
+
+The mask variable "Mask" can be found in the RastPort
+structure: my_rast_port.Mask = 0xFF (All BitPlanes may be
+altered.)
+
+
+
+12.3.6  DRAW SINGLE PIXELS
+
+You draw single pixels with help of the WritePixel() function.
+
+Synopsis:  WritePixel( rast_port, x, y );
+
+rast_port: (struct RastPort *) Pointer to the RastPort that
+           should be affected.
+
+x:         (long) X position of the pixel. 
+
+y:         (long) Y position of the pixel.
+
+
+
+12.3.7  READ SINGLE PIXELS
+
+You use the ReadPixel() function in order to determine what
+colour a specific pixel has. Just give it a pointer to your
+RastPort and the coordinates of the pixel and the function will
+return what colour value that pixel was made of.
+
+Synopsis:  colour = ReadPixel( rast_port, x, y );
+
+colour:    (long) ReadPixel returns the colour value of the
+           specified pixel (colour 0 - 255 ) or -1 if the
+           coordinates were outside the Raster.
+
+rast_port: (struct RastPort *) Pointer to the RastPort which
+           contain the pixel you want to examine.
+
+x:         (long) X position of the pixel. 
+
+y:         (long) Y position of the pixel.
+
+
+
+12.3.8  POSITION THE CURSOR
+
+Before you can start drawing lines or writing text you need to
+position the cursor (the position from where the line/text will
+be drawn from). The cursor is nothing the user can see, it is
+just the current coordinates for the drawing pen. The cursor
+position can be found in the RastPort's cp_x and cp_y variables.
+
+The cursor position is altered by calling the Move() function.
+
+Synopsis:  Move( rast_port, x, y );
+
+rast_port: (struct RastPort *) Pointer to the RastPort that
+           should be affected.
+
+x:         (long) The new X position. 
+
+y:         (long) The new Y position.
+
+
+
+12.3.9  TEXT
+
+In this chapter we will not go into deep details on how to
+write characters/text. All information about changing style
+and fonts will be described in a special TEXT chapter. However,
+I will at least describe how to print normal plain characters
+on the screen.
+
+To print text you use the Text() function. It needs a pointer
+to the RastPort that should be affected, a pointer to a text
+string and finally a value that tells Text() how many
+characters of the string should be printed. Only one line each
+call may be printed, no formatting, word-wrapping etc is done.
+
+Synopsis:  Text( rast_port, string, nr_of_chr );
+
+rast_port: (struct RastPort *) Pointer to the RastPort that
+           should be affected.
+
+string:    (char *) Pointer to a text string that will be
+           printed.
+
+nr_of_chr: (long) The number of characters that should be
+           printed.
+
+
+This example prints "Hello" on the display:
+  Text( &my_rast_port, "HELLO", 5 );
+
+
+
+12.3.10  DRAW SINGLE LINES
+
+You draw single lines with help of the Draw() function. It will
+draw a line from the current position to a new position
+anywhere on the Raster.
+
+Synopsis:  Draw( rast_port, x, y );
+
+rast_port: (struct RastPort *) Pointer to the RastPort that
+           should be affected.
+
+x:         (long) The new X position. 
+
+y:         (long) The new Y position.
+
+
+Here is an example that will draw a triangle on the screen:
+
+Move( &my_rast_port, 100, 100 ); /* Move to start position. */
+Draw( &my_rast_port, 300, 100 ); /* Draw the three lines.   */
+Draw( &my_rast_port, 200, 200 );
+Draw( &my_rast_port, 100, 100 );
+
+
+
+12.3.11  DRAW MULTIPLE LINES
+
+To draw multiple lines we use the PolyDraw() function. It needs
+a pointer to an array of coordinates, a value that tells
+PolyDraw() how many pairs of coordinates (x,y) will be used
+and of course a pointer to the RastPort that should be
+affected. A line is drawn from the current position to the
+first coordinate. There a second line is drawn to the second
+coordinate and so on.
+
+Synopsis:    PolyDraw( rast_port, number, coordinates );
+
+rast_port:   (struct RastPort *) Pointer to the RastPort that
+             should be affected.
+
+number:      (long) The number of coordinates (x,y) defined in
+             the array.
+
+coordinates: (short *) Pointer to an array of coordinates.
+
+
+Here is an example that also will draw a triangle on the
+screen:
+
+/* Three coordinates: */
+WORD coordinates[] =
+{
+  300, 100,
+  200, 200,
+  100, 100
+};
+
+/* Move to the start position: */
+Move( &my_rast_port, 100, 100 );
+
+/* Draw some lines: */
+PolyDraw( &my_rast_port, 3, coordinates );
+
+
+
+12.3.12  DRAW FILLED RECTANGLES
+
+To draw filled rectangles you use the RectFill function. (Note
+that the area pattern will have effect here.)
+
+Synopsis:  RectFill( rast_port, minx, miny, maxx, maxy );
+
+rast_port: (struct RastPort *) Pointer to the RastPort that
+           should be affected.
+
+minx:      (long) Left position of the rectangle.
+
+miny:      (long) Top          - " -
+
+maxx:      (long) Right        - " -
+
+maxy:      (long) Bottom       - " -
+
+
+
+12.3.13  FLOOD FILL
+
+Flood fill is used when a complicated object should be filled.
+There exist two different types of flood fill, Outline mode and
+Colour mode. In outline mode everything will be filled with the
+new colour, and the flood is only stopped when it has reached
+an edge of the same colour as AOlPen. In colour mode all pixels
+with the same colour and are side by side with each other will
+be affected. The fill will stop first when the flood has
+reached a different colour.
+
+You flood fill objects with help of the Flood() function.
+
+Synopsis: Flood( rast_port, mode, x, y ); 
+
+rast_port: (struct RastPort *) Pointer to the RastPort that
+           should be affected.
+
+mode:      (long) Which mode should be used. If you want to use
+           the Colour mode set the mode variable to 1, to get
+           the Outline mode set the mode variable to 0.
+
+x:         (long) X position where the flood fill should start.
+
+y:         (long) Y position where the flood fill should start.
+
+
+Here is an example that will draw a triangle and then fill it.
+We set the AOlPen to the same colour as the FgPen so the flood
+fill will stop when it reaches the edges, outline mode.
+
+/* Set the AOlPen to the same colour as FgPen: */
+SetOPen( &my_rast_port, my_rast_port.FgPen );
+
+/* Draw a triangle: */
+Move( &my_rast_port, 100, 100 );
+Draw( &my_rast_port, 300, 100 );
+Draw( &my_rast_port, 200, 200 );
+Draw( &my_rast_port, 100, 100 );
+
+/* Fill it: (Use the Outline mode) */
+Flood( &my_rast_port, 0, 200, 150 );
+
+
+
+12.3.14  DRAW FILLED AREAS
+
+The Amiga allows you to draw areas that are directly filled.
+You move to a location and then starts to draw your objects.
+The user will however not notice anything since no lines are
+drawn. The lines are instead stored in a large vector list,
+and will first be drawn and filled when you finish (close) the
+object.
+
+
+
+12.3.14.1  AREAINFO AND TMPRAS STRUCTURES
+
+To manage this you need to do some things:
+
+1. A buffer in which a list of all your vertices can be stored
+   in. Five bytes per vertex is needed, and to create a buffer
+   for 100 lines you need 500 bytes. However, the buffer must
+   be word aligned, and you should therefore declare the buffer
+   as a collection of words instead of bytes. Since there goes
+   two bytes on every word, 500 bytes means 250 words.
+   Example: UWORD my_buffer[ 250 ];
+
+2. Declare an AreaInfo structure. (Declared in file
+   "rastport.h".)
+   Example: struct AreaInfo my_area_info;
+
+3. Combine the buffer and the AreaInfo structure with help of
+   the InitArea() function. It needs a pointer to an AreaInfo
+   structure, a pointer to a memory buffer and a value that
+   tells it how many vertices may be stored in the buffer.
+   Example: InitArea( &my_area_info, my_buffer, 100);
+
+4. Declare a TmpRas structure. (Also declared in the file
+   "rastport.h".)
+   Example: struct TmpRas my_tmp_ras;
+
+5. Reserve a BitPlane large enough to store all your objects
+   in. Normally you make the BitPlane equal large as the
+   display. Example:
+   PLANEPTR my_bit_plane;
+   my_bit_plane = AllocRaster( 320, 200 );
+   if( my_bit_plane == NULL )
+     exit();
+
+6. Initialize and combine the TmpRas structure and the extra
+   memory by calling the InitTmpRas() function. It needs a
+   pointer to the TmpRas structure, a pointer to some extra
+   display memory, and finally a value telling it how large
+   the extra memory area is, calculated with help of the
+   RASSIZE() macro. Example:
+   InitTmpRas( &my_tmp_ras, my_bit_plane, RASSIZE( 320, 200 ) );
+
+7. Tell the RastPort were it can find the AreaInfo and TmpRas
+   structures. Example:
+   my_rast_port.AreaInfo = &my_area_info;
+   my_rast_port.TmpRas = &my_tmp_ras;
+
+8. Before your program terminates it must deallocate the
+   display memory it has allocated. Use the function
+   FreeRaster(). Example:
+   FreeRaster( my_bit_plane, 320, 200 );
+
+
+
+12.3.14.2  AREAMOVE(), AREADRAW() AND AREAEND()
+
+Once the TmpRas and AreaInfo structures have been initialized,
+and the RastPort know where to find them, you may start to use
+the AreaFill functions. The first thing you probably would do
+is to move to a new position were you want to start drawing.
+You do it by calling the AreaMove() function.
+
+Synopsis:  AreaMove( rast_port, x, y );
+
+rast_port: (struct RastPort *) Pointer to the RastPort that
+           should be affected.
+
+x:         (long) Start X position.
+
+y:         (long) Start Y position.
+
+
+You can now start to draw with help of the AreaDraw() function.
+NOTE! The user will not see anything, it is first when you
+close this polygon it will be drawn and filled.
+
+Synopsis:  AreaDraw( rast_port, x, y );
+
+rast_port: (struct RastPort *) Pointer to the RastPort that
+           should be affected.
+
+x:         (long) New X position.
+
+y:         (long) New Y position.
+
+
+Be careful not to draw outside the Raster, it may crash the
+system!
+
+Once you are ready with your object you call the function
+AreaEnd() and the polygon is closed and filled. You do not
+need to close the polygon itself, the last line will if
+necessary been drawn automatically. (If you call AreaMove()
+before you have closed a polygon, it will be closed
+automatically before the new polygon starts.)
+
+Synopsis:  AreaEnd( rast_port );
+
+rast_port: (struct RastPort *) Pointer to the RastPort that
+           should be affected.
+
+
+
+12.3.14.3  TURN OFF THE OUTLINE FUNCTION
+
+The areas that are filled with help of the AreaFill functions
+will be outlined with the AOlPen. You can however turn this
+outline function off if you do not want it. You simply call
+the macro (declared in file "gfxmacros.h") BNDROFF() with a
+pointer to your RastPort as only parameter.
+
+Synopsis:  BNDROFF( rast_port );
+
+rast_port: Pointer to the RastPort which outlinefunction should
+           be turned off.
+
+
+
+12.3.14.4  EXAMPLE
+
+Here is an example:
+
+
+#define WIDTH  320
+#define HEIGHT 200
+
+/* Declare an AreaInfo and TmpRas structure: */
+struct AreaInfo my_area_info;
+struct TmpRas my_tmp_ras;
+
+/* Vertex buffer: (100 lines, 5 bytes each gives 500 bytes */
+/* which is 250 words. Must be word-aligned.)               */
+UWORD my_buffer[ 250 ];
+
+/* Pointer to some display memory that will be allocated: */
+PLANEPTR my_bit_plane;
+
+/* Initialize the AreaInfo structure. */
+/* Prepare for 100 vertices:          */
+InitArea( &my_area_info, my_buffer, 100);
+
+/* Allocate some display memory: */
+my_bit_plane = AllocRaster( WIDTH, HEIGHT );
+
+/* Have we allocated it successfully? */
+if( my_bit_plane == NULL )
+  exit();
+
+/* Prepare the TmpRas structure: */
+InitTmpRas( &my_tmp_ras, my_bit_plane, RASSIZE( WIDTH, HEIGHT ) );
+
+/* Tell RastPort were it can find the structures: */
+my_rast_port.AreaInfo = &my_area_info;
+my_rast_port.TmpRas = &my_tmp_ras;
+
+
+/* Draw a filled square: */
+AreaMove( my_rast_port,   0,   0 );
+AreaDraw( my_rast_port, 100,   0 );
+AreaDraw( my_rast_port, 100, 100 );
+AreaDraw( my_rast_port,   0, 100 );
+AreaEnd( my_rast_port );
+
+
+/* Deallocate the extra memory: */
+FreeRaster( my_bit_plane, WIDTH, HEIGHT );
+
+
+
+12.3.15  SET THE RASTER TO A SPECIFIC COLOUR
+
+You set a whole Raster to a specific colour with help of the
+SetRast() function.
+
+Synopsis:  SetRast( rast_port, colour );
+
+rast_port: (struct RastPort *) Pointer to the RastPort that
+           should be affected.
+
+colour:    (long) The colour reg. you want to fill the whole
+           raster with.
+
+
+
+12.3.16  BLITTER
+
+The Blitter is a chip inside the Amiga which is specialized in
+moving and logically combining large rectangular memory areas.
+It moves and works with enormous amount of data and can
+therefore do a lot of hard work which would take much more time
+for the main processor to do. The main processor can instead
+concentrate itself on more important tasks.
+
+The Blitter, also called Fat Agnus (the chip is very fat), is
+the hero behind the Amigas fashinating graphics capabilities. 
+It can be used to clear, scroll and copy large memory areas.
+Unlike other blitters it can also logically combine memory
+areas (explained later) and can therefore do a lot more
+interesting things than just moving data.
+
+
+
+12.3.16.1  CLEAR RECTANGULAR MEMORY AREAS
+
+You can clear memory with help of the BltClear() function. The
+advantage of using this function is that it works together with
+the blitter which is the fastest chip to clear memory.
+
+Synopsis: BltClear( memory, count, flags );
+
+memory:   (char *) Pointer to the memory that should be
+          cleared.
+
+count:    (long) Number of bytes that should be cleared. If you
+          clear display memory you can use the macro RASSIZE()
+          to calculate how many bytes the display use.
+
+flags:    (long) Write 0 to allow the computer to continue
+          while the blitter is still working, or write 1 which
+          will force the program to wait for the blitter.
+
+
+
+12.3.16.2  SCROLL A RECTANGULAR AREA
+
+You can scroll an area of a raster with help of the
+ScrollRaster() function. It works together with the blitter
+and is therefore very fast. The area can be moved both
+vertically as well as horizontally. The area which is moved
+out of the raster is lost, and the new area is filled with the
+BgPen.
+
+Synopsis:  ScrollRaster( rp, dx, dy, minx, miny, maxx, maxy );
+
+rp:        (struct RastPort *) Pointer to the RastPort that
+           should be affected.
+
+
+dx:        (long) Delta X movement. (A positive number moves
+           the area to the right, a negative number to the
+           left.)
+
+dy:        (long) Delta Y movement. (A positive number moves
+           the area down, a negative number up.)
+
+minx:      (long) Left edge of the rectangle.
+
+miny:      (long) Top edge of the rectangle.
+
+maxx:      (long) Right edge of the rectangle.
+
+maxy:      (long) Bottom edge of the rectangle.
+
+
+
+12.3.16.3  COPY RECTANGULAR AREAS
+
+When you are going to copy rectangular memory areas you can
+either use BltBitMap() or ClipBlit(). BltBitMap() should be
+used when you simply want to copy data and do not bother about
+overlapping layers (windows) etc. The ClipBlit() on the other
+hand should be used when you want to look out for overlapping
+layers etc.
+
+BltBitMap() copies BitMaps directly without worrying about
+overlapping layers.
+
+Synopsis: BltBitMap( sbm, sx, sy, dbm, dx, dy, w, h, flag, m, t );
+
+sbm:      (struct BitMap *) Pointer to the "source" BitMap.
+
+sx:       (long) X offset, source.
+
+sy:       (long) Y offset, source.
+
+dbm:      (struct BitMap *) Pointer to the "destination"
+          BitMap.
+
+dx:       (long) X offset, destination.
+
+dy:       (long) Y offset, destination.
+
+w:        (long) The width of the memory area that should be
+          copied.
+
+h:        (long) The height of the memory area that should be
+          copied.
+
+flag:     (long) This value tells the blitter what kind of
+          logically operations should be done. See below for
+          more information.
+
+m:        (long) You can here define a BitMap mask, and tell
+          the blitter which BitPlanes should be used, and which
+          should not. The first bit represents the first
+          BitPlane, the second bit the second BitPlane and so
+          on. If the bit is on (1) the corresponding BitPlane
+          will be used, else (0) the BitPlane will not be used.
+          To turn off BitPlane zero and two, set the mask value
+          to 0xFA (11111010). To use all BitPlanes set the mask
+          value to 0xFF (11111111).
+
+t:        (char *) If the copy overlaps and this pointer points
+          to some chip-memory, the memory will be used to store
+          the temporary area in. However, normally you do not
+          need to bother about this value.
+
+
+ClipBlit() copies BitMaps with help of Rastports and will
+therefore care about overlapping layers, and should be used
+if you have windows on your display.
+
+Synopsis: ClipBlit( srp, sx, sy, drp, dx, dy, w, h, flag );
+
+srp:      (struct RastPort *) Pointer to the "source" RastPort.
+
+sx:       (long) X offset, source.
+
+sy:       (long) Y offset, source.
+
+drp:      (struct RastPort *) Pointer to the "destination"
+          RastPort.
+
+dx:       (long) X offset, destination.
+
+dy:       (long) Y offset, destination.
+
+w:        (long) The width of the memory area that should be
+          copied.
+
+h:        (long) The height of the memory area that should be
+          copied.
+
+flag:     (long) This value tells the blitter what kind of
+          logically operations should be done. See below for
+          more information.
+
+
+As said above the blitter can logically combine data from the
+source and destination areas. The first four bits to the left
+in the flag field determines what calculations should be done.
+
+If the leftmost bit is set (value 0x80) the result will be a
+combination of the source and destination. If the second
+leftmost bit is set (value 0x40) the result will be a
+combination of the source and inverted destination. If the
+third leftmost bit is set (value 0x20) the result will be a
+combination of the inverted source and destination. If the
+fourth leftmost bit is set (value 0x10) the result will be the
+source together with destination and all inverted. See table
+below:
+
+  Bit       Value  Log
+  --------------------
+  1000 0000  0x80  SD
+                    _
+  0100 0000  0x40  SD
+                   _
+  0010 0000  0x20  SD
+                   __
+  0001 0000  0x10  SD
+
+
+To make a normal copy the result should be only S. We can get
+it by setting the flag value to 0xC0 [hex] (11000000 [bin]).
+The mathematically formula will then be:
+        _         _
+  SD + SD = S(D + D) = S
+                                        _
+If you want to get the source inverted (S), set the flag value
+to 0x30 [hex] (00110000 [bin]). The mathematically formula will
+then be:
+  _    __   _     _    _
+  SD + SD = S(D + D) = S
+                                 _
+To get the destination inverted (D), set the flag value to 0x50
+[hex] (01010000 [bin]). The mathematically formula will then
+be:
+   _   __   _     _    _
+  SD + SD = D(S + S) = D
+
+
+Here is an example that will copy a rectangular area from a
+RastPort called source_rp to another RastPort called
+destination_rp. The rectangular area is WIDTH pixels wide and
+HEIGHT lines tall.
+
+ClipBlit( &source_rp,      /* Source RastPort.              */
+          0, 0,            /* Top left corner, source.      */
+          &destination_rp, /* Destination RastPort.         */
+          0, 0,            /* Top left corner, destination. */
+          WIDTH, HEIGHT,   /* Size of the memory area.      */
+          0xC0 );          /* Normal copy.                  */
+
+
+
+12.4  FUNCTIONS
+
+InitView()
+
+  This function will initialize a View structure.
+
+  Synopsis: InitView( view );
+  
+  view:     (struct View *) Pointer to the View that should be
+            initialized.
+
+
+InitVPort()
+
+  This function will initialize a ViewPort structure.
+
+  Synopsis:  InitVPort( view_port );
+  
+  view_port: (struct ViewPort *) Pointer to the ViewPort that
+             should be initialized.
+
+
+GetColorMap()
+
+  This function allocates and initializes a ColorMap structure.
+
+  Synopsis: colormap = GetColorMap( colours );
+
+  colormap: (struct ColorMap *) GetColorMap returns a pointer
+            to the ColorMap structure it has allocated and
+            initialized, or NULL if not enough memory.
+
+  colours:  (long) A value specifying how many colours you
+            want that the ColorMap structure should store.
+            (1, 2, 4, 8, 16, 32)
+
+
+FreeColorMap()
+
+  This function deallocates the memory that was allocated by
+  the GetColorMap() function. Remember to deallocate all memory
+  that you allocate. For every GetColorMap() function there
+  should be one FreeColorMap() function.
+
+  FreeColorMap( colormap );
+
+  colormap: (struct ColorMap *) Pointer to a ColorMap structure
+            that GetColorMap() returned and you now want to
+            deallocate.
+
+
+InitBitMap()
+
+  This function initializes a BitMap structure.
+
+  Synopsis: InitBitMap( bitmap, depth, width, height );
+
+  bitmap: (struct BitMap *) Pointer to the BitMap.
+
+  depth:  (long) How many BitPlanes used.
+
+  width:  (long) The width of the raster.
+
+  height: (long) The height of the raster.
+
+
+AllocRaster()
+
+  This function reserves display memory (one BitPlane).
+
+  Synopsis: pointer = AllocRaster( width, height );
+
+  pointer   (PLANEPTR) Pointer to the allocated memory or NULL
+            if enough memory could not be reserved.
+
+  width:    (long) The width of the BitMap.
+
+  height:   (long) The height of the BitMap.
+
+
+BltClear()
+
+  This function clears large rectangular memory areas. This
+  function work together with the blitter and is therefore very
+  fast.
+
+  Synopsis: BltClear( pointer, bytes, flags );
+
+  pointer   (char *) Pointer to the memory.
+
+  bytes:    (long) The lower 16 bits tells the blitter how many
+            bytes per row, and the upper 16 bits how many rows.
+            This value is automatically calculated for you with
+            help of the macro RASSIZE(). Just give RASSIZE()
+            the correct width and height and it will return the
+            correct value. [RASSIZE() is defined in file
+            "gfx.h".]
+
+  flags:    (long) Set bit 0 to force the function to wait
+            until the Blitter has finished with your request.
+
+
+MakeVPort()
+
+  This function prepares the Amiga's hardware (especially the
+  Copper) to display a ViewPort. NOTE! You have to prepare
+  EVERY ViewPort you are going to use!
+
+  Synopsis: MakeVPort( view, viewport ); 
+
+  view:     (struct View *) Pointer to the ViewPort's View.
+
+  viewport: (struct ViewPort *) Pointer to the ViewPort.
+
+
+MrgCop()
+
+  This function puts together all displayinstructions and
+  prepares the view to be showed.
+
+  Synopsis: MrgCop( view );
+
+  view:     (struct View *) Pointer to the View.
+
+
+LoadView()
+
+  This function will start showing a View. Remember that when
+  you close your View you must switch back to the old view.
+  (See examples for more details.)
+
+  Synopsis: LoadView( view );
+
+  view:     (struct View *) Pointer to the View.
+
+
+FreeVPortCopLists()
+
+  This function will return all memory that was automatically
+  allocated by the MakeVPort() function. Remember to call
+  FreeVPortCopLists() for every ViewPort you have created!
+
+  Synopsis: FreeVPortCopLists( viewport );
+
+  view:     (struct ViewPort *) Pointer to the ViewPort.
+
+
+FreeCprList()
+
+  This function will return all memory that was automatically
+  allocated by the MrgCop() function.
+
+  Synopsis: FreeCprList( cprlist );
+
+  cprlist:  (struct cprlist *) Pointer to the View's cprlist
+            (LOFCprList) structure. If the View was interlaced
+            you must also call the FreeCprList function with a
+            pointer to the SHFCprList.
+
+
+FreeRaster()
+
+  This function will deallocate display memory (BitPlane).
+  Remember to deallocate all BitPlanes!
+
+  Synopsis: FreeRaster( bitplane, width, height );
+
+  bitplane: (PLANEPTR) Pointer to a Bitplane.
+
+  width:    (long) The Bitplane's width.
+
+  height:   (long) The Bitplane's height.
+
+
+FreeColorMap()
+
+  This function deallocates the memory that was allocated by
+  the GetColorMap() function. Remember to deallocate all memory
+  that you allocate. For every GetColorMap() function there
+  should be one FreeColorMap() function.
+
+  FreeColorMap( colormap );
+
+  colormap: (struct ColorMap *) Pointer to a ColorMap structure
+            that GetColorMap() returned and you now want to
+            deallocate.
+
+
+InitRastPort()
+
+  This function initializes a RastPort.
+
+  Synopsis:  InitRastPort( rast_port );
+
+  rast_port: (RastPort *) Pointer to the RastPort that should
+             be Initialized.
+
+
+SetAPen()
+
+  This function will change the FgPen's colour.
+
+  Synopsis:   SetAPen( rast_port, new_colour );
+
+  rast_port:  (struct RastPort *) Pointer to the RastPort that
+              should be affected.
+
+  new_colour: (long) A new colour value.
+
+
+SetBPen()
+
+  This function will change the BgPen's colour.
+
+  Synopsis:   SetBPen( rast_port, new_colour );
+
+  rast_port:  (struct RastPort *) Pointer to the RastPort that
+              should be affected.
+
+  new_colour: (long) A new colour value.
+
+
+SetOPen()
+
+  This macro will change the AOlPen's colour. Note! This is not
+  a function. It is actually a macro that is defined in the
+  header file "gfxmacros.h". If you want to use this function
+  you have to remember to include this file.
+
+  Synopsis:   SetOPen( rast_port, new_colour );
+
+  rast_port:  (struct RastPort *) Pointer to the RastPort that
+              should be affected.
+
+  new_colour: (long) A new colour value.
+
+
+SetDrMd()
+
+  This function will change the drawing mode.
+
+  Synopsis:  SetDrMd( rast_port, new_mode );
+
+  rast_port: (struct RastPort *) Pointer to the RastPort that
+             should be affected.
+
+  new_mode:  (long) The new drawing mode. Set one of the
+             following: JAM1, JAM2, COMPLEMENT, INVERSVID|JAM1
+             or INVERSVID|JAM2.
+
+             JAM1           The FgPen will be used, the
+                            background unchanged. (One colour
+                            jammed into a Raster.)
+
+             JAM2           The FgPen will be used as foreground
+                            pen while the background (when you
+                            are writing text for example) will
+                            be filled with the BgPen's colour.
+                            (Two colours are jammed into a
+                            Raster.)
+
+             COMPLEMENT     Each pixel affected will be drawn
+                            with the binary complement colour.
+                            Where you write 1's the
+                            corresponding bit in the Raster
+                            will be reversed.
+
+             INVERSVID|JAM1 This mode is only use together with
+                            text. Only the background of the
+                            text will be drawn with the FgPen.
+
+             INVERSVID|JAM2 This mode is only use together with
+                            text. The background of the text
+                            will be drawn with the FgPen, and
+                            the characters itself with the
+                            BgPen.
+
+
+SetDrPt()
+
+  This function will set the line pattern.
+
+  Synopsis:     SetDrPt( rast_port, line_pattern );
+
+  rast_port:    (struct RastPort *) Pointer to the RastPort
+                that should be affected.
+
+  line_pattern: (UWORD) The pattern. Each bit represents one
+                dot. To generate solid lines you set the
+                pattern value to 0xFFFF [hex] (1111111111111111
+                [bin]).
+
+
+SetAfPt()
+
+  This function will set the area pattern:
+
+  Synopsis:     SetAfPt( rast_port, area_pattern, pow2 );
+
+  rast_port:    (struct RastPort *) Pointer to the RastPort
+                that should be affected.
+
+  area_pattern: (UWORD) Pointer to an array of UWORDS that
+                generate the pattern. Each bit in the array
+                represents one dot.
+
+  pow2:         (BYTE) The pattern must be two to the power of
+                pow2 lines tall. If the pattern is one line tall
+                 pow2 should be set to 0, if the pattern is two
+                lines tall pow2 should be set to 1, if the
+                pattern is four lines tall pow2 should be set to
+                2, and so on. (If you use multicoloured patterns
+                the pow2 should be negative. A sixteen lines
+                tall multicoloured pattern should therefore have
+                the pow2 value set to -4 [2^4 = 16].)
+
+
+WritePixel()
+
+  This function will draw a single pixel.
+
+  Synopsis:  WritePixel( rast_port, x, y );
+
+  rast_port: (struct RastPort *) Pointer to the RastPort that
+             should be affected.
+
+  x:         (long) X position of the pixel. 
+
+  y:         (long) Y position of the pixel.
+
+
+ReadPixel()
+
+  This function reads the colour value of a pixel.
+
+  Synopsis:  colour = ReadPixel( rast_port, x, y );
+
+  colour:    (long) ReadPixel returns the colour value of the
+             specified pixel (colour 0 - 255 ) or -1 if the
+             coordinates were outside the Raster.
+
+  rast_port: (struct RastPort *) Pointer to the RastPort which
+             contain the pixel you want to examine.
+
+  x:         (long) X position of the pixel. 
+
+  y:         (long) Y position of the pixel.
+
+
+Move()
+
+  This function moves the cursor.
+
+  Synopsis:  Move( rast_port, x, y );
+
+  rast_port: (struct RastPort *) Pointer to the RastPort that
+             should be affected.
+
+  x:         (long) The new X position. 
+
+  y:         (long) The new Y position.
+
+
+Text()
+
+  This function prints text into a Raster.
+
+  Synopsis:  Text( rast_port, string, nr_of_chr );
+
+  rast_port: (struct RastPort *) Pointer to the RastPort that
+             should be affected.
+
+  string:    (char *) Pointer to a text string that will be
+             printed.
+
+  nr_of_chr: (long) The number of characters that should be
+             printed.
+
+
+Draw()
+
+  This function draws single lines from the current position
+  to the new specified position.
+
+  Synopsis:  Draw( rast_port, x, y );
+
+  rast_port: (struct RastPort *) Pointer to the RastPort that
+             should be affected.
+
+  x:         (long) The new X position. 
+
+  y:         (long) The new Y position.
+
+
+PolyDraw()
+
+  This function will draw multiple lines.
+
+  Synopsis:    PolyDraw( rast_port, number, coordinates );
+
+  rast_port:   (struct RastPort *) Pointer to the RastPort that
+               should be affected.
+
+  number:      (long) The number of coordinates (x,y) defined
+               in the array.
+
+  coordinates: (short *) Pointer to an array of coordinates.
+
+
+RectFill()
+
+  This function will draw filled rectangles.
+
+  Synopsis:  RectFill( rast_port, minx, miny, maxx, maxy );
+
+  rast_port: (struct RastPort *) Pointer to the RastPort that
+             should be affected.
+
+  minx:      (long) Left position of the rectangle.
+
+  miny:      (long) Top          - " -
+
+  maxx:      (long) Right        - " -
+
+  maxy:      (long) Bottom       - " -
+
+
+Flood()
+
+  This function will flood fill complicated objects.
+
+  Synopsis:  Flood( rast_port, mode, x, y ); 
+
+  rast_port: (struct RastPort *) Pointer to the RastPort that
+             should be affected.
+
+  mode:      (long) Which mode should be used. If you want to
+             use the Colour mode set the mode variable to 1, to
+             get the Outline mode set the mode variable to 0.
+
+  x:         (long) X position where the flood fill should
+             start.
+
+  y:         (long) Y position where the flood fill should
+             start.
+
+
+AreaMove()
+
+  This function will start a new polygon.
+
+  Synopsis:  AreaMove( rast_port, x, y );
+
+  rast_port: (struct RastPort *) Pointer to the RastPort that
+             should be affected.
+
+  x:         (long) Start X position.
+
+  y:         (long) Start Y position.
+
+
+AreaDraw()
+
+  This function will add a new vertex to the vector list. 
+
+  Synopsis:  AreaDraw( rast_port, x, y );
+
+  rast_port: (struct RastPort *) Pointer to the RastPort that
+             should be affected.
+
+  x:         (long) New X position.
+
+  y:         (long) New Y position.
+
+
+AreaEnd()
+
+  This function will close, draw and fill the polygon.
+
+  Synopsis:  AreaEnd( rast_port );
+
+  rast_port: (struct RastPort *) Pointer to the RastPort that
+             should be affected.
+
+
+BNDROFF()
+
+  This macro (declared in file "gfxmacro.h") will turn off the
+  outline mode.
+
+  Synopsis:  BNDROFF( rast_port );
+
+  rast_port: Pointer to the RastPort which outlinefunction
+             should be turned off.
+
+
+SetRast()
+
+  This function sets a whole Raster to a specific colour.
+
+  Synopsis:  SetRast( rast_port, colour );
+
+  rast_port: (struct RastPort *) Pointer to the RastPort that
+             should be affected.
+
+  colour:    (long) The colour reg. you want to fill the whole
+             raster with.
+
+
+ScrollRaster()
+
+  This function will scroll a rectangular area of a raster.
+
+  Synopsis:  ScrollRaster( rp, dx, dy, minx, miny, maxx, maxy );
+
+  rp:        (struct RastPort *) Pointer to the RastPort that
+             should be affected.
+
+
+  dx:        (long) Delta X movement. (A positive number moves
+             the area to the right, a negative number to the
+             left.)
+
+  dy:        (long) Delta Y movement. (A positive number moves
+             the area down, a negative number up.)
+
+  minx:      (long) Left edge of the rectangle.
+
+  miny:      (long) Top edge of the rectangle.
+
+  maxx:      (long) Right edge of the rectangle.
+
+  maxy:      (long) Bottom edge of the rectangle.
+
+
+BltBitMap()
+
+  This function copies parts of BitMaps directly without
+  worrying about overlapping layers.
+
+  Synopsis: BltBitMap( sb, sx, sy, db, dx, dy, w, h, fl, m, t );
+
+  sb:       (struct BitMap *) Pointer to the "source" BitMap.
+
+  sx:       (long) X offset, source.
+
+  sy:       (long) Y offset, source.
+
+  db:       (struct BitMap *) Pointer to the "destination"
+            BitMap.
+
+  dx:       (long) X offset, destination.
+
+  dy:       (long) Y offset, destination.
+
+  w:        (long) The width of the memory area that should be
+            copied.
+
+  h:        (long) The height of the memory area that should be
+            copied.
+
+  fl:       (long) The four leftmost bits tells the blitter
+            what kind of logically operations should be done.
+
+  m:        (long) You can here define a BitMap mask, and tell
+            the blitter which BitPlanes should be used, and
+            which should not. The first bit represents the
+            first BitPlane, the second bit the second BitPlane
+            and so on. If the bit is on (1) the corresponding
+            BitPlane will be used, else (0) the BitPlane will
+            not be used. To turn off BitPlane zero and two, set
+            the mask value to 0xFA (11111010). To use all
+            BitPlanes set the mask value to 0xFF (11111111).
+
+  t:        (char *) If the copy overlaps and this pointer
+            points to some chip-memory, the memory will be used
+            to store the temporary area in. However, normally
+            you do not need to bother about this value.
+
+
+ClipBlit()
+
+  This function copies parts of BitMaps with help of Rastports
+  and will therefore care about overlapping layers, and should
+  be used if you have windows on your display.
+
+  Synopsis: ClipBlit( srp, sx, sy, drp, dx, dy, w, h, flag );
+
+  srp:      (struct RastPort *) Pointer to the "source"
+            RastPort.
+
+  sx:       (long) X offset, source.
+
+  sy:       (long) Y offset, source.
+
+  drp:      (struct RastPort *) Pointer to the "destination"
+            RastPort.
+
+  dx:       (long) X offset, destination.
+
+  dy:       (long) Y offset, destination.
+
+  w:        (long) The width of the memory area that should be
+            copied.
+
+  h:        (long) The height of the memory area that should be
+            copied.
+
+  flag:     (long) This value tells the blitter what kind of
+            logically operations should be done. See below for
+            more information.
+
+
+
+12.5  EXAMPLES
+
+Example1
+  This example shows how to create your own display, and fill
+  it with a lot of pixels in seven different colours.
+
+Example2
+  This example shows how to create a large Raster and a smaller
+  display. We fill the Raster with a lot of pixels in seven
+  different colours and by altering the RxOffset and RyOffset
+  values in the RasInfo structure, the Raster is scrolled in
+  all directions. This method to scroll a large drawing in full
+  speed is used in many games and was even used in my own
+  racing game "Car".
+
+Example3
+  This example shows how to create a display that covers the
+  entire display. This method is called "Overscan", and is
+  primarily used in video and graphics programs, but can also
+  be used in games etc to make the display more interesting.
+
+Example4
+  This example demonstrates how to open two different ViewPorts
+  on the same display. The first ViewPort is in low resolution
+  and use 32 colours, while the second ViewPort is in high
+  resolution and only use 2 colours.
+
+Example5
+  This example demonstrates how to open a ViewPort in interlace
+  mode.
+
+Example6
+  This example demonstrates how to create a ViewPort in dual
+  playfield mode. Playfield 1 use four colours and is placed
+  behind playfield 2 which only use two colours (transparent
+  and grey). Playfield 1 is filled with a lot of dots and is
+  scrolled around while playfield 2 is is not moved and is
+  filled with only five grey rectangles.
+
+Example7
+  This example demonstrates how to create a ViewPort with the
+  special display mode "Hold and Modify".
+
+Example8
+  This example shows how to use the functions: SetAPen(),
+  SetBPen(), SetOPen(), SetDrMd(), SetDrPt(), WritePixel(),
+  ReadPixel(), Move(), Draw(), Text() and finally PolyDraw().
+
+Example9
+  This example shows how to flood fill a figure, and how to
+  draw filled rectangles (both solid as well as filled with
+  single and multi coloured patterns).
+
+Example10
+  This example demonstrate how to use the Area Fill functions.
+  [ AreaMove(), AreaDraw() and AreaEnd(). ]
+
+Example11
+  This example demonstrate how to copy rectangular memory areas
+  with help of the blitter. 

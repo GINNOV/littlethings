@@ -1,0 +1,25 @@
+VETTORE I:        44   55   12   42   94   18    6   67 
+VETTORE I:        44   55   12   42 
+VETTORE I:        44   55 
+VETTORE I:        44 
+VETTORE I:        55 
+VETTORE O:        44   55 
+VETTORE I:        12   42 
+VETTORE I:        12 
+VETTORE I:        42 
+VETTORE O:        12   42 
+VETTORE O:        12   42   44   55 
+VETTORE I:        94   18    6   67 
+VETTORE I:        94   18 
+VETTORE I:        94 
+VETTORE I:        18 
+VETTORE O:        18   94 
+VETTORE I:         6   67 
+VETTORE I:         6 
+VETTORE I:        67 
+VETTORE O:         6   67 
+VETTORE O:         6   18   67   94 
+VETTORE O:         6   12   18   42   44   55   67   94 
+
+RISULTATO :
+VETTORE vet:       6   12   18   42   44   55   67   94 

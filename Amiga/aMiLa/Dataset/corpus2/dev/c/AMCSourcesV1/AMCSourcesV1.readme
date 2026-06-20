@@ -1,0 +1,186 @@
+Short:        AM C Sources Vol 1
+Author:       amrtn@freenet.hut.fi (Alain Martini)
+Uploader:     amrtn freenet hut fi (Alain Martini)
+Type:         dev/c
+Version:      1.0
+Requires:     Kickstart 2.0 or better
+Architecture: m68k-amigaos
+
+Look at my Homepage if you are interested on my projects.
+
+http://www.geocities.com/SiliconValley/7240
+
+
+
+============================= Archive contents =============================
+Listing of archive 'AMCSourcesV1.lha':
+Original  Packed Ratio    Date     Time    Name
+-------- ------- ----- --------- --------  -------------
+    1188     672 43.4% 24-Apr-97 19:34:38  AMCSources1.info
+    1188     659 44.5% 24-Apr-97 19:30:18 +Algorithms.info
+    1233     591 52.0% 30-Jun-96 23:58:36 +BinSort.info
+      54      38 29.6% 23-Jun-96 23:41:38 +BIN.DAT
+    3969     812 79.5% 30-Jun-96 23:58:36 +BIN.DAT.info
+      94      42 55.3% 23-Jun-96 23:41:50 +BIN1.DAT
+    3969     814 79.4% 30-Jun-96 23:58:36 +BIN1.DAT.info
+    3278    1013 69.0% 23-Jun-96 23:43:36 +Binsort.c
+    4010    1272 68.2% 30-Jun-96 23:58:36 +Binsort.c.info
+    4009    1162 71.0% 23-Jun-96 23:43:26 +Binsort1.c
+    4010    1271 68.3% 30-Jun-96 23:58:36 +Binsort1.c.info
+    1233     596 51.6% 01-Jul-96 00:45:26 +BST.info
+    1061     399 62.3% 01-Jul-96 00:45:46 +BST.c
+    3969    1235 68.8% 01-Jul-96 00:45:54 +BST.c.info
+    1233     590 52.1% 01-Jul-96 00:07:08 +BubbleSort.info
+     797     407 48.9% 01-Jul-96 00:06:26 +BUBBLE.c
+    3969    1235 68.8% 01-Jul-96 00:07:08 +BUBBLE.c.info
+     955     426 55.3% 01-Jul-96 00:06:32 +BUBBLESO.c
+    3969    1235 68.8% 01-Jul-96 00:07:08 +BUBBLESO.c.info
+     688     196 71.5% 01-Jul-96 00:06:38 +BUBBLESO.DAT
+    3969     808 79.6% 01-Jul-96 00:07:08 +BUBBLESO.DAT.info
+    1233     598 51.5% 30-Jun-96 23:45:10 +Cbuffer.info
+     994     441 55.6% 30-Jun-96 23:44:28 +CB.c
+    3969    1235 68.8% 30-Jun-96 23:45:10 +CB.c.info
+     862     376 56.3% 30-Jun-96 23:44:38 +CBUFFER.c
+    3969    1236 68.8% 30-Jun-96 23:45:10 +CBUFFER.c.info
+    1233     595 51.7% 01-Jul-96 00:01:08 +CountingSort.info
+    1415     567 59.9% 30-Jun-96 23:59:44 +COUNT.c
+    3969    1233 68.9% 01-Jul-96 00:01:06 +COUNT.c.info
+    1438     580 59.6% 30-Jun-96 23:59:50 +COUNT1.c
+    3969    1234 68.9% 01-Jul-96 00:01:06 +COUNT1.c.info
+    1658     595 64.1% 30-Jun-96 23:59:56 +COUNTING.c
+    3969    1234 68.9% 01-Jul-96 00:01:06 +COUNTING.c.info
+     860     221 74.3% 01-Jul-96 00:00:00 +COUNTING.DAT
+    3969     808 79.6% 01-Jul-96 00:01:08 +COUNTING.DAT.info
+    1663     603 63.7% 01-Jul-96 00:00:08 +COUNTINR.c
+    3969    1236 68.8% 01-Jul-96 00:01:08 +COUNTINR.c.info
+     303     201 33.6% 05-Apr-94 19:37:06 +CREAF.c
+      69      43 37.6% 06-Apr-94 20:30:50 +DAT.DAT
+      69      41 40.5% 20-Apr-94 18:48:12 +DATI.DAT
+    1233     594 51.8% 01-Jul-96 00:45:00 +Hash.info
+    2655     845 68.1% 01-Jul-96 00:44:56 +HASH.c
+    3969    1239 68.7% 01-Jul-96 00:45:00 +HASH.c.info
+    1233     594 51.8% 30-Jun-96 23:43:28 +HeapSort.info
+    2085     701 66.3% 30-Jun-96 23:43:00 +HEAP.c
+    3969    1234 68.9% 30-Jun-96 23:43:28 +HEAP.c.info
+     430     119 72.3% 30-Jun-96 23:42:06 +HEAP.DAT
+    3969     814 79.4% 30-Jun-96 23:43:28 +HEAP.DAT.info
+    1233     594 51.8% 01-Jul-96 00:02:52 +InsertionSort.info
+     798     382 52.1% 01-Jul-96 00:02:10 +INSERTIO.c
+    3969    1235 68.8% 01-Jul-96 00:02:52 +INSERTIO.c.info
+     699     199 71.5% 01-Jul-96 00:02:20 +INSERTIO.TXT
+    3969     803 79.7% 01-Jul-96 00:02:52 +INSERTIO.TXT.info
+    1233     598 51.5% 01-Jul-96 00:04:48 +List.info
+    2142     643 69.9% 01-Jul-96 00:03:42 +LIST.c
+    3969    1235 68.8% 01-Jul-96 00:04:48 +LIST.c.info
+    1233     595 51.7% 30-Jun-96 23:56:52 +MergeSort.info
+    1487     543 63.4% 30-Jun-96 23:54:40 +MERGE.c
+    3969    1235 68.8% 30-Jun-96 23:56:52 +MERGE.c.info
+     724     142 80.3% 30-Jun-96 23:54:48 +MERGE.DAT
+    3969     811 79.5% 30-Jun-96 23:56:52 +MERGE.DAT.info
+     724     142 80.3% 30-Jun-96 23:54:58 +MERGE.TXT
+    3969     810 79.5% 30-Jun-96 23:56:52 +MERGE.TXT.info
+    2985     876 70.6% 30-Jun-96 23:55:08 +MERGEF1.c
+    3969    1238 68.8% 30-Jun-96 23:56:52 +MERGEF1.c.info
+     577     204 64.6% 30-Jun-96 23:55:14 +MERGEF1.DAT
+    3969     810 79.5% 30-Jun-96 23:56:52 +MERGEF1.DAT.info
+    2364     606 74.3% 30-Jun-96 23:55:24 +MERGEF2.c
+    3969    1239 68.7% 30-Jun-96 23:56:52 +MERGEF2.c.info
+     649     159 75.5% 30-Jun-96 23:55:32 +MERGEF2.DAT
+    3969     813 79.5% 30-Jun-96 23:56:52 +MERGEF2.DAT.info
+    1233     593 51.9% 30-Jun-96 23:51:18 +QuickSort.info
+    1722     659 61.7% 30-Jun-96 23:49:50 +QUICK.c
+    3969    1238 68.8% 30-Jun-96 23:51:16 +QUICK.c.info
+     360      95 73.6% 30-Jun-96 23:50:00 +QUICK.DAT
+    3969     812 79.5% 30-Jun-96 23:51:18 +QUICK.DAT.info
+    1233     594 51.8% 30-Jun-96 23:39:12 +RadixSort.info
+    1010     459 54.5% 23-Jun-96 23:38:52 +RADIXSOR.c
+    4010    1272 68.2% 17-Jul-96 17:39:02 +RADIXSOR.c.info
+     301     142 52.8% 30-Jun-96 23:38:56 +RADIXSOR.DAT
+    3969     805 79.7% 30-Jun-96 23:39:12 +RADIXSOR.DAT.info
+    1233     592 51.9% 30-Jun-96 23:48:26 +RPN.info
+    4736    1213 74.3% 30-Jun-96 23:46:10 +RPN.c
+    3969    1236 68.8% 30-Jun-96 23:48:26 +RPN.c.info
+     140      85 39.2% 30-Jun-96 23:48:16 +RPN.DAT
+    3969     812 79.5% 30-Jun-96 23:48:26 +RPN.DAT.info
+    1154     371 67.8% 30-Jun-96 23:46:40 +RPNSIM.c
+    3969    1235 68.8% 30-Jun-96 23:48:26 +RPNSIM.c.info
+    1418     440 68.9% 30-Jun-96 23:46:46 +RPNSIMST.c
+    3969    1239 68.7% 30-Jun-96 23:48:26 +RPNSIMST.c.info
+    1233     593 51.9% 30-Jun-96 23:40:52 +SelectionSort.info
+     921     404 56.1% 30-Jun-96 23:39:46 +SELECTIO.c
+    3969    1236 68.8% 30-Jun-96 23:40:52 +SELECTIO.c.info
+     765     203 73.4% 30-Jun-96 23:40:42 +SELECTIO.DAT
+    3969     809 79.6% 30-Jun-96 23:40:52 +SELECTIO.DAT.info
+    1233     593 51.9% 30-Jun-96 23:53:06 +ShakerSort.info
+    1335     520 61.0% 30-Jun-96 23:52:36 +SHAKERSO.c
+    3969    1236 68.8% 30-Jun-96 23:53:06 +SHAKERSO.c.info
+     346     118 65.8% 30-Jun-96 23:52:44 +SHAKERSO.TXT
+    3969     812 79.5% 30-Jun-96 23:53:06 +SHAKERSO.TXT.info
+    1233     591 52.0% 01-Jul-96 00:43:38 +ShellSort.info
+     956     395 58.6% 01-Jul-96 00:43:32 +SHELLSOR.c
+    3969    1237 68.8% 01-Jul-96 00:43:38 +SHELLSOR.c.info
+     350     202 42.2% 04-May-94 13:19:12 +STAMPA.c
+    1197     661 44.7% 24-Apr-97 19:30:18 +Base.info
+    1188     623 47.5% 23-Jun-96 23:31:58 +Arrays.info
+     633     276 56.3% 23-Jun-96 22:17:34 +ARRAYDYN.c
+    3969    1241 68.7% 30-Jun-96 23:34:54 +ARRAYDYN.c.info
+     359     192 46.5% 23-Jun-96 22:26:24 +ARRAYDYN.h
+    3969    1184 70.1% 30-Jun-96 23:35:08 +ARRAYDYN.h.info
+     444     217 51.1% 23-Jun-96 22:19:56 +ARRAYSTA.c
+    3969    1240 68.7% 30-Jun-96 23:34:56 +ARRAYSTA.c.info
+     315     190 39.6% 23-Jun-96 22:27:14 +ARRAYSTA.h
+    3969    1184 70.1% 30-Jun-96 23:35:08 +ARRAYSTA.h.info
+    1434     538 62.4% 23-Jun-96 22:24:14 +ARRPTSOR.c
+    3969    1240 68.7% 30-Jun-96 23:34:56 +ARRPTSOR.c.info
+     510     249 51.1% 23-Jun-96 22:28:04 +ARRPTSOR.h
+    3969    1184 70.1% 30-Jun-96 23:35:06 +ARRPTSOR.h.info
+     526     290 44.8% 23-Jun-96 22:25:42 +TestDynAr.c
+    3969    1236 68.8% 30-Jun-96 23:34:54 +TestDynAr.c.info
+     409     253 38.1% 23-Jun-96 22:28:54 +TestStatAr.c
+    3969    1238 68.8% 30-Jun-96 23:34:54 +TestStatAr.c.info
+    1140     643 43.5% 23-Jun-96 23:31:58 +Graphs.info
+    4203    1306 68.9% 23-Jun-96 23:13:40 +GRAPH.c
+    4010    1274 68.2% 30-Jun-96 23:35:52 +GRAPH.c.info
+     848     330 61.0% 23-Jun-96 23:14:10 +GRAPH.h
+    3969    1185 70.1% 30-Jun-96 23:36:20 +GRAPH.h.info
+    1188     686 42.2% 23-Jun-96 23:31:58 +Hash.info
+    1684     504 70.0% 23-Jun-96 22:52:44 +Hash.c
+    4010    1271 68.3% 30-Jun-96 23:36:26 +Hash.c.info
+    1133     467 58.7% 23-Jun-96 22:54:44 +Hash.h
+    3969    1183 70.1% 30-Jun-96 23:36:28 +Hash.h.info
+    1188     598 49.6% 23-Jun-96 23:31:58 +Lists.info
+    3604     879 75.6% 23-Jun-96 23:01:42 +LICICBLC.c
+    4010    1272 68.2% 30-Jun-96 23:35:24 +LICICBLC.c.info
+     958     320 66.5% 23-Jun-96 23:02:36 +LICICBLC.h
+    3969    1184 70.1% 30-Jun-96 23:35:32 +LICICBLC.h.info
+    3741    1006 73.1% 23-Jun-96 22:59:52 +LISTA.c
+    4010    1272 68.2% 30-Jun-96 23:35:24 +LISTA.c.info
+     930     321 65.4% 23-Jun-96 23:00:34 +LISTA.h
+    3969    1185 70.1% 30-Jun-96 23:35:30 +LISTA.h.info
+    4065     909 77.6% 23-Jun-96 23:03:28 +LISTBLCT.c
+    4010    1272 68.2% 30-Jun-96 23:35:24 +LISTBLCT.c.info
+     958     317 66.9% 23-Jun-96 23:04:18 +LISTBLCT.h
+    3969    1184 70.1% 30-Jun-96 23:35:32 +LISTBLCT.h.info
+    1188     630 46.9% 23-Jun-96 23:31:58 +Queue.info
+     977     424 56.6% 23-Jun-96 23:09:26 +Coda.c
+    4010    1274 68.2% 30-Jun-96 23:35:40 +Coda.c.info
+     566     266 53.0% 23-Jun-96 23:09:10 +Coda.h
+    3969    1186 70.1% 30-Jun-96 23:35:44 +Coda.h.info
+    1197     644 46.1% 23-Jun-96 23:31:58 +Stack.info
+    1130     344 69.5% 23-Jun-96 23:11:36 +STACK.c
+    4010    1273 68.2% 30-Jun-96 23:36:46 +STACK.c.info
+     513     225 56.1% 23-Jun-96 23:12:04 +STACK.h
+    3969    1183 70.1% 30-Jun-96 23:36:44 +STACK.h.info
+    1193     703 41.0% 23-Jun-96 23:31:58 +Trees.info
+    3143     842 73.2% 23-Jun-96 23:06:06 +BINTREE.c
+    4010    1275 68.2% 30-Jun-96 23:36:38 +BINTREE.c.info
+     804     322 59.9% 23-Jun-96 23:06:34 +BINTREE.h
+    3969    1183 70.1% 30-Jun-96 23:36:34 +BINTREE.h.info
+    2301    1211 47.3% 01-Dec-96 14:40:34 +Leggimi!
+    1396     678 51.4% 24-Apr-97 19:31:48 +Leggimi!.info
+    2325    1192 48.7% 21-Apr-97 16:14:12 +ReadMe!
+    1666     918 44.8% 24-Apr-97 19:31:56 +ReadMe!.info
+-------- ------- ----- --------- --------
+  385694  123020 68.1% 24-Apr-97 19:39:14   164 files
+
+Operation successful.

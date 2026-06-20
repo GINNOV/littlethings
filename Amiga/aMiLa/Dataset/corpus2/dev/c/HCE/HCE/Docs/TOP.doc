@@ -1,0 +1,57 @@
+Note from Jason Petty:
+   Ignore the comment related to CClib.lib, as TOP has been recompiled
+   and then linked with Dale Schumacher's libraries (see LIB.doc).
+
+/* Copyright (c) 1988,1989,1991 by Sozobon, Limited.  Author: Tony Andrews
+ *
+ * Permission is granted to anyone to use this software for any purpose
+ * on any computer system, and to redistribute it freely, with the
+ * following restrictions:
+ * 1) No charge may be made other than reasonable charges for reproduction.
+ * 2) Modified versions must be clearly marked as such.
+ * 3) The authors are not responsible for any harmful consequences
+ *    of using this software, even if they result from defects in it.
+ */
+
+top Version 2.00  Copyright (c) 1988-1991 by Sozobon, Limited.
+    Amiga Version 1.1 by Detlef Wuerkner.
+
+Usage: top [flags] infile [outfile]
+
+Valid optimizer flags are:
+   -d: Debug
+   -v: Verbose
+   -b: Branch reversal OFF
+   -l: Loop rotation OFF
+   -p: Peephole optimization OFF
+   -r: Variable registerizing OFF
+   -g: No change of stack fix-ups (for debugging)
+   -c: Force DATA and BSS hunks to Chip Memory
+
+If no outputfile is specified, top will, by default, overwrite the inputfile.
+
+The optimizer needs CClib.library to be found in 'libs:'
+
+Temporary files are written to T: Be sure to 'Assign T: xxx' before running
+the optimizer the first time.
+
+Caution: The file names of the temporary files are hard-coded in the program,
+so NEVER RUN TOP MORE THAN ONCE AT A TIME!
+
+I can't say how much stack is needed by the optimizer. With my standard
+setting of Stack 10000, it seemed to work ok.
+
+The optimizer converts the output of HCC to Motorola format. The output is
+as follows:
+List of XREF's,   if any
+List of XDEF's,   if any  (No double names in XREF's and XDEF's. Also no
+                           XDEF's for 'static' functions and data.)
+CODE,             if any
+DATA or CHIPDATA, if any
+BSS  or CHIPBSS,  if any
+END
+
+The optimizer sometimes takes 'a significant amount of time' when optimizing
+long functions, e.g. those in peep2.c and peep3.c of it's own source code.
+You could split long functions in multiple shorter, or you could use some
+of the -blpr flags if you are in a hurry.

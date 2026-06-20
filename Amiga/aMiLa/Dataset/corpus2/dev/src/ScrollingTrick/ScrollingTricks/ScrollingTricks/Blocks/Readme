@@ -1,0 +1,17 @@
+The demo programs don't load these IFF pictures but the corresponding
+RAW files which are in this directory as well. The format of the RAW
+pictures is:
+
+  PALETTE data in RGB4 format (16 bit: 0000RRRRGGGGBBBB)
+  IMAGE data in interleaved planar non-compressed format
+
+----------------------------------------------------------------------------
+
+Die Demoprogramme laden nicht diese IFF Bilder, sondern die entsprechenden
+RAW Dateien, die sich ebenfalls in diesem Verzeichnis befinden. Das Format
+der RAW Dateien ist:
+
+  PALETTE Daten im RGB4 Format (16 Bit: 0000RRRRGGGGBBBB)
+  BILD Daten im interleavten planar nicht-komprimierten Format
+
+

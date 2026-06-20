@@ -1,0 +1,26 @@
+Short:    Bugfixes for Maxon C++ 3.1
+Uploader: TetiSoft@apg.lahn.de (Detlef Wuerkner)
+Author:   stoecker@rcs.urz.tu-dresden.de (Dirk Stoecker), TetiSoft@apg.lahn.de (Detlef Wuerkner)
+Type:     biz/patch
+Version:  1.0
+
+Maxon C++ has a Y2K-Bug: Its strftime() function outputs "10" instead of
+"00" when called with argument "%y", and "20" instead of "2000" when
+called with argument "%Y" since 2000-01-01.
+
+There are two reasons for this strange numbers: Leading and middle zeros
+are stripped (2000->20), and the leftmost position is not stripped
+(100->10).
+
+Since it seems that Maxon doesn't support their amiga products anymore,
+I decided to search the bug and fix it.
+
+Dirk Stoecker <stoecker@rcs.urz.tu-dresden.de> sent me two more bugfixes
+for inclusion in the archive (Thanks, Dirk!). The first corrects a typo
+in time.h (tm_idst changed to tm_isdst), the second is a fixed remove()
+function, which saves two more registers to avoid a problem when creating
+temporary files.
+
+To install, just copy strftime.o and remove.o to the lib directory and
+time.h to the include directory of Maxon C++ (Don't forget to backup
+the old versions first since you never know).

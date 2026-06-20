@@ -1,0 +1,1187 @@
+
+			Hardware Effects
+			================
+
+					by M.Meany
+					----------
+
+ No laughing! This doc file is due to demand. People are sending in some
+great hardware programs, but these are lacking an indepth explanation. I am
+going to attempt to bring all the loose ends together in this file and also
+demonstrate a couple of the more common graphical effects.
+
+ First thing to cover then is the hardware registers.
+
+ Hardware Registers
+ ==================
+
+ One very important address in the A500,A1500 and A2000 is $DFF000. This is
+the start of a block of memory that contains the Amigas hardware registers.
+These registers allow direct access to the custom chips of the Amiga. By
+using these registers it is possible to bypass the Amigas complex operating
+system and that means one thing .... speed!
+
+ Most demos and games are written by direct programming of the hardware
+registers. There are down sides to this method of programming:
+
+ 1/ No multi-tasking.
+ 2/ No gaurentee of future compatability.
+
+ Point 2/ requires a little consideration since the arival of the A3000. If
+you write a mega demo by direct hardware techniques on your A500, do not be
+supprised if it does not run on the A3000. Programs that use the systems
+libraries stand a better chance!
+
+ The hardware registers are all 1 word long. It is common practise to
+access a register by using indirect addressing with a 16 bit displacement.
+For instance, we know that the hardware base is at $DFF000, so this can be
+put into an address register:
+
+		lea		$DFF000,a5	a5->hardware base
+
+ Now any register can be accessed by specifying it's offset from this base,
+for instance the register known as DMACON has an offset of $96 ( or $096 ),
+so to write a value into this we could use the following:
+
+		move.w		$83e0,$096(a5)	$83e0 into DMACON
+
+ This is ok, but what a pain having to remember all those offsets. Fear
+not, help is at hand. There is a file in the Include directory that
+contains all the offsets for the hardware registers, it's called
+'hardware.i'. By including this file at the start of your code, you can
+access all registers by name. So the above example could be written:
+
+		move.w		$83e0,DMACON(a5)
+
+ Now that's more like it.
+
+ There are a number of different types of hardware register. The ones we
+are going to look at in this file are:
+
+ Read Only		Cannot write to this
+ Write Only		Cannot read from this
+ Strobe			When written to, some DMA process will begin.
+
+ The first two are self explanitory, strobe registers require a little more
+explanation though. Suppose you have a Copper list you wish to run. You
+must write the address of this list into a couple of hardware registers.
+The list will not be activated until you write a value ( any value will do
+as it's ignored ) to a special strobe register that signals the Copper that
+there is a new list to execute.
+
+ DMA
+ ===
+
+ Direct Memory Access. There is a unit inside Agnus, one of the Amigas
+custom chips, known as the DMA controller. This unit runs in parallel with
+the 68000 chip, ie at the same time. The idea behind this is that when the
+68000 is not using the address bus, the custom chips can. The DMA
+controller determines which of the custom chips has access to the address
+bus at any particular time. There is a hardware register that can be
+written to allowing the programmer some control over what DMA channels are
+active. For instance, by clearing a bit in the control register it is
+possible to disable all sprites.
+
+ The control register serves the purpose of enabaling/disabaling the
+various DMA channels. The register is called DMACON. This is a weird type
+of register to get to grips with. The register consists of a number of
+flags. You specify if you wish to set or clear a flag by setting or
+clearing bit 15 in the value you write to this register. Any other bits set
+in the register will cause that flag to be set/clear. Confused? Lets look
+at the flags and then an example.
+
+ DMACON
+ -------
+ Bit Number	Flag Name	Description
+    15		SET/CLR		Specify SET (1) or CLEAR (0) following bits
+    14		BBUSY		Blitter Busy. Pole this before using blitter
+    13		BZERO		Result of last blit=0. Collision detect?
+    12+11			unused - always clear.
+    10		BLTPRI		Give Blitter priority over 68000, speedy gfx
+    9		DMAEN		Enable ALL the following DMA channels
+    8		BPLEN		Enable BitPlane DMA
+    7		COPEN		Enable Copper DMA
+    6		BLTEN		Enable Blitter DMA
+    5		SPREN		Enable Sprite DMA
+    4		DSKEN		Enable Disc DMA
+    3		AUD3EN		Enable audio channel 3
+    2		AUD2EN		Enable audio channel 2
+    1		AUD1EN		Enable audio channel 1
+    0		AUD0EN		Enable audio channel 0
+
+  So in a program that is going to run it's own Copper list, COPEN must be
+set. To do this we must set bit 15 to indicate following flags are to be
+set and also bit 7. In code:
+
+		move.w		#%1000000010000000,DMACON(a5)
+
+ or		move.w		#$8080,DMACON(a5)
+
+ If all DMA channels are to be set, then use the master switch DMAEN:
+
+		move.w		#$8200,DMACON(a5) Enable ALL DMA
+
+ Disabaling a DMA channel is just as easy. For instance, to disable sprite
+and audio DMA:
+
+		move.w		#%0000000000101111,DMACON(a5)
+
+ or		move.w		#$002f,DMACON(a5)
+
+ When using a Copper list to display graphics, it is quite often desireable
+to switch off sprite DMA. Failure to do so can lead to random flashing
+blocks on the screen.
+
+ The Copper
+ ==========
+
+ The Copper, short for coprocessor, is responsible for maintaining the
+Amigas display. As this is a seperate processor, it is programmable. The
+language the Copper uses is very simple, consisting of just three
+instructions Move, Wait and Skip.
+
+ I have never had cause to use Skip, probably because I have never gone
+that far into Copper programming. For this reason I will leave it out of
+this discussion, refer to the Hardware Reference Manual for more
+information ( loads and loads more information! ).
+
+ A program for the Copper, called a Copper list, has to be hand coded.
+There are no niceties like assemblers for this job. This means a good
+understanding of the instruction format is required, lucky there are so few
+instructions.
+
+ ALL COPPER LISTS MUST BE IN CHIP MEM!
+
+ The Copper starts executing its list at the start of each vertical
+blanking gap, ie when the electron gun is flying from bottom to top of the
+display. So the list will be executed once every 1/50 th of a second.
+
+ It does not matter how large the Copper list is, it will not effect the
+speed of any 68000 program running at the same time. It is also possible to
+write a 68000 program that modifies a Copper list every 1/50 th of a second
+just before the Copper starts executing it. This is how the best effects
+are created.
+
+ Because the Copper can write direct to the hardware registers, it is also
+handy to have a file of equates for a set of colours. I have included such
+a file with this tutorial called colours.i, it defines colours taken from
+the Hardware Reference Manual.
+
+ Move
+ ----
+
+ First then is the MOVE command. This command  instructs the Copper to move
+one word of data into a hardware register. The form this command takes will
+seem strange at first, but you will soon  see that it is easy to apply. The
+MOVE command is signalled by a 0 in  bit  zero  of the first data word. The
+first data word should be the  address  of  the hardware register and since
+all the hardware registers lie  on  even  addresses  the  address itself is
+enough for the Copper to recognise a MOVE command. No other command has bit
+0 of the first data word set to 0. The  second word of data is the value we
+want  to  be  written  into  the  specified  hardware  register.
+
+ To set the background  colour  to  say  light  green  using the Copper the
+following data would be required,
+
+    dc.w      color00,light_green
+
+                                 this of course assumes you are  using  the
+two include files mentioned above.  That  is it. The Copper would interpret
+this data as:
+
+    MOVE   light_green into register color00
+
+ Similarily we could change colour 1 to red with the following data:
+
+    dc.w      color01,red
+
+ Wait
+ ----
+
+ Now the wait  instruction.  This  instructs  the  Copper  to  wait for the
+electron beam to reach  a  specified  position  before  executing  the next
+instruction in the list. The two  words  forming the WAIT command are built
+up as follows:
+
+ First Word : v7 v6 v5 v4 v3 v2 v1 v0 h8 h7 h6 h5 h4 h3 h2 1
+
+ Note that bit 0 of the first word must be set to 1.
+
+ Second Word: BFD V6 V5 V4 V3 V2 V1 V0 H8 H7 H6 H5 H4 H3 H2 0
+
+ Note that bit 0 of the second word must be set to 0.
+
+  v7-->v0  Vertical beam position
+  h8-->h2  Horizontal beam position
+  V6-->v0  Vertical mask bits
+  H8-->H2  Horizontal mask bits
+  BFD      Blitter Finish Disable flag
+
+ The vertical beam position has to be  described  in  8 bits, v0-->v7, this
+allows values in the range 0-->255.  The  Amiga screen occupies 313 lines (
+though not all these are visible  on  a  monitor  ). In order to wait for a
+line greater than 255 you first
+wait for line 255 and then wait for the difference.
+
+ eg. wait for line 300 would require a wait for line 255 followed by a wait
+for line 44 ( 300-256=44).
+
+ Horizontally we are restricted to values 0-->112. Each horizontal position
+for the Copper is 4 pixels of our  bitplane  display  wide. 
+
+ The BFD bit should always be set to one when we are not using the blitter.
+I am not going to cover mask bits at this  time only to say that for now we
+are going to set them all to 1 at  all  times.  As well as simplifying this
+tutorial we also simplify the second word of the wait command, as this will
+always be %1111 1111 1111 1110 or  $fffe  (  BFD=1, all mask bits=1 and bit
+0=0 ).
+
+ To wait for the beginning of line 120 we would proceed as follows:
+
+x=0   = %0000000  ( 7 bits )
+y=120 = %01111000 ( 8 bits )
+
+so the first word will be   %0111 1000 0000 0001 = $7801.
+The second word will be $fffe as explained above.
+
+ The required data statement will be:
+
+              dc.w       $7801,$fffe
+
+ To combine what we have  learned  so  far  lets  look  at a copper list to
+display a white background for  the  first  120  lines of the display and a
+black background for all lines  following  this. I generally find it easier
+to write down what I want to do  in  plain  words  and then convert this to
+data:
+
+   MOVE  BLACK into COLOUR0
+   WAIT  (0,120)                   x=0,y=120
+   MOVE  WHITE into COLOUR0
+   END
+
+and the translation looks like this:
+
+    dc.w       color00,black
+    dc.w       $7801,$fffe
+    dc.w       color00,white
+    dc.w       $ffff,$fffe
+
+ What is this last line I hear you  say.  Well  this is the command that is
+used to end all Copper lists. It  tells  the  Copper to wait for a position
+that is never reached, so the Copper  hangs  up until the start of the next
+blanking gap when it starts at the top of the list again.
+
+ After all this effort creating a list, we need to tell the Copper of it's
+exsistence before anything happens. This is done by writing the address of
+the list into register COP1LCH and then strobing register COPJMP1:
+
+; Example fragment on starting a Copper list.
+
+Start		lea		$DFF000,a5		a5->hardware base
+		move.l		#CopList,COP1LCH(a5)	set list address
+		clr.w		COPJMP1(a5)		strobe register
+		rts
+
+		section		copper,data_c		get CHIP mem
+
+CopList		dc.w		COLOR00,black
+		dc.w		$7801,$fffe
+		dc.w		COLOR00,white
+		dc.w		$ffff,$fffe
+
+ Do not try and run this, it's for illustration only.
+
+ If the following program was assembled and run the user would be faced
+with some major problems. The screen will be black and white, Intuition
+bye-bye! 
+
+ Obviously some consideration needs to be given to on how to take possesion
+of the hardware from the operating system and then giving it back again. If
+you run a Copper list that is going to trash the os display, you should
+make sure you restore the original list before handing back to the os.
+
+ Programming Considerations
+ ==========================
+
+ When you are programming the hardware you should aleays take control of
+the system and stop multi-tasking. I hate doing this, but it is necessary!
+This is done by calling the Exec function Forbid(). This function does not
+require any parameters and will give you full run of the Amiga within
+reason:
+
+		CALLEXEC	Forbid		kill the os
+
+or		move.l		$4.w,a6		a6->execbase
+		jsr		-$0084(a6)	Forbid
+
+ I have given two methods of achieving the same goal as I know some people
+hate using Include files ( Raistlin, that ones for you! ).
+
+ To enable multi-tasking when your program finishes use the Exec function
+Permit(). Again this requires no parameters:
+
+		CALLEXEC	Permit		resurect os
+
+or		move.l		$4.w,a6		a6->execbase
+		jsr		-$008A(a6)	Permit
+
+ So that's how you switch the os in and out. It is also a good idea to save
+the contents of DMACON and the address of the systems Copper list. As I
+said earlier, DMACON is a write only register. This means we cannot
+determine what the DMA settings are from this register. We must read
+DMACONR, the read only version of the same register. So to save the systems
+DMA settings we could use:
+
+		move.w		DMACONR(a5),sysDMA
+
+ Restoring the DMA for the system is a little more tricky. We must ensure
+that bit 15 of the control word is set so that the channels will be
+enabled:
+
+		moveq.l		#$0080,d0	set bit 15 of d0
+		or.w		sysDMA,d0   	or DMA settings to this
+		move.w		d0,DMACON(a5)	set systems DMA
+
+ All that now remains is to save the address of the systems Copper list.
+Not so easy this one. To find the address of the systems Copper List, the
+Graphics library must be opened. The pointer returned by OpenLibrary is the
+base address of the graphics library. In this library base structure the
+address of the systems Copper list can be found at offset 38. This offset
+is called StartList. So suitable code would be:
+
+		lea		grafname,a0	a0->lib name
+		moveq.l		#0,d0		any version
+		CALLEXEC	OpenLibrary	open it
+		tst.l		d0		open ok?
+		beq		ERROR		quit if not
+
+		move.l		d0,a0		a0->GfxBase
+		move.l		38(a0),oldcop	save addr of sys list
+
+ This systems Copper list is activated in the same way as a user Copper
+list:
+
+		move.l		oldcop,COP1LCH(a5)	set list address
+		clr.w		COPJMP1(a5)		strobe register
+
+ There are a number of other steps that can be taken, but those outlined
+will suffice. To make life easier I have written two subroutines, SysOff
+and SysOn. These are on the disc and also detailed below. These routines
+contain the steps outlines above:
+
+;-------------- Disable the operating system.
+
+; On exit d0=0 if no gfx library.
+
+SysOff		lea		$DFF000,a5	a5->hardware
+
+		move.w		DMACONR(a5),sysDMA	save DMA settings
+
+		lea		grafname,a1	a1->lib name
+		moveq.l		#0,d0		any version
+		move.l		$4.w,a6		a6->SysBase
+		jsr		-$0228(a6)	OpenLibrary
+		tst.l		d0		open ok?
+		beq		.error		quit if not
+		move.l		d0,a0		a0->GfxBase
+		move.l		38(a0),syscop	save addr of sys list
+		move.l		d0,a1		a1->GfxBase
+		jsr		-$019E(a6)	CloseLibrary		
+
+		jsr		-$0084(a6)	Forbid
+
+		moveq.l		#1,d0
+.error		rts
+
+
+;--------------	Bring back the operating system
+
+SysOn		move.l		syscop,COP1LCH(a5)
+		clr.w		COPJMP1		restart system list
+
+		move.w		#$0080,d0	set bit 15 of d0
+		or.w		sysDMA,d0	add DMA flags
+		move.w		d0,DMACON(a5)	enable systems DMA
+
+		move.l		$4.w,a6		a6->SysBase
+		jsr		-$008A(a6)	Permit
+
+		rts
+
+grafname	dc.b		'graphics.library',0
+		even
+sysDMA		ds.w		0
+syscop		ds.w		0
+
+
+ One final consideration to hardware programming is that there are no close
+gadgets around. The easiest way to determine if a user wants to quit is to
+test for the left mouse button:
+
+Wait		btst		#6,CIAAPRA	test for left mouse
+		bne.s		Wait
+
+ A First Program
+ ===============
+
+ At long last we can try things out. Remember the first Copper list
+example? Lets expand it into a runnable program:
+
+
+; A working Copper list program. Cop_eg1.s
+
+		incdir		source:include/
+		include		hardware.i
+		include		colours.i
+
+		bsr		SysOff		disable system, set a5
+
+		move.l		#CopList,COP1LCH(a5)
+		clr.w		COPJMP1(a5)
+
+Wait		btst		#6,CIAAPRA
+		bne.s		Wait
+
+		bsr		SysOn
+
+		rts
+
+		section		cop,data_c	put into CHIP ram
+
+CopList		dc.w		COLOR00,black
+		dc.w		$7801,$fffe
+		dc.w		COLOR00,white
+		dc.w		$ffff,$fffe
+
+
+ I'm not going to dwell on basic lists like this, though they can be used
+to create the common bouncing bars etc. by adding 68000 code to modify the
+Wait position after each vertical blank.
+
+ Waiting On A Beam
+ =================
+
+ Copper lists by themselves are only the start of the story. Things get
+interesting when 68000 code is used to modify the list every 50th of a
+second, so altering the display just before it is created.
+
+ To do this it is necessary to syncronise a 68000 program with the Copper,
+or just as good the electron beam. The 68000 flies along at an incredible
+rate, to alter a Copper list a few hundred bytes long takes the tiniest
+fraction of a second.
+
+ I tend to use the method set out in the Systems Programmers Guide, that is
+to wait for the beam to reach line 16. This can be achieved with the
+following loop:
+
+VBL		move.l		VPOSR(a5),d0	d0=VPOSR+VHPOSR
+		and.l		#$1ff00,d0	mask off vert position
+		cmp.w		#$1000,d0	is this line 16?
+		bne.s		VBL		if not loop back
+
+ I admit that this method is not as useful as using interrupts, but it sure
+beats self modifying code and is simple.
+
+ This loop is most often used in the following senario:
+
+		program initalisation
+
+LOOP		Wait for VBL
+
+		Do some screen synchronised stuff - update Copper - Scroll
+
+		test left mouse
+
+		if not pressed go back to LOOP
+
+		program finishes
+
+ Lets modify the last example so the size of the black and white areas are
+changed after each display. To do this, register d5 will be used to hold
+the vertical beam position to write into the Copper list at the Wait
+instruction. Register d6 will be used to hold an increment value that will
+be added to d5 after each display, this will be set to 1 and negated after
+a certain number of frames have passed. This will ensure that the areas
+shrink and grow alternately. The Copper list itself requires no
+modification, but I have added a label to it to simplify writing to the
+Wait instruction:
+
+CopList		dc.w		COLOR00,black
+WaitPos		dc.w		$7801,$fffe
+		dc.w		COLOR00,white
+		dc.w		$ffff,$fffe
+
+ The loop to control this list is as follows:
+
+;loop initalisation
+
+		move.b		$78,d5		initial y pos
+		move.b		#1,d6		step size
+		lea		WaitPos,a4	a4->Copper Wait command
+
+; wait for beam to reach line 16
+
+VBL		move.l		VPOSR(a5),d0	d0=VPOSR+VHPOSR
+		and.l		#$1ff00,d0	mask off vert position
+		cmp.w		#$1000,d0	is this line 16?
+		bne.s		VBL		if not loop back
+
+; check if Wait position is at max value, if so negate step value
+
+		cmpi.b		#$78,d5		lowest position ?
+		bne.s		.test_upper	if not jump
+
+		neg.b		d6		change direction
+		bra		.no_change
+
+; check if Wait position is at min value, if so negate step value
+
+.test_upper	cmpi.b		#$40,d5		highest position ?
+		bne.s		.no_change
+
+		neg.b		d6		change direction
+
+; add step value to Wait position and write into Copper list
+
+.no_change	add.b		d6,d5		bump y pos
+		move.b		d5,(a4)		write into Copper list
+
+; check if user wants to quit, loop back if not
+
+		btst		#6,CIAAPRA	lefty ?
+		bne.s		VBL		if not loop back
+
+; program should shut down here....
+
+
+ To see this in action, assemble and run Cop_eg2.s. Nothing special, a little
+too fast, but it does demonstrate how to modify the Copper list using a
+68000 routine. The flashing random graphics is the result of not setting up
+the playfields correctly. Lets see how to do this:
+
+ Playfields And The Copper
+ =========================
+
+ There is a lot involved in setting up a display on the Amiga. The reason
+for this is the Amiga supports such a flexible graphics system. By using a
+suitable Copper list, you can set up a display that contains araes of
+different resolution and depth on the same display -- 320x50x5 at the top
+and 640 dual playfield at the bottom for instance.
+
+ Needless to say, I'm only going to scratch the surface.
+
+ All the hardware registers used to control the display are modified by the
+custom registers as the display is generated. This means that after each
+display has been drawn it is necessary to reload the correct values into
+the registers again. The simplest way to do this is by using Move
+instructions at the start of a Copper list. This will ensure that each
+register is reset at the beginning of each display generation.
+
+ Here is an outline of the registers used to control the screen display,
+along with a brief discription:
+
+Name		Description
+
+DIWSTRT	*	Defines position of top left corner of screen
+DIWSTOP	*	Defines position of bottom right corner of screen
+DDFSTRT	*	Data fetch start position ( from left )
+DDFSTOP	*	Data fetch stop position
+BPLCON0		Defines screen type, size and other flags
+BPLCON1		Defines screen scroll values ( odd and even planes )
+BPLCON2		Defines playfield priority
+BPL1MOD		Define modulo for odd planes
+BPL2MOD		Defines modulo for even planes
+BPLxPTH		Holds high part of bitplane address ( x= 1 to 6 )
+BPLxPTL		Holds low part of bitplane address ( x= 1 to 6 )
+
+ Registers marked with an asterix can be set to standard default values
+that I will explain below.
+
+ Now lets look at each register in turn and explain how to set them.
+
+DIWSTRT
+-------
+ This register defines the position at which the top left corner of the
+display will be drawn.
+
+ This can be confusing since the register is set in raster lines of which a
+number are not visible. This is because the video beam starts at a position
+off the top of the monitor. The first visible line varies from make to make
+of monitor, but somewhere around 40 would not be far off.
+
+ In the same way, the beam is not visible at the start of a horizontal
+scan, it is off the left edge of the screen.
+
+ To save any hardship, set this register to $2C81 for a roughly central
+display. This is the same for PAL (256 lines) or NTSC (200 lines).
+
+ How the register is constructed:
+
+ Bit Number:	15 14 13 12 11 10  9  8  7  6  5  4  3  2  1  0
+
+ Function	v7 v6 v5 v4 v3 v2 v1 v0 h7 h6 h5 h4 h3 h2 h1 h0
+
+ Where v0->v7 is the vertical position and h7->h0 the horizontal, so the
+default value $2C81 equates to:
+
+ Vertical position   = $2C = 44  ie start at line 44
+ Horizontal position = $81 = 129
+
+DIWSTOP
+-------
+
+ This register defines the bottom right corner of the display. If you have
+used the above default setting for DIWSTRT, you can set this to one of the
+following two values, depending on the size of the display:
+
+	256 lines ( PAL )		200 lines ( NTSC )
+
+	   $2CC1			     $F4C1
+
+ How the register is constructed:
+
+ Bit Number:	15 14 13 12 11 10  9  8  7  6  5  4  3  2  1  0
+
+ Function	v7 v6 v5 v4 v3 v2 v1 v0 h7 h6 h5 h4 h3 h2 h1 h0
+
+ Also, h8 is always set to 1. This is not shown, but must be included in
+all calculations and v8 is always the complement of v7, this allows
+displays greater and less than 256 lines high.
+
+ Where v0->v7 is the vertical position and h7->h0 the horizontal, so the
+default values $F4C1 ( 200 line display ) and $2CC1 ( 256 line display )
+equate to:
+
+$F4C1
+ Vertical position   = $F4  = 244  ie stop at line 244 ( v7=1 => v8=0 )
+ Horizontal position = $1C1 = 449  ( h8=1 always )
+
+$2CC1
+ Vertical position   = $12C = 300  ie stop at line 300 ( v7=0 => v8=1 )
+ Horizontal position = $1C1 = 449  ( h8=1 always )
+
+
+DDFSTRT and DDFSTOP
+-------------------
+
+ I'm not going to explain these, just accept the default values given
+below:
+
+ Low Resolution ( 320 pixels wide )	High Resolution ( 640 pixels wide )
+
+DDFSTRT		$0038				$003C
+DDFSTOP		$00D0				$00D4
+
+
+BPLCON0
+-------
+
+ This is the main control register, it allows you to define type of screen
+you are setting up. Each bit in this register is a flag, here are the
+defenitions:
+
+BIT	Name		Description
+
+15	HIRES		If set then screen is in 640 pixel width mode
+14	BPU2  |
+13	BPU1  |-------- These 3 bits define how many planes to use. Values
+12	BPU0  |		000 to 110 are allowed ( 0 to 6 planes ).
+11	HOMOD		HAM mode
+10	DBLPF		Dual Playfield Mode
+09	COLOR		Video enable ( ALWAYS SET !! )
+08	GAUD		Genlock Audio Enable ??
+07	----		Not used
+06	----		"      "
+05	----		"      "
+04	----		"      "
+03	LPEN		Light pen enable
+02	LACE		Interlace enable
+01	ERSY		External resync ??
+00	----		Not used
+
+ Looks complicated. A few simple examples should clarify things:
+
+width=320, height=256, 4 bitplanes, normal display:
+
+BPLCON0= %0100001000000000 = $4200
+
+{ DIWSTRT=$2C81, DIWSTOP=$2CC1, DDFSTRT=$0038, DDFSTOP=$00D0 }
+
+			*******
+
+width=640, height=200, 6 bitplanes, dual playfield display:
+
+BPLCON0= %1110011000000000 = $D600
+
+{ DIWSTRT=$2C81, DIWSTOP=$F4C1, DDFSTRT=$003C, DDFSTOP=$00D4 }
+
+			*******
+
+width=320, height=200, 1 bitplane, normal ( can be used to display text ):
+
+BPLCON0= %0001001000000000 = $1200
+
+{ DIWSTRT=$2C81, DIWSTOP=$F4C1, DDFSTRT=$0038, DDFSTOP=$00D0 }
+
+ I included the values for DIWSTRT, DIWSTOP, DDFSTRT and DDFSTOP so you can
+see how they all tie in together.
+
+BPLCON1
+-------
+
+ Here you can define scroll values for your display. The hardware allows
+flickerless scrolling ( horizontally ) by use of this register. See Mike
+Cross's tutorial on an earlier disc for examples of this.
+
+ For a stationary display, set this register to $0000.
+
+ I have included an example of using this register to produce a wobbly
+display. This is achieved by giving each scan line a different scroll value
+and then scrolling the values after each vertical blank. See later.
+
+ How the register is constructed:
+
+ Bit Number: 15 14 13 12 11 10  9  8  7    6    5    4    3    2    1    0
+
+ Function    -- -- -- -- -- -- --  -- p2h3 p2h2 p2h1 p2h0 p1h3 p1h2 p1h1 p1h0
+
+ Where p2 refers to odd planes, p1 to even planes and h3->h0 is the scroll
+value. 
+
+BPLCON2
+-------
+
+ Priority control. No need for this in basic displays so set to $0000.
+
+BPL1MOD
+-------
+
+ This register can be used to display a part of a large picture ( bigger
+than the screen ) on the screen. In effect the screen shows a rectangle
+inside the main picture:
+
+	 _______________________________________________________
+	|							|
+	|	    ____________________________		|
+	|	   |				|		|
+	|<10 bytes>|				|<---20 bytes-->|
+	|	   |  Visible Area Of Display	|		|
+	|	   |				|		|
+	|	   |				|		|
+	|	   |____________________________|		|
+	|							|
+	|		The Bitplane				|
+	|							|
+	|_______________________________________________________|
+
+ The above figure shows a window in a larger bitplane. In the example above
+the modulo would be set to 30 ( $001E ) since this is the number of bytes you
+have to add to the last address of each line of the window to get to the
+start address of the next line.
+
+ How the register is constructed:
+
+ The register contains a signed ( +ve or -ve ), 16 bit value that is added
+to each bitplane pointer after each line has been displayed, for the odd
+planes.
+
+ I have put an example of using the modulo values to produce a screen melt
+effect. This uses a negative modulo ( quite legal ) to produce the effect.
+
+BPL2MOD
+-------
+
+ BPL1MOD defines the modulo for the odd planes of your display, BPL2MOD
+defines it for the even planes. If you set up a display using more than 1
+bitplane, you will have to set both these registers. They usually take the
+same value, unless you are designing some fancy effect of your own.
+
+BPLxPTH and BPLxPTL
+-------------------
+
+ These registers tell the hardware where to find the data to display. They
+are the bitplane pointers.
+
+ Since an address on the Amiga occupies one long word, or two words, the
+address of each bitplane must be stored in TWO hardware registers ( each
+hardware register can hold only 1 word ). For this reason there is a high
+address register and low address register attached to each bitplane.
+
+ You can define from 1 to 6 bitplanes. This means that there are six pairs
+of hardware registers:
+
+bitplane number		high part of address	low part of address
+
+	1			BPL1PTH			BPL1PTL
+	2			BPL2PTH			BPL2PTL
+	3			BPL3PTH			BPL3PTL
+	4			BPL4PTH			BPL4PTL
+	5			BPL5PTH			BPL5PTL
+	6			BPL6PTH			BPL6PTL
+
+ So for each bitplane you use, you must correctly set two hardware
+pointers. This is best illustrated by an example:
+
+
+	move.l		#gfx,d0		d0=address of 1st bitplane
+	move.w		d0,BPL1PTL(a5)	store low part of address
+	swap		d0		get high part of addr into low word
+	move.w		d0,BPL1PTH(a5)	store high part of address
+
+ Notice that the low part is saved first. Also, a data register is used
+since it is not possible to swap an address register, necessary to move the
+high part of the address into the low word of the register.
+
+ If you define more than one bitplane and the gfx data for these are stored
+in a continuous block of memory ( as is the case when using a single INCBIN
+directive in Devpac to load the data ), then all that is required to obtain
+the start address of the second plane from the address of the first is to
+add the size of the bitplane in bytes to the address of the first bitplane:
+
+; Store address of 2 bitplanes
+
+; 1st bitplane
+
+	move.l		#gfx,d0		d0=address of gfx data
+	move.w		d0,BPL1PTL(a5)	store low part of address
+	swap		d0		get high part of addr into low word
+	move.w		d0,BPL1PTH(a5)	store high part of address
+
+	swap		d0		d0=address of 1st bitplane data
+	add.l		#(320/8)*256,d0	add size of bitplane (bytes) to addr
+
+; 2nd bitplane
+
+	move.w		d0,BPL2PTL(a5)	store low part of address
+	swap		d0		get high part of addr into low word
+	move.w		d0,BPL2PTH(a5)	store high part of address
+
+
+   <<<<< REST OF PROGRAM >>>>>
+
+gfx	incbin		'filename of raw data'
+
+
+ I'm sure you've seen this type of code before. In this example, the
+bitplane pointers are loaded by the 68000. It is far easier and more common
+to use the Copper to set these and also the other registers required to
+form a display. As an example then:
+
+ A CopperList to set up a 2 bitplane, low res, PAL ( 320*256 ) display.
+
+CopperList	dc.w		DIWSTRT,$2C81
+		dc.w		DIWSTOP,$2CC1
+		dc.w		DDFSTRT,$0038
+		dc.w		DDFSTOP,$00D0
+		dc.w		BPLCON0,$2200	;2 planes, video
+		dc.w		BPLCON1,$0000
+		dc.w		BPLCON2,$0000
+		dc.w		BPL1MOD,$0000
+		dc.w		BPL2MOD,$0000
+		dc.w		BPL1PTH
+p1h		dc.w		0,BPL1PTL
+p1l		dc.w		0,BPL2PTH
+p2h		dc.w		0,BPL2PTL
+p2l		dc.w		0
+		dc.w		COLOR00,$0000	;BLACK
+		dc.w		COLOR01,$0FFF	;WHITE
+		dc.w		COLOR02,$00DB	;AQUA
+		dc.w		COLOR03,$0F90	;ORANGE
+		dc.w		$ffff,$fffe	;end of CopperList
+
+ Of course the address of the bitplanes is not known at the time of
+assembling the program, so a small fragment of 68000 code will have to be
+used to stuff these adresses into the list before activating it. A suitable
+fragment would be:
+
+		move.l		#picture,d0
+		move.w		d0,p1l		low part of 1st plane
+		swap		d0
+		move.w		d0,p1h		high part of 1st plane
+		swap		d0
+		add.l		#(320/8)*256,d0	add size of plane in bytes
+		move.l		d0,p2l		low part of 2nd plane
+		swap		d0
+		move.l		d0,p2h		high part of 2nd plane
+
+this can be extended to cover as many planes as required. You will find an
+example on the disc called COP_EG2.s, this uses a 3 bitplane picture.
+
+ As you are aware, the Amiga is not restricted to using a single display
+size. Using the Copper, you could construct a list that does the following:
+
+		set up first playfield
+
+		wait for a set vertical position
+
+		set up second playfield
+
+		wait for a set vertical position
+
+		set up third playfield
+
+		:    :   :   :   :   :
+
+ If you wish to use the same resolution display throught, but want
+different sections of the screen to display the contents of different
+bitplanes, then you could do the following:
+
+		set up playfield resolution (DIWSTRT/STOP, DDFSTRT/STOP and
+					     BPLCON0 )
+
+		wait for set vert position
+
+		assign bitplane pointers
+
+		wait for next vert position
+
+		reassign bitplane pointers
+
+		wait .......
+
+ I have not given examples of these techniques as I have run out of time!
+If you look on past discs examples of both can be found.
+
+ So ends this basic introduction to the Hardware. If you would like me to
+continue with it then please write and tell me. If less than ten people
+reply, it's back to the system with me! If I get the reply I will give
+examples of the above two techniques next month and look at some more
+examples.
+
+			*********************
+
+ How Do I Get A RAW Data File?
+ =============================
+
+ I asked myself this for bloody ages until Mike Cross sent me the Kefrens
+IFF converter which he swore by. I no longer use this version as I prefer
+the one I've put on this disc.
+
+ NOTE : THE IFF CONVERTER ON THIS DISC REQUIRES THE IFF.LIBRARY TO BE IN
+        THE LIBS: DIRECTORY OF YOUR BOOT DISC ( OR HARD DISC, YOU LUCKY
+        FELLOW ).
+
+ Firstly you need to draw a picture using DPaint or some inferior
+competitor ( don't use Photon Paint, it uses HAM mode which can be a
+nightmare to handle in assembler ). Save your masterpiece as an IFF file.
+
+ Now boot up IFFConverter. Select Load -- IFF from the project menu and
+load in the masterpiece you have created. Now select Save -- Bitmap from
+the same menu. Give the file a name and that's it!
+
+ There are a few things to watch out for though. First, the colourmap. This
+is 32 words of data that should be stuffed into the colour registers before
+displaying your picture. Failing to do this will produce a picture faintly
+resembling your original, but with a screwed up colour scheme.
+
+ The colourmap is usualy saved along with the bitplane data. It can be put
+before the bitplane data or after the bitplane data, which is usualy the
+case and is also the default setting of the IFFConverter I have supplied.
+To extract this data you will have to write a small fragment of 68000 code
+similar to that used to set up the bitplane pointers in the last example.
+See the wobble.s and melt.s programs in my source directory for an idea on
+how to do this. I have been a little different and saved the colourmap
+BEFORE the bitplane data, nothing wrong with this as long as you program
+for it accordingly.
+
+ Unlike IFF files, there is no way of telling what resolution or depth a
+raw bitmap file should be. So comment the file in case you forget, or write
+it down somewhere.
+
+ Have fun!
+
+			*********************
+
+ OK. This is not an area I usualy delve into, but due to the lack of any
+recent hardware tutorials, I decided to give it a try. This is my attempt
+to explain how to construct a wobbly screen effect.
+
+ As you may have guessed, this effect is generated by modifying the Copper
+list between sucessive displays. There are a number of ways of doing this.
+You can pole a hardware register and test the position of the video beam,
+or you could use the copper list itself to generate an interrupt. For
+simplicity I will explain the poling technique, but I will point out that
+the Copper list in both cases is almost identical.
+
+ I have defined the Copper list in dc.w statements for clarity, normally I
+would allocate memory using Exec and then use a loop to fill this with the
+desired values.
+
+ To wobble a screen is so simple you wont believe it. All you do is set
+different scroll values in BPLCON on successive lines of the display. Using
+the Copper, this is no problem. For instance, consider the following Copper
+list:
+
+		WAIT	(0,0)
+		MOVE	0,BPLCON1
+		WAIT	(0,1)
+		MOVE	1,BPLCON1
+		WAIT 	(0,2)
+		MOVE	2,BPLCON1
+		WAIT	(0,3)
+		MOVE	3,BPLCON1
+
+		 ::        ::
+		 ::        ::
+
+ What you will see is a display that is staggered to the right:
+
+ line 0:	**********
+ line 1:	 **********
+ line 2:	  **********
+ line 3:	   **********
+
+ Now all it takes is a little planning and a Copper list can be set up
+that will display a screen in a sine curve running down the vertical axis.
+What do I mean? let me explain with a diagram:
+
+ line 0:	**********
+ line 1:	**********
+ line 2:	**********
+ line 3:	 **********
+ line 4:	 **********
+ line 5:	  **********
+ line 6:	 **********
+ line 7:	 **********
+ line 8:	**********
+ line 9:	**********
+ line 10:	**********
+ line 11:	 **********
+ line 12:	 **********
+ line 13:	  **********
+ line 14:	 **********
+ line 15:	 **********
+ line 16:	**********
+ line 17:	**********
+ line 18:	**********
+ line 19:	 **********
+ 
+ If you have never come across a sine curve before, I suggest you take a
+look at some maths text books. Without trying to seem condesending, I
+recommend Teach Yourself Trigonometry by P.Abbot, English University Press
+( for those who are interested, I've had a copy of this since I was 16, a
+1941 edition I found in a second hand shop !!! ).
+
+ Back to the subject under discussion. Once you have built this basic
+Copper list, you have to make it wobble. This is done by copying the scroll
+value from line x+1 to line x. Of course this still leaves the last line,
+what scroll value do we put here? Well for consistency, copy the scroll
+value from the first line into the last line. Doing this ensures that the
+pattern remains the same. This procedure should be repeated after each
+blanking period.
+
+ Putting this diagramatically then:
+
+line No. after1 1 vert blank	after 2 vert blanks	after 3 vet blanks
+======== ===================	===================	===================
+
+  1		|*******		| *******		|  *******
+  2		| *******		|  *******		|   *******
+  3		|  *******		|   *******		|  *******
+  4		|   *******		|  *******		| *******
+  5		|  *******		| *******		|*******
+  6		| *******		|*******		| *******
+  7		|*******		| *******		|  *******
+  8		| *******		|  *******		|   *******
+  9		|  *******		|   *******		|  *******
+  10		|   *******		|  *******		| *******
+
+ I hope this gives you the basic idea. Now we need to consider the 68000
+routine responsible for altering the scroll value after each view has been
+displayed. This routine will only have to move the scroll value for a line
+from the line following it in the Copper list:
+
+
+
+Wobble		lea		wob_pos+6,a0	a0->1st scrl val in cop list
+		move.w		(a0),d1		save 1st scroll value in d1
+		move.l		#199,d0		d0=num of lines-1, loop count
+.WobLoop	move.l		a0,a1		a1->lines scroll value
+		lea		8(a0),a0	a0->next lines scroll value
+		move.w		(a0),(a1)	wobble up!
+		dbra		d0,.WobLoop	until all lines changed
+
+		move.w		d1,(a0)		last line = 1st line
+		rts				wobble done
+
+ So calling this subroutine when each vertical blank occurs will wobble the
+screen. This routine assumes you have set a scroll value in the Copper list
+for each line of the display. This does not have to be the case! If you 
+intend to call other routines during the vb period, you may wish to shorten
+the time taken to wobble the screen. This can be achieved by only setting
+scroll values every second, third or fourth screen. Because the display is
+updated 50 times a second, wobbling 2,3 or 4 lines at a time will not spoil
+the effect. Also, wobbling groups of lines will reduce the size of your
+Copper list.
+
+ In the example program 'Wobble.s' I have written out all 400 lines of the
+Copper list required, one Wait and one Move per scan line. The actual scroll
+values are copied into the list prior to activation. This makes it easy for
+you to experiment with Wobble values.
+
+ Before moving on I should explain BPLCON1. This register contains TWO scroll
+values. One for even numbered bitplanes and one for odd numbered ones. Both
+of these scroll values are contained in the lowest byte of the word
+occupying 4 bits each:
+
+ BPLCON1	bit num: 15 14 13 12 11 10  9  8  7   6  5   4  3   2   1   0
+			 <----- NOT USED------->  <-ODD SCRL->  <-EVEN SCRL-> 
+		
+ Since the display I am using contains both even and odd planes, both scroll
+values must be set to the same. Here are a few examples:
+
+	BPLCON1		$0034		odd scrl=3  even scrl=4
+	BPLCON1		$000f		odd scrl=0  even scrl=15
+	BPLCON1		$0022		odd scrl=2  even scrl=2
+
+
+ Melt
+ ----
+
+ Another interesting effect which is easy to produce is a screen melt. This
+is achieved by using the BPLxMOD registers. A display is set up in the
+normal way as described earlier, but the Copper list contains instructions
+to set the modulo values at the start of each scan line in much the same
+way as the wobble code set the scroll value.
+
+ When the picture is first displayed, all lines have a modulo of -40 ( for
+a 320 pixel display 320/8=40 ). This means the second line will contain the
+same graphics as the first, the third the same as the second, the fourth
+the same as the third ....... the 200th the same as the 199th. So initially
+the screen contains a load of lines:
+
+ .. .   .   .   .  ..... . . ... . .... . . .. . ..... . . ..... . . ... ..
+ .. .   .   .   .  ..... . . ... . .... . . .. . ..... . . ..... . . ... ..
+ .. .   .   .   .  ..... . . ... . .... . . .. . ..... . . ..... . . ... ..
+ .. .   .   .   .  ..... . . ... . .... . . .. . ..... . . ..... . . ... ..
+ .. .   .   .   .  ..... . . ... . .... . . .. . ..... . . ..... . . ... ..
+ .. .   .   .   .  ..... . . ... . .... . . .. . ..... . . ..... . . ... ..
+ .. .   .   .   .  ..... . . ... . .... . . .. . ..... . . ..... . . ... ..
+ .. .   .   .   .  ..... . . ... . .... . . .. . ..... . . ..... . . ... ..
+
+ A 68000 routine is set up that changes the modulo of one scan line per VBL
+starting at the top of the display. So after 1 VBL the first and second
+lines are displayed correctly, all remaining lines contain the same image
+as line 2. After 2 VBL's the first 3 lines are displayed correctly, all
+remaining lines contain the same image as the third line. This continues
+until all the modulos are set to 0 and the picture is complete.
+
+ I have used this effect in the menu program to melt the menu in and out
+after each user selection. I like it! There is also an example in my source
+directory using a five bitplane drawing.
+
+ So ends this divergence into hardware coding. In my source directory you
+will also find an example screen typer and text centralising examples for
+you to play with.
+
+ If you want to see more stuff like this from me let me know! Again I need
+more than ten replies before I will even consider it. I have an unroll
+screen example and colour fade example ( works for any colourmap ) ready to
+go!
+
+ Hark! I hear Intuition calling from afar........
+
+			CALLEXEC	Permit
+
+						Mark M.
+

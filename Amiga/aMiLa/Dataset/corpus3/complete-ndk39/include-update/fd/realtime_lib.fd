@@ -1,0 +1,26 @@
+* "realtime.library"
+##base _RealTimeBase
+##bias 30
+##public
+*
+* realtime.library (V40) fd -- Created by Harry Sintonen.
+* This file is public domain.
+*
+*--- functions in V37 or higher (Release 2.04) ---
+*
+* Locks
+*
+LockRealTime(lockType)(d0)
+UnlockRealTime(lock)(a0)
+*
+* Conductor
+*
+CreatePlayerA(tagList)(a0)
+DeletePlayer(player)(a0)
+SetPlayerAttrsA(player,tagList)(a0/a1)
+SetConductorState(player,state,time)(a0,d0/d1)
+ExternalSync(player,minTime,maxTime)(a0,d0/d1)
+NextConductor(previousConductor)(a0)
+FindConductor(name)(a0)
+GetPlayerAttrsA(player,tagList)(a0/a1)
+##end

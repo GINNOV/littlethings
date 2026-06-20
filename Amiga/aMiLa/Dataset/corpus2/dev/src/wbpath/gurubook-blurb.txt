@@ -1,0 +1,305 @@
+
+                     ##### #   # #####
+                       #   #   # #
+                       #   ##### ####
+                       #   #   # #
+                       #   #   # #####
+
+                 ###  #   # ###  ####  ###
+                #   # ## ##  #  #     #   #
+                ##### # # #  #  #  ## #####
+                #   # #   #  #  #   # #   #
+                #   # #   # ###  #### #   #
+
+      #### #   # ####  #   #   ####   ###   ###  #   #
+     #     #   # #   # #   #   #   # #   # #   # #  #
+     #  ## #   # ####  #   #   ####  #   # #   # ###
+     #   # #   # #  #  #   #   #   # #   # #   # #  #
+      ####  ###  #   #  ###    ####   ###   ###  #   #
+
+
+The Amiga Guru Book - a reference manual - by Ralph Babel
+
+
+If you're an Amiga programmer, then by now you've probably
+heard of the Amiga Guru Book, or - more likely - you already
+own a copy. For the few still left in the dark, :-) here's a
+brief overview:
+
+
+The Amiga Guru Book is both an indispensable reference
+manual and a text book. Containing many concise examples,
+ready-to-use listings, and comprehensive tables, it presents
+fundamental knowledge of the system that all Amiga
+programmers - regardless of the programming language used -
+must have at their disposal and be able to apply if they
+wish to create reliable and compatible software. This
+includes: information about the data types supported by the
+processor, the operating system, and the compiler;
+guidelines for proper multitasking programming; the meaning
+of Guru messages; and an introduction to the peculiarities
+of C and assembly-language programming on the Amiga.
+
+Experienced C programmers will find information about ANSI
+C, memory models, compiler specifics, and how to employ the
+special features supported exclusively by Amiga C compilers
+so as to create more efficient programs, as well as an
+overview of all compiler and linker options, libraries, and
+much more for both Aztec C and SAS/C.
+
+Included for advanced programmers are explanations of
+amiga.lib, debugging techniques, and ROM-Wack, along with
+overviews of the hard- and software memory map, the
+real-time clock, and start-up diagnostics, as well as an
+in-depth look at the programming of boot blocks and
+reset-protected programs.
+
+For AmigaDOS pros, this book reveals everything about the
+dos.library, its error codes, the CLI and user shells,
+handlers and packets, BCPL, the Global Vector, processes and
+their creation, and the data structures employed by
+AmigaDOS. Special features of this book include: the
+documentation of the structure of executable files as well
+as the extended object module format, and a thorough and
+easily understandable explanation of the on-disk block
+layout of the Fast Filesystem (FFS).
+
+The book takes the recent developments in the Amiga's system
+software into account and also pays attention to the
+peculiarities of the MC68020/030/040 processors and of the
+MC68881/882 floating-point units. It is concluded by a
+glossary, a list of recommended readings, and an extensive
+index.
+
+
+
+What the critics said about the Amiga Guru Book:
+
+
+"The Amiga Guru Book is probably the ultimate programming
+reference for the Amiga. [...] The level of accuracy and
+detail maintained throughout the book is amazing. [...]
+There have been many other attempts to write reference books
+for the Amiga, but not a single one matches the Amiga Guru
+Book in the richness of detail and depth of background.
+[...] Along with the ROM Kernel Manuals, The Amiga Guru Book
+is one of the essential reference works every serious Amiga
+programmer should own. [...] if you need in-depth
+information on the workings and usage of the OS and
+especially AmigaDOS, this book is a must. With more than 700
+pages, it sets the new standard for quality in Amiga
+references. [...] 5 stars out of 5."
+
+--- Th. Bätzler, M. Illenseer, c.s.a.reviews, 3 Dec 1993
+
+[Full review available via ftp. Host name: math.uh.edu
+[129.7.128.1]. Directory: "/pub/Amiga/comp.sys.amiga.-
+reviews/other-reviews/books/GuruBook_2" (13243 bytes). Or
+send mail to <amiga-reviews-requests@math.uh.edu>. It is
+also included on the latest Fish CD in the directory
+"FreshFish-Mar94:Useful/Reviews/other-reviews/books".]
+
+
+"There are many useful bits and pieces about the OS that
+you'd have a hard time finding anywhere else. [...] It comes
+with a 31-page index, so it's very easy to find a particular
+subject. Obviously, the TeX typesetting system was used in
+preparing the book and it really shows. There's just one
+description of the quality: excellent. [...] It is more fun
+than the Amiga ROM Kernel and Hardware Reference manuals and
+has a better form factor."
+
+--- Heiko Rath, comp.sys.amiga.reviews, 3 Dec 1993
+
+[Full review available via ftp. Host name: math.uh.edu
+[129.7.128.1]. Directory: "/pub/Amiga/comp.sys.amiga.-
+reviews/other-reviews/books/GuruBook" (10294 bytes). Or send
+mail to <amiga-reviews-requests@math.uh.edu>. The review was
+reprinted in Amiga-Report 2.04, which can be found on Aminet
+and its mirrors, e.g. ftp.uni-kl.de [131.246.9.95]. The path
+name is "/pub/aminet/text/mags/ar204.lha" (61464 bytes). It
+is also included on the latest Fish CD in the directory
+"FreshFish-Mar94:Useful/Reviews/other-reviews/books".]
+
+
+"Kein gewissenhafter Programmierer kommt an diesem Buch
+vorbei: als Lehr- und Referenzwerk von unschlagbarem Nutzen
+in der täglichen Praxis, übersichtlich, kompakt und optimal
+gegliedert. Insgesamt eine rundum empfehlenswerte
+Anschaffung ohne Reue."
+
+--- Amiga-Magazin 12/1993, page 130
+
+
+"Ralph is one of the most knowledgable Amiga experts there
+is and his book has long been compulsory reading for all
+serious German programmers. This revision has been rewritten
+from the ground up, and because of the massive demand from
+non-German programmers it has been translated into English."
+
+--- Just Amiga Monthly #40 (January 1994), page 6 f.
+
+
+"La seconda sorpresa è l'Amiga Guru Book: uno splendido
+libro scritto da Ralph Babel - un famoso programmatore Amiga
+che ha collaborato anche con la GVP - che sviscera in più di
+700 pagine gli aspetti più oscuri (e peggio documentati) di
+Amiga. Il libro è scritto in un elegantissimo inglese
+'europeo' e traboccante di citazione di personaggi collegati
+ad Amiga e non."
+
+--- Amiga Magazine 12/1993, page 22
+
+
+"It's what the Bantam manual should have been."
+
+--- Michael B. Smith, comp.sys.amiga.misc, 7 March 1994
+
+
+"Wer sich diesem Thema bisher nur über Commodores hauseigene
+Dokumentation 'The AmigaDOS Manual' genähert hat, stellt
+spätestens beim vergleichenden Studium der entsprechenden
+Abschnitte im Guru-Buch fest, welchem Informationsdefizit er
+bislang ausgesetzt war. Zu diesem leider schon traditionell
+hoffnungslos unterdokumentierten Thema trägt das Guru-Buch
+nämlich einiges bei: umfassende und korrekte Information,
+präzise Fakten sowie Konzentration auf das Wesentliche. Mit
+gleichbleibender Genauigkeit behandelt das Guru-Buch alles
+Wissenswerte zu den Themen DOS-Handler und Packet-Interface,
+Programmausführung und -umgebungen, Filesystem, Disk- und
+Binärfileformate, alle Funktionen der DOS-Library sowie
+Fehlermeldungen und Datenstrukturen."
+
+--- Franz-Josef Reichert, Amiga-Plus 1/1994, page 72
+
+
+"How refreshing to come across a new technical reference
+that is not only detailed, accurate and comprehensive, but
+well-written and entertaining as well. [...] In essence,
+this is a reference guide which takes up where Commodore's
+ROM Kernel Manuals leave off. [...] Although it weighs in at
+a hefty 736 pages, including a comprehensive 30-page index,
+there is very little waffle, just solid information on a
+range of topics hitherto confined to the realm of black
+magic. [...] If you're serious about programming your Amiga
+at the system level, or simply curious about how things
+operate under the hood, you need this book.
+
+--- Eddy Carroll, JAM #43 (April 1994), page 35 f.
+
+
+"Bei der mittlerweile großen Anzahl der Veröffentlichungen
+zum Amiga sucht man vergeblich ein Werk, das es mit dem
+'Guru Book' in Bezug auf Detailkenntnisse und
+Hintergrundwissen des Autors aufnehmen kann. Es läßt sich
+nicht verkennen, daß der Verfasser sein Fachgebiet voll und
+ganz beherrscht."
+
+--- Amiga Special 4/1994, page 54 f.
+
+
+"J'ai aimé:
+   - les citations humoristiques qui émaillent la lecture
+   - les listings numérotés
+   - les anecdotes sur l'histoire de l'Amiga
+   - l'éventail impressionnant des connaissances de l'auteur
+     sur l'Amiga
+ Je regrette:
+   - qu'il y ait si peu de pages :-)"
+
+--- Cédric Beust, AmigaNews #67 (Avril 1994), page 16 f.
+
+
+
+The following reviews refer to "Das Amiga-Guru-Buch", the
+German-language predecessor published in 1989:
+
+
+"Endlich gibt es ein für jedermann zugängliches und
+preiswertes Nachschlage- und Lehrwerk, in dem man sich über
+die richtige Art, den Amiga 'legal' zu programmieren,
+informieren kann: Das Amiga-Guru-Buch. [...] Für den
+ernsthaften Programmierer ist das Amiga-Guru-Buch ein
+unentbehrliches Nachschlagewerk und eine ideale Ergänzung
+zur Neuausgabe der Reference Manuals von Addison-Wesley.
+Lassen Sie es sich nicht entgehen."
+
+--- Amiga Special 10/1989, pages 54-56
+
+
+"Durch das ausführliche Inhaltsverzeichnis und den großen
+Index eignet sich dies Werk wahrlich als Nachschlagebuch für
+Extremsituationen."
+
+--- Kickstart 10/1989, page 34
+
+
+"Das Buch verfügt über eine Fülle von Informationen, die man
+bislang vergeblich suchte. [...] Das Guru-Buch ist für jeden
+Programmierer uneingeschränkt empfehlenswert."
+
+--- Amiga-Magazin 11/1989, page 120
+
+
+"Na endlich! Dieses Buch ist der Hit für jeden
+Amiga-Programmierer, der bisher über das rätselhafte DOS des
+Amiga den Mut verlor, das Kochbuch-Deutsch der Werke
+bekannter Verlage nicht mehr lesen will und obendrein Witz
+und Ironie zu schätzen weiß. [...] Jedem, der ernsthaft
+programmiert, sei dieses Werk wärmstens empfohlen."
+
+--- c't 11/1989, page 374 f.
+
+
+"Insgesamt ist das Amiga-Guru-Buch ein echtes
+Nachschlagewerk für den erfahrenen Programmierer."
+
+--- Amiga-DOS 1/1990, page 83
+
+
+
+Interested? The Amiga Guru Book is available from:
+
+
+Hirsch & Wolf OHG
+Mittelstraße 33
+D-56564 Neuwied
+Germany
+Voice: +49 (2631) 8399-0
+Fax:   +49 (2631) 8399-31
+
+[Hirsch & Wolf will also accept international orders. Yes,
+they _do_ speak English. :-)]
+
+
+Periscope Discs, Tapes, Books
+Attn: Cody Lee
+1717 West Kirby Avenue
+Champaign, IL 61821
+USA
+Voice: +1 (217) 398 4237
+Fax:   +1 (217) 398 4238
+E-Mail: <periscope@cei.com>
+
+[For more information about Periscope (ordering information
+etc.), telnet to "prairienet.org" [192.17.3.3], log in as
+"visitor", and then - at the prompt - type "go periscope".]
+
+
+Someware
+27 rue Gabriel Péri
+59186 Anor
+France
+Voice: +33 27596000
+Fax:   +33 27595206
+
+
+If you have further questions regarding the Amiga Guru Book,
+feel free to contact me directly. My preferred e-mail
+address is <rbabel@babylon.pfm-mainz.de>.
+
+
+Copyright © 1994 by Ralph Babel. Permission granted to
+redistribute this file in unmodified form. All other rights
+reserved.
+

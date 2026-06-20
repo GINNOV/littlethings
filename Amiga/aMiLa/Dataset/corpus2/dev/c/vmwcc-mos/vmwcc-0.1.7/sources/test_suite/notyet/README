@@ -1,0 +1,13 @@
+The sad, the losers, the ones that won't run.
+
+bm0.c  -- gets caught in endless loop register allocating.
+          Even if did compile, doesn't work properly
+	  on 32 bit machine only 64
+
+	  (embarassingly, I wrote this one.  The non "kill-time"
+	   code works fine, though the sine wave doesn't work
+	   well on 32 bits)
+
+bm9.c  -- Segfaults.  Not sure why.
+
+          Also makes 64-bit assumptions.

@@ -1,0 +1,10 @@
+The original FAsm package includes the following files:
+
+ - FAsm                     Executable command line assembler v0.40
+ - FAsm.docs                Assembler Docs.
+ - Save_EXE.CED             ARexx Script file for linking to CED.
+ - 65816_CED_ASM.script     Batch file.
+ - 65816_CED_DEL.script     Batch file.
+ - PACK.README              This file.
+
+Anykind of different package must include at least these files.

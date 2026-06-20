@@ -1,0 +1,13 @@
+Short:        Misc assembly language tools (+source)
+Author:       Glen McDiarmid and Kirk Davies
+Architecture: m68k-amigaos
+Source:       Fish collection
+
+Some misc assembly tools, programs, etc.  "AsmFilter" (actually in
+AmigaBASIC) turns the output of the Metacomco disassembler into a file that
+can be re-assembled.  "AddKickMem" adds the KickStart memory to your free
+memory on an Amiga 1000 with Kickstart in ROM.  "Clear" fills unused areas
+of memory with a specific byte pattern.  "L" is a replacement for the BCPL
+"list" program, but with some graphics enhancements.  "SharpFont" is an 8
+pixel non-proportional font.  "Stack" is a replacement for the BCPL stack
+program.  Includes some source.  

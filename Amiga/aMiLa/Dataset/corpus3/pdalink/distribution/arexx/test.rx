@@ -1,0 +1,142 @@
+/*
+ * PdaLink -- Connect Palm with Amiga
+ *
+ * Copyright (C) 1998-2010 Richard "Shred" Körber
+ *   http://pdalink.shredzone.org
+ *
+ * This library is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation, either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ * A small test for PdaLink's ARexx interface
+ *
+ * @author Richard "Shred" Körber
+ */
+
+/* Add the library functions */
+CALL AddLib("/libs/pdalink.library",0,-30,0)
+
+/* Catch errors for a clean exit */
+SIGNAL ON ERROR
+SIGNAL ON SYNTAX
+
+/* Open a socket (default serial) and the conduit */
+CALL PDA_OpenSocket('socket','')
+SAY "Press the HotSync button now..."
+CALL PDA_Accept('socket','')
+CALL PDA_OpenConduit('socket')
+
+/* Get the baud rate */
+CALL PDA_GetBaudRate('socket')
+SAY "Negotiated baud rate:" RESULT
+
+/* Get System Information */
+CALL PDA_GetSysInfo('socket','SYS')
+SAY "PDA_GetSysInfo"
+SAY "  SYSNAME:   " SYS.SYSNAME
+SAY "  ROMVERSION:" SYS.ROMVERSION
+SAY "  LOCALIZION:" SYS.LOCALIZION
+SAY ""
+
+/* Get Storage Information */
+CALL PDA_GetStorageInfo('socket','','STORAGE')
+SAY "PDA_GetStorageInfo"
+SAY "  NAME:      " STORAGE.NAME
+SAY "  MANUFACT.: " STORAGE.MANUFACTURER
+SAY "  CARDNO:    " STORAGE.CARDNO
+SAY "  VERSION:   " STORAGE.VERSION
+SAY "  CREATED:   " STORAGE.CREATED
+SAY "  ROMSIZE:   " STORAGE.ROMSIZE
+SAY "  RAMSIZE:   " STORAGE.RAMSIZE
+SAY "  RAMFREE:   " STORAGE.RAMFREE
+SAY ""
+
+/* Get all RAM database information */
+INDEXX = 0
+SAY "PDA_GetDBInfo"
+DO FOREVER
+  HASMORE = PDA_GetDBInfo('socket',INDEXX,'INFO')
+  SAY "  NAME:      " INFO.NAME
+  SAY "  INDEX:     " INFO.INDEX
+  SAY "  CREATED:   " INFO.CREATED
+  SAY "  MODIFIED:  " INFO.MODIFIED
+  SAY "  BACKUPPED: " INFO.BACKUPPED
+  SAY "  VERSION:   " INFO.VERSION
+  SAY "  CREATOR:   " INFO.CREATOR
+  SAY "  TYPE:      " INFO.TYPE
+  SAY "  FLAGS:     " INFO.FLAGS
+  SAY "  EXCLUDE:   " INFO.EXCLUDE
+  SAY ""
+  INDEXX = INFO.INDEX+1
+  IF HASMORE==0 THEN LEAVE
+END
+
+/* Get NetSync information */
+CALL PDA_NetSyncInfo('socket','','NSI')
+SAY "PDA_NetSyncInfo"
+SAY "  LANSYNC:   " NSI.LANSYNC
+SAY "  HOSTNAME:  " NSI.HOSTNAME
+SAY "  HOSTADDR:  " NSI.HOSTADDRESS
+SAY "  HOSTSNM:   " NSI.HOSTSUBNETMASK
+SAY ""
+
+/* Get System time */
+CALL PDA_SysTime('socket','','SYST')
+SAY "PDA_SysTime"
+SAY "  TIME:      " SYST.TIME
+SAY "  SECOND:    " SYST.SECOND
+SAY "  MINUTE:    " SYST.MINUTE
+SAY "  HOUR:      " SYST.HOUR
+SAY "  DAY:       " SYST.DAY
+SAY "  MONTH:     " SYST.MONTH
+SAY "  YEAR:      " SYST.YEAR
+SAY ""
+
+/* Get User info */
+CALL PDA_UserInfo('socket','','UI')
+SAY "PDA_UserInfo"
+SAY "  USERID:    " UI.USERID
+SAY "  VIEWERID:  " UI.VIEWERID
+SAY "  LASTSYNCPC:" UI.LASTSYNCPC
+SAY "  LASTSYNC:  " UI.LASTSYNC
+SAY "  SUCC.SYNC: " UI.SUCCESSFULSYNC
+SAY "  USERNAME:  " UI.USERNAME
+SAY "  PASSWORD:  " UI.PASSWORD
+SAY ""
+
+/* Add some lines to the Sync Log */
+CALL PDA_AddSyncLogEntry('socket','"ARexx Test done..."')
+CALL PDA_AddSyncLogEntry('socket','"Amiga made it possible! :-)"')
+
+/* Close the socket */
+CALL PDA_EndOfSync('socket','')   /* Never forget this! */
+CALL PDA_CloseSocket('socket')
+SAY "Done..."
+
+EXIT
+
+
+/* Catch an error */
+ERROR:
+  SAY "** ERROR **"
+  CALL PDA_CloseSocket('socket')
+  EXIT
+
+/* Catch a syntax error */
+SYNTAX:
+  SAY "** SYNTAX ** in line " SIGL ":" ERRORTEXT(RC)
+  CALL PDA_CloseSocket('socket')
+  EXIT
+
+

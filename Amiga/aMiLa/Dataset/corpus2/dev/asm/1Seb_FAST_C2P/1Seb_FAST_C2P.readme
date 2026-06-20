@@ -1,0 +1,40 @@
+Short:        Fast Chunky2Planar for 020,030,040,060
+Author:       spagnolo@int-evry.fr (SPAGNOLO Sébastien)
+Uploader:     fdgraphi netsysteme net (BRANDIN François)
+Type:         dev/asm
+Architecture: m68k-amigaos
+
+
+                              Chunky 2 Planar
+                         ( for 020-030 & 040-060 )
+
+                                    by
+
+                                Seb/SCOOPEX
+
+
+You will find two chunky to planar in 256 colors in this package.
+The first one is better for 020 & 030 and the second one is for 040 & 060.
+
+On 030, it takes around 1.23 VBL to convert a 320*256 screen in 256c and on
+060, it takes less than 0.8 VBL to convert the same screen.
+
+               ********************************************
+               *                                          *
+               *      Watch the included intro called     *
+               *          "Scoopex-Effusion.exe"          *
+               *   to see what is the speed of this C2P   *
+               *                                          *
+               ********************************************
+
+To contact me:
+
+	Sebastien Spagnolo
+	8 residence les peupliers
+	42300 Roanne
+	France
+
+	email : spagnolo@int-evry.fr
+
+
+ <<< If you want to put it in a game or demo just greet and contact me >>>

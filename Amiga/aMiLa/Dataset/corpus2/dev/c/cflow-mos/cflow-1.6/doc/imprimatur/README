@@ -1,0 +1,132 @@
+Imprimatur README
+Copyright (C) 2011 Sergey Poznyakoff
+See the end of file for copying conditions.
+
+* Introduction
+
+This file contains brief information about installing and configuring
+Imprimatur.  It is *not* intended as a replacement for the
+documentation, and is provided as a brief reference only. 
+The complete documentation in Texinfo format is included.  To build
+it, change to the imprimatur subdirectory and run `makeinfo
+imprimatur'.
+
+Complete documentation in various formats is available online from the
+following URL:
+
+  http://www.gnu.org.ua/software/imprimatur/manual
+
+* Overview
+
+Imprimatur provides Texinfo macros for various editing tasks such as
+adding editor notes and annotations, as well as makeinfo rules for
+verifying texinfo document structure, format, and (to a certain
+extent) content coverage.  
+
+In particular, it provides a mechanism for verifying whether the
+entities, such as command line options, configuration file statements,
+library functions, and the like, which are defined in a set of source
+files are also described in the Texinfo document.
+
+* Installation
+
+To use Imprimatur in your project, follow these steps:
+
+** Import the package as a submodule
+
+This needs to be done only once:
+
+  git submodule add git://git.gnu.org.ua/imprimatur.git imprimatur
+  git submodule init
+
+The `submodule add' command takes two arguments: the submodule
+repository, which should be exactly as shown above, and the pathname
+of the cloned submodule in your project. This latter is entirely at
+your option.  Throughout this document we will suppose that the module
+pathname is `imprimatur'. You will need to adjust the examples if you chose
+another name for it.   
+
+** Edit the toplevel Makefile.am
+
+Add `-I imprimatur' to the ACLOCAL_AMFLAGS variable, and `imprimatur'
+to the SUBDIRS variable.  For example:
+
+  ACLOCAL_AMFLAGS = -I m4 -I imprimatur
+  SUBDIRS = imprimatur
+
+** Edit the configure.ac file
+
+Add a call to IMPRIMATUR_INIT.  Normally no parameters are needed.
+However, if you cloned Imprimatur into a directory with another name,
+the actual directory name must be supplied as the first argument.  For
+example, if you used this submodule command
+
+  git submodule add git://git.gnu.org.ua/imprimatur.git somedir
+
+then use
+
+  IMPRIMATUR_INIT(somedir)
+
+in your configure.ac  
+
+** Edit Makefile.am in your doc subdirectory
+
+Apply the following changes to the Makefile.am located in the
+subdirectory where you have your Texinfo sources:
+
+1. To AM_MAKEINFOFLAGS add @IMPRIMATUR_MAKEINFOFLAGS@
+2. Define the variable `imprimatur_INPUT'.  It must contain the
+names of Texinfo sources to be verified by Imprimatur.  Normally,
+the following definition is sufficient:
+
+  imprimatur_INPUT=$(info_TEXINFOS) $(<BASE>_TEXINFOS)
+
+where <BASE> stands for the base name of your Texinfo document (e.g.
+"foo", if it is named "foo.texi").  
+3. Include imprimatur.mk using relative addressing.  For example, if
+your documentation subdirectory is located at the same nesting level
+as the directory you cloned Imprimatur to, use:
+
+  include ../imprimatur/imprimatur.mk
+
+Do not use Automake substitutions nor Makefile variables in the
+argument to include.
+4. If you plan to use the `check-docs.sh' script, define the following
+variable:
+
+  CHECK_DOCS=$(top_srcdir)/@IMPRIMATUR_MODULE_DIR@/check-docs.sh
+
+For example:
+  
+  AM_MAKEINFOFLAGS = @IMPRIMATUR_MAKEINFOFLAGS@
+  imprimatur_INPUT=$(info_TEXINFOS) $(foo_TEXINFOS)
+  include ../imprimatur/imprimatur.mk
+  CHECK_DOCS=$(top_srcdir)/@IMPRIMATUR_MODULE_DIR@/check-docs.sh
+
+** Include `rendition.texi' into your main Texinfo source.
+
+* Bug reporting.
+
+Send bug reports to <gray+imprimatur@gnu.org.ua>.
+
+^L
+* Copyright information:
+
+Copyright (C) 2011 Sergey Poznyakoff
+
+   Permission is granted to anyone to make or distribute verbatim copies
+   of this document as received, in any medium, provided that the
+   copyright notice and this permission notice are preserved,
+   thus giving the recipient permission to redistribute in turn.
+
+   Permission is granted to distribute modified versions
+   of this document, or of portions of it,
+   under the above conditions, provided also that they
+   carry prominent notices stating who last changed them.
+
+
+Local Variables:
+mode: outline
+paragraph-separate: "[	]*$"
+version-control: never
+End:

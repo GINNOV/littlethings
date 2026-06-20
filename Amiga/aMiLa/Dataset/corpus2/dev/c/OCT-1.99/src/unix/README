@@ -1,0 +1,9 @@
+src/unix:
+=========
+
+This directory contains makefiles and such that were used to
+run the OCT system under '386 Xenix.  They should work for
+AT&T UN*X and bsd systems.  Just change the defines for where
+to store the library files.
+
+--- brian witt, 14-Dec-90

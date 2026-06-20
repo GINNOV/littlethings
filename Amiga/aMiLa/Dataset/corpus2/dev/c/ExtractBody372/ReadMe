@@ -1,0 +1,46 @@
+Name: ExtractBody 37.2
+Short: Extracts ILBM/BODY to c source for MUI programmers
+Author: tolaini@freenet.hut.fi (Sandro Tolaini)
+Uploader: tolaini@freenet.hut.fi (Sandro Tolaini)
+Version: 37.2
+Type: dev/c
+Long:
+
+ExtractBody is a small tool useful for MUI applications programmers.
+It can extract the BODY chunk from any IFF ILBM file, and save it in
+c source format. Then you can include the generated files into your
+program to use the MUIC_BodyChunk classes of MUI.
+
+The program generates two files: a code (.c) file, which must be
+compiled, and a header (.h) file, which must be included (via the
+#include directive) into your c source code.
+
+The names defined into the header file are self-explanatory. There
+are also an array containing the image body, and an array containing
+the image palette.
+
+ExtractBody takes two arguments: the name of the Iff image file, and
+the destination file base name. The destination file name MUST NOT
+have any extension, since it is appended by the program. This name
+is also used in the defined names, so make sure it is composed only
+by numbers and letters.
+
+A little example:
+
+CLI> ExtractBody Work:Images/MyBrush.ilbm Work:Sources/MyBrush
+
+will generate two files in the Work:Sources directory: MyBrush.c
+and MyBrush.h. In the header file, all the defined names will have
+BODY_MyBrush_ as a prefix.
+
+Currently, there is not a strong error checking during the process,
+so please report me any bug. My address is tolaini@freenet.hut.fi,
+2:332/113.3 on fidonet, or 39:102/507.3 on amiganet.
+
+This software is FreeWare, but the source remains copyrighted by me.
+If you make some ShareWare or Commercial software using ExtractBody,
+you are requested to send me a free copy of your software.
+
+Have fun,
+Sandro Tolaini
+

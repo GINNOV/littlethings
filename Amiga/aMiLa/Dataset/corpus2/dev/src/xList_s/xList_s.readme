@@ -1,0 +1,48 @@
+Short:    ASM sources of xList105 (ModuleLister)
+Author:   David 'Reez' Le Corfec
+Uploader: lecorfec@merlin.univ-mlv.fr
+Type:     dev/src
+Version:  1.05
+
+Content:
+-------
+xList-GUI_105.s            16548       (assembled: 3984)
+xList_105.s                27503       (assembled: 3920)
+lvos.i                      6978
+
+
+Includes needed for xList-GUI:
+dos: dos.i, var.i
+exec: execbase.i, exec.i, types.i
+lvo: lvos.i (included in this distribution)
+reqtools: reqtools_lib.i, reqtools.i
+
+Includes needed for xList:
+dos: dos.i, var.i
+lvo: lvos.i
+exec: types.i
+
+
+note about the file "lvos.i":
+It only contains the LVOs needed by both progs.
+
+
+Part of util/misc/xList105.readme :
+-------------------------------------------------------------------------------
+                               XLIST IS FREEWARE
+
+                        This tool NEEDS V37+ OS (2.04+)
+
+Some features:
+
+-xList is a tool between xDir and List, oriented towards module-listing.
+-CLI/WB usage (with GUI)
+-Provides file comments, unlike xDir. Provides crunching infos, unlike List.
+-No need of external libraries, but supports the following crunching types:
+ XPK, LHA, Powerpacker data (PP20), CrunchMania , StoneCracker (S403/S404)
+-Ratios and totals calculation.
+-Doesn't show files starting by a dot (.*) and filenotes starting by 'XFH '.
+-Pure (can be made resident)
+
+ Read the doc for other features !
+-------------------------------------------------------------------------------

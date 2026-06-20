@@ -1,0 +1,45 @@
+Short:  Elemental sorting algorithms in C
+Autor:  walternn@rupert.informatik.uni-stuttgart.de (Norman Walter)
+Uploader:  walternn@rupert.informatik.uni-stuttgart.de (Norman Walter)
+Type:  dev/src
+Requires:  C Compiler (e.g. gcc)
+
+
+Demonstration of Elemental sorting algorithms in C:
+
+ - Bubble Sort
+ - Selection Sort
+ - Insertion Sort
+ - Shell Sort
+
+The executables included in this archive require 68000 cpu or better.
+
+The sources are highly portable. They shold work with all major operating systems.
+
+Testet on Amiga 4000/30 with AmigaOS 3.5.
+
+Compiled with gcc - the GNU C Compiler.
+
+
+Literature:
+
+Brian W. Kernighan, Dennis M. Ritchie: The C Programming Language
+
+Andrew Koenig: 
+C Traps and Pitfalls
+
+Robert Sedgewick:
+Algorithms in C
+
+
+World Wide Web:
+
+http://www.norman-interactive.com (my Homepage)
+
+http://www.informatik.uni-stuttgart.de (University Stuttgart, Dept. of Computer Science)
+
+http://www.ninemoons.com (GeekGadgets)
+
+http://www.haage-partner.com (Haage & Partner Homepage)
+
+

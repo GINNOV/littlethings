@@ -1,0 +1,186 @@
+/*
+ * Copyright (c) 1992 Commodore-Amiga, Inc.
+ * 
+ * This example is provided in electronic form by Commodore-Amiga, Inc. for 
+ * use with the "Amiga ROM Kernel Reference Manual: Devices", 3rd Edition, 
+ * published by Addison-Wesley (ISBN 0-201-56775-X).
+ * 
+ * The "Amiga ROM Kernel Reference Manual: Devices" contains additional 
+ * information on the correct usage of the techniques and operating system 
+ * functions presented in these examples.  The source and executable code 
+ * of these examples may only be distributed in free electronic form, via 
+ * bulletin board or as part of a fully non-commercial and freely 
+ * redistributable diskette.  Both the source and executable code (including 
+ * comments) must be included, without modification, in any copy.  This 
+ * example may not be published in printed form or distributed with any
+ * commercial product.  However, the programming techniques and support
+ * routines set forth in these examples may be used in the development
+ * of original executable software products for Commodore Amiga computers.
+ * 
+ * All other rights reserved.
+ * 
+ * This example is provided "as-is" and is subject to change; no
+ * warranties are made.  All use is at your own risk. No liability or
+ * responsibility is assumed.
+ *
+ */
+
+
+
+TABLE OF CONTENTS
+
+cbio/CBClose
+cbio/CBFreeBuf
+cbio/CBOpen
+cbio/CBQueryFTXT
+cbio/CBReadCHRS
+cbio/CBReadDone
+cbio/CBWriteFTXT
+
+
+cbio/CBClose                                                     cbio/CBClose
+
+   NAME
+       CBClose() -- Close the clipboard.device
+
+   SYNOPSIS
+       CBClose()
+
+       void CBClose()
+
+   FUNCTION
+       Close the clipboard.device unit which was opened via
+       CBOpen().
+
+cbio/CBFreeBuf                                                 cbio/CBFreeBuf
+
+   NAME
+       CBFreeBuf() -- Free buffer allocated by CBReadCHRS()
+
+   SYNOPSIS
+       CBFreeBuf( buf )
+
+       void CBFreeBuf( struct cbbuf * )
+
+   FUNCTION
+       Free's a buffer allocated by  CBReadCHRS().  
+
+cbio/CBOpen                                                       cbio/CBOpen
+
+   NAME
+       CBOpen() -- Open the clipboard.device
+
+   SYNOPSIS
+       ior = CBOpen(unit)
+
+       struct IOClipReq *CBOpen( ULONG )
+
+   FUNCTION
+       Opens the clipboard.device.  A clipboard unit number
+       must be passed in as an argument.  By default the unit
+       number should be 0 (currently valid unit numbers are
+       0-255).
+
+   RESULTS
+       A pointer to an initialized IOClipReq structure, or
+       a NULL pointer if the function fails.
+
+   BUGS
+       When these clipboard support functions are used with older 
+       versions of the Amiga OS (i.e., before V36) a memory loss 
+       of 536 bytes will occur due to bugs in the clipboard device.
+
+cbio/CBQueryFTXT                                             cbio/CBQueryFTXT
+
+   NAME
+       CBQueryFTXT() -- Check to see if clipboard contains FTXT
+
+   SYNOPSIS
+       result = CBQueryFTXT( ior )
+
+       int CBQueryFTXT(struct IOClipReq *)
+
+   FUNCTION
+       Check to see if the clipboard contains FTXT.  If so,
+       call CBReadCHRS() one, or more times until all CHRS
+       chunks have been read.
+
+   RESULTS
+       TRUE if the clipboard contains an FTXT chunk, else FALSE.
+
+   NOTES
+       If this function returns TRUE, you must either call
+       CBReadCHRS() until CBReadCHRS() returns FALSE, or
+       call CBReadDone() to tell the clipboard.device that
+       you are done reading.
+
+cbio/CBReadCHRS                                               cbio/CBReadCHRS
+
+   NAME
+       CBReadCHRS() -- Reads the next CHRS chunk from clipboard
+
+   SYNOPSIS
+       cbbuf = CBReadCHRS( ior )
+
+       struct cbbuf *CBReadCHRS(struct IOClipReq * )
+
+   FUNCTION
+       Reads, and returns the text in the next CHRS chunk
+       (if any) from the clipboard.
+
+       Allocates memory to hold data in next CHRS chunk.
+
+   RESULTS
+       Pointer to a cbbuf struct (see cb.h), or a NULL indicating
+       a failure (e.g., not enough memory, or no more CHRS chunks).
+   
+       ***Important***
+
+       The caller must free the returned buffer when done with the
+       data by calling CBFreeBuf().
+
+   NOTES
+       This function strips NULL bytes, however a full reader may 
+       wish to perform more complete checking to verify that the 
+       text conforms to the IFF standard (stripping data as required).
+
+       Under 2.0, the AllocVec() function could be used instead of
+       AllocMem() in which case the cbbuf structure may not be
+       needed.
+
+cbio/CBReadDone                                               cbio/CBReadDone
+
+   NAME
+       CBReadDone() -- Tell clipboard we are done reading
+
+   SYNOPSIS
+       CBReadDone( ior )
+
+       void CBReadDone(struct IOClipReq * )
+
+   FUNCTION
+       Reads past end of clipboard file until io_Actual is
+       equal to 0.  This is tells the clipboard that we are
+       done reading.
+
+cbio/CBWriteFTXT                                             cbio/CBWriteFTXT
+
+   NAME
+       CBWriteFTXT() -- Write a string of text to the clipboard.device
+
+   SYNOPSIS
+       success = CBWriteFTXT( ior, string)
+
+       int CBWriteFTXT(struct IOClipReq *, char *)
+
+   FUNCTION
+       Write a NULL terminated string of text to the clipboard.
+       The string will be written in simple FTXT format.
+
+       Note that this function pads odd length strings automatically
+       to conform to the IFF standard.
+
+   RESULTS
+       TRUE if the write succeeded, else FALSE.
+
+

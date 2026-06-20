@@ -1,0 +1,113 @@
+
+   ›42m    ##     #   ###    ###                ###             ›0m
+   ›42m   #       #  #   #  #   #                #              ›0m
+   ›42m #####  ####      #  #   #  ###  ### ##   #  ####   ###  ›0m (version 1.0b)
+   ›42m   #   #   #   ###   ##### #     #  #  #  #  #   # #   # ›0m
+   ›42m   #   #   #  #      #   #  ###  #  #  #  #  #   # #     ›0m
+   ›42m   #   #   #  #      #   #     # #  #  #  #  #   # #   # ›0m
+   ›42m   #    ####  #####  #   # ####  #  #  # ### #   #  ###  ›0m
+
+›1mfdAsmInc›0m, a ›1mTropicDesign›0m product,  is used to convert .fd-files into assembler-
+includefiles; you need OS2.0!
+
+›42m-- Table of contents ----------------------------------------------------- 1 --›0m
+
+Chapter 1....................Table of contents
+        2....................Copyright
+        3....................About the program
+        4....................Technical stuff
+        5....................Concluding words
+
+›42m-- Copyright ------------------------------------------------------------- 2 --›0m
+
+This Freeware-program  and the sourcecode  are copyrighted  by the author Hanns
+Holger Rutz (that's me...),  this conditions have  to be followed to distribute
+it:
+- the copying-fee may not be higher than $3 (inclusive disk, exclusive postage
+  +packing).
+- the following files have to be kept together in one directory:
+    ›3m fd2AsmInc              ›0m(the executable)
+    ›3m fd2AsmInc.doc          ›0m(the English doc-file)
+  or›3m fd2AsmInc.dok          ›0m(the German doc-file)
+    ›3m fd2AsmInc.asm          ›0m(the assembler-source)
+  These files must be remain unmodified;  of course,  the filenotes,  the dates
+  and the protect-bits may be changed. What about copying the icons, too?
+›4mOnly the user himself is responsible›0m for any damage  caused by one of the files
+listed above  (of course,  I'd like to see bugreports,  improvement-suggestions
+etc.!). The sourcecode is only for private use!
+
+›42m-- About the program ----------------------------------------------------- 3 --›0m
+
+I had the idea of  this program when  I decrunched the OS2.0 assembler-includes
+- because there are  no includefiles for  the libraries since includeversion 36
+any longer. The _LVO-definitions are in the fucking link-libraries now. Because
+on the one hand I was unable to link these libraries with my object-code (BLink
+always gurued) and on  the other hand  I had no desire  to start a linker every
+time I assembled something (I'm using AsmOne), I created the assembler-includes
+from the .fd-files.  Afterwards I wrote this program,  so you don't have  to do
+this hard work  yourself.  It translates any .fd-files  into assembler-includes
+(using the standard _LVO-definitions). This is the usage:
+›3m
+fd2AsmInc <from> [<to>] [comments] [spaces] [tabs <1-65535>] [dec] [hex]
+
+<from>      ›0mName of the .fd-file (may contain wildcards);›3m
+<to>        ›0mName of the includefile to be created or the target directory;›3m
+<comments>  ›0mif you set  this switch,  all comments  found in the  .fd-file will
+            also appear in the include-file.›3m
+spaces      ›0mspaces are used to format the include-file.›3m
+tab <size>  ›0msame as›3m spaces›0m, only that tabulators of the size›3m <size> ›0mare used;›3m
+dec         ›0mthe function-offsets appear as decimal numbers;›3m
+hex         ›0mthe offsets appear as hexadecimal numbers;
+
+If you don't  specify  a Targetname/-path,  the includefile  will be created in
+your current directory.
+If you neither select ›3m spaces ›0mnor›3m tabs ›0m (this is default),  the equals sign and
+the offset will be directly put next to each functionname  (no space).  If both
+switches are set,  the program prefers tabulators and a space is set after each
+equals sign. When formatting the file, ›1mfd2AsmInc›0m calculates the position of the
+equals sign in a manner  that they all appear  in the same column  and there is
+the smallest possible  space between  the longest functionname  and the  equals
+sign.
+While the program works,  the filenames are listet in two columns:  on the left
+there are the names of the .fd-files - on the right there are the includefiles.
+Two dots after a filename mean  that this file is currently worked with.  If an
+error accurs,  its description is printed next to the filename  (if there is an
+syntax error in  the .fd-file  the number of  the errorline is also displayed).
+The includefile is tried to be deleted, if it was already opened, and a message
+is printed (in case of success). If the parameter›3m from ›0mcontained wildcards, the
+program asks, if you want to continue with the converting process.  By the way,
+you can stop the program by pressing CTRL+C.
+
+›42m-- Technical stuff ------------------------------------------------------- 4 --›0m
+
+Here's some background information for the guys who want to know everything:
+- ›1mfd2AsmInc›0m is programmed reentrant and PC-relative (with AsmOne v1.02);
+- the length of a functionname (incl.›3m _LVO›0m) may not be greater that›3m $ffff›0m;
+-›3m ##private, ##public, ##base ›0mand other›3m ##xxx ›0mare ignored;
+-›3m ##bias ›0mand›3m ##end ›0mare recognized, if they contain upper-case letters;
+- the program refuses to work properly on A600 machines :-)
+-›3m RETURN_FAIL ›0mis returned in case of an error,›3m RETURN_WARN ›0min case of›3m ***break›0m;
+- the program contains a versionstring;
+- the hexadecimal offsets appear in lower-case in the include-file;
+- ›1mTropicDesign›0m are Hanns Holger Rutz and Marco Brinkmann;
+- the continue-request checks, if you enter 'y' or 'Y';
+- tabulators are recognized (like spaces);
+- if the .fd-file contains no›3m ##bias›0m, an offset of›3m NULL ›0mis used;
+- .fd-files that don't contain an›3m ##end ›0mdon't cause an error;
+- if›3m from ›0mcontains wildcards and›3m to ›0mdoesn't exist, (as opposed to c:copy) no
+  target-directory is created;
+- you can suck the rest out of the sourcecode;
+
+›42m-- Concluding words ------------------------------------------------------ 5 --›0m
+
+Well, that's it.  I don't know any features for the future - ok,  you could in-
+clude an›3m ALL›0m-Option  and a›3m FROM/M ›0m and create a target directory,  if›3m from ›0mcon-
+tains wildcards, but I think noone needs this (and I'm too lazy to include this
+in my sourcecode).  If you  have  bugreports,  improvement-suggestions  or what
+ever, write to:
+
+›1mTropicDesign›0m
+c/o Hanns Holger Rutz
+Auf dem Godenstedter Berg 17
+27404 Zeven
+Germany

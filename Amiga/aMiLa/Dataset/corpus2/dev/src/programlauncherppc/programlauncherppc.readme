@@ -1,0 +1,43 @@
+Short: Launches Programs from a GUI.  Source included.
+Author:    Jim Steichen (jimbot@frontiernet.net)
+Uploader:  Jim Steichen (jimbot@frontiernet.net)
+Type:      dev/src
+Version:   1.0
+Requires:  C-Compiler of some sort (SAS-C (or gcc) recommended).
+
+DESCRIPTION
+    ProgramLauncher is a GUI for launching prgorams from Workbench,
+    similar to AmiDock (just not as complicated).  This program has NOT
+    been tested with SAS-C or 680x0 processors.  It does work with
+    the AmigaOne PowerPC & AmigaOS4 & gcc V2.95.3, which in my estimation
+    is a more difficult platform to work with since up-to-date documentation 
+    is sparse & gdb is NOT working in my setup.  Complete amigaguide 
+    documentation included.
+    
+HISTORY
+    Jan-30-2005 - Created this file.
+
+COPYRIGHT
+    ProgramLauncher.c Jan-30-2005(C) by J.T. Steichen, All Rights Reserved.
+    You may not modify the source code.  You can use parts of it in your own
+    code, but I wish to keep control of the program in its entirety (don't
+    you have better things to do than re-invent this wheel??).
+    
+NOTES
+    ToolTypes:
+
+        STARTUPFILE      = ProgramLauncher:LauncherStart.ini
+        AMIPREFSFILENAME = System:Prefs/Env-Archive/Sys/AmiDock.amiga.com.xml
+        TOOLEDITOR       = ToolTypesEditorPPC
+        HELPVIEWER       = System:Utilities/MultiView
+
+    Program set up to compile with gcc & AmigaOS4 also.
+
+    $VER: ProgramLauncher.c 1.0 (Jan-30-2005) by J.T. Steichen
+
+AUTHOR
+    James T. Steichen
+    2217 N. Tamarack Dr.
+    Slayton, Mn. 56172-1155, USA
+    jimbot@frontiernet.net
+

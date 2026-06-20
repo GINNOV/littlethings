@@ -1,0 +1,150 @@
+#include <standard.disclaimer>
+
+Monam is written by and copyright Hisoft.
+
+This program ALTERS the original monam program and its libfile; MAKE BACKUPS
+BEFORE USING THIS PATCH!
+
+This has only been tested on one setup (mine!) and therefore I can't guarantee
+it works on anything else. However, there's no reason to assume it won't.
+(Tested on A1200, MC68030-50, 18MB RAM).
+
+The patch and the patched version of MonAm require 68020+ to operate. If anyone
+needs a 68000 version, mail me.
+
+You use this patch at your own risk. Any loss of data, hardware, hair or
+friends is entirely your problem. So there.
+
+The patch program is CLI-operation only. If you run it from workbench, it will
+die kicking and screaming.
+
+-----------------------------------------------------------------------
+
+This program patches Hisoft's Monam 3.06 debugger so that it will recognise
+*any* library you have an *_lib.fd file for.
+
+Requirements
+¯¯¯¯¯¯¯¯¯¯¯¯
+This patch (monampatch2) requires:
+ - Monam 3.06
+ - 68020 or better
+ - An assign to the directory you keep your .fd files in  as "FD:".
+
+You may need to rename some of the fd files so that their name matches exactly
+the library name. For example, the .fd for 'workbench.library' is called
+'wb_lib.fd' by default. This would make monam try and use 'wb.library', which
+would be wrong; the file should be renamed to 'workbench_lib.fd'.
+
+Most *.fd files should be catered for including libraries, devices and
+resources.
+
+
+Method
+¯¯¯¯¯¯
+First, if you have not already done so, run the 'monam.patch' program. This
+modifies the original Monam 3.06 program to a new standard, recognising 16
+libraries.
+The 'monam.patch' program has separate documentation since it is a modified
+version of a program written by someone else which I uploaded separately a
+while back - it's in the 'monampatch.lha' archive (included, just in case).
+
+This second part can be done every time you get a new *_lib.fd file.
+-------
+Make the assign to your fd directory.
+   ie. "assign FD: Work:Includes/fd"
+
+Copy the version of monam created by 'monam.patch' to RAM:
+   ie. "copy Work:Devpac3/monam ram:"
+
+Run "monam.patch2"
+   ie. "monam.patch2" (obvious, or what?)
+
+This creates a new "ram:monam.libfile", copies "ram:monam" to "ram:monam.old"
+and further modifies "ram:monam" to read the new "monam.libfile".
+
+Assuming nothing went wrong, copy the files back into place. Monam will search
+for the libfile in its current directory, then in LIBS:. Make sure you replace
+both versions of the libfile if necessary; an old libfile will probably give
+incorrect results with a new version of monam.
+
+If something did go wrong, the error reporting isn't exactly wonderful. Try
+running DosTrace or similar - this will show exactly where monampatch2 falls
+over. The most likely problem will be with a nonstandard *_lib.fd file; these
+should be in the format:
+
+##base (Name)Base
+
+and one or more groups of
+##bias n
+Function_Name
+Function_Name2
+...
+
+followed by
+##end
+
+Comments begin with an asterisk (*); the rest of the line is ignored.
+-------
+
+Other Stuff
+¯¯¯¯¯¯¯¯¯¯¯
+For each *.fd file scanned, the patch will attempt to identify whether it
+refers to a library, a class or a device. It does this by looking for
+appropriate include files, in your 'Include:' directory. If it can't find a
+file, it will assume the *.fd file is for a library.
+
+Because the original four libraries (exec,intuition,dos,graphics) that Monam
+knew about were always available, it was sufficient to scan the library list
+once at the start of the program. Now that many libraries are recognised, it
+may be that a library is first opened by the program you are debugging. In this
+case, Monam won't know about it and therefore won't recognise it. To solve
+this, use any of monam's requesters (ie help, load, save etc) - this now forces
+Monam to rescan the library list. Okay, so it's an illogical place to put it
+but it was the easiest at the time.
+
+And finally
+¯¯¯¯¯¯¯¯¯¯¯
+Please make sure you always have a backup copy of both the monam executable and
+the appropriate libfile just in case something goes wrong.
+
+
+List of FD Files tested
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+  amigaguide_lib.fd                asl_lib.fd
+  battclock_lib.fd                 battmem_lib.fd
+  bullet_lib.fd                    cardres_lib.fd
+  cia_lib.fd                       colorwheel_lib.fd
+  commodities_lib.fd               console_lib.fd
+  datatypes_lib.fd                 diskfont_lib.fd
+  disk_lib.fd                      dos_lib.fd
+  dtclass_lib.fd                   exec_lib.fd
+  expansion_lib.fd                 gadtools_lib.fd
+  graphics_lib.fd                  icon_lib.fd
+  iffparse_lib.fd                  input_lib.fd
+  intuition_lib.fd                 keymap_lib.fd
+  layers_lib.fd                    locale_lib.fd
+  lowlevel_lib.fd                  mathffp_lib.fd
+  mathieeedoubbas_lib.fd           mathieeedoubtrans_lib.fd
+  mathieeesingbas_lib.fd           mathieeesingtrans_lib.fd
+  mathtrans_lib.fd                 medplayer_lib.fd
+  misc_lib.fd                      muiclass_lib.fd
+  muimaster_lib.fd                 nonvolatile_lib.fd
+  octaplayer_lib.fd                potgo_lib.fd
+  powerpacker_lib.fd               ramdrive_lib.fd
+  realtime_lib.fd                  reqtools_lib.fd
+  rexxsyslib_lib.fd                timer_lib.fd
+  translator_lib.fd                utility_lib.fd
+  VMM_lib.fd                       workbench_lib.fd
+  xfdmaster_lib.fd                 xpkarchive_lib.fd
+  xpkmaster_lib.fd                 xpksub_lib.fd
+  ptplayer_lib.fd
+
+Ones that didn't work
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+  · ptplayer_lib.fd which didn't have an '##end' directive (I added it)
+  · muimaster_lib.fd which didn't have the '##end' on a new line (I changed it)
+
+New for V1.1
+¯¯¯¯¯¯¯¯¯¯¯¯
+Fixed a bug where datatypes.library would be identified as a class (because
+'Include:datatypes/datatypes_lib.i' existed).

@@ -1,0 +1,56 @@
+
+	VisTk - the Visualize ToolKit library
+	-------------------------------------
+
+	(Not to be confused with *serious*
+	projects with similar names or acronyms.
+	VisTk used to be called "VTK", but I
+	changed it for this public release to
+	somewhat reduce the risk of confusion.)
+
+
+In short, this is a widget toolkit originally designed
+for svgalib in 256 color mode. I created it because I
+needed something fast and simple to integrate simple
+GUIs with fast real time visualization. Over time, it
+has evolved a bit, but not much - it's been ported to
+GGI and SDL, but still supports only 256 colors (needs
+emulation provided by GGI or SDL, or the "real thing").
+
+AFAIK, it won't build for GGI or svgalib any more -
+the makefile doesn't check for them, but that's just
+the beginning. OTOH, who needs that when SDL wraps
+those and many more targets, adding lightning fast 256
+color emulation? Works for me.
+
+Either way, I'm not going to spend much more time with
+this crap. The design is somewhat broken, and the code
+could use a major overhaul. Don't use it for anything
+serious, unless you seriously feel like making it "Yet
+Another Toolkit"! I take no responsibility if you get
+seriously ill or injured while trying to figure out if
+you've found a bug or if you just don't understand how
+VisTk is supposed to work.
+
+Instead watch out for ChromeTk, if you're willing to
+wait for something that
+
+	1) is designed and hacked by me ("After
+	   seeing THIS!? Yeah, right!" ;-)
+
+	2) is designed specifically for flashy
+	   GUIs with lots of chrome and high
+	   quality rendering in games and
+	   multimedia applications.
+
+Otherwise, just use FLTK, GTK+, Qt or whatever - those
+are well tested, solid, high quality software, and are
+much more appropriate for common tasks than either my
+VisTk or my upcoming ChromeTk.
+
+Still, *if* you decide to play with VisTK, of course, I'll
+gratefully accept patches - I'm still using VisTK in some
+of my programs.
+
+
+		David Olofson <david@olofson.net>

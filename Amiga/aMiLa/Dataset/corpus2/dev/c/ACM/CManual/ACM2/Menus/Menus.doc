@@ -1,0 +1,988 @@
+7    MENUS
+
+7.1  INTRODUCTION
+
+If you have been working on the Amiga you have probably used
+menus a lot. They are flexible tools which are easy to access
+and are not complicated to set up. In this chapter we will look
+at how you can create your own menus, how to use all the
+special features offered by Intuition, and how the
+communication between the user and the menus is executed.
+
+
+
+7.2  MENU DESIGN
+
+You can connect a "menu strip" to every window, and when the
+user presses down the right mouse button, the active window's
+menu strip is shown at the top of the display.
+
+An example of a "menu strip":
+
+Project  Block  Windows  Search
+
+
+The user can now move the pointer to one of the menu headings,
+while still holding the right mouse button pressed, and that
+menu's "item box" is displayed.
+
+An example of a "item box":
+
+PROJECT  Block  Windows  Search
+|----------|
+| Open     |
+| Save     |
+| Save as  |
+| Print    |
+| Info     |
+| Quit     |
+|----------|
+
+
+The user can now choose the "menu item" he/she wants. The user
+does it by moving the pointer to the desired menu item, and
+releases the right mouse button. If the user wants he/she can
+pick several menu items at the same "menu action" by holding
+down the right mouse button as normal, but click with the left
+mouse button on each menu item the user wants to select. The
+user can also "drag" (holding both mouse buttons down) over
+several menu items if he/she wants to select all of them.
+
+You can connect a separate menu to an item if you want. That
+menu is usually referred as "submenu", and it consists of one
+or more "subitems".
+
+An Example of "subitems": (Note that the subitem box overlap
+the item box!)
+
+Project  Block  Windows  Search
+|----------|
+| Open     |
+| Save     |
+| Save a--------------
+| PRINT | to printer |
+| Info  | to a file  |
+| Quit  --------------
+|----------|
+
+
+
+
+7.3  HOW TO ACCESS MENUS FROM THE KEYBOARD
+
+If you want you can allow the user to select certain menu items
+from the keyboard. This is very handy if it is a command the
+user will often use, and you want to provide him/her with a
+shortcut. The user can access the menu item by pressing the
+right "Amiga key" + another key. For example, if the user should
+be able to access the menu item "Open" from the keyboard by
+pressing the "Amiga key" + "O", Intuition will automatically
+add the sign "[A] O" after the item's name:
+
+PROJECT  Block  Windows  Search
+|------------|
+| Open [A] O |
+| Save       |
+| Save as    |
+| Print      |
+| Info       |
+| Quit       |
+|------------|
+
+Your program will not notice any difference between a normal
+menu access, and a shortcut.
+
+Remember to give enough space on the right side of the item
+box, so the Amiga character + sign will fit. If the item box
+was before 100 pixels wide you can set the width to 100 +
+COMMWIDTH, and everything will fit in nicely. (COMMWIDTH is a
+constant declared in the intuition.h file.) If the window is
+connected to a low-resolution screen, use the constant
+LOWCOMMWIDTH instead.
+
+
+
+7.4  MENU ITEMS
+
+There exist two different types of menu items:
+  - Action items
+  - Attribute items
+
+Action items can be selected over and over again, and every
+time they are selected they will send your program a message.
+
+Attribute items on the other hand can only be selected once,
+and once they have been selected they need to be deselected
+before they can be selected again. The only way to deselect an
+Attribute item is to mutual exclude them (explained later in
+this chapter).
+
+When an attribute item is selected Intuition will put a small
+checkmark, [v], before the item's name. If you want to use your
+own designed checkmark instead of the default one, you set the
+CheckMark pointer in your NewWindow structure to point to an
+Image structure which you have declared and initialized as
+desired.
+
+If you use any attribute item in your menu you need to leave
+enough space at the left side of the box for the checkmark. If
+you use the default checkmark you can move the text in the menu
+CHECKWIDTH amount of pixels to the right. (CHECKWIDTH is a
+constant declared in the intuition.h file.) If the window is
+connected to a low-resolution screen (320 pixels wide), you
+should use the constant LOWCHECKWIDTH instead of CHECKWIDTH.
+
+
+
+7.5  MUTUAL EXCLUDE
+
+This special and very useful function applies only on attribute
+items. The idea with mutual exclude is that when the user
+selects a certain item, some other attribute items are
+deselected automatically. For example, you are writing a
+wordprocessor and the user should be able to print the text as
+normal (plain) or with some special style (Bold, Underline or
+Italic). The user would then only be allowed to select Plain or
+one or more of the other styles (Bold and underlined for
+example). If the user selects Plain, all other styles should be
+deselected (mutual excluded). If the user on the other hand
+selects Bold, Underline or Italic the Plain item should be
+deselected.
+
+Mutual exclude works like this:
+
+1. If the flag CHECKIT (see the MenuItem structure) is not set,
+   the item is not an attribute item, it is an action item, and
+   mutual exclude will have no effect on this item.
+
+2. If the flag CHECKIT is set, the item is an attribute item,
+   and Intuition will make sure that the CHECKED flag is not
+   set. If it is, Intuition will automatically remove it, and
+   the item is unselected.
+
+
+Every item has a MutualExclude field in which you can specify
+which items should be deselected when this item is activated.
+The first bit in the field refers to the first item in the item
+list, the second bit to the second item and so on.
+
+In our previous example we would set the Plain item's
+MutualExclude field to 0xFFFFFFFE (0xFFFFFFFE is equal to
+11111111111111111111111111111110). This would mutual exclude
+all items except the first one. (Plain is the first item in the
+list, and should of course not be mutual excluded.)
+
+The other items (Bold, Underline and Italic) should have their
+field set to 0x00000001 (0x00000001 is equal to
+00000000000000000000000000000001). This would only mutual
+exclude the first item (the Plain item).
+
+
+
+7.6  OPEN A MENU
+
+If you want to attach a menu strip to a window you need to:
+
+1. Declare and initialize one or more Menu structures. The Menu
+   structures should be linked together, and each Menu
+   structure has its own list of items. Each Menu structure
+   represent one "menu heading"
+
+2. Declare and initialize one or more MenuItem structures which
+   are connected to the Menu structures. Each MenuItem
+   structure represent one item. You can connect a list of
+   "subitems" to an Item structure if you want. (Subitems use
+   the same data structure as normal items.)
+
+3. Call the function SetMenuStrip(). Important, before you
+   close the window, or change the "menu strip" you must
+   disconnect the menu from the window. You do it by calling
+   the function ClearMenuStrip().
+
+
+
+7.6.1  INITIALIZE A MENU STRUCTURE
+
+The Menu structure look like this:
+
+struct Menu
+{
+  struct Menu *NextMenu;
+  SHORT LeftEdge, TopEdge, Width, Height;
+  USHORT Flags;
+  BYTE *MenuName;
+  struct MenuItem *FirstItem;
+  SHORT JazzX, JazzY, BeatX, BeatY;
+};
+
+NextMenu:   Pointer to the next Menu structure in the menu
+            strip list. The last Menu structure in the list
+            must have the NextMenu set to NULL.
+
+LeftEdge:   X position of the menu.
+
+TopEdge:    Y position of the menu. For the moment this field
+            is unused since all menus are positioned at the top
+            of the display. Set it to 0.
+
+Width:      The width of the menu.
+
+Height:     The height of the menu. For the moment this field
+            is unused since all menus are as high as the height
+            of the title bar of the screen. Set it to 0.
+
+Flags:      There exist only two different flags for the moment:
+
+            MENUENABLED: If this flag is set the menu is
+                         enabled, and the user can select
+                         items from it. If it is not set, the
+                         menu is ghosted and the user can not
+                         select any items from it.
+                         
+                         If you want the menu to be enabled
+                         when you submit it to Intuition you
+                         should set this flag. You can later
+                         change the status by calling the
+                         functions OnMenu() and OffMenu().
+
+            MIDRAWN:     This flag is set by Intuition when
+                         this menu is displayed to the user.
+
+MenuName:   Pointer to a NULL-terminated string. The text will
+            appear in the menu box at the top of the screen.
+
+FirstItem:  Pointer to the first MenuItem in the item list.
+
+These funny-named variables are for internal use only:
+
+JazzX, JazzY, BeatX, BeatY:  Used by Intuition. Set to 0.
+
+
+Here is an example of how to declare and initialize a Menu
+structure:
+
+struct Menu my_menu=
+{
+  NULL,        /* NextMenu, no other menu structures   */
+               /* connected.                           */
+  0,           /* LeftEdge, 0 pixels to the right.     */
+  0,           /* TopEdge, for the moment ignored by   */
+               /* Intuition. Set to 0.                 */
+  60,          /* Width, 60 pixels wide.               */
+  0,           /* Height, for the moment ignored by    */
+               /* Intuition. Set to 0.                 */
+  MENUENABLED, /* Flags, this menu should be enabled.  */
+  "Project",   /* MenuName, the title of the menu.     */
+  &first_item, /* FirstItem, pointer to the first item */
+               /* in the list.                         */
+
+  0, 0, 0, 0   /* JazzX, JazzY, BeatX, BeatY           */
+};
+
+
+
+7.6.2  INITIALIZE A MENUITEM STRUCTURE
+
+The MenuItem structure look like this:
+
+struct MenuItem
+{
+  struct MenuItem *NextItem;
+  SHORT LeftEdge, TopEdge, Width, Height;
+  USHORT Flags;
+  LONG MutualExclude;
+  APTR ItemFill;
+  APTR SelectFill;
+  BYTE Command;
+  struct MenuItem *SubItem;
+  USHORT NextSelect;
+};
+
+NextItem:      Pointer to the next MenuItem structure in the
+               item list. The last item should have its
+               NextItem field set to NULL.
+
+LeftEdge:      X position of the item's select box relative to
+               the LeftEdge of the Menu structure.
+
+TopEdge:       Y position of the item's select box relative to
+               the topmost position allowed by intuition. The
+               topmost position is automatically calculated by
+               Intuition which examines the font size, how many
+               items above etc. Set TopEdge to 0 in order to
+               select the topmost position.
+
+Width:         The width of the item's select box.
+
+Height:        The height of the item's select box.
+
+Flags:         Here are the flags you and Intuition can use:
+
+               CHECKIT:     Set this flag if you want the item
+                            to be an attribute item, else it
+                            will be an action item. If you set
+                            this flag Intuition will put the
+                            small checkmark in front of the
+                            itmetext when this item is
+                            selected, so make sure there is
+                            enough space for it.
+
+               CHECKED:     If the item is an attribute item
+                            (the CHECKIT flag is set), this
+                            flag is set by Intuition when the
+                            item is selected by the user. The
+                            flag is also automatically removed
+                            by Intuition when this item is
+                            mutual excluded.
+
+                            You can set this flag yourself
+                            before you submit the menu strip to
+                            Intuition, if you want the item to
+                            be initially selected. 
+
+               HIGHITEM:    The item will be highlighted, and
+                            this flag set, when the user moves
+                            the pointer over the item's select
+                            box.
+                            
+                            You need to set one of the
+                            following four flags which will
+                            tell Intuition what kind of
+                            highlighting you want:
+               
+                            HIGHCOMP:  Complement the colours
+                                       of all the pixels in the
+                                       item's select box.
+
+                            HIGHBOX:   Draw a box around the
+                                       item's select box.
+
+                            HIGHIMAGE: Display an alternative
+                                       Image or Text.
+                                       
+                            HIGHNONE:  No highlighting.
+
+               ITEMENABLED: If this flag is set the item is
+                            enabled, and the user can select
+                            it. If this flag is not set, the
+                            item is ghosted and the user can
+                            not select it.
+                         
+                            If you want the item to be enabled
+                            when you submit it to Intuition you
+                            should set this flag. You can later
+                            change the status by calling the
+                            functions OnMenu() and OffMenu().
+
+               ITEMTEXT:    If the item is rendered with text
+                            you should set this flag. Intuition
+                            will then expect ItemFill and
+                            SelectFill to point to IntuiText
+                            structures. If this flag is not set
+                            the item will be rendered with an
+                            image, and Intuition will expect
+                            ItemFill and SelectFill to point to
+                            Image structures.
+
+               COMMSEQ:     If the item also should be
+                            accessible from the keyboard you
+                            need to set this flag. Remember to
+                            tell Intuition which key should be
+                            pressed together with the "Amiga
+                            key" in order to select the item.
+                            You do it by giving the variable
+                            Command the desired character.
+
+               ISDRAWN:     This flag is set by Intuition when
+                            this item's subitems are displayed,
+                            and cleared when not.
+
+MutualExclude: This variable will tell Intuition which
+               attribute items should be mutual excluded
+               (deselected when this item is selected). The
+               first bit refers to the first item in the active
+               list (item list or subitem list), the second bit
+               refers to the second item and so on. For
+               example:
+               
+               The number 0x0000000B (hexadecimal) is equal to
+               00000000000000000000000000001011 (binary), and
+               Intuition would therefore try to mutual exclude
+               the first, the second and the fourth item.
+
+ItemFill:      Pointer to an Image structure (the ITEMTEXT flag
+               not set) or to an IntuiText structure (the
+               ITEMTEXT flag set), which will be used by
+               Intuition to render this item.
+
+SelectFill:    Pointer to an Image structure (the ITEMTEXT flag
+               not set) or to an IntuiText structure (the
+               ITEMTEXT flag set), which will render this item
+               when it is highlighted. (This field is only used
+               if the flag HIGHIMAGE is set.)
+
+Command:       If the user should be able to access this item
+               from the keyboard, you need to tell Intuition
+               which key should be used. This field should
+               therefore contain the desired character.
+               (Remember to set the flag COMMSEQ in the Flags
+               field.)
+
+SubItem:       Pointer to a subitem list if there exist on,
+               else NULL. If this item is already a subitem,
+               this field is ignored by Intuition. (Remember,
+               the subitem list consists of a linked list of
+               MenuItem structures.)
+
+NextSelect:    This field is set by Intuition and will contain
+               a special number if more items after this one
+               was selected at the same menu event, else it
+               will contain MENUNULL. (This will be discussed
+               later in the chapter.) Set it to MENUNULL.
+
+
+Here is an example of how to declare and initialize a MenuItem
+structure:
+
+struct MenuItem my_first_item=
+{
+  &my_second_item,   /* NextItem, pointer to the next item   */
+                     /* in the list.                         */
+  0,                 /* LeftEdge, 0 pixels to right.         */
+  0,                 /* TopEdge, the topmost position.       */
+  150,               /* Width, 150 pixels wide.              */
+  10,                /* Height, 10 lines high.               */
+  CHECKIT|           /* Flags, an attribute item.            */
+  CHECKED|           /*        should initially be selected. */
+  COMMSEQ|           /*        accessible from the keyboard. */
+  HIGHCOMP|          /*        complement the colours when   */
+  ITEMENABLED,       /*        highlighted. The item should  */
+                     /*        be enabled. Not ghosted.      */
+  0x00000037,        /* MutualExclude, deselect if possible  */
+                     /* item: 1, 2, 3, 5 and 6.              */
+  &my_image          /* ItemFill, pointer to an Image        */
+                     /* structure used to render the item.   */
+                     /* Since the flag ITEMTEXT was not set, */
+                     /* Intuition will assume that this is a */
+                     /* pointer to an Image structure, and   */
+                     /* not a pointer to an IntuiText        */
+                     /* structure.                           */
+  NULL,              /* SelectFill, NULL since we complement */
+                     /* the colours instead of displaying an */
+                     /* alternative image.                   */
+  'O',               /* Command, the character which should  */
+                     /* be pressed together with the "Amiga  */
+                     /* key" in order to execute the         */
+                     /* shortcut.                            */
+  NULL,              /* SubItem, this item has no subitems   */
+                     /* connected to it.                     */
+  MENUNULL           /* NextSelect, set later by Intuition.  */
+};
+
+
+
+7.6.3  HOW TO SUBMIT AND REMOVE A MENU STRIP TO/FROM A WINDOW
+
+Once you have declared and initialized the necessary Menu and
+MenuItem structures and linked them together you only need to
+call the function SetMenuStrip(), and the menu strip is
+connected to your window. Remember that you need to first open
+the window, before you can submit a menu strip to the window.
+
+If you have a pointer to an already opened window, my_window,
+and a pointer to the first Menu structure in your list,
+my_first_menu, you attach the menu strip like this:
+
+  SetMenuStrip( my_window, my_first_menu );
+
+
+If you want to change a menu strip which is already attached to
+a window you first need to remove it. You do it by calling the
+function ClearMenuStrip(). You can then change what ever you
+want to change, and attach it once again.
+
+To remove a menu strip from a window, you only need a pointer
+to that window, eg my_window, and then call the function
+ClearMenuStrip() like this:
+
+  ClearMenuStrip( my_window );
+
+
+If a menu strip is connected to a window, and you want to close
+that window, you should first remove the menu. If your program
+does not remove the menu strip before it closes the window,
+there is a risk that the user has activated the menu, and you
+would end up with a nice system crash. So, to be on the safe
+side, always call the function ClearMenuStrip() before you
+close a window which has a menu strip connected to it.
+
+
+
+7.7  SPECIAL IDCMP FLAGS
+
+There exist two special IDCMP flags which are close related to
+menus. They are MENUPICK and MENUVERIFY. The IDCMP flag
+MENUPICK tells your program that the user has picked zero or
+more items from a menu. MENUVERIFY allows your program to
+finish off something before the menu is displayed, and you can
+even abort the whole menu operation if you want.
+
+
+
+7.7.1  MENUPICK
+
+If you want your program to receive a message every time the
+user has picked zero or more items/subitems from the menu, you
+need to set the flag MENUPICK in the IDCMPFlags field in your
+NewWindow structure. You can then handle this message as normal
+IDCMP messages. (See chapter 8 IDCMP for more information about
+IDCMP messages.)
+
+Once you receive a MENUPICK message you need to check if any
+items were selected. The Code field of the IntuiMessage
+structure will contain a special code number ("Menu Number")
+which we can examine in order to see which item was selected.
+The menu number is equal to MENUNULL if no item was selected.
+Use the function ItemAddress() with a pointer to the menu strip
+and the menu number as parameters, and it will return the
+address of the selected item.
+
+The problem which will arise is that the user can select
+several items during one single menu operation, and your
+program needs to check them all. There is however an easy
+solution for this problem. If an item was selected, we can
+examine the NextSelect field of that item's structure, and that
+number is either MENUNULL (no more items selected), or another
+special menu number. (If it was not equal to MENUNULL you
+should again call the function ItemAddress() so you get a
+pointer to the second item's structure, and you should then
+examine the NextSelect field of that structure and so on...).
+
+Here is a fragment of a program which handles MENUPICK event:
+
+if( class == MENUPICK )
+{
+  /* The user has released the right mouse button. */
+  
+  /* The variable menu_number is initialized with the code */
+  /* value:                                                */
+  menu_number = code;
+  
+  /* As long as menu_number is not equal to MENUNULL we */
+  /* stay in the while loop: */
+  while( menu_number != MENUNULL )
+  {
+    /* Get the address of the item: */
+    item_address = ItemAddress( &first_menu, menu_number );
+  
+    /* Process this item... */
+    
+    /* Get the following item's menu number: */
+    menu_number = item_address->NextSelect;
+  }
+  
+  /* All items which were selected has been processed! */
+}
+
+
+If you have a menu number you can use Intuitions three macros
+to check which menu/item/subitem was selected. They all return
+0, if it was the first menu/item/subitem in the list, 1 if it
+was the second and so on.
+
+MENUNUM( menu_number ); Is equal to 0 if the item was selected
+                        from the first menu, 1 if it was from
+                        the second and so on. It is equal to
+                        NOMENU if the user did not select any
+                        item from the menus.
+
+ITEMNUM( menu_number ); Is equal to 0 if the firs item was
+                        selected in this item list, 1 if it was
+                        the second and so on. It is equal to
+                        NOITEM if the user did not select any
+                        item.
+
+SUBNUM( menu_number );  Is equal to 0 if it the firs subitem
+                        was selected in this subitem list, 1 if
+                        it was the second and so on. It is
+                        equal to NOSUB if the user did not
+                        select any subitem.
+
+
+
+7.7.2  MENUVERIFY
+
+The MENUVERIFY message tells your program that the user has
+pressed the right mouse button, and a menu will be activated.
+However, the menu strip will first be activated when you
+program has replied, and you can therefore, thanks to this
+warning, wait with the menu event for a while, or even stop it
+totally, if necessary.
+
+If you want your program to receive a message every time the a
+menu will be activated you need to set the flag MENUVERIFY in
+the IDCMPFlags field in your NewWindow structure. The MENUVERIFY
+flag acts like the REQVERIFY flag for requesters.
+
+Here is an example on how your program should handle this
+verification message, and how you can cancel a menu operation:
+
+/* Wait until we receive one or more messages: */
+Wait( 1 << my_window->UserPort->mp_SigBit );
+
+/* As long as we can collect messages successfully, we will */
+/* stay in this while loop:                                */
+while(my_message = GetMsg( my_window->UserPort ));
+{
+  /* After we have collected the message we can read it,  */
+  /* and save any important values which we maybe want to */
+  /* check later:                                         */
+  class = my_message->Class;
+  code = my_message->Code;
+
+
+  /* Before we reply we need to see if we have received a */
+  /* MENUVERIFY message:                                  */
+  
+  if( class == MENUVERIFY )
+  {
+    /* Yes, we have received a MENUVERIFY message!          */
+    /* The user wants to activate a menu, but the problem   */
+    /* is that we do not know if it is our window's menu    */
+    /* that will be activated, or some other window's menu. */
+    /* We can however check it by examining the Code field  */
+    /* of the message. If it is equal to MENUWAITING, it    */
+    /* means that it is not your window's menu that will be */
+    /* activated, but if Code is equal to MENUHOT it means  */
+    /* it is is your window's menu that will be activated!  */
+    
+    if( code == MENUWAITING )
+    {
+      /* It is not your window's menu that will be activated! */
+      
+      /* Your program can take a pause if necessary. You  */
+      /* maybe want to finish of with some drawings, so   */
+      /* your program does not trash any menus. This is   */
+      /* especially important if you are using the low-   */
+      /* level graphics routines since they do not bother */
+      /* about, menus etc, and will draw over and destroy */
+      /* anything in their way.                           */
+      
+      /* Once the program is ready it should reply the */
+      /* message, and the menu will be activated. */
+    }
+    else
+      if( code == MENUHOT )
+      {
+        /* It is your window's menu that will be activated!  */
+        
+        /* You can now take a pause and finish of with       */
+        /* something before you let Intuition activate the   */
+        /* menu, or you can even stop the whole menu         */
+        /* operation if necessary. If you are writing a      */
+        /* paint program you maybe only want the user to be  */
+        /* able to activate the menu if the pointer is at    */
+        /* the top of the display. That would mean that the  */
+        /* user can draw with the right mouse button, and    */
+        /* when the user wants to make a menu choice, he/    */
+        /* she simply moves the pointer to the top of the    */
+        /* display, and then presses the right mouse button. */
+        
+        /* We will now check if the pointer is somewhere at  */
+        /* the top of the display:                           */
+        if( my_window->MouseY < 10)
+        {
+          /* The Y coordinate of the pointer is at least */
+          /* less than 10 lines below the TopEdge of the */
+          /* window.                                     */
+        
+          /* The menu operation should continue as soon  */
+          /* as possible!                                */
+        }
+        else
+        {
+          /* The pointer is below the Title bar of the */
+          /* window! Cancel the whole menu operation!  */
+          
+          /* To cancel a menu operation you need to change   */
+          /* the Code field to MENUCANCEL. IMPORTANT! Do not */
+          /* change the code variable since it is just a     */
+          /* copy of the real Code value. What we need to do */
+          /* is to change the real value, and that is still  */
+          /* OK since we have not replied yet.               */
+
+          my_message->Code=MENUCANCEL;
+        }
+      }
+  }
+
+  /* After we have read the message we reply as fast as    */
+  /* possible: REMEMBER! Do never try to read or change a  */
+  /* message after you have replied! Some other process is */
+  /* maybe using it.                                       */
+  ReplyMsg( my_message );
+
+
+If you set the RMBTRAP flag in your NewWindow's Flags field you
+tell Intuition that you do not want to use any menus at all for
+this window. Your program could then use the right mouse button
+for something else. (See chapter 8 IDCMP for more information
+about RMBTRAP.)
+
+
+
+7.8  MENU NUMBERS
+
+Here is a description of how the "menu numbers" actually work.
+(This can change later so do not calculate anything yourself,
+let Intuition's macros do it instead.)
+
+The menu number is a 16-bit variable, where the first five bits
+are used for the menus, the following six bits are used for the
+items, and the last five bits are used for the subitems:
+
+c c c c c b b b b b b a a a a a
+|         |           |
+|         |           > Menu
+|         > Item
+> SubItem
+
+This means the Intuition can "only" handle up to 31 Menus, each
+with up to 63 Items, where each item can have up to 31
+SubItems. I do not think this will be any restrictions for your
+program.
+
+If a field is equal to 0 it means the first menu/item/subitem,
+if it is equal to 1 it means the second and so on. If all bits
+are on it means that no menu/item/subitem was selected. See
+following example:
+
+The menu number 0xF803 means:
+
+No SubItem, the first item, from the fourth menu.
+0xF803 (h) = 1111 1000 0000 0011 (b)
+
+Menu number  11111 000000 00011  (b)
+             |     |      |
+             |     |      >  00011 =  3 = fourth Menu
+             |     >        000000 =  0 = first Item
+             >               11111 = 31 = NOSUB
+
+To calculate this you should use Intuition's macros:
+
+MENUNUM( 0xF803 ) == 3  the fourth menu.
+ITEMNUM( 0xF803 ) == 0  the first item.
+SUBNUM( 0xF803 )  == 31 (NOSUB).
+
+
+It sometimes happens that you want to go the other way, and
+calculate your own menu number. You should then use the macros
+SHIFTMENU, SHIFTITEM and SHIFTSUB which does the opposite of
+MENUNUM etc. If you are going to use the functions OnMenu() and
+OffMenu() (explained later), you need to send a menu number as
+one of the parameters. If you for example want to "ghost" the
+second item in the third menu, you calculate the menu number
+like this:
+
+menu_number = SHIFTMENU(2) + SHIFTITEM(1) + SHIFTSUB(NOSUB);
+              [third menu]   [second item]  [no subitem]
+
+
+
+7.9  FUNCTIONS
+
+Here are some commonly used function which affects menus:
+
+SetMenuStrip()
+
+  This function connects a menu strip to a window. Remember
+  that the window must have been opened before you may connect
+  a menu strip to that window.
+
+  Synopsis:   SetMenuStrip( my_window, my_menu );
+
+  my_window:  (struct Window *) Pointer to the window which the
+              menu strip should be connected to.
+
+  my_menu:    (struct Menu *) Pointer to the first Menu
+              structure in the menu strip.
+
+
+ClearMenuStrip()
+
+  This function removes a menu strip from a window. Remember to
+  always remove the menu strip before you close the window, or
+  changes the menu strip.
+
+  Synopsis:   ClearMenuStrip( my_window );
+
+  my_window:  (struct Window *) Pointer to the window which
+              menu strip should be removed.
+
+
+ItemAddress()
+
+  This function returns a pointer to the Menu or Item
+  structure which is specified by the menu number.
+  
+  Synopsis:    ItemAddress( my_menu, menu_number );
+  
+  my_menu:     (struct Menu *) Pointer to the first Menu
+               structure in the menu strip.
+
+  menu_number: (USHORT) This menu number specifies a subitem/
+               item/menu.
+
+
+OffMenu()
+
+  This function can disable a subitem, an item or even a whole
+  menu. The image or text of the disabled items etc will be
+  "ghosted", and the user can not select them.
+  
+  Synopsis:    OffMenu( my_window, menu_number );
+
+  my_window:   (struct Window *) Pointer to the window which
+               the menu strip is connected to.
+  
+  menu_number: (USHORT) This menu number specifies what should
+               be disabled. Use the macros SHIFTMENU, SHIFTITEM
+               and SHIFTSUB to calculate the correct menu
+               number. If you just specify a menu, all items
+               to that menu will be disabled. If you specify
+               a menu and an item, that item will be disabled,
+               and so all subitems connected to it if there are
+               any.
+
+
+OnMenu()
+
+  This function can enable a subitem, an item or even a whole
+  menu. The image or text of the enabled items etc, will become
+  normal (not "ghosted") and the user can now select them.
+  
+  Synopsis:    OnMenu( my_window, menu_number );
+
+  my_window:   (struct Window *) Pointer to the window which
+               the menu strip is connected to.
+  
+  menu_number: (USHORT) This menu number specifies what should
+               be enabled. Use the macros SHIFTMENU, SHIFTITEM
+               and SHIFTSUB to calculate the correct menu
+               number. If you just specify a menu, all items to
+               that menu will be enabled. If you specify a menu
+               and an item, that item will be enabled, so all
+               subitem connected to it if there are any.
+
+
+
+7.10  MACROS
+
+Here are some commonly used macros:
+
+These three macros takes a "menu number" as the only
+parameter, and examines it. These are very handy if you have
+received a menu number, and you want to check which menu and
+which item was selected etc:
+
+MENUNUM( menu_number ); Is equal to 0 if the menu number
+                        specifies the first menu, 1 if it
+                        specifies the second, and so on. It is
+                        equal to NOMENU if it does not specify
+                        any menus at all.
+
+ITEMNUM( menu_number ); Is equal to 0 if the menu number
+                        specifies the first item, 1 if it
+                        specifies the second, and so on. It is
+                        equal to NOITEM if it does not specify
+                        any items at all.
+
+
+SUBNUM( menu_number );  Is equal to 0 if the menu number
+                        specifies the first subitem, 1 if it
+                        specifies the second, and so on. It is
+                        equal to NOSUB if it does not specify
+                        any subitems at all.
+
+
+These three macros does the opposite of the first three. With
+help of these macros you can make your own menu number just by
+specifying which menu, item and subitem you want.
+
+SHIFTMENU( menu );      Is equal to a menu number which
+                        specifies this menu. ("menu" is a value
+                        between 0 and 30, or NOMENU if no menu
+                        should be specified.)
+
+SHIFTITEM( item );      Is equal to a menu number which
+                        specifies this item. ("item" is a value
+                        between 0 and 62, or NOITEM if no item
+                        should be specified.)
+
+SHIFTSUB( sub );        Is equal to a menu number which
+                        specifies this subitem. ("sub" is a
+                        value between 0 and 30, or NOSUB
+                        if no subitem should be specified.)
+
+
+
+7.11  EXAMPLES
+
+Example1
+  This program opens a normal window to which we connect a menu
+  strip. The menu consists of four items: Plain, Bold,
+  Underlined and Italic. The user can select either Plain or a
+  combination of the other styles. (If the user selects Plain
+  all other modes will be mutual excluded, but if the user on
+  the other hand selects Bold, Underlined or Italic, only the
+  Plain option will be mutual excluded.
+  
+  This example also shows how a program should handle the IDCMP
+  flags, and how to collect several messages from one single
+  menu event.
+
+Example2
+  This example is very similar to Example1, but we have this
+  time put the edit styles in a subitem box which is connected
+  to the one and only item box called "Style".
+
+Example3
+  This example is very similar to Example2, but the user can
+  this time also access the subitems from the keyboard. For
+  example, to select Bold the user only needs to press the
+  right Amiga key [A] together with the "B" key.
+
+Example4
+  This program opens a normal window to which we connect a menu
+  strip. The menu consists of two items: Readmode and Editmode.
+  The readmode item is selected and ghosted, and when the user
+  selects the editmode item, it will become disabled (ghosted)
+  while the readmode item will be enabled (not ghosted). This
+  means that if the program is in "readmode", the user should
+  only be able to chose the "editmode", and v.v. The purpose
+  with this program is to show how you can use the OnMenu and
+  OffMenu functions in order to make an "user-friendly
+  interface".
+
+Example5
+  Exactly as Example1 except that we have changed Intuition's
+  checkmark to our own customized "arrow".
+
+Example6
+  This program opens a normal window to which we connect a menu
+  strip. The menu consists of six small dices which are all
+  action items. This example shows how you can use Images
+  inside a menu.
+
+Example7
+  This program opens a normal window to which we connect a menu
+  strip. The menu consists of one small action item with two
+  images.
+
+Example8
+  Same as Example1 except that we this time will verify any
+  menu operations. If the user tries to activate this program's
+  menu we check if the position of the pointer is somewhere at
+  the top of the window (less than 10 lines down). In that case
+  the menu operation will continue as normal, otherwise we
+  cancel the menu operation.

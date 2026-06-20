@@ -1,0 +1,637 @@
+ Copyright (c) 1992-1995 SAS Institute, Inc, Cary, NC
+ All Rights Reserved.
+
+ This document describes bug fixes and enhancements made in the 6.55
+ release of the SAS/C Development System for AmigaDOS.	To install
+ the 6.55 patch, you must have version 6.50 or 6.51 of the SAS/C
+ Development system installed.
+
+ Note that not all executables and shared libraries have been
+ modified. Those that have not been modified keep their old version
+ number (6.50 or 6.51).  This is normal.
+
+ Since technical support has been terminated for the Amiga C product,
+ the technical support avenues listed in your User's Guide are no
+ longer valid.	If you need help, post to the Internet newsgroup
+ comp.sys.amiga.programmer.  Knowledgeable SAS/C developers read
+ that group and may be able to help you.
+
+ Since the size of this archive is too big to fit on a standard floppy,
+ a small script has been included for those who wish to copy this
+ patch to floppies. To run this script, type:
+
+    execute Create_Install_floppies
+
+
+ ***************************** New Features ************************
+
+New development on the SAS/C system for AmigaDOS was terminated last
+summer, but between the release of Version 6.50 and the termination
+of development we did make some improvements to the system.  We have
+included these improvements in the 6.55 patch.
+
+1. SE will now optionally display a C file in multiple colors for the
+   different token types. You can select the foreground, background,
+   and style (bold, italic, underline or normal) for each of the
+   following nine catagories: Plain Text, C Comments, C++ Comments,
+   Double quoted strings, Single quoted strings, Numerical constants,
+   Keywords, Identifiers, and Preprocessor Statements.	There are two
+   new menu items to control this in the Configuration Window.
+
+      Colorize C Files	-  when set will cause all new files opened that
+	 end in .c* or .h to be colorized. Changing this will not effect
+	 any windows currently open in SE.
+
+      Colorize C Prefs	- will bring up another window and allow you to
+	 change the display attributes for any of the nine catagories.
+
+   There is also a new key command that will toggle the colorization
+   status of the current window.  Its abbreviation is CC. You can
+   bind it to any key that you like (enter CTRL-M, hit the key
+   combination, and type "CC" in the box just above the tab settings).
+
+2. A new profiler has been added that works like the SPROF profiler, but
+   provides a graphical user interface to the profiling process.  Its name
+   is GUIPROF; full source code and instructions are provided in the
+   SC:EXTRAS/GUIPROF directory.  The GUIPROF executable is available in
+   the SC:C directory.
+
+3. Example code is provided in SC:EXAMPLES/AMIPROC that forks a subprocess
+   with its own near data section.  This will allow you to share code
+   between processes but still use external data in each subprocess.
+
+4. Example code is provided in SC:EXAMPLES/MOUNT that mounts and
+   dismounts a file system node on the system list WITHOUT using the
+   AmigaDOS Mount command.  This will allow you to code a file system
+   as a regular C program, invokable from command line or workbench.
+   Since it's a regular process, it will be able to use printf() or
+   other library I/O and be easily debuggable with CPR in any usual
+   fashion.
+
+5.  Three new messages have been added to the C compiler: 188, 189,
+    and 113.
+
+    188 is produced if you attempt to define functions or data in a
+    header file while you are building a GST.
+
+    189 is produced if the GST you are using was built with different
+    options than the current option set.  189 is produced sometimes as
+    a warning and sometimes as an error; it is turned OFF by default.
+    If, for example, you use MATH=68881 and the GST was built with
+    MATH=STANDARD, you will get no message.  Enable the warning with
+    the STRICT or WARN=189 options to get a message for this case.
+
+    113 is produced if you use the "->" or "." operators incorrectly.
+    It is similar to message 12, "invalid structure reference", except
+    it gives more information about the operator involved and the type
+    you tried to use the operator with.
+
+    More information on these messages is available in the file
+    sc:help/scmsg.guide .
+
+6.  Built-in preprocessor symbols (like _SHORTINT, _UNSCHAR, etc.)
+    were not added to the GST in previous versions.  In 6.55, they
+    are added.	This is how the compiler detects option conflicts
+    as described above.  If you depend on these built-in symbols
+    for the various MATH= options, make sure you enable warning
+    189 so you don't end up with multiple definitions.  For example,
+    _M68881 and _IEEE could both end up defined for your code if
+    you created a GST with MATH=68881 and used MATH=IEEE on your
+    command line.
+
+6. The built-in memcpy function can copy certain structures more
+   efficiently now since the compiler retains more information on
+   the alignment requirements of the structures.  This also
+   benefits structure assignment and call-by-value.
+
+ ***************************** IMPORTANT ***************************
+
+0. For users who never applied the 6.51 patch:
+   The layout of bitfields was inadvertently changed between 6.0 and
+   6.50, which meant that structures containing bitfields were
+   incompatible between the two versions.  Bitfields now use
+   the 6.0 method, with the exception of bitfields of size :0.
+   :0 bitfields exhibited a bug in 6.0-6.3 and added extra unusable
+   bytes to the structure.  6.55 bitfields do not add these extra
+   bytes.  Note that the bitfields in 6.51 and 6.55 are identical;
+   this change only affects users upgrading from 6.50.
+
+1. The __stack external variable sets the minimum stack size for
+   your program, as documented in the Library Reference Manual and
+   elsewhere.  However, if you use it, you must set __stack to an
+   even multiple of 4 bytes or risk having your machine crash.
+
+2. Many users have inquired about the Quick Reference Guide for
+   6.50.  There is no new Quick Reference Guide in 6.50; the 6.0
+   guide is shipped to all new 6.50 customers, and customers who
+   are upgrading should continue to use their old Quick Reference
+   Guide.
+
+3. Many users have asked about disk 6 in the installation process.
+   Disk 6 is used only if you do the floppy installation; hard disk
+   users do not need this disk.
+
+4. The compiler now defines a preprocessor symbol __AMIGADATE__.
+   This preprocessor symbol resolves to a datestamp string in the
+   format required for the AmigaDOS VERSION command.  The format is
+   "(dd.mm.yy)", where dd is the day (1-31), mm is the month (1-12),
+   and yy is the year. __AMIGADATE__ is available from both C
+   and C++.  Version 6.51 had some bugs in the __AMIGADATE__
+   processing which have been fixed for this patch release.
+
+5. The macros for some functions defined in the C header files are
+   now not defined if compiling C++.  They conflicted with the names
+   of some member items of C++ classes in <iostream.h> or
+   <complex.h>. Problem functions are <string.h>/index(),
+   <math.h>/min(), max(), <fcntl.h>/open(), read(), write(),
+   close(), <stdlib.h>/abs().  Many of these have alternate names
+   using preceding underscores that can be used instead.
+
+6. The priority of the autoinit functions for utility.library and
+   the various Commodore math libraries were changed from 250
+   to 100 in versions 6.51 and 6.55.  This allows the autoinitializer
+   for the SPROF and GUIPROF profilers to use utility.library if it
+   is compiled with UTILLIB.
+
+7. Several users have reported a problem using fopen() to open
+   a "CON:" window. With the default AmigaShell, two windows will
+   be opened. It was not possible to fix this problem in the library,
+   because fopen() needs to do a Lock() to determine if the file exists
+   prior to doing the Open(). However, Lock() will not be called if "r+"
+   mode is used, and only one window will open. For example, the following
+   will only open one window:
+
+     fp = fopen("CON:", "r+");
+
+8. The source file _tzset.c has been added to the sc:source directory.
+   When compiled with no #defines, it will behave like the default
+   __tzset function in the libraries. If compiled with LESS_GETENV=1,
+   the getenv("TZ") will only be called once. This can be beneficial
+   for programs that call time() frequently, ie BBS programs. Be sure to
+   compile this file with the PARM=BOTH option.
+
+9. If you have problems running CPR from the workbench, check to see if
+   you are using a MagicWB icon for the 'Debug' icon.  If so, you need to
+   remove the '»»»» Icon by Martin Huttenloher ««««' ToolType from the
+   icon.  Use the Workbench "Icons/Information" menu option to remove this
+   ToolType.  CPR cannot work correctly with this ToolType in the icon.
+
+10. The C++ translator has some problems dealing with error situations
+    that arise after parse errors.  This can sometimes result in 
+    many enforcer hits.  We have found and fixed many of these problems, 
+    in many cases thanks to your error reports, but some problems no 
+    doubt remain.  The root cause is a fundamental difference in the 
+    way the Amiga operating system or Enforcer handles illegal memory 
+    accesses from the way the C++ translator's original target 
+    platform handles it.
+    
+    If you get a string of enforcer hits from C++, there will almost 
+    always be at least one error message generated.  Fix the first 
+    reported error and you will likely remove the Enforcer hits.
+
+===============================
+Documentation/Help File Changes
+===============================
+
+The Library Reference manual states for the forkl() routine that
+if the std_in field of the FORKENV structure is NULL, the current
+stdin will be used. This has been changed for 6.55 to an
+Open("*",...), so that a single program can call forkl several
+times.
+
+C++ error 1597 was not documented.  It is now documented in the file
+sc:help/scmsg.guide.
+
+The Library Reference manual incorrectly showed the strstream
+constructor as having a default value of ios::out for the third
+formal parameter mode. Please cross out the "= ios::out" in the
+strstream constructor prototype described on page 684 of the Library
+Reference manual. This occurs in two places on page 684, once under
+the Synopsis section and once under the Constructors section.  This
+has been corrected in the online sc_lib.guide file.
+
+The Library Reference manual descriptions of mkstemp() and mktemp()
+need to be changed on pages 349 and 351, respectively, to reflect
+the changes made in the header files. In both cases, the formal
+parameter, template should be be changed to template_arg.  This has
+been corrected in the online sc_lib.guide file.
+
+===============================
+List of Modified Files
+===============================
+
+The following files were modified during the 6.55 patch installation.
+
+These files should be version 6.55.
+
+sc/c/sc
+sc/c/scopts
+sc/c/sc5
+sc/c/cpr
+sc/c/cprx
+sc/c/cprk
+sc/libs/sc1.library
+sc/libs/sc2.library
+sc/libs/scgo.library
+sc/libs/scgst.library
+sc/libs/scpeep.library
+sc/libs/schi.library
+sc/libs/sccxx.library
+sc/c/slink
+sc/c/asm
+sc/c/omd
+sc/c/oml
+sc/c/scmsg
+sc/c/se
+sc/c/smake
+sc/c/scsetup
+sc/c/splat
+sc/c/grep
+sc/c/mkmk
+sc/c/tb
+sc/c/scompact
+sc/libs/sekeymap.library
+sc/extras/mkmk/gensmake.c
+sc/extras/mkmk/mkmk.c
+sc/source/c.a
+sc/source/cback.a
+sc/source/libinit.c
+sc/source/ovs.a
+sc/source/constructor.h
+sc/include/stdlib.h
+sc/include/constructor.h
+sc/include/fcntl.h
+sc/include/mffp.h
+sc/include/stdio.h
+sc/include/dos.h
+sc/include/ios1.h
+sc/include/datatypes/datatypesclass.i
+sc/include/datatypes/datatypesclass.h
+sc/include/exec/exec_lib.i
+sc/include/sys/commhuge.h
+sc/include/sys/dir.h
+sc/include/workbench/workbench.i
+sc/include/workbench/workbench.h
+
+These files were not changed for version 6.55 but were changed in 6.51,
+and will have a version of 6.51.
+
+sc/c/mcc
+sc/c/mln
+sc/c/cctosc
+sc/c/lntoslink
+sc/source/_fpinit.c
+sc/source/_main.c
+sc/source/autoopenfail.c
+sc/source/_iob.c
+sc/include/assert.h
+sc/include/math.h
+sc/include/string.h
+sc/include/unistd.h
+sc/include/functions.h
+sc/include/cxxinclude/iostream.h
+sc/include/sys/commwben.h
+
+The remaining files will still have a version number of 6.50.
+
+
+===============================
+Bug Fixes
+===============================
+
+This is a partial list of bugs fixed in version 6.55.  All repeatable code
+generation bugs, enforcer hits, and CXERRs have been fixed, with the
+exception of a couple in the sccxx.library that occur when it is given
+badly mangled input.  These bug fixes are not listed individually here.
+
+Since the list of bugs is not complete, please try any cases that failed
+before.  Your favorite bug may have been fixed anyway.
+
+-------------------------------------------------------------------------
+
+Yes, the __AMIGADATE__ macro is finally fixed.	__AMIGADATE__ had two
+problems in 6.51 (both related to the same cause).  First, the symbol
+had an extra '\0' at the end, so it didn't work in string concatenations;
+Second, the symbol trashed its own final double quote if the number
+for the current month was 10-12 and the day was 10-31.
+
+---
+
+A very long-standing bug in GSTs was found and squashed.  If you created
+a GST, then modified a header file, then deleted the .gst file from the
+disk but didn't flush the GST from memory, then attempted to rebuild the
+GST, the old GST remained in memory.  No new GST was created.  This has
+now been fixed.
+
+---
+
+The compiler was failing to produce an error or warning if the user
+attempted to define __inline functions in a header file while building
+a GST.	Error 188 was added.
+
+---
+
+The compiler was failing to produce an error or warning if the user built
+a GST with one set of options, then built a C file using that GST but with
+a different set of options.  Warning/Error 189 was added.  This message
+reports conflicts between the MATH=, SHORTINT, and UNSCHAR options.
+
+---
+
+The __FUNC__ built-in preprocessor symbol was being expanded to "" if
+PPONLY was used.  It is now not expanded with PPONLY.
+
+---
+
+The compiler did not produce warning 105, "no external symbols defined",
+if it encountered a prototype for an external function.  It now does so.
+
+---
+
+The compiler now suppresses warning 105 if the NOOBJNAME option is
+specified.  This allows you to build a GST with NOOBJNAME and not get
+the warning.
+
+---
+
+CPR left a lock on the current directory at exit.
+
+---
+
+The compiler now ignores 0x0D characters at the end of a line,
+as long as they are not in a string constant.  This allows you to port
+code for the IBM PC to the Amiga without stripping the CR-LF pair from
+the end of each line.
+
+---
+
+SPROF hung the machine if you tried to run two programs compiled with
+PROFILE at the same time.
+
+---
+
+The stat() family of functions did not do the correct time zone
+conversion.  They now do.
+
+---
+
+The autoinitializer for coverage analysis had the incorrect priority with
+earlier versions.  The priority is now 210, which should allow you to
+cover your C++ constructurs and any C autoinitializers with default
+priority.
+
+---
+
+An error message was added to detect the case of passing a pointer to a
+regargs function as a parameter to a function expecting a pointer to a
+stdargs function.
+
+---
+
+The library function dfind() had a bug in which a dfind on the current
+directory would unlock CurDir().
+
+---
+
+The prototype for opendir() in include:sys/dir.h was missing a 'const'
+keyword.
+
+---
+
+Could not set __stdiowin if compiling with MATH=8 and DATA=FAR.  The linker
+would give "Near reference to item not in near data section" errors.
+
+---
+
+In fcntl.h, the #defines for open, close, read, and write were surrounded
+with #ifndef __cplusplus statements.  This prevented a clash with the
+C++ iostreams library, which defines member functions of the same name.
+If you need to use the UNIX level 1 I/O functions from C++, use the
+double-underscore versions (__open, __close, __read, __write).
+
+---
+
+tmpfile() would not allow more than 99 accesses during a single program
+run, whether you closed any previously opened files or not.  It's supposed
+to allow 99 open files at one time.
+
+---
+
+The SC driver had a limit of 32 command-line options.  This limit has been
+removed.  SC now accepts any number of command-line arguments.
+
+---
+
+CPR had a limit of 1k on the path.
+
+---
+
+The cross-debugger sometimes crashed when using pipes.
+
+---
+
+CPR couldn't display far globals if they were merged into the near section
+by the linker.	This was actually a linker bug, and has been fixed.
+
+---
+
+ASM didn't warn for the invalid statement "add.b d5,a0", but instead
+generated incorrect code.
+
+---
+
+CPR sometimes skipped the first statement in main() when first coming up.
+This happened if the main() had no prolog, so it only occurs for simple
+functions compiled with NOSTACKCHECK.
+
+---
+
+ASM only put the base name of the file into the HUNK_NAME header.  This
+could cause confusion when SLINK tries to produce an error message, since
+SLINK assumes ".c" for the extension.
+
+---
+
+stat() could leave a lock on a file if CTRL-C is hit.
+
+---
+
+forkl() attempted to pass pr_COS to multiple CreateNewProc()s, which
+apparently fails even if you tell CreateNewProc() not to close them.
+Fixed by passing Open("*", ...) for std_in.
+
+---
+
+%p didn't work correctly in __builtin_printf with SHORTINT.
+
+---
+
+If a C++ file with a static class member was compiled from SE via the F4
+key, and the LINK option was set, and that static member was never defined
+in the source, SE would not report the link error to the user.	It would
+instead create an executable file that crashes when run.
+
+---
+
+The compiler issued an incorrect error message for pointer addition
+performed on a void **.  Example:   void **x;  x = x + 1;
+
+---
+
+Strange character appeared in SE if you set tab expansion on, then typed
+{
+}
+}
+
+---
+
+The value of HUGE_VAL was incorrect.  It has been fixed.
+
+---
+
+The %n argument to scanf didn't consider white space (tabs and spaces).
+
+---
+
+When scopts' window was on a public screen, the amigaguide help window
+was opened on the WorkBench screen instead of the public screen.
+
+---
+
+CPR didn't pass local ENV variables to the program being debugged.
+CPR now uses CreateNewProc() with AmigaDOS V2.0 and above.
+
+---
+
+Warning 74, "Initializer data truncated", was produced incorrectly when
+the only thing truncated was the trailing null byte.
+
+---
+
+The compiler could produce garbled error messages if a C file with invalid
+syntax that used a GST was compiled.
+
+---
+
+ASM didn't accept '|' for the bitwise OR operation, as do many other
+assemblers.  It now does.
+
+---
+
+The compiler couldn't print the value of a "static const double" if the
+STRINGMERGE option was used.
+
+---
+
+An empty macro caused ASM to give a "not enough memory" error.
+
+---
+
+The OPTALIAS option was not working correctly.
+
+---
+
+The "Undefined function called" requester was never produced for programs
+linked with SLINK in BATCH mode.  The program just returned.
+
+---
+
+The UNASSEMBLE command in CPR did not work, and did not return control to
+the user.
+
+---
+
+SMFIND did not use full pathnames for files when executed from the Shell.
+
+---
+
+When compiling with PROFILE, _PROLOG() and _EPILOG() calls were added to
+__interrupt functions.	This is no longer done, since interrupt functions
+have no business calling the profiler anyway.
+
+---
+
+strtod() failed if the first character of the string to be converted was
+a null byte.
+
+---
+
+In the include file INCLUDE:mffp.h, the definition of the "ceil" macro
+has been changed from SPFCeil(f) to SPCeil(f).
+
+---
+
+ALT-H to open an interlace screen in SE only opened an NTSC screen.  It
+now opens NTSC or PAL as appropriate.
+
+---
+
+ASM now accepts some 68040 and 68030 instructions that it previously did
+not accept.
+
+---
+
+If SCOPTS failed in its first attempt to open its window, it scanned the
+system fonts list twice (not just once) looking for a replacement font.
+This was very slow on some machines.
+
+---
+
+SCSETUP did not preserve the protection bits on files copied from
+SC:STARTER_PROJECT.
+
+---
+
+The SET command in CPR was broken for floats.
+
+---
+
+The MKMK utility crashed if run under OS 1.3 or earlier.  It now issues an
+error message and quits.
+
+---
+
+rawcon() now sends a message to the console task from the input file
+handler instead of the console task from the process structure.
+This allows it to work when input has been redirected to a console.
+
+---
+
+The PRELINK option of SLINK could not be used with files containing calls
+to C++ constructors/destructors or C autoinit/autoterm functions.  You
+would get multiply defined symbol errors from SLINK from ___ctors and
+___dtors.
+
+---
+
+printf() didn't handle "field.precision" properly for calls like
+printf("%5.d", 0);
+
+---
+
+If ASM was invoked from SC, and CPU=68020 or CPU=68030 was specified, ASM
+was invoked with "-m2 -m3" instead of just one or the other.
+
+---
+
+ASM gave a spurious warning "extraneous data on input line" if a comment
+followed the final END statement.
+
+---
+
+ASM failed to add a trailing '/' to -i paths like the C compiler does.
+
+---
+
+MKMK was putting the date and time it was compiled into the output
+smakefiles, rather than the date and time the smakefile was created.
+(Well, it worked when I tested it... right after compiling it.)
+
+---
+
+The qsort() function could take up lots of stack in 6.51 and previous
+versions.  The 6.55 version will always recurse on the smaller half of
+the list, therefore it does not take up nearly as much stack.
+
+---
+

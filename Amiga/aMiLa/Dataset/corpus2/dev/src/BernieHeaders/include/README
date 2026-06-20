@@ -1,0 +1,45 @@
+Short:    Boopsi, cross compiling and debug support macros
+Author:   bernie@cosmos.it (Bernardo Innocenti)
+Uploader: bernie@cosmos.it (Bernardo Innocenti)
+Type:     dev/src
+Version:  2.0
+
+ During the developement of my projects I've written some useful
+macros that simplify some common problems. The macros have eventually
+grown to full header files that I'm now using almost everywhere.
+
+ I've packaged all these headers in a distribution archive, in the hope
+that they will be useful to other programmers as well.
+
+
+ - CompilerSpecific.h
+	Defines wrappers for several compiler dependent constructs,
+	including function attributes and register specification for
+	function arguments. Supports SAS/C, gcc, EGCS, Storm C, Maxon C,
+	DICE and Aztec C.
+
+ - BoopsiStubs.h
+	Using these inline versions of the amiga.lib boopsi support functions
+	results in faster and smaller code against their linked library
+	counterparts. When debug is active, these functions will also
+	validate the parameters you pass in.
+
+ - BoopsiLib.h
+	Additional macros and inline functions for boopsi class developement.
+
+ - DebugMacros.h
+	Some handy debug macros which are automatically excluded when the
+	DEBUG preprocessor symbol isn't defined. To make debug executables,
+	you must link with debug.lib or any linker module containing a
+	kprintf()-like function.
+
+ - DiagnosticMacros.h
+	Some handy macros to dump some common system structs to the
+	debug console. Use DUMP_XXX(pointer) in your code to get a
+	detailed dump of the structure contents.
+
+ - ListMacros.h
+	Some handy macros for list operations. Using these macros is faster
+	than calling their exec.library equivalents, but they will eventually
+	make your code a little bigger and are also subject to common macro
+	side effects.

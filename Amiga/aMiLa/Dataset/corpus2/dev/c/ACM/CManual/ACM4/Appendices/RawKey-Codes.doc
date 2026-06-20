@@ -1,0 +1,137 @@
+C  SYSTEM DEFAULT CONSOLE KEY MAPPING
+
+Raw Key Code   Unshifted Default Value  Shifted Default Value
+
+00             `                        ~
+01             1                        !
+02             2                        @
+03             3                        #
+04             4                        $
+05             5                        %
+06             6                        ^
+07             7                        &
+08             8                        *
+09             9                        (
+0A             0                        )
+0B             -                        _
+0C             =                        +
+0D             \                        |
+0E             (undefined)              (undefined)
+0F             0                        0 (numeric pad)
+
+10             q                        Q
+11             w                        W
+12             e                        E
+13             r                        R
+14             t                        T
+15             y                        Y
+16             u                        U
+17             i                        I
+18             o                        O
+19             p                        P
+1A             [                        {
+1B             ]                        }
+1C             (undefined)              (undefined)
+1D             1                        1 (numeric pad)
+1E             2                        2 (numeric pad)
+1F             3                        3 (numeric pad)
+
+20             a                        A
+21             s                        S
+22             d                        D
+23             f                        F
+24             g                        G
+25             h                        H
+26             j                        J
+27             k                        K
+28             l                        L
+29             ;                        :
+2A             '                        "
+2B             (reserved)               (reserved)
+2C             (undefined)              (undefined)
+2D             4                        4 (numeric pad)
+2E             5                        5 (numeric pad)
+2F             6                        6 (numeric pad)
+
+30             (reserved)               (reserved)
+31             z                        Z
+32             x                        X
+33             c                        C
+34             v                        V
+35             b                        B
+36             n                        N
+37             m                        M
+38             ,                        <
+39             .                        >
+3A             /                        ?
+3B             (undefined)              (undefined)
+3C             .                        . (numeric pad)
+3D             7                        7 (numeric pad)
+3E             8                        8 (numeric pad)
+3F             9                        9 (numeric pad)
+
+40             SPACE      (20)          SPACE      (20)
+41             BACK SPACE (08)          BACK SPACE (08)
+42             TAB        (09)          TAB        (09)
+43             ENTER      (0D)          ENTER      (0D)
+                 (numeric pad)            (numeric pad)
+
+44             RETURN     (0D)          RETURN     (0D)
+45             ESC        (1B)          ESC        (1B)
+46             DEL        (7F)          DEL        (7F)
+47             (undefined)              (undefined)
+48             (undefined)              (undefined)
+49             (undefined)              (undefined)
+4A             -                        - (numeric pad)
+4B             (undefined)              (undefined)
+4C             UP ARROW    <CSI>A       UP ARROW    <CSI>T
+4D             DOWN ARROW  <CSI>B       DOWN ARROW  <CSI>S
+4E             RIGHT ARROW <CSI>C       RIGHT ARROW <CSI> A
+4F             LEFT ARROW  <CSI>D       LEFT ARROW  <CSI> @
+
+50             F1          <CSI>0~      F1          <CSI>10~
+51             F2          <CSI>1~      F2          <CSI>11~
+52             F3          <CSI>2~      F3          <CSI>12~
+53             F4          <CSI>3~      F4          <CSI>13~
+54             F5          <CSI>4~      F5          <CSI>14~
+55             F6          <CSI>5~      F6          <CSI>15~
+56             F7          <CSI>6~      F7          <CSI>16~
+57             F8          <CSI>7~      F8          <CSI>17~
+58             F9          <CSI>8~      F9          <CSI>18~
+59             F10         <CSI>9~      F10         <CSI>19~
+5A             (undefined)              (undefined)
+5B             (undefined)              (undefined)
+5C             (undefined)              (undefined)
+5D             (undefined)              (undefined)
+5E             (undefined)              (undefined)
+5F             HELP        <CSI>?~      HELP        <CSI>?~
+
+60             LEFT SHIFT               LEFT SHIFT
+61             RIGHT SHIFT              RIGHT SHIFT
+62             CAPS LOCK                CAPS LOCK
+63             CTRL                     CTRL
+64             LEFT ALT                 LEFT ALT
+65             RIGHT ALT                RIGHT ALT
+66             LEFT AMIGA               CLOSE AMIGA
+67             RIGHT AMIGA              OPEN AMIGA
+68             LEFT MOUSE BUTTON        LEFT MOUSE BUTTON
+69             RIGHT MOUSE BUTTON       RIGHT MOUSE BUTTON
+6A             MIDDLE MOUSE BUTTON      MIDDLE MOUSE BUTTON
+6B             (undefined)              (undefined)
+6C             (undefined)              (undefined)
+6D             (undefined)              (undefined)
+6E             (undefined)              (undefined)
+6F             (undefined)              (undefined)
+
+70 - 7F        (undefined)              (undefined)
+
+80-F8          UP TRANSITION            UP TRANSITION
+               (80 for 00, 81 for 01 ... F8 for 7F)
+
+F9             LAST KEYKODE BAD
+FA             KEYBOARD BUFFER OVERFLOW
+FB             (undefined)              (undefined)
+FC             KEYBOARD SELFTEST FAILED
+FD             POWER-UP KEY STREAM START
+FE             POWER-UP KEY STREAM END
+FF             MOUSE EVENT (mouse moved only, no button changed)

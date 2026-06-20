@@ -1,0 +1,1525 @@
+========================================================================
+  
+                         HCE version 1.0
+              C Compiler envirenment for the Amiga
+                         by Jason Petty.
+
+========================================================================
+
+                         Table of Contents
+
+          Disk Contents .............................. L30
+          Installation ............................... L188
+          Getting Started ............................ L239
+          Text Handling .............................. L292
+          File Requester ............................. L385
+          Menus ...................................... L442
+          Gadget Bar ................................. L771
+          Compiler ....................................L816
+          Compiler Options ........................... L893
+          Optimizer Options .......................... L1026
+          Assembler Options .......................... L1104
+          Linker Options ............................. L1170
+          Preferences ................................ L1337
+          Key Short Cuts ............................. L1417
+          Improvements ............................... L1503
+
+========================================================================
+
+************************************************************************
+*                           DISK CONTENTS                              *
+************************************************************************
+
+(ZC)   below  = came from the ZC distribution, from Fish disk 314.
+(HCC)  .....  = came from the HCC distribution, from Fish disk 508.
+(PDC)  .....  = came from the PDC distribution, from Fish disk 351.
+(info) .....  = An '.info' icon file exists with the same name.
+
+(Disk) HCE:
+
+          Drives_1 (info)    - Install Hce to a single drive amiga.
+          Drives_2 (info)    - Install Hce to a two drive amiga.
+          HD0 (info)         - Install Hce to a hard drive amiga.
+          Hce_1MB (info)     - Run Hce on a 1MB amiga from workbench.
+          Hce_1MB.script     - script used by above.
+          Hce_2MB (info)     - Run Hce on a 2MB amiga from workbench.
+          Hce_2MB.script     - script used by above.
+          LibSource.LZH      - Source to the C libraries in compressed form.
+          Readme.doc (info)  - Copyrights, Requirments and Introduction.
+
+          (Dir) bin/
+                   HCE   (ME/HCC) - The main Compiler/Editor program.
+                   TOP   (HCC)    - Optimizer
+                   A68K  (HCC)    - Assembler
+                   BLINK (HCC)    - Linker
+
+          (Dir)(ZC) include/clib/
+                    ar.h       - Archive header format
+                    assert.h
+                    basepage.h - Definitions for basepage header
+                    ctype.h    - Character classification and conversion
+                    errno.h    - System error codes
+                    fcntl.h
+                    limits.h   - Max size definitions for types
+                    macros.h   - Commonly used macros
+                    math.h     - Prototypes and definitions for math.lib
+                    setjmp.h   - Structure required for setjmp(),longjmp()
+                    stat.h
+                    stdarg.h
+                    stddef.h   - Standard definitions.(included by stdio.h)
+                    stdio.h    - Prototypes and definitions for stdio.lib
+                    stdlib.h   - Prototypes and definitions for misc.lib
+                    string.h   - Prototypes for string.lib
+                    time.h     - Time/Date related definitions.(misc.lib)
+                    types.h    - Type definitions.(VOID,ulong,ushort etc)
+
+          (Dir) Install/
+                   Drives1.script    - Used by Drives_1. see above.
+                   Drives2.script    - Used by Drives_2. see above.
+                   HardDrive0.script - Used by HD0. see above.
+ 
+          (Dir) (ME/ZC/PDC) lib/
+                   Ami.lib    - Kickstart release 2.04 Version of Amiga.lib
+                   Math.lib   - Library interface to Motorola fast floating
+                                point library supplied by Commodore.
+                   Misc.lib   - Contains main.c,envirenment.c etc.
+                   Stdio.lib  - Standard I/O functions, printf,scanf etc.
+                   String.lib - Many string related functions.
+                   begin.o    - Startup code.
+
+          (Dir) s/
+                   Script files for startup and system-configuration file 
+                   for after installation.
+
+(Disk) HceSrc:
+
+              (Dir)(info) HCE/
+                        HCE.LL            - Link List used by Hce to link Hce.
+                        Readme.1st (info) - Copyright.
+                        Readme.doc (info) - Explanation on how to make Hce.
+                        
+                        (Dir) HCC/
+                                   Source code to the compiler.
+                                   Hcc.CL - Compile List.
+                        (Dir) HCE/
+                                   Source code to the editor.
+                                   Hce.CL - Compile List.
+              (Dir)(info) Top/
+                        Readme.doc (info) - Explanation on how to make Top.
+                        Top.LL            - Link List used by Hce to link Top.
+                        Top.CL
+                        (Dir) Source/ 
+                                     Source code to the optimizer.
+
+(Disk) LibSrc:
+              Readme.1st (info) - Copyright.
+
+             (Dir) c/
+                      MuchMore
+
+             (Dir)(info) AmigaLib/
+                      AmigaLib.LL       - Link List of Kick 2.04 FD files used
+                                          by Hce to make Kick2.04 Amiga.lib
+                      Readme.doc (info) - Explanation on how to make the
+                                          Amiga library.
+                      (Dir) AMIGA_LIB/
+                                      Amiga_Kick1.3.dir
+                                      Amiga_Kick1.3.lib
+                                      Amiga_Kick2.04.lib
+                      (Dir) extras/
+                               (Dir) Source/
+                                  Extra source code files required by
+                                  the amiga lib.(PDC)(updated).
+                                  Extra.CL - Compile List.
+                      (Dir) FD2STUBS/
+                                  FD2Stubs + doc
+                      (Dir) LIBR/
+                                  Libr
+                      (Dir) SCRIPTS/
+                                  Script files to help make Amiga.lib.
+                      (Dir) STUBS/
+                                  Stubs produced from FD1.3 files.
+
+             (Dir)(info)(ZC) clib/
+                      Readme.doc (info) - Explanation on how to make the
+                                          libraries listed below.
+                      (Dir) crt/
+                                begin.a  - Program startup code.
+                                begin.o
+                                begin.CL
+                      (Dir) math/
+                                Maths library source.
+                                Math.LL - Link list.
+                      (Dir) misc/
+                                Misc library source.
+                                Misc.LL
+                      (Dir) stdio/
+                                Stdio libarary source.
+                                Stdio.LL
+                      (Dir) string/
+                                String library source.
+                                String.LL
+(Disk) D&E:
+             HceSource.LZH - Source code to Hce/Top in compressed form.
+
+         (Dir)(info) Docs/
+             HCE.doc           (info)(ME)    - How to use Hce.
+             LIB.doc           (info)(ME/ZC) - How to use the C libraries.
+             A68K.doc          (info)(HCC)   - How to use the Assembler.
+             Blink.doc         (info)(HCC)   - How to use the Linker.
+             CompilerBugs.doc  (info)(HCC)   - Known compiler bugs.
+             Bug_Report.doc    (info)(ME)    - How to report bugs.
+             Top.doc           (info)(HCC)   - How to use the optimizer.
+
+         (Dir)(info) Examples/
+             Readme.doc (info) - Explanation on how to make examples.
+
+             (Dir)(info) AMIGA/
+                         (Dir)(info)  BALLS/    moving spheres demo
+                         (Dir)(info)  DARKDEMO/ copper demo
+                         (Dir)(info)  POOLS/    simple pools predictor
+
+             (Dir)(info) CLIB/
+                         (Dir)(info)  CCheck/ tests C source for errors
+                         (Dir)(info)  Cflow/  tests C src function flow
+                         (Dir)(info)  Tests/  tests for HCC compiler
+
+************************************************************************
+*                          INSTALLATION                                *
+************************************************************************
+
+There are three Icons on the 'HCE:' disk to help you Install HCE,
+these are as follows:
+                     Drives_1
+                     Drives_2
+                     HD0
+Drives_1:
+---------
+Install HCE to a single drive Amiga. (Requires 1 spare floppy)
+This script will copy your Workbench disk, strip the copy down, 
+Install HCE, and then rename the copy, HCE.
+
+Drives_2:
+---------
+Install HCE to a 2 drive Amiga. (Requires 2 spare floppies)
+This script will copy your Workbench disk, strip the copy down, Install 
+part of HCE, and then rename the copy, HCE.
+Then formats a disk called 'HceTools' and Installs the rest of HCE.
+
+HD0:
+----
+Install HCE to a Hard Drive. (Requires that you boot from Workbench, 
+and that Workbench is installed to your Hard Drive)
+This script will Install HCE to the Workbench disk on your hard drive and
+takes up around 550K of drive space.
+note: this script has not been tested and could fail!.
+
+Make your own WorkDisk(s)
+-------------------------
+If you decide not to use the Install routines provided then you
+should put the following or similar in your Startup-Sequence:
+(note: 'SYS' is an example)
+
+; Common place for program files.(HCE,TOP,BLINK,A68K etc)
+        Assign >NIL: BIN: SYS:bin
+
+; Tell Linker were the Libraries are, and the Compiler where the Includes are
+        Assign >NIL: LIB: SYS:lib
+        SetEnv INCLUDE "SYS:include"
+; Alternative to SetEnv.
+        Assign >NIL: INCLUDE: SYS:include
+
+; HCE cannot find the Optimizer,Assembler and Linker without the following:
+        Path SYS:bin Add
+
+; Stack should be at least:
+        Stack 10000
+
+************************************************************************
+*                         GETTING STARTED                              *
+************************************************************************
+
+After Installing HCE you should test to see if the Installation worked
+correctly and also familiarize yourself with HCE.
+
+note: If you have not used a Text Editor or Word Processor before then I
+      suggest you read the notes on TEXT HANDLING before you begin.
+
+Type the following (exactly as shown) into the Editor Window:
+
+#include <stdio.h>
+
+void main();
+
+void main()
+{
+ short i;
+
+ for(i=1;i <= 10; i++) {
+     printf("Hello World!\n");
+     }
+}
+
+Now click on the 'Compile+O+A+Link' Gadget below the Editor Window.
+After a short while the Message 'No-Errors' should appear in the Message
+Box. If it did not then either you have made a spelling mistake or a file
+or files could not be found. A message should appear indicating which.
+If there were no spelling mistakes and the error messsage given indicates
+that a file was not found, then faulty Installation could be the problem.
+Go through the Installation procedure again and also read the INSTALLATION
+text. If you still have problems, then write to me explaining what they 
+are and I will try and fix them ready for the next release of HCE.
+
+If no errors occured then click on the 'Run' Gadget. The message 
+'Hello World!' without the quotes should appear Ten times in the 
+CLI Window. If this is the case then Installation is correct.
+
+You should now atleast read the following texts to get the best from HCE.
+If you own a printer then I strongly recomend that you print this Entire
+Document.
+
+                      Text Handling
+                      Menus
+                      Gadget Bar
+                      Compiler Options
+                      Optimizer Options
+                      Assembler Options
+                      Linker Options
+                      Preferences
+                      Key Short Cuts
+
+************************************************************************
+*                          TEXT HANDLING                               *
+************************************************************************
+
+  Cursor Movement
+  ===============
+
+  The cursor is positioned anywhere in text by first moving the mouse
+  pointer to the desired location and then clicking on the Left Mouse
+  Button. You can also move the cursor in any direction by using the
+  Arrow keys.
+
+  Arrow key combinations:
+
+            Shift+Up arrow    -  Move up 10 lines at a time.
+            Shift+Down arrow  -  Move down 10 lines at a time.
+            Shift+Left arrow  -  Place cursor at beginning of line.
+            Shift+Right arrow -  Place cursor at end of line.
+            Right-Amiga + T   -  Place cursor at top of file. If already
+                                 at top then place cursor at the bottom.
+            Right-Amiga + B   -  Place cursor to beginning of line. If
+                                 already at beginning then place to end.
+
+   Inserting Text
+   ==============
+
+   When you type a character it is inserted at the current cursor location 
+   and the cursor is moved one place to the right. If the line is full the 
+   last character on the current line is moved to the beginning of the next
+   line to create a space. If however the next line is also full then nothing
+   will be inserted.
+
+
+   Deleting Text
+   =============
+
+   Backspace Key:  Delete the character to the left of the cursor. If the
+                   cursor is at the beginning of the line it is moved to
+                   the end of the previous line. If there was any trailing
+                   characters behind the cursor they are joined to the
+                   end of the previous line.
+   Delete Key:     Delete the character at the current cursor location
+                   moving all characters from the right to the left one
+                   place. If the cursor is at the end of the line, as much 
+                   of the next line as will fit is added to the current 
+                   line.
+   
+   Other
+   ======
+
+      Control Key Combinations:
+
+                   Ctrl+D  -  Delete entire line cursor is on.
+                   Ctrl+E  -  Delete line cursor is on from cursor 
+                              x position.
+                   Ctrl+S  -  Delete all spaces between words if cursor
+                              is on a space.
+                   Ctrl+W  -  Delete all characters until space if cursor
+                              is not on a space.
+                   Ctrl+V  -  Restore entire line after one of the above.
+                   Ctrl+U  -  Change character to opposite case and move
+                              the cursor one place to the right. 
+                              To change hole or parts of lines to upper or
+                              lower case, first mark them out(See BLOCK-MENU)
+                              and then press either the L or U key.
+      Escape Key:
+                   This toggles the Editor Window between full and
+                   standard size. If toggled to full size, the Message Box 
+                   is lost and the Editor Messages can no longer be seen.
+      Tab Key:
+                   By pressing the Tab Key the cursor is moved (if possible)
+                   to the next Tab Stop. By pressing Shift+Tab the cursor
+                   is moved backwords to the previous Tab Stop or to the
+                   beginning of line.
+                   The number of character positions to the next Tab Stop can
+                   be changed in the Preferences Window. Default is 8.
+
+
+   The editor has a few restrictions these are as follows:
+
+        1) The text window sizes are fixed and unchangeble.
+        2) You can only open and work with one file at a time.
+        3) You cannot edit beyond the end of the visible windows width.
+           This is deliberate, I decided that code is more readable if
+           each line is always entirely visible.
+        4) The maximum size that a file can be is 155844 Bytes(152K) or
+           1998 lines. This should not cause any problems, not many
+           source files are this big, if they are they should be broken
+           down into smaller more readable sections anyway.
+        5) There are no Typeover modes.
+
+    See also 'Search/Cursor' Menu.
+
+************************************************************************
+*                           FILE REQUESTER                             *
+************************************************************************
+
+HCE uses the ASL library V36(or higher) file requester.
+On an A1200 the library is located in the libs directory of the
+Workbench disk. On other Amigas it may be an internal library.
+If it exists on your Workbench disk then you must place it in the 'libs/'
+directory of your boot disk. (If you used one of the install Icons I provided
+to install HCE then the library will already be on your boot disk).
+
+You can find a more detailed explanation of the file requester in your 
+Workbench manual, but here's a run down of the most important things anyway:
+
+File selection:
+              with mouse:                         
+                         Point to the desired file and double click the left
+                         mouse button to select it, or click on the file
+                         once and then click on the OK gadget. Note the OK 
+                         gadget may have a different name depending on what 
+                         purpose the file requester was called for.(eg: Load,
+                         Save,Lock).
+              with keys:
+                         Use the Up and Down arrow keys to scroll through
+                         the files listed and then press the return key to
+                         select the desired file.
+Multiple file selection:
+       This only applies to some file operations such as delete or copy.
+
+             with mouse:
+                         Hold down one of the shift keys then click each
+                         file you want selected with the mouse.
+             with keys:
+                         No Idea!
+Directories:
+             with mouse:
+                         To enter a new directory with the mouse click
+                         on the directory once. To get back to the previous
+                         directory click on the Parent gadget.
+             with keys:
+                         Scroll through the directories with the up and down
+                         arrow keys then press return to enter the directory.
+                         To get back to the previous directory press
+                         Right-Amiga + P.
+Volumes:
+             with mouse:
+                         To list the volumes available with the mouse click
+                         the Volumes gadget.
+             with keys:
+                         Right Amiga + V.
+Cancel:
+             with mouse:
+                         To exit without selecting a file click on the
+                         Cancel gadget.
+             with keys:
+                         Right Amiga + C.
+
+************************************************************************
+*                               MENUS                                  *
+************************************************************************
+
+
+HCE-MENU:
+==========
+
+About Hce:
+           Copyright,Author for HCE.
+About Hcc:
+           Copyright,Authors for HCC and TOP.
+Clear text buf:
+           Clears the editor text buffer ready for a new file.
+           If you have made changes to the current file then a confirmation
+           requester will appear before proceeding.
+First error:
+           If any error messages were shown and then overwritten during
+           compile, then this will reshow the first error.
+First warning:
+           If any warning messages were shown and then overwritten during
+           compile, then this will reshow the first warning.
+Print:
+           Opens an intuition window with the following gadgets:
+
+           From Line:   Set the line number to print from.
+           To Line:     Set the line number to print to.
+           Print:       Print using From Line/To Line.
+           Print All:   Print entire source.
+
+           For printing to work correctly, you should install the correct 
+           printer driver to the Devs/Printers directory on your boot disk.
+
+Prefs/Config:
+           See 'PREFERENCES'.
+CLI:
+           Opens a new CLI window and places HCE behind the Workbench Screen.
+           Requires for the 'CLI' file to be in the System directory of your
+           boot disk and also for the 'Shell-Startup' file to be in the S 
+           directory of your boot disk (If not present,copy from WB disk).
+           To get HCE back from behind the Workbench screen press the depth
+           gadget (Top Right of screen) or press Left-Amiga + M.
+Program size:
+           After creating an executable file this will show it's name and 
+           size in the message box.
+Quit:
+           Exit from HCE and return to the CLI.
+
+DISK-MENU:
+===========
+
+Load. (c/a-source):
+           Load a C or Assembler source code file.
+           An ASL filerequester will pop up (see FILE REQUESTER notes), 
+           just double click on the file you want to load.
+           Maximum file size is 1998 lines.
+           HCE can also be used as a normal ASCII editor so you are
+           not restricted to just loading and saving source code files.
+           This document was written with HCE.
+Load. (append....):
+           Same as above except the new file is appended to the current file.
+Load. (lock......):
+           Same as, 'Load (c/a-source)' except that the directory the file
+           was selected from becomes the current directory.
+Save. (c/a-source):
+           Save C or Assembler source code file.
+           If you have not given your file a name then the save as requester
+           will appear, enter the new file name in the 'File' draw, and
+           select Save. You must add the appropriate '.c' or '.a'
+           suffix yourself.
+Save. (as........):
+           Save under a new name (see above save).
+
+COMPILE-MENU:
+=============
+
+Compile only (test):
+            Invoke the internal compiler HCC and test either the file
+            present in the editor buffer or test all source code files 
+            listed in the 'Compile List' buffer (C or Assem files, if list)
+            or do both at the same time. Which depends on the compilers
+            'Compile' option.(See, COMILER-OPTIONS)
+            If any errors are encounted the first five are listed in the
+            message box and compilation is stopped. The editor will 
+            automatically scroll to or near the first offending line.
+            You can go to or near any of the lines which caused an error
+            by holding down one of the Shift keys and pressing 'F1' through
+            to 'F5'. To recall the first error message press Right Amiga+E.
+            To recall the first warning message press Right Amiga+W.
+            To stop compilation, press the 'Esc' gadget and wait, it
+            may take a short while before stopping, deppending on what 
+            part of the compilation was taking place at the time.
+            You can also test sections of code by first marking them out 
+            with the mouse or keys. (See MENUS, 'BLOCK-MENU')
+            Always make the directory containing the C or Assembler source
+            code files the current directory.(See MENUS, 'Other' and MENUS
+            'Disk').
+            No output files are left after a test.
+Compile + Optimize:
+            Does the same things as 'test' above but also optimizes each
+            file. The output files are placed in the 'Quadfile Device' which
+            is set in the Compiler Options window. Default is the Ram Disk.
+            This option is mainly for people who want to improve the
+            optimizer (TOP) and need to inspect its output.
+            You can delete all output files that the optimizer produces by
+            pressing the 'Cleanup' gadget under the editor window.
+Compile + Opt + Assemble:
+            Does the same things as above but also Assembles.
+            The output path for each file assembled is determined by
+            'Outpath',(See ASSEMBLER OPTIONS). Default is the Ram Disk.
+            The Compiler and Optimizer output files are cleaned up for you.
+            You can delete the assemblers output files (if not wanted) by
+            pressing the 'Cleanup' gadget.
+Compile + Opt + Assem + Link:
+            Does the same things as above but also Links all object files
+            into an executable. The executables name and path can be set in 
+            the Linker options window. If you do not choose a name then the
+            default name is taken from the first file compiled and the 
+            destination is taken from the assemblers 'Outpath'. So if the
+            file was called 'open.c' and the 'Outpath' was 'RAM:' then the
+            executables name would be 'RAM:open'.
+            All cleaning up is done for you. If you want to delete the
+            executable press Right Amiga + D.
+Optimizer-Options:
+            See OPTIMIZER OPTIONS.
+Compiler-Options:
+            See COMPILER OPTIONS.
+
+ASSEMBLE-MENU:
+==============
+
+Assemble this file:
+            Call the external assembler A68K and assemble the current editor
+            file. If the message 'Assembler file error!' appears in the
+            message box, either A68K could not open the file for input or
+            the file contains errors. Pressing Left-Amiga + M toggles HCE
+            behind or infront of the workbench screen (same as depth gadget).
+            You will need to do this to see the assembler error messages in
+            the CLI (alternatively you could set the verbose flag, See
+            ASSEMBLER OPTIONS).
+            After making changes, you must resave the source file before
+            assembling.If you do'nt the changes will go unoticed.
+            The default place to assemble a file is the Ram Disk, this can
+            be changed, See ASSEMBLER OPTIONS 'Outpath'.
+Assemble compiled:
+            If you have Compiled + Optimized one or more files, this will
+            do the next stage and Assemble them. All Compiled+Optimized
+            files are cleaned up for you. You can delete the Assembled
+            files (if not wanted) with the 'Cleanup' gadget.
+Assemble selected:
+            Assemble a file selected with the ASL filerequester.
+Assemble + Link:
+            Same as 'Assemble compiled' but also Links the object files into
+            an executable. All cleaning up is done for you.
+            For more info on linking, See LINK-MENU, 'Link (a/l/b)'.
+Assembler-options:
+            See ASSEMBLER OPTIONS.     
+
+LINK-MENU:
+==========
+
+Link  (a/l/b):
+            Link object files into an executable.
+            Either link all files last assembled, all files entered into
+            the linkers Link List gadget or both. Which depends on the 
+            linkers 'Link' cycle gadget (See LINKER OPTIONS).
+            The executables name and path can be set in the Linker options
+            window. If you do not choose a name then the default name is
+            derived either from the first file in the last assembled list
+            or from the first file in the Link List. If you select the
+            link both option from the linker options window then the first
+            name in the last assembled list is used. The default destination
+            path is taken from the assemblers 'Outpath' gadget.
+            If you want to delete the executable press Right Amiga + D.
+Link selected:
+            Link a single object file selected with the ASL file requester
+            into an executable.
+Link list:
+            Link all files listed in the Linkers Linklist gadget to an
+            executable.(this overides the 'Link' linker gadget).
+Linker-options:
+            See LINKER OPTIONS.
+
+OTHER-MENU:
+===========
+
+Run Linked:
+            After linking a file you can test it by selecting this.
+            HCE is placed behind the workbench screen, the program is run,
+            and either a pause will occur or you will have to press a key
+            (any key) or mouse button to return to the editor again.
+            The preferences 'Run' cycle gadget decides which.(so see prefs).
+            If an error occured during the test then a message will appear
+            in the message box. (Run, key short cut: Right-Amiga + K).
+Run?:
+            Run an executable selected with the file requester.(see above)
+Lock this path:
+            If you load a source code file into the editor this makes
+            the directory or device it was loaded from the current directory.
+Lock df0:
+            Make the Root directory of a disk in the internal drive the
+            current directory.
+Lock?:
+            Make a device or directory selected with the file requester the
+            current directory.
+Copy file(s):
+            The file requester will pop up, select the destination device or
+            directory first, then select the file or files to be copied to
+            the destination.(For multiple selection, See FILE REQUESTER)
+Delete Linked:
+            After linking and testing an executable file, you can
+            remove it with this. (Key short cut: Right-Amiga + D).
+Delete?:
+            Delete directory or file(s) with the file requester.
+            Select desired file(s) with mouse or keys and click the
+            'Delete' gadget. If deleting a directory, type its name into the 
+            'File' draw (important!) and press the return key (don't add '/').
+            (For multiple file selection, See FILE REQUESTER)
+Make directory:
+            Make a directory with the file requester.
+            Click into the 'File' draw, type the new directory name,
+            press the return key or select the OK gadget.
+Assign device:
+            Does the same job as the 'Assign' cli command.
+            First enter the name of the device(with or without ':') to be
+            assigned and press the return key, then enter the path (with or
+            without '/') the device is to be assigned to and press the
+            return key.
+            This version of assign does not require for the device to be
+            assigned to be present for the assign to be successful.
+Rename (v/d/f):
+            Rename a Volume, Directory or File.
+                Volume:
+                           1) After the file requester appears click on the
+                              volume gadget and select a volume name with
+                              the mouse or arrow keys. Then click on the
+                              OK gadget or press the return key.
+                           2) Type the new volume name in the small requester
+                              which appears in the middle area of the editor
+                              window, and press the return key.
+                Directory:
+                           1) After the file requester appears select the
+                              directory to be renamed with the mouse or 
+                              arrow keys.  Then click on the OK gadget or
+                              press the return key.
+                           2) Type the new directory name in the small 
+                              requester which appears in the middle area 
+                              of the editor window, and press the return key.
+                File:
+                           1) After the file requester appears select
+                              the file to be renamed with the 
+                              mouse or arrow keys. Then click on the 
+                              OK gadget or press the return key.
+                           2) Type the new file name into the 'File' draw
+                              when the file requester reappears. Then either
+                              click on the OK gadget or press the return key.
+
+BLOCK-MENU:
+===========
+
+Mark:
+            Switch to marking out mode.(Key short cut: Right-Amiga + M).
+            Use the arrow keys to mark out the text to be Cut or Copied.
+            You can also mark out text with the mouse. Point the mouse
+            pointer to the place where you wish to start marking, hold down
+            the left mouse button and move in the direction to be marked.  
+            Releasing the left mouse button signifies end of block.
+            The limit for a block is 198 lines.
+Hide:
+            Cancel marking, and restore highlighted text.
+            (Key short cuts: Right-Amiga + H, or just the H key on its own).
+Cut:
+            After marking out a block this will cut it to the internal
+            buffer. See 'Mark'.
+            (Key short cut: Right-Amiga + X)
+Copy:
+            After marking out a block this will copy it to the internal 
+            buffer. See 'Mark'.
+            (Key short cut: Right-Amiga + C)
+Insert:
+            This will insert from the current cursor location what was
+            previously cut or copied.
+            (Key short cut: Right-Amiga + I)
+Print:
+            Send contents of the block buffer to the Printer. 
+            Must have previously Cut/Copied.
+            (Key short cut: Right-Amiga + P)
+
+SEARCH/CURSOR-MENU:
+===================
+
+Find?:
+            Search towards the end of file, starting one character beyond the
+            current cursor location for the next occurance of the specified 
+            string. When the string is found it is highlighted and the
+            cursor is placed onto the first character of the string.
+            To set case sensitivity see 'Find/Replace' below.
+            (Key short cut: Right-Amiga + F)
+Find next:
+            Find the next occurance of a string specified by 'Find?', or by
+            'Find/Replace'.(Key short cut: Right-Amiga + N).
+Find/Replace:
+            Search towards the end of file, starting one character beyond the
+            current cursor location for the next occurance of the specified 
+            string. If the string is found you can press one of the following
+            keys which will be listed in the message box:
+
+                   G  - Replace all occurances of the search string with the
+                        replacement string.(Global)
+                   R  - Replace this occurance and go to the next.
+                   N  - Skip this occurance and go to the next.
+                   Q  - Quit.
+
+            When searching for a string the default is to make no distinctions
+            between upper or lower case. To change this, set the case
+            sensitive gadget to 'YES'.
+            (Key short cut: Right-Amiga + R)
+B/End of line:
+            Place cursor to the beginning of line,if already there then place
+            to the end.
+            (Key short cut: Right-Amiga + B)
+B/End of file:
+            Place cursor to the beginning of file,if already there then place
+            to the end.
+            (Key short cut: Right-Amiga + T)
+Jump to line:
+            Place cursor to the specified line number.
+            Just enter the line number and press return.
+
+************************************************************************
+*                             GADGET BAR                               *
+************************************************************************
+
+The gadget bar is a thin strip of gadgets under the editor window and is
+provided mainly as a short cut to some of the most important menus.
+
+Test:
+      Test one or more C/Asm source files for errors.
+      This is the same as the 'Compile only(test)' menu item, so see this
+      for details. (Key short cut: 'F1')
+Compile+Optimize+Assemble:
+      Compile, Optimize and Assemble one or more C/Asm source files.
+      Same as the 'Compile + Opt + Assemble' menu item.
+      (Key short cut: 'F3')
+Compile+O+A+Link:
+      Compile, Optimize, Assemble and Link one or more C/Asm source files.
+      Same as the 'Compile + Opt + Assem + Link' menu item.
+      (Key short cut: 'F5')
+Link:
+      Link one or more object files into an executable. (Key short cut: 'F1')
+      (See LINK menu, 'Link (a/l/b)')
+Run:
+      Run a previously linked executable file.
+      Same as the 'Run Linked' menu item.
+      (Key short cut: Right-Amiga + K)
+Esc:
+      This will attempt to stop the compiling process or what ever process
+      is taking place at the time.
+
+         If Compiling:
+                       Compilation will be stopped as soon as it is safe
+                       enough to do so. If the compiler for example is
+                       reading many nested include files, it is not always
+                       possible to stop without closing these files and
+                       returning from the nest.
+         If Optimizing, Assembling or Linking:
+                       You can not stop the Optimizer, Assembler or Linker 
+                       once they have been called, so pressing the Escape
+                       gadget during one of these will only stop the next
+                       program from being called.
+Cleanup:
+        This is used in conjunction with the Compile, Assemble and Link Menus
+        (so see these) and is used to delete unwanted output files.
+
+************************************************************************
+*                            COMPILER                                  *
+************************************************************************
+
+The Sozobon-C compiler is a complete implementation of the C language as
+defined by Kernighan & Ritchie and prevailing practice.
+It was originally ported from the ATARI ST by Sozobon Limited to
+Fish disk 171. Since then various versions have appeared in the public 
+domain under different names, such as ZC and NorthC. The version which is  
+built into 'HCE' is the 'HCC-V2.0, Amiga-V1.1' version by Detlef Wurkner' 
+(Fish disk: 508) which has many advantages over previous versions.
+(can recompile itself, registerize variables, switch between 16 and 32 bit
+ for 'int' and 'unsigned', and more).
+
+KEYWORDS:
+=========
+
+The compiler understands the following key words:
+
+         DATA TYPES       BYTE SIZE      BIT SIZE
+         ----------------------------------------
+         char             1              8
+         short            2              16
+         int              4/2            32/16
+         unsigned         4/2            32/16
+         long             4              32
+         double           4              32
+         float            4              32
+         void             0              0
+         -----------------------------------------
+         note: 'int' and 'unsigned' sizes depend on the 
+               compiler flag 'Int & Unsigned'.
+                
+
+         STORAGE CLASSES
+         ---------------
+         auto
+         static
+         extern
+         register
+       
+         OTHERS
+         ------
+         enum     union       struct     switch
+         do       while       for        goto
+         break    continue    case       default
+         if       else        extern     return
+         sizeof   asm         chip       far
+         __chip   __far     __LINE__   __FILE__
+
+         note: '__chip' acts the same as 'chip' and '__far' as 'far'. 
+
+NOTE ABOUT 'far'
+================
+Currently the 'far' keyword does nothing but is implemented to save you from
+having to make changes to files before they can be compiled. Files I have
+tried which require this key word have worked fine without it anyway.
+
+NOTE ABOUT 'chip'
+=================
+The chip keyword will force Data and Bss hunks to chip memory for the
+file it is defined in, and should only be defined once.
+(See OPTIMIZER OPTIONS for where to use)
+
+PREPROCESSOR KEYWORDS:
+=======================
+
+#define, #undef, #include, #if, #ifdef, #ifndef, #else, #endif
+
+ANSI COMPATABILITY:
+====================
+The HCC compiler does not conform to the ANSI standard but does have some
+ANSI support (Libraries, header files etc).
+I plan to for the next release of HCE to implement the most important
+things such as function prototyping and missing keywords.(don't get your
+hopes up though, this is no small task!).
+
+************************************************************************
+*                          COMPILER OPTIONS                            *
+************************************************************************
+
+[c] below = Cycle gadget.
+[s] ..... = String gadget.
+[b] ..... = Button gadget.
+
+ 
+Compile,[c]:
+               FROM-EDITOR:
+                     When this flag is set all the menus or gadgets related
+                     to compiling will only compile the file present in the
+                     Editor (eg: 'Compile only', 'Compile + Optimize' etc).
+                     The file in the Editor must be a C source code file.
+                     This flag is the default.
+               FROM-LIST:
+                     When this flag is set all the menus or gadgets related
+                     to compiling will only compile the files present in
+                     the 'Compile List' string gadget.
+                     (see 'Compile List' notes below)
+               FROM-BOTH:
+                     When this flag is set all the menus or gadgets related
+                     to compiling will do both 'FROM-EDITOR' and 'FROM-LIST'.
+Debug(a-z),[s]:
+                     Print out various debug information to the CLI.
+                     This is only for people who want to improve the
+                     compiler. You will have to recompile all the compiler
+                     source code files with the DEBUG flag set to get this
+                     to work. Entering a letter from 'a' to 'z' determines
+                     what type of information will be shown.
+Define Symbol,[s]:
+                     Define a symbol as if it were in a C source code
+                     file (eg: #define DEBUG 1). The '#define' keyword is not
+                     required, so to define the Symbol 'DEBUG' for example
+                     just type 'DEBUG' without the quotes.
+                     The symbol will stay defined until deleted from the
+                     gadget.
+Undefine Symbol,[s]:
+                     Undefine a symbol in a C source code file,
+                     (eg: #undef DEBUG). The '#undef' keyword is not
+                     required, so to undefine the Symbol 'DEBUG', just type
+                     'DEBUG' without the quotes.
+                     The symbol will stay undefined until deleted from gadget.
+                     If the symbol was a built in symbol such as AMIGA or
+                     AMIGADOS then the symbol will stay permanently undefined.
+Include Dir List,[s]:
+                     Give the compiler a list of extra devices or directories
+                     to search for include files. Currently you can only
+                     enter one directory between compilations which is then
+                     added to the compilers internal directory/device list.
+                     If you want to save a device or directory path to HCE's
+                     configuration file then you must save it as soon as it
+                     is entered or before you compile.(see PREFERENCES)
+Quadfile Device,[s]:
+                     Set the place where the temporary (quad) files go, such 
+                     as the compiler and optimizer output files. It also
+                     determines such things as where libraries are created.
+                     The default device is the 'Ram Disk:'.
+                     If you do not have much memory (eg: 1MB) then you should
+                     use a disk drive or a hard drive as the quad file device.
+Keep Quad,[c]:
+                     YES:
+                          keep the temporary (quad) files. This option is
+                          mainly for people who want to inspect the
+                          output files of the compiler and optimizer.
+                     NO:
+                          Delete temporary files.
+Int & Unsigned,[c]:
+                     32 BIT:
+                             Make 'int' and 'unsigned' 32 BIT.(default)
+                     16 BIT:
+                             Make 'int' and 'unsigned' 16 BIT.
+Free-Up,[c]:
+                     YES:
+                          Always free memory after compiling.(Default)
+                     NO:
+                          Keep memory and use on next compile.
+                          This can greatly enhance compilation speed and is
+                          best used if compiling more than one file.
+Compile List,[s]:
+                     This holds a list of upto 55 file names (depending on
+                     length) which are to be either compiled or assembled.
+                     Assembler files are recognised by either a '.a' or
+                     '.asm' suffix. C files can be any name which doesn't 
+                     end with an Assembler suffix.
+                     To use the list see 'Compile' notes above.
+Dupe List,[b]:
+                     This copies a list of files (if exist) from the
+                     'Link List' string gadget (See 'Linker Options') to
+                     the 'Compile List' gadget. The suffix for each file name
+                     is changed to a '.c' suffix.
+Check List,[b]:
+                     Check if all files in the 'Compile List' exist either in
+                     the current directory or at the assemblers 'OutPath'.
+                     (See 'Assembler Options').
+Clear List,[b]:
+                     Clear the 'Compile List'. If the list wasn't empty then
+                     a conformation requester will apear.
+Disk To List,[b]:
+                     Get all files ending with a certain pattern and place
+                     them into the 'Compile List' string gadget. If the
+                     'Compile List' string gadget wasn't empty then the new
+                     names are appended to the already existing ones.
+                     Simply enter the path of the files into the file
+                     requester drawer and then click on the OK gadget.
+                     (also see 'Pattern' below)
+Pattern,[s]:
+                     Enter a pattern or patterns for 'Disk To List'.
+                     Each pattern is separated either by  '+' or ' '.
+                     (eg: .c+.a+.asm  or  .c .a .asm)
+Load Compile List,[b]:
+                     Load a previously saved 'Compile List' file.
+                     (Compile list files have a '.CL' suffix).
+                     When loading a compile list file the following
+                     are changed:
+
+                       1) 'Compile List' gadget.
+                       2) 'Define Symbol' gadget.
+                       3) The assemblers 'OutPath' gadget.
+Save Compile List,[b]:
+                     Save a 'Compile List' file.
+                     If you do not add a '.CL' suffix then one is added
+                     for you.
+
+                     The following are saved to a compile list file:
+
+                       1) 'Compile List'
+                       2) 'Define Symbol'
+                       3) The assemblers 'OutPath'.
+Exit,[b]:
+                     Leave compiler options and return to the editor.
+
+************************************************************************
+*                          OPTIMIZER OPTIONS                           *
+************************************************************************
+
+[c] below = Cycle gadget.
+[b] ..... = Button gadget.
+
+Debug,[c]:
+            ON:
+               Print detailed debugging information to the CLI.
+               This is only for people who want to improve the optimizer.
+            OFF:
+               Do nothing.
+Verbose,[c]:
+            ON:
+               Show changes made from optimizing.
+               Also show authors names and copyright.
+            OFF:
+               Do nothing.
+Branch Reversal,[c]:
+            ON:
+               Do branch reversals.
+            OFF:
+               Turn branch reversals off.
+Loop Rotation,[c]:
+            ON:
+               Do loop rotations.
+            OFF:
+               Turn loop rotations off.
+Peephole Optimization,[c]:
+            ON:
+               Do peephole optimization.
+               This slows the optimizer down considerably when working on
+               large functions. You can either break the functions down into
+               smaller sections,be patient,or turn peephole optimization off.
+            OFF:
+               Turn peephole optimization off.
+Variable Registerizing,[c]:
+            ON:
+               Do variable registerizing.
+               If possible, make an auto variable use one of the amigas 
+               registers.
+            OFF:
+               Turn variable registerizing off.
+No change of Stack-Fixups,[c]:
+            ON:
+               Do no change of stack fixups.(for debug)
+            OFF:
+               Do nothing.
+Data-Bss to Chip,[c]:
+            ON:
+               Force Data and Bss hunks to chip memory.
+
+               You can use the keyword 'chip' or '__chip' once anywhere
+               in a file instead, then the compiler will set this flag 
+               automatically and will also unset it (if required) 
+               on next file.
+
+               Example1:
+                         UWORD chip my_image[] = 
+                          {
+                             0x0000,
+                             0x0000,
+                           };
+
+               Example2:
+                         __chip UWORD my_image[] = 
+                          {
+                             0x0000,
+                             0x0000,
+                           };
+            OFF:
+               Use public memory.(any type of memory available).
+Exit,[b]:
+            Leave optimizer options and return to the editor.
+
+            For more information on the optimizer, see 'TOP.doc'.
+
+************************************************************************
+*                           ASSEMBLER OPTIONS                          *
+************************************************************************
+
+[c] below = Cycle gadget.
+[s] ..... = String gadget.
+[b] ..... = Button gadget.
+
+
+Symbol table to Object,[c]:
+                YES:
+                     Write symbol table entries (hunk_symbol) to the object
+                     module for the use of symbolic debuggers.
+                NO:
+                     Do nothing.
+Write Equate File,[c]:
+                YES:
+                     Write a file under the same name as the file being
+                     assembled but with an '.equ' suffix, and write to it all
+                     'EQU's found.
+                NO:
+                     Do nothing.
+Verbose,[c]:
+                Place HCE behind the workbench screen and tell the assembler
+                to display each line number as it assembles.
+                When done bring HCE back to the the front again.
+Outpath,[s]:
+                This determines where each file is to be assembled.
+                The default place is the 'Ram Disk:'.
+Include Header File,[s]:
+                Include a header file as if it were in a source code file.
+
+Include Directory List,[s]:
+                Give a list of paths to be searched for include files.
+                Each path is seperated by a comma.
+
+                Example:  df0:include,df1:include,DH0:my_includes
+
+Create Listing File,[s]:
+                Create a listing file under specified name.
+Disable Optimization,[c]:
+                YES:
+                     Stop all object code optimizations.
+                NO:
+                     Do all object code optimizations.
+
+Display Hashing Stats,[c]:
+                YES:
+                     Display hashing statistics at the end of assembly.
+                     You must use Verbose (or use Left-Amiga + M) with this,
+                     else you will see nothing.
+                NO:
+                     Do nothing.
+Debug,[s]:
+                Display debug information in the CLI.
+                You must use Verbose (or use Left-Amiga + M) with this,
+                else you will see nothing.
+
+                This is only for people who want to improve the Assembler.
+
+                example: 100,200     ,Lists lines 100 to 200.
+Exit,[b]:
+                Exit assembler options and return to the editor.
+
+                For more information on the assembler, see 'A68K.doc'.
+
+************************************************************************
+*                           LINKER OPTIONS                             *
+************************************************************************
+
+[c] below = Cycle gadget.
+[s] ..... = String gadget.
+[b] ..... = Button gadget.
+[t] ..... = Check box gadget.
+ 
+Link,[c]:
+               FROM-ASSEM:
+                     Link all files last assembled.(default)
+                     This is used with the following:
+
+                            1) 'Compile + Opt + Assem + Link' menu item.
+                            2) 'Comp+O+A+Link' gadget.(does same as above)
+                            3) 'Assemble + Link' menu item.
+                            4) 'Link (a/l/b)' menu item.
+
+                     The object files are cleaned up for you unless you
+                     set the compilers 'Keep Quad' gadget.
+               FROM-LIST:
+                     Link all files listed in the linkers 'Link List' gadget.
+                     This affects the same menu items and gadgets as above.
+                     The Object files are not deleted when using a Link List.
+               FROM-BOTH:
+                     Do both FROM-ASSEM and FROM-LIST.
+                     Link all files last assembled (eg: 'Compile + Opt + 
+                     Assemble', 'Assemble compiled' etc) with all files 
+                     listed in the 'Link List' gadget. If you did not give
+                     your new program a name then the default name will be 
+                     derived from the first file in the last assembled list.
+                     This is done by removing the '.o' suffix. If this list 
+                     is empty then the first file name in the 'Link List' 
+                     is used. If the file to be used for the default program 
+                     name has no suffix, then a '.exe' suffix is added.
+                     All object files from the last assembled list
+                     are cleaned up (unless compilers 'Keep Quad' gad is set).
+                     The object files listed in the 'Link List' are always 
+                     kept.
+Startup Object,[s]:
+                     This specifies the name+path of the startup object.
+Maths Library,[s]:
+                     This specifies the name+path of the maths library.
+Use,[t]:
+                This decides whether the maths library is to be linked
+                or not.
+Other Libraries,[s]:
+                This holds a list of the common C libraries, (stdio.lib,
+                string.lib etc). If you make your own C libraries then they 
+                can be added to this list.
+OutName,[s]:
+                This decides the name+path of a linked program. If this
+                is left blank then a default name will be used.
+                (see 'Link' above).
+Verbose,[t]:
+                 Place HCE behind the workbench screen. Print information
+                 about each pass in the CLI. When done bring HCE back to
+                 the front agian.
+Small-Data,[t]:
+                 Set linkers SMALLDATA flag.
+Small-Code,[t]:
+                 Set linkers SMALLCODE flag.
+Link List,[s]:
+                 This holds a list of upto 55 file names (depending on 
+                 length) and is used for the following:
+
+                 1) To hold names of object files to be linked into an 
+                    executable.
+                 2) To hold names of object files to be joined into a library.
+                 3) To hold names of 'FD' files which are to made into a 
+                    library.
+                 4) To hold object and 'FD' file names to be made into a 
+                    library.
+                    (see 'Link' above and also 'Link' menu).
+Dupe List,[b]:
+                     This copies a list of files (if exist) from the
+                     'Compile List' gadget (See 'Compiler Options') to
+                     the 'Link List' gadget. The suffix for each file name
+                     is changed to a '.o' suffix.
+Check List,[b]:
+                     Check all files in the 'Link List' exist either in
+                     the current directory or at the assemblers 'OutPath'.
+                     (See 'Assembler Options').
+Clear List,[b]:
+                     Clear the 'Link List'. If the list wasn't empty then
+                     a conformation requester will apear.
+Disk To List,[b]:
+                     Get all files ending with a certain pattern and place
+                     them into the 'Link List' string gadget. If the
+                     'Link List' string gadget wasn't empty then the new
+                     names are appended to the already existing ones.
+                     Simply enter the path of the files into the file
+                     requester drawer and then click on the OK gadget.
+                     (also see 'Pattern' below)
+Pattern,[s]:
+                     Enter a pattern or patterns for 'Disk To List'.
+                     Each pattern is separated either by  '+' or ' '.
+                     (eg: .o+.fd  or  .o .fd)
+Load Link List,[b]:
+                     Load a previously saved 'Link List' file.
+                     (Link list files have a '.LL' suffix).
+                     When loading a link list file the following
+                     are changed:
+
+                       1) The 'Link List' gadget.
+                       2) The maths library 'use' gadget.
+                       3) The 'OutName' gadget.
+
+Save Link List,[b]:
+                     Save a 'Link List' file.
+                     If you do not add a '.LL' suffix then one is added
+                     for you.
+
+                     The following are saved to a link list file:
+
+                       1) The 'Link List'.
+                       2) The maths library 'use' gadget.
+                       3) The 'OutName' gadget'.
+Library Name,[s]:
+                     Hold library name+path for 'FD To Lib' and 'List To Lib'
+                     gadgets below.
+FD To Lib,[b]:
+                     Create a new C library from either FD files, Object
+                     files or a mixture of both.
+                     The FD/Object file names should be entered into
+                     the 'Link List' gadget. This list of files is treat
+                     the same as any other other 'Link List' except it is
+                     only to be used by the 'FD To Lib' and 'List To Lib'
+                     gadgets.(the linker cannot link FD files!)
+
+                     FD-FILE:
+                       When an FD file is encounted in a 'Link List'
+                       the following is done: 
+
+                       1) The FD file is translated into many stub files.
+                       2) One stub file per function found.
+                       3) '#private' functions are ignored.
+                       4) Each stub is assembled and appended to a temporary
+                          library, which has a similar name to the FD file.
+                       5) When the FD file is done the temp lib is appended
+                          to the final library who's name and path is
+                          set in the 'Library Name' gadget.
+                       6) Cleanup temporary files.
+
+                     OBJECT-FILE:
+                       When an Object file is encounted in a 'Link List,'
+                       it is appended directly to the final library.
+                       note: A library can be made from upto 55 files,
+                             depending on whether all names will fit into 
+                             the 'Link List' gadget.
+
+                      The stub files and temperary libs are created at the
+                      path set by the assemblers 'Outpath' option. This
+                      path defaults to the 'Ram Disk:' and should be
+                      changed (if not already) to a disk drive
+                      or hard drive if you are low on memory.
+
+                      If you want to examine the files which wrere produced
+                      while making a library then set the Compilers
+                      'Keep Quad' gadget to 'YES'.
+List To Lib,[b]:
+                      Currently this does the same as 'FD To Lib'.
+
+Exit,[b]:
+                      Exit linker options and return to the editor.
+
+************************************************************************
+*                            PREFERENCES                               *
+************************************************************************
+
+[c] below = Cycle gadget.
+[s] ..... = String gadget.
+[i] ..... = Integer gadget.
+[b] ..... = Button gadget.
+[p] ..... = Colour Palette gadget.
+[sl] .... = Slider gadget.
+
+[p]:
+            The first preferences gadget has no name and is the 
+            Colour palette gadget. This gadget allows you to select upto 
+            8 colours from HCE's 16 colour palette.
+
+Red,[sl]:
+Green,[sl]:
+Blue,[sl]:
+            The red green and blue slider gadgets allow you to mix colours
+            selected from the Colour Palette gadget.
+
+Set Pen Colour,[b]:
+            This will change the editors text colour to the currently 
+            selected palette colour.
+Set Paper Colour,[b]:
+            This will change the editors background colour to the currently 
+            selected palette colour.
+Set Mark Colour,[b]:
+            This will change the editors marking out colour to the currently 
+            selected palette colour.
+Tab,[i]:
+            This decides how many character positions the cursor is to move
+            for each press of the tab key.(default is 8)
+Run,[c]:
+            WAIT-FOR-DELAY:
+                           After creating then running an executable this
+                           will cause a small pause before returning to
+                           the editor.(default)
+            WAIT-FOR-KEY:
+                           After creating then running an executable this
+                           will wait for a key press(any key) or left mouse
+                           button before returning to the editor.
+Cancel,[b]:
+            If you have changed any of the above gadgets and have not 
+            left the preferences window, then this gadget  will cancel 
+            the changes.
+Load Default Config,[b]:
+            This will load the default configuration file which is loaded 
+            on HCE's startup. The default config is searched for in the 
+            following places:
+
+                           1) The current directory.
+                           2) The 'devs/' directory of the bootdisk.
+                           3) The 's/' directory of the bootdisk.
+Save Default Config,[b]:
+            This will save changes made to HCE, to the default config
+            file which was loaded on HCE's startup. If there was no 
+            default config file then a new config file is written to the
+            'devs/' directory of your bootdisk.
+            All of HCE's Cycle and String gadgets are saved to the 
+            'hce.config' file except the following:
+
+               1) 'Compile'      cycle  gadget   -   'Compiler-options'.
+               2) 'Compile List' string gadget   -   'Compiler-options'.
+               3) 'Pattern'      string gadget   -   'Compiler-options'.
+               4) 'Link'         cycle  gadget   -   'Linker-options'.
+               5) 'Link List'    string gadget   -   'Linker-options'.
+               6) 'Pattern'      string gadget   -   'Linker-options'.
+               7) 'Library Name' string gadget   -   'Linker-options'.
+               8) Find window    string gadget
+               9) Find/Replace   string gadgets
+
+Load Other,[b]:
+            Load a configuration file saved with 'Save Other'.
+Save Other,[b]:
+            Same as 'Save Default Config' except you choose the file name.
+Exit,[b]:
+            Leave preferences.
+
+************************************************************************
+*                            KEY SHORT CUTS                            *
+************************************************************************
+
+Function Keys:
+--------------
+
+                F1     - Compile only(test)
+                F2     - Compile + Optimize
+                F3     - Compile + Opt + Assemble
+                F4     - Compile + Assem List
+                F5     - Compile + Opt + Assem + Link
+                F6     - Assemble this file
+                F7     - Assemble compiled
+                F8     - Assemble selected
+                F9     - Assemble + Link
+                F10    - Link (a/l/b)
+
+Shifted Function Keys:
+----------------------
+
+          Shift+F1     - Go to or near first error in (editor) C source file
+          Shift+F2     - ............. second error ........................
+          Shift+F3     - ............. third error .........................
+          Shift+F4     - ............. fourth error ........................
+          Shift+F5     - ............. fifth error..........................
+
+Right-Amiga + ?:
+----------------
+
+   Right-Amiga + E     - Reprint first error in message box.
+   Right-Amiga + W     - Reprint first warning in message box.
+   Right-Amiga + /     - Open preferences window.
+   Right-Amiga + 1     - Show new executables name and size.
+   Right-Amiga + Q     - Quit with query.
+   Right-Amiga + L     - Load a source code file.
+   Right-Amiga + O     - Append a source code file.
+   Right-Amiga + S     - Save a source code file.
+   Right-Amiga + V     - Save a source code file under a new name.
+   Right-Amiga + K     - Run Linked.
+   Right-Amiga + D     - Delete Linked.
+   Right-Amiga + M     - Mark block.
+   Right-Amiga + H     - Hide block.
+   Right-Amiga + X     - Cut block.
+   Right-Amiga + C     - Copy block.
+   Right-Amiga + I     - Insert block.
+   Right-Amiga + P     - Print block.
+   Right-Amiga + F     - Find.
+   Right-Amiga + N     - Find Next.
+   Right-Amiga + R     - Find/Replace.
+   Right-Amiga + B     - Place curs to beginning or end of line.
+   Right-Amiga + T     - Place curs to beginning or end of file.
+   Right-Amiga + J     - Place curs to specified line.
+
+Control Key + ?:
+----------------
+
+          Ctrl + O     - Open optimizer options-window.
+          Ctrl + C     - Open compiler options-window.
+          Ctrl + A     - Open assembler options-window.
+          Ctrl + L     - Open linker options-window.
+          Ctrl + S     - Delete all spaces between words if under a space.
+          Ctrl + W     - Delete all characters until space if on a char.
+          Ctrl + E     - Delete from current x cursor position to end of line.
+          Ctrl + D     - Delete enter line.
+          Ctrl + V     - Undelete a line, deleted by S,W,E or D above.
+          Ctrl + U     - Change char under cursor to opposite case.
+
+Escape Key:
+          This toggles the Editor window between full and standard sizes.
+          note: If toggled to full size important messages may not be seen!.
+
+When in marking out mode the following can be done in addition to
+the normal block functions:
+
+           1) Part or hole of a line can be toggled between upper and
+              lower case using the 'U' and 'L' keys as long as the 
+              cursor is still on that line.
+           2) If you have made a function in a file which contains many
+              functions but do not want to recompile the hole file to test
+              it, then you can mark out the function and select the 
+              'Test' gadget. 
+              You can also mark and test most parts of a C source file as
+              long as that part to be tested does not require any global
+              declarations.
+
+************************************************************************
+*                             IMPROVEMENTS                             *
+************************************************************************
+
+Here's a list of some of the things I would like to see in the next
+release of HCE:
+
+           1) Calculator.
+           2) Some ANSI support added to the compiler.
+           3) Own file requester.
+           4) The ability to load precompiled header files.
+           5) A faster version of the optimizer.
+
+If you have any good ideas for HCE then write to me:
+
+Jason Petty
+32 Balder Road
+Norton
+Stockton-On-Tees
+Cleveland. TS20 1BE.
+
+I cannot reply to all letters but will do my best.
+Have fun with HCE!.
+

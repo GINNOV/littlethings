@@ -1,0 +1,827 @@
+Start:
+		JSR	StoreCopper
+
+		MOVE.L	#Plane1,Showplane
+		MOVE.L	#Plane2,Workplane
+		MOVE.L	#Copper1,Showcop
+		MOVE.L	#Copper2,Workcop
+
+		JSR	FillC1Planes
+		JSR	FillC2Planes
+
+		JSR	FillC1C2Palettes
+
+		MOVE.L	Showcop,$dff080
+
+	wblt:	BTST	#14,$dff002
+		BNE	wblt
+
+		MOVE.L	#256,d7
+	loopenz:
+		LEA	Sin,a4
+		LEA	Cos,a5
+
+		MOVEQ	#0,d1
+		MOVEQ	#0,d2
+		MOVEQ	#0,d3
+		MOVEQ	#0,d4
+
+		MOVE.L	d7,d5
+		MOVE.L	d7,d6
+		ADD.L	#768,d6	;768		
+		ANDI.L	#1023,d5
+		ANDI.L	#1023,d6
+		MOVE.W	(a4,d5.l),d1
+		MOVE.W	(a5,d5.l),d2
+		MOVE.W	(a4,d6.l),d3
+		MOVE.W	(a5,d6.l),d4
+
+		ADD.L	#32,d1
+		ADD.L	#0,d2
+		ADD.L	#32,d3
+		ADD.L	#0,d4
+
+		LEA	PolygonCoords,a3
+
+		MOVE.L	d1,(a3)+
+		MOVE.L	d2,(a3)+
+		MOVE.L	d3,(a3)+
+		MOVE.L	d4,(a3)+
+
+		MOVEQ	#0,d1
+		MOVEQ	#0,d2
+		MOVEQ	#0,d3
+		MOVEQ	#0,d4
+
+		MOVE.L	d7,d5
+		MOVE.L	d7,d6
+		ADD.L	#768,d5
+		ADD.L	#512,d6		
+		ANDI.L	#1023,d5
+		ANDI.L	#1023,d6
+		MOVE.W	(a4,d5.l),d1
+		MOVE.W	(a5,d5.l),d2
+		MOVE.W	(a4,d6.l),d3
+		MOVE.W	(a5,d6.l),d4
+
+		ADD.L	#32,d1
+		ADD.L	#0,d2
+		ADD.L	#32,d3
+		ADD.L	#0,d4
+
+		MOVE.L	d1,(a3)+
+		MOVE.L	d2,(a3)+
+		MOVE.L	d3,(a3)+
+		MOVE.L	d4,(a3)+
+
+		MOVEQ	#0,d1
+		MOVEQ	#0,d2
+		MOVEQ	#0,d3
+		MOVEQ	#0,d4
+		
+		MOVE.L	d7,d5
+		MOVE.L	d7,d6
+		ADD.L	#512,d5
+		ADD.L	#256,d6		
+		ANDI.L	#1023,d5
+		ANDI.L	#1023,d6
+		MOVE.W	(a4,d5.l),d1
+		MOVE.W	(a5,d5.l),d2
+		MOVE.W	(a4,d6.l),d3
+		MOVE.W	(a5,d6.l),d4
+
+		ADD.L	#32,d1
+		ADD.L	#0,d2
+		ADD.L	#32,d3
+		ADD.L	#0,d4
+
+		MOVE.L	d1,(a3)+
+		MOVE.L	d2,(a3)+
+		MOVE.L	d3,(a3)+
+		MOVE.L	d4,(a3)+
+
+		MOVEQ	#0,d1
+		MOVEQ	#0,d2
+		MOVEQ	#0,d3
+		MOVEQ	#0,d4
+
+		MOVE.L	d7,d5
+		MOVE.L	d7,d6
+		ADD.L	#256,d5		
+		ANDI.L	#1023,d5
+		ANDI.L	#1023,d6
+		MOVE.W	(a4,d5.l),d1
+		MOVE.W	(a5,d5.l),d2
+		MOVE.W	(a4,d6.l),d3
+		MOVE.W	(a5,d6.l),d4
+
+		ADD.L	#32,d1
+		ADD.L	#0,d2
+		ADD.L	#32,d3
+		ADD.L	#0,d4
+
+		MOVE.L	d1,(a3)+
+		MOVE.L	d2,(a3)+
+		MOVE.L	d3,(a3)+
+		MOVE.L	d4,(a3)+
+
+		JSR	Clear
+
+		JSR	Polygon
+
+nuf:
+		ADD.L	#2,d7
+		ANDI.L	#1023,d7
+
+		JSR	Swap
+
+		;JSR	ClearDraw
+
+	rmblp:	BTST.B	#10,$dff016
+		BEQ	rmblp
+
+		BTST.B	#6,$bfe001
+		BNE	loopenz
+	tu:
+		;JSR	WMB
+
+		JSR	RestoreCopper
+
+		RTS
+
+;----------------------------------------------
+Polygon:	
+		MOVE.L	#$0,MaxX
+		MOVE.L	#$0fffffff,MinX
+		MOVE.L	#$0,MaxY
+		MOVE.L	#$0fffffff,MinY
+
+		LEA	PolygonCoords,a2
+
+		MOVE.L	(a2)+,d1
+		MOVE.L	(a2)+,d2
+		MOVE.L	(a2)+,d3
+		MOVE.L	(a2)+,d4
+		
+		JSR	SetMinMax
+
+		JSR	Kreska
+
+		MOVE.L	(a2)+,d1
+		MOVE.L	(a2)+,d2
+		MOVE.L	(a2)+,d3
+		MOVE.L	(a2)+,d4
+
+		JSR	SetMinMax
+
+		JSR	Kreska
+
+		MOVE.L	(a2)+,d1
+		MOVE.L	(a2)+,d2
+		MOVE.L	(a2)+,d3
+		MOVE.L	(a2)+,d4
+
+		JSR	SetMinMax
+
+		JSR	Kreska
+
+		MOVE.L	(a2)+,d1
+		MOVE.L	(a2)+,d2
+		MOVE.L	(a2)+,d3
+		MOVE.L	(a2)+,d4
+
+		JSR	SetMinMax
+
+		JSR	Kreska
+
+		JSR	CopyDraw2Draw2
+
+		JSR	ClearDraw
+
+		JSR	CopyDraw22Work
+
+		JSR	ClearDraw2
+	
+		RTS
+
+SetMinMax:
+		MOVE.L	MinX,d5
+		CMP.L	d1,d5
+		BLE	nonewmin
+		MOVE.L	d1,d5
+	nonewmin:
+		CMP.L	d3,d5
+		BLE	nonewmin2
+		MOVE.L	d3,d5
+	nonewmin2:
+		MOVE.L	d5,MinX
+
+		MOVE.L	MaxX,d5
+		CMP.L	d1,d5
+		BGE	nonewmax
+		MOVE.L	d1,d5
+	nonewmax:
+		CMP.L	d3,d5
+		BGE	nonewmax2
+		MOVE.L	d3,d5
+	nonewmax2:
+		MOVE.L	d5,MaxX
+
+		MOVE.L	MinY,d5
+		CMP.L	d2,d5
+		BLE	nonewminy
+		MOVE.L	d2,d5
+	nonewminy:
+		CMP.L	d4,d5
+		BLE	nonewminy2
+		MOVE.L	d4,d5
+	nonewminy2:
+		MOVE.L	d5,MinY
+
+		MOVE.L	MaxY,d5
+		CMP.L	d2,d5
+		BGE	nonewmaxy
+		MOVE.L	d2,d5
+	nonewmaxy:
+		CMP.L	d4,d5
+		BGE	nonewmaxy2
+		MOVE.L	d4,d5
+	nonewmaxy2:
+		MOVE.L	d5,MaxY
+	
+		RTS
+
+Kreska:
+		CMP.L	d1,d3
+		BLE	ixok
+		EXG	d1,d3
+		EXG	d2,d4
+	ixok:
+		MOVEQ	#0,d5
+		MOVE.W	d1,d5
+		ANDI.L	#$0f,d5
+		LSL.L	#8,d5
+		LSL.L	#4,d5
+		;OR.L	#%0000101111001111,d5 ;AB+a
+		;OR.L	#%0000101111111100,d5 ;$fc
+		;OR.L	#%0000101101001010,d5 ;$fc
+		;OR.L	#%0000101101011010,d5 ;XOR
+		OR.L	#%0000101111001010,d5 ;OR
+		;OR.L	#%0000101110100000,d5 ;AND
+						;ABc+aC
+		MOVE.W	d5,$dff040
+	
+		MOVE.L	d1,d5
+		SUB.L	d3,d5
+		CMP.L	#0,d5
+		BGE	noneg
+		NEG.L	d5
+	noneg:	;SUB.L	#8,d5
+		MOVE.L	d5,DeltaX
+
+		MOVE.L	d2,d5
+		SUB.L	d4,d5
+		CMP.L	#0,d5
+		BGE	noneg2
+		NEG.L	d5
+	noneg2: ;ADD.L	#1,d5
+		MOVE.L	d5,DeltaY
+
+		MOVE.L	DeltaX,d5
+		MOVE.L	DeltaY,d6
+
+		CMP.L	d5,d6
+		BGE	nosfap
+		EXG	d5,d6
+	nosfap:	MOVE.L	d6,DX
+		MOVE.L	d5,DY		
+
+		MOVE.L	#DP1,d0
+
+		MOVE.W	#$8000,$dff074
+		MOVE.W	#$ffff,$dff072
+		MOVE.W	#$ffff,$dff044
+		MOVE.W	#$ffff,$dff046
+
+		SUB.L	d6,d5
+		ASL.L	#2,d5
+
+		MOVE.W	d5,$dff064
+
+		MOVE.L	DY,d5
+		ASL.L	#2,d5
+
+		MOVE.W	d5,$dff062
+
+		MOVE.W	#40,$dff060
+		MOVE.W	#40,$dff066
+
+		MOVE.L	DY,d5
+		MOVE.L	DX,d6
+
+		LSL.L	#2,d5
+		LSL.L	#2,d6
+		SUB.L	d6,d5
+
+		MOVE.B	#0,Sign
+		CMP.L	#0,d5
+		BGE	noset
+		MOVE.B	#64,Sign
+	noset:
+		MOVE.L	d5,$dff050
+		
+		MOVE.L	d2,d5
+		MULU	#40,d5
+		MOVE.L	d1,d6
+		LSR.L	#4,d6
+		LSL.L	#1,d6
+		ADD.L	d6,d5
+
+		ADD.L	d0,d5
+		MOVE.L	d5,$dff048
+		MOVE.L	d5,$dff054
+
+		MOVEQ	#0,d0
+
+		MOVE.L	DeltaX,d5
+		MOVE.L	DeltaY,d6	
+
+		CMP.L	d5,d6
+		BGE	nooneset1
+		BSET.L	#0,d0
+	nooneset1:
+		CMP.L	d2,d4
+		BGE	nooneset2
+		BSET.L	#1,d0
+	nooneset2:
+		CMP.L	d1,d3
+		BGE	nooneset3
+		BSET.L	#2,d0
+	nooneset3:
+		LEA	Function,a3
+		MOVE.B	(a3,d0.w),d6	
+
+		MOVE.W	#%0000000000000011,d5
+		OR.B	Sign,d5
+		OR.B	d6,d5
+		
+		MOVE.W	d5,$dff042
+
+		MOVE.L	DX,d5
+		ADD.L	#1,d5
+		LSL.L	#6,d5
+		ADD.L	#2,d5
+
+		MOVE.W	d5,$dff058
+
+	wblt11:	BTST	#14,$dff002
+		BNE	wblt11
+
+		RTS
+
+CopyDraw22Work:
+		MOVE.L	MinX,d2
+		MOVE.L	MaxX,d3
+		LSR.L	#4,d2
+		LSR.L	#4,d3
+		LSL.L	#1,d2
+		LSL.L	#1,d3
+
+		MOVE.L	d3,d5
+		SUB.L	d2,d5
+		;LSR.L	#1,d5
+		ADD.L	#2,d5
+		MOVE.L	#40,d4
+		SUB.L	d5,d4
+
+		MOVE.W	d4,$dff064
+		MOVE.W	d4,$dff060
+		MOVE.W	d4,$dff066
+		MOVE.L	#$09f00012,$dff040
+		MOVE.L	#$ffffffff,$dff044
+		MOVE.L	#DP2,d4
+				
+		MOVE.L	MaxY,d5
+		SUB.L	#2,d5
+		MULU.L	#40,d5
+		ADD.L	d3,d5
+		ADD.L	d5,d4
+		MOVE.L	d4,$dff050
+		MOVE.L	Workplane,d4
+		ADD.L	#$2800*3,d4
+		ADD.L	d5,d4
+		MOVE.L	d4,$dff054
+		MOVE.L	d4,$dff048
+		MOVE.L	MaxY,d5
+		SUB.L	MinY,d5
+		SUB.L	#3,d5
+		MULU.L	#64,d5
+		SUB.L	d2,d3
+		LSR.L	#1,d3
+		ADD.L	#1,d3
+		ADD.L	d3,d5
+		MOVE.W	d5,$dff058
+
+	wbltw1129:
+		BTST	#14,$dff002
+		BNE.B	wbltw1129
+
+		RTS
+
+CopyDraw2Draw2:
+		MOVE.L	MinX,d2
+		MOVE.L	MaxX,d3
+		LSR.L	#4,d2
+		LSR.L	#4,d3
+		LSL.L	#1,d2
+		LSL.L	#1,d3
+
+		MOVE.L	d3,d5
+		SUB.L	d2,d5
+		;LSR.L	#1,d5
+		ADD.L	#2,d5
+		MOVE.L	#40,d4
+		SUB.L	d5,d4
+
+		MOVE.W	d4,$dff064
+		MOVE.W	d4,$dff066
+		MOVE.L	#$09f00002,$dff040
+		MOVE.L	#$ffffffff,$dff044
+		MOVE.L	#DP1,d4
+				
+		MOVE.L	MaxY,d5
+		;ADD.L	#1,d5
+		MULU.L	#40,d5
+		ADD.L	d3,d5
+		ADD.L	d5,d4
+		MOVE.L	d4,$dff050
+		MOVE.L	#DP2,d4
+		;ADD.L	#$2800*3,d4
+		ADD.L	d5,d4
+		MOVE.L	d4,$dff054
+		MOVE.L	MaxY,d5
+		SUB.L	MinY,d5
+		;ADD.L	#1,d5
+		MULU.L	#64,d5
+		SUB.L	d2,d3
+		LSR.L	#1,d3
+		ADD.L	#1,d3
+		ADD.L	d3,d5
+		MOVE.W	d5,$dff058
+
+	wbltw1128:
+		BTST	#14,$dff002
+		BNE.B	wbltw1128
+
+		RTS
+
+ClearDraw:
+	wabltc:	BTST	#14,$dff002
+		BNE.B	wabltc
+
+		MOVE.L	#DP1,d0
+		MOVE.L	d0,$dff054
+		MOVE.W	#$0000,$dff066
+		MOVE.W	#%0000000100000000,$dff040
+		MOVE.W	#$0000,$dff042
+		MOVE.W	#256*64+20,$dff058
+
+	wabltc2:
+		BTST	#14,$dff002
+		BNE.B	wabltc2
+
+		RTS
+
+ClearDraw2:
+	wabltc222:
+		BTST	#14,$dff002
+		BNE.B	wabltc222
+
+		MOVE.L	#DP2,d0
+		MOVE.L	d0,$dff054
+		MOVE.W	#$0000,$dff066
+		MOVE.W	#%0000000100000000,$dff040
+		MOVE.W	#$0000,$dff042
+		MOVE.W	#256*64+20,$dff058
+
+	wabltc22:
+		BTST	#14,$dff002
+		BNE.B	wabltc22
+
+		RTS
+
+
+Clear:
+		;clear Workplane - 4 bitplanes
+		
+	wablt:	BTST	#14,$dff002
+		BNE.B	wablt
+
+		MOVE.L	Workplane,d0
+		MOVE.L	d0,$dff054
+		MOVE.W	#$0000,$dff066
+		MOVE.W	#%0000000100000000,$dff040
+		MOVE.W	#$0000,$dff042
+		MOVE.W	#256*64+20,$dff058
+
+	wablt2:	BTST	#14,$dff002
+		BNE.B	wablt2
+
+		ADD.L	#$2800,d0
+		MOVE.L	d0,$dff054
+		MOVE.W	#$0000,$dff066
+		MOVE.W	#%0000000100000000,$dff040
+		MOVE.W	#$0000,$dff042
+		MOVE.W	#256*64+20,$dff058
+
+	wablt3:	BTST	#14,$dff002
+		BNE.B	wablt3
+
+		ADD.L	#$2800,d0
+		MOVE.L	d0,$dff054
+		MOVE.W	#$0000,$dff066
+		MOVE.W	#%0000000100000000,$dff040
+		MOVE.W	#$0000,$dff042
+		MOVE.W	#256*64+20,$dff058
+
+	wablt4:	BTST	#14,$dff002
+		BNE.B	wablt4
+
+		ADD.L	#$2800,d0
+		MOVE.L	d0,$dff054
+		MOVE.W	#$0000,$dff066
+		MOVE.W	#%0000000100000000,$dff040
+		MOVE.W	#$0000,$dff042
+		MOVE.W	#256*64+20,$dff058
+
+	wablt5:	BTST	#14,$dff002
+		BNE.B	wablt5
+
+		RTS
+
+Swap:
+		MOVE.L	Showplane,d0
+		MOVE.L	Workplane,Showplane
+		MOVE.L	d0,Workplane
+
+		MOVE.L	Showcop,d0
+		MOVE.L	Workcop,Showcop
+		MOVE.L	d0,Workcop		
+
+		;MOVE.L	Showcop,$dff080
+		RTS
+
+FillC1C2Palettes:
+		LEA	C1Palette,a0
+		LEA	C2Palette,a1
+		LEA	Palette,a2
+		MOVE.W	#$0180,d0
+		MOVE.W	#15,d1
+	pl:
+		MOVE.W	d0,(a0)+
+		MOVE.W	d0,(a1)+		
+		MOVE.W	(a2),(a0)+
+		MOVE.W	(a2)+,(a1)+
+		ADD.W	#2,d0
+		DBF	d1,pl
+		RTS
+FillC1Planes:
+		LEA	C1Planes,a0
+		MOVE.L	Showplane,d0
+		MOVE.W	#$00e2,(a0)+
+		MOVE.W	d0,(a0)+
+		SWAP	d0
+		MOVE.W	#$00e0,(a0)+
+		MOVE.W	d0,(a0)+
+		SWAP	d0
+		ADD.L	#$2800,d0
+		MOVE.W	#$00e6,(a0)+
+		MOVE.W	d0,(a0)+
+		SWAP	d0
+		MOVE.W	#$00e4,(a0)+
+		MOVE.W	d0,(a0)+
+		SWAP	d0
+		ADD.L	#$2800,d0
+		MOVE.W	#$00ea,(a0)+
+		MOVE.W	d0,(a0)+
+		SWAP	d0
+		MOVE.W	#$00e8,(a0)+
+		MOVE.W	d0,(a0)+
+		SWAP	d0
+		ADD.L	#$2800,d0
+		MOVE.W	#$00ee,(a0)+
+		MOVE.W	d0,(a0)+
+		SWAP	d0
+		MOVE.W	#$00ec,(a0)+
+		MOVE.W	d0,(a0)
+		RTS
+
+FillC2Planes:
+		LEA	C2Planes,a0
+		MOVE.L	Workplane,d0
+		MOVE.W	#$00e2,(a0)+
+		MOVE.W	d0,(a0)+
+		SWAP	d0
+		MOVE.W	#$00e0,(a0)+
+		MOVE.W	d0,(a0)+
+		SWAP	d0
+		ADD.L	#$2800,d0
+		MOVE.W	#$00e6,(a0)+
+		MOVE.W	d0,(a0)+
+		SWAP	d0
+		MOVE.W	#$00e4,(a0)+
+		MOVE.W	d0,(a0)+
+		SWAP	d0
+		ADD.L	#$2800,d0
+		MOVE.W	#$00ea,(a0)+
+		MOVE.W	d0,(a0)+
+		SWAP	d0
+		MOVE.W	#$00e8,(a0)+
+		MOVE.W	d0,(a0)+
+		SWAP	d0
+		ADD.L	#$2800,d0
+		MOVE.W	#$00ee,(a0)+
+		MOVE.W	d0,(a0)+
+		SWAP	d0
+		MOVE.W	#$00ec,(a0)+
+		MOVE.W	d0,(a0)
+		RTS
+
+StoreCopper:
+		MOVE.L	4.w,a6
+		JSR	-132(a6)
+		MOVE.L	156(a6),a1
+		MOVE.L	38(a1),OldCop
+		RTS
+
+RestoreCopper:
+		MOVE.L	4.w,a6
+		JSR	-138(a6)
+		MOVE.L	OldCop,$dff080
+		RTS
+
+WMB:
+	mbl:	BTST.B	#6,$bfe001
+		BNE.W	mbl
+		RTS
+
+;----------------------------------------------
+	SECTION Dane,DATA_P
+
+OldCop:		DC.L	$00000000
+
+Showplane:	DC.L	$00000000
+Workplane:	DC.L	$00000000
+Showcop:	DC.L	$00000000
+Workcop:	DC.L	$00000000
+
+DeltaX:		DC.L	0
+DeltaY:		DC.L	0
+DX:		DC.L	0
+DY:		DC.L	0
+DDX:		DC.L	0
+DDY:		DC.L	0
+		even
+
+Sign:		DC.B	0
+		even
+
+HalfOctant:	DC.B	0
+		even
+
+HalfOctant2:	DC.B	0
+		even
+
+Octant:		DC.B	0
+		even
+
+	SECTION	Copper,DATA_C
+
+Copper1:	
+		DC.L	$008e2c81,$00902cc1
+		DC.L	$00920038,$009400d0
+		DC.L	$00960020
+		DC.L	$01020000,$01040000
+		DC.L	$01080000,$010a0000
+C1Palette:	DS.L	16
+C1Planes:	DS.L	8
+		DC.L	$01004000
+		DC.L	$01fc0000
+		DC.L	$fffffffe
+
+Copper2:	
+		DC.L	$008e2c81,$00902cc1
+		DC.L	$00920038,$009400d0
+		DC.L	$00960020
+		DC.L	$01020000,$01040000
+		DC.L	$01080000,$010a0000
+C2Palette:	DS.L	16
+C2Planes:	DS.L	8
+		DC.L	$01004000
+		DC.L	$01fc0000
+		DC.L	$fffffffe
+
+	SECTION	Paleta,DATA_P
+
+Palette:	DC.W	$0fff,$0fdd,$0ebb,$0e9a,$0d79,$0d56,$0c35,$0c35
+		DC.W	$0f07,$0f0a,$0a22,$0a21,$0921,$0611,$0311,$0000
+
+
+	SECTION Screeny,DATA_C
+
+Plane1:
+	P11:	DCB.B	$2800,$0
+	P12:	DCB.B	$2800,$0
+	P13:	DCB.B	$2800,$0
+	P14:	DCB.B	$2800,$0	
+Plane2:
+	P21:	DCB.B	$2800,$0
+	P22:	DCB.B	$2800,$0
+	P23:	DCB.B	$2800,$0
+	P24:	DCB.B	$2800,$0
+
+DrawPlane:
+	DP1:	DCB.B	$2800,$0
+	DP2:	DCB.B	$2800,$0
+
+AD:	DS.B	4
+
+PolygonCoords:
+	DC.L	0,0,0,0,0,0,0,0
+	DC.L	0,0,0,0,0,0,0,0
+	DC.L	0,0,0,0,0,0,0,0
+	DC.L	0,0,0,0,0,0,0,0
+
+MinY:	DC.L	0
+MaxY:	DC.L	0
+MinX:	DC.L	0
+MaxX:	DC.L	0
+
+Function:
+	DC.B	0,16,4,24,8,20,12,28
+
+Sin:	DC.W	$0080,$0081,$0083,$0084,$0086,$0087,$0089,$008A,$008C,$008D
+	DC.W	$008F,$0091,$0092,$0094,$0095,$0097,$0098,$009A,$009B,$009D
+	DC.W	$009E,$00A0,$00A1,$00A3,$00A4,$00A6,$00A7,$00A9,$00AA,$00AC
+	DC.W	$00AD,$00AF,$00B0,$00B1,$00B3,$00B4,$00B6,$00B7,$00B8,$00BA
+	DC.W	$00BB,$00BD,$00BE,$00BF,$00C1,$00C2,$00C3,$00C5,$00C6,$00C7
+	DC.W	$00C8,$00CA,$00CB,$00CC,$00CD,$00CF,$00D0,$00D1,$00D2,$00D3
+	DC.W	$00D5,$00D6,$00D7,$00D8,$00D9,$00DA,$00DB,$00DC,$00DD,$00DE
+	DC.W	$00E0,$00E1,$00E2,$00E2,$00E3,$00E4,$00E5,$00E6,$00E7,$00E8
+	DC.W	$00E9,$00EA,$00EB,$00EB,$00EC,$00ED,$00EE,$00EF,$00EF,$00F0
+	DC.W	$00F1,$00F1,$00F2,$00F3,$00F3,$00F4,$00F5,$00F5,$00F6,$00F6
+	DC.W	$00F7,$00F7,$00F8,$00F8,$00F9,$00F9,$00FA,$00FA,$00FB,$00FB
+	DC.W	$00FB,$00FC,$00FC,$00FC,$00FD,$00FD,$00FD,$00FD,$00FD,$00FE
+	DC.W	$00FE,$00FE,$00FE,$00FE,$00FE,$00FE,$00FE,$00FE
+Cos:	DC.W	$00FE,$00FE
+	DC.W	$00FE,$00FE,$00FE,$00FE,$00FE,$00FE,$00FE,$00FE,$00FE,$00FD
+	DC.W	$00FD,$00FD,$00FD,$00FC,$00FC,$00FC,$00FC,$00FB,$00FB,$00FA
+	DC.W	$00FA,$00FA,$00F9,$00F9,$00F8,$00F8,$00F7,$00F7,$00F6,$00F6
+	DC.W	$00F5,$00F4,$00F4,$00F3,$00F3,$00F2,$00F1,$00F0,$00F0,$00EF
+	DC.W	$00EE,$00EE,$00ED,$00EC,$00EB,$00EA,$00E9,$00E9,$00E8,$00E7
+	DC.W	$00E6,$00E5,$00E4,$00E3,$00E2,$00E1,$00E0,$00DF,$00DE,$00DD
+	DC.W	$00DC,$00DB,$00DA,$00D9,$00D8,$00D6,$00D5,$00D4,$00D3,$00D2
+	DC.W	$00D1,$00CF,$00CE,$00CD,$00CC,$00CA,$00C9,$00C8,$00C7,$00C5
+	DC.W	$00C4,$00C3,$00C1,$00C0,$00BF,$00BD,$00BC,$00BB,$00B9,$00B8
+	DC.W	$00B6,$00B5,$00B4,$00B2,$00B1,$00AF,$00AE,$00AC,$00AB,$00AA
+	DC.W	$00A8,$00A7,$00A5,$00A4,$00A2,$00A1,$009F,$009E,$009C,$009B
+	DC.W	$0099,$0098,$0096,$0095,$0093,$0091,$0090,$008E,$008D,$008B
+	DC.W	$008A,$0088,$0087,$0085,$0083,$0082,$0080,$0080,$007E,$007D
+	DC.W	$007B,$007A,$0078,$0077,$0075,$0073,$0072,$0070,$006F,$006D
+	DC.W	$006C,$006A,$0069,$0067,$0066,$0064,$0063,$0061,$0060,$005E
+	DC.W	$005D,$005B,$005A,$0058,$0057,$0055,$0054,$0052,$0051,$004F
+	DC.W	$004E,$004D,$004B,$004A,$0048,$0047,$0046,$0044,$0043,$0041
+	DC.W	$0040,$003F,$003D,$003C,$003B,$003A,$0038,$0037,$0036,$0034
+	DC.W	$0033,$0032,$0031,$0030,$002E,$002D,$002C,$002B,$002A,$0029
+	DC.W	$0027,$0026,$0025,$0024,$0023,$0022,$0021,$0020,$001F,$001E
+	DC.W	$001D,$001C,$001B,$001A,$0019,$0018,$0018,$0017,$0016,$0015
+	DC.W	$0014,$0013,$0013,$0012,$0011,$0010,$0010,$000F,$000E,$000E
+	DC.W	$000D,$000C,$000C,$000B,$000A,$000A,$0009,$0009,$0008,$0008
+	DC.W	$0007,$0007,$0006,$0006,$0006,$0005,$0005,$0005,$0004,$0004
+	DC.W	$0004,$0003,$0003,$0003,$0003,$0002,$0002,$0002,$0002,$0002
+	DC.W	$0002,$0002,$0002,$0002,$0002,$0002,$0002,$0002,$0002,$0002
+	DC.W	$0002,$0002,$0002,$0002,$0002,$0002,$0003,$0003,$0003,$0003
+	DC.W	$0004,$0004,$0004,$0005,$0005,$0005,$0006,$0006,$0007,$0007
+	DC.W	$0007,$0008,$0008,$0009,$000A,$000A,$000B,$000B,$000C,$000C
+	DC.W	$000D,$000E,$000E,$000F,$0010,$0011,$0011,$0012,$0013,$0014
+	DC.W	$0014,$0015,$0016,$0017,$0018,$0019,$001A,$001B,$001B,$001C
+	DC.W	$001D,$001E,$001F,$0020,$0021,$0022,$0023,$0025,$0026,$0027
+	DC.W	$0028,$0029,$002A,$002B,$002C,$002E,$002F,$0030,$0031,$0032
+	DC.W	$0034,$0035,$0036,$0037,$0039,$003A,$003B,$003D,$003E,$003F
+	DC.W	$0040,$0042,$0043,$0045,$0046,$0047,$0049,$004A,$004C,$004D
+	DC.W	$004E,$0050,$0051,$0053,$0054,$0056,$0057,$0059,$005A,$005C
+	DC.W	$005D,$005E,$0060,$0061,$0063,$0065,$0066,$0068,$0069,$006B
+	DC.W	$006C,$006E,$006F,$0071,$0072,$0074,$0075,$0077,$0079,$007A
+	DC.W	$007C,$007D,$007F,$0080,$0081,$0082,$0084,$0086,$0087,$0089
+	DC.W	$008A,$008C,$008D,$008F,$0090,$0092,$0093,$0095,$0096,$0098
+	DC.W	$009A,$009B,$009D,$009E,$00A0,$00A1,$00A3,$00A4,$00A6,$00A7
+	DC.W	$00A9,$00AA,$00AB,$00AD,$00AE,$00B0,$00B1,$00B3,$00B4,$00B5
+	DC.W	$00B7,$00B8,$00BA,$00BB,$00BC,$00BE,$00BF,$00C0,$00C2,$00C3
+	DC.W	$00C4,$00C6,$00C7,$00C8,$00CA,$00CB,$00CC,$00CD,$00CF,$00D0
+	DC.W	$00D1,$00D2,$00D3,$00D4,$00D6,$00D7,$00D8,$00D9,$00DA,$00DB
+	DC.W	$00DC,$00DD,$00DE,$00DF,$00E0,$00E1,$00E2,$00E3,$00E4,$00E5
+	DC.W	$00E6,$00E7,$00E8,$00E9,$00EA,$00EB,$00EB,$00EC,$00ED,$00EE
+	DC.W	$00EF,$00EF,$00F0,$00F1,$00F1,$00F2,$00F3,$00F3,$00F4,$00F5
+	DC.W	$00F5,$00F6,$00F6,$00F7,$00F7,$00F8,$00F8,$00F9,$00F9,$00FA
+	DC.W	$00FA,$00FB,$00FB,$00FB,$00FC,$00FC,$00FC,$00FD,$00FD,$00FD
+	DC.W	$00FD,$00FD,$00FE,$00FE,$00FE,$00FE,$00FE,$00FE,$00FE,$00FE

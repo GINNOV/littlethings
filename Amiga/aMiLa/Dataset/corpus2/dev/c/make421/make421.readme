@@ -1,0 +1,92 @@
+Short:        controls the generation of executable
+Author:       gnu.org
+Uploader:     dmx404 gmail com (DMX)
+Type:         dev/c
+Version:      4.2.1
+Replaces:     dev/c/make421.lha
+Requires:     ixemul.library v48+
+Architecture: m68k-amigaos
+
+Re-Upload
+
+- Corrected formatting error.
+
+GNU Make
+
+GNU Make is a tool which controls the generation of executables and other
+non-source files of a program from the program's source files.
+
+Make gets its knowledge of how to build your program from a file called the
+makefile, which lists each of the non-source files and how to compute it from
+other files. When you write a program, you should write a makefile for it, so
+that it is possible to use Make to build and install the program.
+
+Capabilities of Make
+
+    Make enables the end user to build and install your package without
+    knowing the details of how that is done -- because these details are
+    recorded in the makefile that you supply.
+
+    Make figures out automatically which files it needs to update, based on
+    which source files have changed. It also automatically determines the
+    proper order for updating files, in case one non-source file depends on
+    another non-source file.
+
+    As a result, if you change a few source files and then run Make, it does
+    not need to recompile all of your program. It updates only those
+    non-source files that depend directly or indirectly on the source files
+    that you changed.
+
+    Make is not limited to any particular language. For each non-source file
+    in the program, the makefile specifies the shell commands to compute it.
+    These shell commands can run a compiler to produce an object file, the
+    linker to produce an executable, ar to update a library, or TeX or
+    Makeinfo to format documentation.
+
+    Make is not limited to building a package. You can also use Make to
+    control installing or deinstalling a package, generate tags tables for
+    it, or anything else you want to do often enough to make it worth while
+    writing down how to do it.
+
+Make Rules and Targets
+
+A rule in the makefile tells Make how to execute a series of commands in
+order to build a target file from source files. It also specifies a list of
+dependencies of the target file. This list should include all files (whether
+source files or other targets) which are used as inputs to the commands in
+the rule.
+
+Here is what a simple rule looks like:
+
+target:   dependencies ...
+          commands
+          ...
+
+When you run Make, you can specify particular targets to update; otherwise,
+Make updates the first target listed in the makefile. Of course, any other
+target files needed as input for generating these targets must be updated
+first.
+
+Make uses the makefile to figure out which target files ought to be brought
+up to date, and then determines which of them actually need to be updated.
+If a target file is newer than all of its dependencies, then it is already up
+to date, and it does not need to be regenerated. The other target files do
+need to be updated, but in the right order: each target file must be
+regenerated before it is used in regenerating other targets.
+
+Advantages of GNU Make
+
+GNU Make has many powerful features for use in makefiles, beyond what other
+Make versions have. It can also regenerate, use, and then delete intermediate
+files which need not be saved.
+
+GNU Make also has a few simple features that are very convenient. For
+example, the -o file option which says ``pretend that source file file has
+not changed, even though it has changed.'' This is extremely useful when you
+add a new macro to a header file. Most versions of Make will assume they must
+therefore recompile all the source files that use the header file; but GNU
+Make gives you a way to avoid the recompilation, in the case where you know
+your change to the header file does not require it.
+
+However, the most important difference between GNU Make and most versions of
+Make is that GNU Make is free software.

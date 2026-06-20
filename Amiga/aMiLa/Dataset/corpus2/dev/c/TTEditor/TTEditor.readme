@@ -1,0 +1,9 @@
+Short:     V1.0 ToolTypesEditor
+Author:    Jim Steichen (jimbot@rconnect.com)
+Uploader:  Jim Steichen (jimbot@rconnect.com)
+Type:      dev/c
+Version:   1.0
+Requires:  OS3.5+
+This program was mainly written so that it
+could be called from other programs, eliminating
+the need to write your own ToolTypes Editor.

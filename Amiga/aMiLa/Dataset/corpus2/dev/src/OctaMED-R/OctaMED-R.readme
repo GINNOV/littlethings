@@ -1,0 +1,9 @@
+Short:        OctaMED Player Programer Sources V6
+Author:       kinnunen@stekt.oulu.fi  ( Teijo Kinnunen )
+Uploader:     rbfsoft cix compulink co uk ( RBF Software )
+Type:         dev/src
+Architecture: m68k-amigaos
+
+
+Routines for programers utilising the OctaMED Program
+Copyright © 1995 Teijo Kinnunen and RBF Software.

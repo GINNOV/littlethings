@@ -1,0 +1,42 @@
+Thorsten Otto of Atari-forums got it to build and here are the notes:
+
+Yes, it looks indeed that this is a slightly *newer* version than the released binary for Atari. Regarding the resource file: all it contained was the main menu, and it seems that the source has been changed to use the already included, propietary menu structure instead, and thus does not need a resource file anymore.
+
+>As Jim remembered he did it with Aztec C
+
+I'm not entirely sure about this. The makefiles in the archive use mmcc.ttp
+and mmimp.ttp, and those are from Megamax-C IIRC, but its been more than 30
+years that i used it, and i don't have a working installation of it anymore
+(only on floppy disk, but no disk drive on PC...). But it was definitely a
+very old compiler, since all the code is in K&R style.
+
+>There might be missing pieces, but that is all he has in source code form for Aegis.
+
+It's altogether possible that the Atari version is complete, if you can use
+the assembler code. I just can't use it directly from GNU-C in its current
+form, and i'm not sure whether the c code fragments really do the same thing.
+But the amiga version definitely can't be built from it, it is calling
+functions like intuition_event() that take the internal structure as
+arguments, and those are missing (most likely there had been a counterpart to
+the libatari directory).
+
+
+I finally found some crippled version of megamax on https://github.com/gondur/ReDMCSB_Release2.git and filled in some header files with versions from LaserC, which luckily seems to work. With that, and writing some missing functions, i was able to compile and link a version that apparently seems to work, at a first glance (although the version that i tried to compile with GNU-C revealed some bugs, like functions not returning any values when they should, using unitialized variables etc).
+
+Megamax does not come with a make utitily, so i used mupfel scripts instead. If you can get the shell to work, you might be able to use the original makefiles, too. Only thing that is missing is a command to link the program together, but that's a one-liner, once you have a linker input file (that anist.lnk in the player directory). 
+
+The process i used was:
+
+- copy the contents of the megamax directory to the root of your drive (could not find another way, the paths seems to be hard-coded)
+
+- invoke the make.mup script in each subdirectory (c, asm, libm, libatari, and player)
+
+- invoke link.mup
+
+I didn't bother to invoke mmimp.ttp (the code improver) on most of the object files, since all he  isable to do is to convert some word-sized branches to their short form.
+
+Note that i left out one source file in the link process (c/scalescr.c) because it does not generate any code, everything was ifdef'd out. That was necessary because the linker input file now has exactly 100 input files, which seems to be the limit megamax can handle.
+
+BTW. the Atari version does not seem to have a menu bar at all anymore. Also, the resolution and screen size are all hardcoded to st medium resolution (320x200, with 16 colors) in a lot of places, so don't expect to be able to run it on more modern hardware.
+
+ 

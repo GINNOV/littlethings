@@ -1,0 +1,92 @@
+# Generated automatically from Makefile.in by configure.
+# Makefile for libiconv
+
+#### Start of system configuration section. ####
+
+# Directories used by "make":
+srcdir = .
+
+# Directories used by "make install":
+prefix = /usr/local
+local_prefix = /usr/local
+exec_prefix = $(prefix)
+libdir = $(exec_prefix)/lib
+includedir = $(prefix)/include
+mandir = $(prefix)/man
+
+# Programs used by "make":
+RM = rm -f
+
+
+# Programs used by "make install":
+INSTALL = /bin/install -c
+INSTALL_PROGRAM = $(INSTALL)
+INSTALL_DATA = $(INSTALL) -m 644
+
+#### End of system configuration section. ####
+
+SHELL = /bin/sh
+
+all : force
+	cd src; $(MAKE) -r all
+	cd man; $(MAKE) -r all
+	if test -d tests; then cd tests; $(MAKE) -r all; fi
+
+# Installs the library and include files only. Typically called with only
+# $(libdir) and $(includedir) - don't use $(prefix) and $(exec_prefix) here.
+install-lib : all force
+	cd src; $(MAKE) -r install-lib libdir='$(libdir)' includedir='$(includedir)'
+	if [ ! -d $(includedir) ] ; then mkdir $(includedir) ; fi
+	$(INSTALL_DATA) include/iconv.h $(includedir)/iconv.h
+
+install : force
+	cd src; $(MAKE) -r install prefix='$(prefix)' exec_prefix='$(exec_prefix)' libdir='$(libdir)'
+	if [ ! -d $(DESTDIR)$(prefix) ] ; then mkdir $(DESTDIR)$(prefix) ; fi
+	if [ ! -d $(DESTDIR)$(exec_prefix) ] ; then mkdir $(DESTDIR)$(exec_prefix) ; fi
+	if [ ! -d $(DESTDIR)$(includedir) ] ; then mkdir $(DESTDIR)$(includedir) ; fi
+	$(INSTALL_DATA) include/iconv.h $(DESTDIR)$(includedir)/iconv.h
+	cd man; $(MAKE) -r install prefix='$(prefix)' exec_prefix='$(exec_prefix)' mandir='$(mandir)'
+
+installdirs : force
+	cd src; $(MAKE) -r installdirs prefix='$(prefix)' exec_prefix='$(exec_prefix)' libdir='$(libdir)'
+	if [ ! -d $(DESTDIR)$(prefix) ] ; then mkdir $(DESTDIR)$(prefix) ; fi
+	if [ ! -d $(DESTDIR)$(exec_prefix) ] ; then mkdir $(DESTDIR)$(exec_prefix) ; fi
+	if [ ! -d $(DESTDIR)$(includedir) ] ; then mkdir $(DESTDIR)$(includedir) ; fi
+	cd man; $(MAKE) -r installdirs prefix='$(prefix)' exec_prefix='$(exec_prefix)' mandir='$(mandir)'
+
+uninstall : force
+	cd src; $(MAKE) -r uninstall prefix='$(prefix)' exec_prefix='$(exec_prefix)' libdir='$(libdir)'
+	$(RM) $(DESTDIR)$(includedir)/iconv.h
+	cd man; $(MAKE) -r uninstall prefix='$(prefix)' exec_prefix='$(exec_prefix)' mandir='$(mandir)'
+
+check : force
+	cd src; $(MAKE) -r check
+	cd man; $(MAKE) -r check
+	if test -d tests; then cd tests; $(MAKE) -r check; fi
+
+mostlyclean : force
+	cd src; $(MAKE) -r mostlyclean
+	cd man; $(MAKE) -r mostlyclean
+	if test -d tests; then cd tests; $(MAKE) -r mostlyclean; fi
+
+clean : force
+	cd src; $(MAKE) -r clean
+	cd man; $(MAKE) -r clean
+	if test -d tests; then cd tests; $(MAKE) -r clean; fi
+
+distclean : force
+	cd src; if test -f Makefile; then $(MAKE) -r distclean; fi
+	cd man; if test -f Makefile; then $(MAKE) -r distclean; fi
+	if test -d tests; then cd tests; if test -f Makefile; then $(MAKE) -r distclean; fi; fi
+	$(RM) config.status config.log config.cache Makefile libtool
+	$(RM) include/iconv.h
+
+maintainer-clean : force
+	cd src; if test -f Makefile; then $(MAKE) -r maintainer-clean; fi
+	cd man; if test -f Makefile; then $(MAKE) -r maintainer-clean; fi
+	if test -d tests; then cd tests; if test -f Makefile; then $(MAKE) -r maintainer-clean; fi; fi
+	$(RM) config.status config.log config.cache Makefile libtool
+	$(RM) include/iconv.h
+
+force :
+

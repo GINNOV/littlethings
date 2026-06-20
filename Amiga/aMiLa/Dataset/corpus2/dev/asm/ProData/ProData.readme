@@ -1,0 +1,17 @@
+Short:        It converts any binary file to assembler source code (FAST!)
+Uploader:     ted@intercom.it (Alfredo Ornaghi)
+Author:       ted@intercom.it (Alfredo Ornaghi)
+Type:         dev/asm
+Version:      1.0
+Requirements: Any Amiga.
+
+ProData is a simple program that converts any binary file to assembler
+source code, it works in a simple Workbench window.
+This version is 100% assembler, wrote to be as fast as possible...
+
+
+          ------------------------------------------------------------
+         |     //          | Alfredo Ornaghi (Amiga user!)            |
+         |    //  Amiga    | E-Mail   : ted@intercom.it               |
+         | \\X/ forever!!! | Web site : http://www.intercom.it/~ted/  |
+          ------------------------------------------------------------

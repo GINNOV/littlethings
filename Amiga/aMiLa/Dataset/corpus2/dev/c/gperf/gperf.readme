@@ -1,0 +1,13 @@
+Short:        Generates perfect hash functions
+Author:       Douglas C. Schmidt, Bruno Haible
+Uploader:     chris unsatisfactorysoftware co uk (Chris Young)
+Type:         dev/c
+Version:      3.0.3
+Architecture: ppc-amigaos >= 4.0.0
+
+This is GNU gperf. It is a program that generates perfect hash
+functions for sets of key words.  A perfect hash function is:
+
+          A hash function and a data structure that allows 
+          recognition of a key word in a set of words using 
+          exactly 1 probe into the data structure.

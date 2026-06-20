@@ -1,0 +1,477 @@
+		A few sentences to ISUP
+		-----------------------
+
+All ISUP objects are created from special data structures (struct xxxData)
+via library functions (Createxxx). Some of these functions expect (a pointer
+to) an ARRAY of data structures to create multiple objects with one call.
+These arrays are terminated with an entry (data structure) with it's type
+member (xxx_Type) set to the special value INTUISUP_DATA_END (0).
+DON'T FORGET THIS TERMINATION ENTRY OR YOU'RE VISITED BY THE GURU.
+
+The creation functions return a pointer (APTR) to the internal data
+environment according to these ISUP objects. This pointer is used later as
+paramter for the other functions to access the object data.
+THE POINTERS TO INTERNAL DATA OF THE DIFFERENT ISUP OBJECTS ARE ALL OF THE
+SAME TYPE (APTR), SO DON'T CONFUSE WITH THEM.
+
+Now a few words to the functions of ISUP library:
+
+APTR IGetRenderInfo(struct Screen  *screen, USHORT flags)
+	screen - ptr to screen the ISUP object should be displayed on or
+		 NULL for the workbench screen
+	flags - RENDER_INFO_FLAG_xxx
+
+	Returns a pointer to an internal data structure with some visual
+	infos needed for creation of ISUP objects. Use the SAME pointer
+	(only ONE call of IGetRenderInfo for all ISUP objects displayed on
+	the SAME screen) as parameter APTR ri to the ISUP functions. This
+	data structure MUST be released with the function IFreeRenderInfo
+	before closing library.
+
+VOID IFreeRenderInfo(APTR ri)
+	ri - pointer to internal data structure returned by IGetRenderInfo
+
+	Releases memory for internal data structure allocated by
+	IGetRenderInfo.
+
+struct Window  *IOpenWindow(APTR ri, struct NewWindow  *nw, USHORT flags)
+	ri - pointer to internal data structure returned by IGetRenderInfo
+	nw - pointer to initialized NewWindow structure
+	flags - OPEN_WINDOW_FLAG_xxx
+
+	Manipulates NewWindow structure according to given flags and opens
+	window from it.
+
+VOID IClearWindow(APTR ri, struct Window  *win, USHORT left_edge,
+		 USHORT top_edge, USHORT width, USHORT height, USHORT flags)
+	ri - pointer to internal data structure returned by IGetRenderInfo
+	win - pointer to window opened by (I)OpenWindow
+	left_edge, top_edge, width, height - dimension of area to clear
+	flags - CLEAR_WIDNOW_FLAG_xxx
+
+	Clears area of given window according to visual infos (APTR ri). The
+	area will be clipped to the window dimension if necessary.
+
+VOID ICloseWindow(struct Window  *win, BOOL more_windows)
+	win - pointer to window opened by (I)OpenWindow
+	more_windows - TRUE if user port of window shared with other windows
+
+	Closes window in a savely manner (all IntuiMessages are replyed,
+	user port is only closed if not shared, ...).
+
+struct AvailFontsHeader	*IAvailFonts(APTR ri)
+	ri - pointer to internal data structure returned by IGetRenderInfo
+
+	Creates a list of all available fonts (ROM + disk) and saves this in
+	the internal data structure (APTR ri).
+
+struct TextAttr  *IAskFont(APTR ri, struct TextAttr  *ta)
+	ri - pointer to internal data structure returned by IGetRenderInfo
+	ta - pointer to initialized structure with text attributes
+
+	Check if given font exists in internal font list (APTR ri) created
+	with IAvailFonts.
+
+struct TextFont  *IOpenFont(APTR ri, struct TextAttr  *ta)
+	ri - pointer to internal data structure returned by IGetRenderInfo
+	ta - pointer to initialized structure with text attributes
+
+	Open font according to given TextAttr structure from internal font
+	list (APTR ri).
+
+VOID IDisplayTexts(APTR ri, struct Window  *win, struct TextData  *td,
+		   SHORT hoffset, SHORT voffset, BYTE **language_text_array)
+	ri - pointer to internal data structure returned by IGetRenderInfo
+	win - pointer to window opened by (I)OpenWindow
+	td - pointer to ARRAY of initialized TextData structures
+	hoffset, voffset - offsets added to positions of ALL texts
+	language_text_array - pointer to string pointer array created with
+			      IBuildLanguageTextArray or NULL
+
+	Displays texts described in given data structure array. If given
+	language_text_array is not NULL then td_Text doesn't contain a
+	pointer to string but an offset of the string pointer in given array
+	with pointers to text in foreign languages.
+
+USHORT IPrintText(APTR ri, struct Window  *win, BYTE *text, USHORT left_edge,
+     USHORT top_edge, USHORT type, USHORT flags, struct TextAttr  *text_attr)
+	ri - pointer to internal data structure returned by IGetRenderInfo
+	win - pointer to window opened by (I)OpenWindow
+	text - pointer to string with text
+	left_edge, top_edge - position of text on diplay
+	type - TEXT_DATA_TYPE_xxx
+	flags - TEXT_DATA_FLAG_xxx
+	text_attr - font used for text
+
+	Displays text at given position.
+
+USHORT IConvertUnsignedDec(ULONG num, BYTE *buffer, USHORT flags)
+	num - number to be converted
+	buffer - pointer to buffer for converted number
+	flags - CONVERT_FLAG_xxx
+
+	Convert binary number to text string in unsigned decimal format.
+
+USHORT IConvertSignedDec(LONG num, BYTE *buffer, USHORT flags)
+	num - number to be converted
+	buffer - pointer to buffer for converted number
+	flags - CONVERT_FLAG_xxx
+
+	Convert binary number to text string in signed decimal format.
+
+USHORT IConvertHex(ULONG num, BYTE *buffer, USHORT flags)
+	num - number to be converted
+	buffer - pointer to buffer for converted number
+	flags - CONVERT_FLAG_xxx
+
+	Convert binary number to text string in hexa decimal format.
+
+USHORT IConvertBin(ULONG num, BYTE *buffer, USHORT flags)
+	num - number to be converted
+	buffer - pointer to buffer for converted number
+	flags - CONVERT_FLAG_xxx
+
+	Convert binary number to text string in binary format.
+
+VOID IDisplayBorders(APTR ri, struct Window  *win, struct BorderData  *bd,
+					       SHORT hoffset, SHORT voffset)
+	ri - pointer to internal data structure returned by IGetRenderInfo
+	win - pointer to window opened by (I)OpenWindow
+	td - pointer to ARRAY of initialized BorderData structures
+	hoffset, voffset - offsets added to positions of ALL texts
+
+	Displays borders described in given data structure array.
+
+VOID IDrawBorder(APTR ri, struct Window  *win, USHORT left_edge,
+		  USHORT top_edge, USHORT width, USHORT height, USHORT type)
+	ri - pointer to internal data structure returned by IGetRenderInfo
+	win - pointer to window opened by (I)OpenWindow
+	left_edge, top_edge, width, height - dimension of border
+	type - BORDER_DATA_TYPE_xxx
+
+	Draws border at given position on display.
+
+APTR ICreateGadgets(APTR ri, struct GadgetData  *gd, SHORT hoffset,
+				  SHORT voffset, BYTE **language_text_array)
+	ri - pointer to internal data structure returned by IGetRenderInfo
+	gd - pointer to ARRAY of initialized GadgetData structures
+	hoffset, voffset - offsets added to positions of ALL texts
+	language_text_array - pointer to string pointer array created with
+			      IBuildLanguageTextArray or NULL
+
+	Create internal data structure for ISUP gadgets from given array of
+	data structures. This function DON'T display any object. Displaying
+	will be done with IDisplayGadgets. Internal data structure MUST be
+	released with IFreeGadgets. If given language_text_array are not
+	NULL then gd_Text doesn't contain a pointer to string but an offset
+	of the string pointer in given array with pointers to text in foreign
+	languages.
+
+VOID IFreeGadgets(APTR gl)
+	gl - pointer to internal data structure returned by ICreateGadgets
+
+	Releases memory for internal data structure allocated by
+	ICreateGadgets. If gadgets are currently displayed then they MUST be
+	removed with IRemoveGadgets first.
+
+VOID IDisplayGadgets(struct Window  *win, APTR gl)
+	win - pointer to window opened by (I)OpenWindow
+	gl - pointer to internal data structure returned by ICreateGadgets
+
+	Displays all gadgets from given internal data structure (gadgets now
+	are selectable). To remove gadgets from display use IRemoveGadgets
+	(gadgets aren't selectable any more).
+
+VOID IRefreshGadgets(APTR gl)
+	gl - pointer to internal data structure returned by ICreateGadgets
+
+	Refresh images of all gadgets from given internal data structure.
+	ONLY NEEDED FOR WINDOWREFRESH OR NEWSIZE IDCMP EVENTS.
+
+VOID IModifyGadget(APTR gl, USHORT data_entry, LONG left_edge, LONG top_edge,
+						  ULONG width, ULONG height)
+	gl - pointer to internal data structure returned by ICreateGadgets
+	data_entry - offset (in array of GadgetData structures) of gadget to
+		     modify
+	left_edge, top_edge, width, height - new dimension of gadget or
+					     USE_CURRENT_VALUE for old value
+
+	Repositions and/or resizes a gadget. All gadgets can be repositioned
+	but only some gadgets can be modified: buttons, sliders and
+	scrollers. NO ADDITIONAL REFRESH NEEDED.
+
+ULONG ISetGadgetAttributes(APTR gl, USHORT data_entry, ULONG flag_mask,
+		     ULONG flag_bits, ULONG data1, ULONG data2, VOID *data3)
+	gl - pointer to internal data structure returned by ICreateGadgets
+	data_entry - offset (in array of GadgetData structures) of gadget to
+		     change attributes
+	flag_mask - mask with bits set for flag bits to change
+	flag_bits - new flag bits (only bits with flag mask bit set are
+		    changed)
+	data1, data2, data3 - new values for appropriate union gd_SpecialData
+			      or USE_CURENT_VALUE for old value
+
+	Changes flags or special data and returns OLD value of a gadget. Not
+	all special data members can be changed of different gadgets. Some
+	are fixed while creating. NO ADDITIONAL REFRESH NEEDED.
+
+
+VOID IActivateInputGadget(APTR gl, USHORT data_entry)
+	gl - pointer to internal data structure returned by ICreateGadgets
+	data_entry - offset (in array of GadgetData structures) of gadget to
+		     activate
+
+	Activates an input gadget (string or integer gadget).
+
+struct Gadget  *IGadgetAddress(APTR gl, USHORT data_entry)
+	gl - pointer to internal data structure returned by ICreateGadgets
+	data_entry - offset (in array of GadgetData structures) of gadget to
+		     get pointer of its standard gadget structure
+
+	Returns pointer to the appropriate standard gadget structure. This
+	function is normally not used, because no access to the standard
+	gadget structures is required. All changes to ISUP objects MUST be
+	performed via ISetGadgetAttributes().
+
+struct Window  *IRemoveGadgets(APTR gl)
+	gl - pointer to internal data structure returned by ICreateGadgets
+
+	Removes all gadgets belonging to given internal data structure from
+	display (gadgets aren't selectable any more). Pointer to window
+	gadgets displayed before is returned.
+
+struct IntuiMessage  *IGetMsg(struct MsgPort  *uport)
+	uport - window's user port
+
+	MUST be used instead of Exec's GetMsg to handle all actions belonging
+	to ISUP objects. For all events produced by ISUP objects a modified
+	IntuiMessage structure will be returned. Some of their members are
+	(mis)used for special ISUP data:
+
+		Class = ISUP_ID -> need to identify an modified ISUP message
+		Code = id of the appropriate ISUP object -> offset of object
+		       data structure in array of GadgetData structures
+		       given to ICreateGadgets()
+		IAddress = value returned from ISUP object, e.g. state (0|1)
+			   of check gadget, count of count gadget,...
+			   ATTENTION: for string gadgets IAddress contains
+				      a pointer to the gadget's input buffer,
+				      so no ptr to gad->StringInfo.Buffer
+				      needed
+		SpecialLink = internal ptr returned by ICreateGadgets()
+			      according to appropriate ISUP object
+			      ATTENTION: if more than one lists with ISUP
+					 objects displayed on the same
+					 window, SpecialLink must be checked
+					 first for the list the ISUP object
+					 belongs to
+
+	All other members of the IntuiMessage structure contains their
+	normal values. All special IntuiMessage	structures MUST be replied
+	with IReplyMsg instead of Exec's ReplyMsg. Normal IntuiMessage can
+	replied with this function too.
+
+	Example:
+
+	   struct IntuiMessage *im;
+
+	   while (im = IGetMsg(win->UserPort)) {
+		       ^
+		       |
+	      if (im->Class == ISUP_ID) {
+		 ULONG value;
+
+		 /* Handle event from ISUP object */
+		 switch (im->Code) {
+		    case 0 :    /* first object in GadgetData array */
+		       value = (ULONG)im->IAddress;   /* value returned from this object */
+		       break;
+		         :
+		         :
+		    case n :    /* n-th object in GadgetData array */
+		       value = (ULONG)im->IAddress;   /* value returned from this object */
+		       break;
+		 }
+	      } else {
+
+		 /* Handle normal IDCMP events */
+			:
+			:
+	      }
+	      IReplyMsg(im);
+	      ^
+	      |
+	   }
+
+VOID IReplyMsg(struct IntuiMessage  *imsg)
+	imsg - IntuiMessage received with IGetMsg
+
+	Replys special IntuiMessage built by IGetMsg (Class == ISUP_ID).
+	Normal IntuiMessage can replied with this function too.
+
+UBYTE IConvertRawKeytoASCII(struct IntuiMessage  *imsg)
+	imsg - IntuiMessage received with IGetMsg
+
+	Returns ASCII code of given RAWKEY IntuiMessage or ZERO if no
+	ASCII character.
+
+BOOL IAutoRequest(struct Window  *req_win, BYTE *title, BYTE *body_text,
+		       BYTE *pos_text, BYTE *neg_text, LONG pos_idcmp_flags,
+	 LONG neg_idcmp_flags, USHORT req_flags, BYTE **language_text_array)
+	req_win - pointer to window opened by (I)OpenWindow or NULL for
+		  window on workbench screen
+	title - pointer to title string for requester window or NULL for
+		default title
+	body_text - pointer to text string for requester body
+	pos_text - pointer to text string for positive gadget or NULL for no
+		   positive gadget
+	neg_text - pointer to text string for negative gadget or NULL for no
+		   negative gadget
+	pos_idcmp_flags - IDCMP flags for activating positive gadget
+	neg_idcmp_flags - IDCMP flags for activating negative gadget
+	req_flags - REQ_DATA_FLAG_xxx
+	language_text_array - pointer to string pointer array created with
+			      IBuildLanguageTextArray or NULL
+
+	Displays an auto requester from given data and waits for it's
+	termination with the positive or negative gadget. In body text a new
+	line is started with `\n'. If given language_text_array is not NULL
+	then td_Text doesn't contain a pointer to string but an offset of
+	the string pointer in given array with pointers to text in foreign
+	languages.
+
+APTR IDisplayRequester(struct Window  *req_win, struct RequesterData  *rd,
+						 BYTE **language_text_array)
+	req_win - pointer to window opened by (I)OpenWindow or NULL for
+		  window on workbench screen
+	rd - pointer to initialized RequesterData structure
+	language_text_array - pointer to string pointer array created with
+			      IBuildLanguageTextArray or NULL
+
+	Displays a requester defined by given RequesterData structure. All
+	other gadgets displayed on window the requester window (req_win)
+	opened from are disabled till removing of requester. So any
+	IntuiMessages with Class == ISUP_ID received by
+	IGetMsg(req_win->UserPort) come from requester. If given
+	language_text_array is not NULL then td_Text doesn't contain a
+	pointer to string but an offset of the string pointer in given array
+	with pointers to text in foreign languages. Pointer to internal
+	data structure belonging to requester is returned. Requester MUST be
+	removed from display with IRemoveRequester.
+
+VOID IRemoveRequester(APTR rl)
+	rl - pointer to internal data structure returned by IDisplayRequester
+
+	Removes requester belonging to given internal data structure from
+	display. All gadgets disabled by IDisplayGadgets are reenabled now.
+	
+APTR ICreateMenu(APTR ri, struct Window  *win, struct MenuData  *md,
+			   struct TextAttr  *ta, BYTE **language_text_array)
+	ri - pointer to internal data structure returned by IGetRenderInfo
+	win - pointer to window opened by (I)OpenWindow
+	md - pointer to ARRAY of initialized MenuData structures
+	ta - pointer to initialized structure with text attributes
+	language_text_array - pointer to string pointer array created with
+			      IBuildLanguageTextArray or NULL
+
+	Create internal data structure for a menu from given array of data
+	structures. This function DON'T display the menu. Displaying will be
+	done with IAttachMenu. Internal data structure MUST be released with
+	IFreeMenu. If given language_text_array are not NULL then md_Text
+	doesn't contain a pointer to string but an offset of the string
+	pointer in given array with pointers to text in foreign languages.
+	Pointer to internal data structure belonging to menu is returned.
+
+VOID IAttachMenu(struct Window  *win, APTR ml)
+	win - pointer to window opened by (I)OpenWindow
+	ml - pointer to internal data structure returned by ICreateMenu
+
+	Make menu built with ICreateMenu available by attaching it to given
+	window. Menu MUST be removed with IRemoveMenu.
+
+struct MenuItem  *IMenuItemAddress(APTR ml, USHORT menu_num)
+	ml - pointer to internal data structure returned by ICreateMenu
+	menu_num - offset (in array of MenuData structures) of menu item
+		   to get address
+
+	Return pointer to normal MenuItem structure of specified menu item.
+
+struct Window  *IRemoveMenu(APTR ml)
+	ml - pointer to internal data structure returned by ICreateMenu
+
+	Remove menu attached with IAttachMenu from display.
+
+VOID IFreeMenu(APTR ml)
+	ml - pointer to internal data structure returned by ICreateMenu
+
+	Releases memory for internal data structure allocated by
+	ICreateMenu. If menu is currently attached then it MUST be removed
+	with IRemoveMenu first.
+
+struct FileData  *IOpenTextFile(BYTE *name, USHORT read_buffer_size,
+				      USHORT line_buffer_size, USHORT flags)
+	name - pointer to string with file name
+	read_buffer_size - size (in bytes) of buffer used for reading text
+			   file
+	line_buffer_size - number of bytes used for longest line of text
+	flags - TEXT_FILE_FLAG_xxx
+
+	Opens given text file and returns pointer to data structure with
+	allocated buffers. This structure MUST be freed with ICloseTextFile.
+
+SHORT IReadTextLine(struct FileData  *fd)
+	fd - pointer to internal data structure returned by IOpenTextFile
+
+	Read next line from text file opened with IOpenTextFile. This line
+	can be found in given FileData structure.
+
+VOID ICloseTextFile(struct FileData  *fd)
+	fd - pointer to internal data structure returned by IOpenTextFile
+
+	Close text file opened with IOpenTextFile and releases allocated
+	buffers.
+
+BYTE **IBuildLanguageTextArray(BYTE *name, USHORT entries)
+	name - pointer to string with name of file with language texts
+	entries - number of text entries in file
+
+	Parse given text file and return pointer to array of text strings
+	read from language file. This array MUST be released with
+	IFreeLanguageTextArray.
+
+BYTE *IGetLanguageText(BYTE *text, BYTE **text_array)
+	text - offset (in array of text strings) of language text (starting
+	       with 1 instead of 0!!!)
+	text_array - pointer to array of text strings created by
+		     IBuildLanguageTextArray
+
+	Returns specified entry from within text pointer array created with
+	IBuildLanguageTextArray.
+
+VOID IFreeLanguageTextArray(BYTE **text_array)
+	text_array - pointer to array of text strings created by
+		     IBuildLanguageTextArray
+
+	Releases memory of array created with IBuildLanguageTextArray.
+
+VOID IChangeMousePointer(struct Window  *win, struct PointerData  *pd)
+	win - pointer to window opened by (I)OpenWindow
+	pd - pointer to initialized PointerData structure or NULL for
+	     busy mouse pointer
+
+	Replace current mouse pointer of selected window with one described
+	in given data structure. Old mouse pointer will be saved and can be
+	restored later with IRestoreMousePointer.
+
+VOID IRestoreMousePointer(struct Window  *win)
+	win - pointer to window opened by (I)OpenWindow
+
+	Restore old mouse pointer saved with IChangeMousePointer.
+
+VOID IMoveMousePointer(struct Window  *win, SHORT x, SHORT y, BOOL button)
+	win - pointer to window opened by (I)OpenWindow
+	x, y - new position (relative to upper left corner of given
+	       window!!!) for mouse pointer
+	button - TRUE for left mouse button pressed
+
+	Move mouse pointer of given window to new position.

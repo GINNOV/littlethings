@@ -1,0 +1,33 @@
+Attention: une fonction virtuelle doit toujours être définie dans sa
+classe de base pour que l'édition de lien fonctionnne.
+
+Par exemple:
+
+classe A {
+   virtuelle f();
+};
+
+ET
+
+A::f() { //je ne fais rien mais je suis définie
+}
+
+ATTENTION: dès qu'une classe comporte une fonction virtuelle, la taille
+de la classe ou de sa structure traduite en C est supérieur de 4 octets.
+Ceci parce qu'en à la fin de la structure a été rajouté un pointeur sur
+la table des fonctions virtuelles.
+
+Les classes qui se terminent par Min ne comportent pas de fonctions
+virtuelles (ainsi leurs tailles et strictement respectées) et seront
+réutilisés par les classes descendantes présentent dans AmigaDOS.
+Par exemple: TacheMin, BibliMin ne comportent pas de fonctions virtuelles.
+Par la suite, Tache hérite de TacheMin et Bibliotheque de BibliMin.
+
+Utilité de la virtualité:
+o Notion de polymorphisme
+o Fonction différée (classe abstraite)
+
+                     Classe contenant des virtuelles
+                     /              |              \
+                  Classe#1       Classe#2       Classe#3
+

@@ -1,0 +1,90 @@
+Short: Fast CRC tools & sources (PPC+68k)
+Type: dev/c
+Uploader: Andreas_Kleinert@t-online.de
+Author: unknown
+Replaces: crc.lha
+
+ CRC2, CRCFast and CRCTab ports for 68k and PPC,
+ including sources. Author unknown.
+
+ The difference 68k -> PPC gets significant
+ on large files, e.g. greater 1 MB.
+
+ PPC binaries are useable from Shell when being
+ used with ppc.library V46+
+
+ 1.0: - PPC/68k port for Amiga
+ 1.1: - changed "unsigned int" to "unsigned short int" in
+        both, crc2.c and crcfast.c
+      - no more regargs for the 68k version (PPC, too)
+      - fixed array overflow in crcfast.c
+      - hopefully works ok now - if not, feel free to
+        send bug reports by *email*
+
+ --
+ ARK, 27/Aug/98
+
+
+ *************************************************************************************
+ *************************************************************************************
+
+ Note:
+
+  In the past, some guy called "SPH" took most of my free PPC ports
+  (those where the sources have been included) and ported them to WOS.
+
+  While I've nothing against WOS ports, an other point is very distasteful
+  and unfair in my opinion: removing all references to my name and initials
+  and simply replacing those with his own, while also removing all references
+  to PPC-Lib/ELF and replacing those with WOS references and usually some flames
+  or even offenses against the competing kernel and porter - without actually
+  rewriting the readme text itself in a major way (for example, if I describe what
+  *I* specifically did for the port - and what he didn't have to do a *second* time,
+  of course - he does not even remove/change *those* notes and/or give me credit).
+
+  This leads to the strange situation, that I hereby have to copyright this
+  .readme text, to claim its authorship and forbid changes which aren't
+  clearly marked as being changes to the original: While quotes may have
+  been derived from other parts of the distribution, the whole .readme as
+  such now is (C)opyrighted by Andreas R. Kleinert in 1998.
+
+  Copyrights to the other files remain as such. Nevertheless I'd ask anyone
+  to give me credit for the changes which I did myself and which of
+  course have been labeled/marked/documented as such. Even free software
+  lives from respecting the intellectual work and property of others. Thank you.
+
+ *************************************************************************************
+ *************************************************************************************
+
+
+                Cyclic Redundancy Check
+---------------------------------------------------------
+
+This archive includes the following three files:
+
+        crc2.c          Computes crc by bit shifting
+        crcfast.c       Computes crc by table lookup
+        crctab.c        Computes tables used in crcfast.c
+        crc.doc         This file
+
+        The utilities crc2 and crcfast compute the cyclic redundancy checks
+for both the crc-16 (used in arc files) and crc-ccitt (used in xmodem).
+crcfast is faster than crc2.  These routines compute the crc's for a
+given file as a means of checking data integrity.
+        These routines compile without change under Turbo C.  All are
+short and illustrate the basic principles of crc calculations.
+
+
+
+CRC References:
+
+        C Programmer's Guide to Serial Communications, J. Compbell,
+                Howard W. Sams & Co.,(1987)
+
+        The Great CRC Mystery, T. Ritter, Dr. Dobb's Journal,
+                (February 1986)
+
+        Byte-Wise CRC Calculations, A. Perez, Wismer, & Becker,
+                IEEE Micro, (June 1983)
+
+*************************************************************************************

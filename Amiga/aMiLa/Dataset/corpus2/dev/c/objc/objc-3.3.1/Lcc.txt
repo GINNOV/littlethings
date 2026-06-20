@@ -1,0 +1,91 @@
+Portable Object Compiler (c) 1997,98,2002,2003.  All Rights Reserved.
+
+
+This file contains some notes that are specific to running "objc"
+(pronounced as "Object Compiler") on Windows95 or WindowsNT using
+the LCC-WIN32 compiler system.
+
+Note: lcc is also available as compiler for UNIX (and is compatible with objc)
+      these notes apply only to the WIN32 port of lcc
+      (available from http://www.cs.virginia.edu/~lcc-win32/)
+
+
+AUTOEXEC.BAT
+------------
+
+	Add C:\OBJC\BIN to your PATH.  This directory contains OBJC.EXE
+	the compiler driver, and OBJC1.EXE, the compiler proper.  It's
+	also assumed that the LCC tools (LCC,LCCLNK,LCCLIB etc.) are in 
+	the PATH.
+	
+	It's also convenient to "set OBJCOPT=options" in this file, where
+	options can be "-q" for example.
+
+	If you want to install in a different location than C:\OBJC\BIN,
+	then set the OBJCDIR environment variable (points to top directory).
+
+Makefiles
+---------
+
+	The Makefiles have a .lcc extension (for lcc make)
+
+	At the top level, there is a .BAT file that drives the process.
+	So you type:
+
+		setup lcc
+		make
+
+	to start building the different components of the compiler.
+
+
+BISON & FLEX
+------------
+
+	We're using the win32 ports of these tools.  That is,
+	the parser and scanner is no longer generated on UNIX (scan.m, parser.m)
+	but is now generated on Windows itself from scan.lm and parser.ym.
+	
+	Flex and Bison for Windows95 are available on http://www.winsite.com.
+	They're configured for VisualC++.  I've modified "bison.simple" to 
+	include
+	(before the top #if __GNUC__) the following lines (to define alloca()
+	correctly :)
+	
+		#if __LCC__
+		#include <malloc.h>
+		#endif
+		
+	I've contacted the author of the port, so this might already have
+	been fixed meanwhile.
+
+	If you use a different port of flex/bison, check the definition of
+	YYLEXC and YTABH/YTABC in the src/objc/Makefile.  It's either y.tab.c
+	or y_tab.c
+
+Makefiles
+---------
+
+	The Makefiles have a .lcc extension (for the nmake clone that comes
+	with lcc)
+
+	For the top level Makefile, just type:
+
+		"make"
+
+	to start building the different components of the compiler.
+
+
+Binary Driver
+-------------
+
+	There's no Bourne shell compiler driver for Windows95.  Only
+	the binary, compiled, version is available (as "objc.exe").
+
+Compiling math.h
+----------------
+
+	There is a switch -ansic which turns off lcc-win32 extensions.
+
+	You can add this to OBJCOPT in order to compile some programs
+	that include <math.h> or other include files.
+

@@ -1,0 +1,158 @@
+fd2lib by Volker Barthelmann / Johnny Tevessen
+
+
+INTRODUCTION
+
+    fd2lib takes .fd-files as input and generates assembler source to
+    create a library with stubs to call the functions (including stubs
+    for varargs functions).
+
+    It will create stubs suitable for vbcc, i.e. restore all necessary
+    registers (including a6) etc.
+
+
+LEGAL
+
+    fd2lib is public domain.
+
+
+USAGE
+
+    Usage : fd2lib [-sc] [-sd] [-40] [-on] [-nv] [-o <dir>] [-of <format>]
+                   [-d] [-?|--help] [files/pattern]
+
+      -sc : Use small code model (else large code model)
+      -sd : Use small data model (else large data model)
+      -40 : Use fast call model for 68040's (no `movem's)
+      -on : Use old motorola assembler notation
+      -nv : No varargs logic - ...A and ...TagList will not be detected
+      -o  : Specify directory to store source files in
+      -of : C printf style output format to generate compiling
+            script. Three `%s' are replaced with output file name
+      -d  : Turn on debugging/verbose mode
+      -?  : Show help/version and quit
+    files : FD files to convert, defaults to stdin
+
+    Commandline is parsed left-to-right. So specifying
+
+    > fd2lib alib_lib.fd -sd blib_lib.fd
+
+    will result in alib created using large data model.
+
+    There will also be a -prof option in future, but it's not yet
+    implemented.
+
+    fd2lib will process all the .fd-files specified at the command line
+    (not specifying any filename results in fd2lib using stdin (console)
+    as input) and will generate an assembler source for each library
+    function as functionname.s and a file containing all the library
+    vector offsets as libname_lvo.s.
+
+    Files are placed in the current directory. Specify an alternative
+    destination using the `-o <dir>' option.
+
+
+GENERATED CODE
+
+    In default mode fd2lib will output Opcodes in so-called "new Motorola"
+    style. This means `(_libBase,A4)' rather than `_libBase(A4)'. So don't
+    get confused when you examine fd2lib's output. 8-)
+
+    Switch to old-style output with the `-on' switch.
+
+    fd2lib versions newer than 1.0 no longer trash the baserel pointer
+    in small data mode if some function uses A4. Anyway, now it's safe to
+    use all registers - excluding A6 of course.
+
+    movem's: fd2lib uses `move.l's if only less than three registers have
+    to be saved. If you are a lucky owner of an 68040 processor, you should
+    use the `-40' switch. It will make fd2lib output `move.l's for any
+    number of registers pushed and popped and is faster on the 68040.
+
+
+VARARGS
+
+    Some functions take a pointer to a list of arguments as the last
+    argument. fd2lib has a hardcoded list of such function and creates
+    additional stubs that can be called with a variable number of arguments
+    from C (e.g. OpenWindowTagList and OpenWindowTags).
+
+    If you want to extend this list, you have to add the name of the
+    function and the name of the varargs function to the file vargs.h
+    and recompile fd2lib.
+
+    Since version 1.2 fd2lib also tries to recognize functions that might
+    have varargs automatically. It scans for `TagList' and `A' postfixes
+    and substitutes them with `Tags' or `'. `A's are only suggested to be
+    varargs if the letter right before is lowercase.
+
+    You may turn off automatic recognition by specifying `-nv'.
+
+
+GOODIES
+
+    `-of <string>' allows you to get runtime output. You may use this
+    feature to show fd2lib's progress or to create batch files for post-
+    processing fd2lib's output. `%s' is substituted by the output asm file
+    just processed. E.g.:
+
+    > fd2lib -of "phxass %s opt ! noexe" fd:dos_lib.fd >batchfile
+    > execute batchfile
+
+    will process dos' functions and then compile them straight-forward.
+
+    You may use `%s' upto three times in the format string. C like jokes
+    like `%30s' to show the file's name right-aligned are also allowed.
+
+
+CREATING LIBRARIES
+
+    If you want to create a library from some .fd-files proceed like this:
+
+    > delete T:#?.(s|o) quiet
+    > fd2lib -o T: <all the .fd-files you want>
+
+    (copying PhxAss to ram: now may speed up the process)
+
+    > vc -c T:#?.s
+    > join T:#?.o as <name of resulting lib>
+    > delete T:#?.(s|o)
+
+
+MakeALIB.script
+
+    This is a small but smart script which will create an amiga.lib or
+    amigas.lib in T:. It will delete files from T: before and assumes
+    nothing is written to T: while it is running.
+
+    You have to assign FD: to a directory that contains the .fd-files for
+    the Amiga shared libraries and cd into the libsrc/AmigaLib directory
+    and start it from there. Otherwise you will get an error.
+
+    Without further parameters you will get a large data model amiga.lib.
+    To create small data model amigas.lib start the script with option
+    "-sd".
+
+    It will then create all library stubs and LVOs with fd2lib (this will
+    result in many many small files in T: which will be assembled by
+    PhxAss - so having PhxAss in RAM: will speed it up quite a lot).
+
+    Then the support routines in libsrc/AmigaLib will be compiled/assembled
+    and the resulting object files will be put in T:, too. You must have
+    the C= includes.
+
+    The support routines are taken from libnix and have been changed a bit
+    to work with vbcc. I have not tested them and several support routines
+    from the original amiga.lib are missing.
+
+    The whole process may take quite some time and a few MB space in T:
+    The resulting amiga.lib should be free from any copyright and is a
+    rather good (but not complete) replacement for the original amiga.lib.
+
+    If everything went right you will be asked whether you want to have the
+    library installed to vlib:. Type <y> or do so manually if you don't
+    trust my script. :-)
+
+
+Volker Barthelmann                                      volker@vb.franken.de
+Johnny Tevessen                                          j.tevessen@line.org

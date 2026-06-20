@@ -1,0 +1,64 @@
+
+
+
+ProAsm History
+--------------------------------
+I most likely forgot some history entries. Sorry for that :)
+And some of the (beta)releases aren't even mentioned here, but only if
+I did some small code clean up or similar stuff.
+
+
+
+v1.92 [07.01.97]
+    Manual:  pro.guide TOC improved.
+
+
+
+v1.90 [15.12.96]
+    ProAsm:  Small improvements to the code, version number bumped.
+
+
+
+v1.89 [07.12.96]
+    ProAsm:  Added CLIST, NOCLIST, MLIST, and NOMLIST directives to be
+             more compatible with the MANX and DEC assemblers.
+
+    Manuals: Concept Index for pro.guide finished.
+
+
+
+v1.84 [14.10.96]
+    ProAsm:  Improved the macro support.
+
+
+
+v1.80 [27.09.96]
+    ProAsm:  Added: IF directive as a synonym for IFNE.
+             Bug fixed: Extension hunk information not written for BSS hunks.
+             Bug fixed: ProAsm showed some problems with the generation of
+                        linkable output files.
+             Removed some typing mistakes.
+
+    ProOpts: Removed the WFLG_NEWLOOKMENUS flag for te menus.
+    ASX:     Dito.
+
+    Manuals: Some links fixed in the ASX guide file.
+
+
+
+v1.78 [04.09.96]
+    Routine Files: Bugs found in startup4.r. Corrected and version number
+             bumped for ASX, ProOpts, ProAsm, ProHunk, and Profiler.
+
+
+
+v1.76 [22.08.96]
+    ProAsm:  Added: Support for ASX's 'GetLineNumber' command.
+             Bug fixed: Return code wasn't set always when an error occured.
+
+    ASX:     Added interface for the 'GetLineNumber' ASX deamon command.
+
+
+
+no histoty entry prior to v1.76
+

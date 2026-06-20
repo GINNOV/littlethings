@@ -1,0 +1,6 @@
+.c.o:
+	sc $*.c
+
+AB3DTrainer: AB3DTrainer.o AB3DTrainerGui.o
+	sc link AB3DTrainer.o AB3DTrainerGui.o
+

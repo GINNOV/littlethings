@@ -1,0 +1,642 @@
+
+
+			New Library Helper Version 1.0
+			==============================
+
+
+			       By Dave Edwards
+			       ===============
+
+
+Contents
+--------
+
+Introduction
+
+Terms & Conditions
+
+Helper Fundamentals
+
+Requirements
+
+HelpFile Format
+
+Example HelpFile
+
+Future Enhancements
+
+Credits
+
+
+Introduction
+------------
+
+	This program was prompted by Mark Meany's own library helper, and I
+thought it would be interesting to see if I could come up with a similar pro-
+gram. Also, I managed to persuade Mark's own program to bomb out with a nasty
+Guru meditation at least once, so I also wanted to see if I could make my own
+program Guru-proof.
+
+
+	Also, Mark's helper program contains the actual function call infor-
+mation embedded within the code, which means that if anyone wishes to extend
+it to cover the new Version 2.0 libraries or any custom libraries such as the
+ARP library or Teijo Kinnunen's medplayer.library that have come into being,
+the program needs to be edited and reassembled to take account of the new in-
+formation.
+
+
+	So, I wanted a program that could cope with information updates. So I
+present the New Library Helper Version 1.0. Now read on and see what it has
+to offer...
+
+
+Terms & Conditions
+------------------
+
+	First, the good news for ACC subscribers:you can skip this whole sec-
+tion!
+
+
+	New Library Helper Version 1.0 is FREEWARE. The only condition that I
+shall impose upon its migration from user to user is that the following files
+should also be passed on to new users (if you're going to pass copies of the
+program on to your friends, you might as well pass the other files too!):
+
+
+			NewLibHelp.DOC (this file)
+
+			NewLibHelp.Text (whatever HelpFile
+					 you are using)
+
+
+The source code for New Library Helper Version 1.0 is available to ACC sub-
+scribers, those who buy ACC (Amiga Coders' Club) discs, or those who obtain
+ACC discs as back numbers from AmigaNuts United, unless you want to obtain
+the source code from me, in which case I'd like some incentive (a small fee
+of £2.00, or a disc full of nice PD utilities will do nicely). I can be con-
+tacted at:
+
+
+			232 Hale Road
+			WIDNES
+			Cheshire
+			WA8 8QA
+
+			No telephone, sorry!
+
+
+or alternatively, contact the following two individuals for the relevant ACC
+disc (read Amiga Format for more details in the AmigaNuts United ad):
+
+
+		Mark Meany		Ray Burt-Frost
+		12 Hinkler Road		AmigaNuts United
+		Thornhill		169 Dale Valley Road
+		SOUTHAMPTON		Hollybrook
+		Hants			SOUTHAMPTON
+					Hants
+					SO1 6QX
+
+
+Now it's time to introduce the Helper and its workings. Read on.
+
+
+Helper Fundamentals
+-------------------
+
+	The principal features of New Library Helper Version 1.0 are:
+
+
+		1) Help information contained in an editable
+		   text HelpFile, editable by the user with
+		   nothing more drastic than Ed (or whatever
+		   text editor is the user's preference);
+
+
+		2) Sleep gadget to put program to sleep when
+		   not in active use;
+
+
+		3) Displays function calling synopsis, host
+		   library, library vector offset (LVO) value,
+		   and calling parameters;
+
+
+		4) Gadgets to allow instant switching between
+		   68000 assembly language and C calling par-
+		   ameters.
+
+
+The program also displays help boxes where required, to cover such matters as
+the lack of text in the string gadget (after all, it's pointless searching a
+file for a null string!) and the lack of a matching entry in the HelpFile.
+
+
+	One minor quibble is this:the program uses the Console Device AND an
+intuition IDCMP together (quite an exercise, I can tell you) and as a result
+the string gadget does not display a cursor. Hopefully this won't be too big
+a disaster for the user! In any case, the string gadget's border changes its
+colour when activated, so it should be easy to differentiate between an act-
+ive string gadget and a dormant string gadget. Also, I have added a feature
+which allows the string gadget to be activated by clicking on the left mouse
+button with the mouse pointer lying anywhere within the main Helper window,
+unless the pointer is pointing to one of the other gadgets of course. So the
+string gadget itself need not be clicked upon directly to use it-just click
+upon the main Helper window when you want to enter text into the gadget, and
+hit the Right-Amiga-X key sequence to remove any existing text if so desired.
+
+
+	The full list of gadgets is:
+
+
+		1) SearchText gadget. A nice, long string gadget
+		   into which the user types the text to search
+		   for. As mentioned above, can be activated by
+		   clicking the left mouse button anywhere within
+		   the main Helper window.
+
+
+		2) Sleep gadget. A boolean gadget allowing the
+		   user to put New Library Helper to sleep when
+		   not in active use. A sleep window appears,
+		   complete with depth and close gadgets.
+
+
+		3) Quit gadget. As expected, a boolean gadget
+		   allowing the user to quit the program. It
+		   causes a requester to pop up alerting the
+		   user JUST to make sure that the user DOES
+		   want to quit, and hasn't hit the Quit gad-
+		   get by mistake.
+
+
+		4) Language gadgets. These have the language
+		   name contained within the boxes, and the
+		   user can choose between the C language and
+		   68000 assembly language. If there is text
+		   in the string gadget, and it corresponds
+		   to a HelpFile entry, then that entry will
+		   be listed using the parameters of the lan-
+		   guage chosen. Note-switching is to all pur-
+		   poses instantaneous!
+
+
+Usage is simple. Click on the string gadget, and type in a string. The string
+doesn't have to be the exact name of the function being called, and doesn't
+have to be in any particular case-the search procedure scans in a case insen-
+sitive fashion, and is a substring search as opposed to an exact match scan.
+
+
+	For example, typing in:
+
+
+			openwindow
+
+
+into the gadget will result in a listing of the calling synopsis for the in-
+tuition library's OpenWindow() function. For that matter, so will typing in
+the texts:
+
+
+			OPENWINDOW
+
+			OpenWindow
+
+			openwin
+
+			openwi
+
+
+However, typing in the text:
+
+
+			open
+
+
+will locate first the diskfont.library library function:
+
+
+			OpenDiskFont()
+
+
+and typing in the text:
+
+
+			openw
+
+
+could reference the OpenWorkBench() function first, if the HelpFile has been
+edited and this function appears in the HelpFile before OpenWindow() (which
+should NOT be the case with my own supplied HelpFile, which has the functions
+in the correct library order). There are a fair number of functions where a
+clash of this sort could occur, especially the following:
+
+
+		RefreshGadget() and RefreshGList (and friends)
+
+		Any of the MANY functions beginning "Rem...",
+		e.g., RemLibrary(), Remove(), RemTask()
+
+		Any of the MANY functions beginning "Add..."
+		e.g., AddTOF(), AddPort(), AddGList()
+
+		Any of the MANY functions beginning "Set..."
+		e.g., SetAPen(), SetBPen(), SetPointer()
+
+
+Note that if you can't be bothered typing in SwapBitsRastPortClipRect(), then
+all you have to type in is:
+
+
+				swap
+
+
+and this should list the function for you! Similarly, typing the text:
+
+
+				inst
+
+
+will reference the layers.library function InstallClipRegion() (with the cur-
+rent version of the HelpFile that I am using). Note that to obtain the Helper
+listing for the DOS library Open() function, the user needs to type in:
+
+
+				open(
+
+
+to avoid clashing with OpenDiskFont() in the earlier diskfont.library. Basi-
+cally, the first few letters of a function name should be sufficient (just as
+well in the case of SwapBitsRastPortClipRect() and friends!) unless there is
+the possibility of a clash, as in the case of the MANY functions that begin
+with the three-letter sequence "Add..." :
+
+
+			AddAnimOb()
+			AddBob()
+			AddConfigDev()
+			AddDevice()
+			AddDosNode()
+			AddFont()
+			AddFreeList()
+			AddGadget()
+			AddGList()
+			AddHead()
+			AddIntServer()
+			AddLibrary()
+			AddMemList()
+			AddPort()
+			AddResource()
+			AddSemaphore()
+			AddTail()
+			AddTask()
+			AddTOF()
+			AddVSprite()
+
+
+Now without trying it out, which of these do you think will appear upon typ-
+ing the text "add" into the string gadget? HINT:the HelpFile I'm using lists
+the functions in order of offset, and in alphabetical library order as in the
+appendix of the Amiga System Programmer's Guide, so you should be capable of
+working this out!
+
+
+	Needless to say, where there exists a big list of functions with the
+same start sequence of characters in the name (the above is just ONE list out
+of several possible ones) a little care is needed unless you want to end up
+doing a complete search of the HelpFile!
+
+
+Requirements
+------------
+
+	New Library Helper V1.0 requires an Amiga with 512K minimum RAM, and
+the basic minimum single disc drive DF0:. It was developed on a KickStart 1.3
+Amiga, and hence works on same, and I would appreciate being told if it works
+on an antique 1.2 or a brand-new A500 Plus with KickStart 2.04. It should not
+cause problems with enhanced spec Amigas except for beta-test A3000s that are
+prone to Gurus even with well-behaved software, since it does everything via
+'legal' means, i.e., using the OS (although that apparently doesn't stop pro-
+grams bombing out on some A3000s from what I've been told!).
+
+
+	In any case, the program is FREE, so if you like it, you can keep it.
+Also, the source comes FREE to ACC members when Mark Meany (ACC's much loved
+editor, crawl, smarm, grovel) pops it onto an ACC disc. Anyone NOT subscrib-
+ing to ACC or buying the required ACC disc will have to pay me for it (now
+come on, two quid isn't much for working source is it?).
+
+
+	Another requirement is that a HelpFile should exist for the program
+to use. This file should be called:
+
+
+			NewLibHelp.Text
+
+
+and should exist in the S: directory of a disc. This NEED NOT be your boot
+disc! Provided you have a spare disc with an S: directory on it, you can put
+the HelpFile on that disc. I decided to adopt this approach because experi-
+ence has taught me that boot discs tend to be cluttered with masses of pro-
+gramming aids, utilities etc., leaving little space for additions. So it's a
+nice touch (brag) when a program doesn't NEED a particular disc.
+
+
+	The program will ask you to insert the disc with the HelpFile on it
+before going ahead. If it doesn't find the HelpFile, then the option to try
+again is presented, until either the correct disc is provided or the user is
+fed up and aborts. If the file is loaded correctly, another nice little box
+will pop up and inform you, at which point pressing a mouse button will take
+you into the Helper proper. Should the file fail to load, another box will
+pop up informing you why, and then the program will clean up after itself and
+return to the caller.
+
+
+	Having mentioned the HelpFile, it's time to describe what the Help-
+File looks like, and how you can create your own or expand a currently exis-
+ting one. So here goes.
+
+
+HelpFile Format
+---------------
+
+	The editable text HelpFile has a well-defined format, relying upon a
+set of keywords to distinguish the various parts of the information for the
+Helper program. These are:
+
+
+		1) LIBRARY	: Tells Helper that the next
+				  line of text in the file is
+				  the name of the library in
+				  which the following functions
+				  reside.
+
+		2) FUNCTION	: Tells Helper that information
+				  on a specific function follows.
+
+		3) APARMS	: Stands for "Assembler Parameters"
+				  and tells Helper that the next few
+				  lines list the assembler parameters
+				  for the function.
+
+		4) CPARMS	: Stands for "C Parameters" and tells
+				  Helper that the next few lines list
+				  the C parameters for the function.
+
+		5) ENDFILE	: Tells Helper that the end of the
+				  HelpFile information has been hit.
+
+
+
+All of these keywords MUST appear on a line of their own in the text file,
+and are always followed on the next lines by the requisite information. The
+exact usages are given below.
+
+
+	1) LIBRARY. This keyword is ALWAYS followed by the name of the Amiga
+library currently under consideration. So, if you are creating a HelpFile and
+are working on the intuition library functions, you would type in:
+
+
+			LIBRARY
+			intuition.library
+
+
+in that order.
+
+
+	2) FUNCTION. This keyword is ALWAYS followed by the name of a library
+function, and then by its library vector offset (LVO) value. For example, if
+you are creating an entry for the intutiton library RefreshGList() function,
+you would type in:
+
+
+			FUNCTION
+			RefreshGList(gadget,window,requester,numgad)
+			-432
+
+
+	3) APARMS. This keyword is ALWAYS followed by at least one line that
+lists the assembly language parameters for the given function. So, for exam-
+ple, using RefreshGList() above, you would type in:
+
+
+			APARMS
+			A0 = ptr to Gadget
+			A1 = ptr to Window
+			A2 = ptr to Requester
+			D0 = number of gadgets
+
+
+The end of the parameter list is ALWAYS denoted by another keyword, be it a
+LIBRARY, FUNCTION, CPARMS (see below) or ENDFILE (see below) keyword that is
+used to signal the start of a fresh entry or the end of the file.
+
+
+	DON'T use up more than five lines maximum for the parameter list, or
+the underlying gadgets will be trashed as the text is printed! See the exam-
+ple mini-HelpFile below for hints on handling functions with long parameter
+lists.
+
+
+	4) CPARMS. This keyword behaves IDENTICALLY to APARMS, except that a
+list of calling parameters for use with C compilers follows the keyword. For
+example, our RefreshGList() entry would appear as:
+
+
+			CPARMS
+			struct Gadget *gadget
+			struct Window *window
+			struct Requester *requester
+			LONG position
+
+
+Again, the end of the parameter list is ALWAYS taken to be denoted by another
+keyword appearing after the list.
+
+
+	5) ENDFILE. This keyword should ALWAYS be the last keyword that ap-
+pears in the HelpFile. It denotes the current end of the HelpFile information
+and allows New Library Helper to determine with a modicum of intelligence if
+there exist any more entries. An ENDFILE keyword MUST be appended to the end
+of the HelpFile!!!
+
+
+	Furthermore, DO NOT INSERT BLANK LINES between entries! This will be
+somewhat confusing to New Library Helper (it should't Guru, but it might just
+piddle all over its own window and trash the rendering of the gadgets) and is
+therefore NOT RECOMMENDED! Aw come on, it's only Version 1.0, what do you ex-
+pect? The same level of polish as Borland C++ Version 3.0? It only represents
+about a week's coding!
+
+
+Example HelpFile
+----------------
+
+	Below is a mini-example of a HelpFile. This illustrates the princi-
+ples outlined above, and New Library Helper V1.0 was tested with this actual
+HelpFile, so it DOES WORK! Of course, you can use this as a basis for your
+own HelpFile and add to it at liberty. Alternatively, you COULD edit the ac-
+tual HelpFile being used currently, but that's NOT a good idea unless you're
+meticulous about backing up the old one and can recover it when things blow
+up! Anyway, here's a mini-HelpFile to show you how it's written...
+
+
+LIBRARY
+intuition.library
+FUNCTION
+OpenIntuition
+-30
+APARMS
+None
+CPARMS
+None
+FUNCTION
+Intuition(ievent)
+-36
+APARMS
+A0 = ptr to Inputevent
+CPARMS
+struct InputEvent *ievent
+FUNCTION
+AddGadget(window,gadget,position)
+-42
+APARMS
+A0 = ptr to Window
+A1 = ptr to Gadget
+D0 = position in Gadget List
+CPARMS
+struct Window *window
+struct Gadget *gadget
+ULONG position
+LIBRARY
+layers.library
+FUNCTION
+InitLayers(li)
+-30
+APARMS
+A0 = ptr to LayerInfo
+CPARMS
+struct LayerInfo *li
+FUNCTION
+CreateUpFrontLayer(li,bm,x0,y0,x1,y1,flags,bm2)
+-36
+APARMS
+A0 = ptr to LayerInfo, A1 = ptr to BitMap, A2 = ptr to 2nd BitMap
+D0/D1 = x0/y0, D2/D3 = x1/y1
+D4 = flags
+CPARMS
+struct LayerInfo *li
+struct BitMap *bm, *bm2
+USHORT x0,y0,x1,y1
+ULONG flags
+ENDFILE
+
+
+Note that I popped several parameters onto one line in the entry for the lay-
+ers library function CreateUpFrontLayer(). This is because the list would be
+more than five lines deep otherwise (resulting in gadget imagery trashing as
+the text was printed). So I lumped the parameters into one text line to make
+life easy for me and for the program. Anyway, it's pretty obvious what's what
+when the function is listed by the program.
+
+
+Future Enhancements
+-------------------
+
+	At the moment, New Library Helper Version 1.0 is limited by the Help-
+File that I have composed for it. At the moment, it contains information upon
+all Amiga operating system functions current as of KickStart Version 1.3 (I'm
+sorry Mark, but I haven't got a 2.0 machine!) including many not mentioned in
+the Amiga System Programmer's Guide (or at least my edition).
+
+
+	The following libraries are covered in the latest HelpFile current as
+of 20/2/91:
+
+
+			clist.library	(what's it for?)
+			console.library
+			diskfont.library
+			dos.library
+			expansion.library
+			exec.library
+			graphics.library
+			icon.library
+			intuition.library
+			layers.library
+			mathffp.library
+			mathieeedoubbas.library
+			mathieeedoubtrans.library
+			mathtrans.library
+			potgo.library
+			timer.library
+			translator.library
+
+
+I have NOT covered system private ones such as romboot.library or the even
+more obscure ramlib.library (I can't find ANY reference to that one anywhere-
+I hit it by accident when scanning the ROM with a debugger!) since nobody is
+likely to use them outside of Commodore-Amiga inc.
+
+
+	Future enhancements will include extra libraries (ARP library, IFF
+library, and ARexx when I get the required information), plus any that Mark
+Meany can supply in the way of version 2.0 functions (which I will happily
+type in by hand yet again).
+
+
+	I was going to leave in a paragraph about not being able to detach my
+program from the CLI. Well, you'll all be glad to know that now I can. Now,
+New Library Helper detaches from the CLI without needing Run, ASyncRun or its
+friends. Aren't I wonderful? Oh, and ACC disc owners with the relevant disc
+can see how it's done, since Mark will kindly provide the source code upon a
+future ACC disc, AND I'm going to write a brief article on the subject!
+
+
+Credits
+-------
+
+	Credits go to the following individuals and/or organisations for the
+reasons stated:
+
+
+		Mark Meany		: 1) For editing ACC
+
+					  2) For writing the original
+					     program that gave me
+					     the idea for this one
+
+					  3) For maintaining 3 megs
+					     of DOC DISC data on my
+					     behalf!!!
+
+		Ray Burt-Frost		: For distributing ACC world-
+					  wide, being nice to ACC sub-
+					  scribers and running Amiga-
+					  Nuts United
+
+		Amiga Format		: For saying nice things about
+					  ACC and its resident tech-
+					  heads
+
+		AmigaNuts United	: For its wacky logo!
+
+		Commodore-Amiga		: For the nice hardware!
+
+
+That's all for now. As always,
+
+
+
+		Live fast, code hard & die in a beautiful way,
+
+
+
+				Dave Edwards.
+
+
+
+
+

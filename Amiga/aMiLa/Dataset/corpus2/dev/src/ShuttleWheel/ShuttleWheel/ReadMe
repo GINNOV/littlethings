@@ -1,0 +1,36 @@
+
+shuttlewheel.gadget
+
+COPYRIGHT AND DISCLAIMER
+ shuttlewheel.gadget is copyrighted 1996-1999 by Stephan Rupprecht. 
+ All rights reserved. This program is freeware, so no financial
+ donations required. Redistribution allowed if the package is 
+ left unchanged. The author is not responsible for any damage 
+ caused by the use or misuse of this documentation and/or the 
+ program(s) it describes.
+
+ This piece of code is dedicated to 
+ "The Amiga Community Source project".
+
+
+DESCRIPTION
+ I wrote this source some years ago, it's based on dialgaget.c which
+ can be found on the AmigaDeveloper CD. The idea for writing this class
+ came from the famous cdda player JukeBox by F.J. Reichert. You are
+ free to modify the source and to include it into your own programs. If 
+ you do any changes to it, please email them to me. Thanks.
+
+
+BUGS
+ Yes, there are bugs. At least it seems to mess up the memory list sometimes
+ :( I don't why 'cause wrote this program years ago, and didn't modify it
+ for a long term. Feel free to fix them ;)
+
+
+AUTHOR
+ Stephan Rupprecht
+ Apfeldweg 1
+ 44359 Dortmund
+ Germany
+
+ stephan.rupprecht@gmx.de

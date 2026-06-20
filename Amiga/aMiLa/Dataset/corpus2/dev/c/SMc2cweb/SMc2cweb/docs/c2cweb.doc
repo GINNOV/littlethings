@@ -1,0 +1,185 @@
+                       Amiga Port of c2cweb V1.4
+                       =========================
+
+This program was written 1994 originally by Werner Lemberg. I have
+not made any changes to it in this port.
+
+Source
+------
+The only (and main) problem was to make the getopt() function which is
+not implemented for SAS/C (but for gcc). After reading the gcc-manual
+I understood that it is used similar to ReadArgs for CLI-Commands but
+uses the Un*x style (-xyz option). So I searched a program which uses
+it and hoped it would use SAS/C as compiler. I found that GNUTar1.2
+did just this so I just copied it (getopt.c, getopt.h) from there and
+also added alloca.c to it (slight changes to alloca.c so I needed not
+to include the whole port.c from GNUTar). That was all I needed.
+I have tried it with a simple program and it seems to work fine.
+
+I did not include the whole archive from CTAN:tex-archive/web/c_cpp/c2cweb
+directory. What I left out are the MS-DOS binaries and the changes to
+cweave (which are not needed for c2web anyway). If you're interested in
+this, you can get it directly from there. If you're not sure about it read
+the c2cweb.txt file in this directory.
+
+If you want to recompile simply use the included SMakefile.
+
+Purpose
+-------
+c2cweb will transform plain C or C++ code into a CWEB file to get a pretty
+formatted output. You will need the cweb package which can be found on
+Amnet as well (Aminet Set 2c or Aminet 9 CD) which contains the CTANGLE
+and the CWEAVE binaries. To include your C/C++ code into a LaTeX document
+simply use CWEAVE after having processed it with C2CWEB (which you can
+also use to make a .tex-file from c2cweb.w, i.e. a documentation for it).
+CTANGLE is only needed if you want to recreate c2cweb.c from c2cweb.w
+
+Copying
+-------
+
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License version 2 as published by the
+Free Software Foundation.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program; if not, write to the Free Software Foundation, Inc.,
+675 Mass Ave, Cambridge, MA 02139, USA.
+
+Installation
+------------
+
+Simply copy C2CWEB to your favourite TeX binary directory. Then you have
+to copy compiler.w to your CWEBINPUTS path. If you want to process the
+example and/or you want to use german language you have to copy
+macros/c2cweb.ger into a directory of your TEXINPUTS path.
+
+Usage
+-----
+
+The only change the user has to do normally is to insert /*@@*/ starting an
+empty line outside of a comment or string before the first function block
+(normally main(){ ... }) in the C code. After this command c2cweb writes each
+function block into a section. Before /*@@*/ all stuff is written into a
+(possibly large) section. If you want to structure this further or if you have
+structure definitions between functions, use /*@*/ to start a new section
+without starting the function block algorithm (and of course /*@@*/ before the
+next function).
+The function algorithm simply counts paired braces; if none are open, a new
+section will begin.
+The file example.c has these control codes inserted already.
+
+
+The syntax is
+
+    c2cweb [switches] csourcefile(s) | @responsefile(s)
+
+The possible switches are:
+
+-v:
+
+all comments are written in typewriter type. You will need this if you have
+already formatted your comments, for example
+
+            /********************/
+            /*    example.c     */
+            /********************/.
+
+-t value:
+
+all tabs will be expanded, and the -t switch defines the tab length (default
+value is 4).
+
+-l:
+
+causes all linefeeds inside of C text to be output explicitly by inserting
+@/ (a CWEB control code) at the end of each code line.
+
+-o directory:
+
+sets the output directory which must exist already.
+
+-b "titlestring":
+
+defines a title with the titlestring enclosed in double quotes. This string
+will be passed directly to \TeX.
+
+-1:
+
+one-sided output (i.e. left header is the same as right header).
+
+
+The last steps are calling CWEAVE with the transformed master file and then
+calling TeX to get a printable .dvi-file.
+
+
+An example:
+
+    your input files are
+        header1.h, header2.h, file1.c, file2.c, file3.c
+
+    you must call then
+        c2cweb [options] header*.h file*.c
+
+    to get the *.*w files. c2cweb will now process your files and tell you
+    which file is the input file for CWEAVE (we'll assume file3.cw).
+
+    After calling
+        cweave [options] file3.cw
+
+    you get a .tex file (and some additional auxiliary files) which should be
+    processed further by PLAIN TeX (LaTeX is not supported):
+
+        tex file3[.tex]
+
+
+Please read the `Hints and Tricks' section about enhancements and limitations
+of c2cweb in the file c2cweb.w (say `smake documentation' to build the .dvi
+file).
+
+Author
+------
+
+Werner Lemberg (a7621gac@awiuni11.bitnet)
+
+Please report any errors, comments or suggestions to this email-address.
+
+N.B.: If you like this program, send me a postcard !
+
+    Werner Lemberg
+    Goldschlagstr. 52/14
+
+    A-1150 Vienna/Austria
+
+Amiga-Port:
+-----------
+
+E-MAIL (prefered):
+------------------
+
+  suamor@student.uni-tuebingen.de
+
+SnailMail:
+----------
+
+  Reinhard Katzmann
+  Schellingstraße 41
+
+  D - 72072 Tübingen
+
+BBS'es
+------
+
+You can try to reach me through BBS'es near Tübingen. Some of the Sysops
+might know me or have contact to the Internet. I'm only User of one BBS:
+
+Onkel Helmut's Hütte
+
+Line 1: (0049) +7157/64546 (28800 Baud)
+Line 2: (0049) +7157/65428 (14400 Baud)
+
+My usual Nickname on the internet or at this BBS is Suamor.

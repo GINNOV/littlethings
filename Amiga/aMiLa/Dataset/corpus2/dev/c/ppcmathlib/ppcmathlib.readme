@@ -1,0 +1,10 @@
+Short:        Fast PPC math lib for StormC
+Author:       andreash@diamondmm.com (Andreas Heumann)
+Uploader:     andreash diamondmm com (Andreas Heumann)
+Type:         dev/c
+Architecture: ppc-warpup
+
+This is a PowerPC link lib for the StormC compiler which replaces some built math
+functions with functions of the math library from Motorola (libmoto).
+It replaces acos, atan, atan2, sqrt, pow, exp, sin, cos, log and log10 with
+functions which are 1.5 to 9 times faster than the original functions.

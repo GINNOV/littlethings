@@ -1,0 +1,130 @@
+Short:      Multilingual translator/speech library
+Uploader:   franc@trace-plc.com (Francesco Devitt)
+Author:     franc@trace-plc.com (Francesco Devitt)
+Type:       dev/src
+
+
+TITLE
+
+Translator Library (Multilingual-speech version)
+(Source)
+
+
+VERSION
+
+42.4
+
+
+AUTHOR
+
+Francesco Devitt
+
+
+internet
+
+franc@trace-plc.com
+
+
+telephones
+
+home    +44 171 713-1363
+work    +44 171 825-1142
+mobile  +44 956 618-352
+nz home +64 4 388-3215
+
+
+addresses
+
+15b Chapel Market, Islington,
+London, N1 9EZ, United Kingdom. 
+
+29a Kinghorne St, Strathmore,
+Wellington, New Zealand.
+
+
+DESCRIPTION
+
+New features:
+    o  Recursive rules: right hand sides can be re-translated
+    o  WWW: http://www.sans.vuw.ac.nz/~ffranc/amiga/translator.html
+    o  Still more languages are supported.
+
+Features:
+    o  Replaces Commodore's translator.library
+    o  Provides multi-lingual text-to-speech support
+    o  Works with all OS versions
+    o  Allows language to be specified in the text to be translated
+    o  Totally compatible with existing software.
+
+With versions of the OS before 2.1 Commodore supplied text-to-speech
+software on the Workbench discs. This library replaces the Commodore
+supplied translator library. The origional translates text to phonemes
+for use with the narrator device. It is used in software with speech
+output such as "Say" and "Term".
+
+Unfortunately for non-American users the origional library translates
+all text as if it were American English. It can not handle other
+languages or dialects.
+
+This library is a drop-in replacement and works with all software that
+currently uses the Commodore speech system.  With this version of
+translator library the user can specify which language the translator
+should use.  The following accents are currently supported by this
+library:
+
+   Name     Language
+   ----     --------
+   American American English
+   Deutsch     German
+   Cymraeg     Welsh
+   English     British English
+   Island      Icelandic
+   Italiano Italian
+   Klingon     Klingon
+   Maori    New Zealand Maori
+   Polski      Polish
+   Suomi    Finnish
+   Svenska     Swedish
+
+If your language is not present here, remember that it is not difficult
+to write translation files for languages, as you can see by looking at
+the above list. I only wrote a few of these.
+I hope that users of this system will be motivated to create accent
+description files for the language(s) they speak.
+
+
+SPECIAL REQUIREMENTS
+
+Requires any version of the OS greater than 1.3.  Some features are
+not supported on pre-2.04 systems and systems without the locale
+library.
+
+To be of any practical use it requires any version of the narrator
+device and software that talks.
+
+Some icons have "EDITOR:" as their default tool.
+Others have "Multiview". This is for my convenience not yours.
+
+
+AVAILABILITY
+
+Available from Aminet, eg:
+
+ftp://ftp.doc.ic.ac.uk/pub/aminet/dev/src/trans42src.lha
+ftp://ftp.doc.ic.ac.uk/pub/aminet/util/libs/translator42.lha
+
+
+
+PRICE
+
+Free.
+Source is copyright but free.
+If you want to maintain it go ahead.
+If you want to sell it share the millions with me.
+
+
+
+DISTRIBUTABILITY
+
+Copyright 1995 Francesco Devitt.
+Freely distributable. Donations gratefully received.

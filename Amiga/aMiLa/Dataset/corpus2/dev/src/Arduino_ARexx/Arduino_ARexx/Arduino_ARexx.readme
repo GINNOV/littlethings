@@ -1,0 +1,146 @@
+Short:        Arduino access using standard ARexx.
+Author:       wisecracker@tesco.net (Barry Walker)
+Uploader:     wisecracker@tesco.net (Barry Walker)
+Type:         dev/src
+Version:      1.00.00
+Architecture: m68k-amigaos; generic
+
+Distribution: Public Domain, Emailware, Freeware.
+
+============================================================================
+
+Architectures: WinAUE, (Amiga Forever 2005 Or Better).
+------------------------------------------------------
+
+  Requirements Are:-
+  ------------------
+
+  1) Amiga environment:-
+  ----------------------
+       WinUAE, (Version 1.5.3 in my case).
+       Full, standard AMIGA OS2.0x install or better.
+
+----------------------------------------------------------------------------
+
+  History:-
+  ---------
+
+  01-06-2009.
+  -----------
+  Version 1.00.00. Probably the one and only upload for this archive.
+
+----------------------------------------------------------------------------
+
+Preamble...
+-----------
+
+This is demonstration code only to show that the Arduino Diecimila board
+can be accessed easily using very simple ARexx coding. Explanation of
+the code is inside the ARexx code itself... This is only in single byte
+READ mode but is easily capable of full control using ARexx.
+
+!!!BE SURE TO READ ANY COMMENTS INSIDE ANY CODE FOR FURTHER INFORMATION!!!
+
+This opens up ARexx to a whole new line for WinUAE:-
+----------------------------------------------------
+
+1) Multiple channel 10 bit, A-D Conversion...
+2) Multiple channel PWM, 8 bit, D-A Conversion...
+3) Multiple Digital I/O lines...
+
+See the Arduino website:-
+-------------------------
+
+                          <http://arduino.cc/>
+
+For more details about The Arduino Diecimila development board... :-)
+
+----------------------------------------------------------------------------
+
+Basic Setup:-
+-------------
+
+When the Arduino Diecimila development board has been installed onto a
+Windows environment go to the 'Device Manager' and set the Serial Port
+parameters to 1200 bps, no parity, 8 bits of data, one stop bit and NO
+SW or HW handshaking.
+
+See also:-
+
+           <http://main.aminet.net/docs/hard/WinUAE_Arduino.lha>
+
+For more information on how to set up for WinUAE, (and Windows).
+(Note that the archive above will be updated with projects as time goes on.)
+
+Also another related archive is:-
+
+           <http://main.aminet.net/dev/src/Arduino_Python.lha>
+
+----------------------------------------------------------------------------
+
+The archive is Public Domain/Emailware and you may modify them as you
+please for your OWN experiments. See below. I would dearly love an Email
+from you even if you think it is absolute rubbish... :)
+
+(Original idea and (C)2009 goes to B.Walker, G0LCU.)
+
+----------------------------------------------------------------------------
+
+                                IMPORTANT:-
+                                -----------
+
+    The Legal Stuff:-
+    -----------------
+
+    These programs are Public Domain and no profit will be made from them,
+    also all of the files must remain unaltered and intact including this
+    one. The author is not responsible for any damage to, or loss of, or
+    failure of equipment or data caused in any way by the use of these
+    programs. There is NO warranty with the use of these software releases
+    and YOU USE THEM AT YOUR OWN RISK.
+
+----------------------------------------------------------------------------
+
+    Testing Evaluation:-
+    --------------------
+
+    All WinUAE test conditions were/are running standard OS2.0x to OS3.1x
+    and using standard ~topaz 8~ fonts throughout.
+
+    I have no idea what strange configuration setups will create so refer
+    to the ~The Legal Stuff~ above.
+
+----------------------------------------------------------------------------
+
+                                 WARNING.
+                                 --------
+
+  1) DISCONNECT any faulty equipment under test from the MAINS supply.
+  2) If a DC supply is used do NOT reverse polarity the connections.
+  3) Do NOT power up any electronic item until it is safe to do so.
+  4) CHECK and RECHECK all of your construction and repair work thoroughly.
+  5) Handle ALL tools used with care.
+  6) Beware of ALL types of solvents, glues and etching fluids.
+  7) NEVER leave a soldering iron switched on unattended.
+  8) KEEP everything OUT of the reach of small children.
+  9) Switch OFF the AMIGA before disconnecting or connecting any hardware.
+ 10) And finally read 1) to 9) again.
+
+----------------------------------------------------------------------------
+
+   Contact:-
+   ---------
+
+   Mr Barry Walker, G0LCU,
+
+   Email:-     wisecracker@tesco.net
+   URL:-       http://homepages.tesco.net/wisecracker/G0LCU.HTM
+
+----------------------------------------------------------------------------
+
+   A very useful HardWare related site, (C) Anthony Hoffman, for
+   modifications, schematics, repairs and the like is:-
+
+                          http://amiga.serveftp.net/
+
+============================================================================

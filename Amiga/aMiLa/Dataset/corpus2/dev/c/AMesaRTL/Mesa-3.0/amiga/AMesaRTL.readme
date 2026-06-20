@@ -1,0 +1,74 @@
+Short:    AmigaMesaRTL Mesa runtime library+GLUT
+Uploader: jarno@kcbbs.gen.nz (Jarno van der Linden)
+Author:   jarno@kcbbs.gen.nz (Jarno van der Linden)
+Type:     dev/c
+Requires: System v39, FPU, SAS/C compiler, original Mesa 3.0 distribution
+Version:  Mesa 3.0, AmigaMesaRTL 3.0, Amiga GLUT 2.0
+
+
+                             AmigaMesaRTL 3.0
+                      A run-time library of Mesa 3.0
+
+                         by Jarno van der Linden
+                            jarno@kcbbs.gen.nz
+
+            http://www.kcbbs.gen.nz/~jarno/AmigaMesaRTL.html
+
+             Mesa 3.0 is Copyright (C) 1995-1998  Brian Paul
+
+
+Changes in version 3.0
+----------------------
+
+  - Just some changes to bring the library up to date with Mesa 3.0
+    Version 3.0 is compatible with v2 of AmigaMesaRTL
+
+Introduction
+------------
+
+This port of the OpenGL-like Mesa 3.0 is specifically aimed at mid-range
+Amiga computers, i.e. at least an '030, FPU, and a fair amount of RAM (at
+least 8MB).
+
+Rendering is not done directly to a window or screen. Instead, an internal
+buffer is maintained by the driver to which all the drawing is done. When
+all the drawing is done (i.e. glFlush() is called), an output handler is
+called. An output handler can do all sorts of things. For example, the
+supplied dl1 output handler uses the dl1 colour quantization code to
+quantize the buffer to a displayable number of colours and C2P it to an
+AGA window. Other output handlers may write the buffer to an ILBM file,
+dump it to a truecolour display, send it to an image editing program, or
+transmit it over a network, or whatever.
+
+
+Features
+--------
+
+  - Complete Mesa implementation
+  - Faster and much better output than CyberGL
+  - A run-time library: no more 200k+ programs like with StormMesa
+  - A GLUT lookalike runtime library featuring most of the important GLUT
+    functionality
+  - Output handlers to support an infinite variety of ways to process the
+    output
+  - A separate driver library. Write your own driver if you want.
+
+
+Compiling
+---------
+
+To compile the library, you will need to original Mesa 3.0 distribution
+(available at e.g. ftp://iris.ssec.wisc.edu/pub/Mesa/ ), and the SAS/C
+compiler (I used version 6.58).
+
+
+Finally
+-------
+
+Many of the features in this version are due to the excellent feedback
+from Szymon Ulatowski (of Framsticks fame http://www.frams.poznan.pl/).
+He is also doing some interesting things with AmigaMesaRTL and MUI, which
+should appear at http://friko.onet.pl/rz/szulat/mesamcc/
+Thanks Szymon!
+
+

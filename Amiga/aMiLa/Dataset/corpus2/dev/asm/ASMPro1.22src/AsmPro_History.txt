@@ -1,0 +1,921 @@
+-----------------------------------------------------------------------------
+				HISTORY
+-----------------------------------------------------------------------------
+
+[*] known bug
+
+Known bugs:
+
+* Multiple cursors in monitors.
+* More editing stuff in menu strip (like with search).
+* problems with some amiga configs strange cursor/scroll behaviour.
+* Enforcer hits on exit of Asm-pro (only on 060 I do not get any on my 040)
+
+
+Check homapage for more info:
+http://asmpro.surf.to
+
+================= Asm-Pro V1.22 (24-Dec-2025) ======================
+People contributing to this opensource release:
+- amigo/binary (amigo@binary.si)
+
+[ ADDITIONS/MODIFICATIONS ]
+1. ASM: Added QREPT directive (paired with ENDR, just like REPT). It generates
+   identical copies of the repeat block resulting in shorter assembly time. It
+   evaluates the block (at most) once and then copies it as many times as needed.
+   Consequently, you can declare labels and constants within, there will be no
+   double symbol errors.
+2. DISASM: FPU k-factor is now displayed as a signed 7-bit integer instead of
+   unsigned. This is more in line with Motorola documentation.
+3. Additional SE (special edition) build of Asm-Pro without gfx assets (logotips),
+   resulting in lower chipmem usage by about 16KB.
+
+[ BUGFIXES ]
+01. UI: Duplicate menu Commands->Output.
+02. EDIT: Pasting a larger block freezes the editor until ESC is pressed.
+03. ASM: Using directives WO/WX/WL to write a file with a large number of relocs
+    could overflow the stack. Added stack protection.
+04. ASM: Incorrect debug line info when a macro contains a directive, instruction,
+    or macro call with constructed name (e.g. using macro arguments).
+05. ASM: REM and TEXT blocks are missing debug line info, causing the source level
+    debugger to misbehave when manually setting a breakpoint.
+06. EDIT: Incorrect free memory amount displayed if more than 99999KB is available.
+07. EDIT: Long filenames (more than 30 characters) of source files overrun several
+    internal buffers.
+08. EDIT: Old source's current directory filename buffer is padded instead of new
+    source's buffer during source switching, which could lead to path corruption.
+09: UI: Tag lists incorrectly terminated in some cases (-1 instead of 0/TAG_DONE).
+10: ASM: K-factor in fmove.p is not parsed properly (in both data register and
+    numerical form), and it could also result in entirely incorrect opcode.
+11: EDIT: Syntax coloring in 1-bitplane mode is not disabled due to a bad screen
+    depth check.
+12: UI: Screen depth exceeding maximum (4) causes endless loop. Default screen
+    depth will be used instead in such cases.
+
+================= Asm-Pro V1.21 (21-Dec-2024) ======================
+People contributing to this opensource release:
+- amigo/binary (amigo@binary.si)
+
+[ ADDITIONS ]
+1. ASM: Optional multi-line scroll (8 lines instead of only 1) to speed
+   up assembly when output is verbose (e.g. large number of included files
+   or print directives). Check Multiscroll in the assembler preferences.
+2. ASM: New integer operator: modulo // (e.g. 123//20 returns 3).
+
+[ BUGFIXES ]
+1. ASM: REM/EREM block was not allowed in BSS sections.
+2. CMDLN: RB (read binary) causes a crash if begin address is unparsable.
+3. UI: Bevel box is slightly off for the top parameter groups in the
+   environment preferences.
+4. CMDLN: @-prefixed dump commands incorrectly check for odd address and
+   cpu version, causing a crash on 68000/010 systems.
+5. ASM: Directives and instructions in the first line of a REPT 0 block
+   starting with either @ or A cause internal error.
+6. ASM: Incorrectly parsed number of bitplanes while including an IFF
+   colormap causes memory list corruption.
+7. ASM: Whitespace lines in a macro could cause the Unexpected end of file
+   error and consequent editor freeze.
+
+================= Asm-Pro V1.20b (22-Dec-2023) ======================
+People contributing to this opensource release:
+- amigo/binary (amigo@binary.si)
+
+[ BUGFIXES ]
+01. UI-1.20: Bugfix #26 (multiple hotkeys) causes crash on some systems.
+02. 1.19: System crash on exit if default directory (set in the general
+    preferences) does not exist.
+03. UI: Gadget messages in the startup window are used after a reply.
+04. ASM: Include jam problem resolved, caching now uses valid paths which
+    elimates eventual double caching and jams due to pass1/2 differences.
+
+================= Asm-Pro V1.20 (17-Dec-2023) =======================
+People contributing to this opensource release:
+- amigo/binary (amigo@binary.si)
+
+[ ADDITIONS ]
+01: ASM: New symbol REPTN, value is set to 0 to (N-1) while inside a
+    REPT block and -1 while outside.
+02: ASM: New predefined symbol ASMPRO, value contains ASMPro version
+    in the following format: major*256+minor.
+03: ASM: New directive EQUA, intended for post-processing. Do not use
+    if unsure how it works and what it does. It works similar to EQU
+    but the value is absolute (it also "relocates" and can be used to
+    access relocatable data from absolute sections).
+04: ASM/DISASM: Added support for PLPA instruction (68060).
+
+[ MODIFICATIONS ]
+01. UI: reqtools.library v38+ is required instead of any version.
+02. DISASM: FNOP is now displayed instead of a 0 displacement FBF.W.
+03. ASM: Macro parameter \@ reimplemented to work correctly with
+    system includes (pass1/2 conflicts with conditional assembly).
+04: ASM: Trailing / is appended to INCDIR path if needed.
+05: ASM: Current source directory is used as fallback to find include
+    files, and finally the INCLUDE: assign as well.
+06. ASM: Both CMP and CMPM with (Ax)+,(Ay)+ are now allowed.
+07: ASM: Allow MOVEM and FMOVEM descending register lists.
+08: ASM: Allow longword size for FMOVEM with control registers.
+09: UI: The ancient prefs toggles and closewb code removed from the
+    menu event handler.
+10. Over 900 additional micro optimizations, 21KB reduction of the
+    executable size compared to v1.18.
+
+[ BUGFIXES ]
+01. UI-1.19: File pattern in the read/write source file requester is
+    incorrect if Source .ASM is enabled in the general preferences.
+02. UI: Crash if diskfont.library couldn't be opened.
+03. DISASM: Crash on 68000/010 systems if DBcc.L (Apollo) has a 2-char
+    conditional code.
+04. EDIT: Continuously pressing page up to reach the top of the source
+    code after unsuccessful assembly (and similar variations), would
+    freeze the editor.
+05. DISASM: CALLM absolute and pc-relative modes don't work, immediate
+    mode's hex operand is missing a leading $.
+06. DISASM: Several CHK2 and CMP2 modes don't work.
+07. ASM: Incorrect opcodes generated or not supported for CHK2 and CMP2.
+08. DISASM: CINV and CPUSH specifier NC (neither cache) is displayed as
+    BC (both caches).
+09. ASM: CINV and CPUSH specifier NC (neither cache) is not implemented.
+10. DISASM: MOVES destination absolute long mode doesn't work.
+11. DISASM: PMOVE (68030 variant) mixes up registers TT0 and TT1.
+12. ASM: FMOVEM and some FMOVE variants allow destination pc-relative
+    modes.
+13. UI: The changed source prompts are brought up at the end of restart
+    instead of right away.
+14. ASM: No CPU warning for CALLM (68020 only) if the selected CPU is
+    68030 or higher.
+15: ASM: INCDIR path is not reset when starting a new assembly.
+16: ASM: Including a directory prints out random trash characters.
+17: MONI: Scrolling left/right (alt-left/right arrow) hides the cursor.
+18: ASM: PMOVE with MMUSR outputs incorrect register.
+19: DBG: Debugged program's user and supervisor stacks (and corresponding
+    USP/SSP registers) are switched.
+20: DISASM: FMOVEM has a trailing "/" in some scenarios.
+21: ASM: FMOVEM allows size .X with control registers.
+22: DISASM: Infinite loop with some 68040 specific FPU opcodes.
+23: ASM: Watchpoints and breakpoints are kept after switching to a
+    different source.
+24: Public port's name and type are not initialized.
+25: ASM: PRINTV doesn't flush the print buffer properly causing the next
+    line to be truncated (for example, if followed by INCLUDE or INCBIN
+    the path is not printed).
+26: UI: System freeze and/or crash if multiple hotkeys are pressed at the
+    same time, and the first one is causing the menu strip change (for
+    example, pressing amiga-AS in the editor).
+27: ASM: Numerous FPU instructions with source immediate longword operand
+    are generated as byte, resulting either in the out of 8-bit range error
+    or incorrect opcode.
+28: DISASM: FSINCOS prints only one destination FPU register.
+29: DISASM: Absolute and pc-relative modes don't work with all bitfield
+    instructions (68020+).
+30: DISASM: CMPI pc-relative index mode (68020+) doesn't work.
+31: DISASM: CAS allows several invalid and non-existing modes, absolute
+    modes don't work.
+32: DISASM: LPSTOP (68060) is not implemented.
+33: DISASM: Typos in FPU ROM constant names (appended as a comment to the
+    MOVECR instruction), probably due to the same typos in the M68K manual.
+    Additionally, TAB changed to a space if Printer Dump is not enabled in
+    the preferences to avoid weird characters on the screen.
+34: ASM: PFLUSHR doesn't allow address register indirect mode.
+35: ASM: MMU register PCSR is not recognized (PCR is checked twice instead).
+
+================= Asm-Pro V1.19 (27-Dec-2022) =======================
+People contributing to this opensource release:
+- amigo/binary (amigo@binary.si)
+
+This version runs (and is able to assemble itself!) on KS2.04+ and
+68000 based systems again.
+
+[ ADDITIONS ]
+
+1. WX command to enable short code and data hunks (code+bss, data+boss)
+WX is similar to WO (write object) but it additionally strips the trailing
+zeroes from the code and data sections reducing the corresponding hunk size.
+To use it properly, enable DS Clear in the assembler preferences. Software
+written for KS1.x must manually clear all the bss parts (KS2+ will do that
+automatically when your program is run).
+
+2. ADDBP directive to add a breakpoint from the source code
+Syntax is:
+	ADDBP	<expression>
+For example:
+	ADDBP	Label1234
+	ADDBP	$30000+idx*4
+Assemble your code with AD and unconditional breakpoints will be activated
+and ready to go.
+
+3. Command line history jump by 10 lines, don't store repeated lines
+Use shift-up/down to jump by 10 lines. A new line won't be added to history
+if it's the same as the previous one.
+
+4. Macro symbol parameter \<symbol> and \<$symbol> (vasm style)
+Macro parameter is replaced with symbol's decimal or hexadecimal value.
+This enables additional splicing of symbol values with the rest of the text.
+For example:
+foo	SET	123
+m	MACRO
+.q1	SET	\1-1			; make 2 out of 1
+.q2	SET	\1+1
+	lea	label\<foo>(pc),a0	; lea    label123(pc),a0
+	move.l	d\<.q1>,d\<.q2>		; move.l d3,d5
+.q3	SET	(.q1+.q2)*\1
+	moveq	#$\<$.q3>,d0		; moveq  #$00000020,d0
+	ENDM
+label123:
+	m	4
+
+5. Assembly elapsed time
+After a successful assembly you will see how much time it has taken.
+
+
+[ MODIFICATIONS ]
+These are primarily structural and source code changes. Listed first
+are the ones more relevant to the end user.
+
+1. ALIGN and CNOP changes
+If DS Clear is enabled in the assembler preferences, ALIGN and CNOP will
+initialize bss memory with zeroes (just like EVEN and ODD). This comes as
+a requirement to support the new WX command.
+
+2. Required stack size reduced from 32KB to 16KB
+
+3. Command line history reduced from 256 to 128 entries
+This is due to its really-not-good memory efficiency. Now that there are
+fewer duplicate entries this shouldn't be noticeable.
+
+4. Data and bss sections merged
+This makes all data accessible through A4 basereg to avoid absolute
+addressing and relocation as much as possible.
+
+5. Variables moved and reordered
+Almost all variables in code sections moved to bss section, reordered
+some variables in bss for a better logical fit and better alignment.
+
+6. Menu construction simplified
+It now uses macros, which resulted in approx. 2000 resourced lines of code
+being reduced to approx. 400.
+
+6. Source code cosmetic changes
+I was trying to keep those low for now, so it's easier to see the 
+actually relevant changes:
+- replaced archaic [] with () (some other assemblers don't like those)
+- replaced some of the resourced labels/symbols with the originals from
+  Rune's asm-one source code (or added them as comments)
+- changed the scope of some labels to local for clarity
+
+7. Micro optimizations, refactoring
+Over 2600 micro optimizations, and about a dozen subroutines have been
+rewritten to be much shorter and/or faster. Overall, a 15KB reduction of
+the executable size.
+
+8. Eliminated or isolated many instances of 68020+ code
+Placing this here instead of listing every one under bugfixes. Plenty of
+violations, e.g. BCC.L (32-bit), TST Ax, odd address accesses.
+Also made a couple dozen 68020+ optimizations (under IF/ELSE), but that
+is low priority and plenty more could be done.
+
+
+[ BUGFIXES ]
+Roy Batty, after looking at the source code:
+  I've seen things you people wouldn't believe...
+
+01. DISASM: Incorrect DBcc.L (Apollo) if the last character of destination
+    label is A-F.
+02. DISASM: Incorrect ftst register (prints target register, always 0/fp0)
+03. CMDLINE: Internal address error while parsing a bad '\' sequence, e.g.:
+    ?label\  (missing . after \).
+04. ASM: PRINTT partially prints its text over assemble progress text if the
+    progress indicator is enabled and text to print is short.
+05. DISASM: CAS addressing modes (d16,Ax) and (d8,Ax,Rx) don't work due to
+    extended opcode.
+06. ASM: Missing EREM/ETEXT causes infinite loop in pass1 due to trashed
+    flags. Bonus loop if All Errors is enabled in the assembler preferences.
+07. ASM: Repeated assembling keeps adding duplicates of the same watchpoints
+    if ADDWATCH is used in the source code.
+08. ASM: Watchpoint data becomes incorrect due to a wrong increment and memory
+    trashing while adding a new one.
+09. ASM: CMPI doesn't allow (d8,PC,Rx) (and respective extended modes) as its
+    destination effective address (68020+)
+10. CMDLN: Source bookmarks are corrupt after reading a project with RE:
+    - WE and RE write and read all source bookmarks (in <project>.APrj) as
+      absolute addresses, and not as relative offsets from the source start.
+    - Additional invalid code sequences that can cause stack corruption.
+11. CMDLN: UA (update project) causes a crashes at the end, while switching
+    back to the active source.
+12. ASM: ADDWATCH error disables menus and Amiga key via RMB-trap. Also, if
+    the error occurred at the end of the line (e.g. missing parameter), it
+    will print out random trash characters.
+13. ASM: ADDWATCH doesn't parse symbol names with 15+ characters properly.
+14. DBG: AD command incorrectly handles the no parameter case (debugger entry
+    point) by copying random data past the terminating zero.
+15. DBG: Byte/word mismatch resulting in FPU registers being displayed instead
+    of CPU registers, or vice versa.
+16. DBG: Debugger stuck in refresh due to a mix of non-register and register
+    based watchpoints (perpetual error to refresh to error...).
+17. UI: Byte/word mismatch in font related code potentially causing incorrect
+    font style, size, and/or flags.
+18: ASM: Macro not found (Illegal operator error) in some rare cases due to
+    macro being looked up as a local and not global symbol. Reordering the
+    code, adding a dummy local label, or referencing an unrelated symbol for
+    no reason could sometimes magically fix it.
+19: CMDLINE: History stops working properly after all the entries have been
+    filled up (it only replaces the last entry). Also, anti-cycling (stop at
+    first/last entry) doesn't work properly due to hardcoded limits.
+20. ASM: Macro parameter expansion doesn't handle semicolon comments properly,
+    and it can end up in an error if some unfortunate backslash sequence of
+    commented out chars is found.
+21. ASM: SET directive in a REPT 0 block results in error.
+22. UI: keymap.library is not closed in a way that makes exec.lbrary sad.
+23. ASM: TRAPcc variant opcode without operand (no .size) followed by a
+    comment results in error.
+24. MONI: Switching to binary mode in monitor sometimes doesn't work due to
+    internal parsing error causing it to reset back to the previous mode.
+25. ASM: Index scale (in indirect addressing modes with index) parser is not
+    robust, it allows *$$@$@$$@ (multiple hex/octal indicators), *@8 (invalid
+    octal number).
+26. ASM: FILESIZE() directive modifies the source code if path is invalid
+    (temporary modification is not reversed).
+27. ASM: DS.D (fp double) doesn't clear the correct amount of memory.
+28. CMDLN: If Y (execute) command fails, screen flags aren't restored from
+    WBENCHSCREEN back to CUSTOMSCREEN.
+29. DBG: Incorrect shortcut for the Dx/FPx register swap in the menu.
+30. ASM: TEXT/ETEXT '|' hexadecimal mode is not initialized, and being used
+    as a toggle it means it will not only carry over between separate blocks
+    but also between assembly attempts with the same or different sources.
+31. ASM: TEXT/ETEXT handler doesn't skip the hexadecimal mode '|' character
+    in pass1 but does in pass2, resulting in the code moved in pass2 error or
+    producing incorrect code.
+32. CMDLN: =A reports incorrect ASM-Pro sections (badly outdated).
+33. ASM: Opcodes for PULSE and HALT (68060) are reversed.
+34. DISASM: PULSE and HALT are not implemented (68060).
+35. CMDLN: 1KB of chip memory is leaked if bootblock checksum fails (e.g. no
+    disk, write protected).
+36. UI: Previous characters in the project info dialog (=P command) are still
+    printed if the new project or source filename is shorter. Also, maximum
+    displayed source filename length is one character too long resulting in
+    overwritten spacing.
+37. EDIT: Jump to next error (Amiga+e) shortcut in editor doesn't work.
+38. CMDLN: History doesn't clear the command line properly when moving up or
+    down and not being at the end of the line, if the next command is shorter.
+39. UI: ASM-Pro.guide is not found (file has been renamed to ASMPro.guide).
+40. DBG: VBR aware code could corrupt the supervisor stack in NMI/INT7 handler
+    due to non-atomic combinations and unsafe sequences of instructions.
+41. UI: gadtools.library is opened twice but closed only once.
+42. UI: Recent files menu causes a crash on KS2.x systems due to a KS3+ only
+    feature (NM_IGNORE flag).
+43. MONI: Save bin (Amiga+w) doesn't work if start and/or end address is 0.
+44. MONI: Save bin end address is printed at the wrong location in status bar.
+45. UI: gadtools messages are not being replied in all preferences windows,
+    causing memory leaks (NULL message pointer).
+46. UI: All preferences windows lock up if failed to save (e.g. ENVARC: is not
+    assigned).
+47. MONI: Incorrect offset table index for bin/hex/ascii dump, uses magic
+    numbers to produce the correct output but crashes on 68000/010.
+48. UI: Palette gadgets (syntax color preferences) cause a crash on KS2.x due
+    to a different implementation of the selection indicator compared to KS3+.
+49: ASM: FPU instructions with immediate integer operand (e.g. fmove.s #1,fp0)
+    cause a crash if no FPU is present in the system.
+50: CMDLN: FPU calculator ([ command) doesn't handle div sign correctly in some
+    cases, e.g. [-1 is -1.000 (ok), [-1/1 or [1/-1 is 1.000 (positive, not ok).
+51. ASM: Several bitfield (BFxxx opcodes) problems:
+    - negative offset/width is allowed (while not allowing values above 31/32)
+    - bad register index is allowed, e.g. D8, D;
+    - width 32 (equivalent of 0) is not always allowed, e.g. if offset is in a
+      data register or if offset is not a zero, it's not allowed
+52. Several loader/startup problems, it's almost entirely rewritten now:
+    - Crash if started from WB on KS1.x systems, also missing a reply to the WB
+      startup message wouldn't.
+    - Potential stack corruption if started from WB and for some reason the WB
+      startup message arglist is NULL (check was done), also current directory
+      isn't obtained/locked.
+    - dos.library isn't closed in some cases.
+    - Parent process pointer (loader) passed to child process will be invalid
+      if parent exits too early.
+53. CMDLN: B (jump bottom) command misses the target if source has more than
+    65535 lines (dbf limitation).
+54. ASM: (C)MEXIT directive doesn't preserve condition level, and a frequently
+    used macro will lead to the conditional overflow error.
+55. ASM: SETCPU directive reports incorrect error message if argument is wrong
+    (illegal operator instead of unknown cpu type). Adjusted for PPC as well.
+56. UI: Memory amount slider's text in the startup window is not refreshed
+    properly on KS2.x systems (leftovers on the right side).
+57. UI: Memory type radio/mx buttons in the startup window don't work on KS2.x
+    systems due to incorrectly handling the selection code.
+58: CMDLN: Private L@ command is outdated and not working properly, disabled
+    now since =A can be used instead.
+59. ASM: Error and warning line numbers above 65535 are truncated.
+60: DBG: Length of the argument specified by the PS command (if Parameters is
+    enabled in the environment preferences), and passed in d0 is incorrect due
+    to memory trashing during assembling.
+61. DBG: Status bar in the no-source mode is broken due to partially outdated
+    code, disabled now since there shouldn't be one or should be empty.
+62. ASM: IDNT string is not initialized and will be used even if commented out
+    or after switching to a difference source that doesn't have it.
+
+================= Asm-Pro V1.18 (5-april-2012) =======================
+People contributing to this opensource release:
+- Rune Stensland (SP) (amigaguru@gmail.com)
+
+- Added the Apollo Cpu (GUI+Config)
+- Apollo: Enabled move byte to adress register (Assembler,dissassembler,debugger)
+- Apollo: Enabled tst byte adress register (Assembler,dissassembler,debugger)
+- Apollo: Added clr.x ax, not.x ax,neg.x ax, negx.x ax (Assembler,dissassembler,debugger)
+- Apollo: Added bset.x #n,ax, bclr.x #n,ax, bchg.x #n,ax, btst #n,ax (Assembler,dissassembler,debugger)
+- Apollo: Added Full <EA> support for tst,clr,not,neg and negx  (ex. neg 10(pc,d0.w*2)) (Assembler,dissassembler,debugger)
+- Apollo: Added (B,W,L) ORIA , EORIA, ANDIA, ADDIA,SUBIA,CMPIA (Assembler,dissassembler,debugger)
+- Apollo: Added DbCC.L (Assembler,dissassembler,debugger)
+- Fixed 020 + inderect adressing modes ([xxx.l,d0]) etc. EX: jsr ([label,d0.l*4])
+- Fixed 020 + inderect adressing modes ([label],123456789) EX: move.l ([label],123456789),d0  
+- Removed Crash when pasting an empty clipboard
+- The commandline buffer now remember 256 lines (before 16). Also Removed wrapping.
+- Added support for Integer Constants in Floatingpoint Expressions. ex: fmove.l #constant*100,fp0
+
+================= Asm-Pro V1.17 (2-may-2005) =======================
+
+People contributing to this opensource release:
+- Franck "Flasher Jack" Charlet.
+
+
+[FIX]	- All libraries calls are now using relevants includes labels
+  	  (Also added a couple of required includes).
+
+	- Forced the FPU flag for 68040 & 60 so fpu instructions can be assembled
+  	  when using these processors and fpu registers are displayed in the regs lists.
+
+	- Pasting block of text when the caret is at the bottom of the editor
+  	  won't trash it anymore.
+
+	- Current line won't be trashed during block marking.
+
+	- Fixed some typos here and there.
+
+	- Fixed the doubled carets in monitor.
+
+	- Fixed start/end save addresses in binary dump.
+
+[NEW]	- Current caret address is now displayed in monitor.
+
+	- Added the includes files into the sourcecode archive
+  	  (dunno if it's legal or not but it makes life easier).
+
+	- bm.l command implemented (longwords binary dump).
+
+[MISC]	- Renamed executable & sourcecode file from Asm-Pro to AsmPro
+	  (Mostly because it's faster to type).
+
+================= Asm-Pro V1.16i (24-02-2001) =======================
+
+People contributing to this opensource release:
+- Aske Simon Christensen aka Blueberry
+- Franck "Flasher Jack" Charlet.
+
+Blueberry:
+---------
+[FIX]	Fixed the "sticky" cursor problem in the editor.
+[FIX]	Instructions like bfexts d0{13:28},d2 are legal and therefor
+	do not generate errors anymore.
+
+Flasher Jack:
+------------
+[NEW]	Added a most recent files list (only for source files).
+
+[FIX]	On Ctrl+V (paste) command: editor's line number trashed.
+[FIX]	Changed "AU" (Auto Update) to "AS" in prefs to avoid conflict with
+	Update Check.
+
+Solo:
+----
+[NEW]	There is now an Asm-Pro developers mailing list!
+
+
+================= Asm-Pro V1.16h (04-02-2001) =======================
+
+People contributing to this opensource release:
+- Boussh
+- Franck "Flasher Jack" Charlet.
+- Solo
+
+Boussh:
+-------
+[FIX]	Fixed disassembler crashes for some (illegal) opcodes.. (jaja beter laat dan nooit he :)
+
+Flasher Jack:
+-------------
+[SRC]	Changed system equ's to includes.
+
+[FIX]	Comment block won't trash line number anymore.
+[FIX]	File >=100k displayed correctly in V command.
+[FIX]	Won't display FastMem in AllocWorkSpace window
+	if there's no FastMem present (A BIIIG ONE!).
+[FIX]	When assembling with no errors editor line number trashed.
+[FIX]	Select a font and then Canceling the prefs window won't
+	trash the screen anymore.
+[FIX]	BootBlock simulator now jumps to Address+12.
+
+[NEW]	AutoUpdate option before Jump or Go added in env. prefs.
+[NEW]	BootBlock simulator menu entry.
+[NEW]	'Select all' option in editor.
+
+
+[NEW]	'Tabulate' option in editor.
+[NEW]	'Spaces to tabs' option in editor.
+[NEW]	Insert disassembly: labels extended to 32 bits.
+[NEW]	RegsData file can be also found in S:
+
+
+Solo:
+-----
+[SRC]	Source reconstruction.
+
+================= Asm-Pro V1.16g (08-08-2000) =======================
+
+People contributing to this opensource release:
+- Aske Simon Christensen aka Blueberry
+- Solo
+
+Blueberry:
+----------
+[FIX]	Pflusha warnings changed from 851/030 only to 851/030+
+[FIX]	Nested REPTs work again. It crashed previously.
+[FIX]	REPT 0 now skips its contents, instead of crashing.
+[FIX]	'<' in expressions was unsigned less than or equal instead of
+	signed less than, as it should be.
+[FIX]	Float values can now be raised to nonpositive exponents
+
+Solo:
+-----
+[NEW]	Added an editor function to change hexnumbers to ascii (Amiga+h)
+	Set the cursor on top of the '$' and press Amiga+h and presto the
+	number changes into an ascii value string.. 
+
+eg.
+ dc.l $534F4C4F
+
+will change into:
+ dc.l "SOLO"
+
+
+A more extensive example:
+
+checksize:
+	moveq   #0,d6
+	move    (a3)+,d0
+	and     d4,d0
+	cmp     #$C057,d0
+	beq.b   .wordsize
+	cmp     #$C04C,d0
+	beq.b   .longsize
+	cmp     #$C042,d0
+	beq     ERROR_IllegalSize
+	bra     HandleMacroos
+
+can be changed into:
+
+checksize:
+        moveq   #0,d6
+        move    (a3)+,d0
+        and     d4,d0
+        cmp     #"@W"+$8000,d0
+        beq.b   .wordsize
+        cmp     #"@L"+$8000,d0
+        beq.b   .longsize
+        cmp     #"@B"+$8000,d0
+        beq     ERROR_IllegalSize
+        bra     HandleMacroos
+
+which is a lot more readable..
+
+================= Asm-Pro V1.16f (04-03-2000) =======================
+[First OpenSource Release]
+
+Source code of Asm-Pro is now available as OpenSource. Check out the
+Website for more details (http://surf.to/asmpro)..
+
+- Fixed autoscroll problem when screensize was bigger than the screenmode size.
+- Fixed warning for pmove.l TC,xx
+
+================= Asm-Pro V1.16e (26-12-1999) =======================
+[BETA release !!]
+
+This release could be unstable for you but works fine for me most of
+the time.. If it is unstabel use v1.16d. I can not give you a newer 
+version at this time as I am messing with the source structure and
+other things that take more time (and less updates) but will be
+significant to future development..
+
+- Removed screen flicker while changing from Data 2 Float regs in 
+  debugger window.
+- The editor can now handle sources with more than 65535 lines :)
+  only 5 digits will show up on screen (99999) but higher linenrs
+  will be handled correctly.
+  (It sometimes crashes your computer if you swap workspaces and
+  debug stuff a lot so I should look at it some more)
+- Automatic source backup option added to the env prefs window.
+  When this option is switched on, and you make an Update (U) of your
+  source, it first renames the old file on disk from "yoursourcename.s"
+  to "yoursourcename.s.BACKUP" and then saves the source in the buffer
+  to "yoursourcename.s"
+  In the future I might add an option to the prefs where you can edit the
+  backup extention, maybe even add a time/date or number extention..
+
+================= Asm-Pro V1.16d (21-07-1999) =======================
+[BETA release !!]
+
+- Bracket syntax stuff fixed and tested with:
+
+  jsr     ([test])
+  jsr     ([test,pc])
+  jsr     ([a6])	;executes right but disassembles wrong
+  jsr     ([a6,d3])	;executes right but disassembles wrong
+  jsr     ([a6,d3*4])	;executes right but disassembles wrong
+  jsr     ([4.w,a6])
+  jsr     ([4.l,a6,d3])
+  jsr     ([4.l,a6,d3*4])
+
+  move.b  ([test],8.w),d2
+  move.b  ([test,pc],8.w),d2
+  move.b  ([test],d0,8.w),d2
+  move.b  ([test,pc],d0,8.w),d2
+  move.w  ([4.w,a6,d2*4]),d0
+  move.w  ([4.l,a6,d2*4]),d1
+  move.w  ([8.w,a6],d3),d2
+  move.w  ([8.l,a6],d3,0),d3
+  move.w  ([a5,d3*2],4.w),d0	;still wrong
+
+  (Please tell me if you know some more that don't work)
+
+- Fixed small opcode syntax coloring bug..  Comments on a line with no
+  opcode and preceding whitespace where colored as if they where
+  opcodes :)
+
+- IncLink added. With Inclink you can add linkobjects to the
+  current section like this:
+
+  test:
+	inclink "ram:testobj.o"
+
+  [Original code for Inclink by deftronic]
+  It reads a linkobject file, Relocs it and gets the symbols.  Inclink can
+  only handle 1 section per file and it is put in current section.
+
+  These Commands Can be used to make definitions
+
+  - xref   (external reference)  a label you want from the main file
+  - xdef
+  - globl
+  - global
+  - extern (external definition) a label you will send to main file
+
+  Use the command write-link (WL) to save a linkfile..
+
+
+================= Asm-Pro V1.16 (01-04-1999) =======================
+[Public release]
+
+- Changed openscreen stuff In Asm-Pro. When screenmode from prefs
+  could not be opened a pal/ntsc screen was created.. (not very usefull
+  when you have a gfx-card.. so now it opens a screenmode requester..
+  (yes yes I noticed it only after I installed my BVision)
+- Fixed debug error with instructions like "move.l  #-1,(a1,d1.w*4)"
+
+- "cmp.b  #0,var(pc)" works now.
+- "fmove.w #1,fp0" works too.
+- Fixed move16 problems in the debugger.
+- Also fixed brs.l and bra.l troubles in debugger.
+- Fixed fmove.b/w in debugger.
+
+- Changed screenmode stuff to handle more than 4 colors. Now you can
+  open screens from 2 to 16 colors (code works for more than 16 colors
+  but I dont want to save all of them in the prefsfile).
+  (some problems with reqtools showing 2 much colors in prefs though)
+- Changed fontrequester from reqtools 2 asl.
+  (will remove all the reqtools stuff for future compatibility)
+- Added opcode coloring in syntaxprefs.
+- The ':' after a label is now also colored :).
+
+================= Asm-Pro V1.15 (05-12-1998) ========================
+[Sinterklaas release] :)
+[Public release]
+
+- Changed Write block from Amiga-w to Amiga-W.
+- Amiga-w is now same as 'U'pdate (more compatible to existing software).
+  and also works in the editor (but will end up in command mode will fix
+  that later).
+- Changed the output of an error in an include file. It now shows the correct
+  include file and 3 lines of code, the middle one is highlighted and
+  shows the errorline. Then the include line in the current source buffer
+  is shown..
+
+Like this:
+
+** Undefined Symbol
+In file DH1:ASMPRO/INCLUDE/replay/Player6.1.s
+         11 P61_motuuli:
+»        12  bra.w P61_Init
+         13  ifeq CIA
+
+  144  include replay/Player6.1.s
+
+- Change source in commandline with Function keys implemented.
+- D$0100000 works again... bit 24 was cleared iso bit 0... oops..
+- Added the commandline options RN and WN.
+  RN will open a filerequester for opening a (source) text file with
+  no wildcards. should be usefull for editing other text files like
+  the startup-sequence..
+  WN will do the same for write source and will also not write the
+  savemarks on top of the file..
+- Recoded the syntax highlighting routine (lot faster) and now it also
+  handles labels (maybe more to come).
+  (if you use '*-*-*-*' it will not be colored as a comment coz you can
+  also do something like this: test = *-2 and then it isn't a comment)
+- Fixed bug in changing source buffers when MCP's (060) CopyMemQuick
+  patch is activated.
+- Masked some more chars in hexdump when 'Ascii only' option is set.
+- Added -f (force) option to the AUTO directive. When this option is
+  used no more requesters will popup to report you that the
+  'File allready exists !! Are you sure ??'. Now it will always
+  create/overwrite the file.
+  The force option only has to be used once in a source like in the
+  example below. It will write Start to End twice without any requesters.
+
+        auto    -f wb ram:test\Start\End\
+        auto    wb ram:test\Start\End\
+
+Start:
+        dc.b    "Asm-Pro"
+End:
+
+- Added Syntax color prefs window.
+- Backwards block select will not freeze asmpro anymore. backwards
+  selection is not colored anymore though (will fix that later).
+- Added Line numbers in the source (by popular demand)..
+- Added search option in monitor (so you can search for your
+  favourite opcode from inside the monitor ;).
+- jmp    ([(label).w,pc,d0.l*4]) works again... (forgot to check for
+  the last ']')
+- Indices with preceeding 0 do assemble now (e.g. move (a0,d0.w*04),d0)
+- Fill is amiga+f, insert is Amiga+i or Amiga+v
+- After assembling mem pointer will be set to begin of your program.
+- Updated the Asmpro.guide file.
+
+================== Asm-Pro V1.14 (02-09-1998) ========================
+[Public release]
+
+- All 10 source buffers have there own read/write directory buffer now
+  so loading a source in buffer 1 will not change the path in buffer 0.
+- Save marks are now written in ASCII so you can also read your source
+  in another editor/txtviewer. The line starts with ";APS" (Asm-Pro
+  savemarks)
+  The old savemarks are still supported but only when reading a source
+  (or includes).
+- Ctrl+ESC gets you into the halfscreen editor and scrolling did not work
+  propperly anymore but it does now... Halfscreen mode is usefull when
+  you need to see the output of a command line option while editing your
+  source. (strange nobody ever reported this 2 me).
+- Fixed small bug in custom scroll check routine. when CS was selected
+  and screensize was changed to something other than 640 Wide CS routine
+  was still used (and not working the way it should).
+- Added BinMem dump (BM) to the menu.
+  (btw you did know about the h.w and m.l memdump stuff changing the
+   output on screen to word or longword right?
+  >m.w$1200
+  00001200 FF60
+  )
+- Workbench screen is not locked anymore if you select WB2Front.
+- Added an option to the Env prefs (Scroll Sync.) to make editor updates
+  wait until next frame. This could fix a scroll problem on some Amiga's.
+  leave this untoughed if scrolling/editing works fine for you as it slows
+  down editor speed somewhat.
+- Fixed problems with syntax error highlighting (no more enforcer hits).
+- Bra.l will not allow labels in another section anymore.
+- Fixed section problem when using brackets, so this works now:
+
+start:
+        jsr     ([test])
+        rts
+
+	section	another,code	;this was the bottle neck..
+
+test:
+        dc.l    go_on
+
+go_on:  nop
+	rts
+
+
+
+================== Asm-Pro V1.13a (29-07-1998) ========================
+[Public release]
+
+- Oops little bug in mark block. Some of the text would dissapear when
+  block mark does not start at the beginning of the line.. Fixed now.
+  (there are still problems when marking a block backwards though)..
+
+
+=================== Asm-Pro V1.13 (27-07-1998) ========================
+[Public release]
+
+- Fixed problem with BEG> END> when using addresses above $7fffffff
+  (like on the BlizzardPPC)
+- Cmp2.l assembled wrong fixed now.(oops..)
+- After a syntax error asmpro will show you how far the parser got in the
+  error line by changing the color of the part that was not parsed yet.
+  So the error is right in front of the colored stuff.
+  (hmm hope you got that.. anyway make some typo in the source and you'll see)
+- Added PCR to the debugwindow (only shown when you have a 060) requested some
+  time ago but sliped my mind as I don't have a 060 :)
+- Fixed some internal 060 stuff
+- BUSCR and PCR  control registers where not known by the disassembler.
+- jsr ([label]) and other ([xx,xx],xx,x) stuff works now. Try the next
+  source in the debugger:
+
+start:
+        lea     0,a0
+        lea     test,a1
+        moveq.l #1,d0
+        moveq.l #0,d1
+        jsr     ([test])
+        jsr     ([test,a0])
+        jsr     ([test,pc])
+        jsr     ([test,pc],d0*4)
+        jsr     ([test,a0],d0*2,2)
+        jsr     ([4,a1],d0*2)
+	jsr	([(test).w,pc,d0])
+	;ofcoz also other instructions like
+	move.w  ([12,a1],d0*2),d1	;-> d1=$00005678
+	;etc
+        rts
+
+test:
+        dc.l    go_on
+        dc.l    go_on2
+        dc.l    go_on3
+	dc.l	value
+
+go_on:  nop
+go_on2: nop
+go_on3: rts
+
+value:	dc.l	$12345678
+
+- Changed the custom scroll routine and now only works with a screen width of
+  640 pixels (well it did only work with 640 screens but now a requester will appear
+  telling you so and I removed some obsolete code)..
+- Screen size (width and height) is back in the screenmode requester.
+- If the include path + filename does not fit on the screen only the last part
+  of the string will be shown so you can always see the filename.
+  (also applies to incbin,inciff etc.)
+
+Like this:
+
+Include : "ASSEMBLER:ASMPRO/INCLUDE/dos/dos.i        " =      8977 (=$00002311 )
+Include : "MBLER:ASMPRO/INCLUDE/libraries/dosextens.i" =       351 (=$0000015F )
+Include : "ASSEMBLER:ASMPRO/INCLUDE/dos/dosextens.i  " =     15091 (=$00003AF3 )
+
+
+=================== Asm-Pro V1.12 (07-06-1998) ========================
+[Public release]
+
+- RB <file> could crash your system when no BEG or END was given.
+- R <filename> works again.
+- The floating point calculator ('[') displays the results correct again.
+- cmp2 (dis)assemble correct now.
+- Added Custom (cpu) scroll routine to speed up scrolling in the editor.
+  Check Env Prefs "Custom Scrollr." to use it.
+- Added different date formats to %getdate also one for $VER (dd.mm.yy)..
+- Fixed strange memory slider value from startup window in absolute mode
+  only noticeable if you had more than 32mb ram.
+
+=================== Asm-Pro V1.11 (19-04-1998) ========================
+[Public release]
+
+- Fixed Processor warn and all errors switch. They should work propperly now.
+  Processor warn switch was never checked..
+- Fixed the click on debug window crash system bug..
+- Fixed some small things.
+- Fixed scrolling the wrong way when clicking in the source and dragging
+  the mouse over the menu strip.
+
+=================== Asm-Pro V1.1 (10-04-1998) =========================
+[First public release version of Asm-Pro]
+
+
+=================== Asm-Pro V1.03a-f (10-04-1998) =====================
+[Beta testers version of Asm-Pro]
+
+================ Asm-Pro V1.00-V1.02q  (21-12-1997) ===================
+[Internal Beta test version of Asm-Pro]
+
+=======================================================================
+
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+
+Special thanx 2 the (First) Beta testers:
+
+- One/Genetic		MC68060/50 MPC604/200	 64MB	CyberVision 64
+- Tib/TFA		MC68030/50		  8MB
+- P-O Yliniemi		MC68060/50 MPC604/200	134MB	CyberVision 64
+- Thomas Wittwer	MC68030/50/fpu		 32MB
+- Peter'ViTAL'Eriksson	MC68060/50		146MB	CyberVision 64
+- Scorpion/Silicon	MC68030/50		  8MB
+- Cliff Earl		MC68000

@@ -1,0 +1,19 @@
+#pragma printLine #include <stdio.h>
+#pragma OCbuiltInType FILE
+#pragma OCbuiltInType size_t
+#pragma OCbuiltInVar NULL
+#pragma OCbuiltInVar stderr
+#pragma OCbuiltInVar stdin
+#pragma OCbuiltInVar stdout
+#pragma OCbuiltInFctn fprintf
+#pragma OCbuiltInFctn vfprintf
+#pragma OCbuiltInFctn getc
+#pragma OCbuiltInFctn fopen
+#pragma OCbuiltInFctn fclose
+#pragma OCbuiltInFctn fflush
+#pragma OCbuiltInFctn fgets
+#pragma OCbuiltInFctn fgetc
+#pragma OCbuiltInFctn fputc
+#pragma OCbuiltInFctn feof
+#pragma OCbuiltInFctn setbuf
+#pragma OCbuiltInFctn printf

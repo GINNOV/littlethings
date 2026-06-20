@@ -1,0 +1,16 @@
+Short: Converts ILBM to RAW. Makes coplists
+Author: Mario Speranda <msper@bigfoot.com>
+Uploader: Mario Speranda <msper@bigfoot.com>
+Type: dev/c
+
+This program converts IFF/ILBM files into RAW files. Also creates
+copperlists. Outputs four files:
+*.BODY - contains uncompressed bitplane information, saved line after
+         line by default or plane after plane optional.
+*.CMAP - contains colors written in 24bit RGB (or 12bit optional).
+*.BMHD - BitMap Header. Directly copied from ILBM file.
+*.CPRL - contains AGA color copperlist (or ECS optional).
+
+For instructions simply call the executable without any arguments.
+Report bugs, comments or ideas by e-mail.
+This product is FREEWARE. Please respect the effort put into it.

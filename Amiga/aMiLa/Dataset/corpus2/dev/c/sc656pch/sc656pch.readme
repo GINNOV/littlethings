@@ -1,0 +1,16 @@
+Short:        SAS/C 6.56 Patch (requires 6.55)
+Author:       Steve Krueger (sekruege@nando.net)
+Uploader:     Steve Krueger (sekruege nando net)
+Type:         dev/c
+Architecture: m68k-amigaos
+
+This archive contains a number of fixes for the 6.55 version 
+of the SAS/C Development System. You MUST have 6.55 installed 
+to use this patch. This patch does not use the original 6.50 
+production disks, but rather just patches the 6.55 images in 
+place in the SC: directory.
+
+This patch is mainly to clean up a few problems that were
+introduced in version 6.55, but it also contains several fixes 
+to older bugs. See the read.me file contained in the
+archive for a list of fixes.

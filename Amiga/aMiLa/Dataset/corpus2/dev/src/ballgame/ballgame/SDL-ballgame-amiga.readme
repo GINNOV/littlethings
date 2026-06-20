@@ -1,0 +1,20 @@
+Short:    ballgame
+Author:   http://sol.planet-d.net/gp (Jari)
+Uploader: ike@ezcyberspace.com (IKE)
+Compiled: ike@ezcyberspace.com (IKE)
+Type: dev/misc (game/misc)
+Requires: AOS 68k
+
+I've done a compile of Jari's SDL tutorial (Part B 07 -16) which demonstrates some of the fundamental features of using SDL.  The complete tutorial is available at:  http://sol.planet-d.net/gp 
+
+Please check it out if you are interested in writing crossplatform games which use SDL.  This is a simple ball game where you navigate the ball through levels (very easy to make more if you want!) avoiding the black walls, collecting tokens and racing against the clock! (use the arrow keys to control the ball) 
+
+Thanks again Jari for the great tutorial which helped me a lot! 
+
+Compiled using:  WinUAE, gcc 2.95.3-4 and the latest SDL dev kit available from:  
+
+http://ggreco.interfree.it/sdl.html  Thanks Gabriele for bringing SDL to the Amiga!
+
+IKE
+
+

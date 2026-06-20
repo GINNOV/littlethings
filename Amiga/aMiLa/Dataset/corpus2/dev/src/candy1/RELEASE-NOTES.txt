@@ -1,0 +1,24 @@
+                           RELEASE NOTES:
+                           ==============
+
+I worked for 8 months on Vortex.. and didn't recieve a SINGLE
+donation for my efforts. It was very dissapointing to say
+the least. I'm releasing the CODE and hoping that those
+who find it useful will send a donation of $1-$5.
+
+Joey McDonald
+2627 S. Lamb Blvd. #205
+Las Vegas, NV 89121
+
+I would very much appreciate the donation!
+
+The code is FREEWARE. You may take and use ANY and ALL code
+within your own programs and for ANY purpose. However, you
+must also include a STATEMENT within your documentation
+that my code was used in the creation process of your program.
+Please... give credit where credit is due!
+
+LONG LIVE THE AMIGA and CANDO!
+
+Joey McDonald
+tron@mclv.net

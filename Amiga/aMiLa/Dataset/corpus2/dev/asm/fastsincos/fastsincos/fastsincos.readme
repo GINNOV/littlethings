@@ -1,0 +1,138 @@
+Short:    Very fast trigonom. funcs for 040/060.
+Uploader: astegema@ix.urz.uni-heidelberg.de (Achim Stegemann)
+Author:   astegema@ix.urz.uni-heidelberg.de (Achim Stegemann)
+Type:     dev/asm
+
+This is an updated version compared to last Aminet upload.
+
+* The fastsin and fastcos functions speed as been improved.
+* Time of table-initialization has been almost halved.
+* The cycle timing has been corrected.
+* I beg your pardon, but... the polynoms are of degree 2 and not 3 as stated in
+  the last version.
+
+
+*** History ***
+
+When I was programming my first version of Digital Almanac (Aminet:misc/sci),
+I saw, that using trigonometric functions take a long time to calculate.
+So I thought that there must be a way to be fast but also to be precise.
+Using short tables would burst the speed, but wouldnt be precise enough.
+Using Taylor series are only fast for values near zero, but would enlengthen
+time for values that are closer to 1 or more, but would use no memory.
+
+As today everybody has enough RAM in his/hers Amiga, memory consuption is no
+more a problem. So I decided to write these functions and make them public.
+
+
+
+*** Copyright ***
+
+There is no copyright on my idea. Use them as you like it, even if you write
+a commercial program. I dont care.
+If you have any idea, how to improve speed, tell me !!
+Any idea is welcome !!
+
+
+
+*** Contents ***
+
+This archive contains assembler source codes for PhxAss that shows, how to
+program very fast trigonometric functions (sin,cos,asin,acos,atan2) on a
+040/060 CPU.
+The source contains interfaces for C, C++ and Assembler stubs.
+I myself use PhxAss and StormC V3.
+
+
+
+*** Background ***
+
+As you know, the 040/060 CPU does not contain those functions. They have to be
+emulated by the 680x0.library. This emulation is very time consuming and not
+very multi-tasking friendly.
+So StormC offers special algorithms to calculate values from those functions
+just by using internal FPU commands. To be 100% compatible to FPU, these
+functions need to calculate values with an accuracy of 16 digits.
+In every-day-purpose a programmer usually does not need that amount of digits.
+10 digits would suffice for their purpose.
+This is where my functions join the game.
+
+All fast functions offer an accuracy of about 10 to 13 digits (depending on the
+initial value.
+
+
+
+*** Speed comparison on a 68060/50 ***
+
+This table shows a speed comparison of the corresponding FPU commands
+on my 68060/50. The times are measured in cycles and might vary by
+some cycles.
+FF=Fast functions
+
+
+Command                  68060.library    StormC    FF (from C)  FF (from Asm)
+------------------------------------------------------------------------------
+
+fsin.x fpx                   333           284          83           61
+fcos.x fpx                   329           281          82           60
+fsincos.x fpx,fpc:fps        416           ---          90          ---
+fasin.x fpx                  444           404          98           74
+facos.x fpx                  434           391          97           74
+atan2(y,x)                   ---           320         211          211
+
+
+As you can see, the fast functions are up to 5 times faster than the
+original commands.
+
+The tan command is not listed here, because tan=sin/cos !!
+
+
+
+*** How is it done ? ***
+
+Interpolation of sin, cos, asin and acos is realized by using square polynoms.
+Starting your program, at first stage tables are filled with polynomial
+coefficients.
+When you want to receive the value of an input, the program simply evaluates
+the corresponding array entry that belongs to your value.
+
+E.g. sin(x) = (p[0]*x+p[1])*x+p[2]
+where p is the double-pointer to the array of coefficients.
+
+
+
+*** Memory consumption ***
+
+The sin and cos use a table of 506 kB size.
+The asin and acos use a table of each 234 kB size.
+The atan2 is transformed into a acos, so its table will be used.
+( atan2(y,x)=acos(x/sqrt(x*x+y+y)) )
+
+The initialization of the tables will need about one to two seconds on a 060.
+
+
+
+*** Register trashing ***
+
+All functions follow the rules for trashing registers (D0/D1,A0/A1,FP0/FP1).
+The assembler functions also restore the FP1 register, so only FP0 is filled with
+the desired return value.
+
+The C/C++ functions also restore the D0 and A0 registers (D1 and A1 are untouched
+throughout the code.
+
+
+
+*** C includes ***
+
+The prototypes of the functions are easy.
+
+double fastsin(double);
+double fastcos(double);
+void   fastsincos(double,double &s,double &c); // (C++)
+double fastasin(double);
+double fastacos(double);
+double fastatan2(double y,double x);
+
+I myself have put them into the math.h include.
+

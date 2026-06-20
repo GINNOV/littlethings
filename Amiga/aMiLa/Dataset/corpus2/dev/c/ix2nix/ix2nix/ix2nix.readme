@@ -1,0 +1,61 @@
+Short:    convert from ixemul to libnix
+Author:   lombi@iprimus.com.au (Lorence Lombardo)
+Uploader: lombi@iprimus.com.au (Lorence Lombardo)
+Type:     dev/c
+Version:  3-Oct-2013 
+Architecture: m68k-amigaos
+
+
+How to convert from ixemul to libnix by Lorence Lombardo.
+
+
+This text is a guide to assist in converting successfully compiled ixemul
+programs to libnix.
+
+Which library is the best to use can only be determined from testing and
+personal circumstances.
+
+In some cases it is not very easy or practical to convert from ixemul to
+libnix because they simply do not have parity.
+
+
+Steps:-
+
+1. With some compilers it will be neccessary to replace "printf("\n");"
+   with "printf(" \n");". (Note the space)
+    
+
+2. Check the program for unix paths and replace them with Amiga paths.
+   (Sometimes easier said than done ;)
+
+
+3. When specifying -noixemul with gcc it may be neccessary to link with
+   "-lm" even if it was not neccessary before.
+
+
+4. When specifying -noixemul it may be neccessary to link with "-lgetopt"
+   even if it was not neccessary before. Supplied in this archive.
+
+
+5. Some times your program fails to write save files with "fopen" & libnix.
+   In this case try changing "w+b" to "wb+".
+
+
+
+There are alot more steps that could be done for libnix such as:-
+
+1. What lib to link with when "fdopen" is required or alternative.
+
+2. What lib to link with when internet functions are required.
+
+
+By all means feel free to contribute any steps you have used to convert
+from ixemul to libnix with your own builds to this document.
+
+
+
+Feeling bored ?  :)
+Why not check out this URL ?
+
+http://home.iprimus.com.au/lombi/1/homepage.htm
+

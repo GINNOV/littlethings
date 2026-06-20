@@ -1,0 +1,65 @@
+Short: Full C source code to FloppyFlux v1.2
+Author: andrew.ab2000@bigfoot.com (Andrew Bell)
+Uploader: andrew.ab2000@bigfoot.com (Andrew Bell)
+Type: dev/src
+
+This archive contains the C source code to FloppyFlux version 1.2
+
+Download this if you want to learn more about programming the following:
+
+ - Doing IO with trackdisk.device.
+ - Compressing data with xpkmaster.library.
+ - Building GUIs with gtlayout.library.
+ - Using AmigaOS style linked lists.
+ - Handling WB app messages.
+ - Creating a simple directory cache system.
+ - Creating WB AppIcons.
+ - Swapping your program's own stack, internally.
+ - Working with AmigaOS hooks.
+ - Using AmigaOS's public message ports to detect multiple copies of your
+   program in memory.
+ - Using AmigaDOS notification to track directory changes.
+ - Creating unique filenames for temp files.
+ - Handling messages from multiple message ports.
+ - Opening ASL requesters.
+
+These are just some of the things that this C source code covers.
+ 
+To compile it, you need the Amiga OS includes. They have not been included
+due to copyright reasons. One file has not been included, which is the
+"system.h" file. To emulate it, create a file under the same name and make
+it include ALL of your Amiga OS includes.
+
+FloppyFlux was compiled with DICE v3 using includes release 40.15.
+
+If you use another compiler such as VBCC, STORM or SAS C, sorry, but
+you'll have a lot of work to do, to get it to compile correctly.
+
+Feal free to contact me about the sources via email.
+
+------------------------------------------------------------------------
+
+The src/ directory contains the source code and the bin/ directory
+contains the debug executable for FloppyFlux.
+
+This source code is provided in the hope that it will be useful to those
+people seeking to learn the C language or learn more about the internal
+workings of the Amiga OS.
+
+You may compile this source for your OWN PRIVATE USE ONLY. You must not
+compile and distribute modified versions of this program. Even if your
+intentions are good. Please contact the author (via email, see below)
+if have noticed any bugs in the source.
+
+------------------------------------------------------------------------
+
+If this source interests you, I'm available for freelance Amiga
+programming work. Contact me via my email address below.
+
+------------------------------------------------------------------------
+
+This source code and all related files are Copyright © 1999 Andrew Bell.
+
+email: andrew.ab2000@bigfoot.com (Andrew Bell)
+  WWW: http://www.homeusers.prestel.co.uk/ab2000
+

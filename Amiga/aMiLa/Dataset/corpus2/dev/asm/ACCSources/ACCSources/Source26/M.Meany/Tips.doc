@@ -1,0 +1,21 @@
+
+				Quick Tip
+				~~~~~~~~~
+ A quick tip for Devpac 3 users. If you have set the ' Auto Indent ' option
+from the ' Settings - Set settings ' menu option, your code is probably
+littered with what appear to be blank lines, but infact contain one or more
+TAB characters. These TAB characters are unwanted and just waste memory, so
+why not remove them?
+
+ Removing unwanted TABs ( or any other character ) from the end of a line is
+quite simple. First select the Search-And-Replace requester by selecting
+' Find & Replace ' from the ' Search ' menu. In the ' Find ' string gadget
+enter the sequence Left-Amiga-TAB then Left-Amiga-CTRL-J. On pressing Return, the
+the ' Change To ' gadget activates. Press CTRL-X then Return to clear this
+gadget. Finally press ' A ' to replace all occurrences of the search string.
+
+ If Devpac reports that substitutions were made, move the cursor to the top
+of the file and repeat the operation. Continue doing this until the ' Not
+Found ' message appears. All unwanted TABs will have been removed!
+
+ Another great tip by ' Shhh, you know who! ' ;-)

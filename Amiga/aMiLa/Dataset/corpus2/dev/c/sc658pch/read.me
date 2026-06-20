@@ -1,0 +1,185 @@
+This patch contains a number of bug fixes (listed below),
+and few enhancements to the SAS/C Developement System.
+This patch will use the original 6.50 disks to perform
+the patch. You should have 6.56 and 6.57 installed BEFORE applying
+this patch.
+
+
+
+
+To install this patch, type
+
+   execute install
+
+
+New Features:
+
+1) Added two new builtin functions to utilize ROL/ROR instructions:
+
+     x = __builtin_rol(a, b, size);
+     x = __builtin_ror(a, b, size);
+     
+  where
+  
+     x       is the result of 'a' rotated by 'b' bits.
+     size    is an optional constant paramter where
+               size = 0               -   byte size rotate
+               size = 1               -   word size rotate
+               size = 2(or anthing else)  long size rotate
+             if size is omitted, size is assumed to be long.
+
+     NOTE: if 'b' is a constant value 16, and long size is to
+           be used, then a SWAP instruction will be generated.
+
+
+2) To aid in debugging code that does not have a seglist (ie ROM code),
+   the following addtion had been made to the SYMLOAD command:
+   
+   
+   SYMLOAD HUNKINFO addr1,addr2,... "filename"
+
+
+   
+------------------------6.58------------------------------------------
+
+1) _M68060 symbol was defined if CPU=040 or CPU=060.     Fixed.
+ 
+2) Phase 1 could get an enforcer hit when handling       Fixed.
+   enums in ?: constructs.
+
+3) Debug generator could get an enforcer hit if          Fixed.
+   some functions were inlined by the optimizer.
+
+4) Improve SC2 so it doesn't flush unused register       Done.
+   parameters to the stack.
+
+5) Split large blocks after a function call to decrease  Done.
+   the time it takes to schedule a function.
+
+6) 16 bit abs relocs were broken in 6.57, for example    Fixed.
+   move foo.w,a0
+
+7) Function pointers paramters to 'extern "C"' functions Fixed.
+   defaulted to __regargs instead of __stdargs.
+
+8) SHOW command causes Enforcer Hits in LINE mode CPR.   Fixed.
+
+9) Scheduler did not know that NEG <ea> modified memory, Fixed.
+   and could cause bad code to be generated.
+
+10) SMAKE has a problem parsing tooltypes from           Fixed.
+    MagicWB icons.
+
+11) Invalid C++ syntax of the form void fun(int =9,int); Fixed.
+    could cause the C++ compiler to crash.
+
+12) Improve GO's handling of CONST pointers.             Done.
+
+13) SC2 will no longer generate byte long bit tests      Done.
+    for volatile variables. 
+
+14) __REVISION__ is now set to 6.58 in C and C++         Done.
+    compiler. 
+
+15) The stdio constructor was not restoring              Fixed.
+    pr_ConsoleTask.
+
+16) With PARM=R and a stackframe size of > 32k, sc2      Fixed.
+    would flush registerized parameters to the wrong
+    offset on the stack.
+
+17) Add a warning to SLINK if the priority for           Done.
+    constructors/destructors exceeds the maximum of 32k.
+
+18) The function requester in CPR would not display the  Fixed.
+    proper line number if two or static C functions were
+    present.
+    
+19) Fix stepping into functions compiled with STACKEXT.  Fixed.
+
+20) SLINK could report bad line numbers is a FLUSH debug Fixed.
+    mode was not used.
+
+21) Don't use CLR instruction for VOLATILE's.            Fixed.
+
+22) __CXVDF() would read one too many digits. This       Fixed.
+    caused scanf("%5f"...) to read 6 digits.
+
+23) __CXVFD() would read 0-10 as -10. This caused scanf  Fixed.
+    to give improper results.
+
+24) SC would not pass the LIBFD option to slink if the   Fixed.
+    option startup=devinit or startup=devinitr was used. 
+
+25) ASM would try to do EQUR subsitution in the include  Fixed.
+    filenames, causing errors.
+
+26) Fix problem doing a go on a task that was caught in  Fixed.
+    a Wait().
+
+27) CPR would crash on exit if debugging a WB program    Fixed.
+    with -s.
+
+28) ?: construct with one CONST and one NON-CONST        Fixed.
+    operand could result in the CONSTNESS of a typedef
+    being changed, including typedefs in GST's.
+
+29) When using the CPR command 'display p "%s"', if      Fixed.
+    'p' pointed to a string larger than 512 bytes,
+    CPR would crash.
+
+30) Prevent GO from inlining __asm functions.            Done.
+
+31) SC1 could get into infinite loop with GENPROTO on,   Fixed.
+    and errors in the source file.
+
+32) In a case like 'a ? a : b->c;', the variable 'b' was Fixed.
+    always being dereferenced, even if 'a' was true.
+
+33) GST command would not return 0 on success.           Fixed.
+
+34) Support quotes around the image name in the break    Done.
+    command to allow setting breakpoints in images that
+    contain spaces or start with a number. For example:
+    
+    break "123_foo.library":function
+
+35) SLINK was not exiting properly if it ran out of      Fixed (I hope).
+    memory.
+
+36) GO would improperly remove a cast to short if the    Fixed.
+    the result was used in a long comparison.
+
+37) SLINK could fail to read debug information from      Fixed.
+    from large libraries.
+
+38) CPR would not single step properly if a watch was    Fixed.
+    set on a formal or auto, and the first C line of the
+    function was a loop construct.
+
+39) Fix long FPU conditional branches. In some cases it  Fixed.
+    is was possible to get a CXERR 91xxxx. 
+
+40) Fix bad warning in STRICT mode when result of ?:     Fixed.
+    was an unsigned long.
+
+41) Added significant speed improvents from our inhouse  Done.
+    version of the global optimizer.
+
+42) Fixed problem generating debug info for globals that Fixed.
+    reference typedefs.
+
+43) SE would not use fonts that were not already loaded  Fixed.
+    into memory.
+
+44) Improve ability for CPR to display symbols from      Done.
+    only H_SYMBOL information.
+
+45) Fix aligned builtin mem functions for shortints.     Fixed.
+
+46) Set pad bytes of LIBID string to NULL rather than    Done.
+    being undefined.
+
+47) Go would not pass proper alignment requirements to   Fixed.
+    phase 2 when changing a for loop into a builtin
+    memcpy().

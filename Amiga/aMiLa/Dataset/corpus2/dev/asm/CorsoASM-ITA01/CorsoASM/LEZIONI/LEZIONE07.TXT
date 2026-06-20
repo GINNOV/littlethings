@@ -1,0 +1,2042 @@
+
+ CORSO DI ASSEMBLER - LEZIONE 7
+
+In questa lezione parleremo degli sprites, del joystick e delle istruzioni
+68000 riguardanti le operazioni sui bit come AND,OR,EOR,NOT,LSR,ROL...
+
+Ricordatevi di scrivere "V df0:SORGENTI3" per poter caricare i file .raw
+dalla directory dove si trovano i listati di questa lezione.
+
+Gli sprite sono oggetti grafici di una dimensione precisa, larghi al massimo
+16 pixel, che si possono muovere per lo schermo indipendentemente dai
+bitplanes, per esempio il puntatore a freccia che muovete col mouse per
+selezionare dai menu o premere "pulsanti" e' uno sprite gestito dal sistema
+operativo, che puo' muoversi dove vuole senza curarsi dei bitplanes che gli
+stanno "sotto".
+Gli sprite si potrebbero considerare come immagini "fantasma" che si aggirano
+"sopra" i bitplanes, ma non tutte le cose che si muovono sono sprites!
+Infatti ci possono essere solo 8 sprites al massimo, essendoci sono solo 8
+puntatori in copperlist per gli sprites:
+
+COPPERLIST:
+SpritePointers:
+	dc.w	$120,0,$122,0	; Puntatore per lo Sprite 0
+	dc.w	$124,0,$126,0	; Puntatore per lo Sprite 1
+	dc.w	$128,0,$12a,0	; ""	""	""	  2
+	dc.w	$12c,0,$12e,0	; ""	""	""	  3
+	dc.w	$130,0,$132,0	; ""	""	""	  4
+	dc.w	$134,0,$136,0	; ""	""	""	  5
+	dc.w	$138,0,$13a,0	; ""	""	""	  6
+	dc.w	$13c,0,$13e,0	; ""	""	""	  7
+
+I puntatori agli sprite si chiamano registri SPRxPT (al posto della "x" si
+mette il numero dello sprite: abbiamo dunque SPR0PT, SPR1PT, .. SPR7PT e
+quando parliamo di SPRxPT ci riferiamo in generale a tutti gli 8 puntatori)
+Per ora li abbiamo messi nella copperlist azzerati solo per evitare che questi
+oggetti "fantasma" saltellino sulle nostre figure senza controllo.
+Gli sprite sono isolati dal resto dello schermo, come fossero in una "busta
+trasparente" applicata sopra il monitor, infatti la risoluzione degli sprite
+e' sempre il lowres, 320x256, anche se i bitplanes sottostanti sono in hires
+o interlacciati.
+Una verifica che gli sprite non fanno parte dei bitplane e' che per muoverli
+non occorre cancellarli e ridisegnarli piu' avanti ogni volta, come avremmo
+invece dovuto fare per spostare un pezzo di grafica in un bitplane.
+Per muovere uno sprite basta cambiare le sue coordinate agendo con poche e
+veloci istruzioni su appositi byte dedicati a questo compito che si trovano
+all'inizio della struttura dati dello sprite stesso.
+Quando gli sprites non bastano a fare astronavi e ometti in un gioco viene
+usato il blitter per copiare blocchi di grafica (bob), che vedremo in seguito.
+Come gia' detto, la dimensione di uno sprite e' di 16 pixel di larghezza,
+mentre l'altezza puo' essere scelta a piacere, anche tutto lo schermo, cioe'
+256 linee. Per fare un mostro di fine livello si potrebbero usare tutti e 8
+gli sprites affiancati, raggiungendo la larghezza totale di 16*8=128 pixel.
+Il problema e' che tale mostro sarebbe poco colorato per i tempi che corrono,
+infatti uno sprite puo' avere 3 colori al massimo, dato che il "quarto" e' la
+parte "trasparente", ossia la parte in cui traspare lo sfondo, ossia i
+bitplanes.
+La caratteristica degli sprites e' che sono semplici da fare e da animare.
+Infatti lo sprite si puo' disegnare con un programma da disegno, basta che
+sia largo non piu' di 16 pixel e che abbia 3 colori piu' lo sfondo, ossia 4,
+e puo' essere convertito in SPRITE dall'IFFCONVERTER KEFCON.
+Oppure si puo' disegnare direttamente in binario, come abbiamo visto per il
+font 8x8:
+
+		 - piano 1 -	    - piano 2 -	    ; la sovrapposizione di
+						    ; questi 2 "piani" di bit
+	dc.w	%0111110000000000,%0111110000000000 ; determina il colore.
+	dc.w	%1000001000000000,%1111111000000000 ; Questa e' la freccia
+	dc.w	%1111010000000000,%1000110000000000 ; putatore di default del
+	dc.w	%1111101000000000,%1000011000000000 ; kickstart 1.3, la
+	dc.w	%1111110100000000,%1001001100000000 ; riconoscete??
+	dc.w	%1110111010000000,%1010100110000000
+	dc.w	%0100011101000000,%0100010011000000
+	dc.w	%0000001110100000,%0000001001100000
+	dc.w	%0000000111100000,%0000000100100000
+	dc.w	%0000000011000000,%0000000011000000
+	dc.w	%0000000000000000,%0000000000000000
+
+	dc.w	0,0	; Due word azzerate indicano la fine dello sprite.
+
+In questo caso la larghezza e' di 16 pixel e non di 8 come nel font 8x8, percui
+lo disegnamo in una word (dc.w) e non in un byte.
+Inoltre ha 3 colori piu' il trasparente, ossia 4 possibilita' come una figura
+a 2 bitplanes, dunque servono un paio di "piani" proprio come per i bitplanes,
+e la loro sovrapposizione determinera' il colore, che puo' essere:
+
+		Piano 1	- Piano 2
+
+binario:	 0	-	0	= COLORE 0 (TRASPARENTE)
+binario:	 1	-	0	= COLORE 1
+binario:	 0	-	1	= COLORE 2
+binario:	 1	-	1	= COLORE 3
+
+Infatti, come abbiamo gia' visto, con 2 piani di bit si possono formare 4
+combinazioni diverse: %00,%01,%10,%11
+
+Per decidere la posizione dello sprite basta inserire le coordinate X ed Y
+nei primi byte dello sprite stesso. Infatti, prima dei dati del disegno, lo
+sprite e' composto da 4 byte, ossia 2 word, dette WORD DI CONTROLLO, ed in
+questi byte vanno scritte le coordinate sullo schermo dello sprite.
+Per essere piu' esatti, il primo byte, detto VSTART, contiene la posizione
+verticale di inizio dello sprite; il secondo byte invece contiene la posizione
+orizzontale (HSTART). Il terzo contiene la posizione della fine dello sprite
+in senso verticale: per determinarla basta aggiungere l'altezza dello sprite
+alla posizione inizio, e come risultato avremo la posizione verticale dove
+finisce lo sprite.
+Il quarto byte contiene dei bit per funzioni speciali che vederemo.
+VSTART e HSTART (Vertical Start e Horizontal Start) dunque sono le coordinate
+dell'angolo in alto a sinistra dove inizia lo sprite:
+
+
+	#....
+	.....
+	.....
+	.....
+	.....
+
+
+Mentre VSTOP e' la posizione verticale dove termina lo sprite:
+
+
+	.....
+	.....
+	.....
+	.....
+	#####	-> linea verticale indicata da VSTOP.
+
+
+Per esempio, uno sprite visualizzato alla posizione XX=$90 e YY=$50, lungo 20
+pixel, comincerebbe cosi':
+
+
+		;IYIX  FY	- IY=Inizio Y, IX=Inizio X, FY=Fine Y
+SPRITE:
+	dc.w	$5090,$6400	;Y=$50, X=$90, altezza= $50+20, cioe' $64
+; da qua iniziano i dati dei 2 piani dello sprite
+	dc.w	%0000000000000000,%0000110000110000
+	dc.w	%0000000000000000,%0000011001100000
+	...
+	dc.w	0,0	; fine dello sprite
+
+
+Infatti il primo byte, VSTART, e' a $50, il secondo, HSTART, e' a $90, mentre
+il terzo, la posizione verticale di fine sprite, e' a $64, ossia a $50+20, la
+posizione inizio+la lunghezza dello sprite. Il quarto byte per ora lo lasciamo
+a zero, vedremo in seguito a cosa serve. Posso premettere che il byte HSTART,
+ossia quello che si occupa della posizione orizzontale, fa spostare lo sprite
+a "scatti" di 2 pixel alla volta, per cui muovendo uno sprite dalla posizione
+$50 alla posizione $51, ad esempio, scatterebbe a destra di 2 pixel, e non di
+uno: vedremo che usando un bit del quarto byte si puo' far scorrere lo sprite
+di un pixel alla volta orizzontalmente.
+Per quanto riguarda la posizione verticale, invece, lo scorrimento avviene gia'
+con VSTART/VSTOP a scatti di un pixel, ma la limitazione e' la linea video $FF,
+oltre la quale si puo' andare usando un'altro dei bit del quarto byte.
+Per ragioni di semplicita' nei primi esempi sposteremo gli sprite solamente
+agendo sui byte HSTART, VSTART e VSTOP, ossia con le limitazioni di uno
+scorrimento orizzontale a "scatti" di due pixel alla volta.
+Solo in un secondo momento vedremo come fare scorrimenti piu' fluidi.
+Ricordatevi dunque della particolarita' che, ad esempio, con un
+
+	ADDQ.B #1,HSTART
+
+spostiamo lo sprite di 2 pixel e non di uno.
+
+
+Per agire sui 3 byte VSTART/HSTART/VSTOP si potrebbe fare cosi':
+
+	MOVE.B	#$50,SPRITE	; VSTART = $50
+	MOVE.B	#$90,SPRITE+1	; HSTART = $90
+	MOVE.B	#$64,SPRITE+2	; VSTOP	 = $64 ($50+20)
+
+Oppure si puo' definire una label per ogni byte per renderlo piu' chiaro:
+
+
+SPRITE:
+VSTART:			; posizione inizio VERTICALE
+	dc.b $50
+HSTART:			; posizione inizio ORIZZONTALE
+	dc.b $90
+VSTOP:
+	dc.b	$64		; posizione fine VERTICALE
+	dc.b	$00		; byte per funzioni speciali azzerato
+
+; da qua iniziano i dati dei 2 piani dello sprite
+
+	dc.w	%0000000000000000,%0000110000110000
+	dc.w	%0000000000000000,%0000011001100000
+	...
+	dc.w	0,0	; fine dello sprite
+
+
+In questo caso agiremmo sulle label VSTART,HSTART e VSTOP:
+
+	ADDQ.B	#1,HSTART	; sposta lo sprite a destra di 2 pixel
+				; (2 pixel e non 1 per le ragioni descritte)
+
+	SUBQ.B	#1,HSTART	; sposta lo sprite a sinistra di 2 pixel
+
+Per spostare in basso o in alto lo sprite dovremmo pero' ricordarci di
+modificare sia VSTART che VSTOP, perche' e' ovvio che se spostiamo in basso o
+in alto lo sprite si sposta sia il primo pixel a sinistra che l'ultimo:
+
+	ADDQ.B	#1,VSTART	; \ sposta lo sprite in basso di 1 pixel
+	ADDQ.B	#1,VSTOP	; /
+
+	SUBQ.B	#1,VSTART	; \ sposta lo sprite in alto di 1 pixel
+	SUBQ.B	#1,VSTOP	; /
+
+
+Ricapitolando questa e' la struttura dello sprite:
+
+
+	prima word di controllo,	 seconda word di controllo
+	prima	linea (.w) del piano 1,  prima	 linea (.w) del piano 2
+	seconda linea (.w) del piano 1,  seconda linea (.w) del piano 2
+	terza	linea (.w) del piano 1,  terza	 linea (.w) del piano 2
+	quarta  linea (.w) del piano 1,  quarta  linea (.w) del piano 2
+	quinta  linea (.w) del piano 1,  quinta  linea (.w) del piano 2
+	...
+	DC.W	0,0  ; l'ultima riga deve contenere due zeri
+
+
+I dati dello sprite sono divisi in piano 1 e piano 2 solo per indicare che la
+loro sovrapposizione determina i 3 colori piu' il trasparente in maniera
+analoga ai bitplanes dello schermo, ma non vanno confusi con questi ultimi!
+
+
+I COLORI DEGLI SPRITE
+
+Per definire i colori degli sprite bisogna usare gli stessi registri colore
+usati dai bitplanes, in quanto l'Amiga ha solo 32 registri colore.
+I progettisti hanno pensato di far assumere agli sprites i colori dal
+16 al 31, per cui se le figure non sono a 32 colori, ossia a 5 bitplanes, gli
+sprites possono avere colori diversi dalle figure. Altrimenti gli sprites
+avranno 16 colori in comune con la figura a 32 colori sottostante.
+Per ora vediamo come definire i colori del primo sprite:
+
+(Gli sprite sono numerati dallo 0 al 7)
+
+	COLORE 0 dello sprite 0 = TRASPARENZA, non va definito
+	COLORE 1 dello sprite 0 = COLOR17 ($dff1a2)
+	COLORE 2 dello sprite 0 = COLOR18 ($dff1a4)
+	COLORE 3 dello sprite 0 = COLOR19 ($dff1a6)
+
+Il colore 0, ossia il quarto, e' la trasparenza e non occorre definirlo.
+
+Vediamo, prima di procedere, il primo esempio di visualizzazione di uno sprite
+in Lezione7a.s. In questo esempio viene puntato il primo sprite, lasciando
+azzerati gli altri 7. Per puntare uno sprite bisogna fare come per i bitplanes,
+in quanto lo sprite ha i puntatori che funzionano allo stesso modo:
+
+	MOVE.L	#MIOSPRITE,d0		; indirizzo dello sprite in d0
+	LEA	SpritePointers,a1	; Puntatori in copperlist
+	move.w	d0,6(a1)
+	swap	d0
+	move.w	d0,2(a1)
+
+Va ricordato che per visualizzare gli sprite occorre aver "acceso" almeno un
+bitplane, con i bitplane disabilitati vengono disabilitati anche gli sprite.
+Allo stesso modo, uno sprite viene "tagliato" se va oltre la finestra video,
+definita col DIWSTART e DIWSTOP, essendo visualizzabile solo al suo interno.
+Da notare che per posizionare nello schermo 320x256 lo sprite, per esempio
+alla coordinata centrale 160,128 bisogna tener conto che la prima coordinata in
+alto a sinistra, dove inizia la finestra video, non e' 0,0, ma $40,$2c per cui
+bisogna sommare $40 alla coordinata X e $2c alla coordinata Y.
+Infatti $40+160, $2c+128, corrispondono alla coordinata 160,128 di uno schermo
+320x256 non overscan.
+Non avendo ancora il controllo della posizione orizzontale a livello di 1
+pixel, ma ogni 2 pixel, dobbiamo sommare non 160, ma 160/2, per individuare il
+centro dello schermo:
+
+
+HSTART:
+	dc.b $40+(160/2)	; posizionato al centro dello schermo
+	...
+
+
+Ecco uno schema dello schermo, in cui la parte visibile, ossia la finestra
+video, e' bianca, mentre l'intero schermo, fuori dai bordi, che inizia con
+le coordinate 0,0 e' fatto di ####. Si noti che la finestra video comincia
+dalle coordinate $40 XX e $2c YY.
+
+      (0,0) __
+	      \
+	       \
+		+---------------------------+
+		|###########################|
+	/\	|###########################|
+	||	|###+-------------------+###|
+	||	|###| $40,$2c		|###|  __ Bordi dello schermo
+	||	|###|	 ______		|###| /   visibile (finestra video)
+	||	|###|	/Sprite\	|###|/
+	||	|###|	|++XX++|	|###/
+	||	|###|	\/\/\/\/	|##/|
+		|###|			|#/#|
+     ASSE Y	|###| 			|/##|
+		|###|			|###|
+	||	|###|			|###|
+	||	|###|			|###|
+	||	|###|			|###|
+	||	|###|			|###|
+	||	|###+-------------------+###|
+	\/	|###########################|
+		|###########################|
+		+--------------------------+
+		    <----- ASSE X ----->
+
+La posizione ORIZZONTALE dello sprite puo' andare da 0 a 447, ma e' chiaro
+che per essere visibile su schermo largo 320 pixel deve andare da 64 a 383.
+La posizione VERTICALE dello sprite invece puo' andare da 0 a 262, ma per 
+essere visibile su schermo largo PAL (256 linee) deve andare da 44 ($2c) alla
+fine dello schermo,  44+256= 300 ($12c). Per ora abbiamo raggiunto solo la
+posizione $FF, vedremo piu' avanti come andare fino alla $12c.
+
+In Lezione7b.s lo sprite viene fatto scorrere sullo schermo con degli ADD e SUB
+sulle due word di controllo.
+
+In Lezione7c.s,  lo sprite viene spostato in orizzontale sullo schermo con
+delle tabelle di valori predefiniti anziche' con ADD e SUB.
+In Lezione7d.s viene fatto saltellare in verticale.
+In Lezione7e.s le due coordinate XX ed YY vengono definite da due tabelle per
+creare movimenti circolari, ad ellisse eccetera. In questo esempio viene
+anche spiegato come crearsi proprie tabelle!
+
+Prima di procedere nella lettura caricate ed eseguite in altri buffer di testo
+questi esempi, leggendone i commenti finali.
+
+Per ora abbiamo visualizzato un solo sprite, vediamo cosa occorre sapere se
+si visualizzano tutti e 8 gli sprite. Innanzitutto ogni sprite ha posizione
+indipendente rispetto agli altri, ed ha un VSTART,HSTART e VSTOP propri nelle
+prime 2 word. Per quanto riguarda invece i colori (e anche altre proprieta`
+degli sprite che vedremo successivamente, come per. es. le collisioni) gli
+sprite non sono totalmente indipendenti ma sono accoppiati a due a due. Ci sono
+dunque 4 coppie di due sprite: Sprite0+Sprite1, Sprite2+Sprite3,
+Sprite4+Sprite5, ed infine Sprite6+Sprite7. In tutto il resto della lezione,
+quando parleremo di "coppia di sprite" non intenderemo 2 sprite qualunque, ma
+una di queste 4 coppie.
+Per i colori, bisogna tenere conto del fatto che gli sprite di una coppia
+hanno i colori in comune, ossia ogni coppia di sprite ha la sua
+palette (tavolozza) diversa da quella delle altre coppie.
+Sappiamo che i 3 colori dello sprite 0 sono definibili coi registri COLOR17,
+COLOR18 e COLOR19. Questi 3 colori valgono anche per lo sprite "fratello",
+ossia lo sprite 1.
+Ogni coppia ha una palette colori diversa perche' sono disponibili i registri
+colore dal 16 al 31, ossia 16 registri.
+Considerando che ogni sprite ha 4 colori (di cui 1 trasparente), servirebbero
+8*4=32 registri, quando ne sono rimasti solo 16.
+Dunque, avendo 8 sprites con 4 colori ciascuno ecco da quali registi le coppie
+di sprite prendono i colori:
+
+
+		Sprite	Valore binario	Registro di colore:
+		------	--------------	------------------
+Coppia 1:	0 o 1		00	Non Usato perche' trasparente
+				01	Color17 - $dff1a2
+				10	Color18 - $dff1a4
+				11	Color19 - $dff1a6
+
+Coppia 2:	2 o 3		00	Non Usato perche' trasparente
+				01	Color21 - $dff1aa
+				10	Color22 - $dff1ac
+				11	Color23 - $dff1ae
+
+Coppia 3:	4 o 5		00	Non Usato perche' trasparente
+				01	Color25 - $dff1b2
+				10	Color26 - $dff1b4
+				11	Color27 - $dff1b6
+
+Coppia 4:	6 o 7		00	Non Usato perche' trasparente
+				01	Color29 - $dff1ba
+				10	Color30 - $dff1bc
+				11	Color31 - $dff1be
+
+Facciamo un esempio pratico: nella copperlist per definire il colore degli 8
+sprite e' necessario fare questo:
+
+
+	dc.w	$1A2,$F00	; color17, - COLOR1 degli sprite0/1 -ROSSO
+	dc.w	$1A4,$0F0	; color18, - COLOR2 degli sprite0/1 -VERDE
+	dc.w	$1A6,$FF0	; color19, - COLOR3 degli sprite0/1 -GIALLO
+
+	dc.w	$1AA,$FFF	; color21, - COLOR1 degli sprite2/3 -BIANCO
+	dc.w	$1AC,$0BD	; color22, - COLOR2 degli sprite2/3 -ACQUA
+	dc.w	$1AE,$D50	; color23, - COLOR3 degli sprite2/3 -ARANCIO
+
+	dc.w	$1B2,$00F	; color25, - COLOR1 degli sprite4/5 -BLU
+	dc.w	$1B4,$F0F	; color26, - COLOR2 degli sprite4/5 -VIOLA
+	dc.w	$1B6,$BBB	; color27, - COLOR3 degli sprite4/5 -GRIGIO
+
+	dc.w	$1BA,$8E0	; color29, - COLOR1 degli sprite6/7 -VERDE CH.
+	dc.w	$1BC,$a70	; color30, - COLOR2 degli sprite6/7 -MARRONE
+	dc.w	$1BE,$d00	; color31, - COLOR3 degli sprite6/7 -ROSSO SC.
+
+NOTA: Se impostate una figura a 2,4,8 o 16 colori come sottofondo, non ci sono
+problemi per la palette, ma se decidete di attivare uno schermo a 32 colori,
+ossia 5 bitplanes, la figura avra' in comune gli ultimi colori con gli sprite,
+per cui dovete fare in modo che i colori siano giusti sia per la figura che per
+lo sprite, che insomma il colore sia "multiuso".
+
+
+
+LA PRIORITA' VIDEO TRA GLI SPRITE.
+
+Quando ci sono due o piu' sprite sullo schermo puo' avvenire che degli sprite
+si sovrappongano. In questo caso viene coperto lo sprite con la priorita'
+minore. La priorita' tra gli sprite e' sempre uguale, lo sprite con numero
+minore ha sempre priorita' su quelli con numero maggiore, i quali rimangono
+"dietro". Di conseguenza lo sprite0 puo' coprire tutti gli altri sprite, mentre
+lo sprite 7 puo' essere coperto da tutti gli altri. Ecco uno schemino:
+
+					   _______
+					  |	  |
+				       ___|___7   |
+				      |	      |___|
+				    __|___6   |
+				   |	   |__|
+				 __|___5   |
+				|       |__|
+			     ___|___4   |
+			    |	    |___|
+		         ___|___3   |
+		        |       |___|
+		     ___|___2   |
+		    |	    |___|
+		 ___|___1   |
+		|	|___|
+		|   0   |
+		|_______|
+
+
+Verifichiamo caricando ed eseguendo in un'altro buffer di testo Lezione7f.s, il
+quale visualizza 8 sprite, e dopo la pressione del tasto sinistro del mouse li
+sovrappone per evidenziare le priorita'. Tasto destro del mouse per uscire.
+
+
+SPRITE "ATTACHED"
+
+Esiste anche una modalita' di accoppiamento degli sprite a 2 a 2, l'uno
+sull'altro, che riduce il numero degli sprite disponibili alla meta', ossia
+a quattro, ma con 16 colori ciascuno anziche' 4.(15 colori piu' il trasparente)
+Possono essere combinati solo in questo modo:
+
+        SPRITE0+SPRITE1      - Sprite ATTACCHED (attaccato) Numero 1
+        SPRITE2+SPRITE3      - Sprite ATTACCHED (attaccato) Numero 2
+        SPRITE4+SPRITE5      - Sprite ATTACCHED (attaccato) Numero 3
+        SPRITE6+SPRITE7      - Sprite ATTACCHED (attaccato) Numero 4
+
+In pratica si attaccano gli sprite che in modalita' normale fanno gia' coppia
+perche' hanno la stessa palette. I 4 sprite "attaccati" condividono la stessa
+palette di 16 colori, dato che sono disponibili solo i registri colore dal
+Color16 al Color31.
+Gli sprite ATTACCHED funzionano in questo modo: normalmente uno sprite ha al
+massimo 4 possibilita' di sovrapposizione per i suoi piccoli "bitplanes",
+ossia %00 per il trasparente e %01,%10,%11 per gli altri 3 colori.
+La modalita' ATTACCHED fa sovrapporre i piani di bit dei due sprites per
+formare 16 possibilita', infatti ponendo i due piani del primo sopra i 2 piani
+del secondo si possono ottenere %1111 possibilita' anziche' %11, ossia 16
+anziche' 4.
+Nella tabella che segue, nella colonna "valore binario", sono elencate le varie
+possibilita' di sovrapposizione e il relativo colore che ne risulta.
+
+
+	      Colore	Valore	 Numero del
+	      Sprite	binario	 registro colore
+	      -------	------	--------------
+		0	0000	Color16 - NON USATO, E' IL TRASPARENTE
+		1	0001	Color17 - $dff1a2
+		2	0010	Color18 - $dff1a4
+		3	0011	Color19 - $dff1a6
+		4	0100	Color20 - $dff1a8
+		5	0101	Color21 - $dff1aa
+		6	0110	Color22 - $dff1ac
+		7	0111	Color23 - $dff1ae
+		8	1000	Color24 - $dff1b0
+		9	1001	Color25 - $dff1b2
+		10	1010	Color26 - $dff1b4
+		11	1011	Color27 - $dff1b6
+		12	1100	Color28 - $dff1b8
+		13	1101	Color29 - $dff1ba
+		14	1110	Color30 - $dff1bc
+		15	1111	Color31 - $dff1be
+
+Dunque in COPPERLIST bisogna definirli in questo modo:
+
+	dc.w	$1A2,$F00	; color17, COLORE 1 per gli sprite attaccati
+	dc.w	$1A4,$0F0	; color18, COLORE 2 per gli sprite attaccati
+	dc.w	$1A6,$FF0	; color19, COLORE 3 per gli sprite attaccati
+	dc.w	$1A8,$FF0	; color20, COLORE 4 per gli sprite attaccati
+	dc.w	$1AA,$FFF	; color21, COLORE 5 per gli sprite attaccati
+	dc.w	$1AC,$0BD	; color22, COLORE 6 per gli sprite attaccati
+	dc.w	$1AE,$D50	; color23, COLORE 7 per gli sprite attaccati
+	dc.w	$1B0,$D50	; color24, COLORE 7 per gli sprite attaccati
+	dc.w	$1B2,$00F	; color25, COLORE 9 per gli sprite attaccati
+	dc.w	$1B4,$F0F	; color26, COLORE 10 per gli sprite attaccati
+	dc.w	$1B6,$BBB	; color27, COLORE 11 per gli sprite attaccati
+	dc.w	$1B8,$BBB	; color28, COLORE 12 per gli sprite attaccati
+	dc.w	$1BA,$8E0	; color29, COLORE 13 per gli sprite attaccati
+	dc.w	$1BC,$a70	; color30, COLORE 14 per gli sprite attaccati
+	dc.w	$1BE,$d00	; color31, COLORE 15 per gli sprite attaccati
+
+Per "attaccare" due sprite basta porre ad 1 il bit 7 della seconda word di
+controllo dello sprite dispari della coppia (ossia del flamigerato quarto
+byte delle funzioni speciali).
+Per esempio per attaccare gli sprite 0 ed 1 basta settare tale bit allo
+sprite 1, per attaccare lo sprite 4 ed il 5 basta settarlo al 5.
+E' ovvio che gli sprite attaccati devono avere le stesse coordinate, ossia
+essere l'uno sopra l'altro, per consentire la giusta sovrapposizione dei 4
+piani.
+Facciamo un esempio: per attaccare gli sprite 0 ed 1 bisogna porre ad 1 il bit
+7 del quarto byte dello sprite1:
+
+
+SPRITE0:
+VSTART0:		; posizione inizio VERTICALE
+	dc.b $50
+HSTART0:		; posizione inizio ORIZZONTALE
+	dc.b $90
+VSTOP0:
+	dc.b	$64	; posizione fine VERTICALE
+	dc.b	$00	; non occorre settare il bit 7 agli sprite pari.
+; da qua iniziano i dati dei 2 piani dello sprite
+	dc.w	%0000000000000000,%0000110000110000
+	dc.w	%0000000000000000,%0000011001100000
+	...
+	dc.w	0,0	; fine sprite0
+
+
+SPRITE1:
+VSTART1:		; posizione inizio VERTICALE
+	dc.b $50
+HSTART:			; posizione inizio ORIZZONTALE
+	dc.b $90
+VSTOP:
+	dc.b	$64		; posizione fine VERTICALE
+
+		;76543210
+	dc.b	%10000000	; BIT 7 SETTATO! ATTACCHED MODE per sprite 0/1
+
+; da qua iniziano i dati dei 2 piani dello sprite
+	dc.w	%0000000000000000,%0000110000110000
+	dc.w	%0000000000000000,%0000011001100000
+	...
+	dc.w	0,0	; fine sprite1
+
+
+Dunque per far si' che tutti gli sprite siano in modo "ATTACCHED" basta porre
+ad 1 i bit 7 del quarto byte degli sprite 1,3,5 e 7, cioe' di quelli dispari.
+
+Per farsi uno sprite a 16 colori e' necessario disegnarlo con un programma da
+disegno e convertirlo in formato SPRITE con l'iffconverter KEFCON, infatti e'
+difficile "calcolarsi" ad occhio i colori risultanti da 4 piani di bit, divisi
+in due sprite!
+
+Caricatevi ed eseguitevi il listato Lezione7g.s, che visualizza uno sprite
+a 16 colori in modalita' ATTACCHED, in cui e' anche descritto come convertirsi
+uno sprite con il KEFCON, sia a 4 colori che a 16.
+
+E' possibile visualizzare contemporaneamente sprite a 16 colori e sprite a 4
+colori, per esempio gli sprite 0 ed 1 "attaccati" e gli altri no, o qualsiasi
+altra combinazione.
+
+Nel listato esempio Lezione7h.s sono visualizzati i 4 sprite attacched a 16
+colori, ognuno con un movimento indipendente dagli altri.
+
+A questo punto vi starete chiedendo come mai non e' ancora stato eliminato
+l'inconveniente dello scorrimento orizzontale scattoso a passi di 2 pixel alla
+volta anziche' uno. Ebbene, e' giunta l'ora di risolvere il problema, ma per
+fare cio' e' necessario imparare una nuova istruzione del 68000, la quale
+opera sui singoli bit di un numero:  --- LSR ---
+Questa istruzione significa "LOGIC SHIFT RIGHT", cioe' "SCORRIMENTO LOGICO
+DEI BIT A DESTRA", in altre parole, se un numero binario in d0 e' %00111, dopo
+un bel LSR #1,d0 il risultato e' %00011, dopo un LSR #2,d0 e' %00001.
+Allo stesso modo, un %00110010 dopo un LSR #1,d0 diventa %00011001, mentre
+dopo un LSR #5,d0 diventa %00000001. Dunque il numero, considerato nella sua
+forma binaria, viene spostato a destra come se i bit fossero su una tovaglia
+che tiriamo: tirando di #1 si sposta la tovaglia con tutti i BitPiatti sopra
+e il primo BitPiatto cade in terra... tirando troppo si puo' spostare tutto
+facendo cadere tutto in terra e azzerando il tavolo.
+Ma cosa c'entra questa istruzione assembler con il byte HSTART???
+Il problema sta in questi termini: come sapete le posizioni orizzontali
+possibili sono ben piu' di $FF (255), per il solo fatto che lo schermo e'
+largo 320 pixel. Per indicare un numero superiore a 255 (8 bit, dallo zero al
+sette), occorre aggiungere almeno un'altro bit, il nono, detto bit 8, in
+tal modo anziche' un massimo di %11111111 ($ff) si puo' avere un massimo di
+%111111111, ossia 511, che per l'HSTART va benissimo. Ma dove mettere questo
+bit?? Quei mattacchioni dei progettisti hanno pensato bene di metterlo nel
+famigerato quarto byte di controllo, quello che abbiamo gia' visto per
+attaccare gli sprite (il bit 7 di tale byte infatti serve ad attaccare gli
+sprite per farli a 16 colori).
+Avendo altri 6 bit liberi per usi vari, decisero di usare il bit 0 come bit
+BASSO della coordinata a 9 bit della coordinata orizzontale, spezzando il
+numero a 9 bit in questo modo:
+
+	;876543210	; numero a 9 bit, che rappresenta la coordinata HSTART
+	%111111111
+	 \_____/ \/
+	    |	  |
+      8 bit alti  |
+      messi nel	  |
+      byte HSTART |
+		  |
+		  |
+		  |
+		  |
+		  |
+	      bit 0 del
+	      numero a 9 bit
+	      messo nel bit 0
+	      del quarto byte
+	      di controllo
+
+Se togliete il bit basso ad un numero a 9 bit, otterrete sempre numeri pari,
+dato che il bit 0 e' sempre a zero. E' quando il bit 0 e' ad 1 che il numero
+e' dispari, fate una prova con "?100" e "?101", verificherete che i numeri pari
+hanno sempre il bit 0 azzerato, mentre quelli dispari hanno sempre il bit 0
+settato. Fino ad ora dunque potevamo andare a scatti di 2 pixel per volta e
+dovevamo mettere la meta' del valore effettivo in HSTART per questo motivo.
+Per poter raggiungere anche i numeri dispari ed inserire la vera coordinata in
+input, bastera' dividere tale coordinata reale in bit basso e byte alto, poi
+mettere il bit basso al suo posto e il byte alto al suo posto. Per fare cio'
+immaginate di avere la coordinata dispari 35: (%00100011)
+Quello che dobbiamo fare innanzitutto e' controllare se il bit 0 del quarto
+byte di controllo va settato, e per fare questo basta testare se il numero
+in questione ha il bit 0 settato con un BTST, dopodiche' si agira' di
+conseguenza: supponiamo di avere la coordinata in D0:
+
+	btst	#0,D0		; bit basso della coordinata X azzerato?
+	beq.s	BitBassoZERO
+	bset	#0,MIOSPRITE+3	; Settiamo il bit basso di HSTART
+	bra.s	PlaceCoords
+
+BitBassoZERO:
+	bclr	#0,MIOSPRITE+3	; Azzeriamo il bit basso di HSTART
+PlaceCoords:
+	....
+
+Ora abbiamo settato o azzerato il bit basso di HSTART, non rimane che mettere
+il resto del numero, gli 8 bit piu' alti, nel byte HSTART come sempre.
+Ma c'e' un problema: il numero ha 9 bit, e a noi servono solo gli 8 bit alti!
+A questo punto compare sulla scena l'istruzione LSR!!! Infatti assolve al
+compito di "far scorrere" i bit del numero di una posizione verso destra,
+facendo sparire il bit basso e posizionando gli 8 bit che ci servono al punto
+giusto, vediamo il seguito della routine sotto la label PlaceCoords:
+
+	lsr.w	#1,D0		; SHIFTIAMO, ossia spostiamo di 1 bit a destra
+				; il valore di HSTART, per "trasformarlo" nel
+				; valore fa porre nel byte HSTART, senza cioe'
+				; il bit basso.
+	move.b	D0,HSTART	; Poniamo il valore XX nel byte HSTART
+	rts
+
+In questo caso avevamo la coordinata %00100011 (35), vediamo come diventa dopo
+l'LSR.W #1,d0: %00010001!!!! Ossia il byte giusto da mettere in HSTART.
+
+In Lezione7i.s questa routine viene fatta funzionare per far scorrere uno
+sprite FINALMENTE fluido come solo l'Amiga sa fare.
+
+A questo punto possiamo eliminare anche l'ultima limitazione, ossia quella in
+senso verticale: infatti verticalmente possiamo spostare lo sprite a scatti di
+un pixel, ma solo fino alla linea $FF. I progettisti Amiga hanno optato per
+una soluzione diversa da quella dell'HSTART per VSTART/VSTOP: infatti anche
+VSTART e VSTOP necessitano di un numero a 9 bit anziche' 8, ma anziche'
+separare il bit piu' basso (lo zero) dagli altri 8 piu' alti, hanno separato
+il bit piu' alto (il nono) dagli otto piu' bassi, in questo modo in VSTART e
+VSTOP il numero e' valido fino a $FF, ossia 255, dopodiche' e' necessario
+settare il nono bit che e' stato messo nel famigerato quarto byte di
+controllo, infatti dopo $ff viene $100,$101 eccetera, dunque il byte basso
+riparte da zero, ma col nono bit settato. Vediamo come fare una routine
+analoga a quella vista per la posizione orizzontale, ossia che parte dalla
+coordinata reale (e' necessaria una word) e la "divide" in bit alto e byte
+basso. Da ricordare che in questo caso abbiamo da aggiornare anche VSTOP oltre
+a VSTART ogni volta!!! Teniamo presente che il bit alto di VSTOP e' il bit 1
+del quarto byte di controllo, mentre quello di VSTART e' il bit 2:
+
+	MOVE.w	(A0),d0		; copia la word dalla tabella in d0
+	ADD.W	#$2c,d0		; aggiungi l'offset dell'inizio dello schermo
+	MOVE.b	d0,VSTART	; copia il byte in VSTART
+	btst.l	#8,d0		; numero maggiore di $FF?
+	beq.s	NonVSTARTSET
+	bset.b	#2,MIOSPRITE+3	; Setta il bit 8 di VSTART (numero > $FF)
+	bra.s	ToVSTOP
+NonVSTARTSET:
+	bclr.b	#2,MIOSPRITE+3	; Azzera il bit 8 di VSTART (numero < $FF)
+ToVSTOP:
+	ADD.w	#13,D0		; Aggiungi la lunghezza dello sprite per
+				; determinare la posizione finale (VSTOP)
+	move.b	d0,VSTOP	; Muovi il valore giusto in VSTOP
+	btst.l	#8,d0
+	beq.s	NonVSTOPSET
+	bset.b	#1,MIOSPRITE+3	; Setta il bit 8 di VSTOP (numero > $FF)
+	bra.w	VstopFIN
+NonVSTOPSET:
+	bclr.b	#1,MIOSPRITE+3	; Azzera il bit 8 di VSTOP (numero < $FF)
+VstopFIN:
+	rts
+
+Questa routine funziona in maniera analoga alla precedente per il settaggio
+del bit "staccato", mentre si differenzia per il fatto che deve agire sia su
+VSTART che su VSTOP, e per l'assenza dell'LSR, qua inutile.
+
+Potete provarla in pratica caricando la Lezione7l.s
+
+Ora che abbiamo il completo controllo sugli sprite, vediamo di ottimizzare le
+routine con le quali li controlliamo: innanzitutto, la prima cosa da fare e'
+quella di fare una routine universale di controllo degli sprite, in modo da
+non dover riscrivere per ognuno degli 8 sprite la parte della sistemazione
+del bit "staccato". Serve una routine parametrica, la quale richieda in
+entrata l'indirizzo dello sprite interessato e la coordinata X ed Y che deve
+assumere, in questo modo bastera' eseguire un "BSR Routine" per ogni sprite
+anziche' riscrivere tutto. Potremo cosi' riutilizzare tale routine ogni volta
+che vogliamo programmare gli sprite, al massimo con piccole modifiche. Un
+esempio di routine del genere la troviamo nella lezione7m.s.
+La routine universale si chiama UniMuoviSprite, e per funzionare e' necessario
+che le vengano indicate oltre all'indirizzo dello sprite da muovere e alle
+nuove coordinate che deve assumere, anche l'altezza dello sprite, che serve
+alla routine per calcolare il valore del byte VSTOP.
+Questi valori vengono comunicati o meglio "passati" alla routine mettendoli in
+alcuni registri prima di eseguire la routine.
+Piu` precisamente si deve mettere l'indirizzo dello sprite nel registro a1,
+la sua altezza nel registro d2, la coordinata Y nel registro d0 e la coordinata
+X nel registro d1.
+La coordinate dello sprite "passate" alla routine sono i valori nello schermo
+320x256. Infatti la routine si occupa di "centrare" lo sprite sullo schermo
+sommando $40 alla coordinata X e $2c alla coordinata Y.
+Inoltre pensa a mettere a posto il bit basso di HSTART e i bit alti di VSTART
+e VSTOP.
+
+Brevemente:
+
+;
+;	Parametri in entrata di UniMuoviSprite:
+;
+;	a1 = Indirizzo dello sprite
+;	d0 = posizione verticale Y dello sprite sullo schermo (0-255)
+;	d1 = posizione orizzontale X dello sprite sullo schermo (0-320)
+;	d2 = altezza dello sprite
+;
+
+Avendo a disposizione questa routine che ci risolve una volta per tutte i
+problemi relativi al posizionamento degli sprite, possiamo divertirci a usarla
+per qualche applicazione che ci consentira` di fare un po'di esperienza con 
+gli sprite. Prima di proseguire pero' caricate ed eseguite la Lezione7m.s, e
+guai a voi se continuate a leggere la lezione7.txt o a caricare listati prima
+di averla capita COMPLETAMENTE. Dato che sara' usata in tutti gli altri esempi
+sugli sprite, sarebbe poco produttivo continuare senza aver capito una routine
+che trovate continuamente.
+
+
+Nella lezione7n.s vediamo uno sprite che si muove sullo schermo seguendo
+traettorie rettilinee. Le posizioni dello sprite non sono contenute
+in un tabella, ma vengono calcolate di volta in volta facendo muovere lo
+sprite con velocita` costante. Caricatelo ed eseguitelo, vedremo anche come
+far rimbalzare uno sprite contro i bordi dello schermo.
+
+
+Nella lezione7o.s vedremo invece due sprite che vengono entrambi mossi dalla
+routine universale. E` un ottimo esempio di come grazie all'utilizzo dei
+parametri la nostra routine universale sia in grado di muovere senza nessuna
+modifica sprite che hanno forma e dimensioni diverse.
+Se non usassimo i parametri dovremmo scrivere una routine per ciascun sprite,
+sprecando tempo per farlo e memoria sul computer (con 8 sprite dovremmo
+scrivere 8 routine).
+
+
+Nella lezione7p.s sempre usando la routine universale vediamo come si possano
+creare degli oggetti larghi piu` di 16 pixel utilizzando degli sprite
+affiancati. State BENE ATTENTI a non confondere gli sprite "ATTACCATI" con
+quelli "AFFIANCATI": i primi sono 2 sprite della stessa coppia usati in
+modalita` "attached", hanno le stesse coordinate (sono perfettamente
+sovrapposti) e lo sprite dispari ha il bit "attach" settato a 1;
+per sprite "affiancati" si intende invece un insieme di due o piu` sprite che
+vengono posizionati sullo schermo uno di fianco all'altro senza lasciare
+neppure una colonna di pixel tra l'uno e l'altro, in maniera da sembrare un
+unico oggetto largo piu` di 16 pixel, dato che sono mossi contemporaneamente.
+Non c'e` nessun bit da settare per gli sprite affiancati, non si tratta di un
+"modo" speciale degli sprite, ma solo di una particolare disposizione sullo
+schermo di normalissimi sprite. Ecco uno schemino che mostra un'astronave
+fatta da un solo sprite, e un'altra fatta da due sprites:
+
+
+     (128,65)		     (128,65)	    (144,65)
+	 |_ _ _ __ _ _ _	|_ _ _ _ _ _ __|__ _ _ _ _ _ _
+	 |     /  \	|	|	    /  |  \	      |
+	    __/____\__			   /	   \
+	 | |	      |	|	|	  /    |    \	      |
+	   |	      |		     ____/___________\____
+	 | |__________| |	|   |	       |	  |   |
+	      \	   /		    |			  |
+	 |_ _ _\__/_ _ _|	|   |	       |	  |   |
+				    |			  |
+				|   |__________|__________|   |
+					 \	     /
+				|	  \    |    /	      |
+					   \	   /
+				|_ _ _ _ _ _\__|__/_ _ _ _ _ _|
+
+				   Sprite 0	  Sprite 1
+
+
+Con una tecnica del genere si possono fare mostri di fine livello larghi fino
+a 128 pixel (16*8) se fatti con sprite a 3 colori, oppure larghi fino a 64
+pixel (16*4) se fatti con sprite attacched a 15 colori. Se il mostro in
+questione e' piu' alto che largo, ad esempio di forma umana, si potrebbe
+sfruttare tutta la lunghezza dello schermo, dato che non ci sono limiti per
+l'altezza di uno sprite, e si potrebbe cambiare la palette verticalmente col
+copper per colorargli, ad esempio, le scarpe con un colore diverso dai jeans.
+
+
+MOUSE E JOYSTICK
+
+Ora che abbiamo visto come far muovere gli sprite all'Amiga, perche` non
+impariamo muoverli noi? Naturalmente con l'aiuto di un joystick o di un mouse!
+
+Prima di vedere come si usano questi dispositivi e` necessario imparare delle
+nuove istruzioni assembler, che riguardano la manipolazione dei bit di un
+registro e che si chiamano NOT, AND, OR, EOR.
+Queste istruzioni lavorano sui singoli bit di un registro (o di una locazione
+di memoria), sia per il registro sorgente che per quello destinazione.
+Ad esempio queste istruzioni considerano un byte non come un numero formato
+da 8 bit (cifre binarie) ma come un insieme di 8 bit indipendenti tra di
+loro. In pratica questo vuol dire che l'effetto che l'istruzione ha su un
+singolo bit del registro e` indipendente da quello che succede agli altri bit
+del registro.
+
+Per prima vediamo la NOT. Essa funziona su un solo operando, e il suo effetto
+e` quello di rovesciare i bit dell'operando, cioe` di scambiare 1 con 0 e 0
+con 1. Se ad esempio nel registro d0 abbiamo il numero %01001100, se facciamo
+        NOT.B   d0
+il risultato sara` %10110011.
+
+Le altre 3 istruzioni, invece lavorano con 2 operandi, uno sorgente e l'altro 
+destinazione, fanno un'operazione tra i contenuti degli operandi e mettono il
+risultato nell'operando destinazione. Le operazioni (che sono ovviamente
+diverse per ogni istruzione) sono bit-a-bit, cioe` avvengono tra ogni bit
+dell'operando sorgente e il corrispondente bit dell'operando destinazione,
+nel quale inoltre viene poi messo il risultato. Quindi fare D0 AND D1
+in pratica significa fare:
+(bit 0 di D0) AND (bit 0 di D1)
+(bit 1 di D0) AND (bit 1 di D1)
+(bit 2 di D0) AND (bit 2 di D1) e cosi` via per tutti i bit di D0 e D1
+
+Vediamo dunque come funziona l'AND tra 2 bit. Poiche` un bit vale 0 o 1,
+ci sono 4 possibili casi:
+
+ 0 AND 0 = 0
+ 0 AND 1 = 0
+ 1 AND 0 = 0
+ 1 AND 1 = 1
+
+AND da come risultato 1 soltanto quando sia il bit del primo operando
+che quello del secondo operando sono ad 1. Infatti AND in inglese significa
+"e" , quindi da come risultato 1 se il primo E il secondo bit sono a 1.
+Si potrebbe tradurre con:
+"SONO AD 1 SIA IL PRIMO CHE IL SECONDO BIT? SE SI, RISPONDO CON 1, SE NO
+INVECE RISPONDO CON UNO ZERO".
+Un AND puo' essere utile ad azzerare certi bit di un numero:
+
+ AND.W #%1111111111111011,LABEL
+
+Azzerera' il bit 2 del numero in LABEL, perche' e' l'unico che e' azzerato
+nell'operando, e l'unico che sara' cambiato nella destinazione, infatti
+tutti gli altri sono ad 1, quindi questi non cambiano la destinazione.
+Se il bit di destinazione e' 0, facendo un 1 AND 0 il risultato rimane 0,
+allo stesso modo se e' 1, facendo un 1 AND 1 il risultato rimane 1. Per quanto
+riguarda il bit che e' a 0, invece, condanna la destinazione ad essere 0,
+infatti per dare un 1 di destinazione entrambi gli operandi devono essere 1,
+in questo caso essendo a 0 il primo, sia che il secondo sia 0 o 1 il risultato
+sara' 0. alcuni esempi:
+
+   1111001111 AND 0011001100 = 0011001100 - Nessuna modifica
+   1101011011 AND 0001110001 = 0001010001 - 1 bit azzerato
+   1111101101 AND 0011111111 = 0011101101 - 2 bit azzerati
+
+Questa operazione di azzeramento si dice MASCHERATURA:
+
+ AND #%11110000,LABEL	(%11110000 e' la maschera, infatti e' come se si
+			mettesse una maschera di ZERI sopra il numero
+			in LABEL, in questo caso e' come se "tappassimo"
+			i primi 4 bit come si "tappa" un neo una ragazza
+			quando si mette il fondotinta. Il neo e' un 1 che
+			si trovava nella posizione della maschera dove
+			c'erano degli 0, e il neo che viene "coperto"
+			dal trucco, ossia viene azzerato).
+
+L'OR invece si comporta in questo modo:
+
+ 0 OR 0 = 0
+ 0 OR 1 = 1
+ 1 OR 0 = 1
+ 1 OR 1 = 1
+
+In questo caso basta che 1 dei 2 bit sia ad 1 per dare risultato 1.
+Dunque il risultato e' sempre 1 tranne quando entrambi i bit sono a zero.
+Anche qui sapere che OR in inglese significa "o" ci aiuta a ricordare che
+il risultato e` 1 se il primo O il secondo bit sono a 1.
+Si potrebbe tradurre in "O UNO O L'ALTRO BIT DEVONO ESSERE AD 1 PER DARE 1"
+Questo comando e' utile, all'opposto dell'AND, per SETTARE dei bit, per porli
+cioe' ad 1: alcuni esempi:
+
+    0000000001 OR 1101011101 = 1101010001 - Nessun cambiamento
+    1000000000 OR 0010011000 = 1010011000 - 1 bit settato
+    0001111000 OR 1111100000 = 1111111000 - 2 bit settati
+
+In questo caso, e' come se la ragazza di prima, anziche' mettersi il
+fondotinta rosaceo (gli 0) per tappare i nei neri (ossia gli 1), si mettesse
+del nero per farsi dei nei falsi, come quello che aveva Marilin Monroe sopra
+il labbro. Oppure come se fosse una ragazza di colore (ossia tutta ad 1) che
+si e' truccata con il rosa per sembrare bianca (come Michael Jackson), ossia
+per essere tutta a zero, che si toglie il fondotinta dove il numero dell'OR
+e' ad uno, scoprendo il nero.
+
+Invece il comando EOR, ovvero OR esclusivo, setta il bit solo quando e' ad 1
+o il primo o il secondo bit, non quando sono ad 1 entrambi, come invece fa
+il comando or:
+
+ 0 EOR 0 = 0
+ 0 EOR 1 = 1
+ 1 EOR 0 = 1
+ 1 EOR 1 = 0	     ; Questa e' la differenza con l'OR! infatti 1 OR 1 = 1.
+
+Alcuni esempi:
+    0000000001 EOR 1101011101 = 1101010000 - 1 bit azzerato
+    1000000000 EOR 0010011000 = 1010011000 - 1 bit settato
+
+Quest'ultima istruzione ci sara` utile per leggere il joystick.
+
+Come sapete l'Amiga ha 2 porte usate per collegare joystick o mouse. Ad
+ognuna di queste porte si puo` collegare indifferentemente un joystick o un
+mouse. Per ogni porta esiste un registro hardware che si puo` leggere per
+sapere se e in che modo sono mossi joystick e mouse. La porta 0 (dove di
+solito e` collegato il mouse) viene letta attraverso il registro JOY0DAT
+($dff00a) mentre la porta 1 attraverso JOY1DAT ($dff00c).
+Per prima cosa vediamo come leggere il joystick. Ci riferiremo al registro
+JOY1DAT che e` quello usato di solito, ma JOY0DAT funziona esattamente allo
+stesso modo quando ci colleghiamo un joystick.
+Possiamo pensare ad un joystick come ad un insieme di 4 interruttori (uno per
+ogni direzione), ognuno dei quali puo` assumere 2 stati:  chiuso (1) o
+aperto (0) a seconda che la leva del joystick sia premuta o meno nella
+direzione associata all'interruttore. Per sapere in quali direzioni e` mosso
+il joystick dobbiamo conoscere gli stati degli interruttori.
+Per 2 di questi interruttori e` molto semplice, in quanto il loro stato e`
+riportato in un bit del registro JOY1DAT:
+- il bit 1 di JOY1DAT e` lo stato dell'interruttore "destra"
+- il bit 9 di JOY1DAT e` lo stato dell'interruttore "sinistra".
+Se un bit vale 1 l'interruttore associato e` chiuso, altrimenti e` aperto.
+Per quanto riguarda le altre 2 direzioni lo stato non e` mappato direttamente
+in un bit, ma deve essere ottenuto mediante il calcolo di un'operazione,
+precisamente dell'EOR che abbiamo spiegato poco fa, effettuata tra 2 bit del
+registro JOY1DAT:
+- lo stato dell'interruttore "alto" e` il risultato di un EOR tra
+  il bit 8 e il bit 9
+- lo stato dell'interruttore "basso" e` il risultato di un EOR tra
+  il bit 0 e il bit 1.
+Anche in questo caso se un bit vale 1 l'interruttore associato e` chiuso,
+altrimenti e` aperto.
+Conoscendo gli stati dei 4 interruttori possiamo dunque usare il joystick per
+muovere uno sprite sullo schermo.
+
+Caricate in un altro buffer di testo la lezione7q.s ed eseguitela
+
+Veniamo ora al mouse. Quando colleghiamo un mouse ad una delle porte, il
+registro corrispondente si comporta in maniera diversa che nel caso del
+joystick. Infatti prendendo il registro JOY0DAT (ma e` lo stesso per l'1),
+troviamo che il byte alto e` usato per rilevare gli spostamenti in direzione
+verticale e quello basso quelli in direzione orizzontale. Ogni byte
+rappresenta un numero (da 0 a 255) che varia secondo i movimenti del mouse.
+- il byte alto diminuisce ogni volta che il mouse viene spostato verso l'alto
+  e aumenta ogni volta che il mouse viene spostato verso il basso.
+- il byte basso diminuisce ogni volta che il mouse viene spostato verso
+  sinistra e aumenta ogni volta che il mouse viene spostato verso destra.
+Vediamo come usare queste informazioni per muovere uno sprite con il mouse.
+Il primo metodo che viene in mente e` di usare i 2 byte di JOY0DAT come
+coordinate per lo sprite, visto che anche le coordinate dello sprite
+diminuiscono se esso va in alto o a sinistra e aumentano se va in basso o a
+destra.
+Questo metodo ha l'inconveniente che in un byte possiamo raggiungere il
+valore 255, quindi i valori che possiamo leggere dal byte di JOY0DAT dedicato
+alla direzione orizzontale possono arrivare al massimo a 255, mentre le
+coordinate orizzontali di uno sprite possono arrivare oltre 320.
+
+Caricate Lezione7r1.s e verificate questo metodo.
+
+Un metodo un po' piu` complesso che pero` risolve il problema della
+limitazione in senso orizzontale a 255 pixel anziche' 320 e` presentato in
+Lezione7r2.s. Per una spiegazione del metodo leggetevi il commento alla fine
+del listato.
+
+Sapendo come muovere una freccia sullo schermo, si puo' facilmente simulare
+il sistema intuition, ossia si puo' fare un pannello di controllo con dei
+bottoni disegnati da attivare spostandoci la freccia (lo sprite) sopra e
+premendo il pulsante, sia esso del joystick o del mouse. Basta controllare al
+momento della pressione del bottone in quale coordinata si trova la freccia,
+e se si trova sopra un bottone attivare l'opzione di quel bottone.
+Fare questo e' piuttosto facile, provate da voi a farlo. Comunque in lezioni
+piu' avanzate del corso ci sara' un listato di questo tipo.
+
+
+
+RIUTILIZZO DEGLI SPRITE
+
+Il riutilizzo degli sprite e` una tecnica che ci consente di visualizzare
+piu` di 8 sprite contemporaneamente. In pratica uno stesso sprite viene usato
+per disegnare diversi oggetti situati a diverse altezze.
+Se ad esempio utilizziamo uno sprite per visualizzare un alieno nella parte
+alta dello schermo, possiamo poi utilizzare di nuovo lo stesso sprite per
+disegnare l'astronave del giocatore nella parte bassa dello schermo.
+L'unica limitazione che si ha quando si riutilizzano gli sprite e` che 2
+oggetti disegnati da uno stesso sprite devono essere posizionati ad altezze
+differenti. Non e` possibile visualizzare su una stessa riga dello schermo 2
+righe che compongono 2 oggetti disegnati con il medesimo sprite.  Per di piu`
+l'ultima riga della figura disegnata durante un utilizzo e la prima riga
+della figura disegnata con l'utilizzo successivo dello stesso sprite DEVONO
+essere separate da almeno una riga nella quale lo sprite non e` utilizzato.
+La figura seguente illustra meglio la situazione:
+
+	    porzione di schermo
+	 ________________________
+	|			 |	  Ogni immagine in questa porzione
+	|		  _	 |	  di schermo e` disegnata dal
+	|		_|_|_	 |	  medesimo sprite.
+	|		\___/ _ _|_ _	  Ogni immagine puo` essere
+	|     _ _ _ _ _ _ _ _ _ _|_ _ <-- posizionata liberamente
+	|   _/_\_		 |	  orizzontalmente.
+	|  |_____|		 |	  Pero`, almeno una riga di schermo
+	|    \_/_ _ _ _ _ _ _ _ _|_ _	  deve separare l'ultima riga
+	|	    _ _ _ _ _ _ _|_ _ <-- di un utilizzo dello sprite dalla
+	|	   /\		 |	  prima riga dell'utilizzo
+	|	   \/		 |	  successivo.
+	|			 |
+	|			 |
+	|________________________|
+
+
+Non c'e` nessuna limitazione invece per quanto riguarda le posizioni
+orizzontali, né per quanto riguarda figure disegnate mediante sprites diversi.
+Uno sprite puo` essere riutilizzato un numero qualunque di volte, ogni volta
+ad un'altezza diversa.
+Questa tecnica si puo` applicare ad ogni sprite, e in modo indipendente tra
+uno sprite e l'altro: per esempio si possono utilizzare 1 volta sola gli sprite
+0,3 e 4, utilizzare 3 volte lo sprite 1, quattro volte lo sprite 2 e non
+utilizzare affatto gli sprite 5,6 e 7.
+
+Applicare questa tecnica e` molto semplice, in quanto richiede solo una
+modifica della struttura dati dello sprite.
+
+Normalmente, alla fine della struttura dello sprite, dopo tutti i dati che
+descrivono la forma ci sono 2 word di valore 0 che appunto indicano la fine
+della struttura. Per riutilizzare uno sprite, al posto di queste 2 word ci
+mettiamo un'altra struttura sprite, che descrive un'altra figura da disegnare
+sullo schermo piu` in basso della prima. Se si vuole riutilizzare per una
+terza volta lo sprite, si mette una terza struttura sprite subito dopo la
+seconda, e lo stesso si fa per tutti i riutilizzi che si vuole. Dopo la
+struttura dati dell'ultimo utilizzo si mettono le 2 word di valore 0 che
+indicano la fine dell'ultimo utilizzo.
+
+
+	      STRUTTURA SPRITE
+	  ___________________________ - -
+      |  |     VSTART_1, HSTART_1    |   |
+	 |___________________________|
+      |  |     VSTOP_1 e bits	     |   |
+	 |___________________________|
+      |				  	 |
+	  ___________________________
+      |  |     piano 1, riga 1       |   |
+	 |___________________________|
+      |  |     piano 2, riga 1       |   |
+	 |___________________________|	 	Dati del primo
+      |				  	 |- - - utilizzo dello
+		------				sprite
+      |		------			 |
+		------
+      |   ___________________________    |
+	 |  piano 1, ultima riga     |
+      |  |___________________________|   |
+	 |  piano 2, ultima riga     |
+      |  |___________________________|   |
+				      - -
+	  ___________________________ - -
+      |  |    VSTART_2, HSTART_2     |   |	Dati del secondo
+	 |___________________________|		utilizzo dello sprite
+      |  |    VSTOP_2 e bit	     |   |- - - La posizione di inizio
+	 |___________________________|		verticale deve essere
+      |					 |	almeno una riga piu` in
+	  ___________________________		basso dell'ultima riga
+      |  |			     |	 |	del precedente utilizzo.
+	 |___________________________|
+      |  |			     |	 |
+	 |___________________________|
+      |					 |
+		------
+      |		------			 |
+		------
+      |   ___________________________	 |
+	 |			     |
+      |  |___________________________|	 |
+	 |			     |
+     \|/ |___________________________|	 |
+				      - -
+				      _ _
+		_____			 |
+		_____			 |- - -	Utilizzi successivi
+		_____		      _ _|
+
+	  ___________________________ _ _
+	 |	     0		     |	 |	Due word azzerate
+      	 |___________________________|	 |_ _ _ che indicano la fine
+	 |	     0		     |	 |	dell'ultimo utilizzo
+     	 |___________________________|_ _|
+
+
+Da notare che i vari utilizzi verticali devono essere messi nella struttura
+in ordine da quello piu` in alto a quello piu` in basso.
+Per cui il byte VSTART di ogni utilizzo deve essere MAGGIORE del byte VSTOP
+dell'utilizzo precedente dello sprite.
+
+Vediamo un esempio pratico di struttura in cui uno sprite e` riutilizzato
+2 volte:
+
+MIOSPRITE:
+VSTART_1:
+	dc.b $50				; posizione primo utilizzo
+HSTART_1:
+	dc.b $40+12
+VSTOP_1:
+	dc.b $58
+	dc.b $00
+ dc.w	%0000001111000000,%0111110000111110	; dati "forma" del primo
+ dc.w	%0000111111110000,%1111001110001111	; utilizzo
+ dc.w	%0011111111111100,%1100010001000011
+ dc.w	%0111111111111110,%1000010001000001
+ dc.w	%0111111111111110,%1000010001000001
+ dc.w	%0011111111111100,%1100010001000011
+ dc.w	%0000111111110000,%1111001110001111
+ dc.w	%0000001111000000,%0111110000111110
+VSTART_2:		                        ; posizione utilizzo 2
+	dc.b $70			; NOTATE CHE VSTART_2 > VSTOP_1
+HSTART_2:
+	dc.b $40+20
+VSTOP_2:
+	dc.b $78
+	dc.b $00
+ dc.w	%0000001111000000,%0111110000111110	; dati "forma" del
+ dc.w	%0000111111110000,%1111001110001111	; secondo utilizzo
+ dc.w	%0011111111111100,%1100010001000011
+ dc.w	%0111111111111110,%1000001110000001
+ dc.w	%0111111111111110,%1000010001000001
+ dc.w	%0011111111111100,%1100010001000011
+ dc.w	%0000111111110000,%1111001110001111
+ dc.w	%0000001111000000,%0111110000111110
+ dc.w	0,0					; fine ultimo utilizzo
+
+
+La tecnica del riutilizzo, se
+ben sfruttata, puo' portare a moltiplicare gli oggetti in movimento in uno
+shoot'em'up. Ad esempio in un gioco a scrolling orizzontale, dove i nemici
+si muovono orizzontalmente:
+
+
+			/--___
+			\--
+	
+				/--___
+				\--
+	
+					/--___
+	   ()-				\--
+	   /\___o - - - - - -
+	  ||||--o - - - - - -			/--___
+	  ||||					\--
+	  //\\
+	 //  \\
+------------------------------------------------------------
+
+La formazione nemica, essendo formata da oggetti che si spostano in senso
+per lo piu' orizzontale, senza mai andare l'uno sopra l'altro, puo' essere
+fatta da un solo sprite riutilizzato. In questo modo avremmo altri 7 sprite
+per il player1 e per le eventuali bombe.
+
+
+Un esempio di utilizzo di questa tecnica lo potete trovare in lezione7s.s dove
+visualizzeremo "16" sprite contemporaneamente. Caricatelo e studiatevelo.
+
+
+Non poteva poi mancare nel nostro corso, uno degli effetti piu` "classici"
+delle intro di qualche anno fa: lo "starfield", ovvero le stelle che si muovono
+orizzontalmente.
+Le stelle infatti sono realizzate usando uno sprite riutilizzato.
+Ne presentiamo 3 versioni in lezione7t1.s, lezione7t2.s e lezione7t3.s.
+Il riutilizzo degli sprite si puo` applicare anche agli sprite "attaccati",
+allo stesso modo degli sprite normali. In lezione7t4.s vediamo un esempio nel
+quale realiziamo un effetto simile allo "starfield" ma con palline colorate al
+posto delle stelle.
+
+	-		-		-		-
+
+IL DUAL PLAYFIELD MODE
+
+Prima di spiegare altre caratteristiche degli sprite, faremo una digressione
+per approfondire la trattazione del Dual Playfield mode.
+Come abbiamo gia` accennato nella lezione 4, il Dual Playfield e` un modo
+grafico speciale che consente di visualizzare due schermi sovrapposti,
+chiamati PLAYFIELD 1 e 2. Cosa vuol dire che i 2 schermi sono sovrapposti?
+In pratica ogni playfield, ha un colore "trasparente" attraverso il quale si
+puo` vedere quello che c'e` sotto, esattamente allo stesso modo del colore 0
+di ogni sprite. In pratica il trasparente non e` un vero colore ma
+una sorta di "buco" all'interno del playfield. Gli altri colori di ogni
+playfield si comportano invece normalmente. Uno dei due PLAYFIELD (a scelta)
+appare al di sopra dell'altro, e i suoi colori NON trasparenti ricoprono
+l'altro playfield; il trasparente, invece si comporta come un buco e lascia
+vedere il playfield sottostante.
+Il numero massimo di bit-planes che ognuno dei 2 playfield puo` avere
+e` 3 bit-plane in LOW-RES e 2 bit-plane in HI-RES. In pratica i 6
+bit-planes dell'Amiga vengono ripartiti in due gruppi da 3, e ogni gruppo
+costituisce un playfield. Il playfield 1 e` costituito dai bit-plane dispari,
+cioe` i bit-plane 1, 3 e 5. Il playfield 2 e` costituito dai bit-plane pari,
+cioe` 2, 4 e 6.
+Naturalmente non e` sempre necessario usare tutti i bit-plane disponibili. Non
+possiamo pero` assegnare indipendentemente ai 2 playfield i bit-plane che
+vogliamo. Infatti il numero di bit-planes da usare si indica esattamente nello
+stesso modo che per i modi grafici "normali". Nei bit 14-12 del registro
+BPLCON0 ($dff100), chiamati bit BPU2, BPU1 e BPU0 viene indicato il numero
+complessivo di bit-plane da attivare nei 2 playfield. In base al numero
+complessivo che noi indichiamo nei bit BPU, l'hardware assegna i bit plane
+secondo la seguente tabella:
+
+
+Numero di bitplanes usati   |	Bit-planes al	  |	Bit-planes al
+ (bit BPU di BPLCON0)	    |	Playfield 1	  |	Playfield 2
+----------------------------|---------------------|-------------------
+			    |			  |
+	0		    |    nessuno	  |	nessuno
+			    |			  |
+	1		    |    plane 1	  |	nessuno
+			    |			  |
+	2		    |    plane 1	  |	plane 2
+			    |			  |
+	3		    |    plane 1,3	  |	plane 2
+			    |			  |
+	4		    |    plane 1,3	  |	plane 2,4
+			    |			  |
+	5		    |    plane 1,3,5	  |	plane 2,4
+			    |			  |
+	6		    |    plane 1,3,5	  |	plane 2,4,6
+
+
+Come potete vedere in pratica il playfield 1 ha sempre piu` planes del
+playfield 2, ed inoltre, il playfield 2 ha al massimo un plane in meno del
+playfield 1; non e` possibile assegnare 3 plane al playfield 1 e un solo
+plane al playfield 2.
+
+Analogamente ai modi grafici standard, la sovrapposizione dei bit-plane
+determina il colore usato per rappresentare ogni pixel sul video.
+Pero` la corrispondenza tra combinazioni dei bit-plane e registri colore e`
+un po' differente, ed illustrata nelle 2 tabelle seguenti:
+
+PLAYFIELD 1
+  Valore	| Valore        | Valore	|  Colore
+	plane 5	|	plane 3	|	plane 1	|  selezionato
+----------------------------------------------------
+		|		|		|
+	0	|	0	|	0	|  trasparente
+		|		|		|
+	0	|	0	|	1	|  COLOR01
+		|		|		|
+	0	|	1	|	0	|  COLOR02
+		|		|		|
+	0	|	1	|	1	|  COLOR03
+		|		|		|
+	1	|	0	|	0	|  COLOR04
+		|		|		|
+	1	|	0	|	1	|  COLOR05
+		|		|		|
+	1	|	1	|	0	|  COLOR06
+		|		|		|
+	1	|	1	|	1	|  COLOR07
+
+
+PLAYFIELD 2
+  Valore	|  Valore	|  Valore	|  Colore
+	plane 6	|	plane 4	|	plane 2	|  selezionato
+----------------------------------------------------
+		|		|		|
+	0	|	0	|	0	| trasparente
+		|		|		|
+	0	|	0	|	1	|  COLOR09
+		|		|		|
+	0	|	1	|	0	|  COLOR10
+		|		|		|
+	0	|	1	|	1	|  COLOR11
+		|		|		|
+	1	|	0	|	0	|  COLOR12
+		|		|		|
+	1	|	0	|	1	|  COLOR13
+		|		|		|
+	1	|	1	|	0	|  COLOR14
+		|		|		|
+	1	|	1	|	1	|  COLOR15
+
+
+A questo punto sapete come funziona il Dual Playfield mode. C'e` solo unica
+cosa che non sapete... come si attiva il dual playfield !!
+E` molto semplice basta settare a 1 il bit 10 del registro BPLCON0.
+Come abbiamo gia` detto e` possibile scegliere quale dei due playfield appaia 
+al di sopra dell'altro. Si dice che il playfield che appare sopra ha priorita`
+maggiore. C'e` un bit che determina la priorita`, il bit 6 del registro
+BPLCON2 ($dff104): se esso vale 0 il playfield 1 appare sopra al 2, se invece
+vale 1 e` il playfield 2 che appare sopra all'1.
+
+Potete vedere un esempio di Dual Playfield in lezione7u.s
+
+
+PRIORITA` TRA SPRITE E PLAYFIELD
+
+Abbiamo gia` visto le priorita` relative dei vari sprite. Cioe` se due sprite
+si sovrappongono, quello con il numero piu` basso apparira` al di sopra
+dell'altro. Inoltre abbiamo appena visto come stabilire la priorita` tra i 2
+playfield nel modo Dual Playfield. Non ci resta ora che vedere le priorita`
+tra sprite e playfield. Innanzitutto notiamo che gli sprite appaiono sempre
+al di sopra del colore zero. Per gli altri colori la priorita` e` controllata
+dal registro BPLCON2. E` possibile settare la priorita` indipendentemente per
+i bit-planes pari e per i dispari. Cio` e` molto utile nel modo Dual
+Playfield, perche` ci consente di dare ad ogni playfied una diversa priorita` 
+rispetto agli sprite. Nel modo standard, invece e` opportuno dare la stessa 
+priorita` rispetto agli sprite a planes pari e dispari. Il registro BPLCON2
+possiede alcuni bit nei quali scrivere il livello di priorita` desiderato per
+planes pari e dispari. I bit da 0 a 2 contengono il livello di priorita`
+dei bit-planes dispari (che corrispondono al PLAYFIELD 1 nel modo Dual
+Playfield) mentre i bit da 3 a 5 contengono il livello di priorita`
+dei bit-planes pari (PLAYFIELD 2 nel modo Dual Playfield).
+Vediamo come e` codificato il livello di priorita`, riferendoci ad un
+generico playfield, visto che la codifica e` identica nei 2 casi.
+Per quanto riguarda le priorita` con i playfield gli sprite si considerano a 
+coppie (0-1, 2-3, 4-5 e 6-7). Come sappiamo, la priorita` tra gli sprite
+(e quindi tra le coppie) e` fissa:
+
+PRIORITA` MASSIMA       COPPIA 1 (SPRITES 0 E 1)
+                        COPPIA 2 (SPRITES 2 E 3)
+                        COPPIA 3 (SPRITES 4 E 5)
+PRIORITA` MINIMA        COPPIA 4 (SPRITES 6 E 7)
+
+Il livello di priorita` ci permette di inserire in questa pila il nostro
+playfield: lo possiamo mettere al di sopra di tutte le coppie, al di sotto di
+tutte le coppie, o in mezzo a 2 coppie. Non e` quindi possibile far comparire
+il playfield al di sotto della coppia 4 e al di sopra della coppia 2, perche`
+la coppia 2 si trova piu` in alto della coppia 4 nella pila. E` invece
+possibile il contrario. Mostriamo ora una tabella con tutte le possibili
+priorita`, a seconda del livello che settiamo nei bit di BPLCON2
+
+CODICE    |    000    |    001    |    010    |    011    |    100    |
+----------------------------------------------------------------------------
+PRI. MAX  | PLAYFIELD | COPPIA 1  | COPPIA 1  | COPPIA 1  | COPPIA 1  |
+          | COPPIA 1  | PLAYFIELD | COPPIA 2  | COPPIA 2  | COPPIA 2  |
+          | COPPIA 2  | COPPIA 2  | PLAYFIELD | COPPIA 3  | COPPIA 3  |
+          | COPPIA 3  | COPPIA 3  | COPPIA 3  | PLAYFIELD | COPPIA 4  |
+PRI. MIN  | COPPIA 4  | COPPIA 4  | COPPIA 4  | COPPIA 4  | PLAYFIELD |
+
+Per esempio, come si vede dalla tabella, se vogliamo che gli sprite 0,1,2,3
+(cioe` le coppie 1 e 2) appaiano al di sopra del playfield e gli altri sprite
+invece al di sotto, dobbiamo scegliere il codice %010. Questo codice
+andra` scritto nel registro BPLCON2, nei bit da 0 a 2 se ci si riferisce al
+playfield 1 in dual-playfield, nei bit da 3 a 5 se ci si riferisce al
+playfield 2 in dual-playfield, mentre se stiamo usando uno schermo normale,lo 
+dovremo scrivere 2 volte, sia nei bit da 0 a 2 che nei bit da 3 a 5.
+
+In lezione7v1.s trovate un esempio di come settare le priorita` degli sprite
+con uno schermo "normale".
+
+In lezione7v2.s invece, viene usato uno schermo Dual Playfield.
+
+
+
+COLLISIONI
+
+L'hardware di Amiga mette a disposizione del programmatore un sistema di
+rilevamento delle collisioni tra sprite e sprite, di quelle tra sprite e
+playfield e di quelle tra i 2 playfield.
+Tutti questi tipi di collisione vengono gestiti mediante 2 soli registri:
+CLXDAT ($dff00e) che e` un registro a sola lettura nel quale vengono
+segnalate le collisioni, e CLXCON ($dff098), che e` un registro di controllo
+mediante il quale si puo` modificare il modo in cui le collisioni vengono
+rilevate. Cominciamo illustrando la struttura di questi registri.
+I bit del registro CLXDAT si comportano come dei rilevatori di collisione.
+Ogni bit e` dedicato ad un particolare tipo di collisione. Quando si
+verifica una collisione di un determinato tipo, il bit ad essa dedicato in
+CLXDAT assume il valore 1. Quando la collisione non si verifica piu` il bit
+ritorna al valore 0. Nella seguente tabella illustriamo il significato dei
+bit di CLXDAT:
+
+USO DEI BIT DI CLXDAT
+
+bit 15  non usato
+bit 14  collisione tra coppia 3 e coppia 4
+bit 13  collisione tra coppia 2 e coppia 4
+bit 12  collisione tra coppia 2 e coppia 3
+bit 11  collisione tra coppia 1 e coppia 4
+bit 10  collisione tra coppia 1 e coppia 3
+bit 9  collisione tra coppia 1 e coppia 2
+bit 8  collisione tra playfield 2 e coppia 4
+bit 7  collisione tra playfield 2 e coppia 3
+bit 6  collisione tra playfield 2 e coppia 2
+bit 5  collisione tra playfield 2 e coppia 1
+bit 4  collisione tra playfield 1 e coppia 4
+bit 3  collisione tra playfield 1 e coppia 3
+bit 2  collisione tra playfield 1 e coppia 2
+bit 1  collisione tra playfield 1 e coppia 1
+bit 0  collisione tra playfield 1 e playfield 2
+
+Il registro CLXCON ha la seguente struttura
+
+USO BIT DI CLXCON
+bit 15  abilita sprite 7
+bit 14  abilita sprite 5
+bit 13  abilita sprite 3
+bit 12  abilita sprite 1
+bit 11  abilita bit-plane 6
+bit 10  abilita bit-plane 5
+bit 9  abilita bit-plane 4
+bit 8  abilita bit-plane 3
+bit 7  abilita bit-plane 2
+bit 6  abilita bit-plane 1
+bit 5  valore-collisione bit-plane 6
+bit 4  valore-collisione bit-plane 5
+bit 3  valore-collisione bit-plane 4
+bit 2  valore-collisione bit-plane 3
+bit 1  valore-collisione bit-plane 2
+bit 0  valore-collisione bit-plane 1
+
+(nota: dove e` scritto "abilita" si intende ABILITA PER IL RILEVAMENTO
+COLLISIONI: se per esempio il bit 15 di CLXCON vale 0 NON vuol dire che lo
+sprite 7 non puo apparire sullo schermo, ma solo che le collisioni che
+riguardano lo sprite 7 non vengono rilevate)
+
+Spiegheremo un po' alla volta il significato di questi bit.
+Cominciamo a parlare della collisione tra sprite e sprite.
+Diciamo subito che anche per quanto riguarda le collisioni gli sprite
+sono considerati al livello di coppie.
+Infatti e` possibile rilevare solo le collisioni tra sprite appartenenti a
+coppie diverse, e non fra sprite appartenenti alla stessa coppia.
+Per esempio non e` possibile rilevare la collisione di sprite 0 con sprite 1.
+Invece vengono rilevate collisioni tra sprite appartenenti a coppie diverse.
+Per esempio se si verifica una collisione tra sprite 0 e sprite 2 il bit 9 di
+CLXDAT (collisione tra coppia 1 e coppia 2) assume il valore 1. Se si
+verifica una collisione tra sprite 1 e sprite 2, poiche` anche lo sprite 1
+appartiene (come lo 0) alla coppia 1, sara` sempre il bit 9 ad assumere il
+valore 1. Questo pero` non accadra` sempre.
+Infatti le collisioni che riguardano gli sprite di numero pari (cioe` gli
+sprite 0,2,4 e 6) vengono sempre rilevate, ma le collisioni che riguardano gli
+sprite dispari, vengono rilevate solo se noi vogliamo. Per abilitare
+uno sprite dispari al rilevamento collisioni, dobbiamo mettere a 1 il
+corrispondente bit di abilitazione nel registro CLXCON. Potete vedere quali
+sono i bit nella tabella che abbiamo riportato sopra. Gli sprite dispari
+possono essere abilitati indipendentemente l'uno dall'altro. Abilitare uno
+o piu` sprite dispari al rilevamento delle collisioni, comporta vantaggi e
+svantaggi. Consideriamo per esempio solo le coppie 1 e 2, e supponiamo
+di non aver abilitato ne` lo sprite 1 ne` lo sprite 3. In questo caso,
+se si verifica una collisione tra sprite 0 e 2, il bit 9 (di CLXDAT)
+assume valore 1. Se invece la collisione si verifica tra sprite 1 e 2,
+oppure tra 0 e 3, oppure tra 1 e 3, non accade nulla, e noi non possiamo
+sapere che la collisione e` avvenuta.
+Supponiamo invece di aver abilitato uno degli sprite dispari, per esempio
+sprite 1. In questo caso le collisioni tra sprite 0 e 2 e tra sprite 1 e 2
+pongono a 1 il bit 9 di CLXDAT, mentre le collisioni tra sprite 0 e 3 e tra
+sprite 2 e 3 non provocano nessun effetto. In questa situazione c'e` uno
+svantaggio rispetto al caso precedente, in cui lo sprite 1 non era abilitato.
+Infatti nel caso precedente, se il bit 9 assumeva il valore 1 eravamo sicuri
+che la collisione era avvenuta tra sprite 0 e sprite 2. Nel caso presente
+invece ci sono 2 possibilita`: o c'e` collisione tra sprite 0 e 2 oppure tra
+sprite 1 e 2. Non vi e` modo di risolvere l'enigma leggendo il registro
+CLXDAT.
+Se lo sprite 1 e` disabilitato, ma lo sprite 3 e` abilitato, si ha una
+situazione analoga, in quanto vengono rilevate le collisioni tra sprite 0 e 2
+e tra sprite 0 e 3, ma non si riesce a distinguere quale delle 2 si e`
+verificata.
+Infine nel caso in cui sono abilitati sia lo sprite 1 che il 3, vengono
+rilevate collisioni tra sprite 0 e 2, tra sprite 0 e 3, tra sprite 1 e 2 e
+tra sprite 1 e 3, e non c'e` modo di distinguere.
+
+
+Un esempio di collisione tra sprite, con gli sprite dispari disabilitati al
+rilevamento collisioni, e` in lezione7w1.s. Caricatelo e verificatene il
+funzionamento.
+
+
+Un esempio di collisione tra sprite con uno sprite dispari abilitato e` nella
+lezione7w2.s. Noterete che questo esempio cosi` com'e` non funziona; per farlo
+funzionare, dovrete seguire le modifiche indicate nel commento.
+In questo esempio, per distinguere se una collisione riguarda lo sprite dispari
+abilitato, o lo sprite pari ad esso accoppiato, viene impiegata una tecnica
+basata sul confronto delle posizioni, illustrata nel commento.
+
+
+Veniamo ora alla collisione tra sprite e playfield.
+E` possibile rilevare una collisione tra una coppia di sprite e uno o piu`
+colori del playfield. Anche in questo caso le collisioni sono rivelate
+considerando coppie di sprite e non i singoli membri della coppia.
+L'abilitazione degli sprite dispari tramite i bit del registro CLXCON ha
+effetto anche in questo caso.
+Il rilevamento delle collisioni avviene in modo diverso se stiamo usando uno
+schermo normale o Dual Playfield. Con uno schermo normale, i bit da 1 a 4
+di CLXDAT indicano una collisione tra una coppia di sprite e il colore (o i
+colori) che abbiamo scelto per la collisione. Il bit 1 indica collisione tra
+il playfield e la coppia 1, il bit 2 tra playfield e coppia 2, il bit 3 tra
+playfield e coppia 3, il bit 4 tra playfield e coppia 4. I bit da 5 a 8
+invece non vanno usati.
+Nel caso di modo dual playfield e` possibile rilevare una collisione tra uno
+dei 2 playfield e una coppia di sprite, e i bit di CLXDAT si usano come
+indicato nella tabella del registro CLXDAT: i bit da 1 a 4 indicano le
+collisioni tra playfield 1 e le varie coppie di sprite, mentre i bit da 5 a 8
+indicano le collisioni tra playfield 2 e le varie coppie di sprite.
+Per scegliere i colori con cui rilevare le collisioni si usa il registro
+CLXCON. Iniziamo con il caso di un solo colore.
+I bit da 6 a 11 di CLXCON indicano quali bit-planes sono attivi
+per le collisioni. Nel caso in cui vogliamo rilevare collisioni tra sprite e
+un solo colore dobbiamo abilitare per le collisioni tutti i bit-planes che
+vengono visualizzati. La scelta del colore con cui rilevare una collisione
+viene effettuata scrivendo il numero del registro in cui e` contenuto il
+colore nei bit da 0 a 5 di CLXCON.
+Per esempio supponiamo di avere uno schermo normale a 16 colori (4 bit-planes)
+e di non voler considerare le collisioni degli sprite dispari.
+Se vogliamo rilevare una collisione tra uno sprite e il colore 13 dobbiamo
+scrivere nel registro CLXCON il valore
+
+        111111
+        5432109876543210
+ $03cb=%0000001111001101
+
+Guardiamo il significato dei bit. I bit da 12 a 15 disabilitano gli sprite
+dispari. Dei bit da 6 a 11 sono a 1 solo i bit 6,7,8,9. Questo indica che
+solo i bit-planes da 1 a 4 sono abilitati per le collisioni. Si tratta dei
+soli bit-planes attivi. I bit da 0 a 5 contengono il numero %001101=13 cioe`
+il numero del registro che ci interessa. Nel caso Dual Playfield la
+situazione e` la stessa, solo che attivando tutti i bit-planes utilizzati per
+le collisioni si abilitano le collisioni con 2 colori contemporaneamente:
+per esempio, se con 2 playfield da 8 colori ciascuno vogliamo abilitare il
+rilevamento delle collisioni per il colore 7 del playfield 1 e il colore 2
+del playfield 2 dobbiamo scrivere in CLXCON il numero
+
+        111111
+        5432109876543210
+ $0fbb=%0000111111011101
+
+Questa combinazione di bit indica che tutti i bit-planes sono abilitati al
+rilevamento collisioni (tutti i bit da 6 a 11 valgono 1).
+Inoltre il numero del colore usato per il playfield 1 e` dato dai bit
+0,2 e 4 che messi affiancati formano il numero %111=7, mentre il numero del
+colore usato per il playfield 2 e` dato dai bit 1,3 e 5 che messi affiancati
+formano il numero %010=2.
+Da notare che la collisione di uno sprite con un colore del playfield 1
+provoca l'accensione di un bit di CLXDAT diverso dal caso di collisione dello
+stesso sprite con un colore del playfield 2. Per esempio, come potete
+verificare nella tabella del registro CLXDAT, la collisione sprite 0 -
+playfield 1 mette a 1 il bit 1 di CLXDAT, mentre la collisione sprite 0 -
+playfield 2 mette a 1 il bit 5 di CLXDAT.
+
+E` possibile anche rilevare collisioni di uno sprite con piu` di un colore
+contemporaneamente sebbene solo in alcune particolari condizioni.
+Per capire come cio` sia possibile occorre tenere presente la rappresentazione
+binaria dei numeri dei registri colore.
+Ci sono, come sapete 32 registri colore numerati da 0 a 31.
+La possibilita` di rilevare collisioni con 2 colori contemporaneamente si basa
+sul fatto che le rappresentazioni di alcuni numeri binari sono simili.
+Per esempio consideriamo i numeri 2 e 21.
+In binario si ha 2=%00010 e 21=%10101 (consideriamo 5 bit per poter scrivere
+numeri fino a 31).
+Come vedete le rappresentazioni binarie di questi 2 numeri sono completamente
+diverse.
+Non vi e` modo dunque di rilevare collisioni con entrambi i colori
+contemporaneamente.
+Consideriamo invece i numeri 22 e 23.
+Osserviamo ora che espressi in binario 22=%010110 e 23=%010111.
+Le rappresentazioni dei 2 numeri differiscono solo per un bit, il bit piu`
+basso. In questo caso e` possibile rilevare collisioni con entrambi i colori.
+Infatti il valore del bit piu` basso (che in questo caso differenzia i colori)
+e` dato dal bit-plane 1.
+Se noi NON abilitiamo il bit-plane 1 al rilevamento collisioni, verranno presi
+in considerazione solo i valori dei bit-plane 2,3,4 e 5 (siamo su uno schermo
+a 32 colori, quindi in totale 5 bit-planes), e il valore assunto dal
+bit-plane 1 non avra` alcuna influenza. Scriviamo dunque in CLXCON il valore:
+
+         111111
+         5432109876543210
+CLXCON= %0000011110010110
+
+Questo vuol dire che la collisione verra` rilevata basandosi sui soli
+bit-plane abilitati (e cioe` 2,3,4 e 5) e precisamente quando il nostro
+sprite si sovrapporra` ad un pixel che abbia:
+
+bitplane 1=(0 o 1) perche` non e` abilitato
+bitplane 2=1
+bitplane 3=1
+bitplane 4=0
+bitplane 5=1
+
+Come abbiamo visto, sia la rappresentazione binaria di 22=%010010
+che quella di 23=%010111 hanno questa particolare configurazione di bit,
+pertanto entrambi i colori provocano una collisione al passaggio dello
+sprite. Notate che il bitplane che NON abbiamo abilitato (l'1) corrisponde
+proprio all'unico bit che differenzia le rappresentazioni binarie di 22 e di
+23.
+Questa tecnica e` applicabile a una qualunque coppia di colori le cui
+rappresentazioni binarie differiscano di un solo bit. Per esempio anche i
+numeri 8=%001000 e 9=%001001 differiscono per il bit piu` basso, quindi anche
+per rilevare collisioni tra lo sprite e questi 2 colori si deve disabilitare
+il bit-plane 1. Se invece consideriamo i colori 10=%001010 e 14=%001110,
+notiamo che le 2 rappresentazioni binarie differiscono nel bit 2 (numeriamo i
+bit da destra a sinistra a partire da 0) che corrisponde al bit-plane 3.
+Per rilevare collisioni tra lo sprite e questi 2 colori si deve disabilitare
+il bit-plane 3, e pertanto assegnare a CLXCON il valore riportato sotto:
+
+         111111
+         5432109876543210
+CLXCON= %0000011011001010   ; bit 8=0 indica bit-plane 3 NON abilitato
+
+Se disabilitiamo 2 bit-plane possiamo rilevare collisioni tra 4 colori.
+Il principio e` sempre lo stesso. Prendiamo per esempio i colori:
+
+1=%00001
+3=%00011
+5=%00101
+7=%00111
+
+questi 4 colori hanno i bit 0, 3 e 4 uguali tra loro, mentre si differenziano
+in quanto ogni colore ha una diversa combinazione di valori nei bit 1 e 2.
+Per rilevare collisioni tra uno sprite e tutti e 4 questi colori basta
+disabilitare i bit-plane 2 e 3 che corrispondono appunto ai bit 1 e 2.
+Disabilitando 3 bit plane si rilevano collisioni con 8 colori
+contemporaneamente, disabilitandone 4 con 16 colori.
+Anche operando in modo Dual Playfield e` possibile, per ciascun playfield,
+disabilitare alcuni bit-planes per rilevare collisioni tra lo sprite e 
+piu` di un colore per ogni playfield (ricordiamo che se dobbiamo rilevare la
+collisione tra lo sprite e 2 colori che pero` appartengono uno al playfield 1
+e uno al playfield 2 cio` non e` necessario, perche` in CLXDAT abbiamo per
+ogni playfield un bit che ci consente di rilevare contemporaneamente la
+collisione con entrambi i playfield).
+
+
+In lezione7x1.s vediamo un esempio di collisione tra sprite e
+playfield in modo "standard".
+
+
+In lezione7x2.s invece c'e` un esempio con il modo Dual Playfield.
+In entrambi i listati nel commento sono riportati diversi esempi di come
+rilevare collisioni con piu` di un colore per volta.
+
+
+L'ultimo tipo di collisione e` tra playfield 1 e playfield 2, ovviamente in
+modo Dual Playfield. E` possibile rilevare una collisione tra uno o
+piu` colori del playfield 1 e uno o piu` colori del playfield 2, abilitando
+solo alcuni bit-planes esattamente con la stessa procedura adottata nel caso 
+di collisione tra sprite e playfield.
+Quando viene rilevata una collisione tra i due playfield, bit 0 di CLXDAT
+assume il valore 1.
+
+
+Un esempio di questo tipo di collisione e` in lezione7x3.s
+
+
+
+USO DIRETTO DEI REGISTRI DEGLI SPRITE
+
+Vedremo ora un diverso metodo per utilizzare gli sprite. Finora abbiamo
+generato degli sprite utilizzando i registri SPRxPT, ovvero dei puntatori a
+delle strutture dati (dette strutture sprite) che contengono tutte le
+informazioni necessarie alla visualizzazione degli sprite. Esiste pero` un
+altro metodo per creare degli sprite che puo` essere usato in alternativa o
+anche in aggiunta a quello con i puntatori. Chiameremo questo nuovo metodo
+"uso diretto degli sprite". L'uso diretto degli sprite non e` conveniente
+nella maggior parte dei casi, ma a volte puo` risultare utile.
+Per comprendere bene di cosa si tratti dobbiamo approfondire il discorso sulla
+visualizzazione degli sprite.
+Quando memorizziamo in un registro SPRxPT l'indirizzo di una struttura
+sprite (secondo le modalita` della tecnica "standard" di utilizzo degli 
+sprite), attiviamo una procedura automatica che permette di visualizzare
+effettivamente gli sprite. Infatti i dati sulla posizione e la forma che noi
+abbiamo memorizzato nella struttura sprite, vengono trasferiti
+automaticamente, attraverso un "meccanismo" hardware chiamato DMA, in
+appositi registri, diversi dai registri SPRxPT; e` proprio la scrittura dei
+dai in questi registri che REALMENTE permette la visualizzazione degli
+sprite. Del DMA, che e` uno strumento molto importante dell'Amiga, diremo di
+piu` in una prossima lezione. Per il momento ci basta conoscere il ruolo che
+esso svolge nella visualizzazione degli sprite. Si comporta in pratica come
+un postino. Immaginate che la struttura dati dello sprite che voi avete
+costruito in memoria sia un mucchio di lettere indirizzate a diversi
+destinatari (registri). Il DMA si occupa di portare queste lettere a
+destinazione, smistandole tra i vari destinatari.
+L'uso diretto degli sprite consiste, appunto, nello scrivere direttamente
+i dati degli sprite negli appositi registri, cioe` nel portare "di persona"
+le lettere ai vari destinatari, rubando il lavoro al postino DMA. Visto che
+il DMA svolge il suo lavoro gratis, vi potreste chiedere a cosa serva questa
+tecnica. In effetti come abbiamo gia` detto di solito essa non offre
+vantaggi; tuttavia in alcuni casi puo` rivelarsi utile.
+Vediamo dunque in cosa consiste questa tecnica. Come abbiamo gia` detto i dati
+degli sprite vengono scritti direttamente in alcuni registri. Ci sono 4
+registri per ogni sprite, chiamati SPRxPOS, SPRxCTL, SPRxDATA, SPRxDATB (al
+posto della x dovete mettere il numero dello sprite che volete usare.)
+Gli indirizzi di questi registri dipendono dallo sprite a cui ci si
+riferisce. Li possiamo calcolare con delle semplici formule. Con "x"
+indichiamo il numero dello sprite, da 0 a 7.
+
+indirizzo SPRxPOS  = $dff140+(x*8)
+indirizzo SPRxCTL  = $dff142+(x*8)
+indirizzo SPRxDATA = $dff144+(x*8)
+indirizzo SPRxDATB = $dff146+(x*8)
+
+Potete comunque cercarli con l'help dell'ASMONE "=C".
+
+Ora descriviamo l'uso di questi registri. La forma di uno sprite viene
+scritta nei registri SPRxDATA e SPRxDATB, che costituiscono i 2 piccoli 
+bit-planes dello sprite (SPRxDATB e` il piano 2). Questi registri hanno lo
+stesso ruolo delle coppie di word che definiscono la forma di una riga dello
+sprite nella struttura sprite. Notate che per ogni sprite ci sono 2 registri
+che contengono i dati relativi ad UNA SOLA riga dello sprite. La posizione
+orizzontale di uno sprite come sapete e` costituita da 9 bit, chiamati H0, H1 
+.. H8. Questi 9 bit sono suddivisi in due registri: il bit H0, cioe` il bit
+basso si trova nel bit 0 del registro SPRxCTL. Gli altri 8 invece nel byte
+basso del registro SPRxPOS. In poche parole questi 2 registri si comportano,
+per quanto riguarda la posizione orizzontale, esattamente come le 2 word di
+controllo della struttura sprite. La posizione verticale, invece, con questa
+tecnica non viene determinata, perche' gli sprite si comportano in modo
+piuttosto strano.
+Per essere visualizzato, uno sprite deve essere attivato.
+Cio` accade quando si scrive nel registro SPRxDATA.
+Una volta attivato, lo sprite viene visualizzato ad ogni riga nella posizione
+orizzontale indicata, come abbiamo appena visto, nei registri SPRxPOS e
+SPRxCTL. La forma dello sprite e` per ogni riga quella contenuta nei registri
+SPRxDATA e SPRxDATB.
+Quindi se il contenuto di questi registri non viene modificato ad ogni riga,
+lo sprite avra` la stessa forma ad ogni riga.
+Lo sprite viene visualizzato, fino a che non lo si disattiva scrivendo nel
+registro SPRxCTL.
+Per visualizzare uno sprite che cambi forma ad ogni riga si dovrebbe dunque
+utilizzare una copperlist fatta in questa maniera:
+(supponiamo di usare lo sprite 0 e che sia VSTART=$40, VSTOP=$60, HSTART=$160)
+
+
+	dc.w	$4007,$fffe	; WAIT - aspetta la linea VSTART
+	dc.w	$140,$0080	; SPR0POS - posizione orizzontale
+	dc.w	$142,$0000	; SPR0CTL
+	dc.w	$146,$0e70	; SPR0DATB - forma sprite riga 1, piano 2
+	dc.w	$144,$03c0	; SPR0DATA - forma sprite riga 1, piano 1
+                                ; inoltre attiva la visualizzazione, per
+                                ; questo va scritta per ultima.
+
+	dc.w	$4107,$fffe	; WAIT - aspetta la linea VSTART+1
+	dc.w	$146,$0a70	; SPR0DATB - forma sprite riga 2, piano 2
+	dc.w	$144,$0300	; SPR0DATA - forma sprite riga 2, piano 1
+
+	dc.w	$4107,$fffe	; WAIT - aspetta la linea VSTART+2
+	dc.w	$146,$0a7f	; SPR0DATB - forma sprite riga 3, piano 2
+	dc.w	$144,$030f	; SPR0DATA - forma sprite riga 3, piano 1
+
+; ripeti per ogni riga Y
+;	dc.w	$40+Y07,$fffe	; WAIT - aspetta la linea VSTART+Y
+;	dc.w	$146,DATOY2	; SPR0DATB - forma sprite riga Y, piano 2
+;	dc.w	$144,DATOY1	; SPR0DATA - forma sprite riga Y, piano 1
+; mettendo al posto di DATOY1 e DATOY2 i dati della forma degli sprite.
+
+	dc.w	$6007,$fffe	; WAIT - aspetta la linea VSTOP
+	dc.w	$142,$0000	; SPR0CTL - disattiva lo sprite
+
+Come vedete per sprite abbastanza alti e` necessaria una copperlist molto
+lunga e complicata. In questo caso conviene decisamente usare il DMA.
+Supponiamo pero` di dover visualizzare uno sprite che abbia la stessa forma
+ad ogni riga. Per esempio uno sprite che rappresenti una colonna. In questa
+situazione la nostra copperlist diventa semplicissima e cortissima:
+
+(supponiamo di usare lo sprite 0 e che sia VSTART=$40, VSTOP=$60, HSTART=$160)
+
+
+	dc.w	$4007,$fffe	; WAIT - aspetta la linea VSTART
+	dc.w	$140,$0080	; SPR0POS - posizione orizzontale
+	dc.w	$142,$0000	; SPR0CTL
+	dc.w	$146,$0e70	; SPR0DATB - forma sprite riga 1, piano 2
+	dc.w	$144,$03c0	; SPR0DATA - forma sprite riga 1, piano 1
+                                ; inoltre attiva la visualizzazione, per
+                                ; questo va scritta per ultima.
+
+	dc.w	$6007,$fffe	; WAIT - aspetta la linea VSTOP
+	dc.w	$142,$0000	; SPR0CTL - disattiva lo sprite
+
+Notate che la nostra copperlist, oltre a essere corta, non varia con l'altezza
+dello sprite.
+Al contrario, se volessimo usare il DMA per visualizzare questo sprite, saremmo
+costretti a memorizzare nella struttura dati le 2 word che rappresentano la
+forma tante volte quante sono le righe che costituiscono lo sprite.
+Pensate al caso in cui si deve visualizzare una colonna alta 100 righe.
+Se usassimo il DMA dovremmo memorizzare una struttura sprite che occupa molta
+memoria:
+
+StrutturaSprite:
+		dc.b	VSTART,HSTART,VSTOP,0
+		dc.w	$ffff,$0ff0	; riga 1
+		dc.w	$ffff,$0ff0	; riga 2
+		dc.w	$ffff,$0ff0	; riga 3
+		dc.w	$ffff,$0ff0	; riga 4
+		dc.w	$ffff,$0ff0	; riga 5
+		dc.w	$ffff,$0ff0	; riga 6
+		dc.w	$ffff,$0ff0	; riga 7
+		dc.w	$ffff,$0ff0	; riga 8
+
+.... e cosi` via, fino a:
+
+		dc.w	$ffff,$0ff0	; riga 99
+		dc.w	$ffff,$0ff0	; riga 100
+		dc.w	0,0		; fine sprite
+
+
+Con l'uso diretto degli sprite, invece basta una semplice copperlist:
+
+	dc.b	VSTART,7,$ff,$fe	; WAIT - aspetta la linea VSTART
+	dc.w	$140
+        dc.b    $00,HSTART	; SPR0POS - posizione orizzontale
+	dc.w	$142,$0000	; SPR0CTL
+	dc.w	$146,$ffff	; SPR0DATB - forma sprite riga 1, piano 2
+	dc.w	$144,$0ff0	; SPR0DATA - forma sprite riga 1, piano 1
+                                ; inoltre attiva la visualizzazione, per
+                                ; questo va scritta per ultima.
+
+	dc.b	VSTOP,7,$ff,$fe	; aspetta la linea VSTOP
+	dc.w	$142,$0000	; SPR0CTL - disattiva lo sprite
+
+
+
+Un semplice esempio di uso diretto degli sprite e` riportato in lezione7y1.s.
+
+
+Nel programma lezione7y2.s, invece, usando degli sprite in accesso diretto
+realizziamo delle barre verticali analoghe a quelle che si fanno
+orizzontalmente con il copper.
+
+
+Con la tecnica dell'uso diretto degli sprite, e` possibile anche visualizzare
+uno stesso sprite piu` volte su una stessa riga. Il metodo viene spiegato e
+applicato in lezione7y3.s. Gli sprite generati piu' volte sulla stessa linea
+sono anche detti MULTIPLEXED, cioe' "multiplexati".
+Dunque eravamo partiti dicendo che ci sono 8 sprite solamente, ma abbiamo
+visto che l'assembler ci permette di moltiplicare gli sprite e anche di fargli
+assumere molti piu' colori di quelli standard, cambiando la palette piu' volte
+anche orizzontalmente. L'unico inconveniente e' che ci vogliono delle
+copperlist molto lunghe, ma ne vale sicuramente la pena.
+
+
+Uno sviluppo di questa idea ci porta a realizzare una schermata completamente
+grazie agli sprite, nell'esempio Lezione7y4.s.
+
+Per compiere tale operazione pero' occorre scrivere una copperlist lunghissima,
+e per renderla piu' comprensibile sono stati usati dei SIMBOLI o EQUATES, una
+direttiva del linguaggio assembler che permette di chiamare con un nome scelto
+a piacere un certo numero fisso, per cui scrivendo il nome viene assemblato il
+numero che gli corrisponde.
+Facciamo questo esempio: vogliamo fare in modo di accedere al registro COLOR0,
+che come sappiamo e' $dff180. Possiamo scrivere:
+
+	move.w	#$123,$dff180
+
+Ma se volessimo potremmo anche scrivere cosi':
+
+COLORE0		EQU	$dff180		; Definizione di un simbolo
+
+	move.w	#$123,COLORE0
+
+In pratica abbiamo definito che quando l'asmone trova scritto COLORE0 deve
+assemblare come se avesse trovato $dff180. E' come se definissimo una label,
+infatti bisogna inventarci un nome e scriverlo senza precederlo da spazi, ma
+non occorrono i : (in realta' si possono anche mettere i :, allo stesso modo
+le label potrebbero avere i : o non averle, l'ASMONE assembla comunque, ma
+certi assemblatori preferiscono che le LABEL siano seguite dai : e che i
+simboli (o equates) non li abbiano). EQU significa infatti EQUIVALE A.
+Quasi tutti gli assemblatori accettano anche il simbolo = al posto del simbolo
+EQU per la definizione. Facciamo un altro esempio:
+
+NUMEROLOOP	=	10
+
+	MOVEQ	#NUMEROLOOP-1,d0
+Loop:
+	clr.l	(a0)+
+	dbra	d0,NUMEROLOOP
+	rts
+
+Con questo listatino azzeriamo 10 longword. L'utilita' degli EQUATES e' che
+possiamo metterli tutti all'inizio del listato, in modo che se vogliamo
+modificare certi valori, ad esempio quanti loop fare o quanti bitplanes
+puntare, basta modificare il valore del simbolo dopo l'= o l'EQU all'inizio
+del listato. Inoltre e' possibile eseguire operazioni tra simboli. Un esempio
+pratico puo' essere il calcolo dello spazio da azzerare per un bitplane:
+
+BytesPerRiga	=	40
+NumeroRighe	=	256
+SpazioBitplane	=	BytesPerRiga*NumeroRighe
+
+	...
+
+	section plane,bss_C
+
+Bitplane:
+	ds.b	SpazioBitplane
+
+Nel listato SpazioBitplane vale 10240, ossia 40*256.
+In Lezione7y4.s vengono definiti dei simboli per la copperlist.
+
+
+Infine nella lezione7y5.s faremo scorrere la schermata formata dagli sprite e
+ne approfitteremo per conoscere 2 nuove istruzioni del 68000, chiamate
+ROR e ROL. Le spiegheremo nel commento al listato.
+
+
+ANIMAZIONE SPRITE
+
+Concludiamo questa lezione con una spiegazione sull'animazione degli sprite.
+Ritorniamo ora a considerare sprites "normali", cioe` generati tramite i
+puntatori SPRxPT e il DMA. Per animare uno sprite e` necessario cambiarne la
+forma ogni volta che esso viene ridisegnato. Ogni forma che viene assunta
+dallo sprite e` detta "fotogramma dell'animazione".
+Di solito l'animazione e` fatta in modo da avere una certa sequenza di
+fotogrammi che viene continuamente ripetuta.
+Pensate per esempio ad un omino che cammina sullo schermo; noterete che 
+tutti i passi sono uguali tra loro.
+Per animare un omino che cammina sullo schermo si disegnano un certo numero
+di fotogrammi che visti in successione raffigurano un passo completo
+dell'omino. Quando l'omino ha completato il passo deve iniziarne uno nuovo:
+a questo punto si mostrano di nuovo gli stessi fotogrammi iniziando dal
+primo. Ripetendo per ogni passo sempre gli stessi fotogrammi possiamo 
+mostrare l'omino camminare tutto il tempo che vogliamo, con un numero
+limitato di fotogrammi (e` evidente che essendo i fotogrammi delle immagini,
+occupano memoria, quindi si deve cercare di usarne il meno possibile).
+Fin qui il discorso e` valido per un qualsiasi oggetto animato, e sara` bene 
+che lo teniate presente anche quando tratteremo le animazioni realizzate 
+tramite blitter. Ora invece ci occupiamo delle animazioni fatte tramite 
+sprite. Questo vuol dire che abbiamo uno sprite che si muove sullo schermo e
+che ogni volta che viene ridisegnato assume una forma diversa. Di solito si
+procede in questo modo: per ogni fotogramma si realizza una struttura sprite,
+e ogni volta che lo sprite viene ridisegnato si fa puntare il registro SPRxPT
+ad un diverso fotogramma (ovvero ad una diversa struttura dati). La posizione
+dello sprite viene scritta ogni volta nella struttura del fotogramma a cui
+SPRxPT viene fatto puntare.
+
+Un esempio pratico e` in lezione7z.s
+
+Questo esempio e' anche il termine della lezione7 e del DISCO 1 del corso.
+Il disco 2 nel momento in cui scrivo (Maggio 1995) non e' ancora del tutto
+terminato, comunque gli argomenti trattati sono:
+
+- BLITTER (copymode, linemode e fill)
+- Interrupt, CIAA/CIAB, caricamento da disco, Tastiera
+- Audio
+- Approfondimenti sul 68000, accenni al 68020
+- Programmazione di videogiochi
+- Routines matematiche (3d, frattali)
+- Chipset AGA
+- Compatibilita' e ottimizzazioni
+- Programmazione della scheda video PICASSO II!!!!
+
+Non so se avro' tempo di terminare un lavoro cosi' immane, gia' questo primo
+disco (in cui per la verita' non ho trattato tanti argomenti) mi sembrava che
+fosse interminabile. Devo ringraziare Luca Forlizzi (The Dark Coder) per
+avermi aiutato a terminare la LEZIONE7, e anche i due volenterosi beta tester
+ANDREA SCARAFONI e FEDERICO STANGO che mi hanno indicato dove non ero stato
+chiaro, o addirittura dove avevo scritto frasi incomprensibili.
+Purtroppo non posso ringraziare coloro che hanno solo PROMESSO di aiutarmi, ma
+che poi sono spariti, come Alvise Spano' (AGA/LUSTRONES).
+
+Per ricevere il disco 2, o almeno quello che avro' fatto in tempo a fare,
+potete scrivermi una lettera, o meglio sarebbe un disco con dei vostri
+programmini:
+
+	Fabio Ciucci
+	Via S.Leonardo n.13
+	55100 LUCCA
+
+Non scrivetemi fino a che non avete veramente assimilato tutto quello che c'e'
+in questo disco, non si diventa programmatori solamente avendo listati.
+Nel frattempo copiate a tutti questo disco, chiunque deve averlo, anche il
+Papa quando si affaccia dal balcone... chiunque abbia un Amiga in Italia deve
+avere questo disco. E non datelo solo a chi pensate che sia interessato,
+perche' ho verificato che quelli che hanno seguito il corso e imparato di
+piu' sono quelli che meno mi aspettavo che lo facessi. Pensate che il piu'
+avanti qua a Lucca e' un ragazzo, Michele, a cui avevo dato il disco perche'
+lo copiasse ad un suo amico, che pareva fosse interessato. Non li ho piu'
+sentiti per un paio di mesi, poi mi si e' presentato Michele a casa con la
+preview del suo gioco!!! Mentre il suo amico era rimanto impantanato!
+Quindi diffondete questo disco come fossero volantini per il vostro partito
+politico o opuscoli della vostra religione, scrivete annunci nelle bacheche
+o giornaletti delle vostre scuole o universita' per avvertire tutti che
+avete il disco per imparare a programmare l'Amiga, date delle copie del disco
+ai negozianti di Amiga della vostra zona chiedendogli di darli a chi chiede
+informazione sulla programmazione Amiga, insomma evangelizzate (assemblizzate)
+questo povero paese!
+
+Quando poi sara' il momento di avere il disco 2, io spero di averlo finito,
+comunque vi mandero' quello che c'e', dovreste scrivermi una lettera normale
+da 750 lire con una breve presentazione con eta', segni particolari, computer
+posseduto, aspirazioni e quello che vi pare, con il vostro indirizzo, e'
+ovvio. In concomitanza dovreste mandarmi un vaglia postale ad offerta libera,
+minimo 10.000 (per ora mi hanno mandato quasi tutti 10.000, qualcuno 20.000,
+poi sempre piu' rari i 30.000 e un mitico 60.000 da un Genovese, tanto per
+sfatare la leggenda che sono tirchi). Nella lettera dovete specificare quanto
+mi avete mandato di vaglia, perche' lettera e vaglia di solito arrivano in
+tempi un po' diversi. Spero che non accadano ritardi galattici per le PT.
+
+Altrimenti potete variare in questo modo: potete spedirmi un dischetto con
+la lettera in formato .txt, e magari qualche vostro listatino o altro per
+riempire il disco. Da notare che vi conviene mettere in disco in una busta
+da spedizione di quelle piccole, e di chiuderla solo con il fermacampioni o
+l'autoadesivo della busta stessa, senza mettere foglietti o lettere oltre al
+disco. Insomma non dovete megasigillare tutto con nastro adesivo o altro,
+questo per permettere l'ispezione postale, che tanto poi non la fanno mai, ma
+se il pacco e' cosi' si paga meno.
+Dovete poi scrivere "pacchetto" sulla busta, e dire alla (spero) gentile
+impiegata dell'ufficio postale che si tratta di un pacchetto senza lettere
+dentro, e questo vi fara' risparmiare rispetto ad un pacco chiuso con lettera,
+che conta come "LETTERA PESANTE"!
+Un pacchetto cosi' con 1 solo dischetto dovrebbe costare 1200 lire.
+Se volete che arrivi prima, potete farlo espresso, aggiungendo 3000 lire, ma
+allora vi conviene calcolare il tempo che vi menca a finire li disco 1 e
+spedire per tempo... e che programmatori siete se non siete furbi?
+NOTA: Se volete che io vi mandi il disco 2 in espresso, potete fare i calcoli
+come prima, oppure partire da una base minima di 13000 lire e indicare nella
+lettera (cartacea o .txt) che volete il disco 2 espresso.
+
+Un ultimo sistema potrebbe essere quello di mettere i soldi "sciolti" nella
+lettera o nel pacchetto, ma occorre metterli in modo che non si vedano in
+trasparenza, e il pacchetto allora dovrebbe essere fatto chiuso... decidete
+voi la strada, ma credo che lettera o pacchetto + vaglia sia meglio.
+
+Eventuali donazioni o contatti incoraggeranno me e i miei "collaboratori" a
+continuare l'opera di stesura di questo corso. Saranno graditissime anche
+eventuali offerte di collaborazione da parte di programmatori esperti, in
+particolare di coloro che hanno programmato giochi (quelli che fanno le demo
+li conosco tutti qua in Italia, la scena e' una specie di famiglia, con i
+litigi delle famiglie, pero'!).
+
+Devo anche segnalarvi il miglior club di utenti Amiga, dove potreste trovare
+altri programmatori, grafici o musicisti per collaborazioni:
+
+	Amiga Expert Team
+
+	Mirko Lalli
+	Via Vecchia Aretina 64
+	52020 Montalto
+	Pergine V.no
+	AREZZO
+

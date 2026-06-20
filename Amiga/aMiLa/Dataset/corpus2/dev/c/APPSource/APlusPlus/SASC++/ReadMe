@@ -1,0 +1,33 @@
+Some comments about compiling the A++ Library with the SAS C++ compiler
+-----------------------------------------------------------------------
+
+A++ requests tow logical devices to be declared, "apphome:" and "appinclude:".
+"appinclude:" always describes the "apphome:includes" directory while
+"apphome:" itself is directed to the "APlusPlus" root directory.
+Just start "Assign_A++" to make these assignments.
+
+I recently used SAS C++ V6.51 (great work!).
+The SCoptions represented in the scoptions file have shown to produce
+a running A++ Library with best optimization.
+WARNING: The Peephole Optimizer causes only SignalResponder class not to 
+work properly! The SCoptions have set the Peephole Optimized off, but
+you can change that. Only be careful NOT to compile "SignalResponder.cxx"
+with that option on!
+
+You will need a fast Amiga with at least 6MB.
+
+SMake makefiles have been supplied for both the A++ link library and the
+test programs. Just click on the Build icon.
+
+Announcements:
+As soon as making a shared library from C++ code becomes easier with SAS®/C++
+the A++ Library will become a shared library! Up to now I don't have the time
+to rewrite every C++ method with __asm keywords.
+There is also a bug in SLink that is already known to SAS which prevents
+linking a shared library with those long names which occur with C++.
+Probably there will be several shared libraries: one for Intuition, one for
+DOS, one for AREXX, one for ...
+
+   Have fun,
+
+      Armin

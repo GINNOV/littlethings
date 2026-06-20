@@ -1,0 +1,43 @@
+Short:		100 bytes paint program for SUMOS
+Uploader:	tcheko@no-log.org (Antoine Dubourg)
+Author:		Antoine Dubourg
+Type:		dev/asm
+version:	0.0
+Architecture:	m68k-amigaos >= 1.1
+
+This is a 100 bytes paint program for SUMOS.
+
+SUMOSPaint features :
+
+- 1 bitplane depth (2 colors)
+- 320 x 256 stencil
+- erase drawing with ESC key
+- 4 pixels wide pencil (0..F key)
+- full relocable PC relative code
+
+SUMOSPaint doesn't feature :
+
+- billions colors
+- save to file
+- modern features like layers, operators or whatever.
+- ...
+
+How to start SUMOSPaint ? 
+
+1 - print SUMOSPaint.txt
+2 - run SUMOS (kill fast ram first...)
+3 - type carefully the 100 bytes (200 keystrikes long)
+4 - run with ESC
+5 - paint ! 
+
+Don't expect much from 100 bytes long program ;)
+
+SUMOS ** must ** be running in CHIP RAM otherwise paint program
+will not work. 
+
+You will need 20480 keystrikes to fill the screen.  
+
+Happy painting !
+
+No warranty for anything as usual. This can crash, kill, destroy your
+computer. You are warned. :)

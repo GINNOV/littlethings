@@ -1,0 +1,12 @@
+Short:        8 sprites also using hscroll/overscan
+Author:       Fabio Bizzetti <bizzetti@mbox.vol.it>
+Uploader:     Fabio Bizzetti <bizzetti mbox vol it>
+Type:         dev/src
+Architecture: m68k-amigaos
+
+
+
+Note: Use this source (and/or its know-how) as you wish, it's completely
+      freeware. It allows you to not lose the sprites in case you enable
+      hscroll or overscan.
+      This source can already be assembled and executed.

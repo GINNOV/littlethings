@@ -1,0 +1,14 @@
+VERSION		EQU	2
+REVISION	EQU	4
+DATE	MACRO
+		dc.b	'2.10.97'
+	ENDM
+VERS	MACRO
+		dc.b	'ClearUpFile 2.4'
+	ENDM
+VSTRING	MACRO
+		dc.b	'ClearUpFile 2.4 (2.10.97)',13,10,0
+	ENDM
+VERSTAG	MACRO
+		dc.b	0,'$VER: ClearUpFile 2.4 (2.10.97)',0
+	ENDM

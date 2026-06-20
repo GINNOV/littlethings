@@ -1,0 +1,42 @@
+Short:        A 2D game engine
+Author:       God64, AmigaOS 4.0 compile by Spot / Up Rough
+Uploader:     "Varthall / Up Rough" <varti02 hotpop com>
+Type:         dev/c
+Version:      20080712
+Architecture: ppc-amigaos >= 4.0.5
+
+SDL Game Engine
+
+The SDL Game Engine (or SGE in short) is a high level multi platform 2d 
+game engine. It is current in a very basic state and API calls may or 
+may not change in the future. SGE is work in progress, so you should 
+check the Sge2d Sourceforge page regularly.
+
+Note: due to a name conflict the Sourceforge project is named sge2d
+
+So why another 2D game engine you may ask, and the answer is easy: 
+because I did not find one that fit my needs. This engine is geared 
+towards multi platform developement and, differently than most engines, 
+we do not treat "multiplatform" as linux, Mac and Windows only.
+
+It runs on little and big endian systems and currently supports Linux, 
+BSD, Windows (through mingw), gp2x crosscompilation (on Linux), 
+Syllable, MorphOS and AmigaOS 4. For the near(er) future it is planned to also get it 
+running (if not already) on AmigaOS 3, AROS, MacOSX and SkyOS. The 
+porting should be easy, as these are its requirements:
+
+- Low number of dependencies. It only requires C, SDL, SDL_image and 
+SDL_mixer.
+- Custom build system. Should be portable to any platform where make is 
+available by copying a config file and (maybe) changing a bunch of 
+variables.
+
+
+The main features for now are:
+
+- Game states
+- Encrypted data files
+- Pixel exact sprite collision
+- Animated sprites supporting waypoints as a animation path
+- Basic drawing functions
+- Easy API and helpful macros to speed up development

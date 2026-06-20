@@ -1,0 +1,12 @@
+Short:    StormC includes updated for OS3.9
+Uploader: james.jacobs@bigpond.com (James Jacobs)
+Author:   james.jacobs@bigpond.com (James Jacobs)
+Type:     dev/c
+Requires: OS3.9, StormC
+Version:  1.0a
+
+These are the OS3.9 NDK includes converted into StormC format. StormC 4 is
+provided only with the OS3.5 includes. The StormC includes differ from the
+NDK includes and converting them is a laborious chore that until now had
+to be done by every OS3.9+StormC developer. Many of the tools which are
+available for performing this task contain serious bugs.

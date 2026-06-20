@@ -1,0 +1,12 @@
+Documentation for ASMFilter.bas
+
+       When using the Metacomco disassembler (DISASM) to convert a program into
+a file suitable for re-assembling, it is normally necessary to do quite a lot of
+work on the resulting text file.  I have written ASMFilter.bas to do a lot of
+the dirty work automatically.  Simply supply the names of the input and output
+files when requested, and let the program do the rest.  Rather than explain each
+step of operation of the program, it is far easier to try it out, and examine
+the resulting file that it creates.  When ASMFilter.bas has completed its job,
+the screen will flash, and a beeping noise will be heard.  Press any key to exit
+at this point.  This program will execute many times faster if compiled using
+the AC-BASIC compiler.

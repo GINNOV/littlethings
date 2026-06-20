@@ -1,0 +1,120 @@
+
+nuqneH is a program to generate parsers to parse command-line
+arguments to programs. It takes a parser specification and
+outputs a code fragment to parse options as specified. An
+argument specification can look like this:
+
+---8<---8<------------------
+
+# Comment
+
+/*
+     Comment
+ */
+
+section options
+   switch
+end
+
+	# Names of the arguments. Corresponding C-type in the comment.
+
+section args
+   arg1=int*			# 'long' - the '*' denotes that this is the default argument.
+   arg2=float			# 'double'
+   arg3=string			# 'char *'
+   arg4=[string]		# 'char **'
+   arg5=bool			# <none>
+   arg6={opt1,opt2,opt3}	# 'enum'
+   arg7=maxint			# 'long long'
+   arg8=rest			# 'char **'
+end
+
+	# an argument can have an alias, usually an abbreviation.
+
+section alias
+   arg1=a1
+   arg2=a2
+end
+
+	# Each argument can have a description.
+
+section desc
+   arg1="description 1"
+   arg2="description 2"
+end
+
+	# All arguments except lists and boolean can have default values.
+
+section default
+   arg1=12
+   arg2=3.7
+   arg6=opt2
+end
+
+	# Some arguments may be mandatory.
+
+section required
+   arg1
+   arg2
+end
+
+	# Some arguments may have constraints. The constraints are only
+	# tested if the arguments are specified.
+
+section validate
+   arg1="arg1<arg2"
+   arg2="arg2<17"
+   arg4="arg4_count>2"
+end
+
+---8<---8<------------------
+
+nuqneH is invoked with a file containing a parser specification
+as input (e.g. "nuqneH test.Hol"). By default, nuqneH generates
+an output file named "muvtay.c" and, if enums are used, "muvtay.h".
+The output name(s) can optionally be specified with the "-o" option.
+
+For nuqneH to work, main must be declared as follows:
+
+int main(int cnt,char *arg[])
+
+The critical part is the names and types of the arguments to main.
+
+In the body of main(), the specified arguments can be saved and
+reloaded with the following calls:
+
+SaveArgs(<filename>);
+
+and
+
+RescueArgs(<filename>);
+
+
+Example:
+
+---8<---8<------------------
+#include <stdio.h>
+
+#include "nuqneH.h"
+
+int main(int cnt,char *arg[])
+{
+int i;
+
+
+#include "muvtay.c"
+
+...
+...
+
+return(0);
+}
+
+
+---8<---8<------------------
+
+
+
+Success!
+
+	Peter

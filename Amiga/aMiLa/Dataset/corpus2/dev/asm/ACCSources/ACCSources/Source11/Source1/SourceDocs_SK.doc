@@ -1,0 +1,86 @@
+HIYA ALL                                                            20 Mar 91
+~~~~~~~~                                                            ~~~~~~~~~
+
+Knipe here. For followers of the series, no excuses this time. I have far
+more important things to do than explain why I haven`t done much coding
+for three months. (I happen to have my REAL GCSEs in about six weeks, and
+that means I must revise like hell, ok?).
+
+I have sent the hard-working Mark a bunch of code for you to ponder over.
+Details coming up ..
+
+PP_DISPLAYFILE
+A simple program that uses the powerpacker.library to read (and decrunch)
+text files. It then dumps the Ascii to the current CLI window, or in my
+case the Devpac2 output window. Intended as a short and simple to
+understand example of how to use the pp.library. (I worked on it myself
+this time, no outside help! Mark mentioned he was going to look at pp some
+time, and that was about 3 months ago too, so maybe you are all using it
+anyway).
+
+ARP_DISPLAYFILE
+Same prog, with the introduction of an Arp requestor to get the filename.
+It is actually quite easy to use arp as well. I tried once and managed to
+crash something. I tried again about 4 weeks later and this was the result!
+Try it folks, Arp is such a wonderful standard.
+
+FUNCTIONKEYMENU / FUNCTIONKEYMENUMUSIC / FUNCTIONKEYMENUMUSICGFX
+Three different versions of the same idea. I was asked to write a function
+key menu by a friend of mine (Max, now Stooge, he of Dynamic Beats fame)
+and this was the result.
+
+It uses a raw key input routine that I asked about ages ago and NO-ONE
+HELPED ME!!! If someone has since, thanks! If not, here is the answer to
+getting raw input correctly from the keyboard.
+
+There is a bitmap file and a music module to try the versions with. I must
+point out that the music was written by Exile's group musician, Professor
+Bass, aka Matt Wakeling (who occasionally contributes code too). It is not
+PD, and was in fact written for his GCSE music exam in school (guess whos
+Amiga got carted along ...). But if you want to use it, credit him. Thanx.
+
+MOVEMOUSE
+A short routine to compare a hardware register value. It checks one of the
+mouse movement vecs, or possibly both (I can't remember) and if your mousie
+moves, the program quits. No more pressing the left rat's eye!!
+
+RAWKEYGET
+A simple version of rawkey input. This waits for the RETURN key to be
+pressed and then quits back to the CLI. Simple demonstration. As a
+sidenote, I have included a Rawkey map picture AND a file from Squidkick
+with rawkey values, in case you don't have an expensive manual to look them
+up in (I don't).
+
+NOCLICK
+Code written by some American. I was going to incorporate some of it in
+Squidkick. Who knows, maybe I will someday. Until then, it is an example of
+playing with the trackdisc.device, and shuts those fucking drives up too. I
+personally spent an extra tenner per drive on fabulous anti-click drives
+from Power Computing (plug plug), perhaps I shouldn't have bothered!?
+
+FASTREPLAY
+The latest fast version of Mahoney and Kaktus's Noisetracker replay code. I
+have just INCLUDEd it in the FunctionKeyMenuMusic/Gfx programs, it is that
+simple.
+
+DELTATRACKER.REPLAY
+Writen by Matt Wakeling, I have sent this along for anyone who used
+DTracker (If you want a copy, just send me a disc and stamp). Deltatracker
+is like a clever soundtracker, and the disc I have has 100s of minute
+instruments on. The code and any resulting programs are sooooo small that
+you find em everywhere, especially in menus, intros and other things.
+Sorry no example, I will try to find one later.
+
+
+That's it for now. When I have finished my GCSEs I get a whole 12! weeks
+summer hol before I begin A-levels, so look forward to more from me then.
+
+Take care y'all,
+
+
+
+Simon Knipe
+(Nipper of Exile)
+
+69 Fields Rd, Alsager, Staffs, ST7 2LX   0270 877891
+

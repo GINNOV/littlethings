@@ -1,0 +1,24 @@
+ascii
+
+This is a handy little utility that recognizes many different ways of
+naming an ASCII character (hex, octal, binary, decimal, C escape, ISO
+character table pair, slang names, and others) and prints out all the
+equivalents.
+
+The latest sources for this utility live at 
+
+    http://www.tuxedo.org/~esr/ascii/
+
+                            Eric S. Raymond
+                            esr@thyrsus.com
+
+
+
+AmigaOS Notes.
+egcs wont compile it under libnix, so you will need ixemul v48+ to use it.
+You can get this from aminet, you also get a sensible text file rarther
+than a man page, buts its still unix syntax, but its about time you learned
+it anyway.
+
+
+-he did it,.. i fixed it, -Matthew J Fletcher 1999

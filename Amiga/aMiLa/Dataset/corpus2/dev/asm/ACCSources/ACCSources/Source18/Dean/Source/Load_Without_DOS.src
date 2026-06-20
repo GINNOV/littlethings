@@ -1,0 +1,305 @@
+* Crumbs! This is an old source of mine that will load a file in
+* the Root Directory of an AmigaDOS disk, without using the system...
+* Want it to load things in directories? TOUGH BLOODY LUCK! Do it
+* yourself! 
+* 
+* Sorry, accelerated Amiga owners... It doesn't use my new DiskMacros
+* that use the CIA Timers... Try replacing the include to use
+* diskmacros2.i. It may work, but you might need to copy the 'WAIT'
+* code from DiskCoder source...
+*                               Dean
+
+	INCDIR 	"source:dean/INCLUDE/"
+	INCLUDE	"hw_examples.i"
+	INCLUDE	"diskmacros2.i"
+
+	OPT O+			
+
+START	MOVE.L	#LOADFILE,$80.W	; Set TRAP vector
+	TRAP 	#0		; Into Supervisor mode...
+	MOVEQ.L	#0,D0		; No errors for AmigaDOS
+	RTS			; Back we go!
+
+LOADFILE	MOVEM.L D0-D7/A0-A6,-(A7)
+	BSR LOADIT
+	MOVEM.L (A7)+,D0-D7/A0-A6
+	RTE
+
+LOADIT	DRIVEON	0010		; Turn drive 1 on.
+	
+	LEA	CUSTOM,A6		; A6=CUSTOM.
+	MOVE.W	#$4489,DSKSYNC(A6)	; Syncword
+	MOVE.W	#$4000,DSKLEN(A6)	; Disable writing
+	MOVE.W	#$7F00,ADKCON(A6)	; Clear ADKCON
+	MOVE.W	#$9500,ADKCON(A6)	; MFM, No PRECOMP
+
+	MOVE.W	#0,CURRTRACK
+	SEEKZERO	$1200,D0
+
+	BSR	GETHASH		; Find the Hash Value 
+				; for the Filename.
+	MOVE.L	#880,D0
+	BSR	LOADSECT		; Find Root Block 
+				; A0 points to buffer.
+	MOVEQ	#0,D0
+	MOVE.W	HASH,D0
+	LSL.W	#2,D0		; Hash*4=Sector Pointer
+	MOVE.L	0(A0,D0),D0	; Get sector number
+	TST.L	D0		; Is there an entry?
+	BEQ 	FATALERR		; NO! Exit Quick!!!!
+;	
+FILELOOP	BSR	LOADSECT		; Load the sector.
+
+CHECKLEN	LEA	432(A0),A1	; A1 Point to BCPL Name
+	MOVE.L	NAMELEN,D0
+	CMP.B	(A1)+,D0		; Is the length the same?
+	BNE	NEXTSECT		; No? Then get the next file
+
+	SUBQ	#1,D0		; Set D0 for counter
+	LEA	FILENAME,A2
+CHECKNAME MOVE.B	(A1)+,D2		; Get Character from BLOCK
+	BSR 	UPPERCASE		; Convert to Upper Case
+	MOVE.W	D2,D1		; Keep the value
+	MOVE.B	(A2)+,D2		; Get Character from FILENAME
+	BSR 	UPPERCASE		; Convert to Upper Case
+	CMP.B	D1,D2		; Are the characters the same?
+	BNE	NEXTSECT		; No? Then get the next file
+	DBF	D0,CHECKNAME
+	BRA	FOUNDIT		; It's the right file!!!
+
+NEXTSECT	MOVE.L	496(A0),D0	; Get the next sector number
+	TST.L	D0		; Is there one there???
+	BNE.S	FILELOOP		; Yes? Then go get it !
+	BRA	FATALERR		; No? Then the file don't exist!
+	
+FOUNDIT	LEA	PROGRAM,A3	; A3 Points to program buffer
+	MOVE.L	324(A0),D7	; D7 holds file size in bytes
+LOADDATA	MOVE.L	16(A0),D0		; Get the next DATA Block number
+	TST.L	D0		; Is there one?
+	BEQ.S 	LOADEXIT		; No? Then end
+	
+	BSR	LOADSECT		; Go and load it!
+	BSR	GETDATA		; Copy data into memory
+	BRA.S	LOADDATA		; Repeat until file is loaded!
+
+LOADEXIT	DRIVEOFF	0010	 	; Drive 1 off
+
+	RTS
+
+***************************************************************
+* Copies the data from the Data Block into the program buffer *
+***************************************************************
+GETDATA	LEA	24(A0),A4		; A3 Points to actual data
+	MOVE.L	#487,D0	; 488 bytes of data
+DATALOOP	MOVE.B	(A4)+,(A3)+	; Copy it!
+	SUBQ	#1,D7
+	TST.L	D7
+	BEQ	COPYOVER
+	DBF	D0,DATALOOP	; Until all done
+COPYOVER	RTS
+
+***********************************************************************
+* Load a specified sector ( on return A0 points to sector in buffer ) *
+***********************************************************************
+LOADSECT	MOVE.W	D0,D1
+	MOVE.W	D1,NEWSECTOR	; Store the new sector.
+	DIVU.W	#11,D1		; Find the track
+	MOVE.W 	D1,NEWTRACK	; And store it.
+
+	MOVE.W	CURRTRACK,D2
+	CMP.W	D2,D1		; Is it on the current track?
+	BEQ	FINDSECT		; Yes? Then just find the sector
+	
+	BTST 	#0,D1		; Is the track number odd?
+	BEQ.S	TRACKLOW		; Yes? Then read the LOWER side
+	UPPERHEAD
+	BRA.S	FINDDIFF	
+TRACKLOW	LOWERHEAD			; In that case read the UPPER side!
+
+FINDDIFF	CMP.W	D2,D1		; Is current track > new track
+	BLE 	MOVEIN		; Yes? Then move towards Track Zero
+	STEPOUT			; Otherwise move to Track 159
+	BRA.S	FINDNUMB
+MOVEIN	STEPIN	
+
+FINDNUMB	LSR.W	D2		; Divide tracks by two because we
+	LSR.W	D1		; we aren't dealing with sides here!
+	SUB.W	D2,D1		
+	BPL	NUMBEROK
+	NEG.W	D1		; How many tracks away is new track?
+
+NUMBEROK	TST.W	D1		; If D1 is zero then we don't need
+	BEQ.S	READITNOW		; to step any tracks.and we've 
+				; changed the head already, so read!
+	SUBQ	#1,D1		; Subtract one from it for counter.
+
+LOCATEIT	STEPTRACK	$1200,D3		; Step that track!
+	DBF	D1,LOCATEIT	; Until I've reached the new track
+
+READITNOW	BSR	READTRACK		; Read the track into buffer
+	BSR	DECODE		; And then decode it!
+
+FINDSECT	MOVEQ	#0,D0
+	MOVEQ	#0,D1
+	MOVE.W	NEWSECTOR,D1
+	MOVE.W	D1,D0
+	DIVU.W	#11,D1		; Find modulo 11 value!
+	MULU.W	#11,D1
+	SUB.W	D1,D0		; D0 now holds sector
+	MULU.W 	#512,D0		; Now it holds offset
+	LEA	TRACK,A0
+	ADD.L	D0,A0		; A0 points to sector!
+	MOVE.W	NEWTRACK,CURRTRACK
+	RTS
+
+*******************
+* Working Storage *
+*******************
+CURRTRACK	DC.W 0
+NEWTRACK	DC.W 0
+NEWSECTOR	DC.W 0
+HASH	DC.W 0
+FILENAME	DC.B "BOOT"
+NAMELEN	DC.L *-FILENAME
+
+************************
+* Calculate Hash Value *
+************************
+GETHASH	MOVE.L	NAMELEN,D0	; D0 holds length of Filename
+	LEA	FILENAME,A0	; A0 points to Filename
+	MOVEQ	#0,D2		
+	MOVE.L	D0,D1		; Use D1 as the loop counter
+	SUBQ	#1,D1		; Subtract 1 for use as counter
+HASHLOOP	MULU.W	#13,D0		; Hash=Hash*13
+	MOVE.B 	(A0)+,D2		; Read character from Filename
+	BSR	UPPERCASE		; Convert to Upper Case
+	ADD.W	D2,D0		; and add code to Hash
+	AND.W	#$7FF,D0
+	DBF 	D1,HASHLOOP
+	DIVU.W	#72,D0		; Hash modulo 72
+	SWAP 	D0
+	ADDQ	#6,D0		; Hash Table offset in Root Block
+	MOVE.W	D0,HASH		; And Store it away!
+	RTS
+
+***********************************
+* Convert character to Upper Case *
+***********************************
+UPPERCASE	CMP.B 	#"a",D2		; Character < 'a' ?
+	BLO.S	UPPEXIT		; Yes? Then leave alone
+	CMP.B	#"z",D2		; Character > 'z' ?
+	BHI.S	UPPEXIT		; Yes? Then leave alone
+	SUB.B	#$20,D2		; Correct the character
+UPPEXIT	RTS
+
+*********************************************
+* Read a track in MFM Format using Disk DMA *
+*********************************************
+READTRACK	MOVE.L		#TBUFFER,DSKPTH(A6)
+	MOVE.W		#$9980,DSKLEN(A6)	; Read $1980 words
+	MOVE.W		#$9980,DSKLEN(A6)	; (Whole track)
+	WAITDISK				
+	RTS
+
+
+*******************************************************************
+* Decode the MFM Format track:- A0 points to TRACK (decoded track *
+*******************************************************************
+DECODE	LEA	TRACK,A0		; Pointer to decoded data
+	LEA	TBUFFER,A1	; Pointer to trackbuffer
+	MOVE.L	#$55555555,D3
+	MOVEQ	#10,D5		; Decode 11 blocks
+
+DECODENEXTBLOCK
+	CMP.W	#$4489,(A1)+	; Check for next sync word
+	BEQ.S	NOGAPFOUND
+
+NOSYNCFOUND
+	CMP.W	#$4489,(A1)+	; Search for next sync
+	BNE.S	NOSYNCFOUND
+
+NOGAPFOUND
+	CMP.W	#$4489,(A1)	; Skip all remaining syncs
+	BNE.S	SKIPPEDSYNCS
+	ADDQ.W	#2,A1
+	BRA.S	NOGAPFOUND
+
+SKIPPEDSYNCS
+	MOVE.L	(A1)+,D0		; Read data from buffer
+	MOVE.L	(A1)+,D1
+	AND.L	D3,D0		; Remove clock bits
+	AND.L	D3,D1
+	ADD.L	D0,D0
+	OR.L	D1,D0
+
+	MOVE.L	D0,D1
+	AND.L	#$FF000000,D1	; Check if header is alright
+	CMP.L	#$FF000000,D1
+	BNE.S	FATALERR		; If not -> ERROR
+
+	AND.L	#$0000FF00,D0	; Get sector number
+	ADD.L	D0,D0
+
+	MOVE.L	A0,A2
+	ADD.L	D0,A2		; Add to get the right pos.
+
+	ADD.L	#$28,A1		; Skip the rest
+
+	MOVE.L	(A1)+,D4		; Decode Data-Checksum
+	MOVE.L	(A1)+,D1		; Store it in D4
+	AND.L	D3,D4
+	AND.L	D3,D1
+	ADD.L	D4,D4
+	OR.L	D1,D4
+
+	MOVEQ	#127,D6		; Decode 2*128 longwords
+	MOVEQ	#0,D2
+
+DECODENEXT			; Decode data block
+	MOVE.L	512(A1),D1
+	MOVE.L	(a1)+,D0
+
+	EOR.L	D0,D2		; Calculate Checksum
+	EOR.L	D1,D2
+
+	AND.L	D3,D0		; Decode longword
+	AND.L	D3,D1
+	ADD.L	D0,D0
+	OR.L	D1,D0
+
+	MOVE.L	D0,(A2)+		; Store longword in buffer
+
+	DBF	D6,DECODENEXT	; Decode next longword
+
+	AND.L	D3,D2		; Skip illegal bits
+	CMP.L	D4,D2		; Compare checksums
+	BNE.S	FATALERR		; If not equal -> error
+
+	ADD.W	#$0200,A1		; Add for next block
+
+	DBF	D5,DECODENEXTBLOCK
+
+	ADD.W	#$1600,A0		; Update position in buffer
+
+	CLR.L	D0		; Return code : OK
+	RTS
+
+
+FATALERR	MOVE.L	#$FFF,D0
+ERRLOOP	MOVE.W	D0,$dff180	
+	DBF	D0,ERRLOOP
+	RTS
+
+************************************************************
+* Uninitialised Data ( in CHIP Memory ) for use by buffers *
+************************************************************
+	SECTION BUFFERS,BSS_C
+	EVEN
+PROGRAM	DCB.W 	10000
+TRACK	DCB.B	11*512	; Decode buffer
+					; 11 Sectors * 512 Bytes
+
+TBUFFER	DCB.B	14000	; Track buffer
+
+;--------------------------------------------------------------------
+

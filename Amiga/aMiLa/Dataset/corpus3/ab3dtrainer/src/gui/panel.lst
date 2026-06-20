@@ -1,0 +1,247 @@
+
+;SAS/C Amiga Compiler (Phase 1)  6.50                May 12 2018 18:51:34                                                                            Page 1
+
+
+;===> Including file "include:clib/gadtools_protos.h"
+;===> Including file "include:exec/types.h"
+;===> Including file "include:sys/commnull.h"
+;===> Including file "include:intuition/intuition.h"
+;===> Including file "include:graphics/gfx.h"
+;===> Including file "include:graphics/clip.h"
+;===> Including file "include:exec/semaphores.h"
+;===> Including file "include:exec/nodes.h"
+;===> Including file "include:exec/lists.h"
+;===> Including file "include:exec/ports.h"
+;===> Including file "include:exec/tasks.h"
+;===> Including file "include:utility/hooks.h"
+;===> Including file "include:graphics/view.h"
+;===> Including file "include:graphics/copper.h"
+;===> Including file "include:graphics/gfxnodes.h"
+;===> Including file "include:graphics/monitor.h"
+;===> Including file "include:graphics/displayinfo.h"
+;===> Including file "include:graphics/modeid.h"
+;===> Including file "include:utility/tagitem.h"
+;===> Including file "include:hardware/custom.h"
+;===> Including file "include:graphics/rastport.h"
+;===> Including file "include:graphics/layers.h"
+;===> Including file "include:graphics/text.h"
+;===> Including file "include:devices/inputevent.h"
+;===> Including file "include:devices/timer.h"
+;===> Including file "include:exec/io.h"
+;===> Including file "include:intuition/screens.h"
+;===> Including file "include:intuition/iobsolete.h"
+;===> Including file "include:intuition/preferences.h"
+;===> Including file "include:libraries/gadtools.h"
+;===> Including file "include:clib/intuition_protos.h"
+;===> Including file "include:intuition/classes.h"
+;===> Including file "include:intuition/classusr.h"
+;===> Including file "include:intuition/cghooks.h"
+;===> Including file "include:pragmas/gadtools_pragmas.h"
+;===> Including file "include:pragmas/intuition_pragmas.h"
+;===> Including file "include:intuition/gadgetclass.h"
+;===> Including file "include:stdio.h"
+;===> Including file "include:sys/commsize.h"
+;===> Including file "include:sys/commlist.h"
+;===> Including file "include:string.h"
+;===> Including file "defines.h"
+;===> Including file "proj:cgle/gle.h"
+;===> Including file "include:clib/graphics_protos.h"
+;===> Including file "include:graphics/gels.h"
+;===> Including file "include:graphics/regions.h"
+;===> Including file "include:graphics/sprite.h"
+;===> Including file "include:hardware/blit.h"
+;===> Including file "include:dos/dos.h"
+6.50 (Cross Reference)        May 12 2018 18:51:36                         Page 1
+
+
+      SYMBOL        ATTRIBUTES AND CROSS REFERENCE
+
+
+AlignToRight     far function returning void
+                 panel.c:    80
+
+AllGads          array [100] of struct "EXT_GADGET" (size 25 bytes)
+                 panel.c:    44(4), 45, 46, 48, 83(2), 84(4)
+
+BOOL             short
+                 panel.c:    24
+
+BeginWindow      far function returning void
+                 panel.c:    50
+
+CalcCheckbox     far function returning void
+                 panel.c:    30, 31, 32, 33
+
+CalcCycle        far function returning void
+                 panel.c:    37
+
+CalcLabel        far function returning void
+                 panel.c:    34, 35, 36, 38
+
+CalcBlank        far function returning void
+                 panel.c:    41, 42
+
+CalcButton       far function returning void
+                 panel.c:    39, 40
+
+ControlCycle     array [4] of "STRPTR"
+                 panel.c:    16, 37, 91
+
+CreateContext    far function returning pointer to struct "Gadget" (size 44
+                 bytes)
+                 panel.c:    28
+
+CreateCheckbox   far function returning void
+                 panel.c:    88, 89, 90
+
+CreateCycle      far function returning void
+                 panel.c:    91
+
+CreateButton     far function returning void
+                 panel.c:    96, 97
+
+CreateLabel      far function returning void
+                 panel.c:    92, 93, 94, 95
+
+6.50 (Cross Reference)        May 12 2018 18:51:36                         Page 2
+
+
+      SYMBOL        ATTRIBUTES AND CROSS REFERENCE
+
+
+
+CreateControlPanel far function returning "BOOL"
+                 panel.c:    24
+
+EndWindow        far function returning void
+                 panel.c:    81
+
+FALSE            #define symbol
+                 panel.c:    100
+
+GAD_ENERGY       #define symbol
+                 panel.c:    30, 53, 88
+
+GAD_AMMO         #define symbol
+                 panel.c:    31, 54, 89
+
+GAD_HACK         #define symbol
+                 panel.c:    32, 56, 90
+
+GAD_CONTROL      #define symbol
+                 panel.c:    33, 37, 71, 83, 84(2), 91
+
+GAD_PLAY         #define symbol
+                 panel.c:    39, 45, 77, 83, 96
+
+GAD_CANCEL       #define symbol
+                 panel.c:    40, 46, 78, 80, 84(2), 97
+
+GAD_BLANK1       #define symbol
+                 panel.c:    41, 74
+
+GAD_BLANK2       #define symbol
+                 panel.c:    42, 48, 55, 57, 62, 64
+
+GList            pointer to struct "Gadget" in struct "PANEL" (offset: 4)
+                 panel.c:    28
+
+Gad              pointer to struct "Gadget"
+                 panel.c:    25, 28, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 100
+
+GadToolsBase     pointer to struct "Library"
+                 panel.c:    28
+
+Gadget           struct tag (size 44 bytes)
+                 panel.c:    25
+                 members:
+                   NextGadget (offset: 0)
+                   LeftEdge (offset: 4)
+                   TopEdge (offset: 6)
+                   Width (offset: 8)
+6.50 (Cross Reference)        May 12 2018 18:51:36                         Page 3
+
+
+      SYMBOL        ATTRIBUTES AND CROSS REFERENCE
+
+
+
+                   Height (offset: 10)
+                   Flags (offset: 12)
+                   Activation (offset: 14)
+                   GadgetType (offset: 16)
+                   GadgetRender (offset: 18)
+                   SelectRender (offset: 22)
+                   GadgetText (offset: 26)
+                   MutualExclude (offset: 30)
+                   SpecialInfo (offset: 34)
+                   GadgetID (offset: 38)
+                   UserData (offset: 40)
+
+GadgetAdd        far function returning void
+                 panel.c:    53, 54, 55, 56, 57, 60, 61, 62, 63, 64, 68, 71, 74,
+                             77, 78
+
+HORIZONTAL       #define symbol
+                 panel.c:    50
+
+Height           long in struct "EXT_GADGET" (offset: 20)
+                 panel.c:    48
+
+INTERHEIGHT      #define symbol
+                 panel.c:    48
+
+LAB_ENERGY       #define symbol
+                 panel.c:    34, 60, 92
+
+LAB_AMMO         #define symbol
+                 panel.c:    35, 61, 93
+
+LAB_HACK         #define symbol
+                 panel.c:    36, 63, 94
+
+LAB_CONTROL      #define symbol
+                 panel.c:    38, 68, 95
+
+LONG             long
+                 panel.c:    26
+
+MAX              #define symbol  (2 arguments)
+                 panel.c:    44
+
+NULL             #define symbol
+                 panel.c:    16
+
+Panel            struct "PANEL" (size 28 bytes)
+                 panel.c:    28
+
+6.50 (Cross Reference)        May 12 2018 18:51:36                         Page 4
+
+
+      SYMBOL        ATTRIBUTES AND CROSS REFERENCE
+
+
+
+PopColumn        far function returning void
+                 panel.c:    58, 65, 66, 69, 72, 75, 79
+
+PushColumn       far function returning void
+                 panel.c:    51, 52, 59, 67, 70, 73, 76
+
+STRPTR           pointer to unsigned char
+                 panel.c:    16
+
+TRUE             #define symbol
+                 panel.c:    102
+
+WINDOWTITLE      #define symbol
+                 panel.c:    50
+
+Width            long in struct "EXT_GADGET" (offset: 16)
+                 panel.c:    44(4), 45, 46, 84(2)
+
+Width            "LONG"
+                 panel.c:    26, 44, 45, 46
+
+x                long in struct "EXT_GADGET" (offset: 8)
+                 panel.c:    83(2), 84(2)

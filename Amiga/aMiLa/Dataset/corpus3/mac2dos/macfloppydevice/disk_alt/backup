@@ -1,0 +1,6 @@
+copy NDmac.asm df1:disk/
+copy NDio.asm df1:disk/
+copy mf.i df1:disk/
+COPY NDCMD.ASM df1:disk/
+COPY NDAMY.ASM df1:disk/
+COPY NDFMT.ASM df1:disk/

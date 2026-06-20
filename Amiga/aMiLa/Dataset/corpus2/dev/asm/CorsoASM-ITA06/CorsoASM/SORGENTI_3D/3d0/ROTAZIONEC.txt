@@ -1,0 +1,103 @@
+
+;*+*+*+*+*+*+*+*+*+*+*+- Rotate the points -+*+*+*+*+*+*+*+*+*+*+*+*+*+*
+Rotate:
+	lea	SineData-labels(a4),a2
+	lea	CosineData-labels(a4),a3
+	moveq	#0,d5
+	move	XAngle-labels(a4),d5
+	add.l	d5,d5				;d5 * 2 (byte offset)
+	move	(a2,d5),SinX-labels(a4)		;d3 = sin(xa)
+	move	(a3,d5),CosX-labels(a4)		;d4 = cos(xa)
+
+	move	YAngle-labels(a4),d5
+	add.l	d5,d5				;d5 * 2 (byte offset)
+	move	(a2,d5),SinY-labels(a4)		;d3 = sin(ya)
+	move	(a3,d5),CosY-labels(a4)		;d4 = cos(ya)
+
+	move	ZAngle-labels(a4),d5
+	add.l	d5,d5				;d5 * 2 (byte offset)
+	move	(a2,d5),SinZ-labels(a4)		;d3 = sin(za)
+	move	(a3,d5),CosZ-labels(a4)		;d4 = cos(za)
+	
+	move.l	CurrentObject-labels(a4),a0
+	lea	OutputCoords-labels(a4),a1
+
+	move	(a0)+,d7			;d7 = num of coords
+	subq	#1,d7
+		
+CalcLoop:
+	movem	(a0)+,d0-d2			;x,y,z coord
+		
+;X rotation
+	movem.l	d1/d2,-(sp)			;save x,y,z
+	muls	CosX-labels(a4),d1		;d1 = y * cos(xa)
+	muls	SinX-labels(a4),d2		;d2 = z * sin(xa)
+	add.l	d2,d1				;d1 = (y*cos(xa))+(z*sin(xa))
+	move.l	d1,d5				;d5 = temporary y
+	movem.l	(sp)+,d1/d2
+	muls	CosX-labels(a4),d2		;d2 = z * cos(xa)
+	muls	SinX-labels(a4),d1		;d1 = y * sin(xa)
+	sub.l	d1,d2				;d2 = (z*cos(xa))-(y*sin(xa))
+	move.l	d5,d1
+
+	lsr.l	#8,d1
+	lsr.l	#8,d2
+
+;Y rotation
+	movem.l	d0/d2,-(sp)			;save x,y,z
+	muls	CosY-labels(a4),d0		;d0 = x * cos(ya)
+	muls	SinY-labels(a4),d2		;d2 = z * sin(ya)
+	sub.l	d2,d0				;d0 = (x*cos(ya))-(z*sin(ya))
+	move.l	d0,d5				;d5 = temporary x
+	movem.l	(sp)+,d0/d2
+	muls	CosY-labels(a4),d2		;d2 = z * cos(ya)
+	muls	SinY-labels(a4),d0		;d0 = x * sin(ya)
+	add.l	d0,d2				;d2 = (z*cos(ya))+(y*sin(ya))
+	move.l	d5,d0
+
+	lsr.l	#8,d0
+	lsr.l	#8,d2	
+
+;Z rotation
+	movem.l	d0/d1,-(sp)			;save x,y,z
+	muls	CosZ-labels(a4),d0		;d0 = x * cos(za)
+	muls	SinZ-labels(a4),d1		;d1 = y * sin(za)
+	sub.l	d1,d0				;d0 = (x*cos(za))-(y*sin(za))
+	move.l	d0,d5				;d5 = temporary x
+	movem.l	(sp)+,d0/d1
+	muls	SinZ-labels(a4),d0		;d0 = x * sin(za)
+	muls	CosZ-labels(a4),d1		;d1 = y * cos(za)
+	add.l	d0,d1				;d1 = (y*cos(za))+(x*sin(za))
+	move.l	d5,d0
+
+	add	Scale-labels(a4),d2		
+	divs	d2,d0
+	divs	d2,d1
+
+	add	#160,d0
+	add	#100,d1
+
+	move	d0,(a1)+			;Store output coordinates
+	move	d1,(a1)+
+	dbra	d7,CalcLoop
+
+	move	XInc-labels(a4),d0
+	add	d0,XAngle-labels(a4)
+	cmp	#360,XAngle-labels(a4)
+	blt.s	NoXAngleReset
+	clr	XAngle-labels(a4)
+
+NoXAngleReset:	
+	move	YInc-labels(a4),d0
+	add	d0,YAngle-labels(a4)
+	cmp	#360,YAngle-labels(a4)
+	blt.s	NoYAngleReset
+	clr	YAngle-labels(a4)
+NoYAngleReset:	
+	move	ZInc-labels(a4),d0
+	add	d0,ZAngle-labels(a4)
+	cmp	#360,ZAngle-labels(a4)
+	blt.s	NoZAngleReset
+	clr	ZAngle-labels(a4)
+NoZAngleReset:
+

@@ -1,0 +1,152 @@
+RUOTAXYZ:
+	LEA.L	RT_AUXBUF(PC),A6
+
+	MOVE.W	AX,D0
+	MOVE.W	AY,D1
+	MOVE.W	AZ,D2
+
+	LEA.L	SENO(PC),A0
+	LEA.L	SENO(PC),A1
+	LEA.L	SENO(PC),A2
+	ADD.W	D0,A0
+	ADD.W	D1,A1
+	ADD.W	D2,A2
+	MOVE.W	(A0),(A6)	;SIN(RX)
+	MOVE.W	(A1),$2(A6)	;SIN(RY)
+	MOVE.W	(A2),$4(A6)	;SIN(RZ)
+
+	LEA.L	COSENO(PC),A0
+	LEA.L	COSENO(PC),A1
+	LEA.L	COSENO(PC),A2
+	ADD.W	D0,A0
+	ADD.W	D1,A1
+	ADD.W	D2,A2
+	MOVE.W	(A0),$6(A6)	;COS(RX)
+	MOVE.W	(A1),$8(A6)	;COS(RY)
+	MOVE.W	(A2),$A(A6)	;COS(RZ)
+
+	ADD.W	r1x,d0
+	AND.W	#$03ff,d0
+	MOVE.W	d0,ax
+	ADD.W	r1y,d1
+	AND.W	#$03ff,d1
+	MOVE.W	d1,ay
+	ADD.W	r1z,d2
+	AND.W	#$03ff,d2
+	MOVE.W	d2,az
+
+	MOVEQ	#$C,D7
+	LEA.L	X_COORD(pc),A0
+	LEA.L	Y_COORD(pc),A1
+	LEA.L	Z_COORD(pc),A2
+	LEA.L	X_COORD2(pc),A3
+	LEA.L	Y_COORD2(pc),A4
+	LEA.L	Z_COORD2(pc),A5
+	MOVE.W	N_XYZCOORD(pc),D0
+	SUBQ	#1,D0
+RUOTAXYZ_LOOP:
+
+	; rotate x-axis
+
+	MOVE.W	(A0)+,D3	;   save partial x
+
+	MOVE.W	(A1),D1		;   y <- d1
+	MULS.W	$6(A6),D1	;   y*cos(a)*1000 <- d1
+	ASR.L	D7,D1		;   y*cos(a)  <- d1
+	MOVE.W	(A2),D2		;   z <- d2
+	MULS.W	(A6),D2		;   z*sin(a)*1000 <- d2
+	ASR.L	D7,D2		;   z*sin(a)  <- d2
+	SUB.W	D2,D1		;   y*cos(a)-z*sin(a) <- d1
+	MOVE.W	D1,d4		;   save  partial y
+
+	MOVE.W	(A1)+,D1	;   y <- d1
+	MULS.W	(A6),D1		;   y*sin(a)*1000 <- d1
+	ASR.L	D7,D1		;   y*sin(a)  <- d1
+	MOVE.W	(A2)+,D2	;   z <- d2
+	MULS.W	$6(A6),D2	;   z*cos(a)*1000 <- d2
+	ASR.L	D7,D2		;   z*cos(a)  <- d2
+	ADD.W	D2,D1		;   y*sin(a)+z*cos(a) <- d1
+	MOVE.W	D1,d5		;   save partial z
+
+	;  Rotate y-axis
+
+	MOVE.W	d3,D1		;   x <- d1
+	MOVE.W	D1,D6		;   save xpar value
+	MULS.W	$8(A6),D1	;   x*cos(b)*1000 <- d1
+	ASR.L	D7,D1		;   x*cos(b)  <- d1
+	MOVE.W	d5,D2		;   z <- d2
+	MULS.W	$2(A6),D2	;   z*sin(b)*1000 <- d2
+	ASR.L	D7,D2		;   z*sin(b)  <- d2
+	SUB.W	D2,D1		;   x*cos(b)+z*sin(b) <- d1
+	MOVE.W	D1,d3		;   save  partial x
+	
+	MOVE.W	d6,D1		;   x <- d1
+	MULS.W	$2(A6),D1	;   x*sin(b)*1000 <- d1
+	ASR.L	D7,D1		;   x*sin(b)  <- d1
+	MOVE.W	d5,D2		;   z <- d2
+	MULS.W	$8(A6),D2	;   z*cos(b)*1000 <- d2
+	ASR.L	D7,D2		;   z*cos(b)  <- d2
+	ADD.W	D2,D1		;   -x*sin(b)+z*cos(b) <- d1
+	MOVE.W	D1,d5		;   save partial z
+
+;	bra	conti
+
+	;  Rotate z-axis
+
+	MOVE.W	d3,D1		;   x <- d1
+	MOVE.W	D1,D6		;   save xpar value
+	MULS.W	$A(A6),D1	;   x*cos(c)*1000 <- d1
+	ASR.L	D7,D1		;   x*cos(c)  <- d1
+	MOVE.W	d4,D2		;   z <- d2
+	MULS.W	$4(A6),D2	;   z*sin(c)*1000 <- d2
+	ASR.L	D7,D2		;   z*sin(c)  <- d2
+	SUB.L	D2,D1		;   x*cos(c)-y*sin(c) <- d1
+	MOVE.W	D1,d3		;   save  partial x
+	
+	MOVE.W	D6,D1		;   x <- d1
+	MULS.W	$4(A6),D1	;   x*sin(c)*1000 <- d1
+	ASR.L	D7,D1		;   x*sin(c)  <- d1
+	MOVE.W	d4,D2		;   z <- d2
+	MULS.W	$A(A6),D2	;   z*cos(c)*1000 <- d2
+	ASR.L	D7,D2		;   z*cos(c)  <- d2
+	ADD.L	D2,D1		;   x*sin(c)+z*cos(c) <- d1
+	MOVE.W	D1,d4		;   save partial y
+
+conti:	
+	MOVE.W	d3,(A3)+
+	MOVE.W	d4,(A4)+
+	MOVE.W	d5,(A5)+
+
+	DBRA	D0,RUOTAXYZ_LOOP
+	RTS	
+
+RT_AUXBUF
+	DS.W	6
+
+
+PROIEZ_CENTRALE:
+	LEA	X_COORD2(pc),A0
+	LEA	Y_COORD2(pc),A1
+	LEA	Z_COORD2(pc),A2
+	LEA	X_SCR(pc),A3
+	LEA	Y_SCR(pc),A4
+	MOVE.W	#$2f0,D4
+	MOVE.W	ZOOMF(PC),D7
+	MOVE.W	N_XYZCOORD(pc),D6
+	SUBQ	#1,D6
+PROIEZ_LOOP:
+	MOVE.W	(A0)+,D0
+	MOVE.W	(A1)+,D1
+	MOVE.W	(A2)+,D2
+	SUB.W	D7,D2
+	MOVE.W	d4,d5			;d4 -> d5
+	muls	d4,d0			;d0 = distance*x
+	muls	d4,d1			;d1 = distance*y
+	SUB.W	d2,d5			;d5 = distance-z
+	divs	d5,d0			;d0 = x(relative)
+	divs	d5,d1			;d1 = y(relative)
+	move.w	d0,(a3)+		;d0 -> store X
+	move.w	d1,(a4)+		;d1 -> store Y
+	DBRA	D6,PROIEZ_LOOP
+	RTS	
+

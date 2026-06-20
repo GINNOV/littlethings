@@ -1,0 +1,529 @@
+
+	Source Docs
+	===========
+
+ I have taken a time this month to introduce some original ( ? ) source.
+All the programs are commented and an outline for each can be found below.
+
+ Note that as with all source on the accdoscs that use Commodore include
+files, these files should be located on your system disc ( boot disc ). This
+is most likely your assembler workdisc ( all files are on Devpac disc ). Any
+program requiring includes not supplied with devpac looks for them in the
+directory Source:Include/. I advise you to copy the following four files
+from Source:Include onto your workdisc into the directory :
+
+Include/misc/
+
+you will always have them at hand then:
+
+	arpbase.i , arpcompat.i , pplib.i and ppbase.i .
+
+
+ Contents
+----------
+
+Boot Source - 	How to write and install a No Fast Mem boot block.
+		This is a fixed version of a program sent to me by Dave
+		Shaw.
+
+PPMuchMore -	This is not yet complete. This program allows the user to
+		view multiple text files. Any number of windows may be open
+		at any time and a different file can be viewed in each.
+		The same source deals with all open windows.
+
+Prime -		Displays all the prime numbers between 1 and 500.
+		Demonstrates how to use a mathematical algorithm as well as
+		RawDoFmt
+
+RawDoFmt -	Two more programs showing how to use this great little
+		function hiding in exec.library
+
+Devices -	Two programs showing correct use of devices. The first
+		calls the narrator.device to get your Amiga talking, the
+		second uses the printer.device produce a graphical dump of
+		the WorkBench screen.
+
+Scroller -	A text scroller that's a little different from others that
+		have been appearing on these discs of late. Uses the Copper
+		to set up a 336*256 bitplane, assigns a RastPort to this
+		( defining the screen size as 672*128 ) and then uses the
+		graphics library functions Text() and ScrollRaster() to
+		generate the scroll text.
+
+Calculator -    Does not do anything yet apart from open a calculator
+		window with lots of gadgets in. I included it to show Nipper
+		I have made a start on this routine. ( No supporting comments
+		as this program was covered on disc 8 ).
+
+Subroutines -	A version of Dave Edwards exec_support.i altered to
+		assemble using Devpac
+
+
+
+Boot Source
+-----------
+
+ As mentioned above, Dave Shaw sent me a program that needed some
+attention. After fixing this ( the mistakes were minor ones and Dave is now
+kicking himself ) I decided to give a quick explanation on how to get a
+program from the assembler onto a boot block.
+
+ Firstly, your code must use pc relative addressing whenever possible.
+
+Example:
+
+	WRONG		lea	dosname,a1
+
+
+		dosname	dc.b	'dos.library',0
+
+	CORRECT		lea	dosnmae(pc),a1
+
+	
+		dosname	dc.b	'dos.library',0
+
+ It is worth noting that genam has an option for automatically producing pc
+mode addressing, opt a+. Those wonderful guys at HiSoft think of everything
+don't they!
+
+ Your program must also perform a test to ensure that the dos library is
+available upon exiting. Note that your program should not use the DOS
+library or any functions that indirectly use the dos.library. A suitable
+fragment of code to put at the start of all boot programs would be:
+
+		movem.l		d0-d7/a0-a6,-(sp)
+		bsr.s		Main			your code
+		movem.l		(sp)+,d0-d7/a0-a6
+
+		lea		dosname(pc),a1
+		CALLEXEC	FindResident
+		tst.l		d0
+		beq.s		not_there
+		move.l		d0,a0
+		move.l		$16(a0),a0
+		moveq.l		#0,d0
+exit		rts
+
+not_there	moveq.l		#-1,d0
+		rts
+
+ I have commented this in the NoFastMem.s listing, further info is
+available in Dave Edwards doc file on bootblocks ( a disc containing Dave
+Docs is available from Dave or myself ).
+
+ If you use the above fragment, your boot source should always start at
+lable Main.
+
+ Ok, so you have written your code and it's time to assemble it. Assemble
+to disc with no Debug info, I named the assembled version of NoFastMem.s
+BootCode when I assembled it.
+
+ Now all that is required is to get the executable program onto the
+bootblock of the desired disc. To the rescue comes a utility called
+BootWriter ( I have no idea who wrote this, neither have I seen a doc file
+to go with it --- anyone help me here ? ). BootWriter takes an executable
+file, in my case BootCode, adds the standard DOS header info to the
+beginning ( including a correct checksum ) and writes the final version to
+the boot block of the disc in df0: ( make sure you have the correct disc in
+df0: !!! ). Call BootWriter from the CLI as shown below
+
+bootwriter <filename>
+
+so I used :
+
+bootwriter BootCode
+
+ That's it. When you reset your Amiga, your boot program will run.
+
+ NoFastMem.s causes an Alert to appear, giving the user the chance to
+allocate all fast mem. This is done using AllocMem, not the best way to
+disable all fast mem, but it is easy to implement.
+
+ PPMuchMore
+ ----------
+
+ Have you ever been reading a file using PPMore and needed to refer to
+another file, for example reading a source listing that call subroutines in
+another file ? Anoying isnt it. Well this program goes some way ( or will
+do when it's finished ) to solving the problem. Press the M key and a new
+window will open, you can then load a new file into this and browse it. You
+can switch between windows by activating them ( clicking in the with the
+mouse ) and any window may be closed at any time. How does it work ?
+
+ The idea is quite simple. First a port is created, any window that is
+opened will be given this port as it IDCMP communication port. Also when a
+window is opened, a memory block is assigned to the window for all
+variables that the program uses and this block is initialised accordingly.
+The address of this memory block is stored in the UserData field of the
+window for future reference.
+
+ The program opens the first window and the address of the memory block is
+held in register a4, all variables are referenced as an offset from this
+address. If the M key is pressed, a new window is opened. Upon being
+displayed this window will send an ACTIVEWINDOW message to the port. The
+program deals with this by moving the pointer stored in wd_UserData into
+register a4, thus the program is now dealing with this window.
+
+ Whenever a window is activated, this sequence of events occur and the
+program deals with the active window as if it were the only one until the
+next ActiveWindow message arrives.
+
+ The program keeps a count of the number of windows it is supporting. If
+this ever drops to 0, then the program finishes.
+
+ Other IDCMP messages that arrive at the port must have been generated by
+the currently active window and the program uses the information contained
+in the memory block pointed to by a4 to deal with this.
+
+ A number of problems I considered are dealt with by Intuition, for
+instance:
+
+ Suppose you have two window open, A and B. You are currently operating on
+window B and decide to close window A by clicking on its close gadget.
+Intuition will send an ACTIVEWINDOW message before it sends a CLOSEWINDOW
+message, ensuring that my program closes the correct window.
+
+ To attach your own port to a window, open the window with no IDCMP flags,
+put a pointer to your port in the wd_UserPort field and then use
+ModifyIDCMP to set up the IDCMP flags you require. If you specify an IDCMP
+flag in the NewWindow structure, Intuition supplies a port for the window.
+If you do not specify any IDCMP flags, no port is created and you are free
+to attach your own to the window.
+
+ This is a very useful trick as you can now write programs with several
+windows open, each dealing with a different aspect of the whole, but you
+only need to wait for a message to arrive at one port. When a message
+arrives all you need to do is determine which window generated it. The
+address of the window is supplied in the im_IDCMPWindow field of the
+message received. ( useful note : if your windows contain gadgets, the
+technique described by Steve Marshall will still work using this method. )
+
+ The actual code for dealing with text manipulation is an adaption of the
+routines used in MyMore ( a program I did way back on disc 4 I think ). I
+have used powerpacker.library to load the file since this allows crunched
+files to be examined as well.
+
+ If you think this program is worth pursuing write and tell me. I wrote it
+as an exersise in using a single shared port, but I will finish it if there
+is a demand for such a utility.
+
+ BUGS and Notes :
+
+	1/ Opening loads of windows will slow the system down.
+
+	2/ Rapidly closing loads of windows can lead to a GURU. I could
+	   not see why, so I loaded Argasm, opened loads of windows and
+	   closed them very quickly ----- GURU ! Is this a problem with
+	   Intuition or has Argasm got the same problems as my code ?
+
+	3/ Up/Down scrolling is shit ! I have not used a scroll routine,
+	   just a simple screen refresh one that causes a lot of flashing.
+	   This is very annoying, but was quicker than writing the extra
+	   code. This is simple to update !
+
+	4/ When the ARP filerequester is open, all windows are inactive.
+	   The program is not listening to the shared port, it is lost
+	   deep in the depths of the arp.library. The messages are qued
+	   by Intuition and all actions will take place once the ARP 
+	   requester is finished with. ( Again the same for Argasm ).
+
+	5/ See the source listing to see what keyboard commands are
+	   supported, currently:
+
+		L 	   - Load a new text file
+		S	   - Save text file ( always decrunched )
+		M 	   - Open a new window
+		Up Arrow   - scroll up
+		Down Arrow - scroll down
+
+
+ Prime
+-------
+
+ Another exersise for myself. Inspired after reading an article on
+programming ( in C ) with a listing of a program that performed the same
+result as this. I was determined to do it smaller and faster. I succeeded !
+As well as this I sacraficed a few bytes and allowed a WorkBench startup,
+tidy display of results and a message to inform the user on what was going
+on.
+
+ The program displays all the prime numbers between 1 and 500. That's it.
+The program itself is however quite involved. For instance I wanted to find
+the square root of a number without using the math.library, so I developed
+a subroutine to find the integer just greater than the root. This uses
+Newtons algorithm :
+
+		X(n+1) = 1/2 ( X(n) + N/X(n) )
+
+	where	N	is the number whose root you are trying to find
+		X(n)	is an approximation to this root
+		X(n+1)	is the next approximation generated
+
+ Feel free to rip this subroutine out and use it yourself, if you ever have
+a need to find an integer approximation to the square root of a number ( I
+doubt you ever will though ).
+
+ There is also a subroutine that tests a number to see if it is prime. This
+involves seeing if any of the odd numbers between 3 and the root of the
+number are factors of the number. If so the number is not prime. If no
+factors are found, the number is prime. Even numbers are never prime, so no
+checking is done, instant not-prime is flagged by testing bit 0 of the
+number ( if 0 the number is not prime ).
+
+ Other points of interest in the listing are the use of RawDoFmt to produce
+a tidy display and use of the PrintMsg subroutine from disc 10.
+
+ RawDoFmt
+----------
+
+ Flavour of the month with me at the moment. I have written a tutorial on
+using this routine elsewhere on this disc. To back this up I have included
+a couple of programs that actually use it.
+
+ Tables.s will display the times table of a number ( 0 to 9 ) entered at
+the CLI as a parameter. This uses RawDoFmt to do the conversion from number
+to ASCII string.
+
+ rdf_egx.s are a number of examples explained in the tutorial.
+
+ Devices
+---------
+
+ THE PRINTER EXAMPLE ON THIS DISC IS INTENDED FOR USE WITH PRINTERS THAT
+CAN HANDLE GRAPHICAL DATA. I CANNOT PREDICT THE RESULT ON A PRINTER THAT
+CANNOT PRODUCE GRAPHICAL PRINTOUTS.
+
+ This is an area I have wanted to get to grips with for ages now. There are
+numerous devices available to the Amiga programmer and it is a great
+advantage knowing how to use them. I have received numerous letters in the
+past concerning the Trackdisc, Printer and Narrator ( speach ) devices and
+now present solutions to two of these, the printer.device and the
+narrator.device. Steve Marshall briefley covered the trackdisk.device on
+disc 9.
+
+ When you open a device you must supply an initialised IO structure. This
+sets up a line of communication between your program and an instance of the
+device, do not forget the device is working in a multi-tasking enviroment
+and may be working for other tasks as well. Each device requires its own
+variation of IO structure, though all these variations follow the same
+format:
+
+	_________________________
+	|                       |
+	| Standard IO structure |
+	|                       |
+	|-----------------------|
+	|                       |
+	|    Device specific    |
+	|       extension       |
+	|_______________________|
+
+ If you are a legal owner of Devpac2, ie you bought it, on disc 2 in the
+drawer:
+		include.cbm/devices
+
+you will find all the information you require for a particular device. For
+example the narrator.device, the required information can be found in the
+file:
+
+		include.cbm/devices/narrator.i
+
+ From this file you will see that NDI_SIZE will give the total length of
+the IO requester required by the narrator.device. From the comments you can
+also tell what the addittional fields are for.
+
+ Every device requires a port to communicate with your program. I am not
+going to explain what a port is, or how to set one up. I am using a
+subroutine found in Dave Edwards exec_support.i file to create a port, this
+carries out all the required initialisation, all you need is the pointer to
+the port, this is returned in register d0 by the subroutine. To use this
+subroutine you must supply the name for the port in register a0 ( a name is
+not essential, but I normaly use one ) and the priority of the port in
+register d0 ( Commodore suggest you use a priority of 0, so I do ). Here is
+a sample fragment to create a port :
+
+		lea		MyPortName,a0
+		moveq.l		#0,d0
+		bsr		CreatePort
+		move.l		d0,MyPort
+		beq		error_noport
+
+as you can see from this, if register d0=0 on return then no port was
+created.
+
+ Once you have a port you can attach it to the io request structure for the
+device as follows:
+
+		lea		io_struct,a1
+		move.l		MyPort,MN_REPLYPORT(a1)
+
+in all cases, MN_REPLYPORT is the correct offset into the io structure for
+the address of the port. Note that if you attach the port immediately after
+creation the address of the port will be in register d0, so you could use
+the following ( as I do ):
+
+		lea		io_struct,a1
+		move.l		d0,MN_REPLYPORT(a1)
+
+ I always create the port and attach it to the io structure before opening
+the device, but I do not think it is essential to do things in this order.
+You should be able to open the device and then attach a port to the io
+structure without any problems. If I am wrong, would someone please tell
+me.
+
+ Now on to actually opening the device, all this requires is a call to the
+exec routine OpenDevice.
+  
+ OpenDevice ( device name, unit number, io request, flags )
+		   a0		d0	    a1	      d1
+
+ By convention the device name should be lower case ( more specifically it
+should be the same as the name of the device on disc ).
+
+ Some devices require a unit number, narrator and printer do not so d0 is
+set to 0.
+
+ a1 should hold the address of the io structure.
+
+ d1 should contain any special flags ( see device specific literature for
+info on this field ) set to 0 for narrator and printer.
+
+ OpenDevice will initialise areas of the io structure depending on which
+device was opened.
+
+ The device is now open and ready for use. To send commands to the device
+you set the appropriate fields in the io structure then use either DoIO or
+SendIO to send the command to the device. If you used DoIO the device will
+not reply to the command until it has finished executing it or an error
+occurs. If you use SendIO the device will reply immediately, then perform
+the function you asked. You can wait for the reply to your command by using
+WaitIO. All three of these commands require the address of the io structure
+in register a1.
+
+ DoIO ( io structure )
+		a1
+
+ SendIO ( io structure )
+		a1
+
+ WaitIO ( io structure )
+		a1
+
+ This is not the only means of communicating with a device, you can use the
+signal allocated to the port and use Wait (), but that is beyond the scope
+of these simple examples.
+
+ The speak.s example shows how to set up narrator to and how to alter the
+voice charecteristics. I am not going to explain all the fields in the
+structure here ( see the file narrator.i as explained above ).
+
+ The printer.s example shows how to obtain the address of the currently
+active screen from IntuitionBase and how to set up the printer to dump the
+contents of a rastport ( you could alter this program to print only the
+contents of a particular window or custom view, infact you could create a
+rastport of your own which is several times larger than the display and
+print this, the printer device will do all the scaling for you ). Again,
+see the file include.cbm/devices/printer.i for more information on the
+printer device io structure.
+
+ For more information on using devices, see either Dave Edwards doc files
+or the Libraries and Devices Reference manual which contains a chapter
+dedicated to each device.
+
+ Steve Marshall has said he was prepared to do a tutorial covering device
+usage. I am sure that this would be more informative than these brief notes
+I've given here. Look out for it, devices are worth the hassle. I have
+tried to get this across in the printer example, but there is so much more
+to this area. It is possible, for instance, to ask the narrator device to
+send information about the mouth shape that accompanies each phonem as it
+is being produced. Using this you can display a face that accompanies the
+voice being produced ( maybe next month !!! ).
+
+ Scroller
+----------
+
+ This program sets up a 336x256 one bitplane screen using a custom Copper
+list, with only 320x256 visible ( BPLMOD values are used ). Nothing new in
+that ! Next a RastPort is initialised, with the BitMap structure pointing
+to the same area of memory asigned as the bitplane set up in the Copper list
+, except the dimensions are set as 672x128. The RastPort is then applied to
+subroutines from the graphics library to produce an oversized scroll text.
+The functions used are Move () to position the GFX pen outside the visible
+region of the bitplane, Text () to plop one character at a time onto the
+screen in this invisible region and ScrollRaster to move the text across
+the screen ( and from the invisible region into the visible region ).
+
+ The text is scrolled 2 pixels at a time, every 50th of a second. I have
+not used interrupts as they did not seem essential in this case.
+
+ Lastly, can anyone convert this program so that it will run from a boot
+block. I tried, but got nowhere. All I ended up with was a major system
+crash that caused even my internal clock to be reset ( yep! a MAJOR crash
+). Some help on this would be appreciated.
+
+ Here is a brief outline of what takes place during each simulated
+interrupt :
+			 |
+			 |-----------------<----|
+			 |			|
+			 |			|
+		wait for blanking gap		|
+			 |			|
+			 |			|
+			is COUNTER=0 ?		|
+			 |        |		|
+			 |yes     |no		|
+			 |	  |		|
+		print next char	  |		|
+			 |	  |		|
+		set COUNTER=4	  |		|
+			 |	  |		|
+			 |---<----|		|
+			 |			^
+			 |			|
+		scroll rastport left		|
+		      2 pixels			|
+			 |			|
+		decrease COUNTER		|
+			 |			|
+			is LMB pressed ?	|
+			 |        |		|
+			 |yes     |no		|
+			 |	  |		|
+			 |	  |------>------|
+			 |
+			 |
+		       EXIT
+
+ nb. COUNTER is initialy set to 0, next character is the start of the text.
+
+
+ The various structure defenitions used in this program can be looked up on
+disc 2 of Devpac, in the directory include.cbm, you will have to locate the
+relevant files yourself.
+
+ Subroutines
+-------------
+
+ This is a rerun of last months exec_suppot.i file written by Dave Edwards.
+This file contains subroutines that can be used in place of routines found
+in Amiga.lib. Dave has commented this file to a great extent and more
+information is available in the Includes and Autodocs Reference Manual. I
+have converted the file so it now assembles using Devpac as apposed to
+Daves own include files.
+
+ Well I hope this has been of some use to someone ! 'till next month then
+
+							Mark.
+
+ If you have any questions on any of the source then write to me. I cannot
+promise a quick reply, but I will try and get something done by the next
+disc.
+
+ Thanks to Dave Shaw for sending me BootWriter and forcing me to look at
+boot block routines. I've been meaning to look at this area ever since my
+internal drive was repaired ( thanks Jim ).
+
+ Do not forget that a copy of Daves docs are available from Dave or myself.
+Just send a disc ( marked with your name and address ) plus an sae. 
+

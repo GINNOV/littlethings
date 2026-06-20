@@ -1,0 +1,142 @@
+****** protoman.doc/protoman ******************************************
+
+   NAME
+
+	ProtoMan - Generate prototypes from and for C source. (V37)
+
+   SYNOPSIS
+
+	protoman FilePats/A/M,O=Outfile/K,AP=Append/S,DB=Database/K,
+	         Lines/S,Static/S,BufSize/K/N
+
+   FUNCTION
+
+	Protoman was designed to scan C source files and produce
+	prototypes.  It will also keep track of multiple prototype
+	files in a main database for use with mutliple source file
+	projects.
+
+   INPUTS
+
+	FilePats/A/M - Any positive number of files or file paterns.
+	Outfile/K    - A file to output the prototypes to, if not
+	               supplied they will goto stdout.
+	               NOTE: this option will override the database
+	                     option
+	Append       - Append to the file specified in Outfile. If this
+	               is not present the outfile will be truncated.
+	Database     - Use a database for storing prototypes.  This will
+	               store all prototypes in a database they will be
+	               stored in C parsable format.  See NOTES for more
+	               details.
+	Lines        - Generate line comments for each prototype. eg:
+	               /*    34 */ int main (int argc, char **argv);
+	               /*    72 */ int cleanup ( struct Globals *globals );
+	Static       - include statically declared functions in prototype
+	               file.  This doesn't seem all that useful but I am
+	               sure somebody needs it.
+	BufSize      - The number of bytes used for I/O buffers when reading
+	               and writing files.  The default is 2048, which seems
+	               to be the fastest.
+   RESULT
+
+	The program will return 0 on success, or in most cases (all except
+	user break) 20 for failure.  It should give some decent indication
+	of what went wrong if something does.
+
+   EXAMPLE
+
+	protoman O=protos.h file1.c file2.c
+	protoman database=protos.h c/#?.c newc/#?.c lines
+
+	or for a makefile maybe:
+
+	srcs=file1.c file2.c file3.c [...] file49.c file50.c
+
+	protos.h: $(srcs)
+		protoman database=$@ $?
+
+	(in smake $? stands for all out of date dependent files.)
+
+   NOTES
+
+	The main reason for using this program instead of, for example, what
+	SAS/C supplies is the database capability.
+
+	The database is a single file that Protoman keeps track of all
+	prototypes for all the files that have ever been passed to it.  If
+	a new file is passed to protoman it is added.  If a file is given
+	that is already present it is replaced.
+
+	The need for a delete is probably there but not very intense.  The
+	main use for this is in projects and will probably be in a makefile.  
+	So a quick option would be in your clean: ie.
+
+	clean:
+		delete protos.h
+
+	The file will be regenerated from scratch then.
+
+	Protoman seems to be reasonably fast on my 68030 system, a project
+	containing 39 C files totaling  324k is processed in about 17 seconds
+	for a full update. For a single file to be processed with this same
+	database it takes app. 5 seconds. (the database is 20k)
+
+   HISTORY
+
+	V37.3 - (14feb93) Second Release.
+	        Fixed parser bug, was not handling comments that occured
+	        the next character after a brace ('}'),  also fixed
+	        same bug for C++ comments.  Made some local states global
+	        for the better handling of multiple files.  Now a single
+	        file having parse errors should not effect others being
+	        parsed.	        
+
+	V37.2 - (12feb93) First Release.
+		Fixed most obvious bugs.
+
+	V37.1 - (10feb93) Created.
+	        Converted  my getprotos source into handling a data base.
+	        Added ReadArgs support and tweaked speed, fixed bug in
+	        source with the handling of function pointer's as
+	        a function argument.
+
+   BUGS
+
+	None known.
+
+   DISCLAIMER
+
+	This programs main purpose is to handle c source a very valuable thing
+	and while it does NO writing to any source files, all errors cannot
+	be anticipated.  Therefore, I claim no responsibility for the destruction,
+	instruction or any othertion of anything this program may cause as a
+	result of, but not limited to, its use.
+
+   COPYRIGHT
+
+	This program protoman and its documentation are:
+
+	Copyright © 1993 Christian E. Hopps.  All Rights Reserved.
+
+	Distribution rights of this version (37.3) are granted to the
+	following people, services, and groups (ie. User groups):
+
+	- Fred Fish for the Fred Fish disk collection.
+	- The Internet as a whole.
+	- Bix.
+	- Compuserve.
+	- Genie.
+	- and any person or group not earning a profit from
+	  its distribution.
+
+	The right to distribute is only granted to the package as a whole,
+	this includes the binary and documentation file.
+
+	Freeware is a nice concept so don't abuse it.
+
+   SEE ALSO
+	Me:     Chirstian E. Hopps
+	bix:    chopps@bix.com
+	home:   chopps@ro-chp.UUCP (sycom.mi.org!ro-chp!chopps)
+	school: chopps@emunix.emich.edu (may only be valid through 6/93)

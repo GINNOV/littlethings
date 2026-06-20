@@ -1,0 +1,20 @@
+Short:     Create & manipulate your own DataBase of Function Code (C).
+Uploader:  jsteic1957@aol.com (Jim Steichen)
+Author:    jsteic1957@aol.com (Jim Steichen)
+Type:      dev/c
+Requires:  68000+, V2.04+ Amiga OS, CanDo! DeckBrowser & DeckRunner 
+           program Fonts: Helvetica - 13, Times - 24, Topaz - 8,9.
+Version:   1.2
+
+CodeStorage (c)1999 by J. T. Steichen is a CanDo deck program that allows
+a programmer to store, add, modify & delete Functions & Documentation 
+stored in a DataBase file (CanDo's IFF FTXT-format).  The program 
+DeckBrowser is included in this distribution, since most people don't have
+the necessary CanDo libraries to run a deck that's bound to the libraries.
+This makes CodeStorage (c) a lot larger than if you had the libraries.
+I've included another version of the program called CodeStorageSmall that
+uses the libraries instead of the DeckBrowser in case you do have the
+necessary libraries.  Simply Delete CodeStorage & rename CodeStorageSmall
+to CodeStorage in order to use the smaller program, then change the default
+tool in the icon to DeckRunner.  All documentation is available from the 
+program via the 'Help' key & menuitems.  Let me know what you think of it.

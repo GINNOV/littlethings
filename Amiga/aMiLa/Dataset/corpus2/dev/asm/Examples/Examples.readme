@@ -1,0 +1,10 @@
+Short:        Misc example assembly programs.
+Author:       Jim Fiore and Jeff Glatt
+Architecture: m68k-amigaos
+Source:       Fish collection
+
+Assembly and C code examples, including some old favorites (like speechtoy
+and yachtc3) downcoded to assembly language.  Includes a replacement for
+the official audio device, an example of creating a subtask, a rewrite in
+assembly of R. J. Mical's file requester, an example of installing a custom
+input handler ahead of intuition, and more.  

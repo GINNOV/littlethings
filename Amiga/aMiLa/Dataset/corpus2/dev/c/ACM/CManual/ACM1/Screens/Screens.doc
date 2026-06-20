@@ -1,0 +1,608 @@
+1    SCREENS
+
+1.1  INTRODUCTION
+
+The screen is the foundation of Intuition's display. It
+determines how many colours you can use, what kind of colours,
+what resolution etc. Every window, gadget, icon, drawing is
+connected to a screen. Moving that screen, and you are also
+moving the objects on it. You may have several screens running
+at the same time, and you may combine different screens (with
+their own individual resolutions, colours, etc) on the same
+display.
+
+
+
+1.2  DIFFERENT TYPES OF SCREENS
+
+When you are going to use a screen you first need to decide if
+you want to use a Standard (Workbench) Screen or if you want to
+use a Screen which you yourself has customized (Custom Screens).
+
+Workbench Screen:
+  This is Intuition's standard screen. It is a four-colour,
+  high-resolution screen. 
+
+Custom Screens:
+  When you want a screen with your own display mode you should
+  use a Custom Screen. You can then decide yourself how many
+  colours you want, what colours, resolution, size etc.
+
+If your program should use a high-resolution screen, and four
+colours is enough, you are advised to use the Workbench Screen.
+This will save a lot of memory (no memory allocated for a
+Custom Screen), and allows the user to have several programs
+running on the same display. On the other hand, if you want
+more colours or want to use a different resolution/display-mode
+you should use a Custom Screen.
+
+
+
+1.3  WORKBENCH SCREEN
+
+Workbench Screen is a high-resolution (640 pixels wide), four
+colour screen. It is either 200 or 256 lines high depending on
+if you have a NTSC (American) or a PAL (European) computer.
+(400/512 lines if you have an Interlaced display.)
+
+The Workbench Screen will automatically open if there does not
+exist any other screens. If you do not want the Workbench
+Screen, and need a lot of memory, you can try to close it,
+CloseWorkBench(). Remember to reopen it when your program has
+finished, OpenWorkBench().
+
+You are advised to always call the function OpenWorkBench()
+when your program exits, even if you have not closed it
+yourself. Another program may have closed it because of
+shortage of memory, and when your program is finished there
+may exist enough memory. This will make the Workbench Screen
+available as much as possible.
+
+
+
+1.4  CUSTOM SCREENS
+
+If you are going to use a Custom Screen you need to initialize
+a structure (NewScreen) with your requirements. You also need
+to open the screen yourself by calling the function
+OpenScreen().
+
+Here is a list of some important decisions you need to make
+before you can open the screen:
+
+
+  
+1.4.1  RESOLUTION
+
+You can either have a high-resolution or a low-resolution
+screen. A high resolution screen is 640 pixels wide, while a
+low-resolution screen is only 320 pixels wide. However, a high-
+resolution screen may only have a depth of up to 4 (maximum 16
+colours), while a low-resolution screen may have a depth of up
+to 5 (32 colours), or even 6 if using some special display
+modes.
+
+
+
+1.4.2  DEPTH
+
+A screen's depth means how many bits are used for every pixel.
+The more bits the more combinations/colours:
+
+Depth   Number of colours   Colour register number
+--------------------------------------------------
+  1             2                   0 -  1
+  2             4                   0 -  3
+  3             8                   0 -  7
+  4            16                   0 - 15
+  5            32                   0 - 31  (Only low-res)
+
+A low resolution screen may even have a depth of 6 if using
+some special display modes (HAM / EXTRA HALFBRIGHTE ).
+
+Each colour may be picked out of a 4096 colour palette. Once
+you have opened your Custom Screen you may change the colours
+by calling the graphics function SetRGB4().
+
+
+
+1.4.3  INTERLACED
+
+An Interlaced screen can be 400/512 lines while a Non-
+Interlaced screen can only be 200/256 lines. You are recommended
+to use a Non-Interlaced screen if possible, since an Interlaced
+display appear to "flicker" if the user does not have a special
+high-phosphor-persistence monitor. (99% of the users do not
+have it.)
+
+The monitor normally draws the display 50 times per second. If
+you are using an Interlaced screen the Amiga will only draw
+every second line first, and will the next time draw the
+remaining lines. This is why an Interlaced display appear to
+"flicker". You can eliminate much of the disturbing effects if
+you are using colours with low contrasts, black and grey
+instead of black and white for example.
+
+
+
+1.4.4  HAM AND EXTRA HALFBRIGHTE
+
+If you have a low-resolution, six bitplanes (Depth 6) screen
+you can either use the special HAM mode, or the Extra
+Halfbrighte mode. HAM allows you to display all 4096 colours
+at the same time, but has some restrictions, and is
+complicated to use. Extra Halfbrighte gives you 32 extra
+colours, which are the same as the first 32 colours, but are
+a bit brighter.
+
+Both HAM and Extra Halfbrighte is using a lot of memory/
+processing time, and is therefore not commonly used.
+
+
+
+1.4.5  DUAL PLAYFIELDS
+
+Dual Playfields allows you to have two screens on top of each
+other. The top screen can then be transparent in some places
+(colour register 0) to show the bottom screen.
+
+
+
+1.4.6  FONTS
+
+You can specify a default font which will be used, if nothing
+else is specified, to draw the text on the screen. The system's
+default font is called Topaz and exist in two sizes:
+
+TOPAZ_SIXTY  : 9 lines tall, 64/32 characters per line.
+TOPAZ_EIGHTY : 8 lines tall, 80/40 characters per line.
+
+This font is built in the Amiga, and is therefore always
+available. (See chapter 3 GRAPHICS for more information.)
+
+
+
+1.4.7  SIZE AND POSITION
+
+The top of your screen does not need to be at the top of the
+display. You may open several screens and position them under
+each other. If you are, for example, designing an adventure
+game, you can have a low-resolution 32 colour screen at the top
+of the display (showing some nice pictures), and have a high-
+resolution 2 colour screen at the bottom of the display (showing
+the text).
+
+(Remember that the user later can drag the screens up or down
+himself.) 
+
+The width of the screen should be either 320 (low-resolution)
+or 640 pixels (high-resolution).
+
+The height may be anything between 1 - 200/256 lines on an Non-
+Interlaced screen, and between 1 - 400/512 lines on an
+Interlaced display.
+
+
+
+1.4.8  TITLE
+
+On top of each screen (on the "drag bar") there exist a screen
+title. There exist two kinds of titles:
+  - The default title, which is specified in the NewScreen
+    structure.
+  - A "current" title which is the same as the title of the
+    current active window. (See chapter 2 WINDOWS for more
+    information.)
+
+
+
+1.4.9  GADGETS
+
+For the moment you are not allowed to attach any custom gadgets
+to a screen. (See chapter 4 GADGETS for more information about
+gadgets.)
+
+
+
+1.5  INITIALIZE A CUSTOM SCREEN
+
+Before you can open a custom screen you need to initialize a
+NewScreen structure which look like this:
+
+struct NewScreen
+{
+  SHORT LeftEdge, TopEdge, Width, Height, Depth;
+  UBYTE DetailPen, BlockPen;
+  USHORT ViewModes;
+  USHORT Type;
+  struct TextAttr *Font;
+  UBYTE *DefaultTitle;
+  struct Gadget *Gadgets;
+  struct BitMap *CustomBitMap;
+};
+
+LeftEdge:     Initial x position of the screen. Should always
+              be 0.
+
+TopEdge:      Initial y position of the screen.
+
+Width:        If it is a low-resolution screen it should be
+              320, otherwise 640.
+
+Height:       If it is a Non-Interlaced screen it can be
+              anything between 1 - 200/256, otherwise 1 -
+              400/512.
+
+Depth:        1-4 if high-resolution, otherwise 1-6.
+
+DetailPen:    The colour register used to draw the text with.
+
+BlockPen:     The colour register used for block fills etc.
+
+ViewModes:    You can use none or some of the flags. If you set
+              more than one flag you put a "|" between them.
+              (You are not allowed to set the HIRES flag
+              together with the DUALPF or HAM flag, and you
+              can not have DUALPF at the same time as HAM.)
+
+                HIRES      Set this flag if you want a high-
+                           resolution screen. (The default is
+                           low-resolution.)
+
+                INTERLACE  Set this flag if you want an
+                           Interlaced screen. (The default
+                           is Non-Interlaced)
+
+                SPRITES    Set this flag if you are going to
+                           use sprites in your display.
+
+                DUALPF     Set this flag if you want to use the
+                           Dual Playfields Mode.
+
+                HAM        Set this flag if you want to use the
+                           Hold And Modify Mode.
+
+Type:         Should be CUSTOMSCREEN. You can also set the
+              CUSTOMBITMAP flag if you want the screen to use
+              your own declared and initialized BitMap. (See
+              chapter 2 WINDOWS for more information about
+              Custom BitMaps.)
+
+Font:         A pointer to an already initialized TextAttr
+              structure. The screen will use it as the default
+              font. (See chapter 3 GRAPHICS for more information
+              about fonts.) Set to NULL if you want to use the
+              current default font.
+
+DefaultTitle: A pointer to a text string which will be used as
+              "default" title.
+
+Gadgets:      Not used for the moment. Set to NULL.
+
+CustomBitMap: If you want to use your own BitMap you should
+              give this field a pointer to the BitMap structure
+              which you have declared, and initialized yourself.
+              Remember to set the CUSTOMBITMAP flag in the Type
+              variable. However, if you want Intuition to take
+              care of the BitMap, set this field to NULL. (See
+              chapter 2 WINDOWS for more information about
+              Custom BitMaps.)
+
+
+
+1.6  OPEN A CUSTOM SCREEN
+
+Once you have declared and initialized the NewScreen structure,
+you can call the function OpenScreen() which will open your
+Custom Screen. When your screen has been opened you can, if you
+have allocated memory for the NewScreen structure, deallocate
+it since you do not need the structure any more.
+
+This is how you call the OpenScreen() function:
+
+my_screen = OpenScreen( &my_new_screen ); 
+
+my_screen has been declared as:
+  struct Screen *my_screen;
+
+my_new_screen has been declared as:
+  struct NewScreen my_new_screen;
+  and has been initialized with your requirements.
+
+
+OpenScreen() will return a pointer to a Screen structure, else
+NULL if it could not open the screen (for example, not enough
+memory). Remember to check what OpenScreen() returned!
+
+if( my_screen==NULL )
+{
+  /* PANIC! Could not open the screen */
+}
+
+
+
+1.7  SCREEN STRUCTURE
+
+Once you have opened the screen you will receive a pointer to
+a Screen structure which look like this:
+
+struct Screen
+{
+  struct Screen *NextScreen;    /* Pointer to the next */
+                                /* screen, or NULL. */
+  struct Window *FirstWindow;   /* Pointer to the first */
+                                /* Window on this screen. */
+  SHORT LeftEdge, TopEdge;      /* Position of the screen. */
+  SHORT Width, Height;          /* Size of the screen. */
+  SHORT MouseY, MouseX;         /* Mouse position relative */
+                                /* to the top left corner */
+                                /* of the screen. */
+  USHORT Flags;                 /* The selected flags. */
+  UBYTE *Title;                 /* The screen's Current title. */
+  UBYTE *DefaultTitle;          /* The screen's Default title. */
+
+  BYTE BarHeight, BarVBorder,
+       BarHBorder, MenuVBorder,
+       MenuHBorder;
+  BYTE WBorTop, WBorLeft,
+       WBorRight, WBorBottom;
+
+  struct TextAttr *Font;        /* The screens default font. */
+  struct ViewPort ViewPort;     /* The screen's ViewPort etc: */
+  struct RastPort RastPort;
+  struct BitMap BitMap;
+  struct Layer_Info LayerInfo;
+  struct Gadget *FirstGadget;
+  UBYTE DetailPen, BlockPen;
+  USHORT SaveColor0;
+  struct Layer *BarLayer;
+  UBYTE *ExtData;
+  UBYTE *UserData;
+};
+
+You will probably not use this structure a lot, but some
+variables/structures can be useful later on. When you are, for
+example, using the function SetRGB4(). More about this later.
+
+
+
+1.8  FUNCTIONS
+
+Here are some common functions which will effect screens:
+
+OpenScreen()
+
+  This function will open a Custom Screen with your
+  requirements.
+
+  Synopsis:      my_screen = OpenScreen( my_new_screen );
+  
+  my_screen:     (struct Screen *) Pointer to a Screen
+                 structure. It will point to your newly opened
+                 screen or be equal to NULL if the screen could
+                 not be opened.
+
+  my_new_screen: (struct NewScreen *) Pointer to a NewScreen
+                 structure which contains your preferences.
+
+
+CloseScreen()
+
+  This function will close a Custom Screen which you have
+  previously opened.
+  
+  Synopsis:      CloseScreen( my_screen );
+  
+  my_screen:     (struct Screen *) Pointer to an already opened
+                 screen.
+
+  All windows (See chapter 2 WINDOWS for more information) on
+  your Screen MUST have been closed before you may close the
+  screen. If you close a window after the screen has been
+  closed, the system will crash. (Not recommended.)
+  
+  If there does not exist any more screens when you close
+  yours, Intuition will automatically reopen the Workbench
+  Screen.
+
+
+MoveScreen()
+
+  This function will move the screen. For the moment you may
+  only move it vertically.
+
+  Synopsis:      MoveScreen( my_screen, delta_x, delta_y );
+
+  my_screen:     (struct Screen *) Pointer to the screen which
+                 you want to move.
+
+  delta_x:       (long) Number of pixels which the screen
+                 should move horizontally. For the moment you
+                 may not move a screen horizontally, set it
+                 therefore to 0.
+
+  delta_y:       (long) Number of lines which the screen should
+                 move vertically.
+
+
+ScreenToBack()
+
+  This will move the screen behind all other screens.
+  
+  Synopsis:      ScreenToBack( my_screen );
+
+  my_screen:     (struct Screen *) Pointer to the screen which
+                 you want to move.
+
+
+ScreenToFront()
+
+  This will move the screen in front of all other screens.
+  
+  Synopsis:      ScreenToFront( my_screen );
+
+  my_screen:     (struct Screen *) Pointer to the screen which
+                 you want to move.
+
+
+ShowTitle()
+
+  This function will make the screen's Title appear above or
+  behind any Backdrop Windows (See chapter 2 WINDOWS for more
+  information about Backdrop Windows). (The screen's title
+  appear always behind normal windows.)
+
+  Synopsis:      ShowTitle( my_screen, show_it );
+
+  my_screen:     (struct Screen *) Pointer to the screen.
+
+  show_it:       (long) A boolean value which can be:
+                 TRUE:  The title will be in front of any
+                        Backdrop Windows, but behind any
+                        other windows.
+                 FALSE: The Title will be behind any windows.
+
+
+OpenWorkBench()
+
+  This function will try to open the Workbench Screen if there
+  exist enough memory.
+  
+  Synopsis:      result = OpenWorkBench();
+  
+  result:        (long) A boolean value which tell us if the
+                 Workbench Screen has been (or already was)
+                 opened (TRUE), or not (FALSE).
+
+
+CloseWorkBench()
+
+  This function will try to close the Workbench Screen if
+  possible. If any other programs is using the Workbench
+  Screen, the function can not close it. Closing the Workbench
+  will free some memory, and can therefore be used if your
+  program needs more memory.
+  
+  (Remember to reopen the Workbench Screen when your program
+  terminates.)
+
+  Synopsis:      result = CloseWorkBench();
+  
+  result:        (long) A boolean value which tell us if the
+                 Workbench screen has been (or already was)
+                 closed (TRUE), or not (FALSE).
+
+
+WBenchToBack()
+
+  This will move the Workbench Screen behind all other screens.
+  
+  Synopsis:      result = WBenchToBack();
+
+  result:        (long) A boolean value which is TRUE if the
+                 Workbench screen was open, or FALSE it it was
+                 not.
+
+
+WBenchToFront()
+
+  This will move the Workbench Screen in front of all other
+  screens.
+
+  Synopsis:      result = WBenchToFront();
+
+  result:        (long) A boolean value which is TRUE if the
+                 Workbench screen was open, or FALSE it it was
+                 not.
+
+
+SetRGB4()
+
+  This function allows you to change your screen's colours.
+  Each colour may be picked out of a 4096 colour palette. (16
+  levels of red, 16 levels of green and 16 levels of blue;
+  16*16*16 = 4096.)
+
+  IMPORTANT! Before you may use this function you must have
+  opened the Graphics Library. (All other functions are in the
+  Intuition Library.) (See chapter 0 INTRODUCTION for more
+  information.)
+
+  Synopsis:   SetRGB4( viewport, register, red, green, blue );
+           
+  viewport:   (struct ViewPort *) Pointer to a ViewPort which
+              colour registers we are going to change. We can
+              find the screen's ViewPort in the Screen
+              structure. (If my_screen is a pointer to a Screen
+              structure, this will get us a pointer to that
+              screen's ViewPort: &my_screen->ViewPort)
+
+  register:   (long) The colour register you want to change.
+              The screen's Depth decides how many colour
+              registers the screen have:
+
+              Depth  Colour Registers
+              -----------------------
+              1      0 - 1
+              2      0 - 3
+              3      0 - 7
+              4      0 - 15
+              5      0 - 31
+              6      0 - 63
+
+  red:        Amount of red. (0 - 15)
+
+  green:      Amount of green. (0 - 15 )
+
+  blue:       Amount of blue. (0 - 15 )
+
+  Eg: SetRGB4( &my_screen->ViewPort, 2, 15, 15, 0 ); will
+  change colour register 2 to be light yellow. (Red and green
+  together will be yellow.)
+
+
+
+1.9  EXAMPLES
+
+We have now talked about different screens, Workbench Screen
+and your own Custom Screens. We have looked at how you can
+change the Custom Screen's display mode, resolution, depth etc,
+and we have described some important functions. It is now time
+for us to have some examples to clear up any confusions.
+
+All Examples, both the programs as well as the source codes,
+are in the same directory as this document.
+
+Example1
+  This program will open a low-resolution, non-Interlaced,
+  eight colour Custom Screen. It will display it for 30
+  seconds, and then close it.
+
+Example2
+  Same as Example1 except that the screen will be a high-
+  resolution, Interlaced, 4 colour Custom Screen.
+
+Example3
+  Same as Example1 except that we will use the TOPAZ_SIXTY
+  Italic style as default font. (See chapter 3 GRAPHICS for
+  more information about text styles.)
+
+Example4
+  This program will open two screens, one (low-resolution 32
+  colours) at the top of the display, and one (high-resolution
+  16 colours) a bit down.
+
+Example5
+  Same as Example4 except that after 10 seconds the low-
+  resolution screen will move down 75 lines. After another 10
+  seconds it will be put in front of all other screens. 10
+  seconds later it will move down another 75 lines. The program
+  will wait 10 seconds before the screens are closed and the
+  program exits.
+
+Example6
+  This program will open a low-resolution, non-Interlaced, 4
+  colour Custom Screen. It will after 5 seconds start to change
+  the screens colours, and will after a while close the screen
+  and exit.
+

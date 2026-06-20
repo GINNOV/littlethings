@@ -1,0 +1,9 @@
+==id $Id: vampire_lib.sfd $
+==base _VampireBase
+==bias 6
+==public
+==include <exec/types.h>
+APTR V_AllocExpansionPort(ULONG unitNum, UBYTE *name) (d0,a1)
+VOID V_FreeExpansionPort(ULONG unitNum) (d0)
+ULONG V_EnableAMMX(ULONG version) (d0)
+==end

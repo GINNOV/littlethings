@@ -1,0 +1,50 @@
+Short:        Source code for BlankBorder
+Author:       Ketil Hunn (ketil@sis.pitt.edu)
+Uploader:     Ketil Hunn (ketil sis pitt edu)
+Type:         dev/c
+Architecture: m68k-amigaos
+
+
+TITLE
+
+  Blackborder Source Code
+
+VERSION
+
+  1.1   (04.Oct.96)
+
+AUTHOR
+
+  Ketil Hunn
+  Nabbetorpveien 35B
+  N-1632 Gamle Fredrikstad
+  Norway
+
+  E-Mail: ketil@sis.pitt.edu
+
+  http://www.sis.pitt.edu/~ketil
+
+DESCRIPTION
+
+  Small utility to make screenborders black.  Makes your Workbench look
+  better when using overscan mode.
+
+  This package contains the source code.
+
+  Running Blackborder twice will toggle the border on/off.
+
+SPECIAL REQUIREMENTS
+
+  OS 3.0 or higher.
+
+AVAILABILITY
+
+  ftp://ftp.wustl.edu/pub/aminet/util/boot/BlackborderSource.lha (3.589)
+
+PRICE
+
+  Free.
+
+DISTRIBUTABILITY
+
+  Freeware.

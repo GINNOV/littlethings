@@ -1,0 +1,779 @@
+----------------------------
+Scrunch documentation  v 1.0
+----------------------------
+
+This program is beerware - If you use it and find it useful, please send
+me some money to keep me in beer. For only 10 pounds, you personally, can
+keep this individual in beer for one whole night. Please give generously.
+If it was a really good night out, I'll let you know....
+
+If you do 'register', I'll send you the latest version whenever you send
+me a disk, I'll answer any questions you have about using it - maybe even
+fix any bugs and do improvements, and send you the source if you want it.
+
+Also, if you're mad, young, female and beautiful, you're invited to our
+next party.
+
+As usual with this sort of program, please distribute it to anyone you
+know, exactly as it is. All code, copyright me, Sout, 1992.
+
+Sout
+The Fish, 
+59 Llwyn Road,
+Oswestry, 
+Shropshire,
+SY11 1EJ.
+(0691) 658648
+Before 9PM as I'll be in the pub.
+
+-----------------
+All about Scrunch
+-----------------
+
+Right, welcome to scrunch.
+
+Originally these were all separate programs, but now theyre all together,
+they allocate (and give back) memory as they need to, and as far as I know
+they all work on Workbench 2.0.
+
+Why 'scrunch' - well 's' for 'sout' and 'crunch' for 'crunch-ers'.
+
+What does it do, well for anyone interested in programming games,
+just about everything.
+
+I write games, and apart from Devpak2, Audiomuster2, and Dpoint3,
+(names mis-spelt to avoid copyright problems),
+this is the only thing I've ever used.
+
+There are programs to convert IFF pics to data files in easy-to-use
+formats, programs to crunch data files and pictures, a whole set of
+disk routines, and loads of little things to make life easier.
+
+
+
+---------------
+How do I use it
+---------------
+
+I've used them on all my games so far, now I've got a PC system, so
+this is how I work.
+
+I have a 486 33Mhz PC running a development system via a SCSI link
+to an A500 with 1Mb ram, and a Workbunch2 A2000 with a 100Mb hard
+drive and 9Mb ram for processing files, crunching, and acting as
+a file server to the A500 which it is linked to via a parallel lead
+I made up. I am now totally skint.
+
+All the graphics arrive by post from the graphic artist as pictures or
+anim files. I pick these up and make any necessary palette changes, etc
+then store them on the hard drive as pictures.
+
+Then I run the appropriate program to convert it to a data file, and
+subsequently scrunch it, to directories files and scrfs (SCRunchedFileS).
+When I make a finished game disk up I use all the scrfs and send the
+program over from the PC. Couldn't be easier. If it was, I'd do it.
+
+My philosophy at the moment is to work as little as possible.
+
+In my startup-sequence on the 2000 I alias "scr" as ram:scrunch, after
+copying scrunch to ram.
+
+I also have a batch file containing all the scr commands used to convert
+all my pictures and sound effects into finished files.
+
+
+
+----------------
+Programs on disk
+----------------
+
+scrunch     - the program
+scrunch.doc -this documentation file
+
+examples (dir)
+ b-sprite.spr - example sprite file
+ b-sprite.dat - example sprite data file
+ b-sprite.pic - example picture file for picking up sprites
+ e-piano.raw  - example created sound effect
+ e-piano.sdt  - example created sound control data
+ l-sfx        - example sound effects file
+ a-prog.s     - source for example disk runnable program
+ a-prog       - assembled version of the above
+ f-pic.fcr    - example raw picture file filecrunched
+ u-pic raw    - example raw picture file
+ p-pic.pcr    - example raw picture file picturecrunched
+ v-pic.iff    - example iff picture file
+ a-file       - example file to go onto bootable disk
+ a-batch      - batch file for bootable disk
+ o-infile     - test file before running through 'o'
+ o-outfile    - batch file for 'o'
+ o-outfile    - output file after running through 'o'
+
+The first letter of eaceh example file shows either what created them
+or where they should be used. Read the descriptions then you'll understand.
+
+----------------
+Usage of Scrunch
+----------------
+
+You dont need to type any of the '>' characters -
+it just shows that it is something that should be typed.
+Also note that all command letters must be in capitals.
+anything in { } should not be typed exactly , e.g.{filename}
+anything in ( ) is optional
+
+----------------
+
+For quick information on syntax and available commands
+
+> scrunch ?
+
+----------------
+
+For quick information on Dos routines
+
+> scrunch A ?
+
+----------------
+
+M - wait for mouse button
+
+Used for my backup procedure
+
+> scrunch M
+
+----------------
+
+J - test memory for faults
+
+This tests ram for errors such as dead chips etc
+
+> scrunch J {startpage} {numpages}
+
+Notes- startpage means which set of 64k, i.e. 03xxxx = page 3
+       numpages means how many sets of 64k
+
+e.g. to test 8mb from 200000 to 9fffff use scrunch J 32 128
+
+Careful not to test program memory or illegal memory
+To test chip ram make sure you have the program in fastram
+To test fast ram run nofastmem
+
+----------------
+
+V - view picture
+
+> scrunch V {picturename}
+
+This displays an IFF picture on the screen - exit with left mouse button.
+
+Note - picture must be in IFF compressed format in 2-64 colours - not HAM
+
+e.g > scrunch V examples/v-pic.iff
+
+----------------
+
+U - undo to bitmap
+
+This takes an IFF picture and turns it into a raw data file.
+
+> scrunch U {picturename} {outfilename} {width} {depth} {planes} (C)
+
+Notes - picture must be IFF etc
+      - width is in whole bytes i.e. numbers of 8 pixels
+      - depth is in lines
+      - planes must match the number of planes in the picture
+      - optional 'C' after command will save palette after raw data
+      - The width and depth dont need to match the size of the
+         original picture - they can be bigger or smaller, although
+         I cant really see any use for bigger.
+
+e.g > scrunch U examples/v-pic.iff examples/u-pic.raw 40 256 5 C
+
+----------------
+
+Z - sample strip
+
+This strips the header off IFF sound samples.
+
+> scrunch Z {iff sample name} {outputfilename}
+
+----------------
+
+I - sample strip with special header
+
+This if the same as Z but it adds a few bytes of header that
+I use for my programs. 
+
+> scrunch I {iff sample name} {outputfilename} {period} {vol} {pri} {cut}
+
+Notes - period is the period you want to play the sample at - it
+      doesnt have to be the one it was recorded at
+      - vol is the nominal volume 0-64
+      - pri is the priority, 999 = cant be switched off - if this is
+         set to 999 then the sample loops
+      - cut is a percentage after which the sample can be overridden
+
+      The sample player, when given a new sample to play first looks for
+      a free channel, if it cant find one it looks for one that has past
+      the cutoff point, else it finds the one playing with the lowest
+      priority as long as it is less than its own.
+
+The data output before the sample itself is (all words)
+
+start+0 ; length (num of words of data , i.e. byteslength/2)
+start+2 ; period value
+start+4 ; volume
+start+6 ; repeat length (either 2 or whole length)
+start+8 ; timer (frames length of sample)
+start+10; cut off timer (frames)
+start+12; priority
+
+The source for the player will follow at a later date.
+
+----------------
+
+L - listen to sample
+
+This plays raw sound samples at any frequency you want
+
+> scrunch L {raw samplename} ({period})
+
+Note - period should not go below 120 ish - if omitted will play at 284
+
+----------------
+
+T - convert colours to text
+
+This strips the colours out of an IFF file and converts them to dc.w data....
+
+> scrunch T {picturename} {outfilename}
+
+Note - it will output all 32 colours whether the picture uses them or not
+
+----------------
+
+N - convert data file to text
+
+This converts the numbers in a data file to dc.w data ....
+
+> scrunch N {datafilename} {outfilename}
+
+Note - it does data in multiples of 8 words so if your data is not that
+        long it will probably just filll with zeroes
+
+----------------
+
+O - subscript variables with address register
+
+Programs run faster if all the variables, instead of having a long address
+are accessed by a word offset to an address register, which stays 
+constant throughout your code. However if you have written a large
+program without bothering about this or are just too lazy to keep typing
+(a3) after everything (I am) then just use this program....
+
+> scrunch O {infile} {outfile} {batchfile} {reg}
+
+The first thing to do is to collect all your variables together
+in one big list of ds.w lines. Dont preset any with dc.w - write
+some code to preset them for you.
+
+Next find a free address register. You dont have one ? Make one !
+Unless youve written some super fast piece of code which uses all the
+registers both stack pointers and 8 others the processor didnt know
+it had then its not impossible.... Remember not to ever stack these
+registers or use them on the interrupts, etc.
+
+Now where all your variables are, you put a label such as, VARIABLES
+just before them on a blank line - then convert all the ds.w lines
+to rs.w lines - also all the ds.b ds.l's etc. After all the variable
+definitions put another variablename on a blank line, ENDVARIABLES
+
+The next line should say VARMEM EQU ENDVARIABLES-VARIABLES
+Then append the VARIABLES line with ds.b VARMEM
+Then insert a line with no label and rs.b -32768
+
+So you should now have....
+
+VARIABLES 	ds.b VARMEM
+
+		rs.b	-32768
+
+varname1	rs.w	100
+varname2	rs.b 	256
+varname3	rs.l    1
+
+.... etc ....
+
+varnamelast	rs.w	1
+
+ENDVARIABLES
+
+VARMEM 		EQU	ENDVARIABLES-STARTVARIABLES
+
+Now at the very beginning of your code. or at least before you use any
+of the variables, put the line
+
+		lea 	VARIABLES,a3
+
+or use whatever address register you have free.
+
+Now instead of having to access variables such as
+
+		move.l	screenaddress,a0
+
+you have to use
+
+		move.l	screenaddress(a3),a0
+
+which saves two bytes of memory and a fair few cycle times....
+
+Ah, but then you have to change all the variables, I hear you say....
+No you dont, youve done the hard bit now - the program does most of the rest.
+
+Save your source file, then pick up all the lines with the individual
+variable names on them ( the ones with rs.w ... after them ) and
+save them out as another file uisng save block
+
+Then strip off the rs.whatevers and prefix them all with ! - I know its
+a pain but its easier than doing everything by hand.
+
+Then insert a blank line with * after them all and resave it.
+
+Now type
+
+> scrunch O {infile} {outfile} {batchfile} {reg}
+
+and your outfile will be your new finished ready to run sourcefile
+
+For example - a simple program
+
+******************************
+start
+		move.l	fred1,d0
+		add.l	fred2,d0
+		add.l	fred3,d0
+		move.l	d0,fred4
+		rts
+
+fred1		ds.l	1
+fred2		ds.l	1
+fred3		ds.l	1
+fred4		ds.l	1
+******************************
+
+After you've done the fiddly bits
+
+******************************
+start
+		lea	VARIABLES,a3
+		move.l	fred1,d0
+		add.l	fred2,d0
+		add.l	fred3,d0
+		move.l	d0,fred4
+		rts
+
+VARIABLES	ds.b	VARMEM
+		rs.b	-32768
+fred1		rs.l	1
+fred2		rs.l	1
+fred3		rs.l	1
+fred4		rs.l	1
+ENDVARIABLES
+VARMEM		EQU	ENDVARIABLES-VARIABLES
+******************************
+
+Your batch file should read
+
+******************************
+!fred1
+!fred2
+!fred3
+!fred4
+*
+******************************
+
+Then you run the program and you have
+
+******************************
+start
+		lea	VARIABLES,a3
+		move.l	fred1(a3),d0
+		add.l	fred2(a3),d0
+		add.l	fred3(a3),d0
+		move.l	d0,fred4(a3)
+		rts
+
+VARIABLES	ds.b	VARMEM
+		rs.b	-32768
+fred1		rs.l	1
+fred2		rs.l	1
+fred3		rs.l	1
+fred4		rs.l	1
+ENDVARIABLES
+VARMEM		EQU	ENDVARIABLES-VARIABLES
+******************************
+
+Notes - dont make your variables list more than 64 k or it wont work
+      - yes I know it takes a while to work, but it doesnt charge by
+         the hour
+      - Remember you can put all your defined space in one BSS section
+
+----------------
+
+R - relocate a program segment
+
+This relocates a one-segment relocatable program to a given address
+
+> scrunch R {infile} {outfile} {relocpos}
+
+Notes - relocpos in in decimal
+      - If you're using the disk routines then its already done for you in
+        that but its here anyway
+      - obviously it wont save any symbols etc
+
+----------------
+
+Q - sample cruncher
+
+Sorry, I havent done that yet - use filecruncher for now
+
+----------------
+
+F - filecruncher
+
+Crunches data files ( not program segs ) with a very fast decrunch
+
+> scrunch F {infile} {outfile}
+
+Notes - you may need a fair bit of memory for large files
+      - descrunch source in the sourcecode
+      - will decrunch to the same address unless it cant crunch file
+
+----------------
+
+P - picturecruncher
+
+Crunches bitmaps with /without palette and my bobspritefiles
+
+> scrunch P {infile} {outfile} {planes}
+
+Will work with raw files, or ones saved with palette after them
+i.e. ones saved with scrunch 'U' option, but then must use
+
+> scrunch C {infile} {outfile} {planes}
+
+Also can be used to crunch my bobspritefiles - but then you use
+
+> scrunch S {infile} {outfile} {planes}
+
+DONT use it on hardware sprite files - it wont work - use filecrunch
+----
+
+Notes - you may need a fair bit of memory for large files
+      - descrunch source in the sourcecode
+      - needs a 16k buffer when decrunching
+      - cannot descrunch to same area of memory at all
+      - However its very very good
+      - dont use it on IFF pictures - you must convert them to raw
+         format first
+      - Yes it takes a while - so buy an accelerator board
+
+----------------
+
+D - descruncher
+
+Descrunches and of my crunched files
+
+> scrunch D {infile} {outfile}
+
+Notes - Source in the source file - what to point a-regs to etc
+
+----------------
+
+B - pick up bobspritefile
+H - pick up hardspritefile
+
+Utility to pick up sprites from a single screen IFF picture
+
+> scrunch B/H {infile.pic} (S)
+
+However, its not as easy as that....
+
+Each file has a 
+
+name.pic - the IFF picture
+name.dat - the data file holding the coordinates, so you dont have
+            to redo all the positions every time you want to change
+            anything
+name.spr - the finished sprite file for use in your program
+
+When you run the program it loads in the .pic file and attempts
+to load in (from the same directory) the .dat file. If it finds one
+then OK, else it creates one - as small as possible - one sprite.
+
+When exited - the program saves .dat and .spr is also created. If the
+commandline is suffixed with S then the program automatically saves the
+file out - for use in batchfiles.
+
+Now - how to pick up your sprites - use one mouse and one joystick
+
+Joystick
+ left  - move back one sprite
+ right - move forward one sprite
+ up    - insert space for another sprite
+ down  - delete current sprite
+
+Notice the pointer crosshair. There are two numbers - the top one is
+the current sprite (0 - numsprites-1) and the bottom one is the
+maximum spritenumber (numsprites-1). Initially on a blank file the
+numbers are set to 00 and 00 . i.e. sprite 0 of 1 (confused?).
+
+ Fire  - save and exit and create .spr file
+
+Mouse
+ right button - exit with no save
+ left button  - press and release to drag a box over the bounds of the sprite
+
+Notes - draw a thin line box around the sprite first in another colour
+      - you need fairly good eyesight and a decent mouse
+      - if you want a mask stored, arrange your palette such that it
+         is stored automatically, since program saves out all planes in 
+         the original picture
+      - If your sprite is 16 pixels wide it will be store in 1 word wide
+      - If your sprite is 17 pixels wide it will be store in 2 words wide
+      - If your sprite is 32 pixels wide it will be store in 2 words wide
+	 etc
+      - If you are using the hardware sprite option then all sprite must be
+         in 16 colour pics and 16 pixels wide or I dont know what will
+         happen
+
+e.g > scrunch B examples/b-cosmic.pic
+
+Now .... outputfile format
+
+* For bobspritefiles
+
+start
+
+ long	- num of planes     
+ long	- plane size
+
+for each sprite in file
+ long    - offset from (start+8) to start of data
+ word    - pixels wide
+ word    - pixels deep
+
+plane0   - data....
+plane1   - data....
+ etc.....
+planez   - data....
+
+* For hardspritefiles
+
+for each sprite in file
+ long    - offset from (start) to start of data
+ long    
+  etc......
+ long
+
+for each sprite of pair
+
+ word    - depth
+ word    - 0 - first of data words to be written for position
+ word    - 0 - second of data words to be written for position
+ word word - two data words 
+ word word - two data words 
+  etc
+ word word - last two data words 
+ word word - two zeroes
+
+use calculation to offset to second of pair from first
+
+----------------
+
+W - wabbit via serial port
+
+Let two amigas talk via null modem cable in serial port
+
+> scrunch W 0/1
+
+Notes - use scrunch W 0 on one amiga, scrunch W 1 on the other
+      - lots of fun when you have a long serial lead and pretend
+         that its the new artificial intelligence program youve written.
+      - may not work on A500Plus
+
+----------------
+
+X - sit in loop sending parallel data
+Y - ask for parallel file
+
+Right, youve got some wierd and wonderful development system, but you
+cant load files into the program while its running because theres
+no system in, and it takes too long off disk (even using soutdos)
+while youre writing the program. You could download from your
+PC but its more dosh, and everytime you have to change a file it has to
+go back onto the PC via lots of hassle. Picture this.
+
+Dev system running an amiga 500
+All graphics stored on another amiga in memory - preferably one with 
+a hard drive and lots of memory
+A parallel lead connecting the two acting as a fileserver running at
+about 80k a second
+
+You could also use it if you program on an amiga and happen to have another
+one lying around....
+
+If, as will become more obvious when you use the disk routines, all your
+files are numbered 00-ff and saved in one files directory / on one disk
+all you need to do to set up the server is type
+
+> scrunch X {directory_example_filename_with_**_insteadof_number)
+
+What the ....
+
+OK say all your files are in directory dh2:files/ and are called file01,
+file40 file41 etc. Just use
+
+> scrunch X dh2:files/file**
+
+The program will load in all the files to ram and sit there.... waiting
+
+Then the other computer, usually will just run a piece of code,
+but there is a whole save file option
+
+> scrunch Y {savefilename} {filenumber}
+
+Notes - if things go wrong, I wouldnt be at all surprised
+      - there is an option of the 'Y' of "scrunch Y !" after to test load 
+	 all the files without saving them
+      - filenumber must be in hex 2 digits etc....
+
+If youre just using the code, use yloadmodule with the interrupts turned off
+
+----------------
+
+E - Sound editor
+
+To create mathematically produced sound effects
+
+I havent decided how it will really work yet, so just work it out for 
+yourself for now - use the joystick and the mouse to alter the
+values, and be prepared for it to crash
+Fire button to work out/hear the sample
+Hold down fire as sample finishes to save and exit
+
+Again the sound has a data file - to run the program, type
+
+> scrunch E {name.dat}
+
+and it will save as name.sfx
+
+----------------
+
+A - SOUTDOS routines
+
+Oh god, this is going to be fun....
+
+These disk routines allow you to create an autorun disk, which will
+save up to 255 files in 983k+ of space on the disk whilst using
+only 3.5 k of the whole amigas memory - You got all the rest
+
+Standard load file is "load filenumber x at position y whirr click done"
+
+Anyway there is a batch file to create a disk, so here we go
+
+{SDOS} First four bytes SDOS - you wouldnt want to create an autorun
+disk using any old file as a batch file would you ?
+
+{%diskname}     - 4 character ID - useful if you have an 18 disk game
+{&loadtext}     - 32 characters - displayed in white/black as program loads
+{<diskposition} - where you want to put the diskroutines (3.5k) - default 
+		   position is $0800. Best to keep them at somewhere
+		   low as program boots higher up.
+{^stacktop}     - Where to initially set the stack pointer to - best just
+		   above (say 500 bytes) the disk routine - default $1800
+{#bufferpos}    - Where to use as a disk buffer (16k). Default $1800
+ 		   This can be on your flip screen, etc. This is not
+		   where your program loads, just where the DMA uses.
+		   Its not so bad, the decrunch routines need 16k too
+	           And as youll see later, you can change where it is
+                   as and when you like
+{*progpos}      - Where the program loads absolutely at. Default is as
+		   high as possible so that program finishes at $80000
+  		   - the normal chipmem limit.
+{>}		- End of batchfile - must be there
+
+!{filenumber},{filename} - Each file has an entry like this
+
+The first file must be the program, numbered ff, e.g !ff.prog.exe
+This is the assembled (one segment) program - not relocated - executable
+This boot up from the bootblock, so remember to switch all the DMA on, etc
+
+Then your files,
+  !00,dh2:files/file00
+  !01,dh2:files/file01
+    etc....
+  !d1,dh2:files/filed1
+
+There is an example of all this on the disk
+
+Notes - Set up all your progpos/stackpos/bufferpos etc before any files
+	 are saved
+
+Now the calls. All offset to where you load them, say $0800 for now.
+
+$0800 - start drive (no regs)      
+$0804 - stop drive (no regs)      
+
+usually startdrive, load all your files, stop drive
+
+$0808 - load file - file d0 loads at a0
+
+If error occurs - unrecoverable one, everything stops and error number
+appears on the screen. It doesnt happen unless your disk is knackered.
+Believe me !
+
+$080c - seek track - seek d0 (2-157 usually)
+
+For use with grab and save track for things like high score tables, etc
+
+$0810 -  readdirec - reads disk directory and ID.
+
+Do this when swapping disks, then check ID. If OK, continue
+
+$0814 - savetrack - from a0 to current track (6144 bytes data)
+$0818 - grabtrack - from current track to a0 (6144 bytes data)
+$081c - initialise drive - just seek zero and stop - not much use
+$0820 - printdisktext - 32 bytes from a0, again not much use
+$0824 - changeloadbuf - Must be in chipmem - set a0 and call
+
+$0828 - stop load -
+
+Suppose on your frame interrupt someone presses escape, but
+your disk routine is loading a 200k sample. Just call this and disk will
+stop immediately.
+
+$082c - read 4 byte disk ID code into d0.long
+
+At present you can only use df0: give me time....
+
+Oh yeah, if you hold down both mouse buttons while the disk boots then it
+will perform a self-test displaying a checksum and the number of retries
+it needs - again if it gets an error it will die....
+
+----------------
+
+Right thats about it....
+I could do lots of improvements, I know, but I do have to write some
+games every now and then. Basically, if I have to improve something
+I will, but your head goes very funny working on crunchers....
+
+----------------
+
+
+Hope it useful and you have enough memory
+Byee
+
+----------------
+

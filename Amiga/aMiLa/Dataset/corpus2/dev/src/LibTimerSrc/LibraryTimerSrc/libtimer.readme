@@ -1,0 +1,14 @@
+Short:    LibraryTimer assembler source
+Author:   jskov@cs.auc.dk (Jesper Skov)
+Version:  38.1 (25.09.93)
+Type:     dev/src
+Uploder:  jskov@cs.auc.dk (Jesper Skov)
+
+This is the source code for an old program I made - the LibraryTimer -
+which is able to measure time-usage of library functions.
+The archive with the binary can be found in dev/misc.
+
+The source lacks a few macros, so you would probably have to hack your
+way through the assembly. Good luck :)
+
+-- Jesper (14.06.97)

@@ -1,0 +1,8 @@
+Short:        Formats plain text or False source in the shape of a given image.  In False.
+Author:       partl@km1.fjfi.cvut.cz (Tomas Partl)
+Uploader:     partl km1 fjfi cvut cz (Tomas Partl)
+Type:         dev/src
+Architecture: m68k-amigaos
+
+This archive includes the False source of the revolutionary text formatter dada.  It was used to format the sources of all enclosed examples.  You can get the False compiler v1.1 from
+aminet/dev/lang/False11.lha

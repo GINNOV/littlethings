@@ -1,0 +1,32 @@
+Short:    v1.0, compare 2 binary file (with source)
+Author:   Nicolas Pomarede (pomarede@isty-info.uvsq.fr)
+Uploader: Nicolas Pomarede (pomarede@isty-info.uvsq.fr)
+Type:     dev/c
+
+This small tool compares 2 binary files and display the position of
+differing bytes.
+The functionnalities are rather limited, but it's fast.
+I coded this small tool in a hurry because I needed a program
+to compare many binary files, that could be used as a shell command
+(no window or things like that) and that would return a simple
+value depending on the result of the comparison (useful in scripts).
+By default, the differing positions are printed, but this can be
+turned off with the '-q' switch.
+
+Files are read 20000 bytes at a time, and there's no limitation on
+their length.
+If files don't have the same length, only the common parts are compared.
+
+After a comparison, the return codes are:
+	 0 files are identical (DOS OK)
+	 5 files are different (DOS WARN)
+	10 a system error occured (no memory, error reading, ...) (DOS ERROR)
+These codes can then be used in an 'IF' test.
+
+
+Requirements:
+	- any AmigaDOS (tested on 1.3), any CPU.
+	- 40 Kb of free mem.
+
+
+Version 1.0, 03/02/1997 by Nicolas Pomarede

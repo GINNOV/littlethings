@@ -1,0 +1,51 @@
+	include	/includes/exec/exec_lib.i
+	include	/includes/intuition/intuition_lib.i
+	movea.l	#0,a1
+	move.l	4.w,a6
+	jsr	FindTask(a6)
+	move.l	d0,a1
+	move.b	#-100,d0
+	jsr	SetTaskPri(a6)
+	lea	intname,a1
+	moveq	#0,d0
+	jsr	OpenLibrary(a6)
+	move.l	d0,d7
+	move.l	d0,a6
+	jsr	OpenWorkBench(a6)
+	move.l	d0,a5
+	lea	timegoon,a4
+abw	move.b	(a4)+,d5
+	moveq	#1,d1
+	bsr	waitloop
+	cmpa.l	#timegoon+128,a4
+	bne	abw
+auf	moveq	#-1,d1
+	move.b	-(a4),d5
+	bsr	waitloop
+	cmpa.l	#timegoon,a4
+	bne	auf
+	rts
+waitloop	move.l	a5,a0
+	jsr	MoveScreen(a6)
+	moveq	#0,d1
+	subq.b	#1,d5
+	bne	waitloop
+	rts
+intname	INTNAME
+timegoon	dc.b	14,12,11,10,9,8,8,7
+	dc.b	7,6,6,6,5,5,5,5
+	dc.b	4,4,4,4,4,4,3,3
+	dc.b	3,3,3,3,3,3,3,3
+	dc.b	3,2,2,2,2,2,2,2
+	dc.b	2,2,2,2,2,2,2,2
+	dc.b	2,2,2,2,2,2,2,2
+	dc.b	2,2,2,2,1,1,1,1
+	dc.b	1,1,1,1,1,1,1,1
+	dc.b	1,1,1,1,1,1,1,1
+	dc.b	1,1,1,1,1,1,1,1
+	dc.b	1,1,1,1,1,1,1,1
+	dc.b	1,1,1,1,1,1,1,1
+	dc.b	1,1,1,1,1,1,1,1
+	dc.b	1,1,1,1,1,1,1,1
+	dc.b	1,1,1,1,1,1,1,1
+

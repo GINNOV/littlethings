@@ -1,0 +1,27 @@
+Short:        Converts binary files to C source
+Author:       john.wj.girvin@gmail.com (John Girvin)
+Uploader:     john wj girvin gmail com (John Girvin)
+Type:         dev/c
+Architecture: m68k-amigaos >= 3.0
+
+DESCRIPTION
+
+    Yet another utility to convert binary files to C language
+    array declarations. Can convert to byte, word or longword
+    sized data in hex, decimal or unsigned decimal. Full help
+    is built into the program.
+
+    Bin2C is freeware.
+
+
+AUTHOR
+
+    John Girvin
+
+    WWW:    http://girv.net
+
+
+HISTORY
+
+    v1.00   First version
+            Released to Aminet in December 1998.

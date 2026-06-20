@@ -1,0 +1,48 @@
+This archive contains a new version of the SAS/C++ compiler,
+with new header files and link libraries. SAS/C 6.5x is required.
+
+
+This is an EXPERIMENTAL version. Use at your own risk, for
+entertainment purposes only...
+
+
+We (SAS) have decided to port our latest in house C++
+translator to the Amiga. Any SAS/C 6.5x customer may use this
+version. In releasing this as a free update to 6.5x, we are 
+hoping to get testing of the portable translator. Please send
+and bug reports to sassek@sas.com.
+
+
+
+This version of C++ has many of the newer ANSI draft features,
+including templates. It does not support exceptions however.
+
+
+
+I don't have an install script ready, but here is how I suggest
+you install it.
+
+
+
+1) Rename sc:libs/sccxx.library to sc:libs/sccxx.library.657
+2) copy the sccxx.library in this archive to sc:libs
+3) copy the directory lib.701 to sc:lib.701
+4) copy the directory cxxinclude.701 to sc:cxxinclude.701
+5) Change the CXXINCLUDE: assign to point to sc:cxxinclude.701
+
+
+When linking, you must add the approriate C++ library before
+the standard SAS/C libraries. Here's an example using the driver:
+
+
+   sc test.cxx link lib sc:lib.701/sccxx.lib
+
+
+
+Other notes:
+
+This version uses significantly more stack. It is compiled
+with stack checking on, so it shouldn't crash if you run out of
+stack. Instead, you will recieve a "Stack Overflow" requestor.
+A stack around 100,000 seems sufficient.
+

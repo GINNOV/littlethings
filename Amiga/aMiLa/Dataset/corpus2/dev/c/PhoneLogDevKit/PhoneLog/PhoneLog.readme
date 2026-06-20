@@ -1,0 +1,91 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+
+Before you go on, you should validate whether all files are unmodified,
+use the md5sum utility together with the checksums appended to this text.
+Just type:
+
+        md5sum -cv PhoneLog.readme
+
+and all files in the distribution will be checked. This file itself is
+signed with my key, so a simple
+
+        pgp -ka PhoneLog.readme
+        pgp PhoneLog.readme
+
+will check the integrity of this text, too.
+
+
+Kai Hofmann
+i07m@zfn.uni-bremen.de
+
+
+
+
+4a059037465380ce1b9e1b2ed13c712f  .Product-Info
+fb2c7c758ef9f08c7251307dab9af554  PhoneLog.txt
+9b60bf6ea4a6de17bf7b88c058331c33 *PhoneLog.txt.info
+7026b3defff8d0504c7c2f1ce21f912e  docs/PhoneLog.doc
+bc96d6199c21d0a7308f458950e20024  docs/PhoneLogGenerator.doc
+c99a9bf7840c59f874913dc7b9907598  docs/PhoneLogParser.doc
+03d090214774c5d0b8b19f424a28a493 *obj/Errors.o
+a9aebc72cbe57f309a49e321f2b7c222 *obj/PhoneLogGenerator.o
+1ad68274eda836b73daaef330239e2f5 *obj/PhoneLogParser.o
+087cacf8553b0291049d27bd3a16c4d1 *obj/PhoneLogParserInterface.o
+e51f3fd74d16341e39bbffb6dc9f243e *obj/PhoneLogScanner.o
+d406338ed93e076260e8da0cef5f35d8 *obj/PhoneLogScannerSource.o
+91a8595eb342bbd1fb4e6fd2551dbfd9 *obj/reuse.lib
+0df3541b34e7aa8cac1d8adc404b8770  SGML/PhoneLog.dtd
+af06ba0ee2f1cf76e9ec41a80231826a  SGML/PhoneLog.sgm
+d2d7cc926af8af42be318ea85319cb9f  SGML/PhoneLogEBNF.txt
+099f71fae7a95fe44bcf2c07f72dba19  src/DynArray.h
+3d91ce78d432757d0cf5ec1f8aaa2703  src/Errors.h
+22cec562cfaac19a2c1c7c09adb88cc0  src/General.h
+8157f695f760a90f99dca2b44ffe96bb  src/Idents.h
+1e60b93d5f457a66a31c34cdd1da78e8  src/Memory.h
+0b40733009cc5e485a26178f1ebeffbc  src/PhoneLog.h
+f528f172df240051b996a9945b54014f  src/PhoneLogGenerator.h
+39c3b595aa6051971e84103f9d6cb3ae  src/PhoneLogParser.h
+a8d24b048c865221755897cd563e76b3  src/PhoneLogParserInterface.h
+5fdf1fb2f44041120ec8cf4b5977ac75  src/PhoneLogScanner.h
+ba7101102a0fadfa326467c24235dfa1  src/PhoneLogScannerSource.h
+fb84846a503abbd82534873e0d2f1ce8  src/Positions.h
+7a862d8750e303f5ae1f3aed09102a70  src/ratc.h
+5739667466ecedf0389c5145d1cb8a8f  src/Sets.h
+724c26d7b7367a2e19f9940266871072  src/StringMem.h
+df2cc7269b5e5a951e02148cd9577f28  src/System.h
+1d7c652c52a8fff6fbc0adc25e708d2e  src/Errors.c
+85ab0be48fce54d6d436cc6fd059fe78  src/PhoneLogGenerator.c
+9a7c1dc966baf163dde6b5a0e81435c7  src/PhoneLogParser.c
+93f970db5136f60660c4408fa8a38df9  src/PhoneLogParserInterface.c
+cc43b43d4c7a04dab026856aa918cf43  src/PhoneLogScanner.c
+2399b96f7e1aa390c7c817dc34e0e52c  src/PhoneLogScannerSource.c
+9337303b0d2d9108122ba3e97c9ffeeb  src/PhoneLogScanner.rex
+3bb240d2a73aa6a1e35311729c039ac9  src/PhoneLogParser.lalr
+7698e490cdaabc03930f118157fcd1d7  src/smakefile
+35718214901c7fea4248ff1d74c16ae0  src/scoptions
+541ecebf9565e6926d5b1f5942c2c3c4 *src/PhoneLogGenerator.c.info
+67ed5c11db7e0496f6f9baba9c1a437a *src/PhoneLogParser.lalr.info
+af7076eba1e33ec1f0f84eb380e40e30 *src/PhoneLogParserInterface.c.info
+87b03b8e96c22142e6493a4f5cebb6e6 *src/PhoneLogScanner.rex.info
+
+-----BEGIN PGP SIGNATURE-----
+Version: 2.6ui (Amiga)
+
+iQCVAgUBMY90+/iw0jcNaWkBAQGWcQP+KFN0jTJhiKWlk1BO6Ebrw1ztctRH4+Cw
+IZYkRT429yY2Wzu/Pw0njMOh/ncUsTmRyKOl/tUeA92wZXrPlD8rWO3bBlXogaXY
+LD54IeGJ8ZxyUw8KaV1iV37xPekT3Dk4lM7u079P4MxXGL31LvUl8edi/91hHwLU
+cDWtAqD1OcY=
+=n/Qp
+-----END PGP SIGNATURE-----
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: 2.6ui (Amiga)
+
+mQCNAi+tJrEAAAEEAOKuSawrRwTVyKhrvt3tbS+V7JCiVYlHVXTwiK3bN9H8Nd2T
+UfwpMYW0RQUnlxP/BT46Y7zvpzEfkFCZxCVeOjfVpUxfsKK0nUdxhdrzrw4zSJQZ
+Rbc26sUhg8qciHXzg3NXPihSiCErl+k5HMNl62YVU9u8Tb2DRPiw0jcNaWkBAAUR
+tCtLYWkgSG9mbWFubiA8aTA3bUBpbmZvcm1hdGlrLnVuaS1icmVtZW4uZGU+tDdL
+YWkgSG9mbWFubiA8aHR0cDovL3d3dy5pbmZvcm1hdGlrLnVuaS1icmVtZW4uZGUv
+fmkwN20+tBtLYWkgSG9mbWFubiA8UG93ZXJTdGF0QElSQz60JEthaSBIb2ZtYW5u
+IDxpMDdtQHpmbi51bmktYnJlbWVuLmRlPg==
+=SoKF
+-----END PGP PUBLIC KEY BLOCK-----

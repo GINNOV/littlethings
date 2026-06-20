@@ -1,0 +1,66 @@
+this is a source-dump of my QuakeTools project. it is an entry to a
+greater project of documenting quakes ans quakeIIs file-internals and
+a library to create and modify and show all of their files.
+
+take a look in the doc-dir.
+
+NOTE: nearly 90% of the code is strict ANSI-C, the rest of 10%
+      are 3 nested functions.
+
+people who wants to give their pennies to this project are welcome.
+
+ current features in short:
+
+        read/writes picture formats:
+        
+         ppm/pgm/png/jpg
+        
+        read/writes 3d formats:
+        
+         tddd/3DS
+         
+        read/writes quake formats:
+        
+         wad/(bsp/vis/lit/prt/h?/map)/pak/(qc/dat)/mip/lmp
+         
+        read only quake formats:
+        
+         bsps of quakeII
+        
+        others:
+        
+         can compress wads
+         can do fs-dithering
+         can do smoothing
+         uses high quality mipmap-scaling
+         build in script-system with recursion-capabilities
+         can load pictures directly into bsps
+         uses less memory
+         error robust
+         can parse entire directories and perform the default actions to every file
+          and subdirectory
+         can extract bsp/pak recursively
+
+	display:
+	
+	 animateables lights
+	 possiblity to visualise the process of qbsp and light
+	 transparent water
+	 splitted in system-independend and system-dependend parts
+	 rudimenal game-capabilities
+	 wire/flat/8bit/16bit/24bit/32bit graphics-driver
+	 multiple displays
+
+	executables:
+	
+	 qbsp
+	 light
+	 rad
+	 vis
+	 qview
+	 ppmdiff
+	 qcc
+	 qtools
+
+NOTE: some of these features exists only rudimental and are not really
+      functional

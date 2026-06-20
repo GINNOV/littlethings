@@ -1,0 +1,55 @@
+	IFND	EXEC_TASKS_I
+EXEC_TASKS_I	SET	1
+
+;	IFND	EXEC_NODES_I
+;	include	exec/nodes.i
+;	ENDC
+
+	STRUCTURE	Task,0
+		STRUCT	tc_Node,14
+		UBYTE	tc_Flags
+		UBYTE	tc_State
+		BYTE	tc_IDNestCnt
+		BYTE	tc_TDNestCnt
+		ULONG	tc_SigAlloc
+		ULONG	tc_SigWait
+		ULONG	tc_SigRecvd
+		ULONG	tc_SigExcept
+		UWORD	tc_TrapAlloc
+		UWORD	tc_TrapAble
+		APTR	tc_ExceptData
+		APTR	tc_ExceptCode
+		APTR	tc_TrapData
+		APTR	tc_TrapCode
+		APTR	tc_SPReg
+		APTR	tc_SPLower
+		APTR	tc_SPUpper
+		APTR	tc_Switch
+		APTR	tc_Launch
+		STRUCT	tc_MemEntry,14
+		APTR	tc_UserData
+		LABEL	tc_SIZEOF
+
+	BITDEF	T,PROCTIME,0
+	BITDEF	T,STACKCHK,4
+	BITDEF	T,EXCEPT,5
+	BITDEF	T,SWITCH,6
+	BITDEF	T,LAUNCH,7
+
+TS_INVALID	EQU	0
+TS_ADDED	EQU	1
+TS_RUN		EQU	2
+TS_READY	EQU	3
+TS_WAIT		EQU	4
+TS_EXCEPT	EQU	5
+TS_REMOVED	EQU	6
+
+	BITDEF	SIG,ABORT,0
+	BITDEF	SIG,CHILD,1
+	BITDEF	SIG,BLIT,4
+	BITDEF	SIG,SINGLE,4
+	BITDEF	SIG,DOS,8
+
+SIGBREAKF_CTRL_C	EQU	$3000
+
+	ENDC ; EXEC_TASKS_I

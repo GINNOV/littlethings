@@ -1,0 +1,35 @@
+
+Porting Makefiles from Unix for SMake or DMake and vice versa is
+rather nasty. scc allows to use the Unix-Makefiles with sc and dcc
+without modification. (Hopefully :-)
+
+scc is just a program which reads command line options, converts them
+and calls sc or dcc.
+
+Supported options are:
+
+	-sas	    Run as a frontend of SAS/C (Default if named scc)
+	-dice	    Run as a frontend of Dice
+	-gcc	    Run as a frontend of gcc (Default if named cc)
+	
+	Best way is to put one of these into the environment variable
+	CCOPT.
+
+
+	-v	    Verbose (try it :-)
+	-w	    No warning messages
+	-c	    Don't link
+	-a	    Compile only, don't assemble
+	-E	    Run preprocessor only
+	-I<dir>     Look for include files in directory <dir>
+	-L<dir>     Look for libraries in directory <dir>
+	-o<file>    Set the name of the created file; it is recommended
+		    to use this as the respective frontends might behave
+		    differently in selecting default names.
+	-D<symbol>  Defines preprocessor symbol; use -Dsymbol=var for
+		    specific values.
+	-U<symbol>  Undefine the preprocessor symbol <symbol>.
+	-l<lib>     Link with library <lib>.
+	-g	    Turn debugging on.
+	-O	    Optimize
+

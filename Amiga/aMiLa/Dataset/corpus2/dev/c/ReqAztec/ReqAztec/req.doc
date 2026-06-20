@@ -1,0 +1,1717 @@
+
+    The  req.library is a run time re-entrant library that is designed
+to  make  it  easier  for  programmers  to  use  powerful, easy to use
+requesters  for  communicating  with  users.   The  requester  library
+includes  such functions as a color requester, file requester, message
+display  requester  and many functions to make the creation of gadgets
+for your own custom requesters easier.
+
+    Req.library  was  written  by  Colin  Fox (of Pyramyd Designs) and
+Bruce  Dawson  (of  CygnusSoft  Software).   Req.library  is  a freely
+distributable  library that may be used in commercial products without
+paying  any  royalties.  We encourage you to use the requester library
+in all of your programs, to make them easier to write, and to use.
+
+    Req.library  is  not public domain.  The requester library and all
+documentation and example programs are all copyright 1989, 1990.
+
+    The  requester  library must be distributed with the file read.me,
+explaining  the requester library to users.  We would appreciate it if
+the  programmer documentation was distributed as well, but this is not
+mandatory.   The programmer documentation includes the descriptions of
+the  library  and its functions (req.doc), and the three include files
+(req.h, reqbase.h and reqbase.i).
+
+
+
+    Req.library  is  dedicated  to  the programmers who make the Amiga
+shine the way it was meant to.
+
+
+OverView:
+
+    All  of  the  req.library functions that bring up requesters allow
+you two ways of specifying what screen you would like the requester to
+appear  on.  The first way is the more efficient way, because you only
+have  to set it up once and then it takes care of things automatially.
+There  is  a  field in all process structures called the pr_WindowPtr.
+This  pointer  is  used by DOS to decide where to put it's requesters.
+If  pr_WindowPtr  contains  a  zero,  requesters  go  on the workbench
+screen.  If it contains the address of a window, then requesters go on
+that  window's  screen.   If  it  contains a negative one, then no DOS
+requesters come up.  The req.library requesters all use this variable,
+if  they  are  called from a process .  However, if the pointer is -1,
+the req.library functions do still appear, on the workbench screen.
+
+    The  second  way  was  put in mainly so that the requesters can be
+called from tasks.  Since a task does not have a process structure, it
+also  lacks a pr_WindowPtr.  Therefore, all of the requester functions
+which  can  be  used from a task (currently everything except the file
+requester) can be passed a window pointer, either as a parameter or as
+an  element in a structure.  Important:  This pointer takes precedence
+over  the  pr_WindowPtr  so  if  you  wish  the  requesters to use the
+pr_WindowPtr  you  must  zero  the window fields that the routines are
+expecting.   In  the case of fields in a structure this can be easy as
+long   as  you  make  sure  your  structure  defaults  to  being  zero
+everywhere.
+
+    Setting  the  pr_WindowPtr is quite a simple matter.  All you have
+to do is do a FindTask((char *)0); which returns a pointer to your own
+task  and your own process (a task structure is the first element of a
+process  structure).   Then  you  simply  preserve  the  old  value of
+pr_WindowPtr (VERY IMPORTANT!!!) and put a window pointer into it.
+
+eg:
+                /* Find my task. */
+    myprocess = (struct Process *)FindTask((char *)0);
+    oldwindowptr = myprocess->pr_WindowPtr;
+    myprocess->pr_WindowPtr = window;
+
+or:
+
+    MOVE.L  4,A6
+    MOVE.L  #0,A1
+    SYS     FindTask    ;Find my task.
+    MOVE.L  D0,_myprocess
+    MOVE.L  D0,A0
+    MOVE.L  pr_WindowPtr(A0),_oldwindowptr
+    MOVE.L  _window,pr_WindowPtr(A0)
+
+    Before your program exits it is VERY important that it restore the
+previous  value of pr_WindowPtr.  If you don't, then your program will
+work  in some situations, but will BLOW UP in others.  For example, if
+you  execute  (without  using the 'run' command) a program, which then
+sets  the  pr_WindowPtr  to  point at one of its windows and the exits
+without  restoring  it,  then  the  next time a DOS requester tries to
+appear...  BOOM!  The machine will probably crash as DOS tries to open
+a requester on a now closed screen.  Therefore, before leaving:
+
+    myprocess->pr_WindowPtr = oldwindowptr;
+
+or:
+
+    MOVE.L  _myprocess,A0
+    MOVE.L  _oldwindowptr,pr_WindowPtr(A0)
+
+
+
+    One  final  note.   The  pr_WindowPtr  field exists in the process
+structure.   This  means  that  a  task  does  not  have  this  field.
+Therefore,  if you want to call one of the requester library functions
+from  a  task,  you  will not be able to specify what screen you would
+like  the  requester  to  appear on by setting the pr_WindowPtr field.
+All  of  the  functions  that open requesters and can be called from a
+task  (the file requester/font requester is the only one that can't be
+called  froma task) have some other way of specifying which screen you
+would like them to open on.  They will have either have a field in the
+structure  which you must pass them or a parameter which can contain a
+window  pointer  to one of the windows on your custom screen.  If this
+pointer is non-zero then it overrides the pr_WindowPtr field.
+
+
+
+
+    By  opening the requester library, you not only gain access to all
+of  the functions documented below, but to some other goodies as well.
+Req.library   needs  and  therefore  opens  several  other  libraries,
+including  dos.library,  intuition.library,  graphics.library  and the
+console  device.   All  of  these  pointers  are  stored in the ReqLib
+structure  which  you  get a pointer to when you open the req.library.
+Therefore,  you  can  save  yourself  a little bit of code by grabbing
+these  fields  after opening the requester library.  The only thing to
+beware of is don't use these values after you have close the requester
+library,  because  at  that point there is no guarantee that they will
+still be valid.
+
+    In  addition  to  these  libraries,  the Images pointer in the req
+library structure points to a set of ten small images (four arrows and
+ssix  letters)  which have are guaranteed to be in chip memory.  These
+can be used if your program requires this type of images.
+
+
+
+
+    One  thing to keep in mind when using the gadget creation routines
+is  that there isn't any way for us to check that you have passed us a
+pointer  to  the  correct size of buffer, so you _must_ make sure that
+you are allocating the right amount of memory.
+
+
+--------------------------------------------------------------
+Here's a quick list of the functions available:
+--------------------------------------------------------------
+
+Center..................Center a new window over the mouse.
+
+SetSize.................Prop gadget handling routines (32 bit)
+SetLocation
+ReadLocation
+
+Format..................sprintf() format routine
+
+SimpleRequest...........Starter gluecode to TextRequest- Single gadget
+TwoGadRequest...........Starter gluecode to TextRequest- Two gadgets
+
+FileRequester...........FileRequester routines
+PurgeFiles
+
+ColorRequester..........a colorrequester
+
+MakeGadget..............Gadget creation routines
+MakeString
+MakeProp
+MakeButton
+
+MakeScrollBar...........3   part   gadget;   2   arrows  and  a  prop.
+                        Horizontal or Vertical
+
+LinkGadget..............Gadget  creation  routines that self-hook into
+                        the newwindow
+LinkStringGadget........gadget list.
+LinkPropGadget
+
+DrawBox.................Draw a box (x1y1)(x2y2) in one command
+
+GetFontHeightAndWidth...return height and width of current font
+
+RealTimeScroll..........scroll routine used in file requester
+
+TextRequest.............Powerful requester function
+
+GetString...............Get a line of text from the user
+GetLong.................Get a signed long from the user
+
+RawKeyToAscii...........Convert raw key to ascii
+
+NewGetString        A second point to GetString.  Different way of
+            passing parameters.
+
+----------------------------------------------------------------
+
+
+NAME
+        Center
+
+
+SYNOPSIS
+        Center( &nw, x, y)
+                 A0 D0 D1
+
+struct NewWindow *nw;
+USHORT x,y;
+
+DESCRIPTION
+
+    Center()  is  used  to  adjust  a  NewWindow structure so that the
+window that it opens will appear immediately under the mouse.  The x,y
+values  are used to specify which part of the window you would like to
+appear  underneath  the mouse.  If x or y is zero, that tells Center()
+to  position  the  window  so  that  the  window center (in the x or y
+direction  respectively)  is  underneath  the  mouse.   If  x  or y is
+positive, that tells Center() to position the window so that the mouse
+is  that  many  pixels  from  the  left  or  top  edge  of  the window
+respectively.   If x or y is negative, that tells Center() to position
+the  window  structure so that the mouse appears that many pixels from
+the right or bottom edge of the window respectively (ie; x = -10 tells
+Center  to  position  the  mouse  ten  pixels to the left of the right
+edge).
+
+    If it is impossible to position the window exactly where requested
+(if  the  mouse  pointer  is too close to the edge of the screen) then
+this  routine  will  position  the  window as close as possible to the
+correct location.
+
+    To  allow  this routine to work accurately it is necessary to have
+already initialized the new window structure to specify on what screen
+the  window  is  going  to  be  open.  ie; you should set the Type and
+Screen fields before calling Center().
+
+    This routine disturbs no registers.
+
+RETURNS
+        nothing
+SEE
+
+BUGS
+        None known
+
+
+;--------------------------------------------------------------------
+
+NAME
+            SetSize
+SYNOPSIS
+
+            SizeVal=SetSize(MaxValue,ViewSize)
+              D0.W              D0.L  D1.L
+
+short   SizeVal;
+long    MaxValue,ViewSize;
+
+DESCRIPTION
+
+    This  routine is designed to correctly handle sizing a prop gadget
+to  a range.  The range is given in in MaxValue/ViewSize.  MaxValue is
+the  maximum value that this prop is supposed to be able to represent.
+Viewsize  is  how  large  the  display area is.  For instance, if your
+maximum  value  was 200 (files, for example), and your viewsize was 15
+(lines of text), then you would call this as so:
+
+        SizeVal=SetSize(200,15);
+
+    Then you would put SizeVal into the appropriate PropInfo structure
+element (in the case of the file requester, that would be VertBody).
+
+RETURNS
+        The  16 bit value to be put into the PropInfo structure of the
+prop gadget.
+
+SEE
+        SetLocation, ReadLocation
+BUGS
+        Bugs? what bugs?
+
+
+;--------------------------------------------------------------------
+
+NAME
+            SetLocation
+SYNOPSIS
+
+NewLoc = SetLocation(MaxValue,ViewSize,Value);
+  D0                    D0      D1      D2
+
+short NewLoc;
+long MaxValue,ViewSize,Value;
+
+DESCRIPTION
+
+            When you have a prop gadget that you wish to directly set,
+then  this  is  the  routine to use.  It allows you to pass any 32 bit
+value and properly set the gadget.
+
+RETURNS
+
+    The  return  is  the value to put into either HorizPot or VertPot,
+depending on what orientation you have the gadget.
+
+
+BUGS
+
+    n/a
+
+EXAMPLE
+
+SEE
+    SetSize(),ReadLocation()
+
+;--------------------------------------------------------------------
+
+NAME
+            ReadLocation
+SYNOPSIS
+
+LocVal=ReadLocation(MaxValue,ViewSize,PotValue)
+  D0                  D0.L    D1.L     D2.W
+
+long LocVal,MaxVal,ViewSize;
+short PotValue;
+
+
+DESCRIPTION
+
+        If  you  prop  gadget has been moved, this is the routine that
+you would use to determine where it's been moved to.
+
+RETURNS
+        Returns  the decoded value of the prop, as an unsigned 32 bit.
+This  is  the  element  number  (line  number  usually) that should be
+displayed on the first line of your display window.
+
+SEE
+
+    SetSize(), SetLocation()
+
+BUGS
+    n/a
+
+EXAMPLE
+
+;--------------------------------------------------------------------
+
+NAME
+            Format
+SYNOPSIS
+
+        Format(Buffer,string,values)
+                A2      A0     A1
+
+char *Buffer,string[];
+char **values;
+
+DESCRIPTION
+
+        This does the same thing as sprintf(), except that it isn't in
+the  stdio  library, and doesn't use up very much room.  This function
+uses  the  ROM  function  RawDoFmt to do the print() style formatting.
+This  routine does not allow the use of all of the '%' directives (for
+example,  floating  point  numbers can not be printed with this).  For
+full   documentation   on  what  directives  are  supported,  see  the
+documentation  on RawDoFmt.  This is the routine that TextRequest (and
+therefore   SimpleRequest   and  TwoGadRequest)  use  for  their  text
+formatting, so these restrictions apply to them also.
+
+        The RawDoFmt routine also assumes that 'int's are sixteen bits
+long.   Therefore,  if  you  are  using a compiler with an int size of
+thirty-two  bits and you want to print an int or a short, you must use
+'%ld', rather than '%d'.
+
+RETURNS
+        The number of characters in the formatted string.
+BUGS
+    none known
+
+EXAMPLE
+
+    Format(Buffer,"There are %d changes to the file %s.",numchanges,
+filename);
+
+    Format(Buffer,"%x is a hex number, %c is a character.", num, chr);
+
+SEE
+    TextRequest, SimpleRequest, TwoGadRequest.
+    Further  information  on printf() style formatting is available in
+the AutoDocs on RawDoFmt and in C manuals discussing printf().
+
+;--------------------------------------------------------------------
+
+
+
+NAME
+            ColorRequester
+SYNOPSIS
+
+NewColor=ColorRequester(DesiredColor);
+   D0                       D0
+long    DesiredColor;
+
+DESCRIPTION
+
+    This  is a full-fledged color requester.  It is intelligent enough
+to open with the right number of colours in the palette automatically.
+It  shows  you both the colour you are working with, and the numerical
+RGB  value  of  that  colour.   It  has  Spread,  Undo,  Ok and Cancel
+functions.  Planned is the addition of HSV.
+
+    The  cursor  keys move the color-cursor around the palette, RETURN
+selects the current color and ESC cancels out.
+
+    You  pass  this  routine  the  color that you would like initially
+highlighted  (typically  the  current drawing colour).
+
+    The ExtendedColorRequester function has slightly more options, but
+is slightly more work to call.
+
+RETURNS
+
+    Color  number  that  the user selected, -1 if the user cancels the
+colour  requester.   The  changed  colours  will  be  in  the viewport
+structure for your screen.
+
+SEE
+    ExtendedColorRequester
+
+BUGS
+
+    none known.
+
+EXAMPLE
+
+    newcolor = ColorRequester(oldcolor);
+
+;--------------------------------------------------------------------
+
+NAME
+            ExtendedColorRequester
+SYNOPSIS
+
+NewColor=ExtendedColorRequester(&(struct ExtendedColorRequester)
+   D0                                      A0
+struct ExtendedColorRequester   colorreqstruct;
+
+DESCRIPTION
+    This  call  brings  up  exactly  the  same  color requester as the
+ColorRequester  call.  The only difference is that this routine allows
+you  to  specify  more  parameters.   The difference is actually quite
+small  right  now, because there is only one additional parameter that
+can  be  passed  through  this  entry  point.   This is the ecr_window
+parameter,  used  to  specify  what window (and hence what screen) the
+color 'requester' appears on.  This parameter is rarely needed because
+the  window  the requester opens up on can be specified by setting the
+pr_WindowPtr  field  in  your process structure to the address of your
+window  structure  (see  the  beginning of the docs for an overview on
+this procedure).  The only time this entry point is needed, currently,
+is  if you try to bring up the color requester on a custom screen from
+a  task,  since  a task does not have a pr_WindowPtr and can therefore
+not specify the window and screen.
+
+RETURNS
+
+    Color  number  that  the user selected, -1 if the user cancels the
+colour  requester.   The  changed  colours  will  be  in  the viewport
+structure for your screen.
+
+SEE
+    ColorRequester
+
+BUGS
+
+    none known.
+
+EXAMPLE
+
+        /* This should generally be declared as a global variable */
+        /* so that all of it's elements get initialized to zero.  */
+        /* If you declare it as a local variable, be sure to zero */
+        /* all of the fields, even the unused ones. */
+    struct ExtendedColorRequester   colorstruct;
+
+    colorstruct.defcolor = 0;
+    colorstruct.window = mywindow;
+    newcolor = ExtendedColorRequester(&colorstruct);
+
+;--------------------------------------------------------------------
+
+NAME
+            MakeGadget
+SYNOPSIS
+MakeGadget(Buffer,String, X, Y)
+              A0    A1   D0 D1
+struct GadgetBlock *Buffer;
+char               *String;
+long               D0,D1;
+DESCRIPTION
+
+        This  routine  prepares a buffer to be a standard BOOLEAN text
+gadget.   This is a simple way of producing gadgets for code that must
+be  reentrant,  and it is more efficient than defining gadgets in data
+statements.    The  routine  initializes  the  gadgets  to  a  set  of
+'standard' values that should cover most cases and then links the four
+parts of the GadgetBlock together.
+
+    Buffer  is  a pointer to a unitialized GadgetBlock, which contains
+the  necessary  Gadget, Border, border pairs and IntuitText structures
+needed to render a boolean gadget with a border and some text.
+
+    String  is  a  pointer  to  the text that should appear inside the
+gadget.   The  gadget  is  automatically  sized  to  match the strings
+length.
+
+    X  and  Y are the gadgets initial position, they are simply copied
+into LeftEdge and TopEdge in the gadget structure.
+
+RETURNS
+SEE
+BUGS
+EXAMPLE
+
+
+;--------------------------------------------------------------------
+
+NAME
+            MakeString
+
+SYNOPSIS
+MakeString(Buffer,StringBuff,UndoBuff,MaxWidthBits,MaxNumChars, X, Y)
+             A0      A1          A2        D0          D1      D2  D3
+
+struct StringBlock Buffer;
+char               *StringBuff;
+char               *UndoBuff;
+long               MaxWidthBits, MaxNumChars, X, Y;
+
+DESCRIPTION
+
+    As  with  all  of  the  MakeGadget  functions, this one prepares a
+buffer  to  be used as a string gadget, that may be used re-entrantly.
+The  buffer need not be cleared first.  This means that you may create
+a temporary gadget on the stack.
+
+    The  StringBuff  is  where the body of text inside the gadget will
+reside.
+
+    When   the   gadget  is  activated,  the  text  in  StringBuff  is
+automatically copied (by intuition) into UndoBuff.  This allows you to
+type  Amiga-Q  and get the old string back.  This field may be null if
+you wish to have no undo.
+
+    MaxWidthBits is the width of the frame around the gadget.
+
+    MaxNumChars  is  the maximum number of characters that you will be
+able  to  type  into the gadget, including the terminating zero on the
+string.  MAKE SURE that this number is no greater than your StringBuff
+size, or else you're going to be typing over memory that isn't yours.
+
+    X,Y  are the position of the upper left hand corner of the gadget.
+The border is actually 2 pixels above and to the left of this corner.
+
+RETURNS
+    Nothing
+SEE
+
+    MakeGadget,MakeProp,MakeScrollbar,LinkGadget,LinkProp,LinkString
+
+
+;--------------------------------------------------------------------
+
+NAME
+            MakeProp
+SYNOPSIS
+
+MakeProp(Buffer,Width,Height,Flags)
+         A0       D0   D1    D2
+
+struct PropBlock *Buffer;
+long             Width, Height, Flags;
+
+DESCRIPTION
+
+    This  routine  prepares an un-initialized buffer for use as a prop
+gadget.
+
+    Buffer,  on  return,  will  contain  the  gadget,  along  with the
+necessary PropInfo and Image structures, all linked together.
+
+    Width is the with of the container, in pixels.
+    Height is the height of the container in pixels.
+
+    The  Flags parameter is simply copied into the gadget flags field.
+It  should  contain  the  Intuition  flags that you would normally put
+there  yourself.   Optionally,  you can initialize this field yourself
+afterwards.
+
+
+EXAMPLE
+
+    propbuffer = (struct PropBlock *)AllocMem((long)sizeof(struct
+                        PropBlock), (long)MEMF_PUBLIC);
+    MakeProp(propbuffer, 20L, 150L, (long)GADGHCOMP);
+
+
+RETURNS
+
+    Nothing
+
+
+;--------------------------------------------------------------------
+
+NAME
+            DrawBox
+SYNOPSIS
+
+DrawBox(rp,MinX,MinY,MaxX,MaxY)
+        A1  D0   D1   D2   D3
+
+struct  RastPort        *rp;
+long    MinX,MinY,MaxX,MaxY;
+
+
+DESCRIPTION
+
+        This  routine  allows you to draw a simple box in one command.
+It  draws  the  box  in APen color, in the current draw mode, with the
+current line pattern.
+
+        (MinX,MinY)  are  the  upper  left  corner  of  the  box,  and
+(MaxX,MaxY) are the lower right.
+
+        The pen is left at the upper left corner (MinX,MinY).
+
+;--------------------------------------------------------------------
+
+NAME
+            MakeButton
+SYNOPSIS
+
+MakeButton(Buffer,Image,Image2,Width,Height,Depth)
+             A0     A1    A2     D0    D1    D2
+
+
+struct  TwoImageGadget  *Buffer;
+char    *Image;     /* Pointer to the actual bitplane data */
+char    *Image2;    /* Pointer to the second image. */
+long    Width,Height,Depth;
+
+
+
+
+DESCRIPTION
+
+    The  purpose  of  this  routine  is one similar to MakeGadget, but
+instead of using text for the button, it uses a graphic.  You supply a
+bitmap, and MakeButton will use it in it's rendering.
+
+    You  may  have  either  one  or two images, the routine handles it
+routinely.   If you supply one image, then this sets GADGHCOMP, and if
+you  have two images, it sets GADGHIMAGE.  RELVERIFY is always set, so
+as  long  as  you  the  user  is  pressing  that gadget, the alternate
+highlight is shown.
+
+    Buffer has room for two images.
+
+    Image  is  a pointer to the actual image data, in CHIP memory, for
+this gadget.
+    Image2 is a pointer to the alternate image data.
+
+    Width and Height make up the size of your image.
+
+    Depth is how many bitplanes of data you've supplied.
+
+EXAMPLE
+
+    MakeButton(buffer, image1, image2, 32L, 40L, 2L);
+
+BUGS
+    It's  not  really  a bug, but if your images aren't the same size,
+then one won't erase the other when it is drawn, so you may be showing
+an image with traces of the other one left there.
+
+;--------------------------------------------------------------------
+
+NAME
+            MakeScrollBar
+SYNOPSIS
+
+MakeScrollBar(Buffer,Flags,Size,X,Y)
+                A0    D0    D1 D2 D3
+
+struct ScrollBlock *Buffer;
+long    Flags,Size,X,Y;
+
+
+DESCRIPTION
+
+    This is a special routine that creates a scrollbar (which consists
+of  a prop gadget and two arrows) and you handle it like it's a single
+gadget.   You  may  have  either a horizontal scrollbar, or a vertical
+scrollbar.   These scrollbars are very much like the ones in workbench
+window  borders.   These  use slightly different images on the arrows,
+however.
+
+    The  way  you  specify  how this is set up and oriented is by flag
+combinations.   If  you wished to put a scrollbar in the bottom border
+of a window, then you would pass (in flags):
+
+        Flags = (HORIZSLIDER | GRELBOTTOM | GRELWIDTH)
+
+    If you wished it in the right border:
+
+        Flags = (VERTSLIDER | GRELRIGHT | GRELHEIGHT)
+
+    The  idea is to allow you to manipulate the scrollbar as though it
+were  a  single  gadget, not three.  If you pass confusing flags (like
+GRELBOTTOM|GRELHEIGHT)  then  it  is  undefined what will happen.  The
+GRELRIGHT  and  GRELHEIGHT  flags tell Intuition (once they are put in
+the  flag  fields of the gadgets) that the gadgets should be placed in
+the  right  window  border and that the prop gadget should size itself
+vertically  as  the  window  sizes.   Similarly,  the  GRELBOTTOM  and
+GRELWIDTH  flags  tell  Intuition  to  put the gadgets into the bottom
+window  border  and  size  the  prop gadget horizontally as the window
+sizes.   See  the  Intuition  manual for further details on those four
+flags.   The  HORIZSLIDER  and  VERTSLIDER flags are req.library flags
+that  specify  the  orientation  of  the scroll bar.  The GRELRIGHT or
+GRELBOTTOM  flags  are  put into all of the gadget's flag fields.  The
+GRELWIDTH  and  GRELHEIGHT  flags  are put into the prop gadget's flag
+fields.   The  VERTSLIDER  and  HORIZSLIDER  flags,  because  they are
+private to req.library, are not put into any gadget's flag field.
+
+    The  Size  parameter  specifies  either the height or width of the
+prop gadget, including the arrow gadgets.  Whether it is the height of
+width  depends  on whether you specify VERTSLIDER (in which case it is
+height) or HORIZSLIDER.
+
+    The  X  and  Y  parameters  specify  the location of the top arrow
+gadget  or  the  left arrow gadget, depending on whether the gadget is
+vertical or horizontal.
+
+    If all you want is a simple scrollbar that doesn't size, then just
+set VERTSLIDER or HORIZSLIDER.
+
+EXAMPLE
+
+        /* Make a scroll bar (with arrows) that goes in the bottom */
+        /* window border and sizes itself as the window sizes. Make */
+        /* it 150 pixels wide in total and position it ten from */
+        /* the left edge and 100 from the top of the window. */
+
+    MakeScrollBar(sbbuffer, (long)(HORIZSLIDER | GRELBOTTOM | GRELWIDTH),
+                        150L, 10L, 100L);
+
+SEE MakePropGadget
+
+
+;--------------------------------------------------------------------
+
+NAME
+            PurgeFiles
+SYNOPSIS
+    PurgeFiles(&FileReqStructure)
+                      A0
+DESCRIPTION
+    Clear  up  all  memory  and  file  locks  allocated  by  the  file
+requester.   This  routine must be called before your program exits if
+you  use  the  file requester with either FRQEXTSELECTM bit set or the
+FRQCACHINGM bit set.  The first bit is if you want the user to be able
+to select multiple files.  The file requester has to allocate a linked
+list  of  file  names which this function will purge.  The FRQCACHINGM
+bit  is set if you want the file requester to remember the contents of
+a directory between calls.
+
+    This  routine can be called any time you want the buffers and file
+locks purged.
+
+RETURNS
+    This routine does not return anything.
+
+SEE
+    FileRequester
+BUGS
+    None known.
+EXAMPLE
+
+main()
+    {
+    FileRequester(&FileReqStructure);
+
+    .
+    .
+    .
+
+    PurgeFiles(&FileReqStructure);
+    }
+
+
+
+;--------------------------------------------------------------------
+
+NAME
+            GetFontHeightAndWidth
+SYNOPSIS
+
+DESCRIPTION
+
+        This allows you quick access to the font attributes set by the
+user  in preferences.  The font width is returned in D0 and the height
+is returned in D1.
+
+RETURNS
+SEE
+BUGS
+EXAMPLE
+
+
+
+;--------------------------------------------------------------------
+
+NAME
+            LinkGadget
+SYNOPSIS
+
+LinkGadget(Buffer,String,nw, X, Y)
+             A0     A1   A3 D0 D1
+
+struct  GadgetBlock *Buffer;
+char    *String;
+struct  NewWindow *nw;
+long    X,Y;
+
+DESCRIPTION
+
+    This  is  actually  a superset of the previous command MakeGadget.
+What  this  does  is automatically link the gadget into your NewWindow
+structure's gadget list.
+
+        No registers are disturbed.
+
+SEE
+    MakeGadget
+BUGS
+    n/a
+
+
+
+;--------------------------------------------------------------------
+
+NAME
+            LinkStringGadget
+SYNOPSIS
+LinkStringGadget(Buffer,StringBuf,UndoBuf,nw, WidthBits,NumChars, X, Y)
+                   A0     A1        A2    A3     D0       D1     D2 D3
+
+struct  StringBlock *Buffer;
+char    *StringBuf;
+char    *UndoBuf;
+struct  NewWindow *nw;
+long    WidthBits,NumChars,X,Y;
+
+DESCRIPTION
+
+    This  is  number 2 in the LinkGadget routines.  This one obviously
+links  the  string  gadget  to the window's gadget list.  In fact, the
+only  difference  between  this  and  the  MakeString  routine  is the
+addition of the NewWindow pointer.
+
+SEE
+    MakeStringGadget
+
+
+;--------------------------------------------------------------------
+
+NAME
+            LinkPropGadget
+SYNOPSIS
+
+LinkPropGadget(Buffer,nw, Width, Height, Flags, LeftEdge, TopEdge)
+                 A0   A3    D0     D1     D2       D3       D4
+
+struct  PropBlock   *Buffer;
+struct  NewWindow   *nw
+long    Width,Height,Flags,LeftEdge,TopEdge;
+
+DESCRIPTION
+
+    Here  we  have a superset for MakeProp.  It works exactly the same
+as  MakeProp,  except  that  it attaches the gadget to the head of the
+list in the window.
+
+SEE
+    MakeProp
+
+
+;--------------------------------------------------------------------
+
+FileRequester
+
+NAME
+    FileRequester  - bring up a file/font requester.
+
+SYNOPSIS
+    success = FileRequester(&FileReqStructure)
+      D0                           A0
+
+FUNCTION
+    Bring  up  a  fully  intuitionized file/font requester (actually a
+window) and let the user select a file/font.
+
+INPUTS
+    &FileReqStructure  - pointer to an initialized (can be initialized
+mostly to zeroes) file requester structure.
+
+RESULT
+    Returns  TRUE  or FALSE to say whether the user selected a file or
+not.   The  file name(s) or font selected are then found by looking at
+the file requester structure whose address was passed.
+
+    For  ideas  on  customizing the file requester for your particular
+system  (thus  overriding the defaults used by programmers who use the
+file requester) see the customizefile.asm file.
+
+BUGS
+    Problem  with  an  Intuition bug that messes up the current active
+window  if  a  window  closes  when one of its string gadgets is still
+active.   This bug show up if you run the file requester straight from
+a CLI window and then exit it with Amiga-L.
+    I have heard that it resets some window flags when run on a custom
+screen,  but I believe this is a feature of Intuition, not of the file
+requester.
+
+SEE ALSO
+    PurgeFiles
+
+
+    The  file  requester  in  the  requester  library  allows to put a
+powerful  and  easy  to  use  file requester into your programs with a
+minimum of work and at a very small expense in program size.  The file
+requester  was  designed  to be as easy as possible to call, while not
+sacrificing power.
+
+    To  get  the  file  requester to come up all you need to do (after
+opening  the  requester  library of course) is to allocate space for a
+FileReq structure and then call the file requester with the address of
+this structure, with all fields initialized to zero, like this:
+
+struct FileReq MyFileReqStruct;
+
+success = FileRequester(&MyFileReqStruct);
+
+    The function will return either one or zero for success or failure
+respectively.
+
+    You can specify what screen the file requester should appear on in
+one  of  two  ways.  If you want it to appear on a custom screen, then
+the  best  way  is  to  set  the  pr_WindowPtr  field  in your process
+structure  to  point at one of the windows on your screen (this should
+be  done anyway, so that DOS requesters appear on your custom screen).
+This  field  is looked at by all functions in the requester library so
+this  way  is the simplest method.  The other way, which overrides the
+pr_WindowPtr  field  is to initialize the frq_Window field to point at
+one of your windows.  If this field is non-zero, it is used instead of
+the pr_WindowPtr field of your process structure.  Important note:  It
+is  VERY  important  that you reset the pr_WindowPtr field back to its
+original  value  before  your  program  exits.  If you don't, the next
+program run may try to open a requester window on a now closed screen.
+
+    The  file  requester  was  carefully  designed so that it could be
+called  without  having  to  initialize  very  many  fields.   This is
+demonstrated  by  seeing  that  it  is  possible  to  call  it without
+initializing any fields.  There are a few fields that are necessary to
+actually  get  any  use  out  of  it,  but  very  view.  Those few are
+documented in the following paragraph.
+
+    Although  you can bring the file requester up without initializing
+any  fields there are a couple of fields that you will definitely want
+to  initialize.   The  file  requester isn't much use unless you get a
+file  name back out of it, and for this you need to initialize the Dir
+and  File  fields.   These two fields should point to character arrays
+that are, respectively, REQ_DSIZE+1 and REQ_FCHARS+1 bytes long.  When
+the  file  requester  is  first  run the file requester looks in these
+arrays  for  the  default  directory  and  file  names and if the user
+selects  a  file name the directory and file name are copied back into
+these  arrays.   You  will probably want to initialize the Title field
+with  the  message that you want to have appear at the top of the file
+requester window.
+
+    If  you initialize the PathName field (it should point an array of
+at least REQ_DSIZE+REQ_FCHARS+2 characters) then when the user selects
+a file, the complete path name will be put into this array.
+
+    The Window field is used to specify what window the file requester
+is associated with.  This is used to get the file requester to show up
+on  a  custom  screen.   Generally  this  field should be unnecessary.
+There  is a variable provided in a process structure which is used for
+this purpose.  Any program that opens a custom screen and uses any DOS
+functions  should set the pr_Window pointer in their process structure
+to  a  pointer  to their window so that DOS requesters will show up on
+their  custom  screen.   If  you do this, then the file requester will
+also  show  up  on  your custom screen.  If you are not using a custom
+screen  then you don't need to set the pr_Window pointer or the Window
+field  in  the  file  requester  structure.   Note:  If you do set the
+pr_Window  structure in the process structure, be sure to return it to
+its old value before your program exits.
+
+    If  the  extended  select  bit  is set in the Flags field then the
+MaxExtendedSelect  fields  specifies  the maximum number of files that
+the user can select.  This is ignored if the extended bit isn't set in
+the Flags field.
+
+    numlines and numcolumns specify the maximum size that the file box
+will  be in characters.  If the system is low on memory, or the screen
+is  too  small,  these will be shrunk as necessary.  devcolumns is the
+number of columns of characters wide that the device box will be.
+
+    The  Flags field can currently contain seven different flags.  The
+first  flag,  FRQSHOWINFOM,  specifies  whether  or not '*.info' files
+(files  containing information for icons) should be filtered out.  The
+default is for them to be filtered.
+
+    The  FRQEXTSELECTM  flags  specifies  whether  extended  select is
+wanted.   If  you  set this flag then you should probably also set the
+MaxExtendedSelect  field.   If  you  don't  then the maximum number of
+files  the  user  will be able to select will be 65536, which is a bit
+high  for  most  purposes.  Note:  If you use this bit then you _must_
+call PurgeFiles() with the address of your FileReq structure after the
+last  time you call the file requester, in order to free up any memory
+used  in  the  extended  select  structures.   When  the  user selects
+multiple  files,  a  linked  list  of  the  file  names  selected (not
+including the directory name) will appear in the ExtendedSelect field.
+The  list  is a linked list of ESStructures.  The directory name which
+should  be  prepended  to  all of these names will appear in the array
+pointed to by the Dir field.
+
+    The  FRQCACHINGM  flag  specifies  whether  or not directories are
+cached  from  one  call  to  the next.  This is a very handy features,
+especially  for those who lack hard drives.  However, if this features
+is  used, you _must_ call the PurgeFiles() routine with the address of
+your  FileReq  structure  after  the  last  time  you  call  the  file
+requester, in order to free up any memory used in caching.
+
+    As  well  as being a file requester, this routine can be used as a
+font requester too.  Just set the FRQGETFONTSM flags to turn it into a
+font  requester.   You  should  also  put the name 'fonts:' in the Dir
+array.   The file/font requester will return a one or zero for success
+or  failure as usual, the font name will be returned in the File array
+and  the  font  size  and  style will be returned in the FontYSize and
+FontStyle  fields.   Note  that  the font requester allows the user to
+change  the  directory  where  the  fonts are read from.  Although you
+should  put  'fonts:' there, you should allow for the possibility that
+the  user  might  change  the  directory.  They might, perhaps, have a
+separate  disk  full  of  fonts.   The simplest way to deal with fonts
+coming  from  different  directories,  is  to  set  the PathName field
+instead of the Dir field.  You can then use the string in the PathName
+field  (which  will  contain  the directory and font name) as the font
+name.   If  you  don't  do this, then you have to concatenate the font
+name  and  the  directory  name  yourself.   If  you  use the PathName
+variable  then  it  is quite reasonable to leave the File field blank,
+since  all  the information you need can be obtained from the PathName
+string.
+
+    The  FRQINFOGADGETM flag specifies whether or not a hide/show info
+gadget should appear on the file requester.  This lets the user toggle
+the  state  of  the  FRQSHOWINFOM flag to decide whether or not to let
+'*.info'  files  show  up.  This is not recommended for most programs,
+since  most  users  have  no  reason  to  look at '*.info' files.  The
+default is to _not_ have this gadget show up.
+
+    The FRQHIDEWILDSM flag specifies whether or not to have 'show' and
+'hide'  string  gadgets.   These gadgets let the user use wildcards to
+specify  which  files  should  show  up.  All files are first compared
+against  the 'show' gadget.  If they fail the comparison, they are not
+displayed.  Then they are compared against the 'hide' gadget.  If they
+match  here then they are not displayed.  If the gadgets are empty, no
+comparisons  are done.  Important note:  Even if these gadgets are not
+displayed,  the comparisons are still done on the data which is in the
+Hide  and  Show  fields of the file requester structure.  The standard
+AmigaDOS wildcards (including '#', '?', '|' and '*') are supported.
+
+    Normally  the  file  requester  appears  centered  under the mouse
+pointer.   If  you would like to specify its opening position you must
+set   the   ABSOLUTEXYM   flag  and  then  put  the  x,y  position  in
+WindowLeftEdge and WindowTopEdge.
+
+    If you feel that the file requester's cached directories (selected
+by  FRQCACHINGM)  should  be  purged  whenever  the directory has been
+changed,  then  set  FRQCACHEPURGEM  field and the file requester will
+check the dates whenever it is opened.
+
+    If you feel that the file requester should never cache directories
+unless  it  manages  to  read  in the entire directory before the user
+sends  it  away,  then  set  the FRQNOHALFCACHEM flag.  This flag will
+cause  the file requester to automatically flush any incompletely read
+directories when it exits.
+
+    If  you  would  like your directories to appear in 'natural' order
+instead of alphabetically sorted, set the FRQNOSORTM flag.
+
+    If  you would like the file requester to appear without a drag bar
+or depth arrangement gadgets, set the FRQNODRAGM flag.
+
+    If  you  are using the file requester to select a filename to save
+to,  you  should set the FRQSAVINGM flag.  Similarly, if you are using
+the  file  requester to select a filename to load from, you should set
+the  FRQLOADINGM flag.  These flags are not currently used by the file
+requester,  but  they  may  be  used in the future.  They also make it
+easier  for  people who want to personalize the file requester to make
+it behave differently for loading vs.  saving.
+
+    If  you  want  the user to select a drawer name rather than a file
+name,  set  the  FRQDIRONLYM  flag.   The file requester will then not
+display  some gadgets and will display only drawers, not files, in the
+file window.  The path name selected will be returned in the Dir field
+and  in  the  PathName  field if supplied.  When in this mode, hitting
+return on the drawer gadget causes the file requester to exit with the
+directory currently in the gadget.  Hitting SHIFT or ALT return causes
+the  file  requester  to  read the specified directory and display all
+directories in there.
+
+
+    The  various  color  fields  let  you  specify  the colors of many
+aspects of the file requester.  If they are left as zero then the file
+requester uses various non-zero certain default values for them.
+
+    The  WindowLeftEdge  and  WindowTopEdge  fields are covered in the
+section on the ABSOLUTEXYM flag.
+
+    The  FontYSize  and FontStyle fields are covered in the section on
+the FRQGETFONTSM flag.
+
+    The  ExtendedSelect  field  is  covered  in  the  section  on  the
+FRQEXTSELECTM flag.
+
+    The  Hide  and  Show  fields  are  covered  in  the section on the
+FRQHIDEWILDSM flag.
+
+    The  four  BufferPos  and  DispPos  variables  are  copies  of the
+equivalent  variables  from  the four string gadgets.  This is so that
+when  the  file  requester goes away and then is brought up again, the
+cursor in the string gadgets will appear in the same places as before.
+These fields should not need to be touched by the programmer.
+
+    The  rest  of the fields are private.  Don't go touching them.  We
+guarantee  to  move them around and change their meaning, just to make
+sure  that  nobody tries to use them.  They are largely concerned with
+keeping  track  of  memory  used in directory caching.  This memory is
+freed  with  the  PurgeFiles() routine.  That's all you should need to
+know.
+
+
+
+
+
+;--------------------------------------------------------------------
+
+RealTimeScroll
+
+NAME
+    RealTimeScroll  -  do the calculations necessary for a responsive,
+pixel resolution, real time scroll routine.
+
+SYNOPSIS
+    RealTimeScroll(&ScrollStruct);
+                         A0
+
+FUNCTION
+    Make  the  implementation  of  real time scrolling area easier and
+make the real time scrolling area more responsive to the user by doing
+pixel resolution scrolling and by checking the current position of the
+scroll  bar  in mid scroll.  This routine calculates how far to scroll
+each  time  and calculates which lines of text, graphics etc.  need to
+be redrawn to fill in the empty area.
+
+INPUTS
+    &ScrollStruct - pointer to an initialized scroll structure.
+
+RESULT
+    This routine returns no result code.
+
+BUGS
+    None known
+
+SEE ALSO
+    n/a
+
+
+    It is relatively easy to implement a real time scrolling area, but
+the most obvious implementations suffer from a lack of responsiveness.
+Typically  the  routines  look  at  where the scroll bar is, calculate
+where  to  scroll  to,  scroll  there  in  several  jumps  to make the
+scrolling  look smooth, and the examine the scroll bar again to see if
+it  has  moved.  This means that there are periods, perhaps annoyingly
+long,  where  the  program may be scrolling in one direction while the
+scroll  bar is being dragged in another.  The answer is to examine the
+scroll  bar  to  find out the desired location, scroll partway towards
+the  destination and then recheck the scroll bar's location.  This can
+greatly  increase  the  responsiveness,  since the program is checking
+after  every  ScrollRaster()  call,  instead of after a dozen or more.
+However,  the  calculations,  especially  of  which  lines  need to be
+refreshed  and  where, get somewhat more complicated.  This routine is
+designed  to  simplify this situation by taking care of as many of the
+messy details as possible.
+
+    First   you   must   initialize   the   scroll   structure.    The
+TopEntryNumber, NumEntries and NumLines fields describe where the data
+is  currently.   NumEntries  is  the number of lines of data in total,
+NumLines  is  the number of lines that are visible, and TopEntryNumber
+is the line number of the first line visible (it therefore ranges from
+zero to NumEntries - 1).
+
+    LineSpacing  is  the  number of pixels high that each line of data
+is.   For  text  this  will  typically be eight or nine (for eighty or
+sixty  column  topaz).   This  can  be  set  to  one  if  your data is
+continuous (as in the case of some graphics).
+
+    PropGadget  is a pointer to the prop gadget which is being used to
+control this scroll area.
+
+    RedrawAll  is  a  pointer  to  a  function that you must supply to
+redraw the entire visible window.  This routine is called whenever the
+user  gets  so far ahead of the scroll routine that scrolling to where
+the  users  wants  to  be  would  take  to  long.  Before calling this
+routine,  the  ScrollStruct that was passed to this routine is updated
+with  the  desired TopEntryNumber so that your routine will know which
+data to redraw.
+
+    ReadMore is an optional routine that will usually not be used.  It
+is  used  if more data is being added while the scrolling is going on.
+This  is  used,  for  instance,  by the FileRequester in the requester
+library, to continue attempting to read the directoy while the user is
+scrolling.   Leave  this set to zero if you don't need it.  It is only
+called  when no scrolling is being done, but the user has not released
+the scroll bar.
+
+    ScrollAndDraw  is the most important routine.  This routine, which
+you  must  supply,  is called whenever the data must be scrolled.  The
+actual  scrolling  and  redrawing of the data is done by this routine,
+but because the scroll amount, the lines to be drawn and the number of
+lines  to  be  drawn are passed to this routine, the routine is fairly
+simple.  Four parameters are passed to this routine:
+
+ScrollAndDraw(firstlinenum, firstliney, scrollamount, numlines);
+
+    All  four parameters are passed as longs, both on the stack and in
+D0-D3,  so  that  the  routine  can  easily  be written in either C or
+assembler.
+
+    When the ScrollAndDraw, ReadMore or RedrawAll routines are called,
+A4,  A5  and  A6  all  contain  the  same  values  they contained when
+RealTimeScroll  was  called.   This allows programs written in C using
+the  small  data  model  to be able to access their data properly from
+these  routines without any special work.  All other registers (except
+those that are used to pass parameters in) could contain anything.
+
+
+
+
+;--------------------------------------------------------------------
+
+
+
+TextRequest
+
+NAME
+    TextRequest  - bring up a text requester with one to three gadgets
+and get a response.
+
+SYNOPSIS
+    result = TextRequest(&TRStructure);
+      D0                      A0
+
+FUNCTION
+    Bring  up  a requester (actually a window) containing a message to
+the  user  and  give  him  a  choice  of  from  one to three different
+responses.   The  window  automatically  sizes  to  fit  the  text and
+printf() style formatting can be used by TextRequest() to generate the
+message to the user.
+
+INPUTS
+    &TRStructure - pointer to an initialized text requester structure.
+
+RESULT
+    Returns  either  zero,  one  or two, depending on which gadget the
+user  clicks  on.   All  of  the  gadgets  are  optional,  so that the
+requester  can  be  used  to  bring up requesters that give the user a
+message,  without demanding an answer, by having only a single gadget.
+The  gadget  in  the  lower  right  hand  corner (the negative gadget)
+returns a zero, the gadget in the lower left hand corner (the positive
+gadget)  returns a one and the gadget in the middle returns a two.  If
+none  of these three gadgets are requested, a close gadget is attached
+to the window and it returns a zero.
+
+BUGS
+    If  any  line  of  the  text  to  be printed is too long, then the
+requester  will  attempt  to open up an impossibly large window, which
+will fail and the requester will return a zero.
+    The  buffer used for formatting the text is 5000 bytes long, so no
+messages can be longer than this.
+
+SEE ALSO
+    SimpleRequest
+    TwoGadRequest
+
+
+    The  purpose  of  this  routine  is  to  make  it as easy to print
+formatted  messages  in  intuitionized window with gadgets as it is to
+print  them  on the CLI screen.  For maximum ease of use, at a loss of
+flexibility,  please see the functions SimpleRequest and TwoGadRequest
+which  are  simply  glue  code functions to make calling TextRequest a
+trivial matter.
+
+    If  you want the text requester to appear on a custom screen, then
+you must set the pr_WindowPtr field in your process structure to point
+at  one  of the windows on your screen (this should be done anyway, so
+that  DOS  requesters  appear  on  your custom screen).  This field is
+looked at by all functions in the requester library so this way is the
+simplest method.  Important note:  It is VERY important that you reset
+the  pr_WindowPtr field back to its original value before your program
+exits.  If you don't, the next program run may try to open a requester
+window on a now closed screen.
+
+    The  structure  whose  address  is  passed to this routine must be
+initialized first.
+
+    The  Text field is initialized with the body of the text you would
+like  displayed.  This text can contain both printf() style formatting
+and  end  of  line characters ('\n' in C, ascii 10 in assembler).  The
+printf()  style formatting, is expanded out into the final text string
+using  the  parameter  list which is pointed to by the Controls field.
+Line  feeds  are  used, as usual, to specify a new line, thus allowing
+very  long  and  complex  messages  to  be  displayed.   The  are some
+limitations  on  the  types  of  printf() formatting that can be used.
+Since the RawDoFmt() function of the ROM is used to do the formatting,
+only   functions   supported   by   it  can  be  used.   For  complete
+documentation,  see  the documentation of the RawDoFmt() command.  The
+main  things  to be aware of is that floating point numbers can not be
+printed,  and,  if  you  are using a compiler that uses thirty-two bit
+ints  then  we  will  have to specify '%ld' to print an int, since the
+RawDoFmt command assumes an int size of sixteen bits.
+
+    The Controls field points to a list of parameters, one for each of
+the  '%'  parameters in the Text field.  Normally these will be pushed
+on  to the stack and the stack pointer copied into the Controls field.
+The first parameter used (the first one to occur in the string) should
+be  at  the beginning of the list, that is, at the lowest address, the
+one pointed at by the Controls parameter.
+
+    The Window field can be used to specify what screen you would like
+the requester to appear on.  This field is usually not necessary since
+the same information can be conveyed in the pr_WindowPtr field of your
+process  structure.   However  this  field  was  left  in  so that the
+TextRequest  function  could  be  called  from  a  task (which lacks a
+process  structure and therefore a pr_WindowPtr field).  If this field
+is  non-zero or if the calling program is a task then this field takes
+precedence over the pr_WindowPtr field.
+
+    MiddleText,  PositiveText  and NegativeText are the pieces of text
+used  for  the  three gadgets.  These three gadgets, when present, are
+placed   in  the  middle,  the  left  and  the  right  of  the  window
+respectively.   All  three  gadgets are placed along the bottom of the
+window.   All of the gadgets are optional.  If a gadget is not wanted,
+the  text  pointer  should be set to zero.  The values returned if the
+user  clicks  on these gadgets are two, one or zero, respectively.  If
+none  of  the gadgets are present (if all of the text fields are zero)
+then  a  standard  CLOSEWINDOW gadget is attached to the window.  This
+gadget returns a zero.
+
+    The  requester  attempt  to  appear so that the negative gadget is
+underneath  the  mouse pointer.  If the negative gadget is not present
+it will attempt to appear so that a different gadget is underneath the
+mouse  pointer.   This is to make it as convenient as possible for the
+user  to  respond  to,  and  especially  to respond negatively to, the
+requester.
+
+    In  addition  to  responding  to  the  requester  with  the mouse,
+keyboard  shortcuts are available.  The user can type ESC, 'N', 'Q' or
+'B'  as  a  shortcut to clicking on the negative gadget.  The user can
+type  'Y'  or 'V' as a shortcut to clicking on the positive gadget and
+can type 'M' as a shortcut to clicking on the middle gadget.
+
+    The  Title  field  of  the structure should either point to a null
+terminated  string  to  be  used in the windows title bar or should be
+null.
+
+    The  KeyMask  field  is  used  to  regulate  the  use  of keyboard
+shortcuts.  The qualifier field of all keyboard messages is ANDed with
+this  field,  and  the  keypress  is  ignored  if  the result is zero.
+Therefore,  to enable all keypresses to be used as keyboard shortcuts,
+initialize  this  field to $FFFF.  To turn off the keyboard shortcuts,
+initialize  this  field to 0.  To force the user to hold down the left
+or right amiga key, initialize this field to AMIGAKEYS.
+
+    The  textcolor,  detailcolor  and  blockcolor  fields  can be left
+unitialized (ie; set to zero) if you wish, in which case the requester
+will  use  the  default values of one, zero and one respectively.  The
+textcolor  field  is used for the color of the actual text message and
+the detail and block color fields are simple copied into the fields of
+the same name in the new window structure.
+
+;--------------------------------------------------------------------
+
+
+SimpleRequest
+
+NAME
+    SimpleRequest - bring up a text requester and wait for the user to
+acknowledge it.
+
+SYNPOSIS
+    SimpleRequest(title, string, parameterlist, , ,)
+                    A0     A1         A2
+
+FUNCTION
+    Bring  up  a requester (actually a window) containing a message to
+the  user  and  wait  for  the  user  to  acknowledge  it.  The window
+automatically  sizes to fit the text and printf() style formatting can
+be used by TextRequest() to generate the message to the user.
+
+INPUTS
+    title  -  a  null  terminated  string.   The  window  title of the
+requester.
+    string  -  a  null  terminated  string,  containing printf() style
+formatting commands if desired.
+    parameterlist - the parameters corresponding to the printf() style
+formatting  commands  in  the string.  In C these are listed after the
+control  string,  exactly as with printf().  In assembler, the address
+of the list of parameters is put in A1.
+
+RESULT
+    No result code is returned.
+
+BUGS
+    See TextRequest
+
+SEE ALSO
+    TextRequest
+    TwoGadRequest
+
+
+    This  function was designed to make it as easy to give messages to
+the  user  and await acknowledgment in an intuition style requester as
+it  is  using  printf() and getc().  Simply replace almost any call to
+printf()  with a call to SimpleRequest and a requester will appear and
+not  disappear until the user acknowledges it (either with a keystroke
+or with the mouse).
+
+    Example:
+    SimpleRequest("okay?", "There have %d changes made to this file.",
+                  numchanges);
+
+    Please  see  the  TextRequest  documentation for further important
+details.   This  routine  is simply a few lines of assembler glue code
+for  the TextRequest routine.  The TextRequest routine is a little bit
+more   complicated   to   use,  but  it  allows  correspondingly  more
+flexibility.   It  is  fairly  simple to modify the glue code to allow
+still more high level entry points to the TextRequest routine.
+
+
+    This  is  a  complete  program that makes use of the SimpleRequest
+function  from  assembler,  and  demonstrates a few of the features of
+Format (which is used by SimpleRequest).
+
+;--------------------------------------------------------------------
+;-----CUT HERE---------------CUT HERE--------------------------------
+;--------------------------------------------------------------------
+
+    INCLUDE "libraries/reqbase.i"
+
+    public  SimpleRequest
+    public  _ReqBase,_main
+
+;--------------------------------------------------------
+; This file should be linked with reqglue.o, for the SimpleRequest
+;function.
+;--------------------------------------------------------
+
+SYS MACRO
+    XREF    _LVO\1
+    JSR _LVO\1(A6)
+    ENDM
+
+;--------------------------------------------------------
+
+
+_main
+    OpenReq
+mystart
+
+    MOVE.L  A6,A5
+    MOVE.L  A6,_ReqBase
+
+
+    PEA     string
+    MOVE.L  #$C0FFEE,-(SP)
+    MOVE.W  #$1CE,-(SP)
+    MOVE.W  #'B',-(SP)
+    MOVE.L  #-12345,-(SP)
+    MOVE.L  SP,A1
+    LEA     Text,A0
+    JSR     SimpleRequest
+
+    LEA     16(SP),SP
+
+    MOVE.L  A5,A1
+    MOVE.L  4,A6
+    SYS     CloseLibrary
+
+    MOVEQ   #0,D0
+    RTS
+string
+    DC.B    "This is a string.",0
+Text
+    DC.B    "A long (signed) decimal is: %ld,",10
+    DC.B    "a character is: %c,",10
+    DC.B    "a 16 bit hex val might be: %x, ",10
+    DC.B    "a register-style format 32 bit hex: $%08lx,",10
+    DC.B    "and a string might read: `%s'.",0
+
+    dseg
+
+_ReqBase    DC.L    0   ;The SimpleRequest function in the glue code
+                        ;needs this variable.
+
+    END
+
+;--------------------------------------------------------------------
+;-----CUT HERE---------------CUT HERE--------------------------------
+;--------------------------------------------------------------------
+
+
+
+
+;--------------------------------------------------------------------
+
+
+
+TwoGadRequest
+
+NAME
+    TwoGadRequest - bring up a text requester and wait for the user to
+acknowledge it.
+
+SYNPOSIS
+    result = TwoGadRequest(title, string, parameterlist, , ,)
+                             A0     A1         A2
+
+FUNCTION
+    Bring  up  a requester (actually a window) containing a message to
+the user and wait for the user to click on either the OK or the CANCEL
+gadget.   The  window automatically sizes to fit the text and printf()
+style  formatting can be used by TextRequest() to generate the message
+to the user.
+
+INPUTS
+    title  -  a  null  terminated  string.   The  window  title of the
+requester.
+    string  -  a  null  terminated  string,  containing printf() style
+formatting commands if desired.
+    parameterlist - the parameters corresponding to the printf() style
+formatting  commands  in  the string.  In C these are listed after the
+control  string,  exactly as with printf().  In assembler, the address
+of the list of parameters is put in A1.
+
+RESULT
+    Either  one  or  zero  is  returned, depending on whether the user
+selected, respectively, the OK or the CANCEL gadget.
+
+BUGS
+    See TextRequest
+
+SEE ALSO
+    TextRequest
+    SimpleRequest
+
+
+    This  function was designed to make it as easy to give messages to
+the  user  and get a response in an intuition style requester as it is
+using printf() and getc().  Simply replace almost any call to printf()
+with  a  call  to  SimpleRequest  and  a requester will appear and not
+disappear  until  the  user responds to it (either with a keystroke or
+with the mouse).
+
+    Example:
+    if(TwoGadRequest("okay?","There have %d changes made to this file"
+                     "\nO.K. to continue?",
+                     numchanges))
+        exit(10);
+
+    Please  see  the  TextRequest  documentation for further important
+details.   This  routine  is simply a few lines of assembler glue code
+for  the TextRequest routine.  The TextRequest routine is a little bit
+more   complicated   to   use,  but  it  allows  correspondingly  more
+flexibility.   It  is  fairly  simple to modify the glue code to allow
+still more high level entry points to the TextRequest routine.
+
+
+
+-------------------------------------------------------------------
+NAME
+    GetString
+
+BOOL = GetString(buffer, title, window, visiblechars, maxchars)
+D0                 A0      A1     A2        D0          D1
+
+DESCRIPTION
+    This  routine allows you to bring up a nice intuition style string
+requester  in  its  own window and get a single line of input from the
+user in just a one line function call.
+
+    buffer  points  to  the  a buffer containing the string which will
+appear  when  the string gadget first appears and it is also where the
+result will be put, if this routine returns TRUE.
+    Title  is  a pointer to a null terminated string that will be used
+for the window title.
+    Window  can  be  used  to  specify  what screen you would like the
+requester  to  appear on.  You simply put a window pointer in it (or a
+zero if you want the requester to appear on the workbench screen).  If
+you have already set your pr_WindowPtr then you can simply pass a zero
+for the window pointer and the pr_WindowPtr value will be used.
+    visiblechars  specifies  how  many  characters  should actually be
+visible at one time.
+    maxchars   specifies   how  long  the  buffer  is,  including  the
+terminating zero.
+
+RETURNS
+    This  routine returns true or false, depending on whether the user
+clicked  on  the  cancel  gadget  (FALSE)  or clicked on the OK gadget
+(TRUE)  or clicked on the close window gadget (FALSE) or hit return in
+the string gadget (TRUE).
+
+BUGS
+    None known.
+
+
+
+-------------------------------------------------------------------
+NAME
+    NewGetString
+BOOL = NewGetString(getstringstruct)
+D0                        A0
+
+DESCRIPTION
+
+    This  is  just  a  different way of calling the GetString routine.
+Instead  of passing five different parameters, you fill out entries in
+a   structure   and  pass  it's  address.   The  structure  is  called
+GetStringStruct.   The  values you put into the structure are the same
+as the ones passed to the GetString function.
+
+BUGS
+    None known.
+
+SEE ALSO
+    GetString
+
+
+-------------------------------------------------------------------
+NAME
+    GetLong
+
+BOOL = GetLong(&GetLongStruct)
+D0                   A0
+
+DESCRIPTION
+    This  routine allows you to bring up a nice intuition style string
+requester  in  its  own  window and get a single signed thirty-two bit
+number  from the user in just a one line function call (although a few
+fields in the structure must be initialized first).
+
+    The  GetLongStruct  contains  fields  for  letting you specify the
+title  bar  message,  the  default  value  that  should  appear in the
+requester  and  the maximum and minimum values that the routine should
+allow  to  be  entered.   If  the  routine  returns  TRUE  (indicating
+successful  entry  of  a  number)  then  the result is returned in the
+result field of the structure.
+    The window field can be used to specify what screen you would like
+the requester to appear on.  You simply put a window pointer in it (or
+a  zero  if you want the requester to appear on the workbench screen).
+If  you  have  already set your pr_WindowPtr then you can simply leave
+the window field zeor and the pr_WindowPtr value will be used.
+
+RETURNS
+    This  routine  returns  TRUE  or  FALSE  (1 or 0) in D0 to specify
+whether  or  not  the  user  successfully  entered  a number.  If this
+routine  returns TRUE then you can find the result in the result field
+of the GetLongStruct whose address you passed to GetLong.
+
+
+
+-------------------------------------------------------------------
+RawKeyToAscii
+
+SYNOPSIS
+
+ key = RawKeyToAscii(Code,Qualifier,IAddress)
+ D0                   D0     D1        A0
+
+ UWORD  Code,Qualifier;
+ APTR   IAddress;
+
+FUNCTION
+
+    Have you ever wanted to have both RAW and COOKED keys?  You can do
+it by checking the keys for whatever raw keys you want, and then using
+the  console.device's RawKeyConvert routine, except that it's a hassle
+to start mucking about with the device.
+
+    Well, here you go!  A nice, clean way of converting from a raw key
+to  a  cooked  key,  in a single call!  All you have to do is pass the
+code  and  qualifier  from  your  intuimessage, and the address of the
+message  itself, and you will get back the ASCII value of the key that
+was  hit.  This does, in fact, use the console.device's RawKeyConvert,
+so that if you have a different keymap set, it will be used.
+
+EXAMPLE
+
+
+struct IntuiMessage *im;
+
+    key = RawKeyToAscii(im->Code,im->Qualifier,im->IAddress);
+

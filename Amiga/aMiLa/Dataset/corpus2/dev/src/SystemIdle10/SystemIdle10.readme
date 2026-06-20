@@ -1,0 +1,31 @@
+Short:        A function to get systems usage, like cpuload2
+Author:       tinic@tinic.mayn.sub.de
+Uploader:     tinic tinic mayn sub de
+Type:         dev/src
+Architecture: m68k-amigaos
+
+TITLE
+
+    SystemIdle
+
+VERSION
+
+    V1.0
+
+AUTHOR
+
+    Tinic Urou
+
+    Steinriesstr. 13
+    88348 Saulgau
+    - Germany -
+
+    +49-(0)-7581-3028
+
+    UUCP:   tinic@tinic.mayn.sub.de
+
+DESCRIPTION
+
+    This is a function to get the systems usage. It is based on cpuload2 from Thomas
+    Radtke. It should work on every compiler and machine, and it can easily be added
+    to own projects.

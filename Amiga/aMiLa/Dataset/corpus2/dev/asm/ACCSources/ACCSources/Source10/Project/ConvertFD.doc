@@ -1,0 +1,150 @@
+							M.Meany,
+							1 Cromwell Road,
+							Southampton,
+							Hant's.
+							SO1 2JH
+							
+							December 199O
+
+			ConvertFD © 1990 by M.Meany
+			===========================
+
+ Disclaimer
+ ==========
+ 
+  The following applies to ConvertFD and ConvertFD.doc. The term 'program'
+will be used to refer to these two files from now on.
+
+ The program may not be distributed by any commercial software or hardware
+vendor without my written authority.
+
+ This program may be distributed by Public Domain Libraries providing:
+ 
+  (i)   All copyright information is unalterd.
+  
+  (ii)  The doc file MUST be on the disc.
+  
+  (iii) The disc package that the program is supplied with MUST NOT contain
+       an assembler or language compiler, unless written authority has been
+       obtained from me, or a copy of the package is sent to me.
+       
+ I cannot be liable for the use or misuse of the program. Full responsability
+lies with the user.
+
+ If you do use this program and are pleased with the result, then write and 
+tell me.
+
+			***********
+			* WARNING *
+			***********
+			
+ ConvertFD writes files to disc. Should files exsist on the disc in the
+target directory, they will be deleted and the content lost forever. If
+in any doubt, make a copy of the target disc before running ConvertFD.
+
+ Origin
+ ======
+ 
+ ConvertFD came into being because of the copyright laws stopping people
+from distributing Include files with PD Assemblers. An assembler without
+any include files is a pain in the rear to use and often confuses newcommers
+to assembly programming. I say this from experience !
+
+ Function
+ ========
+ 
+ ConvertFD reads the .fd files from the Extras disc, supplied with every new
+Amiga, converts the files into commented ( sort of ! ) assembler include
+files and writes this include file into the include directory on an assembler
+workdisc.
+
+ Usage
+ =====
+ 
+ Before running ConvertFD, make a copy of your Extras disc and rename it as
+ 
+ Extras
+ 
+this can be achieved by entering the following line in the CLI:
+
+relabel drive xxx name Extras
+
+ where xxx would be df0: or df1: or whatever drive you put the disc in.
+ 
+ ConvertFD can be invoked from the Workbench, by double clicking on its icon,
+or from the CLI, by entering convertfd.
+
+ Once invoked, a window will open containing brief instructions and three
+gadgets.
+
+ Internal Drive Only
+ -------------------
+ If you only have the internal disc drive available, I would suggest you
+enter the following CLI commands before invoking ConvertFD:
+
+  1/  makedir ram:Include
+  
+  2/  assign Workdisc: ram:
+  
+ ConvertFD will now treat the ram disc as the target disc for the include
+files. When ConvertFD has finished and its indow closes, use a file utility,
+or the CLI, to copy the directory ram:Include onto your assembler workdisc.
+This is not essential, but it will save you 36 disc swaps !
+
+ Two or More Drive Systems.
+ --------------------------
+ You will need your Extras disc and an assembler workdisc. The assembler
+workdisc should be named 'Workdisc:'. If this is not the case you have three
+options:
+
+ 1/ Assign the logical name 'workdisc:' to it from the CLI.
+ 
+ 2/ Rename it.
+ 
+ 3/ Follow the instructions for internal drive users.
+ 
+ All Users
+ ---------
+ Once prepared, you can start ConvertFD. The three gadgets offer the
+following options:
+
+   Extras 1.2
+   ----------
+   For users with Amiga Extras 1.2.
+   If selected, will ask you to insert your extras disc and proceed to
+   produce the required include files.
+   
+   Extras 1.3
+   ----------
+   For users with Amiga Extras 1.3.
+   If selected, will ask you to insert your extras disc and proceed to
+   produce the required include files.
+   
+   CANCEL
+   ------
+   To Abort the program.
+   
+ Once all the .fd files have been converted, the window will close and the
+program will finish.
+
+ Bugs !!!
+ ========
+ 
+ I don't know of any yet, but would appreciate it if anyone finding one would
+report it to me as soon as possible.
+
+ Source
+ ======
+ 
+ The source for the program will be supplied to anyone sending a disc and
+self addressed, stamped envelope to me.
+
+ Other Programs
+ ==============
+ 
+ Write to me at the above address for information on other projects I am
+involved in and have completed.
+
+ Bye for now, 
+ 
+              Mark.

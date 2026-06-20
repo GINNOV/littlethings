@@ -1,0 +1,347 @@
+History:	  *** PhxLnk - Amiga DOS Object File Linker ***
+		  PhxLnk wurde assembliert mit: PhxAss V2.00 - V3.xx
+
+Datum	 Version
+
+18.07.92  V1.00   Erste Version ohne Fehler. Ist allerdings auch nicht
+		  schneller als BLINK.
+		  HUNK_RELOC16 und HUNK_RELOC8 werden noch nicht verarbeitet,
+		  dafuer beherscht er aber Near-Relocs ($000003f8-Hunkblock
+		  oder $86xxxxxx in HUNK_EXT).
+
+20.07.92  V1.10   Durch einige Aenderungen in den Structures, sowie in der
+		  Lade-Technik, wurde die Geschwindigkeit annaehernd verdop-
+		  pelt. HUNK_RELOC8/16 werden nun auch erkannt.
+		  Noch nicht verarbeitet werden:
+		  o Overlay-Hunks ($000003f5/3f6)
+		  o Das von SAS/Lattice benutzte Library-Format ($000003fa)
+		    (keine Ahnung wie's funktioniert)
+
+26.07.92  V1.20   ** Fehlerkorrekturen
+		  Falls beim Entfernen der nicht benoetigten Library-Units
+		  eine Section voellig leer wird, geriet der Linker in eine
+		  Endlosschleife.
+		  ** Neu
+		  Mit den vorherigen Versionen war es zwar schon moeglich mit-
+		  tels des Small-Data Schalters (-d) alle DATA und BSS-Sections
+		  zusammenzulinken und dabei die BSS-Sections zu loeschen,
+		  allerdings benoetigt ein Programm das die BSS-Sections wieder
+		  herstellen moechte mindestens die folgenden drei Symbole:
+		  _DATA_BAS_	 Beginn der Data-Section
+		  _DATA_LEN_	 Laenge der Data-Section in Bytes
+		  _BSS_LEN_	 Laenge der (nicht vorhandenen) Bss-Section
+		  Der Linker erzeugt nun diese Symbole.
+
+27.07.92  V1.21   ** Neu
+		  Der Linker liefert als Return-Code jetzt eine 1 zurueck,
+		  falls ein Fehler auftritt, ansonsten eine 0.
+
+19.09.92  V1.25   ** Fehlerkorrekturen
+		  Wenn der Linker ein XREF-Symbol nicht erfuellen konnte,
+		  stuerzte er mit Guru #81000009 (Free Memory Twice) beim
+		  Verlassen des Programms ab.
+		  ** Neu
+		  Wenn der Small-Data Modus genutzt wird, musste bisher der
+		  Programmierer (oder der Compiler) genau darauf achten, dass
+		  es keine Reloc32-Referenzen auf den Small-Data Bereich gibt.
+		  Da der Small-Data Bereich zu Programmbeginn umkopiert werden
+		  muss, waeren diese Referenzen ungueltig.
+		  Bei gesetzter -d Option meldet der Linker jetzt solche
+		  Referenzen als Warning.
+
+20.09.92  V1.26   ** Fehlerkorrekturen
+		  Der 'Free Memory Twice' Guru tauchte bei Linker-Libraries
+		  immer nocht auf. Das Problem wurde in V1.25 nur verlagert.
+		  Jetzt muesste das Problem (hoffentlich) endgueltig beseitigt
+		  sein.
+
+23.09.92  V1.27   ** Neu
+		  Bei Reloc32-Warnings im Small-Data Modus wird jetzt die
+		  Section sowie der erste Referenz-Offset mit ausgegeben.
+
+04.11.92  V1.28   ** Fehlerkorrekturen
+		  Noch einen #81000009-GURU beseitigt (Uff!). Diesmal war's
+		  bei 'Reloc16 out of range'.
+
+10.11.92  V1.30   ** Neu
+		  Einige Kleinigkeiten verbessert. Zum Beispiel wird jetzt der
+		  Offset innerhalb einer Section mit ausgegeben, falls ein
+		  'Relative addressing out of range' - Fehler entdeckt wurde.
+
+16.11.92  V1.31   ** Fehlerkorrekturen
+		  Bei 'Illegal extension in ..' wurde der fehlerhafte Filename
+		  nicht mit ausgegeben.
+
+24.02.93  V1.32   Kleinere Aenderungen
+
+01.03.93  V1.35   ** Neu
+		  Die neue Option '-a' setzt bei allen Sections das Chip-RAM
+		  Memflag, so dass das gesamte Program ins Chip-RAM geladen
+		  wird.
+
+05.06.93  V1.40   ** Fehlerkorrekturen
+		  Auf OS2.0/3.0-Systemen funktionierte die Textausgabe mittels
+		  RawDoFmt() nicht!!
+
+28.07.93  V2.00   ** Neu
+		  Eine im Small-Data Modus gelinkte Data-BSS Section muss nun
+		  nicht mehr in einen neuen Speicherbereich, der die aus-
+		  reichende Groesse besitzt, kopiert werden. Der Platz fuer
+		  den nichtexistenten BSS-Bereich wird beim Laden der
+		  Segmente nun mit-allociert, allerdings nicht initialisiert.
+		  Zum initialisieren des BSS-Bereichs (normalerweise mit 0)
+		  werden also die Linker-Symbole _DATA_BAS_, _DATA_LEN_ und
+		  _BSS_LEN_ immer noch benoetigt.
+		  Durch dieses neue Verfahren entfaellt das Verbot fuer Refe-
+		  renzen auf den Small-Data Bereich. Der SmallCode/Data Modus
+		  ist somit dem normalen Large-Modus voellig gleichwertig.
+
+07.08.93  V2.01   ** Fehlerkorrekturen
+		  Wenn in einem Filenamen mehrere '.' vorkommen hatte der
+		  Linker Schwierigkeiten dieses File als Object oder Library
+		  zu erkennen.
+
+27.08.93  V2.02   ** Neu
+		  Sections werden jetzt nur noch dann gelinkt, wenn sie den
+		  selben Namen, Typ UND dieselben Flags aufweisen (Trennung
+		  von Fast und Chip-Sections des selben Namens).
+
+02.09.93  V2.03   ** Neu
+		  HUNK_NAME ($3e8) darf ab jetzt auch fehlen. Das hat dann
+		  genau dieselben Auswirkungen wie HUNK_NAME mit Laenge 0.
+
+06.10.93  V2.05   ** Fehlerkorrekturen
+		  Wenn die -d Option benutzt wird, das Object aber keine Data-
+		  Section besitzt, fuehrte dies zu einem boesen Programmfeh-
+		  ler (unendlich grosses Executable, wegen uninitialisierter
+		  Data-Section Liste).
+
+18.01.94  V3.00   ** Fehlerkorrekturen
+		  Wenn eine Section einer Library die Länge 0 hat, und von
+		  KillUnselected() als letzte Section eines Hunks entfernt
+		  wird, dann konnte es vorkommen, daß der Hunk schon lange
+		  vorher freigegeben worde war und es kommt zum Deadlock oder
+		  FreeMemoryTwice (oder schlimmerem).
+		  ** Neu
+		  o Auf AbsExecBase wird nur noch einmal zugegriffen.
+		  o Viele Routinen und Variablen auf 32-Bit ausgerichtet.
+		  o Die Linker-Symbole von Lattice/SAS (_LinkerDB, __BSSBAS,
+		    __BSSLEN) und DICE (__RESIDENT, __DATA_BAS, __DATA_LEN,
+		    __BSS_LEN) werden aus Kompatiblititätsgründen nun ebenfalls
+		    erzeugt.
+		  o Das speizielle, von Lattice/SAS benutzte, Library-Format
+		    mit den Hunk-Blöcken HUNK_LIB und HUNK_INDEX wird nun
+		    ebenfalls gelesen.
+
+22.01.94  V3.01   ** Fehlerkorrekturen
+		  Durch massive Änderungen in V3.00 hatte sich ein kleiner
+		  Fehler eingeschlichen, der den Namen des Output-Files immer
+		  auf den der zuletzt gelesenen Section setzte.
+
+31.07.94  V3.05   ** Fehlerkorrekturen
+		  Nicht hinzugelinkte Sections wurden in einigen Fällen trotzdem
+		  noch im HUNK_HEADER mit zufälliger Längenangabe aufgeführt.
+		  ** Neu
+		  HUNK_RELOC und HUNK_SYMBOL werden bei Länge 0 jetzt wirklich
+		  nicht mehr geschrieben (bisher klappte dies nur teilweise).
+
+04.08.94  V3.10   ** Fehlerkorrekturen
+		  Katastrophale Fehler beim Linken mit Libraries behoben.
+		  Anstatt der Section-Nummern werden nun Section-Pointer in
+		  den XDEF-Strukturen verwendet.
+		  ** Neu
+		  o PhxLnk ist vollkommen lokalisiert!
+		    Bisher existieren deutsche und polnische Kataloge.
+		  o Anleitung ins AmigaGuide-Format konvertiert.
+
+17.12.94  V4.00   ** Fehlerkorrekturen
+		  o Ich fürchte fast, ich habe bei der Fehlerkorrektur in V3.10
+		    die Linker-Symbole übersehen, somit war es nicht mehr mögl-
+		    lich SmallData-Module zu linken.
+		  o MemFlags erschienen unnötigerweise auch in der Hunk-Block
+		    Größe (sollten sie laut Ralph Babel aber nicht!).
+		  ** Neu
+		  o PhxLnk läuft nur noch ab OS2.04, benutzt dessen dos.library
+		    Funktionen und ist deshalb etwas kürzer geworden.
+		  o Parameter-Übergabe nach OS2 ReadArgs()-Style.
+		  o Neue Titelzeile und Short-Intstruction.
+		  o DEBUG-Hunkblocks werden nicht mehr verbunden, wenn deren
+		    Sections verbunden werden, sondern einzeln gespeichert.
+		  o DEBUG-Hunkblocks werden jetzt wie bei BLink (SAS/C)
+		    behandelt, so daß im ersten Longword ein Offset von Linker
+		    eingesetzt wird. Damit kann PhxLnk Load Files für einen
+		    Source Level Debugger erzeugen!
+		    PowerVisor hat mit den erzeugten Offsets bei LINE-Debug
+		    Blöcken leider Probleme, daher gibt es die Option PVCOMPAT
+		    um die Debug-Böcke PowerVisor-freundlich zu gestalten.
+		  o Neue Option DEFINE um absolute Linker-Symbole extern zu
+		    definieren.
+		  o Bei absoluten Linker-Symbolen zeigte der SectionPtr auf NULL
+		    da er nicht bebötigt wird. Trotzdem kann dies zu Enforcer-
+		    Hits führen! Daher mußte ich eine Dummy-Adresse eintragen.
+		  o __MERGED Sections werden jetzt, wie bei BLink, zu Small-
+		    Data Sections vereinigt. Dazu ist der SMALLDATA-Schalter
+		    nicht nötig!
+		  o Wenn eine Code oder Data Section (auch SmallData) mit mind.
+		    4 Nullbytes endet, werden diese nicht mitgespeichert
+		    sondern nur noch im Hunk-Header vermerkt.
+		    Das dies unter Kickstart 1.x nicht funktioniert, gibt es
+		    den Kompatibilitätsschalter K1=KICK1/S.
+
+25.01.95  V4.02   ** Neu
+		  o Wenn ein Name mit '@' beginnt, werden Objektnamen aus einer
+		    Ascii-Datei gelesen, die sogar weitere '@' enthalten darf.
+
+09.02.95  V4.03   ** Fehlerkorrekturen
+		  o Das bestimmen der Dateilängen mit SetFilesize führt zu
+		    einer Schreiboperation auf die Datei (d.h. mindestens das
+		    Datum wurde verändert). Rückkehr zu zweimal Seek().
+		  o Möglicher Absturz bei einigen Read-Errors, da das File-
+		    Handle des fehlerhaften Files vergessen wurde.
+
+21.02.95  V4.10   ** Fehlerkorrekturen
+		  o Bug mit __MERGED-Sections. Alle Referenzen auf *sämtliche*
+		    Bss-Sectionen wurden verschoben, wenn Data-__MERGED
+		    vorhanden ist!
+
+19.03.95  V4.15   ** Neu
+		  o Wenn nicht ausdrücklick durch KICK1 verboten, erzeugt
+		    PhxLnk HUNKRELOC32SHORT Blöcke, wenn möglich.
+		  o Phoenix/Phantasm Schriftzug hinzugefügt.
+
+18.05.95  V4.16   ** Fehlerkorrekturen
+		  o Durch die Berichtigung des __MERGED-Bugs war der normale
+		    SMALLDATA-Modus nicht mehr funktionstüchtig!
+		  o ShortenSections(), das Entfernen der Nullen am Ende einer
+		    Code/Data-Section funktionierte nicht richtig.
+
+24.05.95  V4.17   ** Neu
+		  o Wenigstens teilweise Unterstützung des SAS/C-SLink
+		    typschen ___ctors und ___dtors Felder (indem ich sie
+		    NULL setze...)
+		  o Verbesserter italienischer Catalog
+		  o Französischer Catalog.
+		  ** Bekannte Fehler
+		  o Small-Data Referenz auf Nicht-__MERGED Section ohne
+		    Fehlermeldung???
+
+20.12.95  V4.20   ** Neu
+		  o Ab jetzt gibt es zwei PhxLnk-Versionen (2.x und 3.x)
+		    die entweder eigene MemPool-Funktionen (2.x) oder die
+		    des Betriebssystems verwenden. Durch MemPools wird das
+		    Linken mit Libraries um ein mehrfaches beschleunigt.
+		  ** Fehlerkorrekturen
+		  o Durch Einführung der MemPools wurde ein Problem mit
+		    leeren XDEF-Sections beseitigt, die automatisch ent-
+		    fernt wurden, wenn nicht durch PRESERVE/S verhindert.
+		  ** Erweiterungsmöglichkeiten
+		  o Bei 'out of range' Fehlern könnte man den Namen des
+		    Symbols ausgeben, welches außerhalb der Reichweite ist.
+		  o Ausgabe der undefinierten Symbole sollte mit CTRL-C
+		    abzubrechen sein.
+
+08.03.96  V4.21	  ** Fehlerkorrekturen
+		  o 'PhxLnk a.b.c.o' erzeugte 'a' statt 'a.b.c'
+		  ** Neu
+                  o Ausgabe der undefinierten Symbole läßt sich mit CTRL-C
+		    abbrechen.
+
+23.03.96  V4.22   ** Fehlerkorrekturen
+		  o Das Extension-Problem, das ich in der vorigen Version
+		    beseitigt glaubte, tauchte bei längeren Filenames 
+		    immer noch auf. Jetzt sollte ich bis zu einer Filename-
+		    länge von 234 unmöglich sein.
+                  ** Neu
+		  o Support für den XREF-Subtyp RELREF32 ($88)!
+		  o PhxLnk verwendet Buffered I/O (FWrite) beim Erzeugen
+                    der Zieldatei.
+
+03.05.96  V4.23   ** Fehlerkorrekturen
+		  o PhxLnk verhinderte nicht, daß die Section-Länge, beim
+		    Löschen von Null-Bytes an dessen Ende, runter auf bis
+		    zu 0 fallen konnte. Dies mag LoadSeg() V40 nicht und
+		    löscht in dem Fall den BSS-Teil der Section nicht mehr.
+		  ** Neu
+		  o Statt Buffered I/O via dos.library kommen jetzt eigene,
+		    noch mindestens dreimal schnellere, I/O-Routinen zum
+		    Einsatz. Die Größe des Buffers läßt sich über den
+		    neuen CLI-Parameter BUFSIZE einstellen und ist nor-
+		    malerweise 8k.
+		  ** Bekannte Fehler
+		  o Enforcer-Hit (LongRead from $8) beim Linken von t1.o
+		    und t2.o (siehe Bugs/).
+		  o Bei mehreren XREFs mit demselben Namen gibt es keine
+		    Fehlermeldung. Wenn diese in einer Library vorhanden
+		    sind, werden die Module nicht einmal hinzugelinkt.
+
+06.07.96  V4.24	  ** Fehlerkorrekturen
+		  o Mehrfach definierte XDEFs werden nun erkannt und in
+		    einer Fehlermeldung "Multiple defined symbol: %s"
+		    mit Namen benannt.
+		  ** Neu
+		  o Code ein wenig aufgeräumt. Ein paar, seit der Umstellung
+		    auf MemPools, unnötige Instruktionen entfernt.
+
+08.11.96  V4.25	  ** Neu
+		  o Norwegischer Catalog
+		  o XDEF-Symbole werden über eine Hash-Table gesucht,
+		    deren Größe in Zweierpotenzen von 2^8 - 2^16 mit dem
+		    neuen CLI-Parameter HT=HASHTAB/K/N verstellt werden
+		    kann.
+		  o Alle Ausgaben können mit ^C abgebrochen werden.
+		  o Neue EXT_REF-Typen (OS3.0) EXT_ABSREF8 ($8b) und
+		    EXT_ABSREF16 ($8a) werden unterstützt. PhxAss wird
+		    diese demnächst auch verstärkt verwenden.
+
+08.01.97  V4.26   ** Neu
+		  o Zwei neue Schalter: NOSHORTRELOCS/S und DONTSHORTENSECT/S,
+		    um das Löschen von Nullbytes am Ende einer Section,
+		    sowie das Generieren von RELOC32SHORT-Hunks getrennt
+		    abschalten zu können.
+		  o Neues Linkersymbol _CODE_LEN_, gibt die Länge der
+	 	    ersten, oder aller bei SmallCode, Code-Section in
+		    Bytes an.
+
+02.02.97  V4.30   ** Neu
+		  o Über das Argument DEF=DEFINE/K ist es von nun an
+		    möglich, neben numerischen, absoluten Definitionen
+		    (EXT_ABS) auch Symbol-Definitionen (EXT_DEF und EXT_ABS)
+		    zu tätigen. Beispiel:
+		    DEFINE "_symbolX=_symbolY" (dabei muß _symbolY natürlich
+		    bekannt sein).
+		  o Zur Kompatibilität mit BLink/SLink werden die folgen-
+		    den Optionen verstanden, bewirklen aber nichts:
+		    BATCH/S,ADDSYM/S,NOALVS/S,NOICONS/S,LIB/S
+		  o Über den neuen Schalter "ALV/S" wird PhxLnk erlaubt
+		    Automatic Link Vectors zu erzeugen. Dies funktioniert
+		    derzeit aber nur als Stubs für externe Symbole in
+		    anderen Sectionen und nicht für zu große, relative
+		    Sprünge innerhalb derselben Section, über mehrere Module.
+		  o In einem Hunk sind nun beliebig viele Hunk-DEBUG Blöcke
+		    erlaubt (SAS/C nutzt dies intensiv). SAS/C-Features
+		    wie OPTS und HEADDBGV01 Blöcke werden aber (noch) nicht
+		    unterstützt.
+		  o Neues Linkersymbol _SMALL_DATA_LEN_ bezeichnet einer-
+		    seits die Gesamtlänge des Small Data Bereichs und
+		    kann andererseits als Indikator für aktivierten Small
+		    Data Mode genutzt werden, da es im Larg Data Mode den
+		    Wert Null enthält.
+
+23.09.97  V4.31   ** Fehlerkorrekturen
+		  o Absturz der letzten beiden Versionen auf 68000/010-
+		    Systemen (Word-Zugriff auf ungerade Adresse).
+		  o HUNK_DEBUG Blöcke sind auch *vor* Code/Data/Bss-Hunks
+		    erlaubt, werden dann jedoch ignoriert, da sie keiner
+		    Section zuzuordnen sind.
+
+17.11.98  V4.32   ** Fehlerkorrekturen
+		  o ___ctors und ___dtors müssen __ctors/__dtors heißen.
+
+28.02.99  V4.33   ** Neu
+		  o Spanischer Catalog.
+
+Verbesserungsvorschläge:
+- PRELINK, wie bei BLink, um ein Object-File zu erzeugen, welches immer
+  noch unaufgelöste Referenzen besitzt.
+- Möglichkeit der Ausgabe eines XREF-Listings (wie bei BLink).
+- Ausgabe des angesprochnenen Symbolnames, bei "Relative out of Range".

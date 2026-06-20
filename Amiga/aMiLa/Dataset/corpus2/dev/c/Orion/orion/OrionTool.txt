@@ -1,0 +1,65 @@
+OrionTool - A tool to setup, cleanup, and manipulate the list
+   of resource allocations by programs using Orion.
+   This is a shell only tool.
+
+Usage Template:
+   OrionTool L=List/S,Q=Quit/S,C=Clean/S,V=Verbose/S,NV=NoVerbose/S,
+      I=Interactive/S,NI=Interactive/S,T=Trash/S,NT=NoTrash/S,File/K
+
+Without any arguments, it simply sets up the resource tracking
+structures.  If it's already been setup, it won't do anything.
+
+List: Causes the list of all currently tracked resources to be dumped
+to the shell.  Shows task name, size of allocation, and its address.
+It also shows the line number and source file name where the allocation
+was made.
+** The sizes listed for bitmaps may not exactly match the values passed
+** to AllocBitMap() due to alignment restrictions.
+
+Quit: Removes the resource tracking structures, and frees all memory
+associated with the tracking.  Memory being tracked is *NOT* freed.
+
+Clean: Frees all resources being tracked and removes the resource
+tracking from the system.  Be very careful with this.  Only use this
+if you are tracking a single task and it either has finished execution
+or it has hung.  Otherwise bad things could happen.
+
+Verbose/NoVerbose:Every allocation and free function is logged.  All parameters
+and return values are shown.  This is a flag.  You can set it when
+you setup the tracking, or turn it on after the tracking is already
+setup.  NoVerbose turns off the tracking.   Default:NoVerbose
+
+Interactive/NoInteractive:When this flags is set, you are prompted when
+you free something you didn't allocate or free a different size than you
+allocated.  When you free something that isn't in the track list, your
+options are:Free Anyway, or Ignore.  Selecting 'Free' frees the allocation,
+'Ignore' leaves it alone.
+When you free a different size the options are:Free Anyway,Free Original,
+Ignore.  'Free Anyway' and 'Ignore' are the same as the other option.
+'Free Original' ignores the arguement you supplied and frees what Orion
+thinks you allocated.   Default:Interactive
+
+Trash:Memory allocations(AllocVec,AllocMem,malloc,AllocPooled) are filled
+with garbage after being freed.
+After being allocated memory is filled with garbage(AllocVec,AllocMem,
+malloc).  With AllocVec and AllocMem, this won't be done if the
+MEMF_CLEAR flag is set.
+Note:This can slow your program down significantly.
+Default:NoTrash
+
+File: This is the name of the file to be used for error messages when
+allocating/freeing resources.  Only specify this when setting up the
+tracking resources.  If not specified, the default is a CON: window.
+You can specify any valid DOS path. (NULL:,SER:, CON:, RAD:error.log)
+Note:If you don't setup the system with this tool, the first program
+to allocate a resource will set it up with CON: as the default.
+
+All tracking is done in a very clean way.  No system routines are patched
+and only programs that are Orion-aware are tracked.
+
+Eventually this program will be replaced by one with a proper GUI.
+Individual allocations will be viewable, editable, and freeable.
+Freeing resources by Task name will also be possible.
+
+Because of this I haven't spent a lot of time making this utility
+amazingly brilliant.  It's good enough for now.

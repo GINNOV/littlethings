@@ -1,0 +1,51 @@
+Short:        PhxAss 4.46 source code
+Uploader:     amigasourcecodepreservation@gmail.com
+Author:       frank@phoenix.owl.de (Frank Wille)
+Type:         dev/asm
+Version:      4.46
+Architecture: generic
+
+Source code for the macro assembler PhxAss.
+Binaries: http://aminet.net/package/dev/asm/PhxAss
+Uploaded to aminet for historical preservation.
+Many thanks to Frank Wille for releasing the code.
+
+
+Notes
+======
+
+"The main reason that I never published it (the source) was that it is
+useless. The whole source is a collection of ugly spaghetti-code in pure
+68000 assembler. A real nightmare. Nearly unreadable, only with a few
+german comments here and there.
+
+I wrote most of it in 1991, when I was young and unexperienced, and I
+am not proud of it when I look back now. But I agree that it might be
+interesting for historic reasons, even if it is a bit embarrassing for
+me. But, on the other hand, people can also study my recent sources for
+comparison."
+
+F.Wille
+
+
+License
+=======
+PhxAss is released under the ISC License, see LICENSE.txt.
+
+
+Cheers!
+https://twitter.com/AmigaSourcePres
+
+  _____ ___   _   __  __     _   __  __ ___ ___   _   
+ |_   _| __| /_\ |  \/  |   /_\ |  \/  |_ _/ __| /_\  
+   | | | _| / _ \| |\/| |  / _ \| |\/| || | (_ |/ _ \ 
+  _|_| |___/_/ \_\_|_ |_|_/_/_\_\_|__|_|___\___/_/_\_\
+ / __|/ _ \| | | | _ \/ __| __|  / __/ _ \|   \| __|  
+ \__ \ (_) | |_| |   / (__| _|  | (_| (_) | |) | _|   
+ |___/\___/_\___/|_|_\\___|___|__\___\___/|___/|___|_ 
+ | _ \ _ \ __/ __| __| _ \ \ / /_\_   _|_ _/ _ \| \| |
+ |  _/   / _|\__ \ _||   /\ V / _ \| |  | | (_) | .` |
+ |_| |_|_\___|___/___|_|_\ \_/_/ \_\_| |___\___/|_|\_|
+                                                      
+
+

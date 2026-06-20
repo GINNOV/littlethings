@@ -1,0 +1,39 @@
+Short   : find double pictures by id's
+Author  : Nagilum
+Uploader: nagilum@chillout.org
+Type    : gfx/misc
+Requires: OS3.0,Shell
+Distribution: Aminet
+
+What's the use ?
+You can use this program to find pictures having the same content, 
+even when they have different size.
+
+Why PBM?
+This program can be used to create ID's for PBM-pictures.
+You may ask yourself, why the the hell PBM and not jpeg, iff or png ?
+Well, the first reasond is that PBM has a very simple structure,
+and the second is that for all important formats exist command-line
+converters to PBM.
+This program requires 256 Grayscale pictures in PBM to work,
+those pictures start with P5 in the header and can easily created
+for example from jpeg: djpeg -grayscale ...
+This programm was written in about 4 hours and i know it's not very
+clean, but it works (even fast).
+
+How does it work ?
+The program calculates the average over the whole picture, then splits
+the picture into 64 pieces and calculates the average for each piece,
+then depending on if the average from the piece is lower/equal 
+or higher to the total average it sets a bit in the id to 0 or 1.
+64 pieces create 64 bits, this id will be printed as a 16 digits hex number.
+Usally the ID stays the same if the picture is scaled.
+
+You could use a script like the one included (setnote) to put the pictures id
+in the filenote, after that you could sort the files by the id and easily
+remove double pictures. If you want to use pattern for selecting the pictures
+just type:  spat setnote Pictures/#?.jpg  (for example).
+
+DISCLAIMER: THE AUTHOR IS NOT RESPONSIBLE FOR ANY DAMAGE OR LOSS
+OF DATA OR WHATEVER CAUSED BY PBMKey. ANYONE USES IT WITHOUT WARRANTY.
+

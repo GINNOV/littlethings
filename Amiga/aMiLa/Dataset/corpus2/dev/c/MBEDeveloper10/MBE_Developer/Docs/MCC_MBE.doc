@@ -1,0 +1,43 @@
+TABLE OF CONTENTS
+
+MBE.mcc/MBE.mcc
+MBE.mcc/MUIA_MBE_ID
+MBE.mcc/MBE.mcc
+
+    MBE class allows the user and the programmer to have more images
+    than the predefined MUI-images. The user can change the look of
+    these MBE-images in a comfortable way by using the MBE preferences
+    program.
+
+    The only thing the programmer has to do is to specify an ID of its
+    MBE-image - so the code will be kept very short.
+    
+    Since MBE class is a subclass of Image class (and Image class is a
+    subclass of Area class) you can use all the other things like frames
+    or backgrounds. See MUIA_MBE_ID for example code.
+
+    Please read the manual of MBE and the developer documentation for
+    more information.
+
+MBE.mcc/MUIA_MBE_ID
+
+    NAME
+        MUIA_MBE_ID -- [I..], ULONG
+
+    FUNCTION
+        Specify the MBE-image by its ID-logword.
+
+        This is the only attribute of MBE class. Since MBE class is a
+        subclass of image it's only possible to pass this attribute at
+        object creation time.
+
+    EXAMPLE
+        
+        /* Create an 'play' button with MBE-image: */
+
+        mbe_button = MBEObject,
+            ButtonFrame,
+            MUIA_InputMode, MUIV_InputMode_RelVerify,
+            MUIA_Background, MUII_ButtonBack,
+            MUIA_MBE_ID, MBEB_TapePlay,
+          End,

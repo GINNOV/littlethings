@@ -1,0 +1,10 @@
+Short:        Shared graphics library.  includes source.
+Author:       luke@raj2.tn.cornell.edu (Luke Emmert)
+Uploader:     luke raj2 tn cornell edu (Luke Emmert)
+Type:         dev/src
+Requires:     EGS
+Architecture: m68k-amigaos
+
+  This is an almost complete alternative to both the graphics and
+layers libraries.  It uses EGS as an RTG layer, but with your own
+compiler this could easily be changed.

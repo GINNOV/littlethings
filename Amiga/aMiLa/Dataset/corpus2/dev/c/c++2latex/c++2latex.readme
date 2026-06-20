@@ -1,0 +1,13 @@
+Short:        LaTeX files from C++ and C sources
+Author:       Norbert Kiesel, Joerg Heitkoetter, ported by Lars M. Nordeide
+Uploader:     polluks sdf lonestar org (Stefan Haubenthal)
+Type:         dev/c
+Version:      2.0, Patchlevel 0, Release 4
+Architecture: m68k-amigaos
+
+This is an Amiga port of c++2latex V2.00. The port
+is done with SAS/C V6.58.
+
+c++2latex is a tool for generating LaTeX sources 
+from ANSI-C or C++ programs. It recognizes all keywords,
+strings and comments. It produces a very nice output.

@@ -1,0 +1,595 @@
+
+
+        TML's C Language Card Image Package v1.3               Page 1 of 9
+
+
+        Todd M. Lewis                                   Todd_Lewis@unc.edu
+        2601 Piedmont Drive                                 (919) 776-7386
+        Sanford, NC 27330-9437
+        USA
+
+        The Card Package contains C source code for incorporating playing
+        card images into Intuition programs.  Three complete sets of card
+        images are provided.  One set has horizontal cards, the others have
+        vertical cards.  Though some are small (they were designed so that
+        52 cards could be shown at the same time on a Workbench screen),
+        attention to detail has not been spared.  All the face cards are
+        unique.  The Jack of Spades, the Jack of Hearts, and the King of
+        Diamonds are all "one-eyed" like they are supposed to be.  A joker
+        image is included, as well as the images of the back of a card, a
+        blank card, and black card image.
+
+        The programming interface is straight-forward.  No initialization
+        is necessary (except for opening the intuition.library and the
+        graphics.library).  A blind type is defined (CardID_t) for
+        representing cards.  Four suits are defined for "normal" cards
+        (SUIT_SPADES, SUIT_HEARTS, SUIT_CLUBS, and SUIT_DIAMONDS) plus an
+        additional suit for the special images (SUIT_SPECIAL).  Functions
+        are provided for translating a (suit,rank) pair to a CardID
+        (CardID()) and back (CardSuit() and CardRank()).  These functions
+        provide error checking for invalid CardIDs and impossible
+        (suit,rank) combinations.  Functions are provided to initialize
+        (CardRange()) and shuffle (Shuffle()) an array of CardIDs.  Cards
+        are displayed by calling ShowVCard(), ShowHCard() or
+        ShowVBigCard().  Defined constants give the width and height of
+        both the horizontal and vertical card images.
+
+        COLORS
+
+        The cards were designed to work on a Workbench screen.  Under
+        system version 34 and before, the Workbench colors were Blue (or
+        something neutral), White, Black, and Orange (or some highlight
+        color).  Starting with version 35, White and Black were reversed.
+        The display routines notice which version of the system is being
+        used and exchange Black and White in the card images so that White
+        cards with Black edges are displayed.  If you use these images on a
+        custom screen where you have control over the palette, you may
+        defeat this color-swapping feature.  To defeat color-swapping, set
+        the extern BOOL CardColorSwapping to FALSE before ShowVCard() or
+        ShowHCard() is called the first time.
+
+        The cards were designed with the following color palette:
+               Pen   |   Red   Green   Blue
+                 0   |     0       4     12     Blue
+                 1   |     0       0      0     Black
+                 2   |    14      12     10     Creamy White
+                 3   |    15       8      0     Rusty Red
+
+
+
+
+
+
+
+                      * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+        TML's C Language Card Image Package v1.3               Page 2 of 9
+
+
+
+
+        The following diagram shows the relationships between the different
+        files in the card package.
+
+                                     Cards.h       The "?" is one of
+                                    /   |          "V", "H", or "VBig"
+                                   /    |
+                                  /     |          It is possible to
+        Card?Brush.c  Card?Images.h     |          use any combination
+               \        /      \        |          of the three card sets
+                \      /        \       |          in a single program.
+                 \    /          \      |
+               Card?Images.c      \..Cards.c
+                   :             : \
+                   :            :   \
+                   :           :     \
+                   :          :     your_pgm.c
+                   :         :          :
+                   :         :          :
+            Card?Images.o  Cards.o  your_pgm.o
+
+
+        Solid lines ("\" and "/") represent file inclusions.  Dotted lines
+        (":") represent compile steps.  The xxxVxxx.y and xxxVBigxxx.y
+        files are for vertical card images, while the xxxHxxx.y files are
+        for horizontal card images.  You may use both sets or just one.  In
+        either case, you will need the Card.{h|o} files.
+
+        The Card?Brush.c files are kept separate from the Card?Images.c
+        files because they are produced from DPaint brushes by the ILBMtoC
+        program and filtered through the TrimLine program whenever the
+        brushes are modified.  (See the Makefile for the dependancy
+        relationships.)
+
+        Other files/programs included with this distribution are:
+
+          SMakefile     For the SAS/C compiler/linker (v6.51).
+          makefile      For the Aztec C compiler/linker (v5.2a).
+          CardVBrush
+          CardVBigBrush
+          CardHBrush    The DPaint brushes for the cards.
+          TrimLine.c    (pgm) Shortens text lines of C source files.
+          Hello_V.c
+          Hello_H.c     Example source code using the card package.
+          Hello_V       (pgm)
+          Hello_H       (pgm) Executable examples.
+          Cards.doc     This file.
+
+        If you modify CardVBrush or CardHBrush you will need the program
+        ILBMtoC (from the Commodore IFF distributions) or an equivalent
+        program to convert an IFF ILBM brush to C source code.
+
+
+
+
+
+
+                      * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+        TML's C Language Card Image Package v1.3               Page 3 of 9
+
+
+        NAME
+
+          CardID -- Produce a CardID_t for a card of given suit and rank.
+
+        SYNOPSIS
+
+          card = CardID( Suit, Rank );
+
+          CardID_t CardID( UWORD, UWORD );
+
+        FUNCTION
+
+          Produces the CardID_t for a given (suit,rank) pair.  Though in
+          general CardID_t is supposed to be a blind type, the relational
+          operators >, >=, <, <=, ==, != can be used to compare them with
+          each other.  In particular the CardID_t for any Spade < any Heart
+          < any Club < any Diamond < any Special.  Within a normal suit the
+          CardID_t for an Ace < Deuce < Tray < ... < Jack < Queen < King.
+          Within SUIT_SPECIAL the CardID_t for CARD_JOKER < CARD_BLANK <
+          CARD_BACK < CARD_BLACK.
+
+        INPUTS
+
+          Suit      One of the defined suits SUIT_SPADES, SUIT_HEARTS,
+                    SUIT_CLUBS, SUIT_DIAMONDS, or SUIT_SPECIAL.
+          Rank      The rank of the card.  Ace = 1, Queen = 12, etc.  For
+                    "normal" suits, valid ranks range from 1 to 13.  For
+                    cards of SUIT_SPECIAL the valid ranks are 1 through 4
+                    which result in CardID_t's of CARD_JOKER, CARD_BLANK,
+                    CARD_BACK, and CARD_BLACK.
+
+        RESULT
+
+          card = the new CardID_t or 0 (FALSE) if an invalid card was
+          specified.
+
+        EXAMPLE
+
+        NOTES
+
+        BUGS
+
+        SEE ALSO
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                      * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+        TML's C Language Card Image Package v1.3               Page 4 of 9
+
+
+        NAME
+
+          CardRange -- Fill an array of CardID_t with requested CardIDs.
+
+        SYNOPSIS
+
+          success = CardRange( where, count, offset, firstSuit, firstRank);
+
+          BOOL CardRange( CardID_t *, UWORD, UWORD, UWORD, UWORD);
+
+        FUNCTION
+
+          Fills an array with CardID_t's for cards in a selected range.  A
+          "normal" use would be to fill an array of 52 CardID_t's starting
+          with the Ace of Spades, but you could ask for a smaller range.
+          The "normal" suits (not SUIT_SPECIAL) wrap around, i.e., if you
+          ask for more cards than are in a given suit, the additional cards
+          come from the next suit.  You could ask for 104 cards if you
+          needed two full decks worth of cards.  The SUIT_SPECIAL cards do
+          not wrap around to other suits.
+
+        INPUTS
+
+          where     A pointer to the first CardID_t.
+          count     The number of CardID_t's to place into the array
+                    pointed to by where.
+          offset    The number of bytes from one CardID_t to the next.
+          firstSuit The suit to start filling the array with.  Once that
+                    suit is exhausted, the next suit is used, then the
+                    next, etc., until count CardIDs are placed.  If
+                    firstSuit is SUIT_SPECIAL, the suit doesn't change.
+          firstRank The face value of the first card.  The rank for
+                    subsequent cards is incremented for each card until a
+                    suit is exhausted, then it starts over again at Ace of
+                    the next suit.
+
+        RESULT
+
+          success = TRUE unless the suit/rank combination represents an
+          invalid card in which case success = FALSE.
+
+        EXAMPLE
+
+          typedef struct { int flag; CardID_t card } flagcard_t;
+          flagcard_t deck[ DECKSIZE ];
+                                          /* Fill a "normal" deck. */
+          success = CardRange( &deck[0].card, 52, sizeof(flagcard_t),
+                                                     SUIT_FIRST, 1 );
+        NOTES
+
+        BUGS
+
+        SEE ALSO
+
+          Shuffle()
+
+
+
+                      * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+        TML's C Language Card Image Package v1.3               Page 5 of 9
+
+
+        NAME
+
+          CardRank -- Find the rank of a given card.
+
+        SYNOPSIS
+
+          rank = CardRank( CardID );
+
+          UWORD CardRank( CardID_t );
+
+        FUNCTION
+
+          Determines the rank of a given card.
+
+        INPUTS
+
+          CardID    A CardID_t which represents some card.
+
+        RESULT
+
+          rank = some value from 1 to 13 for all suits except SUIT_SPECIAL.
+          For SUIT_SPECIAL it returns 1 through 4 for the inputs
+          CARD_JOKER, CARD_BLANK, CARD_BACK, or CARD_BLACK respectively.
+          If CardID is invalid, CardRank() returns zero.
+
+        EXAMPLE
+
+        NOTES
+
+        BUGS
+
+        SEE ALSO
+
+          CardSuit()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                      * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+        TML's C Language Card Image Package v1.3               Page 6 of 9
+
+
+        NAME
+
+          CardSuit -- Find the suit of a given CardID.
+
+        SYNOPSIS
+
+          suit = CardSuit( CardID );
+
+          UWORD CardSuit( CardID_t );
+
+        FUNCTION
+
+          Find the suit a given card belongs to.
+
+        INPUTS
+
+          CardID    A CardID_t which represents some card.
+
+        RESULT
+
+          Returns one of SUIT_SPADES, SUIT_HEARTS, SUIT_CLUBS,
+          SUIT_DIAMONDS, or SUIT_SPECIAL for valid CardIDs, or returns zero
+          if CardID is invalid.
+
+        EXAMPLE
+
+        NOTES
+
+        BUGS
+
+        SEE ALSO
+
+          CardRank()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                      * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+        TML's C Language Card Image Package v1.3               Page 7 of 9
+
+
+        NAME
+
+          ShowHCard -- display a horizontal card.
+          ShowVCard,
+          ShowVBigCard -- display a vertical card.
+
+        SYNOPSIS
+
+          success = ShowHCard(    rp, cardid, dx, dy);
+          success = ShowVCard(    rp, cardid, dx, dy);
+          success = ShowVBigCard( rp, cardid, dx, dy);
+
+          BOOL ShowHCard(    struct RastPort *, CardID_t, WORD, WORD );
+          BOOL ShowVCard(    struct RastPort *, CardID_t, WORD, WORD );
+          BOOL ShowVBigCard( struct RastPort *, CardID_t, WORD, WORD );
+
+        FUNCTION
+
+          Display the requested card in a RastPort.  The graphics.library
+          function BlitMaskBitMapRastPort() is used to copy the image, so
+          whatever caveats apply there apply here as well.
+
+        INPUTS
+
+          rp        A pointer to a valid struct RastPort.
+          cardid    A CardID for some card in the card package.  The
+                    special value CARD_NONE can also be used in which case
+                    the rectangle containing the card is cleared.
+          dx, dy    The coordinate for the upper left corner of the card.
+                    The dimensions of the cards are CARD_H_WIDTH by
+                    CARD_H_HEIGHT pixels for the horizontal cards, and
+                    CARD_V_WIDTH by CARD_V_HEIGHT pixels for the vertical
+                    cards.
+
+        RESULT
+
+          success = TRUE if CardID represents a valid card, FALSE
+          otherwise.
+
+        EXAMPLE
+
+        NOTES
+
+        BUGS
+
+        SEE ALSO
+
+
+
+
+
+
+
+
+
+
+
+
+                      * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+        TML's C Language Card Image Package v1.3               Page 8 of 9
+
+
+        NAME
+
+          Shuffle -- Randomize an array containing CardIDs.
+
+        SYNOPSIS
+
+          Shuffle( where, count, offset );
+
+          void Shuffle( CardID_t *, UWORD, UWORD );
+
+        FUNCTION
+
+          Randomly reorder an array of count CardIDs.  This function uses
+          the amiga.lib function RangeRand() which uses RangeSeed as its
+          seed value.  To get different results each time you run your
+          program, you need to set different seed values.
+
+        INPUTS
+
+          where     A pointer to the first CardID_t.
+          count     The number of CardID_t's to reorder.
+          offset    The number of bytes from one CardID_t to the next.
+
+        RESULT
+
+          none
+
+        EXAMPLE
+
+          extern ULONG __far RangeSeed;  /* Remove "__far" for Aztec C */
+          CardID_t where[52];
+
+          /* First, seed RangeRand() seed value RangeSeed. */
+          CurrentTime( &RangeSeed, &RangeSeed );
+
+          /* Now fill a new deck starting with Hearts, then shuffle it. */
+          if ( CardRange( where, 52, sizeof(CardID_t), SUIT_HEARTS, 1 ) )
+             Shuffle( where, 52, sizeof(CardID_t) );
+
+        NOTES
+
+        BUGS
+
+        SEE ALSO
+
+          CardRange()
+
+
+
+
+
+
+
+
+
+
+
+
+                      * * * * * * * * * * * * * * * * * * * * * *
+
+
+
+
+        TML's C Language Card Image Package v1.3               Page 9 of 9
+
+
+        NAME
+
+          ValidCardID -- Test validity of a CardID
+
+        SYNOPSIS
+
+          success = ValidCardID( CardID );
+
+          BOOL ValidCardID( CardID_t );
+
+        FUNCTION
+
+          Determine whether a CardID has a value which represents one of
+          the cards in the card package.
+
+        INPUTS
+
+          CardID    Some value which might represent a card.
+
+        RESULT
+
+          success = TRUE if CardID represents a valid card, FALSE
+          otherwise.
+
+        EXAMPLE
+
+        NOTES
+
+        BUGS
+
+        SEE ALSO
+
+          CardID(), CardSuit(), CardRank()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                      * * * * * * * * * * * * * * * * * * * * * *
+
+
+

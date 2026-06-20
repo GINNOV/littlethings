@@ -1,0 +1,14 @@
+Cl_NewClass EQU -30
+Cl_EndClass EQU -36
+Cl_AddClass EQU -42
+Cl_FindClass EQU -48
+Cl_RemClass EQU -54
+Cl_NewObject EQU -60
+Cl_EndObject EQU -66
+Cl_AddMethod EQU -72
+Cl_RemMethod EQU -78
+Cl_DoMethod EQU -84
+Cl_DoSMethod EQU -90
+Cl_GetOCName EQU -96
+Cl_GetOCData EQU -102
+Cl_GetHData EQU -108

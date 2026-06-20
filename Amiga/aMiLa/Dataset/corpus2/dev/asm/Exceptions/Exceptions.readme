@@ -1,0 +1,22 @@
+Short: MC680x0 exceptions and Amiga interrupts
+Author: Kyzer/CSG (Stuart Caie)
+Uploader: Kyzer/CSG (no net address)
+Type: dev/asm
+
+This is a full document about how the MC680x0 exceptions work, and how
+the Amiga's interrupt system triggers autovector exceptions. It also
+details the trap vectors.
+
+It assumes you want to program at a low level, rather than relying on the
+Amiga's operating system. It also assumes you know how the Amiga's custom
+chipset generally works, and that you know how to program in 680x0 assembly
+language.
+
+Plenty of examples in assembler code given.
+
+Perfect for aspiring demo coders!
+
+|)/-\ |<¥z/-\ | A12002MbChip+0MbFast/NoHD/1DiskDrive/FuckedPRT | Swap/Code |
+Awesome coder | 600MbWarezClxn/250disk/LhA/DiskSpare/CøølIndex | Mus/Arcs/ |
+#1 CSG memba! | 49FairviewRoad/AB228ZG/SCOTLAND./(01224)704117 | Demos!!!! |
+

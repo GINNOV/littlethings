@@ -1,0 +1,14 @@
+copy AmiFTP.cd Catalogs
+set dir `cd`
+cd Catalogs
+;enforcer >NIL: quit
+flexcat AmiFTP.cd NEWCTFILE AmiFTP.ct
+list >t:catcompile dirs lformat "flexcat AmiFTP.cd %n/AmiFTP.ct NEWCTFILE %n/AmiFTP.ct*nflexcat AmiFTP.cd %n/AmiFTP.ct CATALOG %n/AmiFTP.catalog"
+;list >t:catcompile dirs lformat "flexcat AmiFTP.cd %n/AmiFTP.ct NEWCTFILE %n/AmiFTP.ct.new*nflexcat AmiFTP.cd %n/AmiFTP.ct CATALOG %n/AmiFTP.catalog"
+execute t:catcompile
+delete t:catcompile
+;cd sys:wbstartup
+;wbstarter enforcer
+cd $dir
+; flexcat AmiFTP.cd Lang/AmiFTP.ct NEWCTFILE Lang/AmiFTP.ct
+; flexcat AmiFTP.cd Lang/AmiFTP.ct CATALOG Lang/AmiFTP.catalog

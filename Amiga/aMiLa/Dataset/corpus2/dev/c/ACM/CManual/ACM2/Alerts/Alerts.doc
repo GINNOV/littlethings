@@ -1,0 +1,198 @@
+6    ALERTS
+
+6.1  INTRODUCTION
+
+Alerts is the last resource your program can use in order to
+inform the user about a problem. When your program displays an
+alert all screens are moved down, and a black and red box is
+opened at the top of the display. It not only gives the user a
+hart attack, but it will also tell him/her what went wrong, and
+if there is a way out.
+
+
+
+6.2  DIFFERENT LEVELS OF WARNINGS 
+
+There exist three levels of warnings:
+
+1. If you want to alert the user that something went wrong, but
+   it is nothing serious, you can flash the screens. You do it
+   by calling the function DisplayBeep(), and the background
+   colour of all screens will be flashed.
+
+2. If something went wrong, and you want to inform the user,
+   maybe even want that he/she does something, you should open a
+   Requester. (Described in chapter 5 REQUESTERS.)
+
+3. If something went TERRIBLE WRONG, (the system is crashing
+   etc) your program should activate an Alert message,
+   DisplayAlert().
+
+
+
+6.3  HOW TO USE THE DISPLAYALERT() FUNCTION
+
+Synopsis: result = DisplayAlert( nr, message, height ); 
+
+nr:       (long)  Value which describes if it is a
+          RECOVERY_ALERT or a DEADEND_ALERT.
+
+message:  (char *) Pointer to an array of characters (char). It
+          contains the strings we want to display, and some
+          extra information (position etc). The string itself
+          is divided into substrings, which all contain
+          information about its position etc.
+          
+          Each substring consists of:
+          
+          - 2 bytes (16-bit) which are used for the x position
+            of the text.
+          - 1 byte (8-bit) which is used for the y position of
+            the text.
+          - The text string which ends with a NULL ('\0') sign.
+          - A Continuation byte. If it is TRUE there is another
+            substring after this one, else this was the last
+            substring.
+
+          (See below for more information)
+
+height:   (long) The height of the Alert box.
+
+result:   (long) The function DisplayAlert() returns a boolean
+          value. If it is a RECOVERY_ALERT and the user pressed
+          the left mouse button it returns TRUE else, if the
+          user pressed the right mouse button, it returns
+          FALSE. If it is a DEADEND_ALERT the function will
+          immediate return FALSE.
+
+
+
+6.4  EXAMPLES OF STRINGS AND SUBSTRINGS
+
+If we want to display the following Alert message:
+
+---------------------------------------------------------------
+|                                                             |
+|  ERROR! Not enough memory!                                  |
+|                                                             |
+---------------------------------------------------------------
+
+the string would be declared and initialized like this:
+
+  /* Declare the array of char (the string): */
+  char message[30]; /* 30 bytes needed. */
+
+  /* Fill the string with the message: (Remember to give    */
+  /* space for the first 3 bytes which will contain the x/y */
+  /* position.)                                             */
+  strcpy( message, "   ERROR! Not enough memory!" );
+  /* The NULL sign is automatically placed at position 28. */
+
+  /* Fill the string with the position (x,y) (first 3 bytes)  */
+  message[0]=0;  /* X position is less than 256, therefore 0. */
+  message[1]=32; /* 32 pixels out. */
+  message[2]=16; /* 16 lines down. */
+
+  /* Set the Continuation byte to FALSE since there are no */
+  /* more substrings after this one:                       */
+  message[29]=FALSE;
+
+
+
+If we on the other hand want to display the following Alert message:
+
+---------------------------------------------------------------
+|                                                             |
+|  ERROR! Not enough memory!                                  |
+|                                                             |
+|  Buy a memory expansion!                                    |
+|                                                             |
+---------------------------------------------------------------
+
+the string would be declared and initialized like this:
+
+  /* Declare the array of char (the string): */
+  char message[58]; /* 58 bytes needed. */
+
+  /* Fill the array with the first substring: (Remember to */
+  /* give space for the first 3 bytes which will contain   */
+  /* the x/y position.)                                    */
+  strcpy( message, "   ERROR! Not enough memory!" );
+
+  /* Add the second substring: (Remember this time to give */
+  /* space for 5 bytes in the beginning of the string.     */
+  /* They are used for the NULL sign which finish off the  */
+  /* first substring, the Continuation byte, and three     */
+  /* bytes for the position for the second substring.)     */
+  strcat( message, "     Buy a memory expansion!");
+  /* The NULL sign which finish of the second substring is */
+  /* automatically placed at position 56. */
+
+  /* Fill the first substring with the position (x,y) */
+  /* (first 3 bytes) */
+  message[0]=0;  /* X position is less than 256, therefore 0. */
+  message[1]=32; /* 32 pixels out. */
+  message[2]=16; /* 16 lines down. */
+
+  /* Add the NULL sign which finish of the first substring: */
+  /* (It was deleted when we connected the two strings with */
+  /* the strcat() function.)                                */ 
+  message[28]='\0';
+
+  /* Set the Continuation byte to TRUE which tells     */
+  /* Intuition that there is another substring coming: */
+  message[29]=TRUE;
+  
+  /* Fill the second substring with the position (x,y): */
+  message[30]=0;  /* X position is less than 256. */
+  message[31]=32; /* 32 pixels out. */
+  message[32]=32; /* 32 lines down. */
+
+  /* Set the Continuation byte to FALSE since there are */
+  /* no more substrings after this one: */
+  message[57]=FALSE;
+
+
+
+6.5  FUNCTIONS
+
+DisplayAlert()
+
+  This function activates an Alert message.
+
+  Synopsis: result = DisplayAlert( nr, message, height ); 
+
+  nr:       (long)  Value which describes if it is a
+            RECOVERY_ALERT or a DEADEND_ALERT.
+
+  message:  (char *) Pointer to an array of characters (char). It
+            contains the strings we want to display, and some
+            extra information (position etc). The string itself
+            is divided into substrings, which all contain
+            information about its position etc.
+          
+            - 2 bytes (16-bit) which are used for the x position
+              of the text.
+            - 1 byte (8-bit) which is used for the y position of
+              the text.
+            - The text string which ends with a NULL ('\0') sign.
+            - A Continuation byte. If it is TRUE there is another
+              substring after this one, else this was the last
+              substring.
+
+  height:   (long) The height of the Alert box.
+
+  result:   (long) The function DisplayAlert() returns a boolean
+            value. If it is a RECOVERY_ALERT and the user pressed
+            the left mouse button it returns TRUE else, if the
+            user pressed the right mouse button, it returns
+            FALSE. If it is a DEADEND_ALERT the function will
+            immediate return FALSE.
+
+
+
+6.6  EXAMPLES
+
+Example1
+  This example displays an Alert message at the top of the
+  display.

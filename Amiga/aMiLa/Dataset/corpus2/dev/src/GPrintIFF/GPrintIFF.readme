@@ -1,0 +1,14 @@
+Short:        Load IFF files & permit to print it . Support AGA
+Author:       licgin@relay.income.it (Giambattista Bloisi)
+Uploader:     licgin relay income it (Giambattista Bloisi)
+Type:         dev/src
+Version:      V1.2
+Requires:     OS 2.0 or later. OCS & AGA are supported
+Architecture: m68k-amigaos
+
+This simple program show you how to use ILBM modules
+to load a picture file, display it in a custom
+screen and how to handle a very simple menu
+to entually print the picture file.
+
+Public Domain.

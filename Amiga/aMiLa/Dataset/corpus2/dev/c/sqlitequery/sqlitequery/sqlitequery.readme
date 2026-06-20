@@ -1,0 +1,22 @@
+Short:        Example to explain how to use the sqlite3 library
+Author:       Mathias 'Corto' Parnaudeau (amigadev free fr)
+Uploader:     Mathias 'Corto' Parnaudeau (amigadev free fr)
+Type:         dev/c
+Version:      0.10
+Requires:     libsqlite3.a
+Architecture: ppc-amigaos, ppc-morphos
+
+This example is provided with sources and executables for MorphOS and OS4.
+Comments will help to understand how to manage the sqlite3 library, a static
+one provided in archive sqlite-3.6.1-amiga.lha that I used for testing.
+
+It is as simple as possible but keeping an interest : you can write queries to the
+database and display results in a list.
+
+To try it, a small database is provided, it contains a kind of bug tracker data,
+with tables projects and tickets.
+
+A button allows to execute the query written above and another one lists
+the database tables. At the bottom, an area will display errors.
+
+Let me know if you have interest. Else you can improve yourself !

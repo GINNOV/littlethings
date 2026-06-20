@@ -1,0 +1,79 @@
+
+							Michael Cross
+							34 East Avenue
+							Rudheath
+							Northwich
+							Cheshire
+							CW9 7JE
+
+
+ Source docs.
+ 
+ Warning.  I now use Devpac 3 header files when assembling.  If you are
+ using Devpac 2 you will probably have little success in assembling any
+ of these routines without adding a big list of the required include
+ files to the beginning of the source.  Devpac 3 users should also be
+ warned.  I have added ALL of the hardware include files to my system.gs
+ header on my Depvac 3 disk, and I have also set the label 'Custom'
+ to equal $dff000 in my header file.  I advise you to either :-
+ 
+ a) Do the same  or
+ b) Add the custom.i, dmabits.i and blit.i includes to the include path.
+ 
+
+ Vertical coppers.
+ 
+ This simple little routine uses inverse bitplane modulo's to make a one
+ line object fill the screen.  The main routine draws a table of sine
+ bobs to the top line of the screen and the system DMA does the rest.
+ If you don't believe me, change the bitplane modulo back to zero.
+
+
+ Huge scroller intro.
+ 
+ This is quite old and I was in two minds about sending it.  As you can see
+ I did!   A simple intro which features a massive scroller with each letter
+ scaled upto 256 x 256 pixels square!  I wrote a little utility which takes
+ a standard Powerfonts16 font and scales it into the giant font data that
+ makes the huge letters.  Upper and lower case letters can be used.  The
+ program uses dual playfields and is pretty un-optimised.  Really I should
+ have used a bplcon1 scroll rather than having the blitter do all the
+ hard work.  If you like the big scroller and want some more fonts let
+ me know and I will send the font scale utility to ACC.
+
+
+ Dot plotter V1.0.
+ 
+ Another old routine.  This is a single frame routine that plots dots on 
+ the screen in a sine pattern.  The actual plot routine is tiny and could
+ easily be used to plot pixel starfields etc.  To change the pattern,
+ simply alter the X_Add and Y_Add size equates at the start of the code.
+ Be warned though, the X and Y add values should ALWAYS be even numbers. 
+ Odd numbers WILL crash the program.  This routine is old and the sine
+ bits are pretty simple.  To optimise the routine you should :-
+ 
+ a) Use a 'true' sine table.
+ b) Instead of clearing the entire display every frame, the routine should
+    only clear each individual dot.  This would allow a lot more dots to
+    be plotted in a single frame.
+ 
+ 
+ Starfield subroutine.
+ 
+ This is a small subroutine which can be used to put a simple sprite 
+ starfield into your programs.  Remeber to enable sprites by setting
+ DMAF_SPRITE in the dmacon register else nothing will be displayed.
+ There are comments explaining where everything goes.
+ 
+
+ Bubble sort.
+
+ A simple list sorting routine.  It compares items in a list and swaps
+ each consecutive item which was smaller than the previous item.  
+
+
+ That is all!
+ 
+ 
+ Mike Cross, March 1992
+ 

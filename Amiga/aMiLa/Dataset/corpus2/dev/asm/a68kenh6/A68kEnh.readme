@@ -1,0 +1,31 @@
+Short:    C. Gibbs "A68k" w/ 68020+ instr. added V3.01
+Uploader: willik@bellatlantic.net (Willi Kusche)
+Author:   Charlie Gibbs w/ enhancements by W. Kusche
+Type:     dev/asm
+Replaces: A68kEnh.lha
+Requires: "dev/asm/a68k271.lzh" for full documentation of original version
+
+
+    I have been programming in assembly language on all kinds of computers
+since 1959.  Shortly after I acquired an Amiga 1000, I discovered Charlie Gibbs'
+"A68k" and have been using it ever since.  I built up a collection of many,
+many lines of assembly language over the years.
+
+    After using an Amiga 3000 for a period of time but without using any of
+the additional operation codes or modes available in the 68030 CPU, I kept
+hoping that Charlie Gibbs would update his assembler so I could play with the
+new instructions/modes.
+
+    After a period of time with no new version of "A68k" becoming available,
+I tried using various versions of "PhxAss" on some of my assembly language
+source files without success.
+
+    Even though I am not a "C" language programmer, I decided to see if I
+could take the "C" source files that C. Gibbs released along with "A68k" and
+modify them to bring "A68k" up to date.  The "A68kN" that is part of
+"A68kEnh.lha" is the result of those efforts.  The enhancements are not
+complete but I decided to release what I've done so far to see if there's
+anyone out there who would urge me to continue my work on "A68kN".
+
+    So, if you want me to keep working on this project, please send me Email at
+"willik@bellatlantic.net".

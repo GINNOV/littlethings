@@ -1,0 +1,93 @@
+
+                             [1mDicePref V1.0[0m
+
+                        © 1992 by [1m[33mJan Schroeder[0m
+
+
+
+[1mWHAT IS DICEPREF ?[0m
+
+  DicePref is the result of my first steps in Amiga-programming and C. In
+  1991 i bought the Dice C-Environment directly from Matt Dillon at the
+  Amiga 91 in Cologne. At first i steered Dice by ARexx, but i missed the
+  intuitive interface known from the Amiga. So the idea for DicePref was
+  born.
+
+  With the Dice-startup-batchfile (Dice.sh) and DicePref you can steer the
+  most important features of Dice. The switches are stored in the DCCOPTS
+  environment-variable, the assigns and the object-files have their own
+  environment-variables, which are used and set by the startup-file and
+  DicePref. If you see a more comfortable way to give Dice the objectfiles
+  etc. please let me know.
+
+  In the upper part of the window you can switch different options, in the
+  middle part you can choose the path for the assigns and in the lower part
+  the files can be add, which shall be linked. Ok, the switch for 040 is
+  not really necessary, but I added it for completition. The 040 will
+  automatically switch instructions in his special ones, so this switch
+  works like 000.
+
+  If you select "USE" or "SAVE" the switches and the object-files will be
+  stored and the assigns will be made.
+
+[1mSERVICE FILES[0m
+
+  Start your C-environment with the batchfile '[1mDice.sh[0m' or an other
+  batchfile working by the same way to use the additional environment-
+  variables for the paths modified by DicePref.
+
+  To compile you should use a batchfile working like '[1mbin/make[0m',
+  which adds the environment-variable DCCOBJECTS at the end of the -o
+  switch. I didn´t see another - more comfortable - way to get the same
+  result.
+
+[1mBUGS[0m
+
+  No bug known, but there is a behavior, which i couldn´t suppress: when
+  i examine the path for the assigns a requester will appear, which asks
+  for inserting the volume with the requested identifikation, when the
+  assigns are NOT made already.
+
+  I wanted DicePref to be variable, but i wasn´d able to identify the
+  screen on which the actual window exists, so i helped me badly with
+  searching TURBOTEXT or WORKBENCH or opening an own screen.
+
+  Because of i found no way to set a system font for the DicePref-window
+  alone i proove the screenfont for topaz 11 and open an own screen, if
+  there isn´t the needed font (or screensize!).
+
+  If you have any help or suggestions, please write to me!
+
+[1mHOW TO START DICEPREF[0m
+
+  From CLI      : Type '[1mDicePref[0m' and press return.
+
+  From Workbench: Double-click on the '[1mDicePref[0m' icon.
+
+[1mCOMPATIBILITY[0m
+
+  DicePref needs kickstart 2.x ! It has been tested on a Golem 030/882
+  6 MB board running at 14 MHz in an AMIGA 2000 B Rev 6 with 1 MB chip
+  and XT bridgeboard, Golem SCSI II-controller with Quantum 240 LPS
+  and Seagate ST 1096 N, Roßmöller 2 MB RAM-cartridge and a flickerfixer.
+
+  If any problems encounter with other configurations then let me know.
+
+[1mTHANKS![0m
+
+  At first thanks to Matt Dillon for his C-environment.
+
+  Many thanks to Henrich Deppenmeier, who supported me with Fish-Disks
+  and his ROM-Kernel-Manuals (Version 1.1 ;-) and Klaus Bockrath for
+  teaching me the C-basics. Thanks to the many other fish-supporter, too.
+  Also thanks to Jan van den Baard for his GadToolsBox.
+  And last but not least: Fred Fish.
+
+Send [1mbug-reports[0m, [1msuggestions[0m, [1mcomments[0m etc. to:
+
+              Jan Schroeder
+              Metzer Str. 4
+              4800 Bielefeld 1
+              Tel. 0521/17 20 47
+
+              or Pit@Genesys.zer.sub.org

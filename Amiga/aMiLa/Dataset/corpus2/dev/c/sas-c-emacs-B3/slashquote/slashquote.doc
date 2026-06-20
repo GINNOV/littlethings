@@ -1,0 +1,52 @@
+
+			  Slashquote.library
+
+
+			       Written
+				  by
+
+		  Anders Lindgren, d91ali@csd.uu.se
+
+
+
+Slashquote.library is a one-function ARexx-library used by the SAS/C -
+Emacs connection program. Add it to your system with the command:
+
+	rxlib slashquote.library -20 -30 0
+
+
+
+slashquote.library/SLASHQUOTE
+
+   NAME
+	SLASHQUOTE - Prefix special characters in a string.
+
+   SYNOPSIS
+	str = SLASHQUOTE(str)
+		or
+	str = SLASHQUOTE(str, char)
+
+   FUNCTION
+	Handles strings with should be sent through a parser by putting
+	a special character before any occurances of that character and
+	the double quote character. It then returns the string quoted.
+
+	If no argument for the special character is given, backslash
+	is used.
+
+	The function was originally written for the program Mg3a, as
+	a replace for a slow arexx macro by the same name. Mg3a uses
+	the backslash and double-quote as special characters.
+	It can also be used in command shells to fix arguments. Other
+	uses can surely be found, like passing strings to GNUEmacs.
+	
+   EXAMPLE
+
+	arg1		arg2		returned
+	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	hello		<none>		"hello"
+	hel\lo		<none>		"hel\\lo"
+	h"el\lo		<none>		"h\"el\\lo"
+	h"el\lo		*		"h*"el\lo"
+	h"el*lo		*		"h*"el**lo"
+	"hi"		<none>		"\"hi\""

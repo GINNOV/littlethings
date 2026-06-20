@@ -1,0 +1,43 @@
+
+    This directory has the simple example how to use snma with arexx and
+    global symbol table.
+
+    This example uses the following files from the snma/examples directory:
+
+      test.asm
+      test.glb
+      test.i
+
+    ShellAsm.rexx, seegb.rexx and addgb.rexx which are in snma/rexx
+    directory of snma.lha package must be copied in REXX: directory.
+
+	    1) start snma if not already running ("->run snma arexx") in
+	       arexx mode (RexxMaster must also be running).
+
+	    2) first try to assemble without ADDGB. You will get two
+	       errors.
+	       ->rx ShellAsm test.asm
+
+	    3) Add test.i to the global table.
+	       ->rx addgb test.glb
+
+	    4) repeat step 2. If step 3 succeed, test.asm should assemble just
+	       fine and you have created test.o object module.
+
+	    5) type: ->rx "seegb"
+	       You will now see that test.i is in global table.
+
+	    Read the "alias.txt". If you have defined the aliases it makes
+	    the commands in the above steps a little shorter.
+
+	    1) same
+	    2) ->asm a
+	    3) ->addgb test
+	    4) same
+	    5) ->seegb
+
+	    When normally working with some project you can create one file
+	    which has set of neccessary include commands (include files you
+	    don't modify), for example. You have to call only once "addgb"
+	    command to move all symbols and macros from the snma's global
+	    table.  Enjoy...

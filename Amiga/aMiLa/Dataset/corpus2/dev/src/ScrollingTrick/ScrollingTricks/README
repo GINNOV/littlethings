@@ -1,0 +1,13 @@
+if exists MustReadImportant
+	_seticontype ScrollingTricks d
+	delete MustReadImportant QUIET
+endif
+
+multiview README.TXT
+
+if $Result2 eq 205
+	amigaguide README.TXT
+	if $Result2 eq 205
+		more README.TXT
+	endif
+endif

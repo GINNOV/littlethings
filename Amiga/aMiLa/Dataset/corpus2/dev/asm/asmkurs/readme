@@ -1,0 +1,19 @@
+  This is an archive containing doc files about how to code for the 68020/
+  68881 or better combination.
+  All material in this archive is written in 1993 by Erik H. Bakke.
+  See the individual files for copyright notices etc...
+
+  Contents:
+  ===============
+  020+asm.txt
+  020+asm.txt.info
+  881+asm.txt
+  881+asm.txt.info
+  fpu_julia30.s
+  fpu_julia30.s.info
+  ===============
+
+  To contact the author:
+
+  db36@hp825.bih.no
+

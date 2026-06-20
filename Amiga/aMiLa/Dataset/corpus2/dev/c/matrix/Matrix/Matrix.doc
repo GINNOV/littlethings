@@ -1,0 +1,408 @@
+
+		       Matrix Functions C Link Lib
+
+			           by 
+
+		 	    Nicholas d'Alterio
+
+
+This is a set of functions which you may find useful if you have to
+deal with matrices in C. There are the basic matrix operations plus various
+other common operations such as Inverse which are based on the LU
+decomposition method. These functions were created as part of a 
+Compututation Physics project to Analyise the vibrational modes of 
+a wire with only one fixed end. (mail me for the main program source)
+
+The MATRIX datatype
+-------------------
+
+This is a structure containing three fields :-
+
+1) The number of rows (int)
+2) The number of coloumns (int)
+3) A 2D array conatining the matrix elements (double)
+
+The function MatAlloc should be used to allocate memory for a
+matrix, it will return a pointer to a matrix structure of specified
+size which has been initialised to the identity matrix. MatFree will
+free up the matrix structure when it is no longer needed.
+
+IMPORTANT NOTE
+-------------- 
+
+All the matrix functions refer to Mat[1][1] as the first element in
+the matrix the 0th elements of the array are always ignored. This is
+done for ease of thought when dealing with matrices since matrices never
+have zeroeth elements.
+
+All the functions will take account of this automatically so all you need
+to do is remember to address elements correctly e.g.
+
+for ( i = 1; i < (mat->Rows+1); i++ ) {
+
+will loop , i, over all rows of the matrix
+
+The Functions
+-------------
+
+-------------------------------------------------------------------------------
+
+MatAdd   - Performs addition of two matrices
+
+Type     - MATRIX *
+
+Returns  - A new matrix containing the result of the addition
+           NULL is there was an error
+
+Errors   - if addition is not possible due to matrix sizes
+           if cannot MatAlloc fails to allocate new matrix
+
+Args     - MATRIX *, MATRIX *  pointers to the two matrix structures to add
+
+-------------------------------------------------------------------------------
+
+MatAlloc - Allocates and initialises a new matrix structure. Initialised
+           to identity matrix
+
+Type	 - MATRIX *
+
+Returns  - A pointer to the new matrix
+         - NULL if there was an error
+
+Errors   - if memory cannot be allocated
+
+Args	 - int rows = the number of rows in matrix
+           int cols = the number of coloumns in matrix
+
+-------------------------------------------------------------------------------
+
+MatBackSub - Performs back-substitution on an upper triangular matrix and a
+             vector to solve Ux = y. It is assumed that the sizes are the
+             vector and matrix are compatible and that memory has already 
+             been allocated to the matrix that will contain the answer.
+
+Type 	   - int
+
+Returns	   - 0 if successful
+             >0 if failed
+
+Errors     - if a divide by zero situation arises
+
+Args	   - MATRIX *up  = upper traingular matrix
+             MATRIX *val = vector of RHS of equation
+             MATRIX *vec = the result of the back substitution
+
+-------------------------------------------------------------------------------
+
+MatCmp     - Compares two matrices on an element by element basis. If the 
+             difference between two elements is greater than is set
+             by diff then the matrices are considered different. 
+             SIGN of the elements is unimportant
+
+Type       - int
+
+Returns    - 0 is they are the same
+             >0 if different
+
+Errors     - None
+
+Args       - MATRIX *mat1 = 1st matrix
+             MATRIX *mat2 = 2nd matrix
+             double diff  = max allowable difference between elements
+
+-------------------------------------------------------------------------------
+
+MatConst   - Performs an arithmetic operation of each element of a matrix
+             by a constant value.
+
+Type       - MATRIX *
+
+Returns    - New matrix resulting from operation
+             NULL if error
+
+Errors     - if MatAlloc cant allocate memory for new matrix
+             if try to divide by zero
+             if invalid operation chosen
+
+Args       - MATRIX *mat = matrix to operate on
+             double val  = constant to perform operation with
+             int op      = type of operation  1 = add
+                                              2 = subtract
+                                              3 = multiply
+                                              4 = divide
+
+-------------------------------------------------------------------------------
+
+MatDet     - Calculates the determinant of a matrix by LU decomposition
+             method
+
+Type       - double
+
+Returns    - determinant of matrix
+             0.0 if error
+
+Errors     - if matrix is not square
+             if cant allocate memory for LU matrices
+             if LU decomposition fails
+             
+Args       - MATRIX *mat = matrix to find determinant of
+
+-------------------------------------------------------------------------------
+
+MatForSub  - Performs forward-substitution on a lower triangular matrix and a
+             vector to solve Ly = b. It is assumed that the sizes are the
+             vector and matrix are compatible and that memory has already 
+             been allocated to the matrix that will contain the answer.
+
+Type       - int
+
+Returns    - 0 if successful
+             >0 if error
+
+Errors     - if divide by 0 situation arises
+      
+Args       - MATRIX *low = lower traingular matrix
+             MATRIX *val = RHS of equation to solve
+             MATRIX *vec = Solution to equation
+
+-------------------------------------------------------------------------------
+
+MatFree    - Frees memory allocated by MatAlloc
+
+Type       - void
+
+Returns    - None
+
+Errors     - None
+
+Args       - MATRIX *mat = pointer to matrix to be freed
+
+-------------------------------------------------------------------------------
+
+MatInv     - Calculates the inverse of a matrix using LU decomposition
+             method.
+
+Type       - MATRIX *
+
+Returns    - Inverse matrix
+             NULL if error 
+
+Errors     - if fails to allocate memory for LU matrices
+             if LU decomposition fails
+             if MatSimul fails
+
+Args       - MATRIX *mat = matrix to be inverted
+
+-------------------------------------------------------------------------------
+
+MatInvIt   - Performs inverse iteration using Lu decomposition to find 
+             eigenvalues and eigenvectors of a matrix based on an initial
+             guess eigenvalue.
+             WARNING - this code is a mess, a last minute get it to work
+                       job.
+             BUG - This code will be the correct answer except for the
+                   sign being ocasionally wrong.
+
+Type       - MATRIX *
+
+Returns    - Eigenvector closest to guess 
+             NULL if error
+
+Errors     - if some memory allocation fails
+             if MatSub fails
+             if MatLUdecomp fails
+             if iteration hasn't converged in MAX_IT iterations
+             if MatSimul fails
+             if MatConst fails
+             
+Args       - MATRIX *mat    = matrix to solve for
+             double *evalue = guess eigenvalue (the closer to the actual
+                              eigenvalue the better)
+                              Actual eigenvalue returned through this 
+                              pointer.
+
+-------------------------------------------------------------------------------
+
+MatLUdecomp - LU decomposes a matrix to produce upper and lower 
+              triangular matrices. Uses partial pivotting.
+              NOTE memory must be preallocated for these new matrices.
+
+Type        - int
+
+Returns     - 0 if no errors
+              >0 if errors
+
+Errors      - if matrix is not square
+              if MatPPivot fails
+              
+Args        - MATRIX *mat = matrix to be LU decomposed
+              MATRIX *low = resulting lower triangular matrix
+              MATRIX *up  = resulting upper triangular matrix
+              MATRIX *val = The RHS of matrix eqn if needed
+                            ensures that correct simultaneous eqns
+                            are retained after pivotting.
+
+-------------------------------------------------------------------------------
+
+MatMul      - Calculates the product of two matrices
+
+Type        - MATRIX *
+
+Returns     - product of two matrices
+              NULL if error
+
+Errors      - if matrix sizes dont match correctly
+              if MatAlloc fails
+
+Args        - MATRIX *mat1 = first matrix
+              MATRIX *mat2 - second matrix
+
+-------------------------------------------------------------------------------
+
+MatPPivot   - Partial pivots a matrix around an element. Will also ensure
+              that the RHS column matrix and another matrix are swapped 
+              according to the swap in the matrix. Orders elements in the 
+              column below so that the absolute values go from highest at 
+              the top to lowest at the bottom.
+
+Type        - int
+
+Returns     - 0 is successful
+              >0 if errors
+
+Errors      - if the sorted maximum is < SMALL i.e. 0 on a diagonal
+
+Args        - MATRIX *mat  = matrix to be pivotted
+              MATRIX *mat1 = matrix to keep sorted so that corresponds to mat
+              MATRIX *val  = RHS of eqn similar to above
+              INDEX *idx   = element to pivot around
+
+-------------------------------------------------------------------------------
+
+MatPrint    - Prints a matrix to stdout - semi-formatted depending on screen
+              size.
+
+Type        - void
+
+Returns     - None
+
+Errors      - None
+
+Args        - MATRIX *mat = matrix to be printed
+
+-------------------------------------------------------------------------------
+
+MatSimul    - Solves simultaneous equations in matrix form given the
+              LU decomposed matrices.
+
+Type        - MATRIX *
+
+Returns     - Column vector conatining solutions to simulataneous eqns
+	      NULL if error
+
+Errors      - if MatAlloc fails
+              if MatForSub fails
+              if MatBackSub fails
+
+Args        - MATRIX *up  = upper traingular matrix
+              MATRIX *low = lower triangular matrix 
+              MATRIX *val = RHS of eqn
+
+-------------------------------------------------------------------------------
+
+MatSub      - Subtracts first matrix from second matrix
+
+Type        - MATRIX *
+
+Returns     - Result matrix 1st - 2nd
+              NULL if error
+
+Errors      - if MatAlloc fails
+              if matrices are not size compatible
+
+Args        - MATRIX *mat1 = first matrix
+              MATRIX *mat2 = second matrix
+
+-------------------------------------------------------------------------------
+
+MatSwapRow  - Swaps two rows of a matrix 
+
+Type        - void
+
+Returns     - None
+
+Errors      - None
+
+Args        - MATRIX *mat = matrix to have rows swapped
+              int row1    = 1st row
+              int row2    = 2nd row
+
+-------------------------------------------------------------------------------
+
+VecDot      - Calculates the dot product of a pair of vectors
+
+Type        - double
+
+Returns     - the dot product
+              DBL_MAX if error
+
+Errors      - if args are not column matrices
+
+Args        - MATRIX *vec1 = 1st column matrix
+              MATRIX *vec2 = 2nd column matrix
+
+-------------------------------------------------------------------------------
+
+VecMod      - Calculates the modulus of a vector
+
+Type        - double
+
+Returns     - the modulus
+              -1 if error
+
+Errors      - if VecDot fails
+
+Args        - MATRIX *vec = column matrix
+
+-------------------------------------------------------------------------------
+
+All the functions free up the resources they use when finished or if an 
+error occurs.
+
+NOTE 
+
+The functions which involve LU decomposition require that the matrix
+being operated on is square.
+ 
+Reliability
+-----------
+
+All the above functions have been tested against MatLab (TM) and except for
+the sign error in MatInvIt they have never produced an incorrect result.
+
+History
+-------
+
+Release 1: This will probably be the one and only release unless someone comes 
+           and begs me for more ;-)
+
+Release 2: 3 bugs removed 1. MatAdd didn't add the last column
+                          2. MatDet only returned 1 or 0
+                          3. MatInv columns of inverse in wrong order
+
+           All fixed, thanks to Lars Bischoff for spotting these.
+
+Release Conditions
+------------------
+
+There are none, but it would be nice if you sent me a email if you use
+this package. Also if you modify the code or find any other bugs please
+email me at 
+
+daltern@ic.ac.uk
+
+I accept no liability for anything happening result from the use of
+this package.
+
+
+$Id: Matrix.doc 1.2 1995/09/04 01:15:15 daltern Exp $

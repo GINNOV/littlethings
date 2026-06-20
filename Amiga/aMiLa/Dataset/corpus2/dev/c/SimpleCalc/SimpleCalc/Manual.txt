@@ -1,0 +1,48 @@
+/* -----------------------------------------------------------
+  $VER: calc.math.c 1.01 (28.01.1999)
+
+  User Documentation for SimpleCalc
+
+  (C) Copyright 2000 Matthew J Fletcher - All Rights Reserved.
+  amimjf@connectfree.co.uk - www.amimjf.connectfree.co.uk
+  ------------------------------------------------------------ */
+
+Just a quick note about this program. You have a simple (but very
+powerfull) calculator. Its all coded in C/++ for gcc/libnix, but
+any amiga compiler really. It has a few warnings under gcc, but no
+errors and should compile just fine.
+
+Bugs & Stuff
+------------
+Yes the bad news, well me, barfly, and COP, squished most of the bugs,
+to the extent that this program wont crash (i think). On most systems
+infact i will go so far as to say any system.
+
+1) The display re-drawing routines are a bit lame, they presume a
+window of fixed position, now this only causes problems if you use
+a very large or very small font. The code to do the calculations
+properly in the source but disbled cos i had to get the program out
+quick (i have an interview, and they want some code examples).
+
+2) The maths mode select gadget does not work, and at the moment i
+cant work out why not, humm. It defult to float mode and it will
+overflow to expo when needed, which should be ok.
+
+
+Compiling
+---------
+type make -f makefile and it will grind away for a minute or so and
+an executable will pop out the other end. This of course presumes
+that you have a full and working gnu/gcc/libnix install. If you use
+another compiler (maxon/storm). just start a new project and drag
+the files across, for (dice/sasc/vbcc), you will either have to
+convert the makefile, see if the dmake,smake,vmake prog will deal
+with gnu makefiles by changeing the compiler (and path) to dcc or
+vbcc etc. The best way is probaly just to type something like
+
+dcc Calc.clip.c Calc.gui.c Calc.main.c Calc.math.c Calc.supp.c -o
+Calc -v -lm
+
+and it should be ok.
+
+

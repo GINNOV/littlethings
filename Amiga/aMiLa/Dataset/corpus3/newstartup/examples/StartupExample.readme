@@ -1,0 +1,77 @@
+
+
+                   <>-----------------------------------<>
+                       Startup Example binaries readme
+                   <>-----------------------------------<>
+
+
+In  this  directory  you will find six files assembled with various settings.
+You  can  get  quite small files with minimal settings.  If you choose to use
+the debug  feature you can see that the file size will increase dramatically.
+The  debug  feature  is  meant  for  private  use  only so please remember to
+deactivate this feature when publicing you binary files.
+
+
+  StartupExample_NONE			1280 bytes
+  StartupExample_CPUCHECK		1460 bytes
+  StartupExample_MATHCHECK		1380 bytes
+  StartupExample_CPUMATH		1556 bytes
+  StartupExample_DEBUG			2264 bytes
+  StartupExample_ALL			2540 bytes
+
+
+The file StartupExample_NONE has no active settings.
+
+
+The file StartupExample_CPUCHECK has these settings:
+
+CpuCheck	SET	1
+
+Processor	=	68020
+
+
+The file StartupExample_MATHCHECK has these settings:
+
+MathCheck	SET	1
+
+MathProc	=	68881
+
+
+The file StartupExample_CPUMATH has these settings:
+
+CpuCheck	SET	1
+MathCheck	SET	1
+
+Processor	=	68060
+MathProc	=	68882
+
+
+The file StartupExample_DEBUG has this option set:
+
+DODUMP	SET	1
+
+
+The file StartupExample_ALL has all options set:
+
+CpuCheck	SET	1
+MathCheck	SET	1
+
+Processor	=	68020
+MathProc	=	68881
+
+DODUMP	SET	1
+
+
+The reason for the larger filesize is all the text DebugDump shall write to
+the output handler (and some code). You don't need to remove the DebugDump
+lines.. just comment out the DODUMP and all debug will be ignored when
+assembled.
+
+
+NOTE: Other options such as the SkipStart is always set. None of the other
+macros necessary such as the DefEnd, are shown here.
+
+For more information please consult the documentation following this archive.
+
+
+                             - Kenneth C. Nilsen

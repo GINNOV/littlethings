@@ -1,0 +1,71 @@
+Portable Object Compiler (c) 1997,98,2002.  All Rights Reserved.
+
+This file contains some notes that are specific to running "objc"
+(pronounced as "Object Compiler") on OS/2 Warp 4 using IBM's
+VisualAge for C++ compiler.
+
+AUTOEXEC.BAT
+------------
+
+	Add C:\OBJC\BIN to your PATH.  This directory contains OBJC.EXE
+	the compiler driver, and OBJC1.EXE, the compiler proper.  It's
+	also assumed that the compiler tools (ilib, nmake etc.) are in 
+	the PATH.
+
+	It's also convenient to "set OBJCOPT=options" in this file, where
+	options can be "-q" for example.
+
+	If you want to install in a different location than C:\OBJC\BIN,
+	then set the OBJCDIR environment variable (points to top directory).
+
+Makefiles
+---------
+
+	The Makefiles have a .vac extension (for nmake)
+
+	At the top level, there is a .BAT file that drives the process.
+	So you type:
+
+		setup vac
+		make
+
+	to start building the different components of the compiler.
+	
+ARVAC.CMD
+---------
+
+        There's a script in the 'util' directory to provide a UNIX style
+	'ar' interface towards the IBM ilib utility.
+
+	Copy this file to a location in the PATH (e.g. c:\objc\bin) if it's
+	not already there.
+
+BISON & FLEX
+------------
+
+	We're using the GCC EMX ports of these tools.  That is,
+	the parser and scanner are not generated on UNIX (scan.m, parser.m)
+	but are now generated on OS/2 itself from scan.lm and parser.ym.
+	
+	Flex and Bison for OS/2 are available precompiled from
+	ftp://ftp-os2.nmsu.edu.
+	They're configured for GCC EMX package.  I've modified "bison.simple"
+	to include (before the top #if __GNUC__) the following lines
+	(to define alloca() correctly :)
+	
+		#if defined(__IBMCPP__) || defined(__IBMC__)
+		#include <malloc.h>
+		#endif
+		
+Garbage Collection
+------------------
+
+	The -gc option has NOT been tested on OS/2 with the Boehm library
+	(compiled with IBM VisualAge).
+
+Binary Driver
+-------------
+
+	There's no Bourne shell compiler driver for OS/2.  Only
+	the binary, compiled, version is available (as "objc.exe").
+

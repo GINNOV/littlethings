@@ -1,0 +1,441 @@
+@database ????
+@master ????
+@width 80
+@width 76
+@node Main "Page de Garde"
+@toc Sommaire 
+============================================================================
+                  Programme de paramétrage de ABackup 5.20
+
+         Copyright (C) 1993-1998 par Reza ELGHAZI & Denis GOUNELLE
+============================================================================
+
+Sauf  autorisation  écrite,  toute  utilisation  commerciale  ou  vente  est
+strictement interdite. Vous pouvez  copier  et  diffuser  ce  programme  aux
+conditions suivantes : 
+
+    1. L'ensemble des fichiers doit être fourni 
+    2. Aucun fichier ne doit avoir été modifié 
+    3. Vous ne devez pas demander plus de 40FF pour cela 
+
+Malgré de nombreux tests, nous ne pouvons garantir que ABackup  ne  contient
+aucune erreur. VOUS UTILISEZ CE PROGRAMME A VOS RISQUES ET PERILS.  Nous  ne
+pouvons en aucun cas être tenus pour responsables de tout dommage, direct ou
+indirect, résultant de l'utilisation de ABackup. 
+
+@endnode
+@node Sommaire "Sommaire"
+
+Le programme de paramétrage de ABackup fonctionne de la même façon  que  les
+programmes de paramétrage fournis avec le système d'exploitation de l'Amiga.
+Aussi, cette documentation se contente de décrire la liste  des  paramètres,
+et leur influence sur le fonctionnement de ABackup. 
+
+Il est conseillé d'installer ce programme dans  le  répertoire  "SYS:Prefs",
+avec les autres programmes  de  paramétrage.  Si  vous  préférez  le  copier
+ailleurs, n'oubliez pas de modifier de type d'outil "PREFSPATH" de  ABackup,
+afin que celui-ci puisse trouver le programme de paramétrage. 
+
+    @{" Options de sauvegarde               " Link "BackupOpt"}
+    @{" Options de restauration             " Link "RestoreOpt"}
+    @{" Options de vérification             " Link "VerifyOpt"}
+    @{" Options de compression              " Link "CrunchOpt"}
+    @{" Options du dérouleur                " Link "TapeOpt"}
+    @{" Options de l'interface              " Link "GUIOpt"}
+    @{" Option pour les programmes externes " Link "ExternalOpt"}
+    @{" Options diverses                    " Link "MiscOpt"}
+
+@endnode
+@node BackupOpt "Options de sauvegarde"
+
+Sauver vers 
+    Indique vers quoi effectuer la sauvegarde : 
+
+    - un gadget cyclique permet de sélectionner le type d'archive (unité  de
+      disque, fichier, dérouleur de bande) 
+
+    - deux  listes  permettent  de  sélectionner  les  unités  de  disque  à
+      utiliser, si le type d'archive est positionné à "Unité". La  liste  de
+      gauche indique toutes les unités possibles, la liste de droite indique
+      les unités à utiliser. Le passage d'une unité d'une liste à l'autre se
+      fait simplement en cliquant sur le nom à transférer. 
+
+    - un gadget de chaine, et  un  bouton  d'appel  de  requête,  permettent
+      d'indiquer le nom  du  fichier  archive,  si  le  type  d'archive  est
+      positionné à "Fichier". 
+
+Taille tampon 
+    Indique la taille de la mémoire tampon utilisée par la tâche fille  pour
+    les écriture asynchrones,  ainsi  que  pour  l'écriture  sur  une  bande
+    magnétique.  Une  taille  de  tampon  bien  réglée  permet   d'accélérer
+    sensiblement la vitesse de sauvegarde. 
+
+Fichier journal 
+    Si un nom de fichier est indiqué, une ligne de statistiques sera ajoutée
+    dans ce fichier, à chaque sauvegarde. Elle indiquera la date et  l'heure
+    de la sauvegarde, la source  de  la  sauvegarde,  le  nom  de  l'archive
+    destination, le nombre de fichiers et la taille totale de la sauvegarde,
+    ainsi que le commentaire éventuel associé à cette sauvegarde. 
+
+Commentaire 
+    Indique le commentaire par  défaut  à  associer  aux  sauvegardes.  Voir
+    l'option "Ajouter commentaire" ci-dessous. 
+
+Rapport 
+    Active la génération d'un rapport de sauvegarde. Ce  rapport  peut  être
+    envoyé vers l'imprimante ou vers un fichier.  Vous  pouvez  demander  un
+    rapport détaillé ou bref. 
+
+Vérifier 
+    Active la vérification des écritures sur disquettes (ou disques dans  le
+    cas d'une sauvegarde vers  une  partition).  Cette  option  ralentit  la
+    sauvegarde, mais la rend plus sûre. @{b} 
+    ATTENTION ! Il  est  impossible  de  garantir  que  la  sauvegarde  sera
+    correcte, même lorsque l'option de vérification  est  activée.  Si  vous
+    voulez être certain que l'archive ne contient pas d'erreur, utilisez  la
+    fonction de vérification d'archive de ABackup. @{ub} 
+
+Utiliser tâche fille 
+    Active  l'utilisation  d'une  tâche  séparée  pour  les  écritures   sur
+    disquettes, ce qui permet des écritures asynchrones. Suivant  la  taille
+    du tampon choisie (voir plus haut), ceci permet d'accélérer  notablement
+    les sauvegardes. 
+
+Sauver les liens 
+    Active la sauvegarde des liens  créés  par  la  commande  "MakeLink"  de
+    l'AmigaDOS. 
+
+Ajouter commentaire 
+    Si cette option est activée, ABackup vous demandera  d'entrer  un  petit
+    commentaire à la fin de chaque sauvegarde. Ce commentaire sera affiché à
+    l'ouverture de l'archive, avant une restauration ou une vérification, et
+    indiqué dans le journal de sauvegarde. 
+
+Ajouter icône 
+    Active la création d'une icône (fichier ".info") lors  d'une  sauvegarde
+    vers un fichier. 
+
+Compresser données 
+    Active la compression des données sauvegardées.  Notez  que  ABackup  ne
+    compressera pas les fichiers  de  moins  de  512  octets.  De  plus,  il
+    reconnait  les  fichiers  déjà  compressés  à  l'aide   de   LhA,   Zoo,
+    PowerPacker, ou XPK, et  ne  perdra  pas  de  temps  à  essayer  de  les
+    compresser à nouveau. Voir @{" Options de compression " Link "CrunchOpt"}. 
+
+Compresser catalogue 
+    Active la compression du  catalogue  de  l'archive.  Le  catalogue  sera
+    compressé avec le même algorithme que les données. 
+
+Crypter 
+    Active le cryptage des données, lors de la sauvegarde, à l'aide d'un mot
+    de passe indiqué par l'utilisateur au début de la sauvegarde. @{b} 
+    ATTENTION ! Ce mot de passe sera OBLIGATOIRE pour toute restauration  ou
+    vérification. Si vous ne vous en souvenez plus,  les  données  archivées
+    seront définitivement inaccessibles. Il est  INUTILE  de  contacter  les
+    auteurs, pour tenter de récupérer ces données : il nous sera  impossible
+    de vous venir en aide dans ce cas. @{ub} 
+
+Changer bit d'archive 
+    Active le positionnement du bit d'archive (voir  commande  "Protect"  de
+    l'AmigaDOS) sur tous les fichiers correctement sauvegardés. Ce bit étant
+    remis à zéro par l'AmigaDOS, à chaque modification  d'un  fichier,  ceci
+    vous permettra d'effectuer une sauvegarde  incrémentale  (ne  comprenant
+    que les fichiers modifiés) à l'aide de la sélection par  bits  (voir  la
+    documentation de ABackup). 
+
+Dupliquer catalogue 
+    Si  cette  option  est  activée,  ABackup  dupliquera  le  catalogue  de
+    l'archive (normalement simplement ajouté à la fin de l'archive) vers  un
+    fichier. Le nom de ce fichier peut être  indiqué  en  argument  lors  de
+    l'appel de  ABackup,  sinon  il  vous  sera  demandé  à  la  fin  de  la
+    sauvegarde. 
+    Cette option est très utile lors d'une sauvegarde sur bande  magnétique,
+    car elle évite de relire toute la bande pour aller chercher le catalogue
+    à la fin, puis de devoir tout rembobiner pour commencer la  restauration
+    ou la vérification. 
+
+Ignorer SKIPME 
+    Cette option contrôle le fait que ABackup  examine  le  commentaire  des
+    répertoires. Normalement,  quand  ABackup  charge  une  arborescence  de
+    répertoires, en vue d'une sélection pour une sauvegarde, tout répertoire
+    dont le commentaire  commence  par  "SKIPME"  est  ignoré.  Ceci  permet
+    d'éviter de perdre du temps à charger le contenu d'un  gros  répertoire,
+    que vous ne sauvegardez jamais. 
+    Si cette option est activée, ABackup chargera le  contenu  de  tous  les
+    répertoires qu'il trouve. Si elle est désactivée, seuls les  répertoires
+    dont le commentaire ne commence pas par "SKIPME" seront chargés. 
+
+
+@endnode
+@node RestoreOpt "Options de restauration"
+
+Restaure depuis 
+    Indique l'archive source, contenant les données à restaurer.  Pour  plus
+    de détails, voir l'option "Sauve vers" des @{" Options de sauvegarde " Link "BackupOpt"}. 
+
+Restaure vers 
+    Indique le répertoire dans lequel restaurer les fichiers. Si  ce  gadget
+    est vide, les fichiers  seront  restaurés  dans  le  répertoire  où  ils
+    étaient lors de la sauvegarde. 
+
+Si existe déjà 
+    Indique à ABackup ce qu'il doit  faire  lorsqu'un  fichier  à  restaurer
+    existe déjà. Les choix possibles sont : 
+
+    - Toujours remplacer (le fichier existant sera écrasé) 
+    - Ne jamais remplacer (le fichier ne sera pas restauré) 
+    - Demander si remplacer (ABackup vous demandera si vous voulez remplacer
+      le fichier) 
+    - Remplacer si plus ancien (le fichier existant ne sera écrasé que  s'il
+      est plus ancien que le fichier présent dans l'archive) 
+    - Renommer fichier (ABackup  vous  demandera  un  nouveau  nom  pour  le
+      fichier à restaurer) 
+
+Si échoue 
+    Indique à ABackup ce qu'il  doit  faire  lorsque  la  restauration  d'un
+    fichier échoue. En effet, dans  ce  cas,  le  fichier  sur  disque  sera
+    éventuellement incomplet, ou contiendra des données erronées. Les  choix
+    possibles sont : 
+
+    - Toujours détruire (le fichier sera détruit) 
+    - Ne jamais détruire (le fichier sera conservé) 
+    - Demander si détruire (ABackup vous demandera si vous  voulez  détruire
+      le fichier) 
+
+Rapport 
+    Active le rapport de restauration. Ce  rapport  peut  être  envoyé  vers
+    l'imprimante ou  vers  un  fichier.  Vous  pouvez  demander  un  rapport
+    détaillé ou bref. 
+
+Arborescence 
+    Active la restauration de la structure des répertoires, telle qu'elle  a
+    été enregistrée lors de la sauvegarde. Si cette option  est  désactivée,
+    tous les fichiers seront restaurés dans le même répertoire. 
+
+Restaurer la date 
+    Lorsqu'un fichier est restauré, l'AmigaDOS lui donne comme date la  date
+    à laquelle il a été restauré.  Si  cette  option  est  activée,  ABackup
+    remettra la date que le fichier avait lors de sa sauvegarde. 
+
+Restaurer les liens 
+    Si cette option est activée,  ABackup  restaurera  également  les  liens
+    présents dans l'archive (voir commande "MakeLink" de l'AmigaDOS). 
+
+Répertoires vides 
+    Si cette option est activée, ABackup re-créera également les répertoires
+    vides présents dans l'archive. 
+
+Fichier catalogue 
+    Si cette option est activée, ABackup chargera le catalogue de  l'archive
+    depuis un fichier. Le nom de ce fichier peut être indiqué  en  argument.
+    Sinon, il vous sera demandé avant le chargement du catalogue. 
+
+@endnode
+@node VerifyOpt "Options de vérification"
+
+Rapport 
+    Active le rapport de vérification. Ce  rapport  peut  être  envoyé  vers
+    l'imprimante ou  vers  un  fichier.  Vous  pouvez  demander  un  rapport
+    détaillé ou bref. 
+
+Comparer les données 
+    Par défaut, ABackup se contente d'essayer  de  restaurer  les  fichiers,
+    sans vérifier que les données sont correctes. Grâce à  l'utilisation  de
+    sommes de contrôle, ceci est déjà une vérification relativement sûre. Si
+    cette option est  activée,  ABackup  effectuera  une  vérification  plus
+    approfondie, en comparant les données extraites de l'archive avec celles
+    présentes sur disque. 
+    Il va de soit que cette option ralentit la vitesse de  vérification.  De
+    plus, ABackup ne pourra vérifier que les fichiers encore présents sur le
+    disque, et n'ayant  pas  été  modifiés.  Pour  détecter  une  éventuelle
+    modification, le programme compare la taille et la date des fichiers. 
+
+Ignorer la date 
+    Si cette option est activée, ABackup ne testera pas la date  du  fichier
+    sur disque avant de le comparer avec le fichier archivé. 
+
+Choisir les fichiers 
+    Par défaut, ABackup vérifie tous les fichiers archivés. Si cette  option
+    est activée, vous pourrez choisir quels fichiers vérifier, à  l'aide  de
+    la fenêtre de sélection habituelle. 
+
+@endnode
+@node CrunchOpt "Options de compression"
+
+Méthode 
+    Indique la méthode de compression à utiliser.  Vous  pouvez  au  minimum
+    choisir entre "Interne" (utilisation d'un algorithme interne à  ABackup)
+    et "Externe" (utilisation d'un programme de  compression  externe,  voir
+    ci-dessous).  Si  la  bibliothèque   XPK   est   installée,   le   choix
+    "Bibliothèque XPK" sera automatiquement ajouté. 
+    Notez que  la  compression  externe  n'est  pas  utilisable  lors  d'une
+    sauvegarde de partitions. 
+
+Méthode XPK/Mode XPK 
+    Dans le cas où la méthode de compression choisie est "Bibliothèque XPK",
+    ces gadgets vous permettent de sélectionner une des méthodes de XPK,  et
+    le mode pour cette méthode. 
+
+Compression/Décompression 
+    Ces deux gadgets permettent d'indiquer  le  nom  et  les  arguments  des
+    programmes externes de compression et de décompression. Les  conventions
+    suivantes peuvent être utilisées pour les arguments : 
+
+    %0 (ou %s)    : nom complet du fichier source
+    %1            : chemin d'accès du fichier source
+    %2            : nom du fichier source (sans chemin)
+    %3 (ou %d)    : nom complet du fichier destination
+    %4            : chemin d'accès du fichier destination
+    %5            : nom du fichier destination (sans chemin)
+
+    A titre d'exemple,  voici  les  valeurs  à  indiquer  pour  utiliser  le
+    programme LhA (copyright par Stefan Boberg) : 
+
+    Compression   : LhA a -X %d %s
+    Décompression : LhA e -X %s %5 %4
+
+    (Vous pouvez ne pas indiquer l'option -X,  mais  il  vous  faudra  alors
+    appeler ABackup avec l'argument ECSUFFIX renseigné à ".lha"). 
+
+    Lorsque vous utilisez la  compression  par  programme  externe,  il  est
+    recommandé de rendre ce programme résident, ou de  le  copier  en  RAM:,
+    afin de diminuer au maximum le temps de chargement de ce  programme.  En
+    effet, ce programme sera  appelé  par  ABackup  pour  chaque  fichier  à
+    compresser ou décompresser, ce qui veut dire que, sur une sauvegarde  de
+    1000 fichiers, un gain d'une seconde sur le temps de chargement  produit
+    un gain de plus d'un quart d'heure sur la durée totale de la sauvegarde.
+
+    Lorsque ABackup appelle le programme de compression ou de décompression,
+    il envoit les  messages  produits  par  ce  programme  vers  le  fichier
+    "T:ABackup.log". Vous pouvez consulter ce fichier afin de voir ce qui se
+    passe, en cas de problème. 
+
+Filtre 
+    Indique la liste des extensions de nom  de  fichiers  à  exclure  de  la
+    compression. Par exemple, si la liste contient "lzx", les fichiers  dont
+    le nom se termine par ".lzx" ne seront pas compressés. 
+
+@endnode
+@node TapeOpt "Options du dérouleur"
+
+Pilote 
+    Indique le nom du pilote SCSI à utiliser (par défaut: "scsi.device"). 
+
+Port SCSI 
+    Indique le numéro de port SCSI sur lequel est connecté le dérouleur. 
+
+Taille de bloc 
+    Indique la taille de bloc supportée par le lecteur. 
+
+Rembobiner 
+    Active le rembobinage automatique de la bande, en fin d'opération. 
+
+Tendre auto. 
+    Si cette option est activé, ABackup retendra la bande automatiquement en
+    début d'opération. 
+
+Ejecter 
+    Active l'éjection automatique de la cartouche, en fin d'opération. Cette
+    opération n'est supportée que par certains lecteurs. 
+
+Tampon en FAST mem. 
+    Demande que l'allocation de la mémoire tampon pour  les  entrées/sorties
+    soit faite en mémoire FAST, plutôt qu'en mémoire CHIP. 
+
+Interrogation 
+    Si le nom du pilote SCSI et le numéro de port  SCSI  sont  corrects,  ce
+    gadget permet d'interroger le lecteur. Les  informations  reçues  seront
+    alors affichées pour contrôle. 
+
+@endnode
+@node GUIOpt "Options de l'interface"
+
+Type d'écran 
+    Indique le type d'écran à utiliser :  écran  de  l'atelier  (Workbench),
+    écran propre à ABackup (Personnalisé) ou écran public. 
+
+Nom écran public 
+    Indique le nom de l'écran public à utiliser, dans  le  cas  où  le  type
+    d'écran choisit est "Public". 
+
+Dans le cas où le type d'écran choisit est "Personnalisé", il  est  possible
+de sélectionner le mode de l'écran à ouvrir. La requête de sélection est  la
+requête de l'asl.library, ou à  défaut  celle  de  la  reqtools.library.  Si
+aucune de ces bibliothèques n'est disponible (une version V38 ou  supérieure
+est nécessaire), il sera impossible de changer la résolution de l'écran. 
+
+Police de l'écran 
+    Indique la police de l'écran personnalisé. 
+
+Police du texte 
+    Indique la  police  utilisée  pour  l'affichage  dans  les  fenêtres  de
+    ABackup, quel que soit le type d'écran choisit. 
+
+Palette 
+    Dans le cas où le  type  d'écran  choisit  est  "Personnalisé",  il  est
+    possible  de  changer  les  couleurs  de  cet  écran.  La   bibliothèque
+    reqtools.library est nécessaire pour cette requête (V38 ou supérieure). 
+
+@endnode
+@node ExternalOpt "Option pour les programmes externes"
+
+Cette fenêtre permet de paramétrer la visualisation des  fichiers,  qui  est
+activée en double-cliquant sur  un  nom  de  fichier,  dans  le  fenêtre  de
+sélection des fichiers de ABackup. 
+
+ASCII 
+    Nom du programme de visualisation des fichiers contenant du texte. 
+
+ILBM 
+    Nom du programme de visualisation des fichiers contenant une image IFF. 
+
+Autres 
+    Nom du programme de visualisation des autres fichiers. 
+
+Lancer en arrière plan 
+    Active le lancement du programme de  visualisation  "en  arrière  plan",
+    afin de ne pas bloquer ABackup  tant  que  la  visualisation  n'est  pas
+    terminée. 
+
+Confirmer la visualisation 
+    Tant que cette option est activée, ABackup vous  demandera  confirmation
+    avant de lancer la  visualisation  d'un  fichier.  Ceci  vous  permettra
+    éventuellement de modifier le nom du programme à exécuter. 
+
+@endnode
+@node MiscOpt "Options diverses"
+
+Alerte 
+    Indique comment ABackup attirera votre attention  lorsqu'une  erreur  se
+    produira, où lorsqu'il  aura  besoin  que  vous  effectuiez  une  action
+    particulière. Les valeurs possibles sont : 
+
+    - Aucune (ABackup se contentera d'afficher une boite de requête) 
+    - Bip sonore (ABackup envoyera un "bip" sonore) 
+    - Signal visuel (ABackup fera flasher l'écran) 
+    - Bip & signal  (ABackup  envoyera  un  "bip"  sonore  et  fera  flasher
+      l'écran) 
+
+Taille des fichiers 
+    Indique l'unité utilisée pour afficher  la  taille  des  fichiers  :  en
+    octets, en Kilo-octets, en Mega-octets, ou automatiquement (sélection de
+    l'unité la plus grande possible). 
+
+Répertoire temporaire 
+    Indique le nom du répertoire à utiliser comme  espace  de  travail,  par
+    exemple pour  créer  des  fichiers  de  travail.  Pour  des  raisons  de
+    sécurité, il est déconseillé d'indiquer un répertoire qui se trouve  sur
+    une des partitions en cours de sauvegarde. 
+
+Rép. des sélections 
+    Indique le nom du répertoire contenant les fichiers de  sélection  (voir
+    la documentation de ABackup pour plus de  détails  sur  l'enregistrement
+    des sélections). 
+
+Imprimer étiquettes 
+    Active l'impression automatique d'étiquettes, en fin de sauvegarde, pour
+    les disquettes de sauvegarde. 
+
+Lignes par étiquettes 
+    Indique le nombre de lignes entre deux étiquettes. @endbase 
+@endnode

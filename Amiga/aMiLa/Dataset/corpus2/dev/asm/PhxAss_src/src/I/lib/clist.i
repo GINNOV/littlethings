@@ -1,0 +1,23 @@
+InitCLPool equ -30
+AllocCList equ -36
+FreeCList equ -42
+FlushCList equ -48
+SizeCList equ -54
+PutCLChar equ -60
+GetCLChar equ -66
+UnGetCLChar equ -72
+UnPutCLChar equ -78
+PutCLWord equ -84
+GetCLWord equ -90
+UnGetCLWord equ -96
+UnPutCLWord equ -102
+PutCLBuf equ -108
+GetCLBuf equ -114
+MarkCList equ -120
+IncrCLMark equ -126
+PeekCLMark equ -132
+SplitCList equ -138
+CopyCList equ -144
+SubCList equ -150
+ConcatClist equ -156
+

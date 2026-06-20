@@ -1,0 +1,26 @@
+Short:    Compiler erzeugt Assembler Quelltext für A68k
+Uploader: Andi@zap.schiele-ct.de
+Author:   Andi@zap.schiele-ct.de
+Type:     dev/asm
+
+
+          Abakus Compiler V_0.950704
+
+
+
+Abakus Compiler erzeugt Assemblerquelltext für den A68k Assembler.
+
+z.B.
+Repeat/Until  Loop/ End Loop  If/ End If
+For/Next Select/Case Schleifen.
+
+When Goto, When gosub  Dec/Inc
+
+Serielle Makros
+
+uvm.
+
+Ideal für BASIC Umsteiger und Assemblerprogrammierer die ihren
+Quelltext lesbarer machen wollen.
+
+Abakus Supportbox: (49)7045-40283 9:00 - 15:00 und 21:00 - 23:00 Uhr

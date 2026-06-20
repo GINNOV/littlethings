@@ -1,0 +1,7 @@
+AmigaDOS
+© 1985 Commodore-Amiga, Inc.
+All rights reserved.
+Release 1.0
+
+1> LOAD PROTOCOL JMINER
+1> RUN PROJECT 23

@@ -1,0 +1,6 @@
+
+This demonstrates the fetching of a HTTP web page using the network
+library.
+
+It's hardwired to fetch the PLIB home-page.
+ 

@@ -1,0 +1,9 @@
+Short:        My Iosmetric program with ASM source
+Author:       The_Widds@MSN.COM (Andyrew)
+Uploader:     The_Widds MSN COM (Andyrew)
+Type:         dev/asm
+Architecture: m68k-amigaos
+
+An isometric program i wrote a while back similar to populous.
+Its incomplete, but you can get the gist of it if you can 
+understand my coding.

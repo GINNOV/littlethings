@@ -1,0 +1,472 @@
+
+This is the c2cweb package Version 1.4 (20-Aug-1994)
+=====================================================
+
+Copyright (C) 1994 Werner Lemberg
+
+[see below for a German introduction]
+
+
+c2cweb will transform plain C or C++ code into a CWEB file to get a pretty
+formatted output. A modified CWEAVE (which transforms the CWEB file into a
+TeX file, see below) is included also.
+
+Some c2cweb highlights:
+
+    variables and function names in italics
+    reserved words (int, char, return etc.) in bold face
+    strings in typewriter type
+    comments in typwriter type or roman
+    an index(!) of all variables, constants, function names etc.
+    each function gets a section
+
+    and more
+
+
+c2cweb.zip contains the following files:
+
+    c2cweb.txt          this file
+    history.txt         the history file
+    diff.txt            GNU diff between Ver. 1.4 and Ver. 1.3
+    Makefile            a makefile to compile c2cweb for UNIX, OS/2, and DOS
+    c2cweb.def          definition file (needed for compiling under OS/2 only)
+    COPYING             the GNU Copying License
+    c2cweb.w            a CWEB file of the program
+                          you should say
+                             make documentation (using this package's CWEAVE)
+                          to produce a TeX-output
+    c2cweb.dvi          the final .dvi-file
+    c2cweb.exe          an executable for DOS and OS/2
+    compiler.w          compiler dependent formatting commands
+                        (an output of c2cweb reads this file)
+    c2cweb.ger          a small german `package' to demonstrate national
+                        language support
+    example.h
+    example.c           a C code example with inserted c2cweb control commands
+    emx.exe             the emx DOS-extender (ver. 0.8h) (for VCPI)
+    rsx.exe             the rsx DOS-extender (rev. 4beta, 32bit) (for DPMI)
+    emx.dll             the emx runtime library for OS/2 (ver 0.8h)
+    cweb/cweave.exe     a modified executable (for DOS and OS/2) of
+                        CWEAVE Ver. 3.2 with three important new features:
+                          o the switch +a causes CWEAVE to produce a different
+                            output format, basically
+
+                              if(a)
+                                 {bla bla bla...
+                                 }
+
+                            instead of
+
+                              if(a) {
+                                  bla bla bla...
+                              }
+
+                          o the switch +i causes CWEAVE to append () after a
+                            function name in the index (this makes only sense
+                            if all names are unique)
+                          o the #define statement handling was basically
+                            enhanced to allow macros with parameters
+    cweb/cweave.w       this is the original CWEAVE source file of Levy's
+                        CWEB package ver 3.2 (July 1994)
+    cweb/cweave.ch      the change file for cweave.w
+    cweb/common.h       this is needed to build CWEAVE
+                        (slightly different from the original)
+    cweb/common.w       taken unaltered from CWEB 3.2
+    cweb/common.ch      change file for common.w
+    cweb/Makefile       Makefile for CWEAVE (UNIX, OS/2, and DOS)
+    cweb/cweave.def     definition file (needed for compiling under OS/2 only)
+    cweb/cwebmac.ori    the standard cwebmac.tex file (slightly modified)
+    cweb/cwebmac.tex    alternative format file
+    cweb/cwebmaca.tex   this alternative format file is read by TeX if you use
+                        the +a switch; similar to cwebmac.tex
+    cweb/prod-alt.w     this file is an include file of cweave.ch; it
+                        contains the alternative syntax rules of CWEAVE if the
+                        switch a is on
+
+You should get the original CWEB package for further documentation; it contains
+change files for different operating systems also.
+
+
+Copying
+-------
+
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License version 2 as published by the
+Free Software Foundation.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program; if not, write to the Free Software Foundation, Inc.,
+675 Mass Ave, Cambridge, MA 02139, USA.
+
+
+Installation
+------------
+
+The c2cweb executable should be in the path.
+
+The CWEAVE executable should also be in the path; it needs the file compiler.w
+(use the environment variable CWEBINPUTS to set the path).
+
+c2cweb.ger, cwebmac.tex and cwebmaca.tex must be found by TeX (the path is
+usually controlled by the TEXINPUT environment variable).
+
+DOS and WINDOWS user must assure that emx.exe and rsx.exe can be found (either
+in the path or set with the EMX and RSX environment variables).
+
+OS/2 user must assure that emx.dll and rsx.exe can be found (either in the path
+or set with the EMX and RSX environment variables).
+
+
+Remarks for UNIX systems user
+-----------------------------
+
+Because of the many different UNIX implementations, no executables are
+included. The programs should compile without great problems if you use the
+gcc compiler, the GNU C library and gnumake; you should say
+
+    make unix
+
+in the c2cweb and cweb directories to build the executables.
+
+
+Both makefiles need CTANGLE (included in the CWEB package, the original host is
+labrea.stanford.edu; the current version is 3.2 dated July 1994).
+
+
+How to use
+----------
+
+The only change the user has to do normally is to insert /*@@*/ starting an
+empty line outside of a comment or string before the first function block
+(normally main(){ ... }) in the C code. After this command c2cweb writes each
+function block into a section. Before /*@@*/ all stuff is written into a
+(possibly large) section. If you want to structure this further or if you have
+structure definitions between functions, use /*@*/ to start a new section
+without starting the function block algorithm (and of course /*@@*/ before the
+next function).
+The function algorithm simply counts paired braces; if none are open, a new
+section will begin.
+The file example.c has these control codes inserted already.
+
+
+The syntax is
+
+    c2cweb [switches] csourcefile(s) | @responsefile(s)
+
+The possible switches are:
+
+-v:
+
+all comments are written in typewriter type. You will need this if you have
+already formatted your comments, for example
+
+            /********************/
+            /*    example.c     */
+            /********************/.
+
+-t value:
+
+all tabs will be expanded, and the -t switch defines the tab length (default
+value is 4).
+
+-l:
+
+causes all linefeeds inside of C text to be output explicitly by inserting
+@/ (a CWEB control code) at the end of each code line.
+
+-o directory:
+
+sets the output directory which must exist already.
+
+-b "titlestring":
+
+defines a title with the titlestring enclosed in double quotes. This string
+will be passed directly to \TeX.
+
+-1:
+
+one-sided output (i.e. left header is the same as right header).
+
+
+The last steps are calling CWEAVE with the transformed master file and then
+calling TeX to get a printable .dvi-file.
+
+
+An example:
+
+    your input files are
+        header1.h, header2.h, file1.c, file2.c, file3.c
+
+    you must call then
+        c2cweb [options] header*.h file*.c
+
+    to get the *.*w files. c2cweb will now process your files and tell you
+    which file is the input file for CWEAVE (we'll assume file3.cw).
+
+    After calling
+        cweave [options] file3.cw
+
+    you get a .tex file (and some additional auxiliary files) which should be
+    processed further by PLAIN TeX (LaTeX is not supported):
+
+        tex file3[.tex]
+
+
+Please read the `Hints and Tricks' section about enhancements and limitations
+of c2cweb in the file c2cweb.w (say `make documentation' to build the .dvi
+file).
+
+
+Author
+------
+
+Werner Lemberg (a7621gac@awiuni11.bitnet)
+
+Please report any errors, comments or suggestions to this email-address.
+
+N.B.: If you like this program, send me a postcard !
+
+    Werner Lemberg
+    Goldschlagstr. 52/14
+    A-1150 Vienna/Austria
+
+
+
+--------------------------------------------------------------------------------
+
+
+
+c2cweb Paket Version 1.4 (20-Aug-1994)
+=======================================
+
+Copyright (C) 1994 Werner Lemberg
+
+
+c2cweb verwandelt gewîhnlichen C - oder C++ - Quellcode in eine CWEB-Datei,
+um einen gut formatierten Ausdruck zu erhalten. Dieses Paket enthÑlt au·erdem
+eine modifizierte Version von CWEAVE (welche die CWEB-Datei in eine TeX-Datei
+transformiert).
+
+Besonderheiten u.a.:
+
+    Variablen und Funktionsnamen in Kursivschrift
+    reservierte Wîrter (int, char, return etc.) in Fettschrift
+    Strings in Schreibmaschinenschrift
+    Kommentare in Normal- oder Schreibmaschinenschrift
+    ein Index(!) aller Variablen, Konstanten, Funktionsnamen etc.
+    jede Funktion fÅllt einen eigenen Abschnitt
+
+
+c2cweb.zip enthÑlt folgende Dateien:
+
+    c2cweb.txt          diese Datei
+    history.txt         Entstehungsgeschichte von c2cweb
+    diff.txt            GNU diff zwischen Ver. 1.4 und Ver. 1.3
+    Makefile            ein Makefile fÅr c2cweb (UNIX, OS/2 und DOS)
+    c2cweb.def          Definitionsdatei (wird nur fÅr die Kompilation unter
+                          OS/2 gebraucht)
+    COPYING             GNU Kopierlizenz
+    c2cweb.w            die CWEB-Realisation dieses Programms
+                          Um eine TeX .dvi-Datei zu erhalten sollte man
+                            make documentation
+                          eingeben (mit der CWEAVE-Version dieses Pakets)
+    c2cweb.dvi          die finale .dvi-Datei
+    c2cweb.exe          ausfÅhrbares Programm fÅr DOS und OS/2
+    compiler.w          Compiler-abhÑngige Formatierbefehle
+                        (von c2cweb erzeugte Dateien inkludieren diese Datei)
+    c2cweb.ger          ein kleines Deutsch-`Paket', um die UnterstÅtzung von
+                        nichtenglischen Sprachen zu demonstrieren.
+    example.h
+    example.c           ein C-Code-Beispiel mit bereits eingefÅgten c2cweb-
+                        Kontrollbefehlen
+    emx.exe             emx DOS-Extender (Ver. 0.8h) (fÅr VCPI)
+    rsx.exe             rsx DOS-Extender (Rev. 4beta, 32bit) (fÅr DPMI)
+    emx.dll             emx Laufzeit-Bibliothek fÅr OS/2 (Ver. 0.8h)
+    cweb/cweave.exe     eine modifizierte Version von CWEAVE Version 3.2
+                        (fÅr DOS und OS/2) mit drei wichtigen neuen
+                        Eigenschaften:
+                          o mit der Option +a formatiert CWEAVE den Quellcode
+                            anders, und zwar im Prinzip
+
+                              if(a)
+                                 {bla bla bla...
+                                 }
+
+                            anstelle von
+
+                              if(a) {
+                                bla bla bla...
+                              }
+
+                          o die Option +i veranla·t CWEAVE, jedem
+                            Funktionsnamen () im Index anzuhÑngen (nur
+                            sinnvoll, wenn alle Namen eindeutig sind)
+                          o die Behandlung von PrÑprozessorbefehlen (#define
+                            etc.) wurde entscheidend verbessert, um Makros
+                            mit Parametern zu ermîglichen
+    cweb/cweave.w       die originale CWEAVE Quelldatei aus Levy's CWEB-Paket
+                        Version 3.2 (Juli 1994)
+    cweb/cweave.ch      Change-Datei fÅr cweave.w
+    cweb/common.h       wird benîtigt fÅr die Kompilation von cweave.exe
+                        (Original wurde etwas modifiziert)
+    cweb/common.w       unverÑndert von CWEB 3.2 Åbernommen
+    cweb/common.ch      Change-Datei fÅr common.w
+    cweb/Makefile       Make-Datei fÅr CWEAVE (UNIX, OS/2 und DOS)
+    cweb/cweave.def     Definitionsfile (wird nur fÅr die Kompilation unter
+                          OS/2 gebraucht)
+    cweb/cwebmac.ori    ursprÅngliche cwebmac.tex-Datei (leicht verÑndert)
+    cweb/cwebmac.tex    alternative Formatdatei
+    cweb/cwebmaca.tex   diese alternative Formatdatei wird von TeX gelesen,
+                        wenn die +a-Option angegeben ist; sonst gleich zu
+                        cwebmac.tex
+    cweb/prod-alt.w     diese Datei ist eine Include-Datei von cweave.ch;
+                        sie enthÑlt die alternativen Syntaxregeln, falls
+                        Option +a verwendet wird
+
+Es ist empfehlenswert, sich das originale CWEB-Paket zu besorgen, welches
+weitere Dokumentation enthÑlt. Au·erdem sind Change-Dateien fÅr andere
+Betriebssysteme enthalten.
+
+
+Installation
+------------
+
+c2cweb (c2cweb.exe fÅr DOS und OS/2 Benutzer) sollte im Pfad sein.
+
+CWEAVE (cweave.exe fÅr DOS und OS/2 Benutzer) sollte auch im Pfad sein; es
+braucht die Datei compiler.w (die Umgebungsvariable CWEBINPUTS setzt den Pfad).
+
+TeX mu· die Dateien c2cweb.ger, cwebmac.tex und cwebmaca.tex finden kînnen (der
+Pfad wird normalerweise von der TEXINPUT-Umgebungsvariablen kontrolliert).
+
+DOS und WINDOWS BenÅtzer mÅssen sicherstellen, da· emx.exe und rsx.exe gefunden
+werden kînnen (entweder im Pfad oder durch die Umgebungsvariablen EMX und RSX
+bestimmt).
+
+OS/2 BenÅtzer mÅssen sicherstellen, da· emx.dll und rsx.exe gefunden werden
+kînnen (entweder im Pfad oder durch die Umgebungsvariablen EMX und RSX
+bestimmt).
+
+
+Bemerkungen fÅr UNIX Benutzer
+-----------------------------
+
+Aufgrund der vielen verschiedenen UNIX-Systeme sind keine ausfÅhrbaren Dateien
+inkludiert. Die Programme sollten ohne grî·ere Probleme kompilierbar sein, wenn
+gcc, die GNU C-Bibliothek und gnumake verwendet wird.
+
+    make unix
+
+im c2cweb- und cweb-Verzeichnis erstellt die ausfÅhrbaren Dateien.
+
+Beide Make-Dateien benîtigen CTANGLE (aus dem CWEB-Paket; der ursprÅngliche
+Host ist labrea.stanford.edu; die aktuelle Version is 3.2 datiert Juli 1994).
+
+
+Verwendung
+----------
+
+Die einzige VerÑnderung, die der Anwender normalerweise machen mu·, ist das
+EinfÅgen von /*@@*/ am Anfang einer leeren Zeile au·erhalb eines Kommentars
+oder Strings vor dem ersten Funktionsblock (das ist in der Regel main(){ ...})
+im C-Quellcode. Nach diesem Befehl erzeugt c2cweb fÅr jede Funktion einen
+eigenen Abschnitt. Vor /*@@*/ wird alles in eine einzige (u.U. gro·e) Sektion
+geschrieben. Will man solche Abschnitte zusÑtzlich strukturieren oder hat man
+Struktur-Definitionen zwischen Funktionen, sollte man /*@*/ verwenden, um einen
+neuen Abschnitt zu beginnen ohne den Funktionsalgorithmus einzuschalten (und
+natÅrlich /*@@*/ vor der nÑchsten Funktion).
+Der Funktionsalgorithmus zÑhlt einfach paarweise geschwungene Klammern; falls
+keine mehr offen, wird ein neuer Abschnitt begonnen.
+In der Beispieldatei example.c sind diese Kontrollcodes bereits enthalten.
+
+
+Aufruf:
+
+    c2cweb [Optionen] C-Quelldatei(en) | @Response-Datei(en)
+
+Folgende Optionen sind mîglich:
+
+-v:
+
+alle Kommentare werden in Schreibmaschinenschrift ausgegeben. Dieser Schalter
+ist notwendig, falls die Kommentare bereits formatiert sind, zum Beispiel
+
+            /********************/
+            /*    example.c     */
+            /********************/.
+
+-t Wert:
+
+all Tabulator-Stopps werden expandiert; -t Wert definiert die Tabulatorweite
+(Grundeinstellung: Wert=4).
+
+-l:
+
+ZeilenumbrÅche in der Eingabe innerhalb von C-Text bleiben in der Ausgabe
+erhalten durch explizites AnhÑngen von @/ (einem CWEB Kontrollcode) an jede
+Code-Zeile.
+
+-o Verzeichnis
+
+definiert das Ausgabeverzeichis (mu· bereits existieren).
+
+-b "Titel":
+
+definiert einen Titel (in doppelten AnfÅhrungszeichen). Dieser String wird
+direkt an TeX weitergegeben.
+
+-1:
+
+einseitige Ausgabe (d.h., linker Seitenkopf wird dem rechten Seitenkopf
+gleichgesetzt).
+
+
+Die letzten Schritte sind das Aufrufen von CWEAVE mit der transformierten
+Hauptdatei und danach der Aufruf von TeX, um eine druckfÑhige .dvi-Datei zu
+erhalten.
+
+
+Ein Beispiel:
+
+    die Eingabedateien:
+        header1.h, header2.h, file1.c, file2.c, file3.c
+
+    Man mu· jetzt
+        c2cweb [Optionen] header*.h file*.c
+
+    aufrufen, um die *.*w-Dateien zu erhalten. c2cweb bearbeitet jetzt alle
+    Eingabedateien und teilt mit, welche Datei die Eingabedatei fÅr CWEAVE ist
+    (hier im Beispiel sei es file3.cw).
+
+    Nach dem Aufruf
+        cweave [Optionen] file3.cw
+
+    erhÑlt man eine .tex-Datei (und einige zusÑtzliche Hilfsdateien), die
+    mit PLAIN TeX weiterverarbeitet werden mu· (LaTeX wird nicht unterstÅtzt):
+
+        tex file3[.tex]
+
+
+Im Abschnitt `Hints and Tricks' in der Datei c2cweb.w werden weitere
+Verbesserungen und BeschrÑnkungen von c2cweb beschrieben (der Aufruf
+`make documentation' erzeugt die .dvi-Datei).
+
+
+Autor
+-----
+
+Werner Lemberg (a7621gac@univie.ac.at)
+
+Bitte alle Fehler, Kommentare oder Bemerkungen an obige email-Adresse schicken.
+
+N.B.: Wenn Ihnen das Programm gefÑllt, schicken Sie mir doch eine Postkarte !
+
+    Werner Lemberg
+    Goldschlagstr. 52/14
+    A-1150 Vienna/Austria
+

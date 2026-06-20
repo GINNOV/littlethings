@@ -1,0 +1,153 @@
+	include	"/includes/hardware/offsets.i"
+	include	"/includes/exec/exec_lib.i"
+	include	"/includes/libraries/dos_lib.i"
+	include	"/libs/AllRoundStarter"
+atn	equ	4
+clkin	equ	5
+datain	equ	3
+clkout	equ	6
+dataout	equ	7
+	move.l	4.w,a6
+	lea	dosname,a1
+	moveq	#0,d0
+	jsr	OpenLibrary(a6)
+	move.l	d0,DosBase
+	move.l	d0,a6
+	move.l	#Fenster,d1
+	move.l	#1005,d2
+	jsr	Open(a6)
+	move.l	d0,FensterPointer
+MainWait	lea	ciabpra,a4
+	move.b	#$FF,(a4)
+	move.l	FensterPointer,d1
+	move.l	#WaitClickText,d2
+	move.l	#WaitClickEnd-WaitClickText,d3
+	move.l	DosBase,a6
+	jsr	Write(a6)
+WaitMouseClick	btst	#2,potgor+$DFF000
+	beq	Ende
+	btst	#6,ciaapra
+	bne	WaitMouseClick
+	move.l	FensterPointer,d1
+	move.l	#WaitSerialSave,d2
+	move.l	#WaitSerialEnd-WaitSerialSave,d3
+	jsr	Write(a6)
+	bsr	Init
+	bsr	WClkHigh
+	bsr	WAllLow
+	bset	#dataout,(a4)
+	bsr	WAtnHigh
+	bclr	#dataout,(a4)
+	lea	FileName+4,a0
+ReadFileName	bsr	ReadChar
+	move.b	d5,(a0)+
+	tst.b	d5
+	bne	ReadFileName
+	bsr	ReadChar
+	move.b	d5,MessageLength
+	bsr	ReadChar
+	move.b	d5,MessageLength+1
+	bsr	ReInit
+	moveq	#0,d0
+	move.w	MessageLength,d0
+	moveq	#1,d1
+	move.l	4.w,a6
+	jsr	AllocMem(a6)
+	move.l	d0,MemForInput
+	bsr	Init
+	move.l	MemForInput,a3
+	move.w	MessageLength,d7
+	sub.w	#1,d7
+	bsr	WAtnLow
+	bset	#dataout,(a4)
+	bsr	WAtnHigh
+	bclr	#dataout,(a4)
+ReadLoop	bsr	ReadChar
+	move.b	d5,(a3)+
+	dbf	d7,ReadLoop
+	bsr	ReInit
+	move.l	#FileName,d1
+	move.l	#1006,d2
+	move.l	DosBase,a6
+	jsr	Open(a6)
+	move.l	d0,d7
+	move.l	d0,d1
+	move.l	MemForInput,d2
+	moveq	#0,d3
+	move.w	MessageLength,d3
+	jsr	Write(a6)
+	move.l	d7,d1
+	jsr	Close(a6)
+	move.l	MemForInput,a1
+	moveq	#0,d0
+	move.w	MessageLength,d0
+	move.l	4.w,a6
+	jsr	FreeMem(a6)
+	bra	MainWait
+Ende	move.l	DosBase,a6
+	move.l	FensterPointer,d1
+	jsr	Close(a6)
+	move.l	DosBase,a1
+	move.l	4.w,a6
+	jsr	CloseLibrary(a6)
+	rts
+Init	move.w	#$20,dmacon+$DFF000
+	move.b	#0,(a5)
+	move.w	#$8800,adkcon+$DFF000
+	move.w	#$20,intena+$DFF000
+	clr.b	spr0data+$DFF000
+	clr.b	spr0datb+$DFF000
+	move.b	#0,(a4)
+	move.l	4.w,a6
+	jsr	Forbid(a6)
+	rts
+ReInit	move.w	#$800,adkcon+$DFF000
+	move.w	#$8020,intena+$DFF000
+	move.w	#$8020,dmacon+$DFF000
+	move.l	4.w,a6
+	jsr	Permit(a6)
+	rts
+ReadChar	moveq	#7,d0
+	moveq	#0,d5
+ReadCharLoop	bsr	WClkLow
+	bsr	WClkHigh
+	btst	#datain,(a4)
+	beq	NoOnReadChar
+	bset	d0,d5
+NoOnReadChar	dbf	d0,ReadCharLoop
+	rts
+WAtnHigh	btst	#atn,(a4)
+	beq	WAtnHigh
+	rts
+WAtnLow	btst	#atn,(a4)
+	bne	WAtnLow
+	rts
+WClkLow	btst	#clkin,(a4)
+	bne	WClkLow
+	rts
+WClkHigh	btst	#clkin,(a4)
+	beq	WClkHigh
+	rts
+WAllLow	move.b	(a4),d0
+	and.b	#%111000,d0
+	tst.b	d0
+	bne	WAllLow
+	rts
+WAtnClkHigh	move.b	(a4),d0
+	and.b	#%110000,d0
+	cmpi.b	#%110000,d0
+	bne	WAtnClkHigh
+	rts
+DosBase	dc.l	0
+MemForInput	dc.l	0
+FensterPointer	dc.l	0
+MessageLength	dc.w	0
+dosname	dc.b	"dos.library",0
+FileName	dc.b	"dh9:c64/dat/"
+	ds.b	20
+Fenster	dc.b	"CON:51/117/538/21/                      ** *  C-64 Saver  * **                 ",0
+WaitClickText	dc.b	10,"Klicke links, wenn C64 zum Transfer bereit! (rechts fuer exit)"
+WaitClickEnd
+WaitSerialSave	dc.b	10,"Empfange Daten und speichere sie ab!"
+WaitSerialEnd
+

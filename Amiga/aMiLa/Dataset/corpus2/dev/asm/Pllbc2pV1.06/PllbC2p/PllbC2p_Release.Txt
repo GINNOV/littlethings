@@ -1,0 +1,571 @@
+
+ *=------------------------------------------------------------------------=*
+
+
+                   >> Precalc Linear lookup Blitter C2P <<
+
+                             Version: 1.06
+
+                        Released: 5th-08-1996
+
+                   Written & Designed By:  Kevin Picone 
+
+          (c) Copyright 1996 by Kevin Picone of Underware Design
+
+                          All Rights Reserved.
+
+ *=------------------------------------------------------------------------=*
+
+         Contact: 'Kevin Picone' at Email: uwdesign@lin.cbl.com.au
+ 
+ *=------------------------------------------------------------------------=*
+
+
+ Features: 
+
+                  * Linear Chunky Frame Buffer
+
+                  * Single,Double & Quad Pixel widths are supported
+
+                  * Uses Normal (none resorted Pixels)
+
+                  * 256/64/16 Colour Versions
+
+                  * Various Specialized C2P methods.
+                 
+                          * Normal
+                          * Delta
+                          * Null Skip & Clear
+                          * Delta Null Skip & Clear      (NEW to V1.04)
+
+                  * 16bit conversion with 32bit Writes to ChipRAM
+
+  
+ Special Requirements:
+
+                  * ECS/AGA Blitter for long blits.
+
+                  * Fastram for Precalc buffer (from 512k -> 2meg ;)
+
+                  * Normal Planar Screen  (NOT interleaved)
+
+                  * No Screen modulo is allowed
+
+ Disadvantages:
+ 
+                  * Rather Hungry upon FASTRAM
+ 
+                  * Extra ChipRAM demands 
+
+                  * Uses the Blitter	
+                     
+                  * Provided Sources are *VERY* bulky 
+
+                  * Can be cumbersome to initially add
+
+                  * No 'C' support (sorry!)
+ 
+
+ *=------------------------------------------------------------------------=*
+
+
+ * Copyright:
+ ============
+
+ The included source codes, intellectual properties, documentation and
+ their contained description of methods, remain the (c) copyright of
+ Kevin Picone 1996.
+
+ I hereby grant permission for this code to be used freely in either  
+ P.D./Freeware/Shareware/commercial software releases or used as the basis
+ for a better C2P solution in PD/Freeware/Shareware/Commercial software
+ releases, with there being only one condition, that being that you *MUST*
+ credit me for my work.  ( a free copy of the software wouldn't hurt
+ either;) 
+
+ This archive may be freely distributed via any means.
+  
+
+
+ * Disclaimer:
+ =============
+
+ I in no way imply either directly or indirectly, that the described methods
+ or included source code(s) are the best (fastest) possible C2P solutions
+ in any/some/all cases or situations, they are provided as purely _optional_
+ methods to solve the c2p bottleneck.  
+ 
+
+
+ * What is PLLB-C2P ?
+ ====================
+
+ Precalc Linear Lookup Blitter - Chunky To Planar is actually a C2P
+ system and not just a few assorted routines.  The system (although it was
+ originally designed purely for my own use) _attempts_ to allow the
+ programmer too easily setup and support various bitplane depths, pixel
+ widths and conversion methods with relative ease.
+
+
+ 
+ * What are 'Normal' 'Delta' & 'Nullskip' c2p routines ?
+ =======================================================
+
+ Pllpc2p has built in support for various types of c2p conversion.  These
+ methods are 'Normal', 'Delta', 'NullSkip' & 'DeltaNullSkip'.  I've done
+ this for one rather obvious reason, as it's quite common that specific
+ rendering algorithms can have their performance enhanced by using
+ customized c2p solutions.  Hence, I've given you as many choices as I
+ possibly could, actually I've probably gone overboard, but who cares. ;)
+
+
+ * Normal       - This method is the simplest type of C2P possible, each
+                  frame it will convert the entire chunky frame buffer into
+                  planar.
+
+                  Normal C2P is probably best used when your chunky frame
+                  buffer is constantly changing by say %80->%100.
+                   
+
+ * Delta        - Delta c2p is a little more complex, it constantly takes
+                  two chunky frame buffers, the chunky frame just rendered
+                  and the last chunky frame rendered, and then compares
+                  them, looking for differences.  Each time a difference
+                  is found, it converts that group of 16 pixels into planar. 
+
+                  Delta c2p can be very powerful, and not too mention
+                  quite fast in various situations. Personally, I'd recommend
+                  that you use it over 'normal' c2p, or at least do some
+                  performance tests yourself.
+ 
+                  Those Familiar with Delta C2P algo's will notice that PLLB
+                  c2p allows for double buffering of your 'planar' image.
+                  i.e. you don't just render over the current visible
+                  frame. (So no ugly frame cuts.)
+
+                  Moreover, Pllbc2p Delta routines, work in 16 pixel (or
+                  less, depends upon the pixel width) delta fields, for
+                  improved delta frequency and only shift data to ChipRAM
+                  when a difference is found.
+
+
+ * NullSkip     - Is a specialize C2P algorithm that scans for groups of
+                  NULL pixels (groups of pixel 0).  Each time it locates
+                  a NULL pixel group, it performs a quick clear operation
+                  to the planar buffer and then continues on, instead of
+                  passing the null (clear) pixels through the c2p process.
+
+                  NullSkip C2P is probably best used, when you can be fairly
+                  sure that a large part of chunky frame buffer is going to
+                  be constantly blank/clear.
+
+                  Nullskip also clears your chunky buffer as it goes.
+ 
+
+ * DeltaNUllSkip- Is just a logical extension to 'NUllSKIP', and NO it's
+                  not a combination of the 'DELTA' + 'NULLSKIP" Methods.
+                  It's actually a rather simple way to reduce the chipram
+                  access in the null skip algorithm.  Which is very useful
+                  on high end CPU's like the 060, 040, and even 40/50mhz
+                  030 systems.
+
+                  It works via remembering if the present group of NULL
+                  pixels was cleared in the planar buffer during the last
+                  c2p sweep or not. If it was, then it doesn't write to chip
+                  at all, if not, it performs the clear and sets the delta
+                  tag for this group of pixels.  Hence, this reduces the
+                  amount of chipram access and provides a handy speed-up
+                  in the process.
+
+                  DeltaNullSkip also clears out the chunky buffer while it
+                  processes it.
+
+   
+            
+
+ * I don't understand this Pixelwidth stuff ?
+ ============================================
+
+ Pllbc2p, like most other C2p routines supports various pixel widths,
+ including 'Single', 'Double' and even 'Quad' pixel modes.
+
+ In Double & Quad pixel mode, pllbc2p allows you to render a halved or
+ quarter sized (width) chunky image, that the c2p routine will automatically
+ blow it up to your selected planar screen width.  This can greatly improve
+ both your our algorithms performance and of course the c2p routines
+ performance.
+
+ Pllbc2p doesn't automatically support various Pixel height, so you'll
+ have to set those up yourself.  I normally just use the copper to blur
+ the scan lines.
+
+
+
+ * The Bizarre Method:
+ =====================
+
+ The following method outline is based upon the 256 colour single pixel
+ width, other c2p modes may and do vary..
+
+
+ PLLB-C2P is a 16bit combination processor sweep / with lookup array and
+ Blitter resort algorithm, which was originally designed for 020/030 and
+ ECS/AGA systems, But it's also very useful on 040 & 060 processors.
+
+
+ The basic idea behind the algorithm is the usage of large Pre calculated
+ pixel combination tables.  These tables gives us the ability to directly
+ use the chunky pixels as pointers into the Pre calculated conversion
+ table(s).  The chunky lookup table(s), contain all the possible
+ combinations of two 8bit chunky pixels in their unrolled planar format.
+ (I.e. 8 bytes...)
+
+
+ Examples. (256colour Pixel width of 1)
+
+                    (p=plane)    p0  p1  p2  p3  p4  p5  p6  p7
+
+         Chunky Input $00,$0f = $01,$01,$01,$01,$00,$00,$00,$00
+         Chunky Input $0f,$00 = $02,$02,$02,$02,$00,$00,$00,$00
+         Chunky Input $01,$0f = $03,$01,$01,$01,$00,$00,$00,$00
+         Chunky Input $88,$55 = $01,$00,$01,$02,$01,$00,$01,$02
+         Chunky Input $ff,$0f = $03,$03,$03,$03,$02,$02,$02,$02
+
+
+ Obviously, with a little simple maths you'll quickly notices that this
+ means the lookup array for two 8bit chunky pixels ='s (256*256*8) = 512K ;) 
+ and can be as large as 2 megabytes, if available.
+
+ Since the tables are unrolled into precalced groups of 8 bytes (2 longwords)
+ , the idea is too always MOVE/logical OR from these tables in longwords,
+ into our tempory data registers on the CPU..
+
+ So to overview the conversion process of 16 chunky pixels into planar,
+ we've got the following simple routine.
+
+
+ Convert the first 8pixels, Pixels 0->7
+
+ ; A0 = pointer to CHunky pixel buffer
+
+ ; A5 = Base pointer to the Precalc comb's buffer
+
+ ; Process 8 Chunky bits into planar
+
+	clr.l d1		; Clear out d1
+	move.l (a0)+,d0		; Move Bytes ABCD from chunky buffer
+	move.w d0,d1		; move bytes CD into d1
+	clr.w d0		; AB-- clear low word of D0
+	swap d0			; --AB exchange upper word for lower word
+
+	lsl.l #3,d0		; mult d0 * 8 (width of precalc buffer)
+
+	move.l (a5,d0.l),d3	; grab planes 1,2,3,4 for pixels AB
+	move.l 4(a5,d0.l),d4	; grab planes 5,6,7,8 for Pixels AB
+
+		lsl.l #2,d3	; Shift PLanes 1,2,3,4 up 2 bits 
+		lsl.l #2,d4	; sift planes 5,6,7,8 up 2 bits
+
+	lsl.l #3,d1		; mult by 8 (width of precalc Buff)
+	or.l (a5,d1.l),d3	; or on planes 1,2,3,4 for pixels CD 
+	or.l 4(a5,d1.l),d4	; or on planes 5,6,7,8 for pixels CD	
+ 
+		lsl.l #2,d3	; Shift PLanes 1,2,3,4 up 2 bits 
+		lsl.l #2,d4	; sift planes 5,6,7,8 up 2 bits
+
+       ;(first 4 pixels are processed at this point)
+
+	clr.l d1		; Clear out d1
+	move.l (a0)+,d0		; Move pixels EFGH from chunky buffer intoD0
+	move.w d0,d1		; move pixels GH into d1
+	clr.w d0		; EF-- clear low word of D0
+	swap d0			; --EF exchange upper word for lower word
+
+	lsl.l #3,d0		; mult EF * 8 (width of precalc buffer)
+
+	or.l (a5,d0.l),d3	; grab planes 1,2,3,4 for pixels EF
+	or.l 4(a5,d0.l),d4	; grab planes 5,6,7,8 for Pixels EF
+
+		lsl.l #2,d3	; Shift PLanes 1,2,3,4 up 2 bits 
+		lsl.l #2,d4	; sift planes 5,6,7,8 up 2 bits
+
+	lsl.l #3,d1		; mult GH by 8 (width of precalc Buff)
+
+	or.l (a5,d1.l),d3	; or on planes 1,2,3,4 for pixels GH 
+	or.l 4(a5,d1.l),d4	; or on planes 5,6,7,8 for pixels GH	
+
+ 
+ d3 = a1b1c1d1e1f1g1h1a2b2c2d2e2f2g2h2a3b3c3d3e3f3g3h3a4b4c4d4e4f4g4h4
+ d4 = a5b5c5d5e5f5g5h5a6b6c6d6e6f6g6h6a7b7c7d7e7f7g7h7a8b8c8d8e8f8g8h8
+
+
+ Above, I mentioned that the precalc array could be as large as 2 megabytes
+ of FASTRAM, which is (unfortunately) true.  The reason for this is a
+ simple speedup which enables us to remove the two required 'lsl.l #2,d3'
+ & 'lsl.l #2,d4' instructions after each 'Move/logical or' completely
+ from the C2P loop.  The idea is to create 4 versions of the Precalced
+ Array with each one being already shifted into position.  Cumbersome
+ I know, but can make the routine(s) much faster....
+
+
+ Note:     The Pllb-C2p system handles all the possible buffer combinations
+ =====     all by it's  self.
+
+
+ Anyway, above also I stated that this is a 16bit routine, (which
+ is needed for the blitter resort pass) so after we've processed
+ the first 8 chunky pixels into planar,  we then repeat the process,
+ but this time storing the second converted 8 planes of pixels 8 to 15
+ into say registers d5,d6...
+ 
+
+ Now, all that's needed is to merge the planar data together, then move
+ it into the tempory CHIP buffer for the Blitter to resort/transfer to
+ our final screen...
+
+
+ ; a1 = output buffer in CHIPRAM
+
+ ; d2 = $ff00ff00
+
+ ; d3 = planes 1,2,3,4 pixels 0-7
+ ; d4 = planes 5,6,7,8 pixels 0-7
+
+ ; d5 = planes 1,2,3,4 pixels 8-15
+ ; d6 = planes 5,6,7,8 pixels 8-15
+
+
+ ; resort the planar bytes into words 
+
+
+	move.l d3,d0	; move Planes 1,2,3,4 to d0 (first 8 pixels_	
+	move.l d5,d1	; move planes 1,2,3,4 to d1 (second 8 pixels)
+
+	and.l d2,d0	; mask with $ff00ff00  d0 ='s planes 1,-,3,-
+	and.l d2,d1	; mask with $ff00ff00  d1 ='s planes 1,-,3,-
+                        ;                           (second 8 pixels)
+
+	eor.l d0,d3	; mask off planes 1,-,3,- from planes 1,2,3,4
+			; d3 = -,2,-4
+	eor.l d1,d5	; mask off planes 1,-,3,- from planes 1,2,3,4
+			; d5 = -,2,-4 second 8 pixels
+
+	lsr.l #8,d1	; d1 = -,1,-,3 .. Second 8 pixels
+	or.l d1,d0	; d0 = 1,1,3,3
+
+	move.l d0,(a1)+		; Dump out 32bits (16bits of planes 1 & 3)
+
+	lsl.l #8,d3	; d3 = 2,-,4,- 
+	or.l d5,d3	; d3 = 2,2,4,4
+
+	move.l d3,(a1)+		; Dump out 32bits (16bits of planes 2 & 4)
+
+
+	(then repeat the process for Planes 4,5,6,7)
+
+
+
+ One thing, you've probably already noticed, is that via this method your
+ able to write to CHIPRAM in Longwords without a great amount of fuss...
+ Plus, the routine(s) are small enought to fit nicely within the 68020's
+ small instruction cache, which helps a great deal.  In _theory_ pllbc2p
+ on an 28mhz 020's should be as fast if it was running on a 25mhz 030's,
+ but obviously various conditions could hinder this.
+
+
+ Unfortunately, we still need to use the blitter to move/resort the mixed
+ processed display (which is now in Chipram) from the Tempory Image buffer
+ to it's final resting place, the screen.  To avoid having too mess with the
+ blitter constantly the final screen(s) need to be defined as normal planar
+ and *NOT* interleaved, as this allows us to blit move an entire BitPLane
+ worth of Pixels, per each useage of the blitter.
+
+ Hence, a simple hardware bashing routine to Move/Resort a single bitplane
+ from the tempory image buffer to the display screen, would look something
+ like this.
+
+
+ Bitter_Moveresort_TempImageBitplane_to_Display:	; (NICE LABEL ;)
+	 
+ 	lea.l $dff000,a6		
+
+	jsr waitblitter			; wait for Blitter ;)
+
+	move.l #$09f00000,$40(a6)	; setup blitter miniterms and chan's
+	move.l #$ffffffff,$44(a6)	; init masks
+	move.l #((16-2)*$10000),$64(a6) ; setup source and dest modulo's
+
+	lea.l BlitterTemp_ImageBuffer,a0
+	Move.l Display_buffer,a1
+
+	add.l d0,a0	; add on any source plane offset
+	add.l d1,a1	; add on any dest plane offset
+
+	move.l a0,$50(a6)	; set blitter Chan A pointer to source buf 
+	move.l a1,$54(a6)	; set blitter Chan D pointer to dest Buf
+	move.w #20*256,$5c(a6)	; (20 words wide * 256 lines in Height
+	move.w #1,$5e(a6)	; init width (1 word) and START!
+	rts
+
+
+
+ The idea is to work out some way (depends on what your doing really) that
+ allows you to trigger the blitter and then just forget about it, which
+ could be via say, Async blits, Interrupts, copper or perhaps even another
+ Task or something.  Personally, I just found it simpler (in the Tmap
+ engine it was originally designed for) to check it's progress at
+ preselected times. ie. between mapping textures, objects, floors etc etc..
+ which added minimal (if any really) overhead, and seemed to work just
+ fine.. ;)..... lazy I know ;)
+
+
+
+
+
+ * What Memory Is needed ?:
+ ==========================
+ 
+ Well this depends upon the type of game/demo or perhaps util your trying
+ to create.
+
+ Since, i've included Normal, Delta, Nullskip & now Delta Nullskip versions
+ of each routine, well obviously your Buffer requirements will differ.
+
+
+ * NORMAL C2P
+
+ In FASTRAM, all that you require (min) is too firstly allocate your
+ source CHUNKY PIXEL buffer and than the number of Precalc tables you wish
+ to use.. 1->4 ie. 512k->2meg ..
+
+ In CHIPRAM, you'll need to allocate the tempory image buffer ie.
+ ((ScreenWidthInPixels/8) * ScreenHeight*bitplanes)='s size of Tempory
+ image buffer.  So if you were only using Two displays for double
+ buffering originally well now, you'll need an extra display for the
+ Tempory Image buffer.  (sorry)
+
+
+ * DELTA C2P
+ 
+ The only different requirement for using the delta versions, is that
+ you'll need a second CHUNKY PIXEL buffer.  It should also be noted,
+ that you have to swap chunky pixel buffer pointers after each frame is
+ rendered, just as you would do normally for double/triple or even
+ Quad buffering purposes.
+
+
+ * NULL SKIP C2P
+
+ The Nullskip versions have the same memory requirements as the Normal
+ C2P versions...
+
+ 
+ * DELTA NULLSKIP C2P
+
+ Delta Nullskip has the same memory requirements as the Normal c2p version,
+ except it also needs a special 'delta' buffer so it can remember which
+ groups of null pixels it's cleared in the planar buffer.
+
+ This buffer needs to be in FASTRAM and at least the size of your chunky
+ buffer divided by 4.  
+
+ Ie. (ChunkyScreenwidth*ChunkyScreenheight)/4
+ 
+
+
+
+ PLEASE NOTE: Neither the Normal or Delta versions of the routine CLEAR
+              the source Chunky Frame Buffer.
+ 
+
+
+
+ * Linear Frame Buffer:
+ ======================
+ 
+ After messing with various Tmapped & Gouraud Shaded engines (just like
+ everybody else) where the requirement of a chunky frame buffer for gfx is
+ high, the one rather obvious thing I found is that,  it's _normally_ much
+ better to save say a couple of cycles per chunky pixel, via rendering 
+ / copying across the linear buffer, than to save say a couple of cycles
+ in the C2P loop, particularly when your constantly rendering a full
+ frame buffer of pixels, where pixel (texture/gouraud) overlap (ie. polygons
+ that share the same screen space) is high.
+ 
+ Pllb-c2p is probably quite unique, since it uses Precalc tables to preform
+ the actual bit shifting process, well we obtain a free linear buffer 
+ and we also achive slightly faster C2P in the process.
+
+
+
+ * A possible C2P Hint for 'Wolf 3D' or 'Doom' texture mapped engines:
+ =====================================================================
+
+ Without wanting to sound critical of *ANY* of the presently available
+ Tmap Engines, and having written a 'Blade Stone' ish engine myself,
+ (so I know just how hard the task actually is), the one thing I notice
+ is the lack of specialized C2P for when floor/Ceiling texture mapping isn't
+ present.  Personally, I consider this the ideal time for either a delta'd
+ C2P routine or a specialized NUll SKIP/CLEAR (you could make it use a
+ pattern) routine.  Via using the latter method, I was able to obtain
+ 8->9fps refresh updates upon just a a1200/020 14mhz+fastram, with a
+ screen size of 320*256, 256colour, 1x*2y pixel res, while the engine
+ includes lightsources, Solid & See through Texture Mapped Walls & 2D
+ mapped objects.
+
+
+ Also, it becomes pretty obvious that for a Delta'd C2P routine to be all
+ that useful while Floor/Ceiling Mapping is present, that the artist
+ should  probably think more about making the floors & ceilings (and even
+ walls where possible) texture images a little less complex, which will
+ enchance preformance greatly.  It might also be a nice option for Full
+ or reduced detail floors & Ceilings, instead of turning them off
+ completely.
+
+
+
+ * Why supply Quad Pixel width versions ?:
+ =========================================
+
+ Well, what can I say, they give you an optional 'Copper' styled screen
+ resolution, but without the loss of 24bit colour. (not that it matters
+ too much at this res ;)  Perhaps they can be best used in effects like
+ 'Fire' / 'Water' & 'Life' effects. 
+
+
+
+ * Some Future Idea's:
+ =====================
+
+
+ * Auto 8bit to 6bit colour reduce/remapping.    (Still - Coming Soon ;)
+
+ * Ham 8 with auto interpolation.       (Just a crazy idea at the moment ;)
+
+
+
+ * That's it from me:
+ ====================
+
+ Well, hopefully the enclosed routine(s) are of some use to you, or perhaps
+ they might inspire you to take this method further than I have, as this
+ is really only the initial working version(s) of PLLB-C2P, so I've *NO*
+ doubt there's any number of possible speed-ups just waiting to be found. 
+
+ If you do bother too enhance any of the pllbc2p routines, well, I'd
+ appreciated it greatly if you'd let me know, so I can pass this
+ information to others in future releases of pllbc2p.
+
+
+ Cya,
+
+ Kevin Picone
+ Underware Design
+
+
+ *=----------------------------------------------------------------------=*
+
+                               T H E    E N D
+
+ *=----------------------------------------------------------------------=*
+

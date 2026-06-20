@@ -1,0 +1,115 @@
+  LightWave converter scene information (v3.4) (C) 1996-97 TBL
+  
+  This is what the current version of the LightWave converter
+  supports:
+  
+  
+  * Object and camera motions.
+  * Parent objects.
+  * Object morphing (unlimited number of objects, almost :)
+  
+
+  First some things what NOT to do:
+  
+  * Don't change the camera zoom factor! (It's ok to set it to
+    a start value and then keep that value)
+  * Don't scale the objects during the animation! As in the camera
+    it's ok to scale the object to a size in the beginning but then
+    it has to keep that size during the whole animation.
+  
+ What motion things can i use??
+ 
+  The following motion values could be changed:
+   * X position
+   * Y position
+   * Z position
+   * Heading rotation
+   * Pitch rotation
+   * Bank rotation
+   (Use morph instead of scaling)
+  Repeatition of movements are allowed.
+  
+   
+ How do i use parent objects???
+ 
+  As normal :) Every child object will follow it's parent.
+  * NOTE! All mothers has to be before it's child in the objectlist.
+
+ Object morphing:
+  
+  All morphing must be done with evelopes. You can't set the morph-
+  percentage at certain keyframes. It has to be done with an envelope.
+  You can make LightWave morph between more then 2 objects,
+  infact you can morph between as many as you want. (I think!)
+  How to do a morph between more then 2 objects:
+  
+   * First to a normal morph from object 1 to object 2
+   * Make the third object a child to object 2 i.e
+     Do a parent object to number 2.
+   * Now if you set the morphfactor to 200% it will be at 
+     object 3
+   * If you want 4 objects make the fourth a child to number 3. etc
+   
+  
+ Things to think about (Concerning memory etc).
+ 
+   * Always make the movement of objects etc as short as possible,
+     you can repeat them. (every frame for Every objects take 13 
+     bytes. I.e 500 frames for 3 objects = 500*3*13 = 19500 bytes)
+     
+   * When morphing don't use too many targetobjects, or too many 
+     frames. (Every frame for every object take 12 bytes. I.e 500
+     frames when morphing 3 diffrent objects takes 500*3*12 = 18000
+     bytes + the target objects themselfes).
+     
+   
+
+ Flares (Lights)
+
+   The settings for flares doesn't follow LW at all!!! If the flares
+   are rendered in LW it will probably look like shit! The reson why
+   is that i wan't more control over the flare-looks, then i need to
+   use some values that are normally not used the way i use them.
+   Rotation of flares in made by altering the Bank angle (B).
+ 
+   Currently 3 kinds of flares are supported: 
+    Flare - Flare is like a classic flare with strikes.
+    Blob  - A blob is like a round ball of light.
+    Image - Image let's you select a custom flaremap.
+   Imagemapping could be done 2 ways. One way is to create a gray-
+   scale image and let the converter calculate the colours. This 
+   allows you to have diffrent colours on every flare but still 
+   only need one image (this could be compared to blob and flare).
+   The second method is simple using the flare-image colours.
+   
+   Choose flaretype as following:
+   
+    Light Type: 
+     Distant  = Flare
+     Point    = Blob
+     Spot     = Imagemap
+
+    How to choose between grayscale imagemapping or not.
+    Shadow Type:
+     Off       = Use imagepalette for flare
+     RayTrace  = Calcualte colours     
+     Shadow Map= Calcualte colours     
+    All flareimages must:
+     * Be an IFF-ILBM file.
+     * Contain no more then 256 colours.
+     * Be not wider then 256 pixels, or less then 8 pixels.
+     * Have a minimum height of 8.
+     * Be a mutiple of 8 pixels wide. (width=n*8) i.e 64,128,192...
+
+   Theese settings are valid for Flare,Blobs and greyscale images.
+
+    Colour:          R,G,B Set the flare colour
+    Intensity:       Brightness 0=Backdrop,100%=Colour
+    Flare dissolve:  Spot size, 0%=Large dot,100%=Small dot
+    Flare intensity: Flare size in meters. 100%=1 meter
+   
+   Theese setting are valid for palettemapped images.
+
+    Colour:          R,G,B Colour change of image. Normal=128,128,128
+    Intensity:       Strength of colour, 0=At R,G,B,100=Normal image
+  

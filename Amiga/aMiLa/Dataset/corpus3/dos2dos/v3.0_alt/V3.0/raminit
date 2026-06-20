@@ -1,0 +1,8 @@
+copy dh1:ramstuff/copy vd0:
+copy dh1:ramstuff/di vd0:
+copy dh1:ramstuff/e vd0:
+copy dh1:ramstuff/ddt vd0:
+copy dh1:ramstuff/blink vd0:
+copy dh1:ramstuff/casm vd0:
+copy dh1:ramstuff/cd vd0:
+

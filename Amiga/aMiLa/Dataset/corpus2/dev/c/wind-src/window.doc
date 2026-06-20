@@ -1,0 +1,27 @@
+-------------------------------------------------------------------------
+Program:     window
+Source file: window.c
+Doc file:    window.DOC
+
+Explanation: This little routine is just an example of a simply structure
+             of any C program which uses intuition. In this code is shown
+             how to open windows, set menus, make a new face of the mouse
+             pointer, print an intuition text, work with "messages" which
+             intuition sends to our proggys and calling the amiga's "bad"
+             AutoRequest (which is known as System Request).
+
+             Routine is developed in Aztec C 5a but it should be compiled
+             on other compilers also cause I program very friendly. :-D
+-------------------------------------------------------------------------
+Author:      Dalibor Kezele
+e-mail:      dkezele@jagor.srce.hr (finger this address for more info)
+             sentinel@bonus.fido.hr
+             dadok@systematics.fido.hr
+URL:         http://jagor.srce.hr/~dkezele
+FidoNet:     Dalibor Kezele 2:381/120
+snail mail:  Dalibor Kezele
+             Toplicka 127
+             42204 Turcin
+             CROATIA
+phone:       ++385 (0)42 65 15 67
+-------------------------------------------------------------------------

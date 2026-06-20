@@ -1,0 +1,42 @@
+                        Swap v1.0 (c) 1992, Tom Champion
+                        --------------------------------
+
+    I used a program on (Fish 412) that swapped file names over, it was over
+    5k in size and it couldn't swap file names between devices.
+
+    Swap will change file names between devices, Swap is also under 2k
+    in size.
+
+Note:
+    Use Swap at your own risk.
+
+Usage:
+
+    Swap [First file]  [Second file]
+
+    Example
+        Swap file1 file2
+        Swap ram:file1 dh0:file2
+        Swap file1 docs/file2
+
+
+Distribution:
+
+    Icon is freely distributable as long as this doc file and the source
+    files are with it and a nominal copy fee is charged.
+
+
+Files in directory:
+
+    Swap        Swap.asm
+    Swap.Doc
+
+
+Correspondence:
+
+    Please sent any bug reports or correspondence to
+
+        Tom Champion
+        62 Sterling Rd.
+        Metung 3904
+        Australia

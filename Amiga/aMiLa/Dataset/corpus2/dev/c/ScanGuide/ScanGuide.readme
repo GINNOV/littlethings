@@ -1,0 +1,74 @@
+Short: StormC: Con-sensitive help in GoldED! ;)
+Author: fini.alring@netmedia.dk (Fini 'Warp' Alring)
+Uploader: fini.alring@netmedia.dk
+Type: dev/c
+Requires: Arexx, AmigaOS 2.0+ (I think!).
+Version: 1.0
+Long:
+
+
+ Yet another GiGA Production has seen the light..!
+
+
+ Called ScanGuide!!!
+
+
+ I made it because there wasn't any real context sensitive help for StormC coders,
+ when using GoldED, like when you use StormC's own editor...  But now there is....!
+
+ Content:
+
+ · C:ScanGuide  - Main program, can be used for many search tasks...
+
+ · GoldED:Arexx/StormC_ScanGuide.ged  - The StormC on-line help, for GoldED.
+
+
+
+
+
+
+
+*** NOTE:  To get more help, start C:ScanGuide without arguments ***
+
+
+                             AMIGA Forever!!!
+
+
+
+
+
+/*
+** StormC_ScanGuide.ged v1.0   ©29-May-1997 by Warp / GiGA Prod...
+**
+** GoldED v4.0 PRO script for Context sensitive help, using ScanGuide v1.0 by Warp / GiGA Prod... ©1997
+**
+** This is mainly intended for StormC v2.0, but i'm sure you could make it very useful other places... ;-)
+** Just start ScanGuide wthout arguments, to read some help about it...
+**
+**
+** Installation:
+**
+** · Be sure to have the program ScanGuide on your system (You might choose C:).
+** · Put this script in GoldED:Arexx/
+**
+** · Create a menu entry in GoldED, called ScanGuide, you may also choose a HotKey for it.
+**   Then assign this arexx script to the menu entry.
+**
+** · Modify the three variables, in this source, to point at the correct dir, and and files. (ScanGuide_Path etc.)
+**
+** · Save preferences in GoldED.
+**
+** · Now try these things:
+**
+** Type  >   printf(   <  in GoldED, and put the cursor over or right after the word, and activate ScanGuide,
+** through the Menu, or the HotKey...  try also these words:  pr#?tf(   #?tof(  wai#?of(  Ras#?ort  printf()
+**
+** NOTE!!!: Instead of spaces you should use either ? or #? because the script only takes one word...
+**
+** If you have made a similar program, which is better or different, then send it to me!!
+**
+** This ScanGuide is GiftWare, and if you use it, you MUST send me a copy of a program you made...
+**
+**                   Write to: fini.alring@netmedia.dk    -  Subject: ScanGuide!
+**
+*/

@@ -1,0 +1,81 @@
+Short: FFT program and test signal generator (PPC)
+Type: dev/c
+Uploader: info@ar-kleinert.de
+Author: Steve Sampson, Andreas R. Kleinert (Amiga port)
+
+ *************************************************************************
+
+   The FFT program and test signal generators included in the archive, can be
+used to perform signal analysis in the frequency domain, using samples in the
+time domain.  Historically the applications have ranged from music to radar. [...]
+
+The original Byte Magazine program (see references below) was designed for real
+data only.  In my experiments I needed to preserve both real and imaginary
+data.  If you feed the FFT real data only, then the output will be a mirror
+image, and you can ignore the left side.  Two signal generators are included.
+One generates sine waves (sine) and the other generates pulses (pulse).  Some
+papers I found on the subject of FFTs are included at the end.  There are
+several books devoted to the subject also. [...]
+
+For the Amiga example (based on Unix code) try:
+
+        sine 16 in
+        1000
+        3000
+
+Which will sample the 1 Khz data every 333 microseconds (1 / 3 Khz).  Note: The
+sample frequency should be greater than 2 times the input frequency (Nyquist
+and all that...).
+
+Then run fft:
+
+        fft 16 in out
+
+And you should see a display like so:
+
+0       |=======                                      (-1500.0 Hz)
+1       |=====                                        (-1312.5 Hz)
+2       |====                                         (-1125.0 Hz)
+3       |====                                          (-937.0 Hz)
+4       |===                                           (-750.0 Hz)
+5       |===                                           (-562.5 Hz)
+6       |===                                           (-375.0 Hz)
+7       |===                                           (-187.5 Hz)
+8       |====           <-------   DC                   (000.0 Hz)
+9       |====           <-------   Fundamental          (187.5 Hz)
+10      |======         <-------   Second Harmonic      (375.0 Hz)
+11      |========                                       (562.5 Hz)
+12      |==============                                 (750.0 Hz)
+13      |========================================================
+14      |============================               (1125.0 Hz) ^
+15      |===========                                (1312.5 Hz) |
+                                                                |
+                                [13 - 8 (center)] * 187.5 = 937.0 Hz
+
+The fundamental display frequency is:
+
+        T  = Time Increment Between Samples
+        N  = Number Of Samples
+        Tp = N * T
+
+        Then F = 1 / Tp
+
+        In the example above, the time increment between samples is
+        1 / 3000 or 333 microseconds.  N = 16, so Tp = 5333 microseconds
+        and 1 / .005333 is 187.5 Hz.
+
+        Therefore each filter is a multiple of 187.5 Hertz.  Filter 8 in this
+        example is center, so that would be zero, 9 would be one, etc.
+
+[...]
+
+ *************************************************************************
+
+ The Amiga PPC version comes with the three programs fft.elf, pulse.elf and
+ sine.elf, which all were derived from the unix version - with slight
+ modifications.
+
+ Maybe someone likes to do a graphical interface for this code...
+
+ --
+ ARK, 31/May/2000

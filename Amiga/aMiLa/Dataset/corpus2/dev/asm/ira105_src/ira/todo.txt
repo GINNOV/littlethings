@@ -1,0 +1,14 @@
+Er  erkennt  zwar sehr viel des Textes, (Option -TEXT=1) aber in den Source
+wird  nur  sehr  wenig  bis  nichts uebernommen..  Warum wird nicht gefragt
+"Uebernehmen (J/n)" (<cr> = j) (Einstellbar).
+
+DC.$0000FFFF,$4B616E6E,$2050726F,$6D657468   ; úúKann Prometh
+DC.$65757320,$53657276,$6572206E,$69636874       ; eus Server nicht            
+DC.$2066696E,$64656E21,$0000706D,$62736F6E       ; finden!úúpmbson             
+DC.$6C696E65,$2E6C6962,$72617279,$00004B61       ; line.libraryúúKa            
+DC.$6E6E2070,$6D62736F,$6E6C696E,$652E6C69       ; nn pmbsonline.li            
+DC.$62726172,$79207631,$2E30206E,$69636874       ; brary v1.0 nicht            
+DC.$20F66666,$6E656E21,$00004B61,$6E6E2050       ;  öffnen!úúKann P            
+DC.$726F6D65,$74686575,$7320506F,$7274206E       ; rometheus Port n            
+>   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^         
+>                   ALT                                  NEU                   

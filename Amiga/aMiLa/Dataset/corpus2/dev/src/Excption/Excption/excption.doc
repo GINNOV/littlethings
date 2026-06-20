@@ -1,0 +1,325 @@
+		TABLE OF CONTENTS (not in order)
+
+
+			 Version 0.6
+			July 6th, 1988
+
+
+excption/EIRaise
+excption/EIBlow
+excption/AllocException
+excption/FreeException
+excption/EIInit
+excption/EIUnmount
+excption/ExcpDisable
+excption/ExcpEnable
+excption/EIEndHand       -- Not Documented
+excption/EIExcpHandler   -- Not Documented
+
+excption/EIInit
+
+NAME
+	EIInit -- set excption handler
+
+SYNOPSIS
+	void EIInit(anchor)
+
+	E_ErrorStatus *anchor;
+
+FUNCTION
+	This function must be called to set the data structures used
+	by the exception handler. This routine will install the first
+	protected zone.
+
+INPUTS
+	anchor -- an pointer to an non filled E_ErrorStatus structure.
+
+RESULT
+        none -- initialization always succeeds.
+
+BUGS
+	None known
+
+SEE ALSO
+	EIUnmount()
+
+AUTHOR
+	HEWES
+
+DATE    
+	880508 HEW First documented version
+
+excption/EIUnmount
+
+NAME
+	EIUnmount -- dismount/terminate excption handler
+
+SYNOPSIS
+	void EIUnmount(anchor)
+
+	E_ErrorStatus *anchor;
+
+FUNCTION
+	This function dismounts the exception handler. It disables the
+	exception anchor structure, and installs the default trap code
+	which existed before the exception handler was installed.
+
+INPUTS
+	anchor -- an pointer to a initialised E_ErrorStatus structure.
+
+RESULT
+        none -- unmount always succeeds.
+
+BUGS
+	None known
+
+SEE ALSO
+	EIInit()
+
+AUTHOR
+	HEWES
+
+DATE    
+	880508 HEW First documented version
+
+excption/EIRaise
+
+NAME
+	EIRaise -- raise and/or propagate an exception
+
+SYNOPSIS
+	void EIRaise(anchor,class)
+
+	E_ErrorStatus *anchor;
+        ExcpClass class;
+
+FUNCTION
+	In a protected code zone, EIRaise raises an exception transferring
+	program to current exception handler code.
+	In a handler code zone, propagates to the next level handler code
+	zone. This is used to propagate an exception which cannot be
+	treated locally.
+
+	Raising in the top level handling code brutally calls the exit
+	function. You are responsible for your own handling, including
+	non-planned exceptions.
+
+	Warning : if your the exception data is corrupted, ie the magic number
+	is not correct, then exit is brutaly called with either a exit
+	value of 200 or 201 depending on the context. This error occurs
+	either if all the amiga is corrupted, but most often it happens
+	if you have not respected the BEGIN/EXCEPTION/END format. Forgetting
+	the END statement is a good example.
+INPUTS
+	anchor -- an pointer to a initialised E_ErrorStatus structure.
+	class  -- Class number of exception. Values 1 - 65535 are reserved.
+RESULT
+        none -- control does not resume after the call.
+	exit(200) or exit(201) if corrupted data.
+BUGS
+	None known
+
+SEE ALSO
+
+AUTHOR
+	HEWES
+
+DATE    
+	880508 HEW First documented version
+        880517 HEW protected the puts around an #if DEBUG for pgm
+                   with no stderr.
+
+excption/EIBlow
+
+NAME
+	EIBlow -- blow up to top level
+
+SYNOPSIS
+	void EIBlow(anchor,class)
+
+	E_ErrorStatus *anchor;
+        ExcpClass class;
+
+FUNCTION
+	Similar to EIRaise, but gives control to the top level handler code
+	zone, thus the name blow. This is a pretty dramatic function.
+
+	Warning: the same warning applies to this function as for EIRaise
+	concerning corrupted data. The exit is called with the value 203.
+INPUTS
+	anchor -- an pointer to a initialised E_ErrorStatus structure.
+	class  -- Class number of exception. Values 1 - 65535 are reserved.
+RESULT
+        none -- control does not resume after the call.
+        exit(203) if data corrupted.
+BUGS
+	Never Tested.
+
+SEE ALSO
+
+AUTHOR
+	HEWES
+
+DATE    
+	880508 HEW First documented version
+        880517 HEW protected the puts around an #if DEBUG for pgm
+                   with no stderr.
+
+excption/AllocException
+
+NAME
+	AllocException -- Allocates an unique exception number
+
+SYNOPSIS
+	result =  AllocException(number)
+
+        ExcpClass number;
+	ExcpClass result;
+
+FUNCTION
+	Allocates an unique exception number for use by the handler.
+
+	Currently two incompatible ways to use exceptions are possible.
+	Either, the programmer #define's all his exceptions, and thereby
+	is responsible for their uniqueness.
+	Either, the programmer uses Alloc and Free exception to get unique
+	numbers. 
+	These two methods are incompatible because AllocException is
+	unaware of your #define's.
+
+	In all case exception class numbers must be over 65535. Under the
+	numbers are reserved for various other libraries currently under
+	developement.
+
+	Under version 0.4, AllocExcption just allocates numbers starting
+	from 65536, and increments by one at each call.
+
+	One day, in the future, this allocation may function in a more 
+        Amiga-like fashion (see Trap Allocation in RKM).
+
+INPUTS
+	number -- MUST be -1 with version 0.4
+
+RESULT
+	result -- returns a positive number if success,
+                  or -1 if failure. 	
+
+BUGS
+	None Known
+
+SEE ALSO
+	FreeException()
+
+AUTHOR
+	HEWES
+
+DATE    
+	880508 HEW First documented version
+
+excption/FreeException
+
+NAME
+	FreeException -- Free an exception number
+
+SYNOPSIS
+	void FreeException(number)
+
+        ExcpClass number;
+
+FUNCTION
+	Free an allocated exception number for later use.
+
+	Under version 0.4, FreeException does ABSOLUTELY nothing.
+
+	One day, in the future, this allocation may function in a more 
+        Amiga-like fashion (see Trap Allocation in RKM).
+
+INPUTS
+	number -- Valid allocated exception number.
+
+RESULT
+        None
+
+BUGS
+	None Known, just a nice return!
+
+SEE ALSO
+	AllocException()
+
+AUTHOR
+	HEWES
+
+DATE    
+	880508 HEW First documented version
+
+excption/ExcpDisable
+
+NAME
+	ExcpDisable -- Disable processor errors capture
+
+SYNOPSIS
+	void ExcpDisable(anchor)
+
+        E_ErrorStatus *anchor;
+
+FUNCTION
+	Disables the use of the provided processor errors handler.
+	This means that these events: 680x0 exception, traps and interrupts
+	will not be captured by the software. This is useful if you wish
+	to debug your code with an external debugger such as Wack. If this
+	is not done, your errors will be invisible to your debugger, and
+	thus impossible to find the error.
+
+	Default status is error handler in use.
+
+INPUTS
+	anchor -- an pointer to a initialised E_ErrorStatus structure
+
+RESULT
+        None
+
+BUGS
+	Never tested
+
+SEE ALSO
+	ExcpEnable()
+
+AUTHOR
+	HEWES
+
+DATE    
+	880706 HEW First documented version V0.6
+
+excption/ExcpEnable
+
+NAME
+	ExcpEnable -- Enable processor errors capture
+
+SYNOPSIS
+	void ExcpEnable(anchor)
+
+        E_ErrorStatus *anchor;
+
+FUNCTION
+	Enables software capture of processor errors such as 680X0 exceptions,
+	traps, and interrupts. This function is to be used after an ExcpDisable
+	call.
+
+	Default status is error handler in use.	
+INPUTS
+	anchor -- an pointer to a initialised E_ErrorStatus structure
+
+RESULT
+        None
+
+BUGS
+	None Known, just a nice return!
+
+SEE ALSO
+	ExcpDisable()
+
+AUTHOR
+	HEWES
+
+DATE    
+	880706 HEW First documented version V0.6

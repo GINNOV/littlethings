@@ -1,0 +1,25 @@
+Short:        Fuzzysystem development kit (incl. compiler & examples)
+Author:       kaiser@ira.uka.de (Michael Kaiser)
+Uploader:     kaiser ira uka de (Michael Kaiser)
+Type:         dev/c
+Version:      1.6
+Architecture: m68k-amigaos
+Distribution: Aminet
+Kurz:         Entwicklungswerkzeuge fuer Fuzzysysteme & -regler
+
+Fuzz is a set of files and tools that, as a combination, serves as a
+toolkit supporting the development of applications using fuzzy rule
+bases. At its current state, it's pretty much rudimentary with respect
+to its documentation. Regarding its functionality, its more or less
+complete.
+
+Fuzz mainly consists of three things:
+
+1.  A library and a set of include files that allow for easy
+    incorporation of fuzzy systems in a proprietary 
+    application program written in C.
+
+2.  A compiler for translating a fuzzysystem specified in fuzz-syntax into
+    a C program. 
+
+3.  Several tools that allow to check developed systems.

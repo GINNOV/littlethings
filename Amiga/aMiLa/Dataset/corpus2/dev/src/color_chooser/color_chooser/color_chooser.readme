@@ -1,0 +1,8 @@
+Short: Color chooser example using MUI
+Author: Ilkka Lehtoranta
+Uploader: Ilkka Lehtoranta (ilkleht@yahoo.com)
+Type: dev/src
+Version: 1.1
+Architecture: generic
+
+Example code written in C using MUI to create a color chooser.

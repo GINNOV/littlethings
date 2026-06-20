@@ -1,0 +1,342 @@
+
+
+    -------------------------------------------------------------------
+      ---------------------------------------------------------------  
+        -----------------------------------------------------------    
+          ------------   How to Code with PreAss   -------------       
+            --------------------------------------------------     
+              ------------  Support-Text für  --------------          
+                ------------------------------------------                   
+                  ------------- PreAss 1.33 ------------
+                    ----------------------------------
+                      ------------------------------
+                        --------------------------
+                          ---------  3  --------
+                            ------------------
+                              --------------
+                                 --------
+                                    --
+
+    Weiter gehts mit Type4, das nun schon Hexadezimal anzeigen kann und
+    auch selbstständig erkennt, ob es nötig ist, mehr Zeichen pro Zeile
+    auszugeben.
+
+    Die Änderungen:
+
+                ...
+                If Result=#1 --> .Schleife
+                Write(outputhandle,"Binärfile,bitte Ausgabefile angeben\n",?)
+                FileReq()
+                If Result=#False --> HexMode            <-----
+                {* Flush *}                             |\
+                Close(WindowHandle)                       \
+                WindowHandle=Open(#Filename,#Mode_new)     \
+                ...                                         \
+
+Hexmode:
+    {* String: Hexzeichen="0123456789ABCDEF"*}
+    {* Incblock: Zeilenpuffer,180*}
+
+Bei Binärfiles sollen ja die einzelnen Zeichen nicht in AscIIform dar-
+gestellt werden, sondern als Hexzahlen. Die Ausgabe wird die Form:
+
+    XXXXXXXX:aa bb cc dd ee ff gg hh {ii jj kk ll mm ...}
+
+haben wobei XX das jeweilige Offset zum Filebeginn darstellt und aa,bb etc
+die einzelnen Hexzahlen.Wenn das File länger als 10Kb ist, schaltet das
+Programm auf EXTENDED um, was dann 20 Zahlen statt 8 Zahlen pro Zeile
+bedeutet.
+
+    Write(WindowHandle,"Hexmode:\n",?)
+    Seek(Filehandle,#0,#Offset_end)
+    Filelaenge=Seek(Filehandle,#0,#Offset_begin)
+
+Seek setzt bekanntlich den Datenzeiger eines Handles an die angegebene
+Position,dafür bekommt man den alten Datenzeiger zurück.Wenn man nun den
+Datenzeiger ans Ende! positioniert und danach an den Anfang zurück, dann
+bekommt man die Länge in Bytes als alten Datenzeiger zurück.
+
+    MAX=Read(Filehandle,#Puffer,1000)
+
+Auslesen des Files , normalerweise 1000 Bytes.Die Variable Max enthält 
+die gelesenen Bytes, sollte das File kleiner als 1000 Bytes sein, dann
+ist Max die Länge des Files, das ist nachher wichtig.
+
+    LineCounter==0
+
+Die Variable LineCounter zählt die ausgegebenen Zeilen, d.h. die Zeilen-
+nummer wird damit errechnet (das, was vor den Hexzahlen steht).
+
+    Offset==0           ; Ein weiterer Zähler.
+    Anzahl==8           ; Anzahl Zeichen pro Zeile
+
+    If Filelaenge>#10000 Calc Anzahl=20
+
+Wenn die Filelaenge größer als 10000 Byte ist , dann dauert das Anzeigen
+der Hexzeichen ziemlich lange, deshalb verwenden wir dann mehr Zeichen.
+
+    Laenge==Anzahl*3
+    Laenge==Laenge+10
+
+Hier wird die Länge der auszugebenen Zeichenkette errechnet.Jedes
+Binärzeichen verbraucht 3 AscIIzeichen (2 für die Hexzahl 1 Space).
+
+    Lea Puffer,a5
+.HexSchleife:
+    Convertzahl(LineCounter,0)  ; Umwandlung Zeilenzahl ---> ASCII
+    Lea ZeilenPuffer,a4
+    Move.l Zusatz,(a4)+         ; Ausgabe der Zeilenzahl
+    Move.l Zahl,(a4)+
+    Move.b #`:`,(a4)+
+
+Je nach Anzahl werden nun die Zeichen in Hexzahlen gewandelt.Hexzahlen
+bestehen aus den Zeichen 0-9 und A,B,C,D,E und F , insgesamt 16 Zahlen
+gibt es. 1 Byte besteht aus 2 Hexzeichen , weil 16*15+15 = 255 ist, und
+dies der größt mögliche Wert für ein Byte darstellt. Zwei Beispiele:
+
+    $FF = 255  weil F=15 --> 15*16+15 = 255
+
+    $9A = 154  weil A=10 --> 9*16+10 = 154
+
+Näheres dazu steht im Assemblerkurs von Milka , Extraausgabe 1+2 von Mir.
+
+Wie recht man die Zahl nun um? Wie man gesehen hat, besteht ein Byte aus
+zwei Zeichen.Diese kann man seperat abfragen indem man sie vorher zerlegt.
+Dies geschieht mit Hilfe der UND (AND) Funktion. Diese Funktion verknüpft 
+Zahlen logisch UND d.h. nur 2 gleiche Bits ergeben am Ende wieder 1 (siehe
+Extrabeilagen Stichwort BITs&Bytes)
+
+    $A8 = %10101000 = !168
+
+wenn ich die Zahl mit $F0 und $0F , also %11110000 und %00001111 verknüpfe,
+dann erhalte ich einmal %10100000 und einmal %00001000. Schon sind beide
+Zeichen getrennt.Nun muß die eine Zahl (%10100000) noch nach rechts
+rotieren,d.h. die Bits werden nach rechts verschoben,aus %10100000 wird
+%00001010 , wenn ich sie 4!x nach rechts verschiebe.Das macht der Befehl 
+ROR.l #4,Dx (Rotate Right). Im Speicher befindet sich eine Zeichenfolge,
+Hexzeichen,die mit Null beginnt. Wenn ich die Zahl 0 zum Anfang der Zeichen-
+addiere, erhalte ich das Zeichen `0` , wenn ich 8 addiere, dann erhalte ich
+`8`.
+
+    For I=1 to Anzahl
+        clr.l d0
+        move.b (a5),d0          ; Byte nach D0
+        andi.b #$0F,d0          ; erstes Zeichen ermitteln,
+        lea Hexzeichen,a0       ; Anfangsadresse nach A0,
+        add.l d0,a0             ; auf Zeichenfolge addieren.
+        move.b (a0),(a4)+       ; ASCIIzeichen der 1 Zahl auslesen und in
+                                ; den  Ausgabestring schreiben.
+        move.b (a5)+,d0         ; siehe oben für zweites Zeichen
+        andi.b #$F0,d0
+        ror.b #4,d0
+        lea Hexzeichen,a0
+        add.l d0,a0
+        move.b (a0),(a4)+
+        move.b #` `,(a4)+       ; Leerzeichen einfügen.
+    Next I
+    Move.b #$0a,(a4)+           ; Zeilensprung einfügen
+
+    LineCounter==LineCounter+Anzahl
+    Offset==Offset+Anzahl
+    Write(Windowhandle,#Zeilenpuffer,laenge)    ; String ausgeben
+
+Wenn Offset kleiner als die maximale Anzahl der eingelesenen Zeichen, dann
+weitermachen, wenn Max ungleich 1000 ist, dann konnte aus der Datei nichts
+mehr gelesen werden und die Sache hat sich erledigt, also nach .ENDE
+springen,ansonsten 1000 weitere Zeichen nachladen. und diverse Variablen
+und Zeiger neusetzen:
+
+    If Offset<MAX --> .Hexschleife
+    If Max##1000 --> .ende
+    MAX=Read(Filehandle,#Puffer,1000)
+    Lea Puffer,a5
+    Offset==0
+    bra .HexSchleife
+.ende:
+    Close(Windowhandle)
+    Close(Filehandle)
+    RTS
+
+; TYPE4 - Beispielsource für Preass How2Code
+; 
+; (c) 1995 Cyborg 
+
+    {* Include sys:coder/preass/Options.p *}
+    {* Include sys:coder/preass/Prozeduren.p *}
+
+    {* String: Version="$VER: TYPE4 (C) CYBORG 95"*}
+
+    {* IncBlock: Puffer,1000*}
+
+    {* NewProc=FileReq[][]*}
+    {* NewProc=ID[Zeiger_auf_Puffer,PufferLaenge][a0,d7]*}
+
+ID:
+    AscII==0
+    Binary==0
+    subq.l #1,d7
+.Schleife:
+    move.b (a0)+,d0
+    cmpi.b #$09,d0
+    beq .Asc
+    cmpi.b #$0A,d0
+    beq .Asc
+    cmpi.b #$0C,d0
+    beq .Asc
+    cmpi.b #"ü",d0
+    beq .Asc
+    cmpi.b #"Ü",d0
+    beq .Asc
+    cmpi.b #"ö",d0
+    beq .Asc
+    cmpi.b #"Ö",d0
+    beq .Asc
+    cmpi.b #"ä",d0
+    beq .Asc
+    cmpi.b #"Ä",d0
+    beq .Asc
+    cmpi.b #"ß",d0
+    beq .Asc
+    cmpi.b #$20,d0
+    blt .bin
+    cmpi.b #$7A,d0
+    bgt .bin
+.asc:
+    AscII==ASCII++
+    bra .Scheifenende
+.bin:
+    Binary==Binary++
+.Scheifenende:
+    dbra d7,.Schleife
+    If ASCII>Binary { If Binary<#40 {                                   
+                                      Code==1
+                                    }
+                      If Binary>#40 {                                   
+                                      Code==0
+                                    }
+                    }
+    If Binary>ASCII calc Code=0
+
+    Move.l Code,d0
+    RTS
+
+FileReq:
+    {* IncBlock: DirName,256*}
+    Requester=AllocAslRequest(#ASL_FileRequest,0)
+    CheckF Requester,Select2
+    Result=ASLRequest(Requester,>ASLFR_Taglist:ASLFR_Pubscreenname,Pubscreenname="Workbench"|
+                                               ASLFR_PrivateIDCMP,Dostrue|ASLFR_TextAttr,Dosfalse|
+                                               ASLFR_InitialLeftEdge,20|ASLFR_InitialTopEdge,24|
+                                               ASLFR_InitialWidth,300|ASLFR_Initialheight,210|
+                                               ASLFR_InitialDrawer,Dirname|Tag_end,0)
+        CheckF Result,Select2
+            Filename_Zeiger=.l4(Requester)
+            Dirname_zeiger=.l8(Requester)
+            Dirlock=Lock(Dirname_Zeiger,#Access_Read)
+            CheckF Dirlock,.lab1
+            Dirlock=Currentdir(Dirlock)
+            Unlock(Dirlock)
+.Lab1:      Copymem(dirname_zeiger,#Dirname,1)
+            Copymem(Filename_zeiger,#FileName,100)
+Select2:CheckF Requester,.lab1
+        FreeASLRequest(Requester)
+.lab1:  RTS
+
+Start:
+    Outputhandle=Output()
+    FNlaenge=GetFilename()
+    Checkf FNLaenge,.error1
+.Sprungpunkt1:
+        FileHandle=Open(#Filename,#Mode_old)
+        Checkf Filehandle,.error2
+            Windowhandle=Open("CON:0/0/640/200/Ausgabewindow/AUTO/WAIT",#Mode_old)
+            CheckF WindowHandle,.error3
+                AnzahlRead=Read(Filehandle,#Puffer,1000)
+                Seek(Filehandle,#0,#Offset_begin)        
+                Result=ID(#Puffer,AnzahlRead)
+                If Result=#1 --> .Schleife
+                Write(outputhandle,"Binärfile,bitte Ausgabefile angeben\n",?)
+                FileReq()
+                If Result=#False --> HexMode
+                {* Flush *}
+                Close(WindowHandle)
+                WindowHandle=Open(#Filename,#Mode_new)
+                CheckF WindowHandle,.error3
+.Schleife:
+                AnzahlRead=Read(Filehandle,#Puffer,1000)
+                AnzahlWrite=Write(Windowhandle,#Puffer,AnzahlRead)
+                If AnzahlWrite=#1000 --> .Schleife
+                If AnzahlRead=AnzahlWrite --> .ende
+.Error4:        
+    Write(OutputHandle,"\nREAD/WRITE- Error!\n",?)
+.ende:
+    Close(Windowhandle)
+.ende1:
+    Close(Filehandle)
+    RTS
+
+.error3:
+    Write(OutputHandle,"\nKonnte Window nicht öffnen\n",?)
+    bra .ende1
+
+.error2:
+    Write(OutputHandle,"\nKonnte File nicht öffnen\n",?)
+    RTS    
+
+.error1:
+    {* Flush *}
+    Write(OutputHandle,"\nKeine Argumente übergeben,AutoFileRequest.\n",?)
+    FileReq()
+    If Result=#False { Write(OutputHandle,"Kein File ausgewählt.\n",?)
+                       RTS }
+    bra .Sprungpunkt1
+
+Hexmode:
+    {* String: Hexzeichen="0123456789ABCDEF"*}
+    {* Incblock: Zeilenpuffer,180*}
+    Write(WindowHandle,"Hexmode:\n",?)
+    Seek(Filehandle,#0,#Offset_end)
+    Filelaenge=Seek(Filehandle,#0,#Offset_begin)
+    MAX=Read(Filehandle,#Puffer,1000)
+    LineCounter==0
+    Offset==0
+    Anzahl==8
+    If Filelaenge>#10000 Calc Anzahl=20
+    Laenge==Anzahl*3
+    Laenge==laenge+10
+    Lea Puffer,a5
+.HexSchleife:
+    Convertzahl(LineCounter,0)
+    Lea ZeilenPuffer,a4
+    Move.l Zusatz,(a4)+
+    Move.l Zahl,(a4)+
+    Move.b #`:`,(a4)+
+    For I=1 to Anzahl
+        clr.l d0
+        move.b (a5),d0
+        andi.b #$0F,d0
+        lea Hexzeichen,a0
+        add.l d0,a0
+        move.b (a0),(a4)+
+        move.b (a5)+,d0
+        andi.b #$F0,d0
+        ror.b #4,d0
+        lea Hexzeichen,a0
+        add.l d0,a0
+        move.b (a0),(a4)+
+        move.b #` `,(a4)+       
+    Next I
+    Move.b #$0a,(a4)+
+    LineCounter==LineCounter+Anzahl
+    Offset==Offset+Anzahl
+    Write(Windowhandle,#Zeilenpuffer,laenge)
+    If Offset<MAX --> .Hexschleife
+    If Max##1000 --> .ende
+    MAX=Read(Filehandle,#Puffer,1000)
+    Lea Puffer,a5
+    Offset==0
+    bra .HexSchleife
+.ende:
+    Close(Windowhandle)
+    Close(Filehandle)
+    RTS

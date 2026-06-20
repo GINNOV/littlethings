@@ -1,0 +1,57 @@
+Short:    convert from Ncurses to SDL 
+Author:   lombi@iprimus.com.au (Lorence Lombardo)
+Uploader: lombi@iprimus.com.au (Lorence Lombardo)
+Type:     dev/c
+Version:  22-Jan-2012 
+Architecture: m68k-amigaos
+
+
+How to convert from Ncurses to SDL by Lorence Lombardo.
+
+
+Although I am using GeekGadgets 68k this readme is also relevant to other
+architectures and environments.
+
+Steps:-
+
+1. You need to have the SDL implementation of ncurses. i.e. pdcurses
+ 
+   http://aminet.net/package/dev/lib/libpdcurses
+ 
+   Because I already have ncurses in my GG environment I have made a
+   "pdcurses" directory in my "GG:include". This also requires a small
+   modification to the pdcurses includes so I have provided my pdcurses
+   includes in this archive.
+
+
+2. You need to have some ncurses software to compile which is provided in
+   this archive. I am using "bastet-0.41" which is a game by
+   Federico Poloni. This was originally obtained from here:-
+   http://fph.altervista.org/prog/files/bastet-0.41.tgz
+
+
+3. In the game sources I have commented all occurrences of 
+   "#include <ncurses.h>", "#include <curses.h>" and "#include <term.h>".
+
+   These have been replaced respectively with the following:-
+   "#include <pdcurses/curses.h>", "#include <pdcurses/curses.h>" and
+   "#include <pdcurses/term.h>" .
+
+
+4. In the "Makefile" compare the "LDFLAGS" changes to that of the original.
+
+
+Additional notes:-
+
+For this readme I have chosen to use the FPU version of libpdcurses.
+
+The games keyboard controls are best and most responsive when playing
+level 9. 
+
+
+
+Feeling bored ?  :)
+Why not check out this URL ?
+
+http://home.iprimus.com.au/lombi/1/homepage.htm
+

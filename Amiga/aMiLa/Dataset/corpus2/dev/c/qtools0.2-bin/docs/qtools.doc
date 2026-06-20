@@ -1,0 +1,432 @@
+
+
+
+
+
+                                    QuakeTools-library
+                                       Version 0.0
+                     Copyright © by Niels Froehling (Dyna-Tech) 1998
+
+
+       idea:
+       
+         the intention to write this was to bind all the (sometimes not easy to find) basic
+         functions to create and modify all the different files of quake. i know, there are
+         allready the sources from mr. carmack, but ive written lots of extensions, sometimes
+         his code is a bit confusing, and as we all now we can read own code better than code
+         from others :).
+         this is an open project, so any programmer who wants to put his ideas or descriptions
+         into this, can join. there is so much left and undocumented i havnt enough time to do
+         all of it.
+         as a beginning this code could act as a quake-dokumentation-project too (eg. combined
+         together with "the unofficial quake-faq").
+       
+       contact:
+       
+         email
+          <Niels.Froehling@Informatik.Uni-Oldenburg.DE>
+          
+         snailmail
+          Niels Froehling
+          Bardieksweg 28
+          26125 Oldenburg
+          Germany
+       
+       status:
+       
+	 This program is free software; you can redistribute it and/or modify
+	 it under the terms of the GNU General Public License as published by
+	 the Free Software Foundation; either version 2 of the License, or
+	 (at your option) any later version.
+
+	 This program is distributed in the hope that it will be useful,
+	 but WITHOUT ANY WARRANTY; without even the implied warranty of
+	 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	 GNU General Public License for more details.
+
+	 You should have received a copy of the GNU General Public License
+	 along with this program; if not, write to the Free Software
+	 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+         read it carefully, aspecialy if you drive windows or something like that.
+         
+         bsptomap:
+          "you are free to use this program
+           you are free to use/modify/compile source code
+           you can do anything you want with it"
+          means: the code from bsptomap falls under the GPL too
+         
+         qutils/exdawn:
+          no comment about copyrights
+          means: the code from qutils falls under the GPL too
+         
+         unqcc:
+          "Do whatever you like with it."
+          means: the code from qcc falls under the GPL too
+         
+         summary:
+          ALL of this code falls under the GPL. in short: every modification of the code
+          must be reported and send to the programmer(s) of this code, and is distributed
+          under the GPL too.
+          you are NOT allowed to take money more than the costs of the medium on it is copied.
+       
+       programmer(s)/credits:
+       
+         Janis Jagars <ppsaikne@mail.vernet.lv>
+         John Carmack <???>
+         Christian Knauer <cnknauer@cip.informatik.uni-erlangen.de>
+         Ben Cohee <benco@gisco.net>
+         Niels Froehling <Niels.Froehling@Informatik.Uni-Oldenburg.DE>
+       
+       maintainer:
+       
+         Niels Froehling <Niels.Froehling@Informatik.Uni-Oldenburg.DE>
+         
+       options:
+
+	 -c <colormap>       quake colormap lump
+	 -d <destdir>        alternative destination directory including "/" at the end
+	 -dither [<value>]   dither floyd-steinberg with this error
+	 		     (a little bit complicate: the standard error diffusion
+	 		      with floyd steinberg is to divide by 16 and add con-
+	 		      stant parts of the error to neighnour pixels. the value
+	 		      is valid from 16 to 256 which means: is the error-ammount
+	 		      for a pixel 3 we use 3/16 of the error in default. if the
+	 		      amount is 32 we use 3/32, so the error-diffusion is halfed.
+	 		      in general we could say, the higher the value, the less
+	 		      qtools do error-diffusion (an invinite value means NO
+	 		      error-diffusion, in practice the errors maximum is 256).
+	 		      default is 16.
+	 -smooth [<value>]   smooth the pictures while converting (valid from 1 to 256)
+	 		     meaning, all upto 256th of the 8 neighbour-pixels influences
+	 		     the original pixel-color. default is 2.
+	 -l <darkness>       take this darkness-level
+	 -lump/-mip          specifies pic-conversion (in general for directory-
+	 		     conversions without "-o")
+	 -mip0               store only the first mip instead of all four (only
+	 		     for wads)
+	 -lz                 compress data with lz77 (only for wads)
+			     (only available in the executeable for amiga, i will
+			      compile it for other 68k-systems on demand. its my
+			      algorithm and my implementation, so im not interesting
+			      in a publication for free (eah, i do only have 68k-code))
+	 -ns                 do not write index-files
+	 -o <file>           specify archive-content or output-name
+	 -p <palette>        quake palette lump
+	 -ppm/-jpg/-png	     convert pictures and palettes to ppm/jpg/png
+	 -r                  recurse extracting
+	 -<qbsp/light/vis>   support for ALL option that qbsp, light and vis have. except
+	 		     threads
+	 -waterlit	     water and slime get shadows
+	 -watervis	     look through water (GLQuake)
+	 -slimevis	     look through slime (GLQuake)
+	 -pp "<commandline>" you can specify a preprocessor like cpp to parse
+	 		     QuakeC-files before the compiler. if you want to give
+	 		     commandlines to it, it is a must to set quotation-marks
+	 		     (eg. "cpp -P" is perfectly valid), afterwards qtools inter-
+	 		     prets the commandline for itself
+
+       commands:
+
+	 a                   add
+	 d                   delete (unimplemented)
+	 l                   list (default)
+	 r                   replace (unimplemented)
+	 u                   update (unimplemented)
+	 v                   view (unimplemented)
+	 x                   extract
+
+       environment:
+	
+	 QUAKE_PALETTE	     the location of the default "palette.lmp"
+	 		     (default is "palette.lmp")
+	 QUAKE_COLORMAP	     the location of the default "colormap.lmp"
+	 		     (default is "colormap.lmp")
+	 QUAKE_WADFILE	     the location of the default wad for bsps, you can put more than
+	 		     one wad into the line: "test1.wad; medivial.wad; rogue.wad"
+	 		     (no default)
+	 QUAKE_WADDIR	     the location of the default directory to parse for miptexs, you
+			     can put more than one dir into the line: "test1.wad; medivial.wad;
+			     rogue.wad"
+	 		     (default is current directory)
+
+       extensions:
+       
+	floating points in every data-file qbsp/vis uses: map/prt/h?/pts
+	
+	multiple wads in the "wad" and "_wad" keywords: "test1.wad; medivial.wad; rogue.wad"
+	of map-files
+	
+	"dir" keyword in map files, if qtools scans for textures in bsp-creation, it scans
+	the dirs (non-recursive) and loads the textures from every fileformat it can load
+	multiple dirs are valid too: "test1.dir; /tmp/medivial-contents; ~/crap-tests"
+	(it does NOT search for wads in these directories, only images)
+
+       some features in short:
+       
+        read/writes picture formats:
+        
+         ppm/pgm/png/jpg
+        
+        read/writes 3d formats:
+        
+         tddd
+         
+        read/writes quake formats:
+        
+         wad/(bsp/vis/lit/prt/h?/map)/pak/(qc/dat)/mip/lmp
+         
+        others:
+        
+         can compress wads
+         can use fs-dithering
+         uses high quality mipmap-scaling
+         build in script-system with recursion-capabilities
+         can load pictures directly into bsps
+         uses less memory
+         error robust
+         can parse entire directories and perform the default actions to every file
+          and subdirectory
+         can extract bsp/pak recursively
+
+       available modes (examples):
+	
+	notes:
+	
+	 qtools is able to read AND write all of its datas, so you could
+	 make make it a ppm2png-converter or vice versa with the limitation, that the
+	 pictures will be remapped to the quake-colors, but that need not to be a
+	 limitation, maybe a feature.
+	 
+	 sometimes you can suspress the "x" if you define a clear (from the program
+	 understandable) output like "qtools quake.wad -o *slime1".
+	 
+	 sometimes you can suspress the "a" if you define a clear (from the program
+	 understandable) output like "qtools *slime1.mip -o quake.wad"
+	 
+	 it is possible to emulate some behaviours of other programs like mergewad:
+	 
+	  to merge to wads you should type something like this:
+	  
+	   qtools a first.wad -o merged.wad
+	   qtools a second.wad -o merged.wad
+	   qtools a third.wad -o merged.wad
+	   qtools a fourth.wad -o merged.wad
+	   ...
+	  
+	  to sub wads:
+	  
+	   qtools v first.wad
+	   rename first.idx delfirstinmerged.idx
+	   replace "update" with "delete" in delfirstinmerged.idx
+	   replace "first.wad" with "merged.wad" in delfirstinmerged.idx
+	   qtools delfirstinmerged.idx
+	  
+	 qtools does not extract wads out of paks nor converts pictures. you will
+	 get the raw data only. try "-r" for recursive, then all the contents of
+	 the pak will be postprocessed by qtools. WARNING: recursive means really
+	 recursive: pak->bsp->wad->pic and pak->bsp->map or pak->dat->src. every-
+	 thing will be processed!
+	
+	 the format of "-o <file>" is very error-resistent. these:
+	  -o *slime1
+	  -o *slime1.
+	  -o *slime1.<whatever you think>
+	 extract surely "*slime1" out of bsps and wads.
+	 one exception is "-o *slime1.<whatever you think>":
+	  -o *slime1.ppm			extracts to a ppm
+	  -o *slime1.png			extracts to a png
+	  -o *slime1.<whatever other you think> extracts to a raw-mipmap
+	 mipmap does not have any identifiers, its up to you to remember, which
+	 files are mips and which not.
+	
+	 there are some special word on bsps. i have split up the definition of a
+	 bsp in several parts:
+	  test.bsp
+	 contains
+	  test.map (decompiled bsp, map-format)
+	  test.iob (decompiled bsp, imagine-object-format)
+	  test.wad (textures)
+	  test.lit (raw)
+	  test.vis (raw)
+	 so if you type "qtools x test.bsp -o test.vis" you get the raw-visdata.
+	 all names, that are not of the form "<filebase>.<map/wad/lit/vis>" are
+	 accepted as texturenames. "qtools x test.bsp -o *slime1" extracts the
+	 texture "*slime1" seperatly.
+	
+	directory-structures and default outputs:
+	
+	 if the output-name do not specify an alternate directory (like: -o /tmp/test.map)
+	 all files will be saved to <filebase>.<dir>/<filebase>.<ext> or (in case of
+	 qtools test1234.bsp -o test4321.map) <oldfilebase>.<dir>/<newfilebase>.<ext>
+	 
+	 if you specify a destdir, its the same as above <destdir>/<filebase>.<dir>/<filebase>.<ext>
+	 except you do something like this: qtools -d /tmp/ test.bsp -o /tmp2/bla/test.map
+	 produces without checking /tmp/tmp2/bla/test.map, which is invalid. in that case
+	 the dirpart of the output is stripped resulting in /tmp/test.dir/test.map
+	 
+	 it is reommended to use the default hierarchy the program offers and move data
+	 only via directories or partitions, leave the structure in it intact:
+	 
+	 /quake
+	 /quake/id1
+	 /quake/id1/pak0.pak				(results from below)
+	 /quake/id1/pak0.idx				(file to build data recursive)
+	 /quake/id1/pak0.dir
+	 /quake/id1/pak0.dir/progs.dat			(results from below)
+	 /quake/id1/pak0.dir/progs.dir
+	 /quake/id1/pak0.dir/progs.dir/progs.src
+	 /quake/id1/pak0.dir/progs.dir/*.qc
+	 /quake/id1/pak0.dir/gfx
+	 /quake/id1/pak0.dir/maps
+	 /quake/id1/pak0.dir/maps/start.bsp		(results from below)
+	 /quake/id1/pak0.dir/maps/start.dir
+	 /quake/id1/pak0.dir/maps/start.dir/start.map
+	 /quake/id1/pak0.dir/maps/start.dir/start.wad
+	 /quake/id1/pak0.dir/maps/start.dir/start.prt
+	 /quake/id1/pak0.dir/maps/start.dir/...
+	 /quake/id1/pak0.dir/progs
+	 /quake/id1/pak0.dir/sound...
+	
+	patterns:
+	
+	 all form of patterns are allowed so
+	  qtools -png -r -wad x *.bsp blabla/*.wad ../pak*.pak
+	 extracts _all_ contents of matching files, all pictures will be converted
+	 to png-pictures, the rest will be stored as is. additional the resulting
+	 wad from the bsps will be converted to pngs and all contents of the pak
+	 will be postprocessed (wad->pictures, bsp->wad->pictures, bsp->map ...).
+	 
+	 on some OSs the character "*" is reserved for pattern-matching (i think
+	 dos and windows and nt are the only one). as a result on that platforms
+	 you are NOT able to extract warp-textures that begins with a "*" (bsp->wad
+	 is okay). hint: buy something like linux. [evilgrin]
+	
+	defaults:
+	
+	 qtools test.bsp
+	  list the contents of the bsp, that means all textures and the statistics
+	 
+	 qtools test.idx
+	  processes the script "test.idx"
+	 
+	 qtools test.pak
+	  list the contents of the pak
+	 
+	 qtools test.wad
+	  list the contents of the wad
+	 
+	 qtools test.dir
+	  processes all files and directories in test.dir with the defaults above
+	 
+	extracts:
+	
+	 qtools x test.bsp
+	  extracts the contents of the bsp, that means all textures and the statistics
+	 
+	 qtools x test.idx
+	  processes the script "test.idx"
+	 
+	 qtools x test.pak
+	  extracts the contents of the pak
+	 
+	 qtools x test.wad
+	  extracts the contents of the wad
+	 
+	 qtools x test.dir
+	  processes all files and directories in test.dir with the defaults above
+	 
+	modifiers:
+
+	 qtools -ppm *.mip
+	  converts all mips to ppm
+	  
+	 qtools -png *.mip
+	  converts all mips to png
+
+	 qtools -mip *.png -o png.wad
+	  converts all pngs to mipmaps in pngs.wad
+	  
+	 qtools -mip -dither 16 *.png -o png.wad
+	  converts all pngs to mipmaps in pngs.wad with dither and error diffusion of 1
+	  
+	 qtools -lump *.png -o png.wad
+	  converts all pngs to consolepics in pngs.wad
+	  
+	 qtools -mip -mip0 *.png -o png.wad
+	  converts all pngs to mipmaps that contains only the first mipmap in pngs.wad
+	  (probably not readable for other tools)
+	 
+ 	 qtools -mip -lz *.png -o png.wad
+	  converts all pngs to mipmaps in pngs.wad that are compressed
+	  (surely not readable for other tools)
+	  
+	 qtools -mip -mip0 -lz *.png -o png.wad
+	  converts all pngs to mipmaps that contains only the first mipmap in pngs.wad
+	  and that are compressed
+	  (surely not readable for other tools)
+
+	 qtools -ppm -d /usr/home/quake *.mip
+	  converts all mips to ppm in the directory /usr/home/quake
+	  
+	 qtools -png *.mip -p /bullshit/quake/zer/gfx/colormap.lmp
+	  converts all mips to png and uses the /bullshit/quake/zer/gfx/colormap.lmp
+	  colormap instead of quakes (same for palettes)
+
+       scripting:
+
+	common commands:
+	 "process <file>.<ext>"               -> take this file upto
+	 "finish <file>.<ext>"                -> here
+	 "list <file>.<ext>"		      -> list the contents
+	 "view <file>.<ext>"		      -> view the pictures or texts in a window, or whatever
+
+	 sub-commands:
+	  "update <file>.<ext> as <name>"     -> add if not exists, replace if newer
+	  "replace <file>.<ext> as <name>"    -> replace if exists, do NOT add
+	  "add <file>.<ext> as <name>"        -> add if not exists, do NOT replace
+	  "delete <name>"                     -> delete if exists
+	  "extract <name> as <file>.<ext>"    -> extract if exists
+
+        currently implemented are only add/extract
+        
+       todo:
+       
+        use zlib instead of own compression algorithm? (already in, but only used for png)
+        make-like timestamp-updating?
+        lot of dokumentation (the whole source)
+        support for quake2
+        support fr the extensions of bsp/worldcraft/...
+        ... (too much)
+
+       used code:
+       
+        ive ripped code from
+        
+         qcc      - look at ripped/quakeutils.txt
+          modified to use autoexpanded memory-pools
+         
+         qbsp     - look at ripped/quakeutils.txt (also used: hipnotics qbsp)
+          modified to use autoexpanded memory-pools
+          modified to make waterleafs and/or slimeleafs visible
+          modified to use dynamic face-sizes
+          modified to read from special wads and entire directories with pictures (ppm/png/jpg/mip/lmp)
+          modified to read and write floating points to and from every textfile (better accuracity)
+          modified to read multiple wads
+          modified to scan multiple dirs
+          
+         light    - look at ripped/quakeutils.txt (also used: hipnotics light)
+          modified to use autoexpanded memory-pools
+          modified to make water and/or slime with lightstyles
+          modified to make the qrad3-algorithms available to quake1
+          
+         vis      - look at ripped/quakeutils.txt
+          modified to use autoexpanded memory-pools
+          modified to read floating points from portal-file
+
+         unqcc    - look at ripped/unqcc099.txt
+          modified to use autoexpanded memory-pools (unqcc itself contains code from advqcc4)
+
+         bsptomap - look at ripped/bsptomap.txt
+          completly rewritten, only the concept is used
+

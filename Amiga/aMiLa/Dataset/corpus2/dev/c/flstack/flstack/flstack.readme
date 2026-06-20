@@ -1,0 +1,23 @@
+Short:    Fixed length stack ADT
+Author:   Giles Burdett <layabouts@the-giant-sofa.demon.co.uk>
+Uploader: Giles Burdett <layabouts@the-giant-sofa.demon.co.uk>
+Type:     dev/c
+
+By default, implements a 4KB stack structure, but you can change
+that in the header. Includes simple test program to demonstrate
+usage.
+
+Functions included:
+
+Make_Empty
+Push
+Pop
+Top
+Is_Empty
+Is_Full
+Height
+
+
+Giles Burdett
+http://www.the-giant-sofa.demon.co.uk
+

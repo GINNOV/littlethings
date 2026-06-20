@@ -1,0 +1,67 @@
+Short:    Fillbar Image Class source code 43.5
+Author:   pcl38058@alfa.ist.utl.pt <Antonio Santos>
+Uploader: pcl38058@alfa.ist.utl.pt <Antonio Santos>
+Type:     dev/c
+Replaces: dev/c/fillbar-ic.*
+
+
+*--------------------------------------------------------------------------*
+FILLBAR Image Class - (c) Copyright 1997 Antonio Santos. All Rights Reserved
+*--------------------------------------------------------------------------*
+
+This is the source for an "FILLBAR" image class BOOPSI object with SAS 6.
+It's based on the source code of the led.image found in the Amiga developer
+CD 1.1
+To make all the stuff in the package just do:
+	$ cd fillbar-ic
+	$ smake
+	$ smake doc
+	$ smake install
+	$ smake headers
+	$ smake clean
+
+
+****************************************************************************
+
+     NAME
+        fillbar.image-- Show the percentage of some work using a image.
+ 
+     SUPERCLASS
+        imageclass
+ 
+     DESCRIPTION
+        The fillbar.image image class provides a gauge that displays some
+        amount of work being done.
+ 
+****************************************************************************
+
+To contact the author by email:
+	pcl38058@alfa.ist.utl.pt
+
+To contact the author by normal mail:
+	Antonio Manuel Santos
+	Rua do Zaire, 5 1o dto
+	1170 Lisbon, Portugal
+
+
+*--------------------------------------------------------------------------*
+	In this revision 43.4 many bugs have been removed because I rewrote all
+the source code. Now is much more clean, fast and GUI friendly. Also is more
+font sensitive but I think there still might be some bugs in there.
+	IA_Left, IA_Top, IA_Width, IA_Height are understand. Check the autodocs.
+	Added some more space to the left/right labels. Hope now things look
+good on every screen on every amiga computer in the world 8-)
+*--------------------------------------------------------------------------*
+
+  Computer magazines are allowed to distribute this archive on they're cover
+disks/CD's if they send me a copy of the magazine and if possible some
+shareware fee in order to motivate my work in the Amiga.
+  Aminet can distribute this archive in they Aminet CD releases without
+restritions. Other CD Rom sellers must contact me in order to distribute
+this files.
+  User should pay some kind of shareware fee for my work. I leave it to your
+imagination.
+
+  Visit my (old) homepage: http://alfa.ist.utl.pt/~l38058
+
+

@@ -1,0 +1,143 @@
+
+
+
+Tach Frank,
+
+hier ein weiteres Update für ArtPRO von meiner Seite. Anbei findest Du
+das fertige Logo sowie eine leicht geänderte Scale-Routine. Das Logo
+müßte jetzt so ziemlich mit jeder Workbench-Palette zurechtkommen
+(siehe Presets). Die Guide findest Du in aktualisierter Form. Für den
+nächsten Release hab' ich auch noch etwas an den Texten im Programm
+gefeilt (siehe weiter unten).
+
+Dem Paket liegt auch noch ein verbessertes GUI fürs Hauptfenster bei,
+das besser mit verschiedenen Fonts klarkommt, besser aussieht und
+kompakter ist. Kann irgendwann in ferner Zukunft mal Verwendung
+finden.
+
+
+Wichtig für die Abstimmung mit der Dokumentation (betrifft
+insbesondere Installation und Distribution):
+
+1) Dem Libs-Verzeichnis ein Icon geben und das Unterverzeichnis so
+fixieren, daß darin alle Dateien sichtbar sind!
+
+2) WICHTIG!!! Das Verzeichnis in ENVARC: heißt jetzt, wie das
+Programm, "ArtPRO", nicht mehr "ART-Pro"!!! Bitte ALLE Verweise im
+Programm in "ArtPRO" umändern.
+
+3) Denk daran, die Filelist ggf. anzupassen. Die Längen habe ich gemäß
+Absprache weggelassen.
+
+4) Der endgültige Name der CD muß an verschiedenen Stellen eingetragen
+werden. Suche nach fünf Fragezeichen ????? im Text.
+
+5) Die Files .Readme und .Liesmich behandeln die besonderen
+Shareware-Bedingungen der CD. Bitte nochmal überprüfen.
+
+Bitte das Guide nochmal komplett testlesen lassen, sonst muß ich jede
+Verantwortung für Fehler / schlechtes Englisch / falsch gelinkte
+Sektionen von mir weisen.
+
+
+Anmerkungen, Vorschläge, Ideen, Bugs
+====================================
+
+- Fensterpositionen (auch Settings, unter Umständen sogar die
+Listfenster) bei Exit abspeichern. (Wird in der Doc schon
+vorausgesetzt)
+
+- ScreenLock/ScreenMode bei Exit abspeichern. (Wird in der Doc schon
+vorausgesetzt)
+
+
+- BusyPointer im Hauptfenster setzen, wenn Settings offen ist.
+
+- Wenn ein neu eingestellter CustomScreen nicht groß genug ist, fällt
+ArtPRO zwar auf Topaz8 zurück, aber manchmal reicht das nicht aus
+(z.B. NTSC-Lores). Vorschlag: In diesem Fall automatisch einen
+Autoscroll-Screen der benötigten Größe öffnen oder zusätzlich zu
+Topaz8 auf PAL-Hires zurückfallen.
+
+- Unschön: Manche kleinere Fenster haben kein Closegadget und das
+Publicscreen- und das SpriteControl-Fenster haben nicht einmal ein
+Depth-Gadget.
+
+- Gib zumindest allen "Global" Settings Shortcuts, und versuche
+ansonsten, noch soviele Shortcuts wie möglich zu vergeben, vor allem
+bei Source-, Image- und Color Format (in dieser Reihenfolge) !
+
+- Noch 'ne Idee: Gib' den Operator-Select-Buttons keine Fragezeichen,
+sondern Zahlen (1,2,3...). Sieht zwar doofer aus, hat aber den
+Vorteil, daß die Modul- und Operator-Fenster mit der Tastatur
+angewählt werden könnten. Das macht aber nur recht Sinn, wenn auch die
+Listviews selbst mit der Tastatur bedient werden können!-) Das sollte
+aber, wenn überhaupt, erst in der nächsten Version kommen, weil in der
+Doc noch von Fragezeichen ausgegangen wird.
+
+- Default für Source Width sollte Words sein, nicht Bytes
+
+- Könnte man die ganzen Listviews nicht (irgendwann mal) vertikal
+sizeable machen?
+
+
+
+Texte
+=====
+
+- "ART-Pro" ist obsolet, neu: "ArtPRO".
+
+- Loaders:
+
+IFF ILBM	!
+DATATYPE
+SCREEN
+RAW
+RAW INTERLEAVED !
+PALETTE RAW	!     
+PALETTE IFF	!
+
+- Savers:
+
+IFF ILBM
+RAW
+RAW INTERLEAVED		!
+SPRITE
+PALETTE			!
+MASK
+MASK INTERLEAVED	!
+CHUNKY LEFT		!
+CHUNKY RIGHT		!
+RGB CHUNKY 12		!
+RGB CHUNKY 24		!
+
+- Settings:
+
+Statt "Ask for Exit" "Confirm Exit".
+Statt "Mode" "Get".
+
+- "Usernumber" statt "Usernummer"
+
+- Requester: "Accept and Operate" statt "Accept and Ok"
+
+- Wenn Autosave-Colors angewählt ist, bei Assembler-Source bitte .asm
+und nicht .s verwenden. (.s ist verräterisch lame -> AsmOne)
+
+
+
+Diese neue Nomenklatur erscheint in der Doc!
+============================================
+
+
+
+Achja,  es wäre sehr praktisch, wenn Du künftig JEDE Änderung, und sei
+sie  noch so klein, in einem Logfile vermerken könntest. Das würde das
+Updaten der Doc enorm erleichtern.
+
+
+
+Ciao
+   Timm
+
+
+

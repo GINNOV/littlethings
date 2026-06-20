@@ -1,0 +1,238 @@
+
+TABLE OF CONTENTS
+
+xmplayer.library/XMPl_Init
+xmplayer.library/XMPl_Play
+xmplayer.library/XMPl_StopPlay
+xmplayer.library/XMPl_PausePlay
+xmplayer.library/XMPl_ContPlay
+xmplayer.library/XMPl_SetPos
+xmplayer.library/XMPl_GetPos
+xmplayer.library/XMPl_DeInit
+
+xmplayer.library/XMPl_Init     xmplayer.library/XMPl_Init
+
+   NAME
+	XMPl_Init -- Inits a player structure & player.
+
+   SYNOPSIS
+	error=XMPl_Init(XMPlayerInfo)
+	  D0	  A0
+
+	BOOL XMPl_Init(struct XMPlayerInfo *);
+
+   FUNCTION
+	This function initialize a XMPlayerInfo filled by user and initialies a player.
+
+   INPUTS
+
+	XMPlayerInfo - a structure XMPlayerInfo filled by user
+
+	XMPlayerInfo must be filled with the following information:
+        -----------------------------------------------------------
+	XMPl_Cont = pointer to a FastTracker module (XM).
+	XMPl_MixType = type of module mixing. Following types available:
+			XM_MONO = mono mixing - fast but low quality.
+			XM_STEREO = stereo mixing - fast and medium quality.
+			XM_SURROUND = stereo surround mixing - pseudo surround,
+                                      partly eliminates "Paula Stereo" problem.
+			XM_REALSURR = stereo real surround mixing - better surround,
+                                      partly eliminates "Paula Stereo" problem.
+			XM_STEREO14 = 14 bit stereo mixing - high quality but slowest.
+	XMPl_MixFreq = mixing frequency in Hz (0-n). Maximum frequency is dependent from
+                       display mode. High mixing frequency works slower.
+	XMPl_VBoost  = volume boost value (0-8).
+	XMPl_PrName  = pointer to NULL terminated string which contain name for player
+                       process.
+	XMPl_PrPri   = Priority for player process (-127 - 127).
+
+   RESULT
+	In D0 returns FALSE if initialization fails.
+
+   NOTES
+ 	XMPlayerInfo MUST be filled with valid values and XMPl_Cont must be a XM module.
+
+   SEE ALSO
+        xmplayer.library/XMPl_DeInit
+xmplayer.library/XMPl_Play     xmplayer.library/XMPl_Play
+
+   NAME
+	XMPl_Play -- Plays a FastTracker module.
+
+   SYNOPSIS
+	error = XMPl_Play()
+        D0
+
+	BOOL XMPl_Play(void);
+
+   FUNCTION
+	This function creates port (see XMPlayerInfo -> XMPl_PrName) and
+	plays a FastTracker module.
+
+   INPUTS
+	NONE
+
+   RESULT
+	error - if the player started successfully, this will be TRUE.
+		Else an error value will be FALSE.
+
+   NOTES
+	You cannot play two module at the same time.
+
+   SEE ALSO
+	xmplayer.library/XMPl_Play
+xmplayer.library/XMPl_StopPlay     xmplayer.library/XMPl_StopPlay
+
+   NAME
+	XMPl_StopPlay -- Stops playing a FastTracker module.
+
+   SYNOPSIS
+	XMPl_StopPlay()
+
+	void XMPl_StopPlay(void);
+
+   FUNCTION
+	This function stops playing a FastTracker module.
+
+   INPUTS
+	NONE
+
+   RESULT
+	NONE
+
+   NOTES
+	You cannot stop if you don't call XMPl_Play becourse this will wait for
+	player process ends and creates a infinite loop.
+
+   SEE ALSO
+	xmplayer.library/XMPl_Play
+xmplayer.library/XMPl_PausePlay     xmplayer.library/XMPl_PausePlay
+
+   NAME
+	XMPl_PausePlay -- Pause a a FastTracker module.
+
+   SYNOPSIS
+	XMPl_PausePlay()
+
+	void XMPl_PausePlay(void);
+
+   FUNCTION
+	This function pause a FastTracker module.
+
+   INPUTS
+	NONE
+
+   RESULT
+	NONE
+
+   NOTES
+	NONE
+
+   SEE ALSO
+	xmplayer.library/XMPl_ContPlay
+
+xmplayer.library/XMPl_ContPlay     xmplayer.library/XMPl_ContPlay
+
+   NAME
+	XMPl_ContPlay -- Continues a paused FastTracker module.
+
+   SYNOPSIS
+	XMPl_ContPlay()
+
+	void XMPl_ContPlay(void);
+
+   FUNCTION
+	This function continues a paused FastTracker module.
+
+   INPUTS
+	NONE
+
+   RESULT
+	NONE
+
+   NOTES
+	NONE
+
+   SEE ALSO
+	xmplayer.library/XMPl_PausePlay
+xmplayer.library/XMPl_SetPos     xmplayer.library/XMPl_SetPos
+
+   NAME
+	XMPl_SetPos -- Set a new position for a FastTracker module.
+
+   SYNOPSIS
+	XMPl_SetPos( NewPosition )
+			D0
+
+	void XMPl_SetPos( LONG );
+
+   FUNCTION
+	After this function has been called, player will jump to a NewPosition in
+	FastTracker module.
+
+   INPUTS
+	NewPosition = new position in a FastTracker module.
+
+   RESULT
+	NONE
+
+   NOTES
+	NONE
+
+   SEE ALSO
+	xmplayer.library/XMPl_GetPos
+xmplayer.library/XMPl_GetPos     xmplayer.library/XMPl_GetPos
+
+   NAME
+	XMPl_GetPos -- Gets and returns a position in a FastTracker module and a
+		       current pattern position to a XMPlayer structure.
+
+   SYNOPSIS
+	XMPl_GetPos(XMPlayerPos)
+		  A0
+
+	void XMPl_GetPos(  struct XMPlayerPos * );
+
+   FUNCTION
+	This function gets and returns a position in FastTracker module and a
+	current pattern position to a XMPlayer structure.
+
+   INPUTS
+	NONE
+
+   RESULT
+	XMPlayerPos structure will be filled with the following information:
+        --------------------------------------------------------------------
+	XMPl_ModPos = position in a FastTracker module.
+	XMPl_PattPos = current pattern position.
+
+   NOTES
+	NONE
+
+   SEE ALSO
+	xmplayer.library/XMPl_SetPos
+xmplayer.library/XMPl_DeInit     xmplayer.library/XMPl_DeInit
+
+   NAME
+	XMPl_DeInit -- Deinits a player.
+
+   SYNOPSIS
+	XMPl_DeInit()
+
+	void XMPl_DeInit(void);
+
+   FUNCTION
+	This function deinitialize a player.
+
+   INPUTS
+	NONE
+
+   RESULT
+	NONE
+
+   NOTES
+	NONE
+
+   SEE ALSO
+	xmplayer.library/XMPl_Init
+

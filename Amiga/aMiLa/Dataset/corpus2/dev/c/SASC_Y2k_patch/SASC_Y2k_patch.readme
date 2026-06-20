@@ -1,0 +1,8 @@
+Short:        Year 2000 patch for SAS/C 6.58
+Author:       Victor Pakhomov
+Uploader:     rdc cyberstorm mtu-net ru (Denis I Sotchenko)
+Type:         dev/c
+Architecture: m68k-amigaos
+
+SAS/C 6.58 has Y2K bug - __AMIGADATE__ inserts wrong date (by one day)
+after 1 Mar 2000.  This patch repairs it.

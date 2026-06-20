@@ -1,0 +1,11 @@
+Short:        Example of gadget programming
+Author:       amigansoftware@altavista.com (James Jacobs)
+Uploader:     amigansoftware altavista com (James Jacobs)
+Type:         dev/src
+Version:      1.0
+Requires:     OS2.04+
+Architecture: m68k-amigaos
+
+This comprises three equivalent examples, illustrating straightforward
+gadget programming using OS1.x-style gadgets, GadTools, and ReAction,
+respectively. They are written in SAS/C 6.58.

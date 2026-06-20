@@ -1,0 +1,18 @@
+curve_test by Tyler Montbriand, 2005
+tsm@accesscomm.ca http://burningsmell.org
+
+curve_test is a set of 3 programs to demonstrate 3 different kind of 
+third-order parametric curves:  Hemite curve segments, Bezier curve 
+segments, and Splines.  Hemite curves are defined by two endpoints and 
+two vectors, Bezier curves are defined by four points, and Spline curves 
+are defined by 4+n points.  In particular, my program draws *closed* 
+spline curves.
+
+All 3 programs are operated the same way;  the 0-9 keys select a 
+particular point.  x or shift-x increases or decreases the X coordinate 
+of the selected point or vector, y or shift-y increases or decreases the 
+Y coordinate of the selected point or vector, ESC quits.  You will see 
+the results of the modified curve redrawn in realtime.
+
+It's probably stupidly slow and inefficient both in design and 
+implimentation, but I hope the idea at least is fairly clear.

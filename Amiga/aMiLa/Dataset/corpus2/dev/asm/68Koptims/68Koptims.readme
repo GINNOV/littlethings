@@ -1,0 +1,26 @@
+Short: 68k optimizations and tips
+Uploader: kakace@aix.pacwan.net (Didier Levet)
+Author: kakace@aix.pacwan.net (Didier Levet)
+Type: dev/asm
+
+   This is an UNOFFICIAL update of the old asp68k6 file,
+   with 68030/68040 and 68060 optimizations infos and some 
+   tips for these processors.
+
+   Use it at your own risk.
+   
+   I spend my time to update this doc in order to help
+   all those who don't have any informations. I hope
+   this will avoid the proliferation of bad coded soft-
+   wares.
+
+   Motorola documentation :
+   
+   http://www.mot.com/SPS/HPESD/docs/pubs/index.html
+   http://www.mot-sps.com/home/lit_ord.html
+
+
+   If you have some questions, feel free to contact me.
+   kakace@aix.pacwan.net
+
+   Now enjoy... :-)

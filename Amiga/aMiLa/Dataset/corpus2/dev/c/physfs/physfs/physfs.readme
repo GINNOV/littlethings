@@ -1,0 +1,11 @@
+Short:        PhysicsFS
+Author:       Various
+Uploader:     Ilkka Lehtoranta (ilkleht@isoveli.org)
+Type:         dev/c
+Version:      1.1.0
+Architecture: ppc-morphos
+
+MorphOS port of PhysicsFS. It was completed years ago but never bothered to
+upload this trivial stuff.
+
+http://icculus.org/physfs/

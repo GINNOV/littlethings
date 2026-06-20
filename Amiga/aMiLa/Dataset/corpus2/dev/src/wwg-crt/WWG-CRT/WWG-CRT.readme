@@ -1,0 +1,46 @@
+short:   Crt.(i|p) for PCQ-Pascal
+author:  Walter Weber-Groß
+type:    text/ascii
+
+Nützliche Prozeduren und Funktionen für PCQ-Pascal
+--------------------------------------------------
+Basierend auf den Crt-Dateien von Andreas Tetzl habe
+ich diese Quelltexte um einige nützliche Funktionen
+und Prozeduren erweitert, ebenso wie ich vorhandene
+Prozeduren wie z. B. TextLine inhaltlich verändert
+habe um sie ein bißchen schneller zu machen. Die
+Prozedur GetConSize habe ich durch die Funktionen
+MaxX und MaxY ersetzt.
+
+Weitere Veränderungen und Ergänzungen sind den beiden
+Crt-Quelltexten zu entnehmen.
+
+Desweiteren gibt es jetzt eine Funktion ReadKey, die
+auf die Eingabe eines Zeichens wartet, ohne es dann
+jedoch auf dem Bildschirm darzustellen.
+
+Die Quelltexte sind FREEWARE.
+
+Meine Email-Adressen:
+
+Fido: 2:2411/801.96
+UUCP: wwg@fg.arco.met.fu-berlin.de
+
+***
+
+Useful console procedures and functions for PCQ-Pascal
+------------------------------------------------------
+Based on the Andreas Tetzl's work I added, changed and
+reworked some procedures and functions which allows
+simple controlling of cursor positioning as well as
+getting a single key without displaying it and something
+more.
+
+For further informations take a look at the source codes.
+
+All source codes are FREEWARE.
+
+My email addresses:
+
+Fido: 2:2411/801.96
+UUCP: wwg@fg.arco.met.fu-berlin.de

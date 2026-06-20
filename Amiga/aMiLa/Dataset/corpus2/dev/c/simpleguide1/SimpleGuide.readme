@@ -1,0 +1,30 @@
+Short: Source for easy use of AmigaGuide help
+Type: dev/c
+Author: Petter Nilsen (pettern@powertech.no)
+Uploader: Petter Nilsen (pettern@powertech.no)
+
+------------------==================================------------------
+950205
+           SimpleGuide: A simple AmigaGuide interface
+
+                              Release 1
+
+    Copyright (C) 1995 Ultima Thule Software, All Rights Reserved.
+                        Author: Petter Nilsen
+
+------------------==================================------------------
+
+What is SimpleGuide?
+~~~~~~~~~~~~~~~~~~~~
+SimpleGuide  was  created  by  me for own use in our program THOR, the
+most  advanced  offline  reader  currently on the Amiga (todays ad :).
+SimpleGuide  does  much  of the gruntwork associated with the creation
+and  use  of the AmigaGuide online help that Commodore has provided to
+users  and programmers.  To use it, you simply link you program to the
+SimpleGuide  module (simpleguide.c) and call SimpleGuide to create the
+AmigaGuide  help  system,  open  nodes,  close  the  help  system etc.
+Currently,  this  code  only  supports  opening AmigaGuide as an async
+prosess.   There  might  be  some  problems  with  earlier versions of
+amigaguide.library with this, but as far as I know these problems only
+exist  with  V33  and early V34 versions.
+

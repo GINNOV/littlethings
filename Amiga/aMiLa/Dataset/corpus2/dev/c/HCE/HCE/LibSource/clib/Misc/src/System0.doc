@@ -1,0 +1,104 @@
+#! rnews 11784
+Path: van-bc!ubc-cs!ubc-vision!uw-beaver!mit-eddie!bloom-beacon!think!ames!pas
+teur!ucbvax!decvax!decwrl!sun!pitstop!sundc!seismo!uunet!mcvax!unido!rmi!kkaemp
+f
+From: kkaempf@rmi.UUCP (Klaus Kaempf)
+Newsgroups: comp.sys.amiga
+Subject: Execute()
+Keywords: shell, BCPL, AmigaDOS, fork(), fexec()
+Message-ID: <857@rmi.UUCP>
+Date: 22 Jan 88 15:40:47 GMT
+Reply-To: kkaempf@rmi.UUCP
+Organization: RMI Net, Aachen, W.Germany
+Lines: 385
+Posted: Fri Jan 22 16:40:47 1988
+
+Wanna call a CLI-command in your own application? Maybe you
+don't have "RUN" in your "C:" directory? Or it's "PROMPT",
+"STACK", "CD" or the like? So forget "Execute()"! But it's
+one of these BCPL programs - darn!
+
+Try this one!
+
+This small program can be used to execute CLI-commands, even
+the ones that rely on the correct BCPL setup.
+
+Two restrictions:
+
+"System0()" must be called from a CLI-PROCESS (or SHELL or
+whatever). You cannot call it from WorkBench, a simple task
+or interrupt (argh!).
+
+"EXECUTE" (the CLI-command) will not loop through the
+batchfile itself, but rather change the "cli_CurrentInput",
+so the shell will execute the incoming lines until "EOF" is
+encountered and then restore "cli_CurrentInput". So this is
+not a restriction, if you return to the input-loop directly
+after "System0()" has been called (normally true in shell
+program). Batchfiles called this way may be nested, but do
+not try to "EXECUTE" several batch-files ...
+
+System0("Execute", seglist, "first");
+System0("Execute", seglist, "second");
+System0("Execute", seglist, "third");
+
+... without returning to the input-loop first.
+
+"System0()" WON'T handle loading and unloading of the code,
+I/O-redirection or whatever, but this is fairly simple.
+
+Commands should be checked in the following order:
+
+built-in commands of the shell
+resident commands ("NetHand")
+current directory (WindowPtr = -1)
+path list ("CommandDir", WindowPtr = -1)
+"C:" (WindowPtr = 0)
+
+As an option for shells: Try to execute it as a batchfile
+(current directory or "S:"), if everything else fails (but
+use "WindowPtr = -1" for "C:" then).
+
+I/O-redirection should save the values of "pr_CIS" and
+"pr_COS", put the new ones into these fields and restore
+them after the command has finished. That's why "EXECUTE" is
+not that much impressed if you supply it with ">" or "<".
+
+"System0()" returns the return code (register D0 or
+"Exit()"-parameter) of the program called (not the same as
+"Execute()"!), or an internal error code:
+
+-1: process not a CLI
+-2: not enough memory for stack
+
+It does not rely on some strange undocumented data
+structures the way Aztec's "fexec#?()" does. You do not need
+a special startup code to save the registers (Csh 2.04). I
+still have to find the command, that cannot be called this
+way, but you will certainly manage this. :-)
+
+Two non-standard include files are used. "extern/exec.i"
+contains the "_LVO" equates for "exec", you can use
+"amiga.lib" instead. "extras/asm.i" provides ...
+
+AbsExecBase equ 4
+
+REG_SysBase equr a6
+
+callsys macro
+        jsr _LVO\1(REG_SysBase)
+        endm
+
+The uuencoded object file has been created using the
+Metacomco Macro Assembler. A new release (11.1) of this one
+has been announced for the ST, does anybody have further
+information about an Amiga-version?
+
+multam salutem omnibus
+
+!ralph
+
+P.S.: If someone would be as kind as to mail me a disk with
+the latest version of Matt's shell for Lattice-C? Thanks!
+
+################

@@ -1,0 +1,84 @@
+ ifnd DEVICES_CONSOLE_I
+DEVICES_CONSOLE_I set 1
+*
+*  devices/console.i
+*  Release 2.0
+*  for PhxAss
+*
+*  © copyright by F.Wille in 1994
+*
+
+ ifnd EXEC_IO_I
+ include "exec/io.i"
+ endc
+
+ DEVINIT
+ DEVCMD CD_ASKKEYMAP
+ DEVCMD CD_SETKEYMAP
+ DEVCMD CD_ASKDEFAULTKEYMAP
+ DEVCMD CD_SETDEFAULTKEYMAP
+
+SGR_PRIMARY	= 0
+SGR_BOLD	= 1
+SGR_ITALIC	= 3
+SGR_UNDERSCORE	= 4
+SGR_NEGATIVE	= 7
+SGR_NORMAL	= 22
+SGR_NOTITALIC	= 23
+SGR_NOTUNDERSCORE = 24
+SGR_POSITIVE	= 27
+ rsset 30
+SGR_BLACK	rs.b 1
+SGR_RED 	rs.b 1
+SGR_GREEN	rs.b 1
+SGR_YELLOW	rs.b 1
+SGR_BLUE	rs.b 1
+SGR_MAGENTA	rs.b 1
+SGR_CYAN	rs.b 1
+SGR_WHITE	rs.b 1
+		rs.b 1
+SGR_DEFAULT	rs.b 1
+SGR_BLACKBG	rs.b 1
+SGR_REDBG	rs.b 1
+SGR_GREENBG	rs.b 1
+SGR_YELLOWBG	rs.b 1
+SGR_BLUEBG	rs.b 1
+SGR_MAGENTABG	rs.b 1
+SGR_CYANBG	rs.b 1
+SGR_WHITEBG	rs.b 1
+		rs.b 1
+SGR_DEFAULTBG	rs.b 1
+ rsset 30
+SGR_CLR0	rs.b 1
+SGR_CLR1	rs.b 1
+SGR_CLR2	rs.b 1
+SGR_CLR3	rs.b 1
+SGR_CLR4	rs.b 1
+SGR_CLR5	rs.b 1
+SGR_CLR6	rs.b 1
+SGR_CLR7	rs.b 1
+ rsset 40
+SGR_CLR0BG	rs.b 1
+SGR_CLR1BG	rs.b 1
+SGR_CLR2BG	rs.b 1
+SGR_CLR3BG	rs.b 1
+SGR_CLR4BG	rs.b 1
+SGR_CLR5BG	rs.b 1
+SGR_CLR6BG	rs.b 1
+SGR_CLR7BG	rs.b 1
+
+DSR_CPR 	= 6
+CTC_HSETTAB	= 0
+CTC_HCLRTAB	= 2
+CTC_HCLRTABSALL = 5
+TBC_HCLRTAB	= 0
+TBC_HCLRTABSALL = 3
+M_LNM		= 20
+M_ASM macro
+ dc.b ">1"
+ endm
+M_AWM macro
+ dc.b "?7"
+ endm
+
+ endc

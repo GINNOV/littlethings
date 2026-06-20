@@ -1,0 +1,329 @@
+		    UTILITY PROGRAM DOCUMENTATION
+
+    Copyright (C) 1989,1990 by Robert W. Albrecht, All Rights Reserved
+
+--------------------------------------------------------------------------
+			 CONTENTS
+
+I)    CCLIB.LIBRARY
+II)   BITES
+III)  EXEC
+IV)   IFFCheck
+V)    LOC
+VI)   NOIBM
+VII)  NOW
+VIII) NUKELIB
+IX)   SETPRI
+X)    XWAIT
+XI)   CREDITS
+XII)  LICENSE AND DISCLAIMER
+
+---------------------------------------------------------------------------
+I) CCLIB.LIBRARY
+
+   All of these utilities use CClib.library which you need to put in your
+   LIBS: directory. The reason the programs are so small is that the
+   overhead for the C library is all in one place.
+   I don't know about you but I need every last bit of disk space on
+   my system. The Amiga community should DEMAND that C programmers use this
+   library for all their programs, this will eventually save you from
+   having to upgrade your system because you are out disk space or RAM.
+   You certainly don't need multiple copies of the Aztec and Lattice C
+   libraries imbedded in your programs.
+
+   The binary version of CClib.library is available in the form of
+   USRCCLIB.lzh found on many BBS's including Compuserve and Codename:
+   Lorraine BBS (805-648-7833). If you wish to write PD C programs that
+   use CClib.library look for the full version of CClib.library in the
+   form of CCLIB.lzh which contains everything you need to write programs
+   for CClib.library. If you are a commercial software developer you will
+   need pay the one license fee of $50 to distribute CClib.library with
+   your software, however I urge you to get the non-commercial version
+   and evaluate it first.
+
+---------------------------------------------------------------------------
+II) BITES
+
+	   Documentation For 'Bites' Version 1.3
+		 It's smaller, and better.
+
+		     Introduction
+
+   Bites is a program written at the request of "MIKE VDS"
+   by Robert W. Albrecht. It is designed to display disk space
+   available on all mounted volumes.
+
+
+		     How to use Bites...
+
+   Run the program by double clicking on it's icon or typing:
+   'RUN Bites' from the CLI prompt.
+
+   Bites needs at least a 2500 byte stack.
+
+   A small window will appear in the title bar with the Bites icon at the
+   left. When you click on the Bites icon the program terminates. The
+   window can be dragged around like any other intuition window. The
+   standard 'to back' and 'to front' system gadgets appear at the right of
+   the window. There are two other gadgets to the left of the system
+   gadgets that control the behaviour of Bites.
+
+   When Bites first comes up it will cycle through all of the mounted
+   volumes and display the number of bytes available on each volume every
+   three seconds. To stop cycling through the volumes click on the 'up and
+   down arrow' gadget. The next time you click on the 'up and down arrow'
+   gadget the next volume in the list will be displayed. To return to
+   cycling mode click on the 'circle arrow' gadget.
+
+   The Bites window can be 'iconified' by clicking the right mouse button
+   while it's window is active. The window will reduce to a 24x10 Bites
+   icon that takes a minimum amount of screen space. To 'un-iconify' the
+   Bites window just activate the window by clicking on the icon with the
+   left mouse button, then click the right mouse button.
+
+   Bites can also be terminated by use of the Amiga DOS Break command.
+   First type 'Status' at the CLI and get the Process ID of Bites then type
+   'Break <Process ID>'.
+
+
+		  Enhancements Made for Version 1.1
+
+   You can now control the position and size of the Bites window through
+   command line switches or icon 'Tool Types'. You may also display free
+   'blocks' instead of free bytes.
+
+   CLI command line switches:
+
+   -l<Left Edge>	Left edge of Bites window in pixels
+
+   -t<Top Edge> 	Top Edge of Bites window in pixels
+
+   -w<Width>		Width of Bites window in pixels
+
+   -b			Displays 'blocks' instead of bytes
+
+	 EXAMPLE: RUN BITES -l0 -t20 -w640 -b
+
+   Icon Tool Types:
+
+   LEFTEDGE=<Left Edge>  Left Edge of Bites window in pixels
+
+   TOPEDGE=<Top Edge>	 Top Edge of Bites window in pixels
+
+   WIDTH=<Width>	 Width of Bites window in pixels
+
+   SHOWBLOCKS=ON	 Displays 'blocks' instead of bytes
+
+	 EXAMPLE:
+
+	 LEFTEDGE=0
+	 TOPEDGE=20
+	 WIDTH=640
+	 SHOWBLOCKS=ON
+
+
+	       Bug Fixes Made for Version 1.1
+
+   There was a bug where if you had an 'ASSIGN' to a disk that was no
+   longer in the drive a system requester would come up and not go away.
+   This has been fixed. Now when this situation exists the volume name will
+   be given and instead of bytes free or blocks free the message 'Not
+   Installed' will be displayed. This way you will be clued into assigns
+   that are just flopping around.
+
+	       Bug Fixes made for version 1.2
+
+   The command line arguments for width and left-edge and top-edge are now
+   checked for correctness. The width has to be greater than 24, and the
+   left-edge and top-edge have to be greater than zero.
+
+	       Enhancements for version 1.3
+
+   Bites now uses CClib.library which is a shareable C library. This has
+   reduced the size of the executable to 5288 from 6420 bytes. For bites
+   version 1.3 to work you MUST have CClib.library installed in your LIBS:
+   directory. You can find the binary only version of CClib.library under
+   the name USRCCLIB.lzh on many BSS's.
+
+---------------------------------------------------------------------------
+III) EXEC
+
+   SYNTAX: Exec
+
+   Exec displays a list of the data structures used by the Amiga OS. This
+   includes a list of; memory, resources, devices, interrupt handlers,
+   libraries, message ports, and tasks.
+
+---------------------------------------------------------------------------
+IV) IFFCheck
+
+   SYNTAX: IFFCheck <iff file name>
+
+   IFFCheck checks the integrity of any IFF file.
+
+   A typical listing looks like this:
+
+--- Checking file "pic:life/pumpkin"---
+ FORM 6194 ILBM
+. BMHD 20
+. CMAP 96
+. CRNG 8
+. CRNG 8
+. CRNG 8
+. CRNG 8
+. BODY 5985
+--- (IFF_OKAY) A good IFF file.
+
+---------------------------------------------------------------------------
+V) LOC
+
+   SYNTAX: LOC [-Q] <files1> <files2> ...
+
+   The -Q switch turns off the file-by-file listing of files and only
+   prints the totals.
+
+   The file name arguments can contain the '*' and '?' wild card characters.
+
+   Loc counts lines of C code and gives other statistics.
+   Here is an example of it's output:
+
+   Lines Of C (LOC) by Robert W. Albrecht
+
+
+   The file loc.c contains...
+   157 lines of code, 20 blank lines, 2387 bytes of code,
+   1032 bytes of whitespace, and 479 bytes of comments.
+   The average code line has 15 bytes.
+   The code content is 61%, 69% without comments.
+
+---------------------------------------------------------------------------
+VI) NOIBM
+
+   SYNTAX: NoIBM [>outfile] infile
+
+   Noibm will strip the carriage returns from a file. Typically text files
+   from an IBM PC will have <CR><LF> at the end of each line, where on Amiga
+   DOS and UNIX lines are terminated only with <LF>. By default output
+   is directed to the console, but you can redirect it to a file.
+
+---------------------------------------------------------------------------
+VII) NOW
+
+   SYNTAX: now
+
+   Now will display the date in a more American fasion. Here is some
+   example output:
+
+   Saturday October, 07 1989 02:24 AM
+
+---------------------------------------------------------------------------
+VIII) NUKELIB
+
+   SYNTAX: NukeLib <lib1.library> <lib2.library> ...
+
+   NukeLib removes un-needed libraries from memory. For example:
+
+   NukeLib CClib.library
+
+   removes CClib.library if no programs are using it. This is really
+   not necessacary because Amiga OS will attempt to remove libraries
+   when it needs the memory. To find out the names of the libraries in
+   memory use the exec program.
+
+---------------------------------------------------------------------------
+IX) SETPRI
+
+   SYNTAX: SetPri
+
+   SetPri will allow you set the priority of any task in the system, even
+   while it is running. This is very useful for controlling your multi-
+   tasking computer. After you type SetPri you will be shown a list of the
+   currently running tasks in the system and be asked for the number
+   of the task to change the priority of. You can then enter the
+   priority of the task.
+---------------------------------------------------------------------------
+
+X) XWAIT
+
+SYNTAX:
+
+   XWAIT HH:MM[:SS] [[MM-DD-YY] TOMORROW,SUN,MON,TUE,WED,THU,FRI,SAT]
+
+ Waits until a specified time, or a key is pressed. If ^C is pressed a code
+ of 20 is returned, if ^D ^E or ^F is pressed a code of 10 is returned, if
+ the time arrives to stop waiting then a 0 is returned. If an error occurs
+ 30 is returned.
+
+ The command line arguments are given as a time and a date. XWAIT will stop
+ waiting when the time is greater than or equal to that given.
+
+
+---------------------------------------------------------------------------
+XI) CREDITS
+	       Software and Documentation Written by:
+
+		      Robert W. Albrecht
+		      1457 Zion Way
+		      Ventura CA 93003
+
+---------------------------------------------------------------------------
+XII) LICENSE AND DISCLAIMER
+
+
+			    LICENSE
+
+      Robert W. Albrecht is the exclusive owner of the enclosed Software
+      and Documentation. You are granted non-exclusive license to use the
+      Software and Documentation, but you are not the owner of them.
+	 Your right to use the Software and Documentation under this
+      agreement is the "License". "You" means the individual or legal
+      entity whose agent uploads this software and accepts this Agreement.
+      "Software" means the computer program recorded on the floppy-disk or
+      other media, any update to them Robert W. Albrecht may later provide
+      you, and any back-up copies made. "Documentation" means the user
+      manual and other materials packaged with this Software.
+
+			    Transfer
+
+      You may transfer the license for the use of the Software or
+      Documentation to another person without limitation, except that
+      no license fee may be charged.
+
+			  Backup Copies
+
+		 Make as many copies as you want.
+
+			      Term
+
+      The license is effective for twenty (20) years from the time you
+      upload the software. You may terminate the license at any time.
+
+		    Robert W. Albrecht's rights.
+
+      The Bites Software and Documentation is protected by copyright, trade
+      secret and trademark laws. You may not disclose the Software or
+      Documentation to others, except as allowed in this license agreement,
+      or remove or alter ownership, trademark and copyright notices on
+      Documentation. YOU MUST MAKE A GOOD FAITH EFFORT TO PREVENT ANY
+      UNAUTHORIZED USE, COPYING, OR DISCLOSURE OF THE SOFTWARE OR
+      DOCUMENTATION. THESE OBLIGATIONS WILL SURVIVE ANY TERMINATION OF THE
+      LICENSE AGREEMENT.
+
+	     Disclaimer of other Warranties, and Liabilities.
+
+      THERE ARE NO WARRANTIES, EITHER EXPRESSED OR IMPLIED, FOR THE
+      SOFTWARE OR DOCUMENTATION, WHICH ARE BOTH LICENSED TO YOU "AS IS".
+      ROBERT W. ALBRECHT EXPRESSLY DISCLAIMS ANY WARRANTY AS TO THE
+      PERFORMANCE OF THE SOFTWARE, OR DOCUMENTATION. HE ALSO DISCLAIMS ALL
+      OTHER WARRANTIES, INCLUDING (WITHOUT LIMITATION) IMPLIED WARRANTIES
+      OF MERCANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT
+      SHALL ANYONE INVOLVED IN THE CREATION, PRODUCTION, OR DISTRIBUTION,
+      OF THE SOFTWARE OR DOCUMENTATION BE LIABLE FOR ANY INDIRECT, SPECIAL,
+      INCEDENTAL, OR CONSEQUENTIAL DAMAGES RESULTING FROM THE USE OF THE
+      SOFTWARE OR DOCUMENTATION OR ARISING FROM ANY BREACH OF ANY WARRANTY.
+      Some states do not allow the exclusion or limitation of implied
+      warranties or liability for incedental or consequential damages so
+      the above exclusion and limitation may not apply to you. IN ADDITON
+      TO THE ABOVE LIMITATION, OUR LIABILITY TO YOU OR TO ANYONE ELSE FOR
+      DAMAGES SHALL NOT EXCEED THE LICENSE FEE PAID BY YOU FOR THE SOFTWARE
+      AND DOCUMENTATION (NOTHING).

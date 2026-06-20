@@ -1,0 +1,114 @@
+
+    includefile     ::= inclusions includefile              { "#include"            }
+    includefile     ::= constants includefile               { "#define"             }
+    includefile     ::= structs includefile                 { "struct"              } { "{" }
+    includefile     ::= conditional includefile             { "#ifdef" , "#ifndef"  }
+    includefile     ::= funcs includefile                   { -basictype, "struct"  }
+    includefile     ::= vars includefile                    { -basictype, "struct"  }
+    includefile     ::= eps                                 { EOF, "#endif"         }
+
+    inclusions      ::= "#include" filename                 { "#include"            }
+
+    filename        ::= """ allstr """                      { """                   }
+    filename        ::= "<" allstr ">"                      { "<"                   }
+
+    allstr          ::= identifier allright                 { identifier            }
+
+    allright        ::= "." allright                        { "."                   }
+    allright        ::= identifier allright                 { identifier            }
+    allright        ::= "/" allright                        { "/"                   }
+    allright        ::= eps                                 { """                   }
+
+    identifier      ::= letter identifier
+    identifier      ::= letter
+
+    constants       ::= "#define" identifier expr           { "#define"             }
+
+    expr            ::= "(" expr ")"                        { "("                   }
+    expr            ::= identifier                          { identifier            }
+    expr            ::= infix                               { ----                  }
+    expr            ::= "~" expr                            { "~"                   }
+    expr            ::= number                              { hexnumber, decnumber  }
+    expr            ::= """ allstr """                      { """                   }
+
+    infix           ::= expr exprright                      { "(", identifier, "~", number, """ }
+
+    exprright       ::= "|" expr                            { "|"                   }
+    exprright       ::= "&" expr                            { "&"                   }
+    exprright       ::= "||" expr                           { "|"                   }
+    exprright       ::= "&&" expr                           { "&&"                  }
+    exprright       ::= "<<" expr                           { "<<"                  }
+    exprright       ::= ">>" expr                           { ">>"                  }
+
+    number          ::= "0x" hexnumber
+    number          ::= decnumber
+
+    hexnumber       ::= letter hexnumber
+    hexnumber       ::= digit hexnumber
+    hexnumber       ::= letter
+    hexnumber       ::= digit
+
+    decnumber       ::= digit decnumber
+    decnumber       ::= digit
+    decnumber       ::= digit "L"
+
+    structs         ::= "struct" structright                { "struct"              }
+
+    structright     ::= identifier structdef                { identifier            }
+    structright     ::= structdef                           { "{"                   }
+
+    structdef       ::= "{" components "}" ";"
+
+    components      ::= component components                { -basictypes, "struct" }
+    components      ::= eps                                 { "}"                   }
+
+    component       ::= typedef identifiers ";"             { -basictypes, "struct" }
+
+    arraylen        ::= "[" number "]"
+    arraylen        ::= eps
+
+    typedef         ::= basictypes pointing                 { -basictypes           }
+    typedef         ::= "struct" identifier pointing        { "struct"              }
+
+    pointing        ::= "*" pointing                        { "*"                   }
+    pointing        ::= eps                                 { identifier            }
+
+    basictypes      ::= "uint"
+    basictypes      ::= "int"
+    basictypes      ::= "word"
+    basictypes      ::= "uword"
+    basictypes      ::= "short"
+    basictypes      ::= "ushort"
+    basictypes      ::= "byte"
+    basictypes      ::= "ubyte"
+    basictypes      ::= "char"
+    basictypes      ::= "uchar"
+    basictypes      ::= "long"
+    basictypes      ::= "ulong"
+    basictypes      ::= "strptr"
+    basictypes      ::= "aptr"
+    basictypes      ::= "void"
+
+    identifiers     ::= identifier arraylen idelist         { identifier            }
+
+    idelist         ::= "," identifier arraylen idelist     { ","                   }
+    idelist         ::= eps                                 { ";"                   }
+
+    conditional     ::= "#ifdef" condright                  { "#ifdef"              }
+    conditional     ::= "#ifndef" condright                 { "#ifndef"             }
+
+    condright       ::= identifier includefile "#endif"     { identifier            }
+
+    funcs           ::= typedef identifier "(" params ")" ";"        { -basictypes, "struct" } { "(" }
+
+    params          ::= typedef parameters
+
+    parameters      ::= "," typedef parameters              { ","                   }
+    parameters      ::= eps                                 { ")"                   }
+
+    vars            ::= typedef identifier varsright        { -basictypes, "struct" } { ";" }
+
+    varsright       ::= "=" expr ";"                        { "="                   }
+    varsright       ::= ";"                                 { ";"                   }
+
+
