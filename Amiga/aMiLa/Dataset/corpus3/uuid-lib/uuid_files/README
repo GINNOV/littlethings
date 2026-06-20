@@ -1,0 +1,37 @@
+This README should be deleted. IDLTool generated it for you.
+
+These files where generated automatically by IDLTool, and ideally they will
+compile out of the box, possibly with a few minimal changes. These changes are:
+
+- The file "Makefile" contains a few comments that should help you to 
+  customize it to your liking. Most notably, you should uncomment the 
+  CROSS_COMPILE if you are crosscompiling under an alien OS.
+  Also make sure tho check DEBUG, LINK and CFLAGS.
+
+- The file "init.c" contains the complete init code of your library. The only
+  Assumption it makes (which might not be true, though) are that the Library base
+  structure contains the field "SegList". This field is used to store the DOS seglist
+  that the system uses to keep track of the memory occupied by your library. It needs
+  to be returned on Expunge. The skeleton code already takes care of that. 
+  If the field is named differently, you need to edit "init.c".
+
+- For each of your libraries interfaces, a separate directory has been created that
+  contains a single file for each function in that interface. The functions are all
+  created to be completely empty (and return a NULL value if they have a return value).
+  In addition they output a message to the Debug log via IExec::DebugPrintF stating their
+  unimplemented state, so that you can watch the debug output to see if you forgot 
+  some function.
+
+
+Some of the files contain comments with additional hints on what can be customized. 
+Don't hesitate to throw away what you don't need.
+
+Before starting to compile, make sure to do a single "make revision" to create the
+Revision file, or the build will fail with a missing #include. Also, the makefile
+might not contain dependencies, so make sure to either add them manually, or make 
+sure that you always compile all relevant files (Future versions of IDLTool might
+generate these dependencies)
+
+   Have fun developing for AmigaOS 4!
+   Your AmigaOS 4 Development Team
+

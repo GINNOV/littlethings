@@ -1,0 +1,1485 @@
+
+	DOSLIB.I * Metacc Include File
+		 Version 1.21
+	        Date 27.06.89
+
+
+	EXECLIB.I * Metacc Include File
+		Version 1.08
+	      Date 12.06.1989
+
+
+	GFXLIB.I * Metacc Include File
+		Version 1.01
+	       Date 15.06.89
+
+
+	INTLIB.I * Metacc Include File
+		Version 1.063
+	        Date 25.06.89
+
+
+	JOYSTICK.I * Metacc Include File
+		Version 1.3
+	      Date 04.03.1989
+
+
+	MATH.I * Metacc Include File
+		Version 1.4
+	       Date 21.06.89
+
+
+	NUMERIC.I * Metacc Include File
+		Version 1.42
+	       Date 01.07.89
+
+
+	STRING.I  *  Metacc Include File
+		Version 1.763
+		Date 22.06.89
+
+
+	---
+	ABS
+	---
+
+   abs		(abs(x))
+   in:		d0: integer;
+   call:	mathlib abs;
+   out:		d0: positive integer;
+
+
+	------
+	ADDDIR
+	------
+
+   adddir	(move to directory)
+   in:		a0=dir_name;
+   call:	doslib	adddir;
+   out:		a0=dir_name; d0=success (0=fail);
+   notes:	/locks the new, unlocks the old/;
+
+
+	-------
+	ADDPATH
+	-------
+
+   addpath	(add a dirname to path)
+   in:		a0=dir_name; a1=pathname_string;
+   call:	doslib	addpath;
+   out:		a0=dir_name; a1=pathname_string;
+   notes:	/a masterpiece - handles also parent-dirs,/
+  		/device names, rootdirs, subdirectories and yet/
+  		/all these together/
+ 		/strlib must be included/;
+
+
+	--------
+	ADDSLASH
+	--------
+
+   addslash	(add slash into end of string if not / or :)
+   in:		a0=*string;
+   call:	strlib addslash;
+   out:		a0=*(NULL);
+
+
+	-----
+	ALLOC
+	-----
+
+   alloc	(allocate memory and argue if not got)
+   in:		d0=bytesize, d1=requirements;
+   call:	doslib	alloc;
+   out:		a0=d0=location;
+
+
+	-----
+	ALLOC
+	-----
+
+   alloc	(allocate memory)
+   in:		d0=bytesize; d1=requirements;
+   call:	execlib	alloc;
+   out:		a0=d0=*memory;
+   notes:	/allocates 4 bytes more and saves/
+ 		/the length, like util.i's/
+
+
+	-------
+	ALLOCGG
+	-------
+
+   allocgg	(allocate and create a gadget structure chain)
+   in:		a0=*gadgetdata; a1=*strgad_bufr_base;
+   call:	intlib	allocgg;
+   out:		d0=a0=*firstgadget; /use execlib->free to free/
+   notes:	The gadgetdata list may contain elements
+ 		of the following form:
+ 		 type.w, x1.w, y1.w, sx.w, sy.w, userdata.l,
+ 		 specl.w
+ 		followed by "specl" bytes of additional data.
+ 		See "info:sample.gad" for examples.
+
+
+	----
+	BADD
+	----
+
+   badd		(add bcd)
+   in:		a0, d0: bcd; a1, d1: bcd;  {a0=a0+a1}
+   call:	mathlib	badd;
+   notes:	d0 is UWORD length of bcd a0 (in bytes),
+   		d1 is the same for a1. Action taken when
+   		either of the lengths is zero is undefined.
+   		The pointers a0, a1 point to the first (most
+   		significant) byte of the signed bcd.
+
+
+	----
+	BCHK
+	----
+
+   bchk		(check bcd)
+   in:		a0, d0: bcd;  {check if valid bcd value}
+   call:	mathlib	bchk;
+   out:		d0: result; {if 0, value is OK}
+   notes:	See "badd"
+
+
+	----
+	BCLR
+	----
+
+   bclr		(clear bcd)
+   in:		a0, d0: bcd;  {a0=0}
+   call:	mathlib	bclr;
+   notes:	See "badd"
+
+
+	----
+	BCMP
+	----
+
+   bcmp		(compare bcd)
+   in:		a0, d0: bcd1; a1, d1: bcd2;  {cmp a1,a0}
+   call:	mathlib	cbmp;
+   out:		d0: sign_of_result = in {-1, 0, 1};
+ 		p.flags = set_according_to_comparison;
+   notes:	See "badd"
+
+
+	----
+	BEEP
+	----
+
+   beep		(beep)
+   in:		d0=(uword) period, d1=(uword) cycles;
+   call:	execlib	beep;
+   out:		d0=success; /0 = error/
+   notes:	/"cycles" defines the length of the beep/
+   		/if d0 is -1, default values are used for
+   		both the period (1050) and cycles (300)/
+
+
+	------
+	BLKCPY
+	------
+
+   blkcpy	(string copy /blank or comma terminated/)
+   in:		a0=*source_string; a1=*target_string;
+   call:	strlib blkcpy;
+   out:		a0=*rest_of_string=*(BLANK or NULL);
+   		a1=*after_target_string=(*NULL)+1;
+   notes:	/the target string will be null-terminated/
+   		/whilst the source string terminates/
+   		/with either blank, comma or null/
+ 		/quotes "" enbrace strings with blanks/
+ 		/"*" (in quotes) as in the CLI cmds/
+
+
+	-------
+	BLKNCPY
+	-------
+
+   blkncpy	(string copy /length-limited blkcpy/)
+   in:		a0=*source_string; a1=*target_string; d0=max_length;
+   call:	strlib blkncpy
+   out:		a0=*rest_of_string=*(BLANK or NULL);
+   		a1=*after_target_string=(*NULL)+1;
+   		d0=num_of_chars_left_in_buffer;
+   notes:	/*n, *N = newline (10)/
+   		/*e, *E = esc (27)/
+   		/*t, *T = tab (9)/
+
+
+	-----
+	BMOVE
+	-----
+
+   bmove	(move and extend bcd)
+   in:		a0, d0: bcd; a1, d1: bcd;  {a1=a0}
+   call:	mathlib	bmove;
+   notes:	See "badd";
+ 		If the bcd a1 is longer than a0, the
+ 		value is sign-extended to full length.
+
+
+	----
+	BNEG
+	----
+
+   bneg		(negate bcd)
+   in:		a0, d0: bcd;  {a0=-a0}
+   call:	mathlib	bneg;
+   notes:	See "badd"
+
+
+	----
+	BSUB
+	----
+
+   bsub		(subtract bcd)
+   in:		a0, d0: bcd; a1, d1: bcd;  {a0=a0-a1}
+   call:	mathlib	bsub;
+   notes:	See "badd"
+
+
+	----
+	BTST
+	----
+
+   btst		(test bcd)
+   in:		a0, d0: bcd;  {a0?}
+   call:	mathlib	btst;
+   out:		d0: integer in {-1, 0, 1};
+   notes:	See "badd"
+
+
+	-------
+	CHECK10
+	-------
+
+   check10	(check whether decimal (base10) value follows)
+   in:		a0=*ptr;
+   call:	numlib check10;
+   out:		p.z=result (NE if no value)
+   notes:	/the value may be terminated by any character
+ 		less than '@' (64) except a decimal digit/
+ 		/if any other character terminates it, it is
+ 		not considered to be a number/
+
+
+	-------
+	CHECK16
+	-------
+
+   check16	(check whether hexadec (base16) value follows)
+   in:		a0=*ptr;
+   call:	numlib check16;
+   out:		p.z=result (NE if no value)
+   notes:	/the value may be terminated by any character
+ 		less than '@' (64) except a hexadecimal digit/
+ 		/if any other character terminates it, it is
+ 		not considered to be a number/
+
+
+	--------
+	CHKSLASH
+	--------
+
+   chkslash	(check if a this string ends with a / or :)
+   in:		a0=*string;
+   call:	strlib chkslash;
+   out:		p.z=result /Z is set if no "/" or ":"/;
+
+
+	---------
+	CHRCURSOR
+	---------
+
+   chrcursor	(set and read current cursor position)
+   in:		d0, d1=column, row; a1=*chrout;
+   call:	intlib	chrcursor;
+   out:		d0, d1=oldcolumn, oldrow;
+
+
+	------
+	CHROUT
+	------
+
+   chrout	(output text into a chrout)
+   in:		a0=*string; a1=*chrout;
+   call:	intlib	chrout;
+   notes:	Control codes are:
+ 		8   BS   Backspace. Cursor left
+ 		9   TAB  Tabulator (size 8 characters)
+ 		10  LF   Line feed
+ 		11  VT   Vertical tab. Cursor up
+ 		12  FF   Form feed (clearscreen)
+ 		13  CR   Carriage return
+ 		14  SO   Cursor on
+ 		15  SI   Cursor off
+ 		16  DLE  Scroll up one line
+ 		17  DC1  Scroll down one line
+ 		20  DC4  Clear to end of line
+ 		21  NAK  Insert character
+ 		22  SYN  Delete line at cursor
+ 		23  ETB  Insert line at cursor
+ 		24  CAN  Clear line at cursor and end of screen
+ 		25  EM   Cursor to nethermost line
+ 		26  SUB  Cursor home
+ 		28  FS   Cursor up. Scroll if out
+ 		29  GS   Cursor down. Scroll if out
+ 		30  RS   Cursor left
+ 		31  US   Cursor right
+ 		127 DEL  Delete character to right
+
+
+	-------
+	CMDNAME
+	-------
+
+   cmdname	(get the current command name)
+   in:		a0=*buffer;
+   call:	doslib	cmdname;
+   out:		a0=*end_of_name==*NULL;
+
+
+	--------
+	CREATEIO
+	--------
+
+   createio	(creates an IORequest structure)
+   in:		a0=*messageport; d0=size;
+   call:	execlib	createio;
+   out:		a0=d0=*iorequest;
+   trashed:	a1, d1;
+
+
+	----------
+	CREATEPORT
+	----------
+
+   createport	(creates a message port)
+   in:		a0=*name; d0=sizeof;
+   call:	execlib createport;
+   out:		a0=d0=*port;
+   trashed:	a1, d1;
+
+
+	--------
+	DELETEIO
+	--------
+
+   deleteio	(deletes an IORequest structure)
+   in:		a0=*iorequest;
+   call:	execlib	deleteio
+   trashed:	a0-a1, d0-d1;
+
+
+	----------
+	DELETEPORT
+	----------
+
+   deleteport	(deletes a message port)
+   in:		a0=*port;
+   call:	execlib	deleteport;
+   trashed:	a0-a1, d0-d1;
+
+
+	-----
+	DIV10
+	-----
+
+   div10	(divide long-integer by 10 /unsigned/)
+   in:		d0=value;
+   call:	numlib div10;
+   out:		d0=value DIV 10; d1=(UWORD) value MOD 10;
+
+
+	----
+	DIVS
+	----
+
+   divs		(divide / 32/32->32 bits, signed /)
+   in:		d0, d1: integer;  { d0/d1 }
+   call:	mathlib divs;
+   out:		d0: d0 div d1;
+   		d1: d0 mod d1;
+
+
+	----
+	DIVU
+	----
+
+   divu		(divide / 32/32->32 bits, unsigned /)
+   in:		d0, d1: integer;  { d0/d1 }
+   call:	mathlib divu;
+   out:		d0: d0 div d1;
+   		d1: d0 mod d1;
+
+
+	-------
+	DPY_ERR
+	-------
+
+   dpy_err	(display a formatted error message)
+   in:		a0=*format_string; d0..d7=parameters;
+   call:	doslib	dpy_err;
+   notes:	/" - error code %d\n" will be automatically
+ 		added before printing/
+
+
+	-------
+	DPY_MSG
+	-------
+
+   dpy_msg	(display a formatted message)
+   in:		a0=*format_string; d0..d7=parameters;
+   call:	doslib	dpy_msg;
+
+
+	---------
+	DRAWARRAY
+	---------
+
+   drawarray	(draw from a table of commands)
+   in:		d0=x0, d1=y0; a0=*array; a1=rport;
+   call:	gfxlib	drawarray;
+   notes:	Possible commands are (given in Ascii):
+   		  Mx,y	Move drawing pen to (x,y)
+   		  Dx,y	Draw line to (x,y)
+   		  Rx,y	Draw rectangle to (x,y)
+   		  Tl,t  Write text "t" of length l using
+ 			last x,y as centre
+ 		  Fx,y	Fill rectangle to (x,y)
+   		  Ax	Set APen
+   		  'NUL'	End of array (a NULL char.)
+   		where x and y given as signed decimal
+ 		(base 10) integers (coordinates relative
+ 		to (x0,y0)).
+
+
+	--------
+	DRAWRECT
+	--------
+
+   drawrect	(draw a rectangle)
+   in:		d0=x1, d1=y1, d2=x2, d3=y2; a1=rport;
+   call:	gfxlib	drawrect;
+   notes:	/the drawing pen will be left into/
+   		/position (x1,y1)./
+
+
+	-----
+	ERROR
+	-----
+
+   error	(set/read the dos error return code)
+   in:		d0=error;
+   call:	doslib	error;
+   out:		d0=old_error;
+ 		p.c=failed /C is set if not a CLI process/
+
+
+	--------
+	ERR_LOCK
+	--------
+
+   err_lock	(display "unable to get information")
+   in:		a0=*name;
+   call:	doslib	err_lock;
+
+
+	-------
+	ERR_MEM
+	-------
+
+   err_mem	(display "unable to allocate memory")
+   in:		d0=*size;
+   call:	doslib	err_lock;
+
+
+	--------
+	ERR_READ
+	--------
+
+   err_read	(display "error reading file")
+   in:		a0=*name;
+   call:	doslib	err_lock;
+
+
+	-----
+	EXTBL
+	-----
+
+   extbl	(sign extend byte to long)
+   in:		d0: byte;
+   call:	mathlib extbl;
+   out:		d0: long;
+
+
+	--------
+	EXTFNAME
+	--------
+
+   extfname	(extract file name from a valid path+filename)
+   in:		a0=*string;
+   call:	strlib extfname;
+   out:		a0=*filename;
+   notes:	if no filename is present, the last directoryname
+   		must be followed by slash (/).
+
+
+	----------
+	FILELENGTH
+	----------
+
+   filelength	(find out length of a file)
+   in:		a0=file_name;
+   call:	doslib	filelength;
+   out:		d0=file_length; /-1 = error/
+
+
+	------
+	FINDGG
+	------
+
+   findgg	(find a gadget by UserData)
+   in:		a0=*firstgadget; d0=userdata;
+   call:	intlib	findgg;
+   out:		a0=*gadget; /==0 if not found/
+
+
+	-------
+	FINDGGW
+	-------
+
+   findggw	(find a gadget by a halve of UserData)
+   in:		a0=*firstgadget; d0=(uword) userdata;
+   call:	intlib	findggw;
+   out:		a0=*gadget; /==0 if not found/
+
+
+	-------
+	FINDNTH
+	-------
+
+   findnth	(find string from list /null terminated/)
+   in:		a0=*string; a1=*list;
+   call:	strlib findnth;
+   out:		d0=count;
+   notes:	/0 stands for the first string, -1 for error/
+ 		/the list should be terminated by an empty/
+ 		/string./
+
+
+	--------
+	FINDPROC
+	--------
+
+   findproc	(find a cli process by the number)
+   in:		d0=number;
+   call:	doslib	findproc;
+   out:		a0=d0=*task; /NULL if error/
+
+
+	-------
+	FINDTOK
+	-------
+
+   findtok	(find token from list /case-insensitive/)
+   in:		a0=*token; a1=*list;
+   call:	strlib findtok;
+   out:		d0=count; /-1 =^ not found/
+   notes:	/see tokcmp/
+
+
+	-------
+	FMTDATE
+	-------
+
+   fmtdate	(format a date)
+   in:		a0=*datestamp; a1=*output_buffer;
+ 		a2=*format, a3=*parameters;
+   call:	doslib	fmtdate;
+   out:		a1=*NULL;
+   notes:	/"format" contains an ordinary "sformat" string
+ 		defining how the parameters are formatted/
+ 		/"parameters" is a character queue containing
+ 		the following characters:
+ 		y - number of year	Y - the last two digits
+ 		m - number of month	M - name of month
+ 		d - day-of-month	D - name of day-of-week
+ 		The characters M and D require a %s declaration
+ 		in the "format", the others a (word) %d./
+
+
+	------------
+	FOLLOWTHREAD
+	------------
+
+   followthread	(follow the directory thread to root)
+   in:		d1=lock; a0=*name_buffer, d0=buf_length;
+   call:	doslib	followthread;
+   out:		p.c=error; (c=1 if failed)
+   notes:	/the lock is not unlock()ed during process/
+
+
+	------
+	FORMAT
+	------
+
+   format	(format a string)
+   in:		a0=*format_string;
+   		a1=*output_buffer;
+   		a2=*data_stream;
+   call:	execlib	format;
+   out:		a0=a1=*output_buffer_end==*(NULL);
+   notes:	/data_stream may contain either words,
+   		longwords, or both. The 'l' specifiers
+   		must be used accordingly./
+   		/The format for the item specifier is:
+   		  %-0xxx.yyylc
+   		where
+   		  '-' , if specified, left-aligns the value,
+   		  '0' right-aligns the value filling the
+   		      opening space with zeros,
+   		  'xxx' and 'yyy' are the field widths,
+   		  'l' is a longword specifer, and
+   		  'c' is one of the following:
+   		     's': string output, pointer in data stream
+   		          pointer is supposed to be 'l' even if
+   		          the specifier were not used.
+   		     'c': single character output
+   		     'd': decimal value output
+   		     'x': hexadecimal value output/
+
+
+	----
+	FREE
+	----
+
+   free		(free memory)
+   in:		a0=*memory;
+   call:	execlib	free;
+   notes:	/frees that being allocated by alloc/
+   		/doesn't care even if the pointer be/
+   		/NULL - just doesn't free it/
+
+
+	-----
+	GET10
+	-----
+
+   get10	(string10 to integer /signed/)
+   in:		a0=*string;
+   call:	numlib get10;
+   out:		a0=*endofvalue; d0=integer;
+   		p.c=error_exit; /if no value present/
+
+
+	-----
+	GET16
+	-----
+
+   get16	(string16 to integer /signed/)
+   in:		a0=*string;
+   call:	numlib get16;
+   out:		a0=*endofstring; d0=integer;
+ 		p.c=error_exit; /if no value present/
+
+
+	-------
+	GETBCPL
+	-------
+
+   getbcpl	(convert FROM BCPL string)
+   in:		a0=*bcpl_string; a1=*string;
+   call:	strlib getbcpl;
+   out:		a1=*NULL;
+   notes:	/the pointers are both APTRs and NOT BPTRs/
+
+
+	------
+	GETCLI
+	------
+
+   getcli	(get the address of CLIStruct)
+   call:	doslib	getcli;
+   out:		a0=*clistruct; /0 if not a cli process/
+   notes:	/flags set according to the result/
+
+
+	-------
+	GETDATE
+	-------
+
+   getdate	(convert a datestamp)
+   in:		a0=*datestamp;
+   call:	doslib	getdate;
+   out:		d0=year, d1=month /1..12 Jan..Dec/,
+ 		d2=day_of_month, d3=day_of_week /0..6 Mon..Fri/;
+
+
+	--------
+	GETIDCMP
+	--------
+
+   getidcmp	(get a standard idcmp message)
+   in:		a0=*window; d0=flag /=0: wait, <>0 do not wait/;
+   call:	intlib	getidcmp;
+   out:		d0=class, d1=code, d2=qualifier;
+   		a0=iaddress, d3,d4=mousex,mousey;
+
+
+	--------
+	GETIWORD
+	--------
+
+   getiword	(get integer string /double longword/)
+   in:		a0=*string;
+   call:	strlib getiword;
+   out:		a0=*newstring; d1:d0=string;
+   notes:	/included characters are:/
+   		/a-z, A-Z for first character/
+   		/a-z, A-Z, 0-9 for other characters/
+   		/no more than 8 characters will be fetched/
+
+
+	---------
+	GETIWORDU
+	---------
+
+   getiwordu	(get integer string and ucase /double longword/)
+   in:		a0=*string;
+   call:	strlib getiwordu;
+   out:		a0=*newstring; d1:d0=string;
+   notes:	/see getiword/
+
+
+	----------
+	GETRAWDATA
+	----------
+
+   getrawdata	(get raw data string)
+   in:		a0=*from, a1=*to;
+   call:	strlib getrawdata;
+   out:		a0=*from_rest, a1=*to_end, d0=length_of_TO;
+   notes:	/The 'raw data' may include one or more
+   		 of the following elements, separated by
+   		 commas, ending with a blank or NULL:
+   		   "blubblub"	8-bit ascii data
+   		   123 or 123.b	8-bit decimal data
+   		   $ab or $ab.b	8-bit hexadec data
+   		   1234.w	16-bit decimal data
+   		   $12ab.w	16-bit hexadec data
+   		   123456.l	32-bit decimal data
+   		   $12ab56.l	32-bit hexadec data
+   		 ** Requires 'numlib' (getval)
+   		/
+
+
+	-------
+	GETTOKW
+	-------
+
+   gettokw	(get a token word)
+   in:		a0=txtptr; a1=*buffer; d0=(UWORD)buffer_length;
+   call:	strlib gettokw;
+   out:		a0=txtptr /updated/ ; a1=*buffer;
+   		p.c=error; /c=1 if buffer overflow/
+   notes:	/a token word:/
+   		/- begins with a-z|A-Z|.|_/
+   		/- other chrs are a-z|A-Z|0-9|.|_/
+   		/- must be at least 1 char. long/
+
+
+	------
+	GETVAL
+	------
+
+   getval	(string to integer /signed/)
+   in:		a0=*string;
+   call:	numlib getval;
+   out:		a0=*endofstring; d0=integer;
+   		p.c=error_exit; /if no value present/
+   notes:	/base 16 values have prefix $/
+   		/base 10 values have no prefix or prefix +/
+
+
+	--------
+	GGBORDER
+	--------
+
+   ggborder	(draw simple border to gadgets)
+   in:		a0=*gadgetdata; a1=*rport;
+   call:	intlib	ggborder;
+
+
+	---
+	HYP
+	---
+
+   hyp		(sqrt(x²+y²))
+   in:		d0, d1: integer;
+   call:	mathlib	hyp;
+   out:		d0: integer;
+   notes:	See "sqrt"
+
+
+	-----
+	INFOS
+	-----
+
+   infos	(type info/finfo/sinfo texts)
+   in:		a0=*cmdlin, a1=*usage, a2=*finfo_info;
+   call:	doslib	infos;
+   out:		d0=flag /==0 if nothing done/
+   notes:	/at the address a2 is give the "finfotx",
+ 		then NULL, then "infotxt" and another null./
+ 		/The string at a1 does not contain the word
+ 		"usage" or the command name./
+
+
+	----------
+	INITCHROUT
+	----------
+
+   initchrout	(init a chrout structure)
+   in:		a0=*window; a1=*chrout;
+   call:	intlib	initchrout;
+
+
+	-----
+	IOERR
+	-----
+
+   ioerr	(get IoErr code and convert to string)
+   in:		a0=place_for_string;
+   call:	doslib	ioerr;
+   out:		a0=*(NULL); d0=ioerr;
+   notes:	/the format is as/
+ 		/sprintf(" - Error code %i",IoErr());/
+ 		/numlib, handler must be included/;
+
+
+	-------
+	ISALPHA
+	-------
+
+   isalpha	(check if alpha /a-z, A-Z/)
+   in:		d0=char;
+   call:	strlib isalpha;
+   out:		p=(flags) result; /eq if true/
+
+
+	----------
+	ISALPHANUM
+	----------
+
+   isalphanum	(check if alphanumeric /a-z, A-Z, 0-9/)
+   in:		d0=char;
+   call:	strlib isalphanum;
+   out:		p=(flags) result; /eq if true/
+
+
+	-------
+	ISBLANK
+	-------
+
+   isblank	(check if blank /32, 9, 10/)
+   in:		d0=char;
+   call:	strlib isblank;
+   out:		p.z=(boolean) result; /eq if blank/
+
+
+	---------
+	ISDIGIT10
+	---------
+
+   isdigit10	(check if base10 digit)
+   in:		d0=character;
+   call:	numlib isdigit10;
+   out:		p=(flags) result /eq if true/;
+
+
+	---------
+	ISDIGIT16
+	---------
+
+   isdigit16	(check if base16 digit /non-case-sensitive/)
+   in:		d0=character;
+   call:	numlib isdigit10;
+   out:		p=(flags) result /eq if true/;
+
+
+	-----
+	ISEND
+	-----
+
+   isend	(skip blanks - end of command line? (0/";"))
+   in:		a0=ptr;
+   call:	doslib	isend;
+   out:		a0=ptr;
+   notes:	/strlib must be included/;
+
+
+	---------
+	ISNUMERIC
+	---------
+
+   isnumeric	(check if numeric /0-9/)
+   in:		d0=char;
+   call:	strlib isnumeric;
+   out:		p=(flags) result; /eq if true/
+
+
+	-------
+	LISTLEN
+	-------
+
+   listlen	(measure length of a string list)
+   in:		a0=*string_list;
+   call:	strlib listlen;
+   out:		d0=number_of_bytes; d1=number_of_strings;
+   notes:	/d0 is the number of bytes occupied by/
+   		/the list, including the end nulls/
+   		/d1 is the number of the string in the list/
+
+
+	------
+	LOCASE
+	------
+
+   locase	(convert character to lower case /byte/)
+   in:		d0=char;
+   call:	strlib locase;
+   out:		d0=newchar;
+
+
+	-------
+	LZPUT10
+	-------
+
+   lzput10	(short integer to string10 /unsigned, incl. leading zeroes/)
+   in:		a0=*string; d0=short_integer;
+   call:	numlib lzput10;
+   out:		a0=*(NULL);
+   notes:	/output string always 5 characters + NULL/
+
+
+	----
+	MULS
+	----
+
+   muls		(multiply / 32*32->64 bits, signed /)
+   in:		d0, d1: integer;
+   call:	mathlib	muls;
+   out:		d1 (63..32), d0 (31..0): double longint;
+
+
+	----
+	MULU
+	----
+
+   mulu		(multiply / 32*32->64 bits, unsigned /)
+   in:		d0, d1: integer;
+   call:	mathlib	mulu;
+   out:		d1 (63..32), d0 (31..0): double longint;
+
+
+	----
+	OPEN
+	----
+
+   open		(open a file and display possible errors)
+   in:		a0=*name, d0=access_mode;
+   call:	doslib	open;
+   out:		d0=file; /NULL==error/
+   notes:	/access_mode =	0:  Read
+   				1:  Write
+   				2:  Append
+   				8:  Quiet (or'ed with others)/
+ 		/needs execlib, handler/
+
+
+	-----
+	ORDER
+	-----
+
+   order	(return higher and lower of two)
+   in:		d0, d1: integer;
+   call:	mathlib	order;
+   out:		d0: lower, d1: higher;
+
+
+	--------
+	PEEKWORD
+	--------
+
+   peekword	(peek integer string /double longword/)
+   in:		a0=*string;
+   call:	strlib peekword;
+   out:		d1:d0=string;
+   notes:	/see getiwordu/
+
+
+	-------
+	PTRLIST
+	-------
+
+   ptrlist	(create string pointer list)
+   in:		a0=*string_list; a1=*room_for_ptrlist;
+   		d0=max_number_of_ptrs;
+   call:	strlib ptrlist;
+   out:		d0=number_of_ptrs;
+   notes:	/the string list in a0 should be terminated/
+   		/by an empty string/
+   		/collects the starting addresses for each/
+   		/string into the ptrlist./
+
+
+	-----
+	PUT10
+	-----
+
+   put10	(integer to string10 /signed/)
+   in:		a0=*string; d0=integer;
+   call:	numlib put10;
+   out:		a0=*(NULL); d0=length;
+
+
+	-----
+	PUT16
+	-----
+
+   put16	(integer to string16 /signed/)
+   in:		a0=*string; d0=integer;
+   call:	numlib put16;
+   out:		a0=*(NULL); d0=length;
+
+
+	-------
+	PUTBCPL
+	-------
+
+   putbcpl	(convert TO BCPL string)
+   in:		a0=*string; a1=*bcpl_string;
+   call:	strlib putbcpl;
+   out:		-
+   notes:	/the pointers are both APTRs and NOT BPTRs/
+
+
+	---------
+	RANGERAND
+	---------
+
+   rangerand	(generate random numbers)
+   in:		d0=range;
+   call:	joylib	rangerand;
+   out:		d0=random_number;
+   notes:	/Needs GFX/
+ 		/'range' should be between 0 and 256/
+ 		/'random_number' is chosen between [0..]range/
+ 		/thus including '0' but excluding 'range'/
+
+
+	--------
+	READFILE
+	--------
+
+   readfile	(allocate a buffer and read a file into it)
+   in:		a0=*name; d0=mode; /d0=0 or d0=open_quiet/
+   call:	doslib	readfile;
+   out:		d0=*buffer /0=error/
+
+
+	--------
+	REMSLASH
+	--------
+
+   remslash	(remove slash , if present, from end of pathname)
+   in:		a0=*string;
+   call:	strlib remslash;
+   out:		a0=*(NULL);
+
+
+	-------
+	REQUEST
+	-------
+
+   request	(set/read requester window pointer)
+   in:		d0=*window;
+   call:	doslib	request;
+   out:		d0=*old_window;
+   notes:	/the pointers are in data register because
+ 		there are two values with a special meaning:
+ 		0	No default window. The requesters ap-
+ 			pear into the WorkBench screen.
+ 		-1	No requesters are displayed./
+
+
+	-------
+	REQUEST
+	-------
+
+   request	(display an autorequester)
+   in:		a0=*window; a1=*texts; a2=*textattr (==0: deflt)
+   call:	intlib	request;
+   out:		d0=result; />0: true, =0: error, <0: false/
+
+
+	----
+	SBLK
+	----
+
+   sblk		(simple skip blanks /32, 9, 10/)
+   in:		a0=*;
+   call:	strlib sblk;
+   out:		a0=*;
+
+
+	-------
+	SBORDER
+	-------
+
+   sborder	(draw a simple border)
+   in:		d0,d1=x1,y1; d2,d3=sx,sy; a1=rport;
+   call:	intlib	sborder;
+
+
+	-------
+	SETMASK
+	-------
+
+   setmask	(set a drawing mask into a rastport)
+   in:		d0=mask; a1=rport;
+   call:	gfxlib	setmask;
+
+
+	-------
+	SFORMAT
+	-------
+
+   sformat	(format a string)
+   in:		a0=*format_string;
+   		a1=*output_buffer;
+   		d0..d7=data;
+   call:	execlib sformat;
+   out:		a0=a1=*output_buffer_end==*(NULL);
+   notes:	/the same as "format", but the data is
+   		given in data registers, from d0 and higher,
+   		instead of a specific data stream. All the
+   		data must be specified as longwords, with the
+   		'l' specifier, since the data is entered into
+   		a temporary data stream allocated from stack./
+
+
+	---
+	SGN
+	---
+
+   sgn		(sgn(x))
+   in:		d0: integer;
+   call:	mathlib sgn;
+   out:		d0: integer in (-1,0,1);
+
+
+	-------
+	SKIPBLK
+	-------
+
+   skipblk	(skip blanks /32, 9, 10/)
+   in:		a0=*string;
+   call:	numlib skipblk;
+   out:		a0=*newstring; d0=num_of_skipped_chars;
+
+
+	-------
+	SKIPBLK
+	-------
+
+   skipblk	(skip blanks /32, 9, 10/)
+   in:		a0=*string;
+   call:	strlib skipblk;
+   out:		a0=*newstring; d0=num_of_skipped_chars;
+
+
+	------
+	SPUT10
+	------
+
+   sput10	(short integer to string10 /signed/)
+   in:		a0=*string; d0=short_integer;
+   call:	numlib sput10;
+   out:		a0=*(NULL);
+
+
+	---
+	SQR
+	---
+
+   sqr		(x²)
+   in:		d0: integer;
+   call:	mathlib	sqr;
+   out:		d0: integer; /-1 if error/
+
+
+	----
+	SQRT
+	----
+
+   sqrt		(sqrt(x))
+   in:		d0: integer;
+   call:	mathlib	sqrt;
+   out:		d0: integer; /-1 if error/
+   notes:	Rounded to lower integer, if decimals in root
+
+
+	------
+	STABLE
+	------
+
+   stable	(seek string from table with modulo)
+   in:		a0=*string, a1=*string_list, d0=*modulo;
+   call:	strlib stable;
+   out:		a0=*data_item /==NULL if not found/;
+   notes:	/the value returned points to the data area/
+   		/of the string. the parameter given in d0/
+   		/specifies the length of the data entry./
+   		/this entry is overskipped between the/
+   		/string items. a NULL character must exist/
+   		/after each string./
+   		/condition codes are set according to the result./
+
+
+	-----
+	STICK
+	-----
+
+   stick	(read joystick direction)
+   in:		d0=port_number;
+   call:	joylib stick;
+   out:		d0=x_direction; /left=-1,0,1=right/
+ 		d1=y_direction; /up=-1,0,1=down/
+ 		d2=fire_button; /0,1=pressed/
+
+
+	----
+	STOP
+	----
+
+   stop		(check whether SIGBREAKB_CTRL_C set)
+   call:	execlib stop;
+   out:		p.z=(boolean) result; /z=0: stop/
+
+
+	------
+	STRCMP
+	------
+
+   strcmp	(compare strings /null terminated/)
+   in:		a0=*first_string; a1=*second_string;
+   call:	strlib strcmp;
+   out:		p.flags=result;
+   notes:	/results flags as CMP first_string, second_string/
+   		/compares also lexicographity/
+
+
+	-------
+	STRCMPI
+	-------
+
+   strcmpi	(compare strings /case-insensitive/)
+   in:		a0=*first_string; a1=*second_string;
+   call:	strlib strcmpi;
+   out:		p.flags=result;
+   notes:	/see strcmp/
+
+
+	------
+	STRCPY
+	------
+
+   strcpy	(string copy /null terminated/)
+   in:		a0=*source_string; a1=*target_string;
+   call:	strlib strcpy;
+
+
+	------
+	STREND
+	------
+
+   strend	(find end of string)
+   in:		a0=*string;
+   call:	strlib strend;
+   out:		a0=*(NULL)+1;
+
+
+	------
+	STRLEN
+	------
+
+   strlen	(compute string length & end address/ null terminated)
+   in:		a0=*string;
+   call:	strlib strlen;
+   out:		d0=length; a0=(*NULL)+1;
+
+
+	-------
+	STRLIST
+	-------
+
+   strlist	(convert a ptrlist into a stringlist)
+   in:		a0=*ptr_list; a1=*room_for_stringlist;
+   		d0=len_of_buffer;
+   call:	strlib strlist;
+   out:		d0=number_of_strings;
+   notes:	/the check for overflow is only made/
+   		/between the strings, thus the value/
+   		/in d0 should be buffersize-<length-of/
+   		/longest-string>/
+
+
+	------
+	STRLWR
+	------
+
+   strlwr	(string to lower case /null terminated/)
+   in:		a0=*string;
+   call:	strlib strlwr;
+
+
+	------
+	STRNTH
+	------
+
+   strnth	(find nth string in list / null terminated/)
+   in:		a0=*string_list; d0=(uword) count;
+   call:	strlib strnth;
+   out:		a0=*string; d0=(uword) $ffff;
+   notes:	/high speed, 4 instructions incl. rts./
+ 		/each string of the list is terminated/
+ 		/with a null byte. double-null (end-of-list)/
+ 		/will not be noticed./
+
+
+	------
+	STRREV
+	------
+
+   strrev	(reverse string /null-terminated/)
+   in:		a0=*string;
+   call:	strlib	strrev;
+   notes:	/created just for fun - the 40th routine!/
+
+
+	-------
+	STRSCMP
+	-------
+
+   strscmp	(simple string compare /null terminated/)
+   in:		a0=*first_string; a1=*second_string;
+   call:	strlib strscmp;
+   out:		p.z=(boolean) result; /eq if equals/
+   notes:	/does not compare alpha order, just/
+   		/equality/
+
+
+	--------
+	STRSCMPI
+	--------
+
+   strscmpi	(simple string compare /case-insensitive/)
+   in:		a0=*first_string; a1=*second_string;
+   call:	strlib strscmpi;
+   out:		p.z=(boolean) result; /eq if equals/
+   notes:	/does not compare alpha order, just/
+   		/equality/
+
+
+	------
+	STRUPR
+	------
+
+   strupr	(string to upper case /null terminated/)
+   in:		a0=*string;
+   call:	strlib strupr;
+
+
+	----
+	TEXT
+	----
+
+   text		(write text into a rastport)
+   in:		d0=x, d1=y; a0=*string; a1=rport;
+   call:	gfxlib	text;
+   notes:	/remember the baseline in Y/
+
+
+	------
+	TOKCMP
+	------
+
+   tokcmp	(token compare /case-insensitive/)
+   in:		a0=*first_string; a1=*second_string;
+   call:	strlib tokcmp;
+   out:		p.z=equality; /EQ if token match/
+   		a0=*end_of_1st_string /if they were EQ;
+   		otherwise unchanged/
+   notes:	/first_string may be terminated with/
+   		/either NULL or BLANK, the second_string/
+   		/must terminate with a NULL./
+   		/the first_string does not need to match/
+   		/the entire string, just the given chars/
+   		/from the beginning/
+
+
+	-----
+	TSORT
+	-----
+
+   tsort	(bubble-sort a ptrlist)
+   in:		a0=*ptr_list;
+   call:	strlib tsort;
+   notes:	/a rather slow (?) way of doing this/
+ 		/empty strings separate "units": only/
+ 		/the units within a unit are ordered./
+ 		/the order of units is not changed./
+
+
+	------
+	TSORTI
+	------
+
+   tsorti	(bubble-sort a ptrlist /case-insensitive/)
+   in:		a0=*ptr_list;
+   call:	strlib tsorti;
+   notes:	/see tsort/
+
+
+	-------
+	TYPEOUT
+	-------
+
+   typeout	(type a text into the current default output file)
+   in:		a0=*text;
+   call:	doslib	typeout;
+   notes:	/if the Output() returns a NULL, no text
+   		 is output. The text is written line-by-
+   		 line, thus permitting the user to inter-
+   		 rupt the output by entering a character
+   		 into the console./
+
+
+	-----
+	UCASE
+	-----
+
+   ucase	(convert character to upper case /byte/)
+   in:		d0=char;
+   call:	strlib ucase;
+   out:		d0=newchar;
+

@@ -1,0 +1,56 @@
+SearchILBM V1.0 - Documentation
+-------------------------------
+
+Author
+------
+
+Frédéric BASSALER	fbas@club-internet.fr
+La Serre
+19500 COLLONGES
+FRANCE
+
+
+What is this?
+-------------
+
+SearchILBM is actually a bootblock program. That's why it needs to be installed
+on a floppy disk.
+
+SearchILBM allows you to find any IFF-ILBM picture files hiding in memory.
+Each picture found is then written to the disk, directly to disk tracks
+(no AmigaDOS files), using trackdisk.device.
+
+It is particularly useful when you want to rip some graphics from a (non dos)
+game, provided these graphics are in IFF-ILBM format.
+
+
+How to install
+--------------
+
+Just install the bootblock on a blank formatted disk.
+You can use the supplied 'Install' utility:
+
+In a CLI/Shell, type:
+
+tools/install DF0: bb/SearchILBM10
+       ^               ^---------------- Path/Name of bootblock data to install
+       |
+      my install command,
+      not the standard AmigaDOS one!
+
+
+How to use
+----------
+
+When you boot with a disk where SearchILBM is installed, a message will appear.
+Just follow the instructions.
+
+Upon completion, if pictures have been found, you have to use the supplied
+utility 'PicRestore' in order to get the files in AmigaDOS format.
+
+
+See also
+--------
+
+PicRestore.doc
+Install.doc

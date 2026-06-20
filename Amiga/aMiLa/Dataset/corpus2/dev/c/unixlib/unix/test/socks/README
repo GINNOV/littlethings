@@ -1,0 +1,7 @@
+1) type smake
+2) start AmiTCP
+3) open another shell
+4) in the first shell type `strchkread'
+5) in the second shell type `streamwrite $HOSTNAME <port>' where <port> is
+   the port number number reported by strchkread
+6) Also try typing something in the small window that has opened on Workbench

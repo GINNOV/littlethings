@@ -1,0 +1,81 @@
+GUIPROF utility source code Copyright (c) 1993-1995 SAS Institute, Inc.
+All Rights Reserved.
+-----------------------------------------------------------------
+
+[[[FOR A QUICK DEMO: from WorkBench, click on "guiprof", then shift-double
+[[[click on "test".  From CLI, type "guiprof test".  8^)
+
+This directory contains the source code to a GUIPROF, a graphical version
+of the SPROF utility.  GUIPROF basically receives messages from the 
+executable being profiled each time a function is entered or exited.  It 
+accumulates time information and displays the results as one of four
+possible histograms.
+
+Syntax:
+
+   GUIPROF <prof options> [<program> [<program options>]]
+
+The <prof options> portion of the above command line adheres to the
+following AmigaDOS command template:
+
+   GUIPROF ?/S,HELP/S,WAIT/S,FULLNAMES/S,FORCE/S,AXIS/S,INTERVAL/N,
+           SORT,FORMAT,VERBOSE/S,AUTOEXIT/S
+
+where the various options are described below:
+
+          ?
+       HELP
+               Print usage information to the console and exit.
+
+       WAIT
+               If WAIT is specified, the profiler will wait until a
+               program compiled with the PROFILE option is run, then
+               profile that program.  If you specify WAIT, you do not
+               need to specify a program name on the command line.  You
+               must specify either WAIT or the program name, however.
+       
+  FULLNAMES
+               Causes the profiler to use full names for the functions
+               profiled.  The full name is of the form
+               
+                  \module\function\line
+               
+               where "module" is the name of the source file containing
+               the definition of the function, "function" is the name
+               of the function, and "line" is the source file line number
+               of the end of the function.  If FULLNAMES is not specified,
+               just the "function" portion of the name is used.
+                  
+      FORCE
+               Forces status reports, at a cost to the program.  Normally,
+               the profiler waits until the program signals it before it
+               updates the display.  This allows the display update to take
+               place without affecting the timing statistics.  If you
+               specify FORCE, the display will be updated whether or not
+               the program has been suspended.  This means that the program
+               being profiled will be competing with the profiler for time,
+               so you don't normally want to specify this flag.
+      
+       AXIS
+               Adds a horizontal axis to the histogram.
+
+   INTERVAL=time
+               Report interval, in milliseconds.  Default 250.  A report
+               will be generated at most every INTERVAL milliseconds; it
+               may be longer if FORCE is not specified, since the profiler
+               will wait until the next function entry or exit point before
+               updating the display.
+
+       SORT=type
+       
+               Either ALPHA or NUM, for alphabetic or numeric sort.
+
+     FORMAT=fmt   
+               Report format.  Format is one of
+                    PCT:   Percentage of time spent in routine.
+                    ETIME: Milliseconds in routine, excluding subroutines.
+                    ITIME: Milliseconds in routine, including subroutines.
+                    COUNT: Number of times routine was called.
+
+Other than described above, the GUIPROF program works like the SPROF
+program described in your SAS/C User's Guide.

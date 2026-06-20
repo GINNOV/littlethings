@@ -1,0 +1,111 @@
+Short:        Unix compatibility library (source code)
+Author:       Various
+Uploader:     carsten.larsen@mail.com
+Type:         dev/src
+Architecture: AmigaDOS 2.04 or higher
+
+
+Introduction
+------------
+
+This library provides 80 odd functions which are useful for porting
+Unix programs to the Amiga running AmigaDOS 2.04 or higher. It is thus
+similar to Markus Wild's ixemul.library, but has more restricted aims:
+
+a) It is written specifically for SAS C 5.10b.
+
+b) It isn't a complete C library, it requires the SAS C library to function.
+It adds some routines, and replaces others that were deficient, out of date,
+or that didn't provide adequate functionality.
+
+c) It isn't a complete Unix emulation library, it only contains those functions
+that I needed while porting various utilities (mainly from GNU) to the Amiga.
+
+d) It is a traditional C link library, not an Amiga library. This produces 
+bigger executables.
+
+Considering the above points, you might ask why I wrote it ... There are several
+good answers:
+
+a) I started it before I was aware of ixemul.library.
+
+b) ixemul.library didn't provide the features I needed for Emacs (support for
+select).
+
+c) It is easier for me to maintain when I find I need to support another Unix
+feature (eg deleting open files).
+
+Copying
+-------
+
+The library includes code that I have written, which I place in the public domain.
+This is found in all the files that don't have a Copyright notice.
+
+It also includes code which is (inclusive of my modifications)
+
+ Copyright (c) 1982, 1986, 1991 The Regents of the University of California.
+ All rights reserved.
+
+This code is freely redistributable (see the copyright notices in the source
+and include files).
+
+Finally it includes Doug Gwyn's public domain alloca implementation.
+
+Installation & Use
+------------------
+
+To use this library, you must compile with the include directory in your include
+search path, and link with the unix.lib library (which must be specified before
+lc.lib). For example, if you extract this archive in a directory called src:, you
+could compile the following program:
+
+echo.c:
+
+#include <sys/unistd.h>
+
+void main(int argc, char **argv)
+{
+  int i;
+
+  for (i = 1; i < argc; i++)
+    {
+      if (i != 1) write(1, " ", 1);
+      write(1, argv[i], strlen(argv[i]));
+    }
+  write(1, "\n", 1);
+}
+
+with the command
+
+  lc -isrc:unix/include/ -L+src:unix/src/unix.lib echo.c
+
+to produce a simple unix-like echo command.
+
+You should define the following environment variables:
+
+USER - A user name for the sole Amiga user (default "user").
+USERNAME - The full name of the sole Amiga user (default $USER).
+HOME - A "home" directory (default "s:") for programs that want one. Configuration
+       files will probably end up here ...
+SHELL - A program which behaves reasonably like a Unix shell (default "bin:sh").
+	You should copy the sh executable there if you don't have a Unix-like shell.
+HOSTNAME - The name of your machine (default "amiga").
+
+If you are going to be using pipes, you will require Matt Dillon's fifo.library
+and fifo: device. This can be found on the Fish disks, with his UUCP distribution
+and on many FTP sites.
+
+If you want to install the timezone information (see the discussion below on
+Unix vs Amiga time), do the following:
+
+  a) change to the zoneinfo directory
+  b) compile the zic problem by running lmk.
+  c) change to the datfiles directory.
+  d) edit lmkfile and choose your timezone (you can look at the data files
+     to see the ones available). If you get this wrong, you can always change
+     it later with the zic program.
+  e) type 'lmk install'. This will compile the timezones, and setup the one
+     you chose as the default. The default can be changed with
+       zic -l <timezone name>
+
+     or by defining the environment variable TZ.

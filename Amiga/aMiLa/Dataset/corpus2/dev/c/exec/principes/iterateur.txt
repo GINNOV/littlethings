@@ -1,0 +1,10 @@
+La notion d'itérateur permet de parcourir tout type de donnée de manière
+plus puissante, plus simple, de façon cohérente.
+Lorsque l'itérateur d'une classe précise est lui-même une classe, par
+exemple la classe iterListe pour la classe Liste, plusieurs instances
+de celui-ci peuvent être crée. Ce qui n'est pas très utile pour parcourir
+une seule liste mais, l'est lorsque l'on veut gérer plusieurs listes
+simultanément. Par exemple, un moniteur d'Exec qui affiche toutes les 
+listes d'Exec dans plusieurs fenêtres, aura besoin de plusieurs instances
+de la classe IterListe.
+

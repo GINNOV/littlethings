@@ -1,0 +1,20 @@
+name:     OSscroller
+short:    old os friendly scroller by zeeball
+author:   Zbigniew Trzcionkowski (zeeball@interia.pl)
+uploader: Zbigniew Trzcionkowski (zeeball@interia.pl)
+version:  0.1 (05.05.2002)
+requires: OS37+, diskfont.library
+type:     dev/asm
+
+STATUS:   Public Domain
+
+
+Primarily: this is just lame scroller I came across recently during
+watching of my backups... Note that ScrollRaster() isn't smooth with
+more than 3 planes (with AGA) and hopefully on any UAE :P
+
+
+Zbigniew Trzcionkowski <zeeball@interia.pl>
+Astrow 7
+43-250 Pawlowice
+Poland

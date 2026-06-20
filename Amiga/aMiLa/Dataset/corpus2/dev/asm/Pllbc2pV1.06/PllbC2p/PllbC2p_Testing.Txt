@@ -1,0 +1,26 @@
+
+ *=----------------------------------------------------------------------=*
+
+                           >> T E S T I N G  <<
+ 
+ *=----------------------------------------------------------------------=*
+
+
+ I must send thanks to the following generous individuals, for taking the
+ time to test some pllbc2p demo's on their machines, as it was greatly
+ appreciated.
+
+
+                     Daniel Martin    (A4000/030 25mhz)
+                     Ville Helin      (A1200/030 33mhz)
+                     Steven Sheedy    (A3000/030 25mhz & 040 25mhz)
+                     Carsten Marmulla (A4000t/040 25mhz)
+                     Andre Osterhues  (A1200/060 50mhz)
+
+
+
+ *=----------------------------------------------------------------------=*
+
+
+ *=----------------------------------------------------------------------=*
+

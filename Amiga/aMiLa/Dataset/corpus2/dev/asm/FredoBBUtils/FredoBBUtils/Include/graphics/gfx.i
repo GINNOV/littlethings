@@ -1,0 +1,13 @@
+	IFND	GRAPHICS_GFX_I
+GRAPHICS_GFX_I	SET	1
+
+	STRUCTURE	BitMap,0
+		UWORD	bm_BytesPerRow
+		UWORD	bm_Rows
+		UBYTE	bm_Flags
+		UBYTE	bm_Depth
+		UWORD	bm_pad
+		STRUCT	bm_Planes,8
+		LABEL	bm_SIZEOF
+
+	ENDC ; GRAPHICS_GFX_I

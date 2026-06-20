@@ -1,0 +1,70 @@
+MPRINT	macro
+	dc.b	\1,\2
+	dc.b	\3
+	even
+	dc.w	\4
+	dc.w	\5
+	dc.l	\6
+	dc.l	\7
+	dc.l	\8
+	endm
+MWINDOW1	macro
+	dc.w	\1
+	dc.w	\2
+	dc.w	\3
+	dc.w	\4
+	dc.b	\5,\6
+	dc.l	\7
+	dc.l	\8
+	dc.l	0
+	dc.l	0
+	dc.l	\9
+	endm
+MWINDOW2	macro
+\1	dc.l	0
+	dc.l	0
+	dc.w	\2
+	dc.w	\3
+	dc.w	\4
+	dc.w	\5
+	dc.w	15
+	endm
+MSCREEN	macro
+	dc.w	\1
+	dc.w	\2
+	dc.w	\3
+	dc.w	\4
+	dc.w	\5
+	dc.b	\6,\7
+	dc.w	\8
+	dc.w	15
+	dc.l	0
+	dc.l	\9
+	dc.l	0
+	dc.l	0
+	endm
+MZEICHEN	macro
+	dc.l	\1
+	dc.w	\2
+	dc.b	\3
+	dc.b	\4
+	endm
+MLINE	macro
+	dc.w	\1,\2
+	dc.b	\3
+	dc.b	0
+	dc.b	\4
+	dc.b	\5
+	dc.l	\6
+	dc.l	\7
+	endm
+MIMAGE	macro
+	dc.w	\1,\2
+	dc.w	\3
+	dc.w	\4
+	dc.w	\5
+	dc.l	\6
+	dc.b	\7
+	dc.b	\8
+	dc.l	\9
+	endm

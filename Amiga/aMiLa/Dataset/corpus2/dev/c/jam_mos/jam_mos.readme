@@ -1,0 +1,52 @@
+Short:        Software build tool and make replacement
+Author:       info@perforce.com (Christopher Seiwald)
+Uploader:     polluks sdf lonestar org (Stefan Haubenthal)
+Type:         dev/c
+Version:      2.6
+Architecture: ppc-morphos
+URL:          http://www.perforce.com/resources/documentation/jam
+
+This is MorphOS compile of Jam 2.6.
+
+gcc -o ./jam0  builtins.c command.c compile.c execas400.c execunix.c execvms.c expand.c filent.c fileos2.c fileunix.c filevms.c glob.c hash.c headers.c jam.c jambase.c jamgram.c lists.c make.c make1.c newstr.c option.c parse.c pathunix.c pathvms.c regexp.c rules.c scan.c search.c timestamp.c variable.c
+./jam0
+...found 144 target(s)...
+...updating 31 target(s)...
+MkDir1 bin.amigappc
+Cc bin.amigappc/builtins.o
+Cc bin.amigappc/command.o
+Cc bin.amigappc/compile.o
+Cc bin.amigappc/execunix.o
+Cc bin.amigappc/fileunix.o
+Cc bin.amigappc/pathunix.o
+Cc bin.amigappc/jamgram.o
+Cc bin.amigappc/expand.o
+Cc bin.amigappc/glob.o
+Cc bin.amigappc/hash.o
+Cc bin.amigappc/headers.o
+Cc bin.amigappc/lists.o
+Cc bin.amigappc/make.o
+Cc bin.amigappc/make1.o
+Cc bin.amigappc/newstr.o
+Cc bin.amigappc/option.o
+Cc bin.amigappc/parse.o
+Cc bin.amigappc/regexp.o
+Cc bin.amigappc/rules.o
+Cc bin.amigappc/scan.o
+Cc bin.amigappc/search.o
+Cc bin.amigappc/timestamp.o
+Cc bin.amigappc/variable.o
+Archive bin.amigappc/libjam.a
+Ranlib bin.amigappc/libjam.a
+Cc bin.amigappc/mkjambase.o
+Link bin.amigappc/mkjambase
+Chmod1 bin.amigappc/mkjambase
+Cc bin.amigappc/jam.o
+GenFile1 jambase.c
+Cc bin.amigappc/jambase.o
+Link bin.amigappc/jam
+Chmod1 bin.amigappc/jam
+...updated 31 target(s)...
+
+Credits
+Ilkka Lehtoranta

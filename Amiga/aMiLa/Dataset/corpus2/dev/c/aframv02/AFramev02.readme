@@ -1,0 +1,53 @@
+Short:    C++ OOP Wrapper for Intuition v.02
+Uploader: nur_hutsko@emuvax.emich.edu (Deryk Robosson)
+Author:   nur_hutsko@emuvax.emich.edu (Deryk Robosson)
+Type:     dev/c
+Requires: KS 3.0+, SAS/C 6.5+
+Version:  .02
+Replaces: dev/c/AFramev01.lha
+Distribution: Any Amiga supporting site
+
+  Update to v.01 prerelease
+
+  Includes many updated classes and many new classes,
+  including datatypes.
+
+  AFrame is a C++ OOP encapsulant for Intuition.  It
+  allows the programmer to easily and quickly write
+  programs that are flexable and easily coded.
+
+  This is a preliminary version of AFrame, so only the
+  include files, a .LIB, all .o files and documentation in
+  AmigaGuide and HTML format (I'm still plugging away at,
+  these so bear with us)
+
+  In order to keep archive file size down, the examples
+  are in a seperate archive called AFExamplsv1.lha in dev/src
+
+  AFrames coders are:
+
+    Jeff Worth - worth@emuvax.emich.edu
+      IRC - Panique on #amiga
+    Deryk Robosson (email address pending move from Michigan to South Dakota)
+      IRC - newlook on #amiga
+
+  Any comments, bug reports etc should be directed to myself
+  or Jeff at either of the addresses above.
+
+  NOTES: An assign must be made to the extracted directory in order
+         to compile properly i.e. assign AFrame: Work:AFramev02
+
+         If you are running Enforcer, we are aware that there are
+         a couple of classes and examples that take hits on the
+         way out and are working to correct the problems.
+
+         There is a minor problem in the ReqTools Class.  It won't
+         load files from the current directory w/o a path.  This
+         will be fixed in the next release.
+
+         There is a minor problem in the Tab Class.  If a rect is
+         given during creation that is smaller than the actual
+         tab.gadget requires not all gadgets will be usable.  This
+         too will be fixed in the next release.  For the time being
+         keep increasing the rect width until you have the full
+         width of the gadget (sorry for the inconvenience.)

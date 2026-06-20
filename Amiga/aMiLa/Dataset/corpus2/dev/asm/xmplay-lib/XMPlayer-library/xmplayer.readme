@@ -1,0 +1,149 @@
+Short:        xmplayer.library - plays a FastTracker modules
+Author:       crust@go2.pl (Michaî Skorupka)
+Uploader:     ymi@inetia.pl (Marcin Wieczorek)
+Type:         dev/asm
+Version:      1.0a
+Requires:     OS2.04
+Date: 	     17-Apr-2001
+
+This  library  is  designed  for  coders - for more details see the autodoc
+file.   It plays FastTracker (XM) modules.Package contains xmplayer.library
+which  was written in assembler, and needed developer files :  includes (C,
+assembler)  and  autodoc file.  You can also find an example XM by Madman /
+Amnesty.Library  was  written  based  on  source code of PS3M Copyright (c)
+Jarno Paananen a.k.a.  Guru / S2 1994-96.
+
+*** History ***
+
+1.0a (17-Apr-2001) -  First public release...
+
+*** Copyright ***
+
+Package  have  mailware  status so if you want use it you have to send me a
+mail (see ***Contact***).  Library was written based on source code of PS3M
+Copyright (c) Jarno Paananen a.k.a.  Guru / S2 1994-96.
+
+*** Contents ***
+
+Package  contains  xmplayer.library  which  was  written  in assembler, and
+needed  developer  files  :  includes (C, assembler) and autodoc file.  You
+can also find an example XM by Madman / Amnesty.
+
+*** Background ***
+
+Package  was  designed  to  use  for  demos  and games, because FastTracker
+modules,  as  you  know,  are  multichannels, it supports 16bit samples and
+mixing  routines  are fast (more XMs you can play on 020 with fast).  Here
+are list of supported effects:
+
+*************************
+*   Standard effects:   *
+*************************
+
+
+0	Arpeggio
+1	Porta up
+2	Porta down
+3	Tone porta
+4	Vibrato
+5	Tone porta+Volume slide
+6	Vibrato+Volume slide
+7	Tremolo
+8	Set panning
+9	Sample offset
+A	Volume slide
+B	Position jump
+C	Set volume
+D	Pattern break
+E1	Fine porta up
+E2	Fine porta down
+E3	Set gliss control
+E4	Set vibrato control
+E5	Set finetune
+E6	Set loop begin/loop
+E7	Set tremolo control
+E9	Retrig note
+EA	Fine volume slide up
+EB	Fine volume slide down
+EC	Note cut
+ED	Note delay
+EE	Pattern delay
+F	Set tempo/BPM
+G	Set global volume
+H	Global volume slide
+K	Key off
+L	Set envelope position
+P	Panning slide
+R	Multi retrig note
+T	Tremor
+X1	Extra fine porta up
+X2	Extra fine porta down
+
+*********************************
+*   Effects in volume column:   *
+*********************************
+Value      Meaning
+
+   0       Do nothing
+ $10-$50   Set volume Value-$10
+   :          :        :
+   :          :        :
+  $60-$6f   Volume slide down
+  $70-$7f   Volume slide up
+  $80-$8f   Fine volume slide down
+  $90-$9f   Fine volume slide up
+  $a0-$af   Set vibrato speed
+  $b0-$bf   Vibrato
+  $c0-$cf   Set panning
+  $d0-$df   Panning slide left
+  $e0-$ef   Panning slide right
+  $f0-$ff   Tone porta
+
+*** Requirements ***
+
+Library  for  correct working needs OS 2.04 and of course some memory...  I
+didnt  remove  mixing  routine  for  68000  but im not sure if it will be
+working on this processor because i cant check it.
+
+*** Usage ***
+
+Library is for coders - for more details see the autodoc file.
+
+*** Future ***
+
+If  there  will  be  an  interest  in my library, maybe I will add some new
+effects, fix bugs, speed up and when MisterQ finish his sound card (Martina
+- www.martina.3d.pl) i will add support for it.
+
+*** Bugs ***
+
+Library  dont  play  some  XM  files, and some plays wrongly.  Its not my
+fault  but PS3M player - on which my library was based, so if there will be
+an  interest  in  my  library, mayby I will add some new effects, fix bugs,
+etc..
+ 
+*** Thanks ***
+
+Thanks for:
+
+-  Jarno  Paananen  for  release  PS3M source code, without it this library
+   cannot be written.
+- Igor / TCG for C includes and example.
+- Madman/ Amnesty for example XM.
+- ...and for everyone i forgot.
+
+*** Contact ***
+
+Contact me by email:
+
+crust@go2.pl
+crust@viper.pl
+crust@amigascne.org
+
+My home page (only polish now...)
+
+http://viper.pl/~crust/index.html
+
+*** Sorry ***
+
+Sorry for my bad english... it's not my native language...

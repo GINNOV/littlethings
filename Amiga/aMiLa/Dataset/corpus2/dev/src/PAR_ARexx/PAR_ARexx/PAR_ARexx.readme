@@ -1,0 +1,144 @@
+Short:        PAR: access using the SIMPLEST of ARexx.
+Author:       wisecracker@tesco.net (Barry Walker)
+Uploader:     wisecracker@tesco.net (Barry Walker)
+Type:         dev/src
+Version:      1.00.01
+Architecture: m68k-amigaos
+
+Distribution: Public Domain, Emailware.
+
+============================================================================
+
+  Requirements Are:-
+  ------------------
+
+           Any Classic Amiga, SEE TEXT BELOW.
+           Standard Kickstart 2.0x and Workbench 2.0x or better.
+           RexxMast running, and RX in the path.
+           PAR: Device installed.
+           PAR_READ.lha from the hard/hack drawer of AMINET.
+
+----------------------------------------------------------------------------
+
+04-05-2008.
+-----------
+Version 1.00.01. Added very simple ARexx code to write to the PAR: VOLUME.
+
+16-05-2006.
+-----------
+Version 1.00.00. First upload.
+
+----------------------------------------------------------------------------
+
+This is a project to use PAR: as a VOLUME in READ mode only, NOT as a DEVICE.
+I have NOT included PAR: in WRITE mode as this is easily done.
+
+For example connect a standard parallel port printer to the parallel port
+and from a CLI or Shell type:-
+
+Echo > PAR: "This is a test line."<RETURN>
+
+This is a test line.
+
+Is printed to by the printer, so WRITE mode is possible without any special
+knowledge.
+
+PAR: in READ mode however is not so easy and was intended to accept binary
+data IN through the parallel port to the computer WITHOUT ANY knowledge of
+the HW registers or DEVICE offsets at all. The ~-ACK~ line must be toggled
+for this to work and a very simple EXTERNAL modification is all that is
+needed for correct operation. It is a wire link only. See PAR_READ.lha
+in the hard/hack drawer of AMINET for full details.
+
+As the offsets are not required for correct operation then PAR: acts for
+all intents and purposes like a disk in a disk drive and can be written
+to, or, as in this case, READ from, and binary data aquired from the port
+displayed onto the screen.
+
+(I hope you enjoy messing with it like I do... :)
+
+----------------------------------------------------------------------------
+
+The archive is Public Domain/Emailware and you may modify them as you
+please for your OWN experiments. See below.
+
+(Original idea goes to B.Walker, G0LCU. Joint copyright, (C)2006, B.Walker
+and A.Hoffman. First upload to  http://amiga.serveftp.net/  (C)A.Hoffman.)
+
+----------------------------------------------------------------------------
+
+                                IMPORTANT:-
+                                -----------
+
+
+    The Legal Stuff:-
+    -----------------
+
+    These programs are Public Domain and no profit will be made from them,
+    also all of the files must remain unaltered and intact including this
+    one. The author is not responsible for any damage to, or loss of, or
+    failure of equipment or data caused in any way by the use of these
+    programs. There is NO warranty with the use of these software releases
+    and YOU USE THEM AT YOUR OWN RISK.
+
+----------------------------------------------------------------------------
+
+    Testing Evaluation:-
+    --------------------
+
+    An A1200 in 2MB, 6MB and 10MB modes using trapdoor memory AND/OR
+    PCMCIA memory expansions. All memory expansions were ~DISABLED~ using
+    the NoFastMem program from the System drawer. Also tested on two A600s
+    with various memory configurations, a 1MB A500+ and an old style A500
+    with a 0.5MB memory expansion at $C00000 using the A500+ emulator and
+    Workbench 2.04, and LBNL an A600 emulating KS3.0x and running
+    Workbench 3.0x. Also tested on an A4000 with various upgrades and
+    OS3.9x.
+
+    All test conditions were/are running STANDARD KS2.0x to 3.9x, and using
+    standard ~topaz 8~ fonts throughout.
+
+    I have no idea what a strange configuration setup will create so refer
+    to the ~The Legal Stuff~ above.
+
+----------------------------------------------------------------------------
+
+                                 WARNING.
+                                 --------
+
+  1) DISCONNECT any faulty equipment under test from the MAINS supply.
+  2) If a DC supply is used do NOT reverse polarity the connections.
+  3) Do NOT power up any electronic item until it is safe to do so.
+  4) CHECK and RECHECK all of your construction and repair work thoroughly.
+  5) Handle ALL tools used with care.
+  6) Beware of ALL types of solvents, glues and etching fluids.
+  7) NEVER leave a soldering iron switched on unattended.
+  8) KEEP everything OUT of the reach of small children.
+  9) Switch OFF the AMIGA before disconnecting or connecting any hardware.
+ 10) And finally read 1) to 9) again.
+
+----------------------------------------------------------------------------
+
+   Contact:-
+   ---------
+
+   Mr Barry Walker, G0LCU,
+   70 King George Road,
+   Loughborough,
+   Leicestershire,
+   LE11 2PA,
+   England.
+
+   Email:-     wisecracker@tesco.net
+   URL:-       http://homepages.tesco.net/wisecracker/G0LCU.HTM
+
+   Author of the ~TestGear?~ projects in the ~hard/hack~ drawer of AMINET.
+
+----------------------------------------------------------------------------
+
+   A very useful HardWare related site, (C) Anthony Hoffman, for
+   modifications, schematics, repairs and the like is:-
+
+                          http://amiga.serveftp.net/
+
+============================================================================

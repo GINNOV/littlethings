@@ -1,0 +1,128 @@
+Programming Documentation For
+
+
+MAC-2-DOS
+
+
+OVERVIEW
+
+Mac-2-Dos is a program which utilizes a special hardware interface
+to permit the Amiga to read and write Macintosh files via a
+Macintosh floppy disk attached to the Amiga.
+
+
+DESIGN PHILOSOPHY
+
+Macintosh floppy disks are formatted using a bizarre bit encoding
+scheme known as GCR, which, unlike MFM, used by MS-DOS and Amiga
+computers, encodes specific data bit patterns by a lookup table.
+Fortunately, the Amiga hardware includes options to perform basic
+GCR reads and writes.  Note, however, that since the standard Amiga
+system software does NOT utilize the GCR hardware features, there is
+no guarantee that they will function correctly on a machine which
+otherwise appears to be working correctly.
+
+Macintosh diskettes are written at five different rotational speeds,
+permitting data to be stored at more-or-less unifirm density on all
+the tracks, yet permitting more actual data to be stored on the
+outer tracks.  Since the rotational speed of Amiga floppy drives is
+fixed, they cannot read or write Macintosh floppy disks.  Thus the
+decision to develop a hardware solution permitting attachment of
+Macintosh floppy drives to the Amiga.
+
+Older Macintosh floppy drives require that the computer monitor and
+control the speed of the floppy drive.  Newer Macintosh floppy
+drives ignore the speed control signal from the computer and monitor
+and control their own speed.  However, Mac-2-Dos was designed to
+work with both types of Mac floppy drives; for that reason the
+program includes code to monitor and control the speed of the drive,
+based on the type of drive which is attached.
+
+Mac-2-Dos also includes an AmigaDOS floppy device driver which
+permits Mac floppy drives made by ?? to be used as Amiga floppy
+drives as well as reading and writing Mac floppy disks.  These
+drives are no longer available, so this feature of Mac-2-Dos has
+been discontinued.
+
+
+MODULE DESCRIPTION
+
+Mac-2-Dos consists of 18 source modules and 2 include files.
+
+MACROS.ASM and BOXES.ASM are include files assembled with all source
+modules.  MACROS.ASM is a set of common assembly language macros
+defining a pseudo language used in the source modules.  BOXES.ASM is
+a set of equates defining the coordinates of messages, gadgets, and
+windows used in the program.
+
+MAC.ASM contains initialization and exit code, and main event loop
+processing code.
+
+CMDS.ASM contains major routines selected from the menu bar.
+
+COPY.ASM is the main routine for copying files in either direction
+(from Mac to Amiga or Amiga to Mac).
+
+BUFFERS.ASM contains memory allocation routines.
+
+DISKCMDS.ASM performs Macintosh disk drive specific commands.
+
+DOSFILES.ASM contains AmigaDOS open, close, read, and write commands
+used in copying files.
+
+MACFILES.ASM contains Macintosh file open, close, read, and write
+commands used in copying files.
+
+HFS.ASM implements the Macintosh HFS file system.
+
+DISK.ASM contains disk Macintosh drive read/write routines.
+
+GADGETS.ASM contains tables for all gadgets used in the program.
+
+ILBM.ASM contains routines used in translating Amiga ILBM files to
+and from Macintosh MacPaint format.
+
+IMAGES.ASM contains gadget imagery in bitmap format.
+
+MENUS.ASM contains menu tables for the menu bar.
+
+MESSAGES.ASM contains language-specific text and error messages.
+
+WIND.ASM contains routines to build, display, and scroll the two
+catalog windows.
+
+XLATE.ASM contains ASCII translation tables.
+
+FUN.ASM contains string manipulation and requester routines.
+
+VERSION.ASM contains text strings defining the copyright notice and
+version of the program.
+
+
+BUILDING INSTRUCTIONS
+
+Each source module is assembled using the CAPE assembler, and the
+resulting object modules linked via BLINK.
+
+
+TRICKS, TRAPS, AND GOTCHAS
+
+The measurement of floppy rotational speed and control of the motor
+lead to set speed required careful timing.  After considerable
+experimentation on the Amiga, I determined that Timer B offered
+sufficient accuracy with low overhead.
+
+
+SUPPORT ISSUES
+
+Several public domain programs have been placed on the Mac-2-Dos
+disk to provide the user with file conversions which are not
+directly supported by Mac-2-Dos.  Permission has been obtained from
+their authors to do this.
+
+
+COMMENTS
+
+Additional conversion options should be added to Mac-2-Dos to
+improve its usefulness.  This includes IFF to/from PICT2, and
+encapsulated PostScript.

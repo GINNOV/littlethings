@@ -1,0 +1,38 @@
+Version 1.0
+
+You can find there an c++ include for ttengine.library version 7
+You can find there also simple examples how You can use this include
+
+Don't forget all include files are copyright by Tomasz Kaczanowski. You can
+use it for free, but you must add info about using this code and info
+about author. Remember also, that if you want to have new versions of this
+code and other codes for AmigaOS-like systems you should motivate author
+of this code. You can send him a small gift or mail or bug report.
+
+    contact:
+       kaczus (at) poczta (_) onet (_) pl
+       or
+       kaczus (at) wp (_) pl
+    (_) replaced dot.
+
+   snail address:
+   	  Tomasz Kaczanowski
+      Rydzowa 23 m 32
+      91-211 Lodz
+      Poland
+
+Dont forget also about author of ttengine:
+http://teleinfo.pb.bialystok.pl/tte/
+krashan (at) teleinfo (dot) pb (dot) edu (dot) pl
+
+History:
+
+17.03.2006
+			* First public version (bugged)
+
+19.05.2007
+			* Improved ALL methods
+            * Add examples
+
+
+

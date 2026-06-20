@@ -1,0 +1,45 @@
+
+
+			Venus Art - Manipulations
+
+		Released at Intel Outside II held in Warsaw
+
+		    -------Full Source Release-------
+
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+				WARNING!!!
+ We are taking no responsibility for any damage this software may cause to
+your soft- or hardware.
+This sources are freely distributable as long as come with this readme.
+Anyway they are still copyrighted by Venus Art so you cannot modify them
+or use in your own programs without our permission...;-)
+Use on your own RISC.
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+      This archive contains full source code to our demo 'Manipulations'.
+It was placed at 5'th during the demo competition at Intel outside II in
+August '95.
+You can compile it with Devpac (No lame asm-one) 
+	(FileManipulations/Manipulations_xx.s is the main file)
+An assign DEMO: to the demo directory is really needed....
+
+
+This archive comes with some tools that are really nessesary to create the
+demo and data file. (eg. MergeChunky to merge two files from commanche -
+Height map and texture map).The most important tools is MakeDataFile,
+With You can create manipulations.data file.Of cource you need also
+some xxx.makedata files placed in some directores.
+It's quite hard to explain all the things but I hope you will find this
+sources usefully.
+
+
+				Noe & BJSebo / Venus Art
+
+PS
+	Sources to EvilEmpire (IntelOutside III) 
+	and 0Gravity(winning demo from Gravity) sooon.
+PS2
+	You can always get working version from any aminet site:
+		demo/aga/Manipulations.lha

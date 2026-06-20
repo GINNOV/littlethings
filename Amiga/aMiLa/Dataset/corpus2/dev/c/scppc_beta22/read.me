@@ -1,0 +1,221 @@
+The archive contains a set of patches to create a PowerPC
+compiler and debugger from the SAS/C 6.5x Developement system. 
+You must have SAS/C 6.5x installed on your machine to use this 
+archive. Also, you must have the original 6.50 disks.
+
+
+
+
+To install this patch, type
+
+   execute install
+
+
+
+Documentation for this compiler and related tools can be found in
+the file:
+
+manual.txt
+
+
+
+
+
+
+
+
+Revision History:
+
+Beta 22
+
+   Add support in SLINK, sc2ppch.library, and libinit.c for Amiga style
+   PPC shared libraries - see samplelib in this archive for an example.
+   
+   Allow anonymous unions like the 68k compiler.
+
+   Support __chip in the HUNK version of the compiler.
+   
+
+Beta 21
+
+   Fix another convert long to short bug.
+   
+   Fix compiler's disassembly output in HUNK version so the source 
+   is displayed if debug info is available.
+
+   Remove error for empty structure TAG declaration when the TAG is
+   already defined.
+
+Beta 20
+
+   Add ability to generate HUNK style objects and executables.
+   
+   Fix WHERE in CPRPPC.
+
+   Don't use __setjmp in setjmp.h since it causes problems with
+   C++.
+
+   Fix convert long -> short conversion (was not properly sign 
+   extending or 0 extending in some cases).
+
+   Fix strtol() which returned the wrong pointer if the string was
+   "0" and the base was 0.
+
+Beta 19
+
+   Fix passing 'this' pointer to member functions called through a 
+   function pointer. This was broken in Beta 15 - Beta 18.
+
+   Teach CPRPPC about memory 0xfff00000 - 0xfff80000, so it can step
+   into the PPC Kernel.
+   
+   Improve register allocation by boost weight of register parameters.
+   This makes it more likely that parameters will stay in registers
+   for short functions.
+
+
+Beta 18
+  
+   Fix realloc().
+
+
+Beta 17
+
+   New cut of C++ with several improvements/fixes.
+   
+   Fix _tzset() so it doesn't lose memory.
+
+
+Beta 16
+
+   Added support for running PPC programs from WorkBench, with
+   Ralph Schmidt's LoadSeg Patch.
+
+
+Beta 15
+
+   Changed alignemt of 68k aligned structures in arrays to be more 
+   68k-like. This change may require a full rebuild of your projects.
+
+   Fixed problem in C++, where  pointers in structures from INCLUDE: 
+   were not getting 68k aligned.
+
+   Fixed bad uninitialized variable warnings following and empty switch
+   statement.
+
+Beta 14
+
+   Added Readargs() support to CPRPPC to match runelf.
+   
+   Fix varargs handling (recognition of __optype) that I broke in
+   Beta 11 in the process of adding alignment processing for C++.
+
+   Runelf will return the PPC program's return code to the shell.
+
+Beta 13
+
+   Had the wrong version of the library scppc.a in Beta 12, so the taglist
+   stubs weren't in there after all. They're really in there this time, honest :)
+
+   Runelf has been modified to allow the use of ReadArgs() in PPC programs.
+
+
+Beta 12
+   Use Volker Barthelmann's 'FD2LibPPC' to generate stubs for all the varargs
+   TAGLIST functions.
+   
+
+Beta 11
+
+   Fix bug in builtin memset.
+   
+   C++ improvements/fixes.
+      1) Handle long mangled names better.
+      2) Do inlining in translater
+      3) Support PPCINCLUDE: and 68k alignement of structures in INCLUDE:
+
+   Ignore CPU=060 option.
+
+   Ignore FAR in a few more places that I missed previously.
+   
+Beta 10
+
+   Fix bug in peephole opt if PROFILE was on. R31 was not saved and restored
+   properly if it was only used in the epilog of the function.
+
+Beta 9 (not publicly released)
+ 
+   Fix bug calling a function that returns a structure. In the case where
+   the return was not used, the returned structure was placed in the wrong
+   place on the stack, ovewritting other temporaries.
+
+
+Beta 8 (not publicly released)
+  
+   Fixed bug in scheduler. When Passing floats, scheduler did not recognize which
+   regs were used as parameters properly, and could move a load of a register
+   after the call.
+   
+   Use new method for CTRL-C detection in __chkabort(). It now uses PPCSetSignal()
+   instead of SetSignal(). This should be faster, but also requires the 
+   PPCTASKSTAG_BREAKSIGNAL to be used when the task is created. This tag is only
+   available in V45.5 and above. Runelf and CPRPPC have been modified to use
+   this tag.
+
+Beta 7 (not publicly released)
+
+   CPRPPC will pass a stack of no smaller than 64k to the program being debugged.
+   Previously is would pass the shell stack size through. This change makes
+   it behave like runelf.
+
+   Fixed calling varargs function with doubles with tail recursion.
+   CR6 was not being set properly.
+   
+   Fixed passing floats to functions declared in the old K&R style functions 
+   that also had a new style prototype.
+
+   Driver was running the 68k version of C++ instead of the PPC version, causing
+   improper sizes of structures with sizeof().
+
+Beta 6 (not publicly released)
+
+   Added C++ support.   
+   
+   Fixed bug in scheduler that caused it to loop until memory was
+   exhausted, in rare cases.
+   
+
+Beta 5
+   
+   Fix CTRL-C checking.
+
+   Implemented the PROFILE option in the compiler. You can now use the
+   SPROF utility with PPC programs. (Sprof runtime requires V45.3 of
+   ppc.library). 
+   
+   Fixed message when CPRPPC detects a CTRL-C.
+
+   Fixed bad error when initializing a char array to a constant
+   string of the exact length of the array (null byte truncated).
+   
+   Fixed code generation problem recieveing float paramters in new
+   style function declaration.
+   
+   Fixed problem in 'runelf' not setting the minimum stack size to
+   a multiple of four if the shell stack size was less than 64k.
+   
+
+Beta 4
+
+   First public beta release.
+
+
+
+Known Bugs.
+
+1) If you declare a varargs function INLINE, the optimizer will inline
+   it, but the resulting code is incorrect. The optimizer needs to be
+   taught not to inline varargs functions.
+   
+
+

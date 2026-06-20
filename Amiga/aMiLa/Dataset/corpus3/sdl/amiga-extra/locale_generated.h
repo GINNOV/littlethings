@@ -1,0 +1,397 @@
+#ifndef LOCALE_GENERATED_H
+#define LOCALE_GENERATED_H
+
+
+/****************************************************************************/
+
+
+/* This file was created automatically by CatComp.
+ * Do NOT edit by hand!
+ */
+
+
+#ifndef EXEC_TYPES_H
+#include <exec/types.h>
+#endif
+
+#ifdef CATCOMP_CODE
+#ifndef CATCOMP_BLOCK
+#define CATCOMP_ARRAY
+#endif
+#endif
+
+#ifdef CATCOMP_ARRAY
+#ifndef CATCOMP_NUMBERS
+#define CATCOMP_NUMBERS
+#endif
+#ifndef CATCOMP_STRINGS
+#define CATCOMP_STRINGS
+#endif
+#endif
+
+#ifdef CATCOMP_BLOCK
+#ifndef CATCOMP_STRINGS
+#define CATCOMP_STRINGS
+#endif
+#endif
+
+
+/****************************************************************************/
+
+
+#ifdef CATCOMP_NUMBERS
+
+#define MSG_APP_MAIN_MENU 0
+#define MSG_APP_MAIN_ICONIFY 1
+#define MSG_APP_MAIN_ABOUT 2
+#define MSG_APP_MAIN_LAUNCH_PREFERENCES 3
+#define MSG_APP_MAIN_QUIT 4
+#define MSG_APP_ABOUT_WINDOW 5
+#define MSG_APP_OK 6
+#define MSG_APP_APPLICATION 7
+#define MSG_APP_LIBRARY_VERSION 8
+#define MSG_PREFS_APPLICATION 1000
+#define MSG_PREFS_OK 1001
+#define MSG_PREFS_RENDERER_OPTIONS_GROUP 1002
+#define MSG_PREFS_DRIVER_GAD 1003
+#define MSG_PREFS_DRIVER_DEFAULT 1004
+#define MSG_PREFS_DRIVER_COMPOSITING 1005
+#define MSG_PREFS_DRIVER_OPENGLES2 1006
+#define MSG_PREFS_DRIVER_SOFTWARE 1007
+#define MSG_PREFS_VERTICAL_SYNC_GAD 1008
+#define MSG_PREFS_VERTICAL_SYNC_DEFAULT 1009
+#define MSG_PREFS_VERTICAL_SYNC_ENABLED 1010
+#define MSG_PREFS_VERTICAL_SYNC_DISABLED 1011
+#define MSG_PREFS_VIDEO_OPTIONS_GROUP 1012
+#define MSG_PREFS_SCREEN_SAVER_GAD 1013
+#define MSG_PREFS_SCREEN_SAVER_DEFAULT 1014
+#define MSG_PREFS_SCREEN_SAVER_ENABLED 1015
+#define MSG_PREFS_SCREEN_SAVER_DISABLED 1016
+#define MSG_PREFS_SETTINGS_GROUP 1017
+#define MSG_PREFS_SAVE_GAD 1018
+#define MSG_PREFS_RESET_GAD 1019
+#define MSG_PREFS_CANCEL_GAD 1020
+#define MSG_PREFS_MAIN_MENU 1021
+#define MSG_PREFS_MAIN_ICONIFY 1022
+#define MSG_PREFS_MAIN_ABOUT 1023
+#define MSG_PREFS_MAIN_QUIT 1024
+#define MSG_PREFS_ABOUT_WINDOW 1025
+#define MSG_PREFS_ABOUT_AUTHOR 1026
+#define MSG_PREFS_ABOUT_TRANSLATOR 1027
+#define MSG_PREFS_DRIVER_HELP 1028
+#define MSG_PREFS_VERTICAL_SYNC_HELP 1029
+#define MSG_PREFS_SCREEN_SAVER_HELP 1030
+#define MSG_PREFS_SAVE_HELP 1031
+#define MSG_PREFS_RESET_HELP 1032
+#define MSG_PREFS_CANCEL_HELP 1033
+
+#endif /* CATCOMP_NUMBERS */
+
+
+/****************************************************************************/
+
+
+#ifdef CATCOMP_STRINGS
+
+#define MSG_APP_MAIN_MENU_STR "Main"
+#define MSG_APP_MAIN_ICONIFY_STR "I|Iconify"
+#define MSG_APP_MAIN_ABOUT_STR "?|About..."
+#define MSG_APP_MAIN_LAUNCH_PREFERENCES_STR "P|Launch preferences..."
+#define MSG_APP_MAIN_QUIT_STR "Q|Quit"
+#define MSG_APP_ABOUT_WINDOW_STR "About SDL3 library"
+#define MSG_APP_OK_STR "_Ok"
+#define MSG_APP_APPLICATION_STR "SDL3 application"
+#define MSG_APP_LIBRARY_VERSION_STR "SDL library version"
+#define MSG_PREFS_APPLICATION_STR "SDL3 preferences"
+#define MSG_PREFS_OK_STR "_OK"
+#define MSG_PREFS_RENDERER_OPTIONS_GROUP_STR "2D renderer options"
+#define MSG_PREFS_DRIVER_GAD_STR "_Driver"
+#define MSG_PREFS_DRIVER_DEFAULT_STR "default"
+#define MSG_PREFS_DRIVER_COMPOSITING_STR "compositing"
+#define MSG_PREFS_DRIVER_OPENGLES2_STR "opengles2"
+#define MSG_PREFS_DRIVER_SOFTWARE_STR "software"
+#define MSG_PREFS_VERTICAL_SYNC_GAD_STR "_Vertical sync"
+#define MSG_PREFS_VERTICAL_SYNC_DEFAULT_STR "default"
+#define MSG_PREFS_VERTICAL_SYNC_ENABLED_STR "enabled"
+#define MSG_PREFS_VERTICAL_SYNC_DISABLED_STR "disabled"
+#define MSG_PREFS_VIDEO_OPTIONS_GROUP_STR "Video options"
+#define MSG_PREFS_SCREEN_SAVER_GAD_STR "_Allow screen saver"
+#define MSG_PREFS_SCREEN_SAVER_DEFAULT_STR "default"
+#define MSG_PREFS_SCREEN_SAVER_ENABLED_STR "enabled"
+#define MSG_PREFS_SCREEN_SAVER_DISABLED_STR "disabled"
+#define MSG_PREFS_SETTINGS_GROUP_STR "Settings"
+#define MSG_PREFS_SAVE_GAD_STR "_Save"
+#define MSG_PREFS_RESET_GAD_STR "_Reset"
+#define MSG_PREFS_CANCEL_GAD_STR "_Cancel"
+#define MSG_PREFS_MAIN_MENU_STR "Main"
+#define MSG_PREFS_MAIN_ICONIFY_STR "I|Iconify"
+#define MSG_PREFS_MAIN_ABOUT_STR "?|About..."
+#define MSG_PREFS_MAIN_QUIT_STR "Q|Quit"
+#define MSG_PREFS_ABOUT_WINDOW_STR "About SDL3 preferences"
+#define MSG_PREFS_ABOUT_AUTHOR_STR "Written by Juha Niemimaki"
+#define MSG_PREFS_ABOUT_TRANSLATOR_STR "(using built-in strings)"
+#define MSG_PREFS_DRIVER_HELP_STR "Select driver implementation:\n \033bcompositing \033ndoesn't support some blend modes\n \033bopengles2 \033nsupports most features\n \033bsoftware \033nsupports most features but is not accelerated"
+#define MSG_PREFS_VERTICAL_SYNC_HELP_STR "Synchronize display update to monitor refresh rate"
+#define MSG_PREFS_SCREEN_SAVER_HELP_STR "Allow screen saver (disabled by default)"
+#define MSG_PREFS_SAVE_HELP_STR "Store settings to ENVARC: and exit"
+#define MSG_PREFS_RESET_HELP_STR "Reset GUI to default values"
+#define MSG_PREFS_CANCEL_HELP_STR "Exit program"
+
+#endif /* CATCOMP_STRINGS */
+
+
+/****************************************************************************/
+
+
+#ifdef CATCOMP_ARRAY
+
+struct CatCompArrayType
+{
+    LONG         cca_ID;
+    CONST_STRPTR cca_Str;
+};
+
+STATIC CONST struct CatCompArrayType CatCompArray[] =
+{
+    {MSG_APP_MAIN_MENU,(CONST_STRPTR)MSG_APP_MAIN_MENU_STR},
+    {MSG_APP_MAIN_ICONIFY,(CONST_STRPTR)MSG_APP_MAIN_ICONIFY_STR},
+    {MSG_APP_MAIN_ABOUT,(CONST_STRPTR)MSG_APP_MAIN_ABOUT_STR},
+    {MSG_APP_MAIN_LAUNCH_PREFERENCES,(CONST_STRPTR)MSG_APP_MAIN_LAUNCH_PREFERENCES_STR},
+    {MSG_APP_MAIN_QUIT,(CONST_STRPTR)MSG_APP_MAIN_QUIT_STR},
+    {MSG_APP_ABOUT_WINDOW,(CONST_STRPTR)MSG_APP_ABOUT_WINDOW_STR},
+    {MSG_APP_OK,(CONST_STRPTR)MSG_APP_OK_STR},
+    {MSG_APP_APPLICATION,(CONST_STRPTR)MSG_APP_APPLICATION_STR},
+    {MSG_APP_LIBRARY_VERSION,(CONST_STRPTR)MSG_APP_LIBRARY_VERSION_STR},
+    {MSG_PREFS_APPLICATION,(CONST_STRPTR)MSG_PREFS_APPLICATION_STR},
+    {MSG_PREFS_OK,(CONST_STRPTR)MSG_PREFS_OK_STR},
+    {MSG_PREFS_RENDERER_OPTIONS_GROUP,(CONST_STRPTR)MSG_PREFS_RENDERER_OPTIONS_GROUP_STR},
+    {MSG_PREFS_DRIVER_GAD,(CONST_STRPTR)MSG_PREFS_DRIVER_GAD_STR},
+    {MSG_PREFS_DRIVER_DEFAULT,(CONST_STRPTR)MSG_PREFS_DRIVER_DEFAULT_STR},
+    {MSG_PREFS_DRIVER_COMPOSITING,(CONST_STRPTR)MSG_PREFS_DRIVER_COMPOSITING_STR},
+    {MSG_PREFS_DRIVER_OPENGLES2,(CONST_STRPTR)MSG_PREFS_DRIVER_OPENGLES2_STR},
+    {MSG_PREFS_DRIVER_SOFTWARE,(CONST_STRPTR)MSG_PREFS_DRIVER_SOFTWARE_STR},
+    {MSG_PREFS_VERTICAL_SYNC_GAD,(CONST_STRPTR)MSG_PREFS_VERTICAL_SYNC_GAD_STR},
+    {MSG_PREFS_VERTICAL_SYNC_DEFAULT,(CONST_STRPTR)MSG_PREFS_VERTICAL_SYNC_DEFAULT_STR},
+    {MSG_PREFS_VERTICAL_SYNC_ENABLED,(CONST_STRPTR)MSG_PREFS_VERTICAL_SYNC_ENABLED_STR},
+    {MSG_PREFS_VERTICAL_SYNC_DISABLED,(CONST_STRPTR)MSG_PREFS_VERTICAL_SYNC_DISABLED_STR},
+    {MSG_PREFS_VIDEO_OPTIONS_GROUP,(CONST_STRPTR)MSG_PREFS_VIDEO_OPTIONS_GROUP_STR},
+    {MSG_PREFS_SCREEN_SAVER_GAD,(CONST_STRPTR)MSG_PREFS_SCREEN_SAVER_GAD_STR},
+    {MSG_PREFS_SCREEN_SAVER_DEFAULT,(CONST_STRPTR)MSG_PREFS_SCREEN_SAVER_DEFAULT_STR},
+    {MSG_PREFS_SCREEN_SAVER_ENABLED,(CONST_STRPTR)MSG_PREFS_SCREEN_SAVER_ENABLED_STR},
+    {MSG_PREFS_SCREEN_SAVER_DISABLED,(CONST_STRPTR)MSG_PREFS_SCREEN_SAVER_DISABLED_STR},
+    {MSG_PREFS_SETTINGS_GROUP,(CONST_STRPTR)MSG_PREFS_SETTINGS_GROUP_STR},
+    {MSG_PREFS_SAVE_GAD,(CONST_STRPTR)MSG_PREFS_SAVE_GAD_STR},
+    {MSG_PREFS_RESET_GAD,(CONST_STRPTR)MSG_PREFS_RESET_GAD_STR},
+    {MSG_PREFS_CANCEL_GAD,(CONST_STRPTR)MSG_PREFS_CANCEL_GAD_STR},
+    {MSG_PREFS_MAIN_MENU,(CONST_STRPTR)MSG_PREFS_MAIN_MENU_STR},
+    {MSG_PREFS_MAIN_ICONIFY,(CONST_STRPTR)MSG_PREFS_MAIN_ICONIFY_STR},
+    {MSG_PREFS_MAIN_ABOUT,(CONST_STRPTR)MSG_PREFS_MAIN_ABOUT_STR},
+    {MSG_PREFS_MAIN_QUIT,(CONST_STRPTR)MSG_PREFS_MAIN_QUIT_STR},
+    {MSG_PREFS_ABOUT_WINDOW,(CONST_STRPTR)MSG_PREFS_ABOUT_WINDOW_STR},
+    {MSG_PREFS_ABOUT_AUTHOR,(CONST_STRPTR)MSG_PREFS_ABOUT_AUTHOR_STR},
+    {MSG_PREFS_ABOUT_TRANSLATOR,(CONST_STRPTR)MSG_PREFS_ABOUT_TRANSLATOR_STR},
+    {MSG_PREFS_DRIVER_HELP,(CONST_STRPTR)MSG_PREFS_DRIVER_HELP_STR},
+    {MSG_PREFS_VERTICAL_SYNC_HELP,(CONST_STRPTR)MSG_PREFS_VERTICAL_SYNC_HELP_STR},
+    {MSG_PREFS_SCREEN_SAVER_HELP,(CONST_STRPTR)MSG_PREFS_SCREEN_SAVER_HELP_STR},
+    {MSG_PREFS_SAVE_HELP,(CONST_STRPTR)MSG_PREFS_SAVE_HELP_STR},
+    {MSG_PREFS_RESET_HELP,(CONST_STRPTR)MSG_PREFS_RESET_HELP_STR},
+    {MSG_PREFS_CANCEL_HELP,(CONST_STRPTR)MSG_PREFS_CANCEL_HELP_STR},
+};
+
+#endif /* CATCOMP_ARRAY */
+
+
+/****************************************************************************/
+
+
+#ifdef CATCOMP_BLOCK
+
+STATIC CONST UBYTE CatCompBlock[] =
+{
+    "\x00\x00\x00\x00\x00\x06"
+    MSG_APP_MAIN_MENU_STR "\x00\x00"
+    "\x00\x00\x00\x01\x00\x0A"
+    MSG_APP_MAIN_ICONIFY_STR "\x00"
+    "\x00\x00\x00\x02\x00\x0C"
+    MSG_APP_MAIN_ABOUT_STR "\x00\x00"
+    "\x00\x00\x00\x03\x00\x18"
+    MSG_APP_MAIN_LAUNCH_PREFERENCES_STR "\x00"
+    "\x00\x00\x00\x04\x00\x08"
+    MSG_APP_MAIN_QUIT_STR "\x00\x00"
+    "\x00\x00\x00\x05\x00\x14"
+    MSG_APP_ABOUT_WINDOW_STR "\x00\x00"
+    "\x00\x00\x00\x06\x00\x04"
+    MSG_APP_OK_STR "\x00"
+    "\x00\x00\x00\x07\x00\x12"
+    MSG_APP_APPLICATION_STR "\x00\x00"
+    "\x00\x00\x00\x08\x00\x14"
+    MSG_APP_LIBRARY_VERSION_STR "\x00"
+    "\x00\x00\x03\xE8\x00\x12"
+    MSG_PREFS_APPLICATION_STR "\x00\x00"
+    "\x00\x00\x03\xE9\x00\x04"
+    MSG_PREFS_OK_STR "\x00"
+    "\x00\x00\x03\xEA\x00\x14"
+    MSG_PREFS_RENDERER_OPTIONS_GROUP_STR "\x00"
+    "\x00\x00\x03\xEB\x00\x08"
+    MSG_PREFS_DRIVER_GAD_STR "\x00"
+    "\x00\x00\x03\xEC\x00\x08"
+    MSG_PREFS_DRIVER_DEFAULT_STR "\x00"
+    "\x00\x00\x03\xED\x00\x0C"
+    MSG_PREFS_DRIVER_COMPOSITING_STR "\x00"
+    "\x00\x00\x03\xEE\x00\x0A"
+    MSG_PREFS_DRIVER_OPENGLES2_STR "\x00"
+    "\x00\x00\x03\xEF\x00\x0A"
+    MSG_PREFS_DRIVER_SOFTWARE_STR "\x00\x00"
+    "\x00\x00\x03\xF0\x00\x10"
+    MSG_PREFS_VERTICAL_SYNC_GAD_STR "\x00\x00"
+    "\x00\x00\x03\xF1\x00\x08"
+    MSG_PREFS_VERTICAL_SYNC_DEFAULT_STR "\x00"
+    "\x00\x00\x03\xF2\x00\x08"
+    MSG_PREFS_VERTICAL_SYNC_ENABLED_STR "\x00"
+    "\x00\x00\x03\xF3\x00\x0A"
+    MSG_PREFS_VERTICAL_SYNC_DISABLED_STR "\x00\x00"
+    "\x00\x00\x03\xF4\x00\x0E"
+    MSG_PREFS_VIDEO_OPTIONS_GROUP_STR "\x00"
+    "\x00\x00\x03\xF5\x00\x14"
+    MSG_PREFS_SCREEN_SAVER_GAD_STR "\x00"
+    "\x00\x00\x03\xF6\x00\x08"
+    MSG_PREFS_SCREEN_SAVER_DEFAULT_STR "\x00"
+    "\x00\x00\x03\xF7\x00\x08"
+    MSG_PREFS_SCREEN_SAVER_ENABLED_STR "\x00"
+    "\x00\x00\x03\xF8\x00\x0A"
+    MSG_PREFS_SCREEN_SAVER_DISABLED_STR "\x00\x00"
+    "\x00\x00\x03\xF9\x00\x0A"
+    MSG_PREFS_SETTINGS_GROUP_STR "\x00\x00"
+    "\x00\x00\x03\xFA\x00\x06"
+    MSG_PREFS_SAVE_GAD_STR "\x00"
+    "\x00\x00\x03\xFB\x00\x08"
+    MSG_PREFS_RESET_GAD_STR "\x00\x00"
+    "\x00\x00\x03\xFC\x00\x08"
+    MSG_PREFS_CANCEL_GAD_STR "\x00"
+    "\x00\x00\x03\xFD\x00\x06"
+    MSG_PREFS_MAIN_MENU_STR "\x00\x00"
+    "\x00\x00\x03\xFE\x00\x0A"
+    MSG_PREFS_MAIN_ICONIFY_STR "\x00"
+    "\x00\x00\x03\xFF\x00\x0C"
+    MSG_PREFS_MAIN_ABOUT_STR "\x00\x00"
+    "\x00\x00\x04\x00\x00\x08"
+    MSG_PREFS_MAIN_QUIT_STR "\x00\x00"
+    "\x00\x00\x04\x01\x00\x18"
+    MSG_PREFS_ABOUT_WINDOW_STR "\x00\x00"
+    "\x00\x00\x04\x02\x00\x1A"
+    MSG_PREFS_ABOUT_AUTHOR_STR "\x00"
+    "\x00\x00\x04\x03\x00\x1A"
+    MSG_PREFS_ABOUT_TRANSLATOR_STR "\x00\x00"
+    "\x00\x00\x04\x04\x00\xB2"
+    MSG_PREFS_DRIVER_HELP_STR "\x00"
+    "\x00\x00\x04\x05\x00\x34"
+    MSG_PREFS_VERTICAL_SYNC_HELP_STR "\x00\x00"
+    "\x00\x00\x04\x06\x00\x2A"
+    MSG_PREFS_SCREEN_SAVER_HELP_STR "\x00\x00"
+    "\x00\x00\x04\x07\x00\x24"
+    MSG_PREFS_SAVE_HELP_STR "\x00\x00"
+    "\x00\x00\x04\x08\x00\x1C"
+    MSG_PREFS_RESET_HELP_STR "\x00"
+    "\x00\x00\x04\x09\x00\x0E"
+    MSG_PREFS_CANCEL_HELP_STR "\x00\x00"
+};
+
+#endif /* CATCOMP_BLOCK */
+
+
+/****************************************************************************/
+
+
+#ifndef PROTO_LOCALE_H
+ #ifndef __NOLIBBASE__
+  #define _NLB_DEFINED_
+  #define __NOLIBBASE__
+ #endif
+ #ifndef __NOGLOBALIFACE__
+  #define _NGI_DEFINED_
+  #define __NOGLOBALIFACE__
+ #endif
+ #include <proto/locale.h>
+ #ifdef _NLB_DEFINED_
+  #undef __NOLIBBASE__
+  #undef _NLB_DEFINED_
+ #endif
+ #ifdef _NGI_DEFINED_
+  #undef __NOGLOBALIFACE__
+  #undef _NGI_DEFINED_
+ #endif
+#endif
+
+struct LocaleInfo
+{
+#ifndef __amigaos4__
+    struct Library     *li_LocaleBase;
+#else
+    struct LocaleIFace *li_ILocale;
+#endif
+    struct Catalog     *li_Catalog;
+};
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
+CONST_STRPTR GetStringGenerated(struct LocaleInfo *li, LONG stringNum);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
+
+#ifdef CATCOMP_CODE
+
+CONST_STRPTR GetStringGenerated(struct LocaleInfo *li, LONG stringNum)
+{
+#ifndef __amigaos4__
+    struct Library     *LocaleBase = li->li_LocaleBase;
+#else
+    struct LocaleIFace *ILocale    = li->li_ILocale;
+#endif
+    LONG         *l;
+    UWORD        *w;
+    CONST_STRPTR  builtIn = NULL;
+
+    l = (LONG *)CatCompBlock;
+
+    while (*l != stringNum && l < (LONG *)(&CatCompBlock[sizeof(CatCompBlock)]))
+    {
+        w = (UWORD *)((ULONG)l + 4);
+        l = (LONG *)((ULONG)l + (ULONG)*w + 6);
+    }
+    if (*l == stringNum)
+    {
+        builtIn = (CONST_STRPTR)((ULONG)l + 6);
+    }
+
+#ifndef __amigaos4__
+    if (LocaleBase)
+    {
+        return GetCatalogStr(li->li_Catalog, stringNum, builtIn);
+    }
+#else
+    if (ILocale)
+    {
+#ifdef __USE_INLINE__
+        return GetCatalogStr(li->li_Catalog, stringNum, builtIn);
+#else
+        return ILocale->GetCatalogStr(li->li_Catalog, stringNum, builtIn);
+#endif
+    }
+#endif
+    return builtIn;
+}
+
+
+#endif /* CATCOMP_CODE */
+
+
+/****************************************************************************/
+
+
+#endif /* LOCALE_GENERATED_H */

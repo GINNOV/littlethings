@@ -1,0 +1,10 @@
+Short:        ReAction texteditor.gadget example
+Uploader:     amigansoftware@altavista.com (James Jacobs)
+Author:       amigansoftware@altavista.com (James Jacobs)
+Type:         dev/src
+Requires:     OS3.5+
+Version:      1.0a
+
+This is a straightforward example of using the ReAction texteditor.gadget
+class without using ReActor. It is written in SAS/C 6.58. This is
+version 1.0a, which replaces version 1.0.

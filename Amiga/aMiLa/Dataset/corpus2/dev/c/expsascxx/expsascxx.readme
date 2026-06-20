@@ -1,0 +1,20 @@
+Short:        Experimental SAS/C++ (requires SAS/C)
+Author:       "Steve Krueger" <Steve.Krueger@sas.com>
+Uploader:     ville9 caps-project org
+Type:         dev/c
+Replaces:     biz/patch/expsascxx.lha
+Architecture: m68k-amigaos
+
+This archive contains a new version of the SAS/C++ compiler,
+with new header files and link libraries. SAS/C 6.5x is required.
+
+
+This is an EXPERIMENTAL version. Use at your own risk, for
+entertainment purposes only...
+
+
+We (SAS) have decided to port our latest C++ translator to 
+the Amiga. Any SAS/C 6.5x customer may use this version. 
+In releasing this as a free update to 6.5x, we are hoping 
+to get testing of the portable translator. Please send any 
+bug reports to sassek@sas.com.

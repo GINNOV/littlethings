@@ -1,0 +1,424 @@
+
+
+P R I N C I P L E   O F   R O T A T I O N   A R O U N D   T H E   X - A X I S
+
+
+                             By Phantom Of Desire
+
+
+After a quick, brief phone-call to
+Pazza, I decided to send this article
+in, during that phone call he said
+that only the principles need be done,
+this made me think, originally i was
+going to send in the beta version of
+my routine, that rotated a 8 colour
+logo around the X-axis in 50 frames a
+second (the current does 32 colour
+logo), then I started to think, after
+the blitter scaling article there was
+a lot of blitter scaling in some of
+the smaller groups demos, then
+Shagratt published the source to his
+end-part to Jesus-On-E's (Great
+Music).
+--------------------------------------------------------------------------------
+
+
+
+
+
+
+Then a lot of demos had that type of
+ending, also a lot of people tend to
+have debugging systems running in
+there demos after 2-Cool's was
+published, so after a bit of thought,
+I realised that every man and his
+dog's demo would start to have bitmap
+rotation, also the beta version of 8
+colours, only took me one hour to
+speed up to 32 colours, so I thought,
+nope.  So this article has no source,
+but any decent coder out there, who
+has trouble coding this routine write
+to me (address at end of article),
+that also goes for any coder to write
+to me for source-swapping etc.
+--------------------------------------------------------------------------------
+Firstly there's a little bit of
+tutorial on matrix rotations etc.
+reason, you may (hint), find it useful
+for speeding up your routine.
+NOTE: If you don't understand this,
+you can still code the routine, but
+not running as fast or as many colours
+being used, if you don't get a good
+maths-book, and learn it!  This is
+mainly a refresher course!
+
+       I N T R O D U C T I O N
+
+The major asset of computer graphics
+as we all know is the ease which the
+pictures can be altered, scaled,
+rotated etc.  These changes are easy
+to perform because the image is stored
+as numbers within the computer.  this
+allows for TRANSFORMATIONS.
+
+Transformations allow us to uniformly
+--------------------------------------------------------------------------------
+alter the entire picture, with ease.
+it is often a lot easier to change the
+whole image, rather than a small
+section of the image.  Know are some
+stuff on geometric transformations of
+scaling, translation and rotation.
+Obviously the rotation bit is the most
+important bit for this article.
+
+           M A T R I C E S
+
+Love them or hate them YOU need to
+know how to use them.  Our computer
+images are generated from a series if
+line segments which are represented by
+the coordinates of their endpoints.
+Certain changes in an image can be
+easily made by performing
+mathemematical operations on these
+coordinates.  Before we consider some
+of the possible transformations, let
+us look at some of the mathematical
+--------------------------------------------------------------------------------
+tools we shall need, namely matrix
+multiplication.
+
+For these purposes we will consider
+the matrix as a 2D array of numbers.
+
+| 1 0 |  | 1 2 3 |  | 1 |  | 1 0 2 |
+| 0 1 |  | 4 5 6 |  |-1 |  | 0 1 2 |
+                    | 0 |  | 0 0 1 |
+
+These are four different matrices.
+
+Lets for sake of a orgy define matrix
+A to Be:
+
+        | 1 2 3 |
+     A= | 4 5 6 |
+        | 7 8 9 |  (1.1)
+
+Then the element in the third row and
+second column would be A(3,2) would
+have the value of 8 (I Hope!).
+--------------------------------------------------------------------------------
+The matrix operation that concerns us
+most is that of multiplication.
+Matrix multiplication is more complex
+than the simple product of two
+numbers, it involves simple products
+and sums of the matrix elements.  NOT
+EVERY PAIR CAN BE MULTIPLIED!  We can
+multiply two matrices A And B together
+if the number of columns of the first
+matrix (a) is the same as the number
+of rows (Lady Chatterly Nose Is TOO
+Big!) in the second matrix (b) (I
+think, if my memory is working all-
+right!).
+
+If Matrix B Was This For Sake Of Oral-
+Sex (Keeping You On Ya Toes!)
+
+            | 1 0 |
+          B=|-1 2 |
+            | 0 1 |  (1.2)
+
+--------------------------------------------------------------------------------
+Then we can multiply them (See if
+memory has worked know!!).  Because A
+has 3 Columns and B Has 3 Rows.
+Unlike normal multiplication, the
+multiplication of matrices is not
+commutative, that is, while we can
+multiply A times B, we can't do B
+times A (Damn Shame Huh!).  Cause B
+has only 2 columns, this does not
+match the 3 rows o A Ya See!
+
+When we multiply two matrices, we get
+a matrice as a result (COR!).  This
+product matrix will have the same
+number of rows as the first and the
+same number of columns as the second,
+so multiplying the 3x3 matrix A times
+the 3x2 matrix B gives a 3 x 2 matrix
+result called "C" (Original Huh!).
+
+The formula for this (Not As Complex
+As First Impressions!).  Quick Look In
+--------------------------------------------------------------------------------
+My Pocket Maths Formula Book!
+
+C(i,k) = ___
+         \
+          \ A(i,j)B(j,k)      (1.3)
+          /
+         /__
+            j
+
+For our example C=AB
+
+         | 1 2 3 |    | 1 0 |
+      C= | 4 5 6 |    |-1 2 | (1.4)
+         | 7 8 9 |    | 0 1 |
+
+The element C(1,1) is found by
+multiplying each element of the first
+row of A by the corresponding element
+of the first column of B and adding
+these products together.
+
+C(1,1) = A(1,1)B(1,1) + A(1,2)B(2,1) +
+--------------------------------------------------------------------------------
+A(1,3)B(3,1) = (1)(1) + (2)(-1) +
+(3)(0) = -1 (1.5)
+
+The element C(3,2) would be (This Is
+Getting Boring!)
+
+C(3,2) = A(3,1)B(1,2) + A(3,2)B(2,2)
++A(3,3)B(3,2) = (7)(0)+(8)(2)+(9)(1) =
+25 (1.6)
+
+Doing This For All The Numbers would
+make C this:
+
+          C= |-1  7|
+             |-1 16|
+             |-1 25|     (1.7)
+
+This Multiplication is associative.
+This means for the none informed if
+several matrices were to be times
+together, it does not matter which
+is done first.
+--------------------------------------------------------------------------------
+Well before I start talking about the
+FLIP, SWISH And INVERT System  I've
+Made For EASY (Slightly FAKE,
+Rotations).  Ill just like to say if
+anyone out there understands that and
+wants matrice scaling OR matrice
+rotations (If You Don't Have Any Text
+On Them).Just write, as all this text
+was learnt from a book (In fact a
+couple of the examples, are direct out
+of the book!).  Called Computer
+Graphics, A Programming Approach, by
+Steven Harrington.  Published By
+McGRAW-HILL International Book
+Company.  Printed In 1983 (Yep That
+Old!  But It Tells You About ALL
+Vector Techniques, Hidden Faces,
+Hidden Objects, Z-Sort Formulas Etc.,
+Etc.  Line Drawing formuals, Shading
+And Curves etc.)
+
+NOTE: The Above Matrix Stuff Is NOT
+--------------------------------------------------------------------------------
+Required To Make A Convincing Rotation
+Routine, It Just Makes It Look A Bit
+More Realistic!
+
+The FLIP, SWISH And INVERT system, (c)
+1993 C.Foulds (Aka Phantom/Desire), if
+this technique is used in any
+production on ANY machine, then it
+you are require to credit me, as i'm
+placing this in the public sector for
+people to gain this technique, It is
+to be used in a forth-coming dentro by
+me to its fullist (also Y and Z are in
+my routine!).  I've been working on
+this for about 1 month know, and its
+GREAT!
+
+Well after all that you be WELL
+disappointed with this, as its SO
+simple its UNTRUE, but its fast, it
+looks convincing.  I've only done X,Y
+and Z rotations, both separate or
+--------------------------------------------------------------------------------
+together.  For more than one it slows
+down, but blasts any other i've EVER-
+SEEN!
+
+
+Lets Draw A quick Ansi Of A Typical
+Screen, here it comes...
+
+  __________________________________________________________________________
+ |                                                                         |
+ |                                                                         |
+ |                                                                         |
+ |                                                                         |
+ |                                                                         |
+ |                  ______________________________________                 |
+ |                  |                                     |                |
+ |                  |                                     |                |
+ |                  |                                     |                |
+ |                  |           L  O  G  O                |                |
+ |                  |                                     |                |
+ |                  |                                     |                |
+ |                  |_____________________________________|                |
+ |                                                                         |
+ |                                                                         |
+ |                                                                         |
+ |                                                                         |
+ |                                                                         |
+ |                                                                         |
+ |                                                                         |
+ |_________________________________________________________________________|
+
+The logo is the only bit rotation, the
+rest of the screen MAY have art of it,
+but it won't be effected.
+
+             I N V E R T
+
+Know take a typical logo and save EACH
+bitplane separately.  Know take the
+first, examining this.  It will either
+have NEARLY all the pixels set and a
+few not set, or the opposite.  Got It?
+Right, Know Store the pixels co-ords
+of either all the BLANK pixels if most
+are set, or FILLED if most are blank
+(Note: Converting it to a plane-vector
+is also an option, of course the speed
+on this may be slower or FASTER, I
+just don't know, not giving anything
+away ya see!).  These pixels are
+on a 3D co-ords system, that all
+DECENT coders will know, so I ain't
+doing a quick over-view on that
+--------------------------------------------------------------------------------
+fucker.  Do this for all the
+bitplanes.  Know its time to DRAW It!
+Well if you stored the co-ords of the
+blank pixels that memory chunk should
+be something like this
+
+dcb.b 80*40,$ff ;All Bytes Are SET.
+
+Then you inversely plot these pixels,
+do this for all the bitplanes either
+inversely of the other way round
+(Plotting the pixels instead of
+clearing them!).
+
+Hopefully there want be more than 8000
+or so pixels over 4 bitplanes, so
+these can easily be plotted in 50
+frames per/sec.
+
+That's the INVERT bit, what about the
+FLIP and SWISH!
+
+--------------------------------------------------------------------------------
+               F L I P
+
+Now create a inversed copy of all the
+X-CORDS, the Y and Z stay the same
+guys! (You have to say just incase you
+see!).
+
+              S W I S H
+
+You can all do a picture fader can't
+you, OR a solid-vector transforming
+routine is the best, the one that
+compares the co-ords and either adds
+or subs one to each co-ord until its
+the same, yep I thought you knew the
+one!  Change this so it only does X-
+co-ords (Why do Y and Z if they don't
+change?).  Do this each for frame, to
+the co-ords, oh that reminds me, you
+will need another copy of the original
+co-ords so you can go back again!).
+Make your programs main loop look
+--------------------------------------------------------------------------------
+something like this;
+
+     loop:
+          cmp.b     #$ff,$dff006
+          bne.s     Loop
+
+          bsr.w     TRANSFORM
+          bsr.w     PLOTPIXELS
+
+          btst #6,$bfe001
+          bne.s     Loop
+
+Your transform will have to detect
+when you have transformed to one lot
+then transform to the other, then the
+other for ever and ever, i call this
+the swish system (it was LATE when I
+made it!).
+
+This gives A GREAT ILLUSION of yep you
+guessed it, rotating on the X-AXIS,
+well as you can see i've as good as
+--------------------------------------------------------------------------------
+done it for you, a lot of people
+think, "Oh my god what a dim bastard I
+am", Well a total anti-computer type
+person said why is bitmap rotation so
+hard, I explained to do real rotations
+you would need to do a proper SIN and
+COS rotation on each pixel, then he
+said why don't you do this.  I
+thought, ha, developed it a bit MORE
+and there you have, it well that's it,
+please note the matrix bit is needed
+if your going to make the rotation
+look convincing, as the present system
+may go wrong by not doing a full 360
+degree rotation just 180 degree then
+going back again, depends how you
+coded it, its easy to get past using
+matrices, there is a QUICKER way
+besides matrices, but i'm afraid that
+one says a secret for NOW!
+
+Little things also needed to make it
+--------------------------------------------------------------------------------
+look real, start moving the outer
+points first, if you move them all
+instantly, it will look shit!  Also
+try fiddling with the z values during
+rotation to add a touch more realism!
+
+Here's My Address;
+
+                Chris,
+           38 Meynell Road,
+             Long Eaton,
+             Nottingham,
+              NG10 1AF,
+               England.
+
+           +44(0)602 722750
+
+Phone Between 6.00pm And 10.00pm GMT
+Only Please, Thanx For Reading!
+
+                                  end.
+
+--------------------------------------------------------------------------------

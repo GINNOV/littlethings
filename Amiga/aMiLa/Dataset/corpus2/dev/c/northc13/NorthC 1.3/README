@@ -1,0 +1,56 @@
+NorthC Version 1.3  December 1990 (c) 1990 S.Hawtin.
+
+
+		NorthC by Steve Hawtin and others
+
+
+  Welcome to NorthC Version 1.3, this is the latest version of NorthC, 
+a complete environment for developing 'C' programs.  This directory contains 
+all you need to compile and link 'C' programs.  This version of NorthC has 
+many bug fixes, more documentation, lots more example code and some 
+improvements.  Details are all given in the "CHANGES" file on the "NorthC:" 
+disk.
+
+  This distribution of "NorthC" has been compressed, to make it easier to 
+copy.  You will have to uncompress the NorthC disks before you can start.  To 
+uncompress the disk you should
+
+  1)  Create two empty blank floppies called "NorthC" and "NorthC Examples", 
+      you can do this with the CLI commands
+
+    format drive df0: name "NorthC" NOICONS
+    format drive df0: name "NorthC Examples" NOICONS
+
+  2)  Write protect your workbench disk and the disk this file is on.
+  3)  Close all the windows you do not need and run the "unpack" program.
+
+
+  The "Unpack" program should work on anything from a vanilla Amiga 500 
+upwards, however I have not tested it on OS versions before 1.3, or on 
+other Amigas.  If you have problems then the file "unpack.script" contains 
+the CLI instructions to unpack the release.
+
+  It is my understanding that all the data and programs on this disk can be 
+freely copied, provided the restrictions noted in the various documentation 
+files are observed.  You use the information and programs on this disk at 
+your own risk, neither myself or any other member of Alcibiades Cabal can 
+accept any resposiblity for any damage caused as a result of using this disk.
+
+  The NorthC disk is a combination of programs from various sources, the 
+most complete list of contributors is on the "NorthC:" disk.
+
+
+*******************************
+***  Note for distributors  ***
+*******************************
+
+  This software is not in the public domain, it is freely distributable, 
+you must not charge more than a reasonable copy fee for it.
+
+  To distribute the floppy you should copy the files 
+
+    :c/lharc
+    :c/MuchMore
+    :NorthC 1.3/#?
+
+and edit the ":Contents" file as you see fit.

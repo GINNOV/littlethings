@@ -1,0 +1,740 @@
+## version $VER: AmiFTP.catalog 2.3 (30.8.96)
+## language français
+## codeset 0
+; Catalog descriptor file for AmiFTP 
+; Copyright (C) 1995 by Magnus Lilja, All Rights Reserved.
+;
+; e-mail: lilja@lysator.liu.se
+;
+; Some notes for translators:
+;
+; In order to create a hotkey to activate a gadget insert
+; a _ in the string before the character that should be
+; the hotkey. ('Te_st' would result in 's' being the hotkey
+; for that particular gadget).
+;
+;
+; Note that menu shortcuts are defined differently:
+; A correct menu entry for 'Quit' with Amiga-Q as the
+; shortcut should look like this:
+; Q\000Quit
+;
+;
+;
+;
+; SiteList window
+;
+SLW_SiteListWindow
+Liste de sites AmiFTP
+;AmiFTP Sitelist
+;
+SLW_SiteList
+Sites FTP
+;FTP Sites
+;
+SLW_Connect
+_Connexion
+;_Connect
+;
+SLW_New
+_Nouveau site
+;_New site
+;
+SLW_Edit
+_Editer
+;_Edit
+;
+SLW_Remove
+_Retirer
+;_Remove
+;
+SLW_Cancel
+_Annuler
+;C_ancel
+;
+SLW_OK
+_OK
+;_OK
+;
+SLW_Up
+Monter
+;Up
+;
+SLW_Down
+Descendre
+;Down
+;
+SLW_Top
+Haut
+;Top
+;
+SLW_Bottom
+Bas
+;Bottom
+;
+SLW_Newstring
+(Nouveau)
+;(New)
+;
+SLW_Sort
+_Trier
+;_Sort
+;
+; SiteConfiguration Window
+;
+SCW_SiteConfigurationWindow
+AmiFTP - Configuration Site
+;AmiFTP Site Configuration
+;
+SCW_Name
+No_m
+;Na_me
+;
+SCW_Site
+_Site
+;_Site
+;
+SCW_Port
+_Port
+;_Port
+;
+SCW_RemDir
+_Auto-CD répertoire
+;_Auto-cd to drawer
+;
+SCW_LocDir
+Chemin _Téléchargement
+;_Download path
+;
+SCW_Anonymous
+Login a_nonyme
+;Anonymous lo_gin
+;
+SCW_LoginName
+Nom de _Login
+;_Login name
+;
+SCW_Password
+Mot de p_asse
+;Pass_word
+;
+SCW_OK
+_OK
+;_OK
+;
+SCW_Cancel
+A_nnuler
+;Ca_ncel
+;
+SCW_OS
+S_ystème d'opération
+;Operating S_ystem
+;
+SCW_Proxy
+Pro_xy
+;Pro_xy
+;
+SCW_HotList
+_Hotlist
+;_HotList
+;
+; Transfer window
+;
+TW_WinTitle
+Fenêtre de transfert AmiFTP
+;AmiFTP - %ld file(s) left (%ld %s)
+;
+TW_RemoteFile
+Ficher distant
+;Remote file
+;
+TW_LocalFile
+Fichier local
+;Local file
+;
+TW_Size
+Taille
+;Size
+;
+TW_Cps
+CPS
+;CPS
+;
+TW_DataTransferred
+Données transférées
+;Data transferred
+;
+TW_Abort
+Annuler transfert
+;Abort transfer
+;
+TW_FileExists
+Le fichier '%s' existe déjà.\n\
+L'ancienne taille est : %ld octets (nouvelle %ld octets).\n\
+;File '%s' already exists.\nOld filesize is: %ld bytes (new %ld bytes).\n
+;File '%s' already exists.\nOld filesize is: %ld bytes (new %ld bytes).\n
+;
+TW_Overwrite
+Réécrire
+;Overwrite
+;
+TW_Resume
+Reprendre transfert
+;Resume transfer
+;
+TW_CancelTransfer
+Annuler transfert
+;Cancel transfer
+;
+TW_DownloadDir
+Vous allez télécharger un répertoire arborescent.\n\
+Etes-vous sûr de vouloir faire çà ?
+;You are about to download a directory tree.\nAre you sure you want to do this?
+;
+TW_GetDir
+Télécharger|Passer cette entrée
+;Yes, download it!|Skip this entry
+;
+; Main preferences window
+;
+MPW_WinTitle
+Préférences globales AmiFTP
+;AmiFTP Global Preferences
+;
+MPW_Password
+Mote de passe _Anonyme
+;_Anonymous password
+;
+MPW_ViewCommand
+Commande de _visualisation
+;_View command
+;
+MPW_ProxyHost
+_Hôte proxy
+;Proxy _host
+;
+MPW_ProxyPort
+Port proxy
+;Proxy _port
+;
+MPW_ProxyDefault
+Utiliser pro_xy par défaut
+;Use pro_xy per default
+;
+MPW_DefDownloadDir
+Répertoire de téléchargement
+;Default local drawer
+;
+MPW_IgnoreCase
+_Ignorer casse
+;_Ignore case
+;
+; Main window
+;
+MW_SiteName
+_Site courant
+;_Site
+;
+MW_DirName
+Réperto_ire
+;Drawer
+;
+MW_DownloadDir
+Chemin t_éléchargement
+;L_ocal drawer
+;
+MW_Parent
+_Parent
+;_Parent
+;
+MW_Get
+_Obtenir
+;_Get
+;
+MW_Put
+Me_ttre
+;P_ut
+;
+MW_View
+_Voir
+;_View
+;
+MW_Connect
+_Connexion à...
+;_Connect to...
+;
+MW_Disconnect
+_Déconnexion
+;_Disconnect
+;
+MW_DeleteRequest
+Etes-vous sûr de vouloir effacer ces fichiers ?
+;Are you sure you want to\ndelete these files?
+;
+MW_DeleteCancel
+Effacer|Annuler
+;Delete|Cancel
+;
+MW_Reload
+_Recharger
+;_Reload
+;
+; Connect window
+;
+CW_WinTitle
+Fenêtre de connexion AmiFTP
+;AmiFTP Connect window
+;
+CW_Abort
+Avorter
+;Abort
+;
+CW_Site
+Site:
+;Site:
+;
+CW_Status
+Status :
+;Status:
+;
+CW_Connecting
+Connexion...
+;Connecting...
+;
+CW_ReadingDir
+Lecture répertoire...
+;Reading drawer...
+;
+CW_SendingLogin
+Envoi login...
+;Sending login...
+;
+CW_SendingPassword
+Envoi mot de passe...
+;Sending password...
+;
+CW_ChangingDirectory
+Changement de répertoire...
+;Changing drawer...
+;
+; Main menus
+;
+MENU_Project
+Projet
+;Project
+;
+MENU_AddToSiteList
+Ajouter à la liste des sites
+;Add current to sitelist
+;
+MENU_Reconnect
+Reconnexion
+;Reconnect
+;
+MENU_Iconify
+I\000Icônifier
+;I\000Iconify
+;
+MENU_About
+?\000A propos
+;?\000About...
+;
+MENU_Quit
+Q\000Quitter
+;Q\000Quit
+;
+MENU_Files
+Fichiers
+;Files
+;
+MENU_TagAll
+Sélectionner
+;A\000Tag all
+;
+MENU_UntagAll
+Désélectionner
+;U\000Untag all
+;
+MENU_TransferMode
+Mode de transfert
+;Transfer mode
+;
+MENU_Binary
+Binaire
+;Binary
+;
+MENU_ASCII
+ASCII
+;ASCII
+;
+MENU_ClearCache
+Effacer répértoire-cache
+;Clear dir-cache
+;
+MENU_Delete
+Effacer
+;D\000Delete
+;
+MENU_Move
+M\000Move
+;M\000Move
+;
+MENU_Sort
+Trier
+;Sort
+;
+MENU_SortbyName
+par nom
+;by name
+;
+MENU_SortbyDate
+par date
+;by date
+;
+MENU_Settings
+Réglages
+;Settings
+;
+MENU_Global
+1\000Globaux
+;1\000Global...
+;
+MENU_Hostlist
+2\000Sites
+;2\000Sitelist...
+;
+MENU_LogWindow
+Fenêtre log
+;Log window
+;
+MENU_ToggleDotFiles
+Montrer fichiers '.'
+;Show dot-files
+;
+MENU_LoadSettings
+Chargement des réglages...
+;Load settings...
+;
+MENU_SaveSettings
+Sauver les réglages
+;Save settings
+;
+MENU_SaveSettingsAs
+Sauver les réglages en...
+;Save settings as...
+;
+MENU_HotList
+Hotlist
+;Hotlist
+;
+; Other strings
+;
+Str_ErrorReadingDir
+Erreur en lecture du répertoire\n
+;Error reading drawer!\n
+;
+Str_CannotDLDirs
+Impossible de télécharger des répertoires entiers !\n
+;Cannot download entire directories!\n
+;
+Str_SelectDLPath
+Choisissez un chemin de téléchargement
+;Select download path
+;
+Str_SelectULFiles
+Choisissez le(s) fichier(s) à charger
+;Select file(s) to upload
+;
+Str_CDFailedTimedout
+Echec du CD distant :\n\
+Connexion achevée
+;Remote CD failed:\nConnection timed out
+;
+Str_CDFailed
+Echec du CD distant .
+;Remote CD failed.
+;
+Str_AmiFTPError
+Erreur AmiFTP
+;AmiFTP error
+;
+Str_OK
+OK
+;OK
+;
+Str_CANCEL
+Annuler
+;Cancel
+;
+Str_PasswordRequest
+Requête de mot de passe AmiFTP
+;AmiFTP Password request
+;
+Str_PasswordEntry
+Entrez le mot de passe pour l'utilisateur :\n\
+%s
+;Enter password for user:\n%s
+;
+Str_ServiceNotAvail
+Service non disponible.
+;Service not available.
+;
+Str_ConnectFailed
+La connexion a échoué.
+;Connect failed.
+;
+Str_ConnectLoginFailed
+La connexion a échoué, login inconnu.
+;Connect failed, login unknown.
+;
+Str_Putfailed
+Le placement de %s a echoué.
+;Put of %s failed
+;
+Str_RemoteWriteFailed
+L'écriture a échoué (système de fichiers distant complet ?).
+;Write failed (remote file system full?).
+;
+Str_GetFailed
+L'obtention de %s a échouée.
+;Get %s failed.
+;
+Str_LocalfileError
+Erreur d'ouverture de %s.
+;Error opening %s.
+;
+Str_LocalWriteFailed
+L'écriture a échoué : %s
+;Write failed: %s
+;
+Str_NoSuchDir
+%s: fichier ou répertoire non trouvé.
+;%s: No such file or directory.
+;
+Str_DisconnectedTimeout
+Déconnecté (temps écoulé).
+;Disconnected (timeout).
+;
+Str_Outofmem
+A cours de mémoire
+;Out of memory
+;
+Str_SelectSettingsFile
+Choisissez un fichier de réglages...
+;Select settings file...
+;
+Str_NoRestart
+La commande de reprise a échoué.
+;Resume command failed.
+;
+Str_ConnectionTimedOut
+Le temps de connexion est écoulé.
+;Connection timed out
+;
+Str_AmiFTPRequest
+Requête AmiFTP
+;AmiFTP Request
+;
+Str_AboutAmiFTP
+A propos d'AmiFTP...
+;About AmiFTP...
+;
+Str_UnknownHost
+Hôte inconnu
+;Unknown host
+;
+Str_ErrorBuildingDirList
+Erreur de construction de liste de fichiers.
+;Error building filelist.
+;
+Str_Translator
+Traduit par Didier GIRON\n\
+(girondid@club-internet.fr)\n
+;
+; This string will show up in the about window telling the user who made 
+; the translation. I suggest the string should look like this:
+; 'English translation by\nMagnus Lilja\n' (and perhaps your emailaddress
+; too). Ofcourse the above string should be in the same language as
+; the rest of the translation.
+SLW_NewGroup
+Nouveau _groupe
+;New _group
+;
+SLW_AddBar
+Ajouter une barre
+;Add bar
+;
+MENU_ToggleADTFiles
+Montrer RECENT en entier
+;Show entire RECENT
+;
+MENU_ResetADT
+Réinitialiser la date ADT
+;Reset Aminet-date
+;
+MW_ViewReadme
+Voir readme
+;View readme
+;
+MPW_General
+Général
+;General
+;
+MPW_ADT
+Aminet
+;Aminet
+;
+MPW_Proxy
+Proxy
+;Proxy
+;
+MPW_BufferSize
+Taille du tampon
+;Buffer size
+;
+MPW_DirCacheSize
+Taille du répertoire-cache
+;Directory cache size
+;
+MPW_DeleteViewed
+Effacer fichiers vus
+;Delete viewed files
+;
+MPW_Beep
+Bip après transfert
+;Beep after transfer
+;
+MPW_HideDirectories
+Cacher répertoires
+;Hide drawers
+;
+MPW_PreservePath
+Préserver chemin
+;Preserve filepath
+;
+MPW_ShowMOTD
+Montrer fichiers MOTD
+;Show MOTD-file
+;
+MPW_GetReadme
+Télécharger readme
+;Download readme
+;
+SCW_AminetMode
+Mode Aminet
+;Aminet-mode
+;
+MPW_OK
+_OK
+;_OK
+;
+MPW_Cancel
+_Annuler
+;C_ancel
+;
+TW_TimeLeft
+Temps restant
+;Time left
+;
+Str_NoNewAminetFiles
+Pas de nouveau fichier depuis la dernière visite d'Aminet
+;No new files since last Aminet visit
+;
+Str_WindowTitle
+AmiFTP - %ld fichiers sélectionnés (%ld %s) %ld %s libres sur le disque
+;AmiFTP - %ld files selected (%ld %s) %ld %s free on disk
+; This might look a bit strange, but when the fields are filled the
+; string looks like:
+; AmiFTP - 10 files selected (4 MB) 15 MB free on disk
+MENU_Connect
+Connect...
+;C\000Connect...
+;
+MENU_Disconnect
+Disconnect
+;Disconnect
+;
+MENU_Get
+Get
+;G\000Get
+;
+MENU_Put
+Put
+;U\000Put
+;
+MENU_View
+View
+;V\000View
+;
+MENU_PatternSelect
+Select by pattern...
+;Select by pattern...
+;
+MPW_Display
+Display
+;Display
+;
+Str_PatternRequest
+AmiFTP request
+;AmiFTP request
+;
+Str_SelectPattern
+Enter AmigaDOS pattern:
+;Enter AmigaDOS pattern:
+;
+MENU_Parent
+Parent
+;P\000Parent
+;
+MPW_PublicScreen
+Public screen
+;Public screen
+;
+MPW_SystemFonts
+Use system fonts
+;Use system fonts
+;
+MPW_InterfaceFont
+Interface font
+;Interface font
+;
+MPW_FilelistFont
+Filelist font
+;Filelist font
+;
+MPW_ShowButtons
+Show buttons
+;Show buttons
+;
+MPW_ShowToolbar
+Show toolbar
+;Show toolbar
+;
+MENU_ViewReadme
+View readme
+;View readme
+;
+MPW_DefaultScreen
+Open on default public screen
+;Open on default public screen
+;
+TW_OverwriteAll
+Overwrite all
+;Overwrite all
+;
+MENU_CreateDir
+Create directory
+;Create directory
+;
+Str_RemoteDir
+Enter name of directory
+;Enter name of directory
+;
+MENU_RawCommand
+Send FTP command
+;Send FTP command
+;
+MENU_Rename
+Rename
+;Rename
+;

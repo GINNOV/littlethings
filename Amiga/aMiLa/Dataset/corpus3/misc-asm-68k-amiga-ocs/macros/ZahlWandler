@@ -1,0 +1,34 @@
+ZW	macro
+	move.l	#\2,a6
+	move.b	#32,0(a6)
+	move.b	#32,1(a6)
+	move.b	#32,2(a6)
+	move.b	#32,3(a6)
+	move.b	#32,4(a6)
+	move	\1,d7
+	move.l	#1,d0
+	clr.l	d2
+\3	add.l	#1,d2
+	clr.l	d1
+	move	d7,d1
+	divu	d0,d1
+	cmpi	#10,d1
+	blt	\4
+	mulu	#10,d0
+	bra	\3
+\4	clr.l	d1
+	sub.l	#1,d2
+	move	d7,d1
+	divu	d0,d1
+	move	#5,d3
+	sub	d2,d3
+	move	d1,d4
+	and.l	#$0000FFFF,d4
+	mulu	d0,d4
+	sub	d4,d7
+	divu	#10,d0
+	add.b	#48,d1
+	move.b	d1,-1(a6,d3.w)
+	tst.l	d2
+	bne	\4
+	endm

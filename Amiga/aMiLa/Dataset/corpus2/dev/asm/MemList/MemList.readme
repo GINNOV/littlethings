@@ -1,0 +1,16 @@
+Short:    Reports system memory ranges in decimal
+Author:   simon@studio.woden.com (Simon N Goodwin)
+Uploader: simon@studio.woden.com (Simon N Goodwin)
+Version:  33.3
+Type:     dev/asm
+
+Example code to scan system memory lists and report
+to the console, with source.
+
+
+REQUIREMENTS
+
+68020 or later (for DIVU.L instruction)
+
+
+

@@ -1,0 +1,283 @@
+[1mNAME[0m
+    sfdc - Compile SFD files into someting useful
+
+[1mSYNOPSIS[0m
+    sfdc [options] file1.sfd [file2.sfd ...]
+
+      Options:
+        --addvectors=TYPE       Add default functions
+        --gateprefix=PREFIX     Prefix for gatestub functions
+        --help -h               Show full help message and exit
+        --libarg=LOCATION       Where to pass the libbase
+        --libprefix=PREFIX      Prefix for library functions
+        --sdi                   SDI header compatibility mode
+        --man                   Show full manual page and exit
+        --mode=MODE             What to do
+        --output=FILE -o FILE   Where to store the output
+        --quiet -q              Be quiet
+        --target=TARGET         Specifies the machine target
+        --version -v            Show version and exit
+
+[1mOPTIONS[0m
+    [1m--addvectors[0m
+            This flag adds the standard library/device/BOOPSI functions to
+            the list of function entries to process. Possible values are
+            [1mnone[0m, [1mlibrary[0m, [1mdevice[0m and [1mboopsi[0m. The default is [1mnone[0m. Useful
+            when generating gate stub functions.
+
+    [1m--gateprefix[0m
+            Sets a function name prefix for the gate stub functions when
+            generating gatestubs or gateproto files.
+
+    [1m--help[0m  Show the full help message and exit.
+
+    [1m--libarg[0m
+            Specifies where to place the library base argument when
+            generating gatestubs or gateproto and libproto files. Possible
+            values are [1mnone[0m, [1mfirst[0m and [1mlast[0m. The default is [1mnone[0m.
+
+    [1m--libprefix[0m
+            Sets a function name prefix for the local library functions when
+            generating gatestubs or libproto files.
+
+    [1m--sdi[0m   Turns on the SDI header compatibility mode. This will make sure
+            that all header files (especially the gatestub and gateproto
+            files are generated to be used in a SDI compatible environment.
+
+    [1m--man[0m   Show the complete manual page and exit.
+
+    [1m--mode[0m  Instructs [36msfdc[0m what to do. [36msfdc[0m can handle the following
+            arguments:
+
+            [1mautoopen[0m
+                Generate C code for automatically opening the module. It is
+                usually placed in a link library together with C stub
+                functions.
+
+            [1mclib[0m
+                Generate C prototypes to be placed in [36mInclude/clib/[0m.
+
+            [1mdump[0m
+                Dumps all information gathered from the SFD file.
+
+            [1mfd[0m  Generate an old-style FD file.
+
+            [1mfunctable[0m
+                Generate a list of function names suitable for inclusion in
+                a library function table. By defining the preprocessor
+                symbol [1m__SFDC_FUNCTABLE_M68K__[0m, the list of functions will
+                be modified so it's suitable for AmigaOS 4's m68k function
+                table.
+
+            [1mgateproto[0m
+                Generate a prototype header file for library gate stubs.
+                Useful for library and device developers.
+
+            [1mgatestubs[0m
+                Generate library gate stubs. Useful for library and device
+                developers.
+
+            [1minterface[0m
+                Generate a struct with function pointers, like that uses in
+                AmigaOS 4.
+
+            [1mlibproto[0m
+                Generate a prototype header file for library functions. This
+                is almost like [1mclib[0m, but for internal use by library and
+                device developers.
+
+            [1mlvo[0m Generate an assembler LVO include file.
+
+            [1mmacros[0m
+                Generate a header file containing [36mgcc[0m specific preprocessor
+                macros, similar to [36mfd2inline[0m's [1m--new[0m switch. For AROS
+                targets, it generates a file suitable to be placed in the
+                [36mInclude/defines/[0m directory.
+
+            [1mproto[0m
+                Generate header file to be placed in [36mInclude/proto/[0m that
+                includes the C prototypes as well as compiler-specific
+                inlines or pragma files.
+
+            [1mpragmas[0m
+                Generate a [36mSAS/C[0m/[36mLATTICE[0m/[36mDICE[0m and [36mMaxon C[0m/[36mStorm C[0m/[36mAztec C[0m
+                pragma file.
+
+            [1mstubs[0m
+                Generate C library stubs suitable to be compiled and
+                archived into [36mlibamiga.a[0m, [36mlibamigastubs.a[0m or [36mlib[33m<module>[0m.a[0m.
+                Using the [1m%f[0m escape sequence in the [1m--output[0m switch or a
+                tool like [36msplitasm.awk[0m strongly is recommended.
+
+            [1mverify[0m
+                Just loads and parses the SFD file. This is the default.
+
+    [1m--output[0m
+            Specifies where the result will be stored. The following escape
+            sequencies are allowed in the file name. If the sequence [1m%f[0m is
+            present in the name, a new file will be created for each
+            function processed.
+
+            [1m%b[0m  The library base variable name ("DOSBase", for example).
+
+            [1m%f[0m  The current funcion name ("Open", for example).
+
+            [1m%l[0m  The name of the library or device ([36mdos.library[0m, for
+                example).
+
+            [1m%n[0m  The base name of the library or device ("dos", for example).
+
+            If omitted, the result will be sent to the standard output
+            instead of a file.
+
+    [1m--quiet[0m Be quiet.
+
+    [1m--target[0m
+            Specifies the target when generating macros etc. The target
+            names follow the GNU autoconf standard. Some possible values are
+            listed below. The default is [1mm68k-unknown-amigaos[0m.
+
+            [1mi?86-pc-aros[0m, [1mi?86-linux-aros[0m, [1mppc-aros[0m ...
+                AROS. Anything goes, as long as it ends in "-aros".
+
+            [1mi?86be-pc-amithlon[0m, [1mi?86be-amithlon[0m
+                Amithlon/big endian IA32.
+
+            [1mm68k-unknown-amigaos[0m, [1mm68k-amigaos[0m
+                Traditional AmigaOS/m68k.
+
+            [1mm68kvbcc-unknown-amigaos[0m, [1mm68k-amigaos[0m
+                Traditional AmigaOS/m68k but with the VBCC compiler.
+
+            [1mppc-unknown-amigaos[0m, [1mppc-amigaos[0m
+                AmigaOS 4/PowerPC.
+
+            [1mpowerpc-unknown-morphos[0m, [1mppc-morphos[0m
+                MorphOS/PowerPC.
+
+    [1m--version[0m
+            Prints the version and exits.
+
+[1mDESCRIPTION[0m
+    [36msfdc[0m is an open source replacement for Amiga, Inc.'s [36msfd[0m tool,
+    distributed with [1mNDK 3.9[0m. It is also an replacement for [36mfd2inline[0m from
+    GeekGadgets and the MorphOS team, later improved to death by Martin
+    Blom. It's now a complete mess and needs a replacement. SFD files and
+    [36msfdc[0m might to be a good start.
+
+    For developers using [36mgcc[0m, [36msfdc[0m aims to handle all your needs when it
+    comes to libraries, devices, datatypes, BOOPSI classes or similar
+    modules. [36msfdc[0m can also generate [36mSAS/C[0m, [36mDICE[0m and [36mStorm C[0m files for end
+    users of such modules.
+
+    The basis for all work performed by [36msfdc[0m is the [1mSFD[0m file, which contains
+    all required information about the module and the functions provided.
+    From this information, [36msfdc[0m can:
+
+    *   Generate an old-style [1mFD[0m file for futher processing with other
+        tools.
+
+    *   Generate a [1mC prototype file[0m, such as those normally found in the
+        [36mInclude/clib/[0m directory.
+
+    *   Generate [36mgcc[0m [1minlines[0m (actually preprocessor macros) or [1mpragmas[0m for
+        direct library function calls (without going via library stubs).
+
+    *   Generate the [36mInclude/proto/[0m file, which includes the [36mInclude/clib/[0m
+        file and either the inlines or pragmas.
+
+    *   Generate an [1massembler LVO[0m file, which contains the library offset of
+        all functions in the library.
+
+    *   Generate [1mC stubs[0m, which can be compiled and archived into a stub
+        library. It can also generate auto-open and auto-close code.
+
+    *   Generate library [1mgateway stubs[0m, which can be used as part of your
+        module as glue between the module function table and your C
+        functions.
+
+    Additionally, [36msfdc[0m does all this for several Amiga-like operating
+    systems: traditional [1mAmigaOS[0m, native [1mAmithlon[0m, [1mAROS[0m and [1mMorphOS[0m.
+
+    [36msfdc[0m uses [36mautoconf[0m style identifies for the operating systems, making it
+    easy to generate the correct output. Just make sure [36mconfigure.in[0m
+    contains the [1mAC_CANONICAL_SYSTEM[0m command and use [1m@host@[0m in your
+    [36mMakefile.in[0m. Using [36mautoconf[0m and [36msfdc[0m, it's easy to make for example a
+    library that can be compiled or cross-compiiled for any of the mentioned
+    architectures.
+
+[1mRETURN VALUE[0m
+    Returns 0 on success and 10 on errors.
+
+[1mNOTES[0m
+    Had I seen [36mcvinclude.pl[0m before I started writing this program, I might
+    still have been using fd/clib files. Or maybe not.
+
+[1mAUTHOR[0m
+    Martin Blom <martin@blom.org>
+
+[1mHISTORY[0m
+    *   [1m1.0 (2003-07-27)[0m
+
+        Initial release.
+
+    *   [1m1.1 (2003-12-22)[0m
+
+        Added workaround for workbench.library (base name is "wb"). Added
+        AmigaOS 4 support. Added the [1m--addvectors[0m switch.
+
+    *   [1m1.2 (2004-06-16)[0m
+
+        Generates files for mathieeedoub*, though probably broken. Well they
+        are the same as fd2inline generates at least.
+
+    *   [1m1.2a (2004-06-20)[0m
+
+        Replace AROS_LP with AROS_LD. Because it is guaranteed to define the
+        function prototype. [verhaegs]
+
+    *   [1m1.3 (2004-11-12)[0m
+
+        Correctly handle the argument "type **arg", where there is no
+        whitespace between the argument type and the argument name.
+
+    *   Correctly handle the prototype "void function (void)", were there is
+        a whitespace between the function name and the parenthesis and
+        "void" is used to indicate no arguments.
+
+    *   Replace "-" with "_" in base/library name.
+
+    *   New special keyword for register specification (in addition to [1msysv[0m
+        and [1mbase[0m): [1mautoreg[0m, which automatically allocates m68k registers for
+        the arguments.
+
+    *   [1msysv[0m now works correctly with varargs functions. [1msysv[0m combined with
+        [1mgatestubs[0m work for m68k and i386 only for now. For AROS targets in
+        [1mmacros[0m, the correct AROS macro is used to fetch the function to be
+        called.
+
+    *   New [1m--mode[0m: [1mfunctable[0m. For proper code generation in AROS, make sure
+        gateprotos are included before you include the functable.
+
+    *   [1mproto[0m files now include [36mInclude/defines/[0m files when used in AROS.
+
+    *   [1m1.4 (2005-09-23)[0m
+
+        Added AmigaOS 4-style interfaces (C++ only for non-OS4 targets, and
+        without implementation).
+
+    *   The library base in the [1mproto[0m file is now defined for AmigaOS 4 too.
+
+    *   AmigaOS 4 [1mclib[0m files now add [1m__attribute__((linearvarargs))[0m to
+        varargs functions.
+
+    *   Added AmigaOS 4 support for [1mstubs[0m files.
+
+    *   Added support for the 'iptr' gcc attribute.
+
+    *   Added [1m__SFDC_FUNCTABLE_M68K__[0m check in the [1mfunctable[0m mode.
+
+    *   Added m68k stub functions to AmigaOS 4's [1mgatestubs[0m and [1mgateproto[0m.
+
+    *   Added the [1mautoopen[0m mode.
+

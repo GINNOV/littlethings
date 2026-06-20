@@ -1,0 +1,29 @@
+Short:        Macros for playing sound samples
+Uploader:     blasio kemmunet net mt  (Blasio Muscat)
+Architecture: m68k-amigaos
+
+* SimpleAudio.i
+Author:    Blasio@kemmunet.net.mt   (Blasio Muscat)
+Uploader:  blasio@kemmunet.net.mt  (Blasio Muscat)
+Type:      dev/asm
+
+A set of macros to remove some of the hassle of playing sound samples.
+
+Very simple to use.
+
+PLEASE MAIL ME IF YOU USE THIS.
+
+
+Installing:     1) Move SimpleAudio.i to wherever you want,
+                preferably with the rest of the include files.
+                (I put it in misc/ with the rest of the includes)
+
+                SimpleAudio needs the standard include files, and
+                looks for an assign "include:" to the includes directory.
+                If you do not have this assign then edit the 6 th line of
+                SimpleAudio.i to point to your includes.
+
+                NOTE:  If you do not have the standard includes but would
+                like to use this include then please MailMe and I will make 
+                a version that does not need the standard includes.  One
+                mail is enough.

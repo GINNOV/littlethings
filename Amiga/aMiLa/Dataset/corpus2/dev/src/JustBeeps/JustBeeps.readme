@@ -1,0 +1,7 @@
+Short:        Simple example of using Audio/Timer devs
+Author:       Phil Burk
+Architecture: m68k-amigaos
+Source:       Fish collection
+
+Simple example of using Audio and Timer devices.  Plays a series of beeps
+whose pitches are based on a just intoned tuning system.

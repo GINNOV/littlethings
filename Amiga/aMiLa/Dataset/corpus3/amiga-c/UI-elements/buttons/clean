@@ -1,0 +1,7 @@
+delete buttons
+delete buttons.lnk
+delete buttons.info
+delete src/ui.o
+delete src/button.o
+delete src/main.o
+

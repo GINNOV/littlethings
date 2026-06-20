@@ -1,0 +1,35 @@
+Short: Convert text/ansi files to C source
+Type: dev/c
+Uploader: jools@io.org
+Author: jools@io.org
+
+mcs v1.1a -- 1994.may.30, first public release
+
+QUICK DOCS
+==========
+
+Mcs is an abbreviation for "make C string", since that is exactly what it
+does.  Mcs is a small tool for programmers that will convert any text/ansi
+file into a c-source file in the form of a character pointer array, with
+each line from the input file having an index in the char *generic[] array
+generated.
+
+One of my current (big) projects is a BBS package, and I found it easiest to
+design my account editor, main idle screen and so on with an ansi editor
+such as FANSi, and then run it through mcs -- at which point the file can
+simply be #included, and minor changes (such as changing generic[] to a more
+appropriate name) can be made.
+
+Run it and see what I mean.  It will also escape into standard C notation
+the following ASCII chars:  CSI, ESC, BEL, TAB, FF, CR, LF, \, ', and ".
+
+Email:	(fidonet)	Ben Kennedy at 1:241/11
+	(internet)	jools@io.org (or) ben.kennedy@f11.n241.z1.fidonet.org
+	(snailmail)	P.O. Box 152, Deep River ON, CANADA K0J 1P0
+
+Or call my BBS at +1-613-584-1426!
+
+regards,
+jools
+
+---------------

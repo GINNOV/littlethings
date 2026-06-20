@@ -1,0 +1,273 @@
+head	1.630;
+access;
+symbols;
+locks
+	lilja:1.630; strict;
+comment	@# @;
+
+
+1.630
+date	96.07.07.20.13.52;	author lilja;	state Exp;
+branches;
+next	1.608;
+
+1.608
+date	96.07.01.20.15.58;	author lilja;	state Exp;
+branches;
+next	1.401;
+
+1.401
+date	96.03.28.13.57.27;	author lilja;	state Exp;
+branches;
+next	1.265;
+
+1.265
+date	96.03.08.18.05.17;	author lilja;	state Exp;
+branches;
+next	1.124;
+
+1.124
+date	96.02.10.15.50.24;	author lilja;	state Exp;
+branches;
+next	0.1332;
+
+0.1332
+date	95.12.17.13.23.20;	author lilja;	state Exp;
+branches;
+next	0.1312;
+
+0.1312
+date	95.12.14.16.17.47;	author lilja;	state Exp;
+branches;
+next	0.13;
+
+0.13
+date	95.12.09.00.03.40;	author lilja;	state Exp;
+branches;
+next	;
+
+
+desc
+@Aminet description file.
+@
+
+
+1.630
+log
+@boo
+@
+text
+@Short:    Easy to use GUI FTP client for OS 2.0+
+Author:   Magnus Lilja <lilja@@lysator.liu.se>
+Uploader: Magnus Lilja <lilja@@lysator.liu.se>
+Type:     comm/tcp
+Replaces: comm/tcp/AmiFTP-1.264.lha
+
+Title
+
+   AmiFTP
+
+Version
+
+   1.607
+
+Description
+
+   AmiFTP is an easy to use ftp-client with a GUI built on the
+   ClassAct BOOPSI system. Some of the features are:
+
+   * Localized (Danish, Dutch, Finnish, German, Greek, Icelandic, Italian, 
+     Norwegian, Spanish and Swedish catalogs are available at the moment)
+
+   * Aminet-mode
+
+   * ARexx interface
+
+   * Resume transfer
+
+   * Multiselect when up/downloading files
+
+   * Caches the latest directories
+
+   * Has hotlist with submenus
+
+   * Online AmigaGuide-help
+
+   Make sure to use the installerscript and follow the instructions there
+   before you start AmiFTP. This is really necessary in order to install
+   the ClassAct classes on your system.
+
+
+History
+
+   AmiFTP now has an Aminet-mode, in which AmiFTP works like an ADT-client that
+   keeps track of when you last visited Aminet.
+
+Requirements
+
+   AmigaOS 2.0 or higher.
+   reqtools.library
+
+   One of the following TCP/IP stacks:
+   AmiTCP 3.x or higher
+   AS225r2,
+   I-Net 225,
+   CPR TCP/IP Base Kit
+   or mlink.
+
+   AmiFTP also needs ClassAct gadgets, which are included in this 
+   archive.
+
+Price
+
+   AmiFTP is Shareware. This version is not crippled in any way which
+   means that there's no extra features available for those who
+   register, but this shouldn't stop you from supporting this program.
+   The Shareware fee is $15. See the documentation in the archive
+   for more information.
+
+Author
+
+   Magnus Lilja
+
+   e-mail: lilja@@lysator.liu.se
+
+   Postal Address: Magnus Lilja
+                   Alsättersgatan 9C:17
+                   S-584 35 LINKÖPING
+                   SWEDEN
+@
+
+
+1.608
+log
+@bla
+@
+text
+@d5 1
+d13 1
+a13 1
+   1.6xx
+d45 1
+a45 1
+   keeps track of when you last visited Aminet etc.
+d51 1
+@
+
+
+1.401
+log
+@Bug-fixes.
+@
+text
+@d12 1
+a12 1
+   1.264
+d19 1
+a19 1
+   * Localized (Danish, Dutch, Finnish, German, Icelandic, Italian, 
+d22 2
+d30 1
+a30 1
+   * Caches the 5 latest directories
+d43 2
+a44 5
+   The major new features are the possibility to have submenus in the hotlist and
+   that AmiFTP now supports both bsdsocket.library (AmiTCP) and socket.library
+   (as225-alike) TCP/IP-stacks in one binary.
+   The ARexx command-set has also been extended. An aminet search script written
+   in ARexx (by Sami Itkonen) is also included.
+d48 2
+a49 1
+   AmigaDOS 2.0 or higher.
+d76 1
+a76 1
+                   S-582 51 LINKÖPING
+@
+
+
+1.265
+log
+@Updated.
+@
+text
+@d1 1
+a1 1
+Short:    AmiTCP/AS225 FTP-client v1.0 (ClassAct GUI)
+d12 1
+a12 1
+   1.0
+d30 3
+a32 1
+   * Has hotlist with submenus.
+d41 5
+@
+
+
+1.124
+log
+@Updated documentation, fixes some bugs.
+@
+text
+@a21 2
+   * Multiselection
+
+d30 2
+d42 7
+a48 2
+   AmigaDOS 2.0 or higher. AmiTCP 3.x or higher, AS225r2/IW225 or
+   mlink.
+@
+
+
+0.1332
+log
+@Release 1.0
+@
+text
+@d19 2
+a20 2
+   * Localized (Danish, Dutch, Finnish, German, Italian, Norwegian
+     and Swedish catalogs are available at the moment)
+d35 4
+@
+
+
+0.1312
+log
+@Added something.
+@
+text
+@d1 1
+a1 1
+Short:    FTP-client for AmiTCP/as225/mlink with ClassAct-GUI
+d12 1
+a12 1
+   0.13xx
+d16 1
+a16 1
+   AmiFTP is a easy to use ftp-client with a gui built on the
+d32 3
+a34 2
+   Make sure to the installerscript and follow the instructions there
+   before you start AmiFTP.
+d38 1
+a38 1
+   AmigaDOS 2.0 or higher. AmiTCP 3.x or higher, or AS225r2/IW225 or
+d44 8
+d61 1
+a61 2
+                   Sweden
+
+@
+
+
+0.13
+log
+@*** empty log message ***
+@
+text
+@d12 30
+a41 1
+   0.9xxx
+@

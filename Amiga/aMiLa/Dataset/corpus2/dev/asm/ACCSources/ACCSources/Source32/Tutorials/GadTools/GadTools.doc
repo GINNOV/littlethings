@@ -1,0 +1,221 @@
+
+			   Gadtools Library
+			   ~~~~~~~~~~~~~~~~
+
+ As of WB2 your Amiga comes with a real gem of a library, gadtools. This
+library allows you to quickly add and monitor a number of gadgets to your
+application. As well as standard button gadgets some new types have been
+introduced, such as ListView that will display a list of items.
+
+ Your code needs to do some preparation before calling gadtools.library,
+refer to the RKM Libraries manual for more information. For the purpose of
+this tutorial I am assuming that you have a copy of GadToolsBox available.
+This utility will allow you to design windows, add gadgets and menus and
+will then generate the source code required to initialise gadtools.library,
+open the window, close the window, refresh the window and deinitialise. All
+you need to add is the event handler and startup code. This utility is
+essential item for all WB2 programmers and will save you many hours of
+laborouis work. A copy can be obtained from Amiganuts, disk ref: ACC Tools1
+
+ GadToolsBox generates 2 source files. One of these contains all global XREFs
+you would need if assembling your project as individual modules that will
+eventually be linked together. For the purpose of this tutorial, this is not
+necessary and the .i file can be ignored. The .s file generated is terminated
+with an end instruction and so must be included at the end of any application
+you may be working on.
+
+ GadTools library simply accepts a Tag List that describes a gadget and builds
+the gadget for you. Some of GadTools gadgets are a great improvement over
+Intuition gadgets, but to acheive this certain GadTools functions need to be
+used in your event loop where before you would have used Exec functions.
+
+ A GadTools gadget will send a GADGETUP once activated. You should then use
+the im_IAddress of the message generated to locate the gadget structure and
+examine the gg_GadgetID field to determine what gadget this is. How you act
+on the ID is up to you, but GadToolsBox will geneerate ID's from 0 upwards
+so the two obvious methods that spring to mind are a stream of cmp/bne
+tests or using a jump table. I have opted for the jump table approach, if
+it's good enough for system libraries, it's good enough for me! The ID is
+multiplied by four and the address of the start of a jump table is added to
+the result, this forms an address in the jump table. A long word is read
+from the jump table at this address and is used to call the desired
+subroutine ( see the event loop for more information ).
+
+ This is not intended as a full blown tutorial on GadTools, that will come
+next month. This is just to get you started! Below is a quick list of how to
+deal with each type of gadget:
+
+ Button
+ ~~~~~~
+ Your code will receive a GADGETUP message and the ID of the gadget will have
+to be examined. Basically the same as pre WB2.
+
+ String
+ ~~~~~~
+ Your code will receive a GADGETUP message and you will need to examine the
+si_Text field of the gadget to determine what string was entered. Again same
+as pre WB2.
+
+ Integer
+ ~~~~~~~
+ You get a GADGETUP message and will need to examine the si_LongInt field
+of the gadgets Special Info structure to obtain the value of the integer
+entered.
+
+ MX Gadgets
+ ~~~~~~~~~~
+ At last! Mutually Exclusive gadgets. These are those funny little round
+buttons, click one and it deactivates another. When a MX gadget is selected,
+you will receive a GADGETUP message and im_Code will contain the ordinal
+number of the gadget selected. So if you create an MX gadget with five
+entries and the user clicks on the third one, im_Code will contain 3.
+
+ Cycle Gadgets
+ ~~~~~~~~~~~~~
+ This is the gadget that when clicked, cycles through a list of entries. You
+will receive a GADGETUP message and im_Code will contain the ordinal number
+of the entry selected.
+
+ ListView Gadgets
+ ~~~~~~~~~~~~~~~~
+ Wow, great, the best and all that. At long last a easy to implement selection
+gadget. You supply a ListView with an exec list structure and it will display
+the name of each node in that list, along with slider and scroll gadgets. The
+best part is that the OS takes care of scrolling the list and your code only
+receives a GADGETUP message when an entry is selected. The ordinal number of
+the entry is returned in im_Code.
+
+ To modify a list being used by a ListView, you must first send a -1 list
+pointer to the ListView, then modify the list and finally send the address
+of the first node of the new list back to the ListView. Simply sending a
+NULL pointer will cause the ListView to clear all entries while you modify
+the list.
+
+ CheckBox Gadget
+ ~~~~~~~~~~~~~~~
+ A Check Box gadget can be thought of as a switch. When selected, the gadget
+contains a 'tick' and when deselected it is empty. When clicked a GADGETUP
+message is sent and a 0 or 1 returned in the im_Code field depending on
+wether the gadget has become deactivated or activated. 
+
+ Slider Gadget
+ ~~~~~~~~~~~~~
+ Slider gadgets should be used to control levels. The gadget will always
+return a value between it's upper and lower limits depending on the
+location of it's knob when released. The value is returned in im_Code. 
+
+ Scroller Gadget
+ ~~~~~~~~~~~~~~~
+ Scroll Gadget should be used when showing a section of the whole. The
+gadget has an upper and lower limit and also the amount represented by the
+knob, the visible amount. When the knob is released the gadget will return
+the position of the top line of the new visible section.
+
+ Text Gadget
+ ~~~~~~~~~~~
+ At first seems a little pointless, but this is a real gem of a gadget. It
+simply displays a string in a bevel box. The string will be clipped to the
+size of the box. You can change the text beeing displayed simply by sending
+the address of a new string.
+
+ Number Gadget
+ ~~~~~~~~~~~~~
+ Same as a text gadget, but it displays an integer value!
+
+ Palette Gadget
+ ~~~~~~~~~~~~~~
+ Isn't life easy these days! A palette gadget will render a rectangle for
+each colour available. When one of these colours is selected it's ordinal
+value is returned in im_Code.
+
+ Modifying a GadTools Gadget
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ The function GT_SetGadgetAttrsA() can be used to send a Tag List to a
+gadget at any time. The most usual case is to enable/disable a gadget.
+Below is a list of what tags can be sent to what gadget and what they do.
+This list was generated from libraries/gadtools.i:
+
+		Tag Name		Purpose
+		~~~~~~~~		~~~~~~~
+ Any Gadget
+ ~~~~~~~~~~	GA_Disabled		GA_Disabled,0 for activating gadget.
+ 					GA_Disabled,1 for disabling gadget.
+
+ CheckBox
+ ~~~~~~~~	GTCB_Checked		0/1 to clear/set a checkbox.
+
+ ListView	
+ ~~~~~~~~	GTLV_Top		Top visible node in listview
+		GTLV_Labels		List to display in listview
+		GTLV_ReadOnly		TRUE if listview is to be read-only
+		GTLV_ScrollWidth	Width of scrollbar
+		GTLV_ShowSelected	show selected entry beneath listview
+		GTLV_Selected		Set ordinal number of selected entry
+					in the list
+ MX Gadgets
+ ~~~~~~~~~~	GTMX_Labels		NULL-terminated array of labels
+		GTMX_Active		Active one in mx gadget
+
+ Cycle Gadgets
+ ~~~~~~~~~~~~~	GTCY_Labels		NULL-terminated array of labels
+		GTCY_Active		The active one in the cycle gad
+
+ Palette Gadget
+ ~~~~~~~~~~~~~~	GTPA_Depth		Number of bitplanes in palette
+		GTPA_Color		Palette color
+		GTPA_ColorOffset	First color to use in palette
+		GTPA_IndicatorWidth	Width of current-color indicator
+		GTPA_IndicatorHeight	Height of current-color indicator
+
+ Scroller Gadget
+ ~~~~~~~~~~~~~~~
+		GTSC_Top		Top visible in scroller
+		GTSC_Total		Total in scroller area
+		GTSC_Visible		Number visible in scroller
+		GTSC_Arrows		Specify size of arrows for scroller
+
+ Slider Gadget
+ ~~~~~~~~~~~~~	GTSL_Min		Slider min value
+		GTSL_Max		Slider max value
+		GTSL_Level		Slider level
+		GTSL_MaxLevelLen	Max length of printed level
+		GTSL_LevelFormat	Format string for level
+		GTSL_LevelPlace		Where level should be placed
+
+ String Gadget
+ ~~~~~~~~~~~~~
+		GTST_String		String gadget's displayed string
+		GTST_MaxChars		Max length of string
+
+ Integer Gadget
+ ~~~~~~~~~~~~~~
+		GTIN_Number		Number in integer gadget
+		GTIN_MaxChars		Max number of digits
+
+ Text Gadget
+ ~~~~~~~~~~~	GTTX_Text		Text to display
+		GTTX_CopyText		Copy text label instead of referencing it
+
+ Number Gadget
+ ~~~~~~~~~~~~~	GTNM_Number		Number to display
+
+
+
+ So to pass a new string to a string gadget, you would use the following Tag
+List:
+
+strNewTags	dc.l		GTST_String,newText
+		dc.l		TAG_DONE
+
+newText		dc.b		'This is the new string',0
+		even
+
+ Most of the gadgets above are demonstrated in the one example supplied with
+these notes. The example contains enough notes, I hope, for you to follow
+how gadtools gadgets are handled. The CheckBox routine also demonstrates
+how you can modify gadgets using GT_SetGadgetAttrsA().
+
+Next issue I hope to have a full tutorial for you!
+
+							M.Meany
+							

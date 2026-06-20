@@ -1,0 +1,9 @@
+Short:    Official OpenGL benchmark (source codes)
+Uploader: Niels.Froehling@Informatik.Uni-Oldenburg.DE (Niels Froehling)
+Author:   spit@sgi.com (John Spitzer) [ported to MesaGL: Niels.Froehling@Informatik.Uni-Oldenburg.DE (Niels Froehling)]
+Type:     dev/src
+Requires: flex/lex, bison/yacc, MesaGL, GLu, aux, tk
+
+ This is an AmigaOS-port of the official benchmark-program from SGI.  It
+requires a slightly modified version of tk and aux (available in dev/src).
+ It does so more simple API-calls.

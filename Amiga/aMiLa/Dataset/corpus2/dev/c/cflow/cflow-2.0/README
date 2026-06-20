@@ -1,0 +1,41 @@
+$Id$
+
+This is a enhanced copy of cflow I've been using, which has been
+floating around for a number of years.
+
+This works well if you use GNU make, gcc and bash.
+
+
+With anything else, you mileage may vary.
+
+Some combinations of code/header file require a little coaxing.
+
+Contributors:
+Andrew Moore
+Steve Kirkendall
+Tony Hansen
+Kevin Szbo
+Aleixs Szabo
+Alexis Kwan
+M.M.Taylor
+
+Many contributions are more than a decade old.
+
+I've seen some problems on various systems...
+For example, on linux I get:
+cflow prcc.c
+/u/marty/bin/prcc: cannot redefine: sys_nerr    {v /usr/include/errno.h 8}
+/u/marty/bin/prcc: cannot redefine: sys_errlist {v /usr/include/errno.h 9}
+/u/marty/bin/prcc: cannot redefine: _sys_nerr   {v /usr/include/errno.h 12}
+/u/marty/bin/prcc: cannot redefine: _sys_errlist        {v /usr/include/errno.h 13}
+1       __gnu_calloc {/usr/include/stdlib.h 183}
+2               calloc {}
+3       __gnu_malloc {/usr/include/stdlib.h 188}
+4               malloc {}
+
+
+Get around this with:
+leisner@compaq$ cflow -X 'errno.h stdlib.h' prcc.c
+
+to produce the file in examples/prcc.cflow
+

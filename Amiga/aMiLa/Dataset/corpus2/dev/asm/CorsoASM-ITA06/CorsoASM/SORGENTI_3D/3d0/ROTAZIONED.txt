@@ -1,0 +1,92 @@
+
+******************************************************************************
+*                         Calculate 3d-coordinates
+******************************************************************************
+Calculate
+    lea     td_points,a0        *>>>> 3D points buffer
+    lea     dd_points,a1        *>>>> 2D points buffer
+    move.l  #td_npoints-1,d7    *>>>> Number of points
+
+CalcLoop
+    move.w  (a0)+,d2    *>>>> x = xcoord
+    move.w  (a0)+,d3    *>>>> y = ycoord
+    move.w  (a0)+,d4    *>>>> z = zcoord
+
+******************************************************************************
+* y2=(y*cos(anx) + z*sin(anx))/256
+    move.l  anx,d0
+    bsr     GetSinCos
+    move.l  d0,d5   *>>>> Save sin(anx)
+    move.l  d1,d6   *>>>> Save cos(anx)
+
+    muls    d3,d1   *>>>> y*cos(anx)
+    muls    d4,d0   *>>>> z*sin(anx)
+    add.l   d1,d0   *>>>> y*cos(anx)+z*sin(anx)
+    asr.l   #8,d0   *>>>> (y*cos(anx)+z*sin(anx))/256
+
+******************************************************************************
+* z=(z*cos(anx) - y*sin(anx))/256
+    muls    d6,d4   *>>>> z*cos(anx)
+    muls    d3,d5   *>>>> y*sin(anx)
+    sub.l   d5,d4   *>>>> z*cos(anx)-y*sin(anx)
+    asr.l   #8,d4   *>>>> z = (z*cos(anx)-y*sin(anx))/256
+    move.l  d0,d3   *>>>> y = (y*cos(anx)+z*sin(anx))/256
+
+******************************************************************************
+* x2=(x*cos(any) + z*sin(any))/256
+    move.l  any,d0
+    bsr     GetSinCos
+    move.l  d0,d5   *>>>> Save sin(any)
+    move.l  d1,d6   *>>>> Save cos(any)
+
+    muls    d2,d1   *>>>> x*cos(any)
+    muls    d4,d0   *>>>> z*sin(any)
+    add.l   d1,d0   *>>>> x*cos(any)+z*sin(any)
+    asr.l   #8,d0   *>>>> (x*cos(any)+z*sin(any))/256
+
+******************************************************************************
+* z=(z*cos(any) - x*sin(any))/256
+    muls    d6,d4   *>>>> z*cos(any)
+    muls    d2,d5   *>>>> x*sin(any)
+    sub.l   d5,d4   *>>>> z*cos(any)-x*sin(any)
+    asr.l   #8,d4   *>>>> z = (z*cos(any)-x*sin(any))/256
+    move.l  d0,d2   *>>>> x = (x*cos(any)+z*sin(any))/256
+
+******************************************************************************
+* y2=(y*cos(anz) + x*sin(anz))/256
+    move.l  anz,d0
+    bsr     GetSinCos
+    move.l  d0,d5   *>>>> Save sin(anz)
+    move.l  d1,d6   *>>>> Save cos(anz)
+
+    muls    d3,d1   *>>>> y*cos(anz)
+    muls    d2,d0   *>>>> x*sin(anz)
+    add.l   d1,d0   *>>>> y*cos(anz)+x*sin(anz)
+    asr.l   #8,d0   *>>>> (y*cos(anz)+x*sin(anz))/256
+
+******************************************************************************
+* x=(x*cos(anz) - y*sin(anz))/256
+    muls    d6,d2   *>>>> x*cos(anz)
+    muls    d3,d5   *>>>> y*sin(anz)
+    sub.l   d5,d2   *>>>> x*cos(anz)-y*sin(anz)
+    asr.l   #8,d2   *>>>> x = (x*cos(anz)-y*sin(anz))/256
+    move.l  d0,d3   *>>>> y = (y*cos(anz)+x*sin(anz))/256
+
+    move.l  d2,d0   *>>>> d0=X
+    move.l  d3,d1   *>>>> d1=Y
+    move.l  d4,d2   *>>>> d2=Z
+
+**************************** 3d to 2d projection *****************************
+    add.l   Observer_Z,d2 *>> z = z + observer_distance
+    add.l   #488,d2     *>>>> z = z + zcenter
+    asl.l   #8,d0       *>>>> x = x * 256
+    asl.l   #8,d1       *>>>> x = x * 256
+    divs    d2,d0       *>>>> Project X
+    divs    d2,d1       *>>>> Project Y
+    add.w   #160,d0     *>>>> x = x + xcenter
+    add.w   #100,d1     *>>>> y = y + ycenter
+    move.w  d0,(a1)+    *>>>> Store X
+    move.w  d1,(a1)+    *>>>> Store Y
+    dbf     d7,CalcLoop *>>>> Repeat...
+    rts
+

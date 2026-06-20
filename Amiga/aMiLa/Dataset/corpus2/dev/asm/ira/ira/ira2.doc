@@ -1,0 +1,307 @@
+
+
+                      ________________
+                     /___/_________/_/\----- - -  -   -   -
+                    /   /         /  \ \
+                   /   /  ____   /    \ \
+                  /   /  / / /  /  /\  \ \----- - -  -   -   -
+                 /   /  / / /  /  / /\  \ \
+                 \   \  \ \/  /  / /  \  \ \
+                  \   \  \/  /  /  ¯¯¯¯\  \ \----- - -  -  -   -
+                   \   \     \  ¯¯¯¯¯¯¯¯   \ \
+                    \   \     \    ______   \ \ :
+                    /   /  /\  \   \ \  :\   \ \|/--- - -  -  -   -
+                   /   /  / /\  \   \ \ ° \   \ *--
+                  /   /  / /  \  \   \/    \   \|\
+                  ¯¯¯¯¯¯¯¯¯    ¯¯¯¯¯¯¯      ¯¯¯¯:
+
+                                                
+
+                      IRA  V2.09
+
+                      Freeware reassembler
+
+
+DESCRIPTION
+¯¯¯¯¯¯¯¯¯¯¯
+This is version V2.09 of reassembler IRA. Reassembler means that IRA
+translates any executable or binary file into an assembler sourcecode that
+might immediately be translated back by an assembler. E.g., you can do that
+with a debugging option. After that you can examine that program with any
+debugger. That's fine for finding and analysing viruses, repairing old
+programs, even optimising alien programs.
+
+When translating back with an assembler, switch optimising off, except you
+know exactly what you're doing! Optimisations and modifications might work
+with a perfect reassembly, where you entered all code/data regions and jump-
+tables into the config file.
+
+IRA is for use from CLI/SHELL.
+
+IRA has some command line options. Just type 'ira' to get a short description.
+
+FPU commands are not implemented yet.
+Reassembling programs for 68020+ processors may cause trouble with some
+addressing modes.
+For example: (0,A0) and (0,A0) seem to be the same, but the first may be
+(d16,An) and the second (bd,An,Xn) with Xn suppressed (and bd might be 16
+or 32 bit). There are other ambiguous addressing modes.
+IRA has no problems with that, but assemblers can't know what the original
+addressing mode was, so problems with running a reassembled file may occur.
+
+
+DESCRIPTION OF THE COMMAND-LINE OPTIONS
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+The default values are in brackets.
+
+-A      (off)
+        This option makes IRA append the address and data of an instruction
+        to every line. That is pretty useful to me. E.g. when code and data
+        is mixed, you can manually delete some instructions to replace them
+        by DC.x directives.
+
+-AW	(off)
+        Same as -A, but enforce 8-digit addresses.
+
+-BASEABS (off)
+        When specified, a label in base-relative addressing mode is written as
+        an absolute label, without the base register name (as with IRA V1.05).
+        The default behaviour now is to write base-relative references
+        as "(label,An)".
+
+-BASEREG[=n[,adr,sec]]
+        n is the number of the base register, adr the address with that the
+        base register is loaded and sec the section that n is related to.
+
+        You can use this option if the program uses the smalldata model. It
+        will provide you with a more readable .ASM file.
+        Smalldata model means the access to data is made by D16(An), and the
+        register An has to be preloaded by the SMALLDATABASE value. A lot of
+        compilers use A4 as baseregister and the address of the datasection
+        plus 32766 as the SMALLDATABASE.
+        A good way to find out if a program makes use of the smalldata model
+        is the following:
+        1. Type "IRA >x -a -info -basereg test"
+        2. Look at the file test.asm and x with an editor.
+           If there are memory accesses by D16(An) (e.g. move.l -32754(A4),D0)
+           look at the file x. There may be lines like BASEREG 00000008: A4.
+           The first number is the hexadecimal address of an instruction that
+           has A4 as destination register. Look at this address in the file
+           test.asm. You may find a line like LEA SECSTRT_1,A4. Perhaps, A4
+           is the base register and SECSTRT_1 the SMALLDATABASE. Now memo the
+           address of SECSTRT_1 (=adr).
+        3. Type "IRA -a -info -basereg=4,adr,1 test"
+        4. Look at test.asm and you will see LAB_xxxx instead of D16(A4).
+        5. The line NEAR A4,1 in test.asm tells the assembler to use the
+           smalldata model. This directive may differ from assembler to 
+           assembler.
+
+        As always, be careful when modifying a program. Often code and data
+        is mixed or there are some program protection techniques that makes
+        it hard to modify and run a program.
+
+-BINARY (off)
+        IRA automatically recognises if the sourcefile is an executable,
+        an object file or any other (binary). It may happen that some
+        kind of binary data is recognised as an executable. To avoid this
+        make use of the -BINARY option.
+
+-COMPAT=x (off)
+        Various compatibility flags.
+
+        b : Recognize immediate values of 8-15 for bit-instructions accessing
+            memory (former -BITRANGE option).
+        i : Recognize immediate byte addressing modes with an MSB of 0xff.
+            Some assemblers generated 0xffff instead of 0x00ff for #-1.
+
+-CONFIG (off)
+        First, you can control the IRA settings with this option. That means 
+        you can specify the parameters that are otherways controlled via the
+        command-line options. Second, you can specify addresses where to find
+        code. This is useful for addresses where the -PREPROC option oversees
+        code (for whatever reason). Third, you can specify symbols that are
+        inserted instead using the 'LAB_xxxx' type.
+
+        In combination with the -PREPROC option a new .cnf file is created.
+        All the code areas found by PASS 0 are then written to this .cnf file.
+        In addition, most of the command-line options are included, too.
+        So, for the next calling of IRA you won't need to specify all of the
+        command-line options you used to.
+
+        If a .cnf file exists, a possible new one does not overwrite the old
+        one. The name of the new one just get a '1' appended to its name.
+        Look out for that.
+
+        See ira_config.doc for details.
+        
+        Try the -CONFIG option out in combination with the -PREPROC option.
+        IRA will create a .cnf file that you can look at for better
+        understanding.
+
+-ENTRY=<OFFSET> (-ENTRY=0)
+        If you know, that a file has data at the beginning (eg. bootblocks),
+        you specify the (relative) adress where IRA should begin with
+        code-scanning. For bootblocks: -ENTRY=$C .
+
+-ESCCODES (off)
+        Use escape character '\\' in strings.
+
+-FIXLABELS
+        Prepend 'L' to potentially illegal label names, like those starting
+        with a digit or a dot.
+
+-INFO   (off)
+        Use this option to get some information about the hunk structure of
+        your sourcefile.
+
+-KEEPBIN (off)
+        Before the first pass, an executable is relocated by IRA and written
+        to a .BIN file. Normally, this file is deleted at some point, but if
+        you want to keep it for some purpose, use the -KEEPBIN option.
+        E.g. for a <type >x.hex x.bin opt h>.
+
+-KEEPZH (off)
+        There are files that have hunks with a length of zero. By default
+        these hunks don't appear in the .ASM file. If you want them preserved
+        just use this option. There are executables where you have to use
+        this option, because they work with their own SEGMENT structure.
+
+-LABEL=<n> (0)
+        Select the label style.
+        n=0: original style with 4-digit continuous index: LAB_NNNN, EXT_NNNN
+        n=1: use hexadecimal address in label: LAB_ADDR, EXT_ADDR
+
+-M68xxx (-M68000)
+        This specifies the type of processor or coprocessor for which the
+        program should be reassembled. This doesn't have anything to do with
+        the machine you're running IRA on.
+        Most programs are written for 68000 CPUs.
+        If anything other than -M68000 is specified, a MACHINE directive
+        in the .ASM file is created. This works fine with PhxAss and vasm
+        assemblers. For any other assembler this directive possibly has to be
+        changed.
+
+        Values accepted for xxx can be:
+
+        - processor
+          000,010,020,030,040,060
+        - coprocessor
+          851,881,882
+
+-NEWSTYLE (depends on the -M68xxx option)
+        This option forces IRA to use the new Motorola syntax like (D16,PC)
+        instead of D16(PC). By default this option is used for 68020, 68030,
+        68040 and 68060 processors.
+
+-OFFSET=<OFFSET> (-OFFSET=0)
+        When the sourcefile is relocated by IRA the offset value is added to
+        the relocation. Why should I do that ?
+        If you want to run an executable at a specific location in memory
+        you specify the address of that location with the -OFFSET option
+        in combination with the -KEEPBIN option. After running IRA you can
+        load the .BIN file to the specific location and execute it. You just
+        have to know what you're doing (e.g. contents of registers and so on).
+        The second, more useful application is to write a part of memory to a
+        file, then create a .ASM file with the -OFFSET option. You have to
+        take the address of the memory location as offset. E.g. you can create
+        your own kickfile with your own modifications (is it legal ?), of
+        course some additional work on the .ASM file has to be done.
+        OFFSET can be decimal or hexadecimal (e.g. -OFFSET=$4FF0).
+
+-OLDSTYLE (depends on the -M68xxx option)
+        This option forces IRA to use the old Motorola syntax like D16(PC)
+        instead of (D16,PC). By default this option is used for 68000 and
+        68010 processors.
+
+-PREPROC (off)
+        This option will turn on PASS 0. That is to find data in code sections
+        and even code in data sections (e.g some old compilers put their
+        jumptables into data sections). Found data is checked for text.
+        This option normally works very fine for compiled programs. But there
+        may be problems like these:
+
+        - parts of code may be seen as data. This comes for
+          o code that is jumped to by (An), D16(An) or D8(PC,An)
+            (jumptables, pointers to code, ...).
+          o interrupt code that is only referenced by pointer (installation).
+          o code that is never used.
+
+        - parts of data may be seen as code. This comes for
+          o crypted or crunched code.
+
+-RADIX=<n> (0)
+        Select the radix for displacements and equates.
+        n=0: use hex for values >= 10, decimal for the rest (including
+             negatives)
+        n=10: print as decimal
+        n=16: print as hexadecimal, except -9 to 9, which is printed decimal
+
+-SPLITFILE (off)
+        With this option the .ASM file is split up. Every section is put into
+        its own file. One 'main' file is created to include these files via
+        INCLUDE directives. What is it for ? I don't know. I was asked for
+        this option.
+
+-TEXT=1 (off)
+        Since version 1.03 there is only one method for finding text left. The
+        whole code and data sections are searched for text which is printed
+        out to <stdout>. It may happen that some stupid text lines show up, so
+        you have to decide yourself about every line to include into the .ASM
+        file.
+
+
+HOW TO REASSEMBLE A PROGRAM
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+First, you have to be sure that your Assembler, Linker and IRA work fine.
+That goes like follows:
+  (Let's assume the linker is called LN, the ASSEMBLER is called AS and the
+   program is called TEST.)
+
+  1. Type "IRA -a TEST TEST1.S"
+  2. Type "AS -n TEST1.S"           (assume -n to be the NO_OPTIMISE flag)
+  3. Type "LN TEST1.O"
+  4. Type "IRA -a TEST1 TEST2.S"
+  5. Type "FDIFF TEST1.S TEST2.S RESYNC 1"
+
+If no error pops up until now it's very likely that TEST1 will work. (Try it).
+If FDIFF tells you that there are differences between TEST1.S and TEST2.S you
+have to be careful with running TEST1 because there is at least one bug in
+IRA or in your assembler.
+
+If you got no problems with the five points above you can start with editing
+TEST1.S. First, try to find all data that is hidden in code sections and
+replace the instructions with DC.W directives. If you have done so try
+assembling TEST1.S with an optimising assembler (should work).
+To find parts of text use the -TEXT option. Or use the -KEEPBIN option and
+type <type >test.hex TEST.BIN opt h> and look at TEST.HEX for text.
+
+To collect some experience it'll be better to begin with short programs.
+
+
+To reassemble bootblocks, disktracks or memory take a monitor program and put
+these things into a file. Then invoke IRA.
+
+
+WHAT ASSEMBLER CAN I USE ?
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+You can use any assembler you want, but minor problems may occur:
+
+  - There may be problems with the SECTION, MACHINE and NEAR directives.
+    Change these lines by hand or tell me the name and version of your
+    assembler and the syntax of the above directives. So I could build a
+    command-line option to switch between different assemblers.
+  - Some assemblers can't handle more than 2^16-1 (65535) lines. Get the
+    GigaPhxAss from Frank Wille (see below) for the big programs.
+  - If code and data is mixed in a code hunk you have to switch optimising
+    off when you run the assembler. Else the chance of having a damaged
+    program is very high. Some assemblers have problems with that.
+
+
+CONDITIONS
+¯¯¯¯¯¯¯¯¯¯
+IRA is freeware.
+
+There is no guarantee for the correct functioning of IRA.
+Any responsibility will be explicitly rejected for any consequences from the
+use of IRA whatsoever. This includes, but is not limited to, secondary 
+consequences, personal injuries or other kinds of side effects.

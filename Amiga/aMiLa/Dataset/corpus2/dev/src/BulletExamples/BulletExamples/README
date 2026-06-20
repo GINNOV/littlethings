@@ -1,0 +1,89 @@
+Here's some interesting example code dealing with Compugraphic outline
+fonts and the Bullet font scaling engine from the 1992 Amiga Mail Vol. 2
+article collection. I have modified the code to compile cleanly with
+SAS/C 6.58 and to use pragmas and direct library calls rather than
+calling the stub routines in amiga.lib.
+
+I have modified the programs to open a new screen. The viewport modes,
+bit depth, and background and foreground colors can be set with the
+`V=VPModeID', `B=BitDepth' and `C=Colors' command line keywords. The
+`V=VPModeID' keyword expects a hexadecimal value. I have included a
+small utility called `ListVPModes' that displays a list of available
+viewport modes that have a name, and their IDs. The `C=Colors' keyword
+expects a six character long hexadecimal value that defines the
+background and foreground color RGB triplets. For example, `fff000' sets
+a white background and black foreground. The default viewport modes, bit
+depth and colors are taken from the Workbench screen.
+
+I have improved `View' somewhat:
+
+- The program supports UCS-2 and UCS-4 encoded text files (use the U=UCS
+  command line keyword with 2 or 4 as the value). The Bullet font
+  scaling engine is limited to 16-bit code points, though.
+- The point size is interpreted as centipoints. So, to set e.g. 14.75
+  points, enter 1475.
+- The leading (distance between baselines) can be set in percent of the
+  point size (default 120).
+- The descender (the portion of a glyph that extends below the baseline)
+  can be set in percent of the point size (default 25). I wish there would
+  be a way to calculate the descender automatically, but that seems to
+  take using diskfont.library and OpenDiskFont(). I have made the
+  `ViewDiskfont' program mentioned below display some data about the font,
+  among them the descender percentage.
+- Kerning can optionally be disabled with the `N=NoKern' command line
+  switch.
+- Kerning of whitespace can optionally be enabled with the `S=SpcKern'
+  command line switch. It's not widely used, however, and it might look
+  cramped at times.
+- Tabular (non-proportional) figures can optionally be enabled with the
+  `T=TabFigs' command line switch.
+- The tracking (letter-spacing) can be adjusted with the `R=Tracking'
+  command line keyword. The value is percent of the point size, either
+  positive or negative.
+- Whitespace characters are handled properly.
+- The text scrolls up when it reaches the bottom of the window, rather
+  than the whole window being cleared.
+- The output of the text can be paused/resumed with the Space key, or
+  ended with the `q' key.
+- The program waits for the user to click the close gadget rather than
+  closing the window immediately at the end of the displayed file.
+
+I have added a small program called `ViewChars', that lets you view a
+range of Unicode characters. The `StartCode' and `EndCode' command line
+arguments are expected to be hexadecimal values. Characters with no
+glyph and no width are represented by a white square (U+25A1). The
+default range is from U+0021 to U+007E inclusive. For relatively logical
+reasons this program doesn't make use of any kerning information.
+
+The statement about the point size being interpreted as centipoints goes
+for `ViewChars' and `Rotate' as well.
+
+Outline fonts are supported by diskfont.library in AmigaOS 2.04 (V37)
+and up, unfortunately the Text() function doesn't seem to make use of
+any kerning information in the font, so if kerning adjustment is desired
+it will be necessary to use the Bullet engine directly, and blit to the
+raster ourselves, which is also done in the example programs. I have
+included an additional program called `ViewDiskfont' that displays a
+text string with a chosen font using diskfont.library and the Text()
+function for demonstrational purposes. Please note that if you change
+the XDPI or YDPI command line argument between invocations, it will be
+necessary to use `avail flush' in order to clear any previously
+generated font bitmaps from memory.
+
+I use my own startup module; if you want to build the programs yourself,
+first compile and install mystartup.o in the `src/mystartup'
+subdirectory.
+
+Please see `Bullet.txt' for the "Using Compugraphic Typefaces with
+Bullet" article by John Orr, which also describes the example programs.
+Where he gets the default screen resolution values from is over my head,
+but I've decided to keep them anyway. An excerpt below:
+
+    "If that variable is not defined, Rotate will use an XDPI of 68 and
+     a YDPI of 27 which, nominally, is the X and Y DPI of a standard
+     Hires display."
+
+The original code and executables can be found in the `Original'
+subdirectory.
+
+Mats Peterson <matsp888@yahoo.com>

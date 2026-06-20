@@ -1,0 +1,71 @@
+= AmiFTP
+
+**Description**: Easy to use GUI FTP client for OS 2.0+ 
+
+	**Technology stack**: C, SAS/C 6.5x
+	**Project Status**:  https://gitlab.com/amigasourcecodepreservation/buildtime/blob/master/CHANGELOG.adoc[CHANGELOG]
+
+== Dependencies
+
+  * Amiga OS Classic
+  * SAS/C 6.5x or compatible compiler
+  * reqtools.library
+  * Classact library
+  * AS225r2
+
+== Build
+
+* tcphook is an abstraction for AmiTCP/inet
+* buildrev is a helper for the upping the versionnr while linking
+* sprintf is specialversion of sprintf
+
+sprintf.c should be compiled sprintf.o och added to lib: and it should possibly be the same for tcphook, look in the smakefile
+brev.c should be compiled as a standalone program
+
+
+== Installation
+
+  * TO-DO
+
+== Getting help
+
+If you have questions, concerns, bug reports, etc, please file an issue in this repository's Issue Tracker.
+
+== Getting involved
+
+Contact your old amiga friends and tell them about our project, and ask them to dig out their source code or floppies and send them to us for preservation.
+
+Clean up our hosted archives, and make the source code buildable with standard compilers like devpac, asmone, gcc 2.9x/Beppo 6.x, sas/c ,vbcc and friends.
+
+
+Cheers!
+
+....
+
+     _____ ___   _   __  __     _   __  __ ___ ___   _   
+    |_   _| __| /_\ |  \/  |   /_\ |  \/  |_ _/ __| /_\  
+      | | | _| / _ \| |\/| |  / _ \| |\/| || | (_ |/ _ \ 
+     _|_| |___/_/ \_\_|_ |_|_/_/_\_\_|__|_|___\___/_/_\_\
+    / __|/ _ \| | | | _ \/ __| __|  / __/ _ \|   \| __|  
+    \__ \ (_) | |_| |   / (__| _|  | (_| (_) | |) | _|   
+    |___/\___/_\___/|_|_\\___|___|__\___\___/|___/|___|_ 
+    | _ \ _ \ __/ __| __| _ \ \ / /_\_   _|_ _/ _ \| \| |
+    |  _/   / _|\__ \ _||   /\ V / _ \| |  | | (_) | .` |
+    |_| |_|_\___|___/___|_|_\ \_/_/ \_\_| |___\___/|_|\_|
+
+....
+
+https://twitter.com/AmigaSourcePres[Twitter]
+https://gitlab.com/amigasourcecodepreservation[Gitlab] 
+https://amigasourcepres.gitlab.io/[WWW]
+
+== Licensing
+
+AmiFTP is distributed under the terms of the MIT License. See the https://gitlab.com/amigasourcecodepreservation/amiftp/LICENSE[LICENSE] file for details.
+
+This archive also contains some files not under this license, it should be stated in their headers.
+
+== Credits and references
+
+Many thanks to Magnus Lilja for the source code.
+

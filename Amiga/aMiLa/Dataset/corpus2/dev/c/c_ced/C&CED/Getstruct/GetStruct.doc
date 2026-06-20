@@ -1,0 +1,69 @@
+
+                        GetStruct
+
+
+   WHAT IT IS
+   ~~~~~~~~~~
+GetStruct is a structure/object lookup routine for Cygnus Ed.  Hit a
+function key, pull up the include/header/object file that contains
+that structure or object and place the cursor on it.
+
+
+   WHAT YOU NEED
+   ~~~~~~~~~~~~~
+header files
+~~~~~~~~~~~~
+Either the C= header (*.h) or include (*.i) files or the ascii version
+of the E object files (*.e).  AmigaEdocs.LHA archive contains the
+*.txt files or you can ShowModule the individual *.m files.  You'll
+have to rename the *.txt files to *.e if you use the AmigaEdocs.LHA
+archive.
+
+some assigns
+~~~~~~~~~~~~
+include_h: <dir that has the *.h files>
+include_i: <dir that has the *.i files>
+include_e: <dir that has the *.e files>
+
+   ie > ls include_h:
+        clib   
+        devices
+         ...
+
+index files
+~~~~~~~~~~~
+Each directory needs an INDEX file.  ParseInc builds these:
+      parseinc h >include_h:INDEX
+      parseinc e >include_e:INDEX
+      parseinc i >include_i:INDEX
+'parseinc ?' will remind you of the usage.
+
+Cygnus Ed F-Key assignments
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Put GetStruct.ced in REXX:  and assign a CED function key (or macro)
+to:
+
+   rexx:getstruct h  ('i' for the asm includes or 'e' for the E objects)
+
+That should do it.
+
+
+   SOME POSSIBLE PROBLEMS
+   ~~~~~~~~~~~~~~~~~~~~~~
+nothing happens when you hit the function key
+   - you may need to set the script bit on REXX:GetStruct.ced or
+     use 'rx' in the CED key assignment
+
+CED requester says something like 'can't find include_x:INDEX'
+   - include_x: isn't assigned
+   - ParseInc hasn't been used to build the INDEX file
+
+ParseInc won't run
+   - it requires rexxarplib.library (and arp.library) for the
+     filelist() function
+
+the include file gets loaded, but the cursor isn't being positioned on
+the structure name.
+   - 'uc==lc?' is toggled off in the search requester
+   - you may have to alter the search statements at the end of
+     the script.

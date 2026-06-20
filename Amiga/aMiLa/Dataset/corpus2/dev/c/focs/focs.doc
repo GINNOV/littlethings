@@ -1,0 +1,107 @@
+Introduction:
+
+This is a little tool I made for all programmers who need to call SetFunction()
+from C (or C++). It is intended to make life easier and to make source files more
+readable.
+
+Usually, when one want to use SetFunction(), he/she must look in .fd files or
+#pragma statements to find the LVO of each function he/she want to patch (*). This
+leads to source files difficult to understand and maintain, since each call to
+SetFunction() looks like:
+
+oldfunction=SetFunction(Execbase,-690,myfunction);
+
+where you can't understand very well which function is being patched, unless you
+add tons of comment lines to each call.
+
+(*)= All the system libraries offsets exist through amiga.lib, but 3rd party
+libraries don't. This is why I made FOCS!
+
+FOCS (that stands for Function Offset Creator for SetFunction() ), takes a file
+with LVOs and creates nice C header (.h) files, with a symbol definition for each
+function found in the LVO file.
+So the example above will look like:
+
+oldfunction=SetFunction( Execbase, FOS_FreeVec, myfunction );
+
+Nice, isn't it ?
+
+FOCS version 1.0 support the following file formats:
+ - SAS C #pragma files
+ - StormC #pragma files (similar but not the same stuff).
+ - FD files (those who started it all).
+ - GCC inline's (hopefully... only the new, preprocessor based format is
+   supported). 
+
+In future versions these format may also be supported:
+ - Assembler .LVO files.
+ - Aztec C #pragma files.
+(Does anybody care about these ?)
+
+
+Installation:
+
+Smash the corresponding executable anywhere in you search path. The file named
+FOCS is for 68020+ systems. If you really need a plain 68000 version, use the
+patch file focs.pch with spatch (not included) (if you're a programmer,
+you'll know what to do).
+
+Usage:
+
+Pretty simple, I think. Just smash any input file on the command line; wildcards
+are welcome. Wildcards in the path part of the file are NOT welcome.
+Example:
+focs #?_pragmas.h graphics_lib.fd
+
+For each function offset a corresponding #define will be built, with 'FOS_'
+before the function name. Example (from fos_exec.h): 
+
+#define FOS_FreeVec -690
+#define FOS_AllocVec ....
+
+You'll just have to #include the necessary FOCS files in your code, and you'll
+have everything correctly defined. 
+For .fd files, you can add 'PRIVATE' to the command line to make FOCS generate
+#define symbols for private functions too, so you can do some nice low-level
+hacking!
+
+All the corresponding output files will be generated in the corresponding
+directory.
+Generally the output file name is formed using the library name, with 'fos_'
+(Function Offsets for SetFunction() ) before and '.h' after: so the FOCS file for
+exec.library is "fos_exec.h", and so on.
+
+HINT: if you don't want to mess up with header files too much, you can create a
+'fos' directory in your include: path, and store every FOCS file there.
+
+Bugs (and other little nasty crawling things):
+
+ - Filetype recognition isn't perfect, so if you submit a file which is slightly
+   modified, FOCS will barf. Syntax recognition is quite strict; this is most
+   important for StormC files, where a line like:
+
+   #pragma amicall(UtilityBase, 0x3c, MapTags(a0,a1,d0))
+
+   is considered valid, but
+
+   #pragma amicall( UtilityBase, 0x3c, MapTags(a0,a1,d0) )
+
+   will break everything; so keep in mind FOCS works well with standard, common
+   and correct header files, but will fail on statments badly written or just
+   a bit 'out of standard'. A good example is xfd_master_pragmas.h : the first
+   part of the file is a Aztec C pragma file, which is mistaken as StormC. In
+   this case, FOCS fails completely. Eliminating the first part will cure the
+   problem.
+
+ - Stack usage is big, compared to FOCS size (almost everything is allocated on
+   the stack). Ensure you've a stack of 32k bytes or more.
+
+
+Author:
+
+It's me! Send bug reports and other things (preferably nice ones) to:
+Andrea Vallinotto AKA andrea.vallinotto@torino.alpcom.it , or
+2:334/21.13 (FidoNet) and 39:101/402.13 (AmigaNet).
+
+Happy patching !
+

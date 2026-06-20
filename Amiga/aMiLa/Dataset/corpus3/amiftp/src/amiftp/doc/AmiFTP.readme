@@ -1,0 +1,78 @@
+Short:    Easy to use GUI FTP client for OS 2.0+
+Author:   Magnus Lilja <lilja@lysator.liu.se>
+Uploader: Magnus Lilja <lilja@lysator.liu.se>
+Type:     comm/tcp
+Replaces: comm/tcp/AmiFTP-1.607.lha
+
+Title
+
+   AmiFTP
+
+Version
+
+   1.853
+
+Description
+
+   AmiFTP is an easy to use ftp-client with a GUI built on the
+   ClassAct BOOPSI system. Some of the features are:
+
+   * Localized (Danish, Dutch, Finnish, German, Greek, Icelandic, Italian, 
+     Norwegian, Spanish and Swedish catalogs are available at the moment)
+
+   * Aminet-mode
+
+   * ARexx interface
+
+   * Resume transfer
+
+   * Multiselect when up/downloading files
+
+   * Caches the latest directories
+
+   * Has hotlist with submenus
+
+   * Online AmigaGuide-help
+
+
+History
+
+   Added support for creating directories and renaming files.
+   Many other bugs fixed, see History-file for more details.
+
+   Note that the needed ClassAct classes are no longer included in the 
+   distribution of AmiFTP. If you don't have ClassAct, download it from
+   ftp://ftp.thule.no/pub/classact/ or http://www.thule.no/classact/
+
+Requirements
+
+   AmigaOS 2.0 or higher.
+   ClassAct
+   reqtools.library
+
+   One of the following TCP/IP stacks:
+   AmiTCP 3.x or higher
+   AS225r2,
+   I-Net 225,
+   CPR TCP/IP Base Kit
+   or mlink.
+
+Price
+
+   AmiFTP is Shareware. This version is not crippled in any way which
+   means that there's no extra features available for those who
+   register, but this shouldn't stop you from supporting this program.
+   The Shareware fee is $15. See the documentation in the archive
+   for more information.
+
+Author
+
+   Magnus Lilja
+
+   e-mail: lilja@lysator.liu.se
+
+   Postal Address: Magnus Lilja
+                   Rydsvägen 130 B
+                   S-584 31 LINKÖPING
+                   SWEDEN
+

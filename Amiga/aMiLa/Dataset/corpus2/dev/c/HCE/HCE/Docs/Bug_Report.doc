@@ -1,0 +1,64 @@
+***********************************************************************
+*                         Bug Reporting                               *
+***********************************************************************
+*                                                                     *
+* If you think you have found a bug, then please make a copy of this  *
+* bug report form, fill it in and send to me. I cannot guarantee a    *
+* reply to all reports but will give your name a mention              *
+* (if bug is fixed) in the next release of HCE.                       *
+*                                                                     *
+***********************************************************************
+
+DATE:
+NAME & ADDRESS:
+                ----------------------------------
+                   
+                ----------------------------------
+
+                ----------------------------------
+
+Please add the relevant details for your computer:
+--------------------------------------------------
+Machine Model:
+Kickstart Version:
+Workbench Version:
+Memory size:
+Drive types and size:
+Expansion Boards:
+
+Please describe the problem(s) briefly in the space below:
+----------------------------------------------------------
+(If you think the problem is related to another program within
+ the HCE environment other than HCE, then please state this.)
+
+
+
+
+
+
+
+
+
+Please describe in detail the software environment used with HCE:
+------------------------------------------------------------------
+(eg: Was HCE run from a Shell/CLI/IconX, what stack size was used?.)
+
+
+
+
+
+
+
+
+
+
+
+Please submit reports to:
+-------------------------
+
+Jason Petty.
+32 Balder Road,
+Norton,
+Stockton-On-Tees,
+Cleveland. TS20 1BE.
+

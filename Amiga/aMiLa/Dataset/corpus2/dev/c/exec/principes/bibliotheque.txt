@@ -1,0 +1,32 @@
+
+Pour respecter l'ordre de la structure d'origine et pouvoir utiliser
+des fonctions systèmes du type bibliothèque, l'héritage n'est pas utilisé.
+
+La classe de base est Bibliotheque: 4 fonctions membres privées sont
+ouvre(), ferme(), epure(), nulle() et sont définies dans foncBibli.cpmry.
+Ces fonctions C/C++ prennent leurs arguments dans la pile, et sont
+interfacées chacunes avec une routine assembleur commençant par asm.
+Fichier asmFoncBibli.a Le premier argument passé est la base de la classe;
+à partir de l'assembleur: move.l A6,-(sp).
+(toute fonction d'une bibliothèque est appelée avec A6 pointant la base)
+
+Chargement / dechargement du code:
+Une bibliothèque terminée est un code qui n'est pas exécutable par
+l'utilisateur mais, chargeable. Elle contient un "Resident" qui permettra
+de designer:
+1) soit la fonction d'initialisation.
+2) soit un tableau de donnée particulières. (AUTOINIT)
+
+Dans la cas 2), la bibliothèque est construire grâce à la fonction
+MakeLibrary() qui utilise un tableau des fonctions. MakeLibrary()
+fait une allocation de taille: tableau de fonctions plus la taille de
+la structure bibliothèque (BibliMin). Puis, elle initialise les champs
+TaillePositive et TailleNegative de la bibliothèque.
+Ces champs permettront de déchargement. Par:
+// FreeMem(this-TailleNegative, TaillePositive-TailleNegative);
+Toutefois, ils servent aussi à inventorie() (SumLibrary()), conséquence:
+il faut les initialiser même si on se place dans le cas 1).
+
+Dans le cas 1), tout le code est chargé par la fonction d'initialisation
+du module résident: à faire à la main.
+Il faut la décharger lors d'un épuration (EXPUNGE)

@@ -1,0 +1,22 @@
+Short:        GNU Emacs interface to SCMSG, the SAS/C error handler
+Uploader:     d91ali csd uu se
+Type:         dev/c
+Architecture: m68k-amigaos
+
+Interface routined between SCMSG, the SAS/C error handler, and GNU
+Emacs. 
+
+Featuring:
+- Walk in the SCMSG message list from within Emacs
+- Call Emacs from SCMSG.
+- The correct file is loded automatically, the cursor is positioned
+  on the correct line and the error message is displayed in the 
+  mimibuffer.
+- The `alternate' file can be viewed
+- (Re)compilations can be started from within Emacs, with the output
+  displayed in an Emacs buffer.
+- Always uses a running Emacs, if one is avaiable.
+- AutoEdit: The first error is autmatically displayed (optional)
+- The SCMSG window need not be open
+- Implemented as a Gnu Emacs minor mode, which can be used under
+  any major mode, not only c-mode

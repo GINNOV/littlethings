@@ -1,0 +1,186 @@
+BODY {
+	margin: 0;
+	padding: 0;
+	font-family: sans-serif;
+}
+
+#panel_container {
+	display:flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: stretch;
+	height: 100%;
+	position: absolute;
+	top: 0; bottom: 0; left: 0; right: 0;
+}
+
+#panel_left {
+	overflow: auto;
+}
+
+#panel_messages {
+	overflow: auto;
+	padding-left: 20px;
+	padding-right: 20px;
+	background: #eee;
+	flex-grow: 1;
+}
+
+#panel_messages .message {
+	border: solid 1px #333;
+	margin: 5px 0;
+	padding: 20px 20px 0 20px;
+}
+
+#panel_messages .message.warning {
+	background-color: darksalmon;
+}
+#panel_messages .message.error {
+	background-color:indianred;
+}
+#panel_messages .message.success {
+	background-color:darkseagreen;
+}
+
+#panel_right {
+	width: 50%;
+	background: #ccc;
+	overflow: auto;
+	padding-left: 20px;
+}
+
+H2 {
+	font-variant: small-caps;
+}
+
+.btn_large {
+	display: block;
+	width: 95%;
+	height: 3em;
+	margin: 5px auto;
+	font-weight: bold;
+}
+
+.end_good {
+	color: green;
+	font-weight: bold;
+}
+
+.end_bad {
+	color: darkred;
+	font-weight: bold;
+}
+
+.button_row {
+	display: flex;
+	flex-direction: row;
+	gap: 10px;
+	justify-content: space-between;
+	align-items: stretch;
+}
+
+.button_row BUTTON {
+	flex-grow: 1;
+}
+
+#separate_plan_costs {
+	font-size: small;
+}
+
+.stat_value {
+	font-weight: bold;
+}
+
+/*----------------------------------------------------------------------DEFS--*/
+
+LABEL {
+	width: 40%;
+	display: inline-block;
+	overflow: auto;
+	margin: 3px;
+}
+
+LABEL * {
+	display: inline-block;
+	float: right;
+}
+
+/*-----------------------------------------------------------------WAREHOUSE--*/
+
+.comm_table {
+	border-collapse: collapse;
+	text-align: center;
+	width: 80%;
+	margin: 0 auto;
+}
+
+.comm_table TD, .comm_table TH {
+	border: solid 1px black;
+}
+
+/*-----------------------------------------------------------------MINE VIEW--*/
+
+#mine_preview {
+	border-collapse: collapse;
+	text-align: center;
+}
+
+#mine_preview TD {
+	font-size: 12px;
+	font-weight: bold;
+	width: 20px;
+	line-height: 20px;
+	height: 20px;
+	border: solid 1px black;
+	overflow: hidden;
+	background: white;
+	user-select: none;
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+}
+
+.row_index {
+	border: none !important;
+	text-align: left;
+	padding-left: 5px;
+	color: #aaa;
+	text-shadow: none !important;
+}
+
+.tile_dirt {
+}
+
+.tile_silver {
+	color: deepskyblue;
+}
+
+.tile_gold {
+	color: gold;
+}
+
+.tile_emerald {
+	color: greenyellow;
+}
+
+.tile_ruby {
+	color: pink;
+}
+
+.tile_moonstone {
+	color: turquoise;
+}
+
+.tile_bg {
+	background: black !important;
+}
+
+.tile_magma {
+	color: red;
+}
+
+.tile_stone {
+	color: #ccc;
+}
+
+.tile_bone, .tile_gate, .tile_crate, .tile_capsule {
+	color: orchid;
+}

@@ -1,0 +1,56 @@
+Copyright (C) 1992-1993 SAS Institute, Inc., Cary, NC USA
+All Rights Reserved.
+
+THE MATERIALS CONTAINED IN THESE FILES ARE BEING PROVIDED TO
+LICENSED USERS OF THE SAS/C® DEVELOPMENT SYSTEM FOR AMIGADOS AS
+TEMPORARY FIXES TO THAT PROGRAM.  THEY ARE PROVIDED "AS IS", AND
+THE INSTITUTE SPECIFICALLY DISCLAIMS ANY WARRANTIES, EXPRESS OR
+IMPLIED, INCLUDING THE WARRANTIES OF MERCHANTABILITY OR FITNESS
+FOR A PARTICULAR PURPOSE.  RECIPIENT ACKNOWLEDGES AND AGREES THAT
+THE INSTITUTE SHALL NOT BE LIABLE FOR ANY DMAGES ARISING OUT OF
+THEIR USE OF THESE MATERIALS.
+
+This patch set may be freely redistributed.  Please upload it to
+bulletin boards, make it available at user group meetings, and
+use any other method that will make it available to registered
+users of the SAS/C Development System, Version 6.
+
+This patch procedure requires that you have the original seven-disk
+set for the SAS/C Development System, Version 6.0.  The original
+disks will not be modified.  After you install the patch, keep 
+the original disks for use with future patches.
+
+The changes for the 6.3 release are a superset of the changes for 
+the 6.2 and 6.1 releases; all 6.1 and 6.2 fixes are included with 
+6.3.  Therefore, the patch process will work correctly whether you 
+have version 6.0, 6.1, or 6.2.
+
+Double-click on the Install-6.3-Patch icon to install the patch.
+You will be prompted immediately to insert the first disk from
+the original disk set, SASC_6.0_DISK_1 .
+
+You will be asked if you want to install the patch on a hard disk
+or a floppy.  Choose the same method you chose when you installed
+version 6.0 in the first place.
+
+The hard disk install will read the original disks and install the
+patched version in SC:.
+
+The floppy install will patch the 2 or 3 disk set created by the 
+floppy install of the SAS/C Development system.
+
+
+The Version 6.0 installation process supports the ability to 
+suppress the installation of certain parts of the product.
+If you chose to suppress installation of some part of the product
+when you installed 6.0, and you want to install that portion
+of the product in the future, you must first use your original
+6.0 disks to install that portion, then apply the 6.3 patch again
+to make sure that portion is up to date.  For example, you might
+have chosen to suppress installation of the assembler when you
+installed 6.0.  If you have already applied the 6.3 patch and
+you want to now add the assembler, you must first go back to your
+original 6.0 disks, install the assembler, then reinstall the 
+6.3 patch to bring the assembler up to date.
+
+

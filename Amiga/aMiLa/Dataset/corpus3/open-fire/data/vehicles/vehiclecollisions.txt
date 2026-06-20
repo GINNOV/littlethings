@@ -1,0 +1,4 @@
+;All coords are for vehicle facing east
+;Type NWx NWy Nx Ny NEx NEy Wx Wy Ex Ey SWx SWy Sx Sy SEx SEy
+0     2   6   15 6  29  6   2  15 29 15 2   25  15 25 29  25
+3     8   11  16 11 25  11  11 16 25 16 8   20  16 20 25  20

@@ -1,0 +1,71 @@
+FUZZ: Fuzzy system development stuff
+
+Libraries version 1.6
+
+READ THE DISCLAIMER!
+
+INTRODUCTION
+
+Fuzz is a set of files and tools that, as a combination, serves as a
+toolkit supporting the development of applications using fuzzy rule
+bases. At its current state, it's pretty much rudimentary with respect
+to its documentation. Regarding its functionality, its more or less
+complete. For an introduction to fuzzy logics, please check any of the
+numerous introductory books or articles that are available in
+virtually any language. Here, I'll concentrate on the package itself.
+Since the whole thing was developed using SAS/C on an Amiga, I'll
+describe everything in terms of AmigaOS. Nevertheless, libraries and
+tools are available for other platforms, I personally have them
+running under Solaris 1.x and 2.x, MS-DOS, and OS/9. 
+
+Fuzz mainly consists of three things:
+
+1.  A library and a set of include files that allow for easy
+    incorporation of fuzzy systems in a proprietary 
+    application program written in C.
+
+2.  A compiler for translating a fuzzysystem specified in fuzz-syntax into
+    a C program. 
+
+3.  Several tools that allow to check developed systems.
+
+
+Additionally, the package contains several example fuzzy systems.
+Usually, you'll get Fuzz in an archive, which you just have to unpack
+to somewhere on your harddisk. This should give you a tree like this:
+
+fuzz
+    bin
+    doc
+    examples
+    inc
+    lib
+
+
+To run any of the programs, you don't have to do anything else.  If
+you want to use the crossreferences contained in the library's
+AmigaGuide documentation, you have to do an assign  fuzz:   <whereever
+your  fuzz  root-directory  is  located>, e.g., assign  fuzz:
+home:sas-c/fuzz.  If you want the utilities and the compiler in your
+path, add a 'path  fuzz:bin fuzz:bin/tools add' to your user-startup
+(located behind the assign command).  
+
+LEGAL STUFF
+
+Permission is granted to use the libraries, the include files, and the
+tools to develop and release code public and commercial.  Permission
+is NOT granted to dissasemble, modify, or re-release the code or
+documentation. 
+
+DISCLAIMER
+
+This software is provided as is. I claim no responsibility for any
+damages that may occur from the use of any of the included files.  Use
+this software at your own risk.
+
+WHAT ELSE?
+
+If anyone would like to write a GUI for the whole thing, contact me.
+I'd certainly like one, but I currently don't have the time to do it
+myself.
+

@@ -1,0 +1,43 @@
+Short:        International Classes for Unicode (bin)
+Author:       Taligent, Inc., IBM Corp.
+Uploader:     kyrimis cti gr (Kriton Kyrimis)
+Type:         dev/c
+Version:      1.3.1
+Architecture: m68k-amigaos
+
+This is a native Amiga port (no ixemul.library required) of ICU,
+IBM's International Classes For Unicode
+
+INSTALLATION:
+
+
+a.FULL INSTALLATION:
+
+  (For use with ICU clients such as Jikes, and for development using gcc.)
+
+  Copy the contents of the bin, include, lib, and share directories to
+  GG:bin, gg:include, gg:lib, and GG:share, respectively. Set your stack
+  to 30000 if you want to use the tools in the bin directory.
+
+
+b.PARTIAL INSTALLATION:
+
+  (For use with ICU clients such as Jikes.)
+
+  Copy the contents of share/icu/1.3.1 to a directory on your hard
+  drive. If you install them in GG:share/icu/1.3.1, then the files will
+  be found automatically. If you install them elsewhere, then set the
+  environment variable ICU_DATA to point to that directory.  Make sure
+  you include the trailing slash in the directory name. (E.g., if you
+  install the files in Work:icu, use "setenv ICU_DATA Work:icu/".) If
+  you are short on space, you can install only convrtrs.txt and the
+  .cnv files corresponding to the encodings you want to use. (E.g.,
+  if you are interested in using the iso-8859-7 encoding, you can see
+  by looking at convrtrs.txt that you need ibm-4909.cnv.)
+
+Kriton Kyrimis (kyrimis@cti.gr)
+
+******************************************************************************
+This software is subject to the terms of the IBM Public License, a copy
+of which is available in file license.html.
+******************************************************************************

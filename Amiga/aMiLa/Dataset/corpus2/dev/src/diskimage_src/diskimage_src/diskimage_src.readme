@@ -1,0 +1,38 @@
+Short:        Ex. device (cut down diskimage.dev)
+Author:       Fredrik Wikstrom
+Uploader:     Fredrik Wikstrom <fredrik@a500.org>
+Type:         dev/src
+Version:      0.2
+Architecture: generic
+
+This is a stripped down version of the diskimage.device for "educational"
+purposes only. Probably it could still be simplified. As it is, it is still
+mostly compatible with the DiskImageGUI program.
+
+Only "raw" images are supported by this version of the device, i.e.:
+
+ - adf
+ - hdf
+ - img (not ccd/img!)
+ - iso
+
+The device implementation is much simpler than the one in the "ramdev.device"
+sources in my opinion.
+
+Compiling:
+
+To compile a "normal" version: "make"
+
+To compile a debug version edit the Makefile and remove the '#' in front of
+-DDEBUG.
+
+Changes:
+
+0.2 (12-Nov-2007)
+ - Added AbortIO() support
+ - Added HD_SCSICMD support
+ - Added DITAG_DiskImageType support (used by DiskImageGUI)
+ - Some other fixes from diskimage.device v52.24
+
+0.1 (9-Oct-2007)
+ - First released version

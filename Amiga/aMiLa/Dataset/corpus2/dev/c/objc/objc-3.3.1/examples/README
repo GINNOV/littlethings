@@ -1,0 +1,15 @@
+
+This directory contains some examples (not very useful ones) to test the
+compiler.
+
+To learn the language, the "words" example (see objc/words) can be
+interesting, or applications such as:
+
+Dave Flater's "CheezMud"
+
+	http://sunsite.unc.edu/pub/Linux/games/muds/
+
+Brad Cox & Kurt Schmucker's "Producer"
+
+	http://sunsite.unc.edu/pub/Linux/devel/lang/objc/
+

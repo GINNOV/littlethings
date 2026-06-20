@@ -1,0 +1,109 @@
+//////////////////////////////////////////////////////////////////////////////
+// button.cpp
+//
+// Jeffry A Worth
+// November 10, 1995
+//////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////
+// INCLUDES
+#include "aframe:include/button.hpp"
+
+//////////////////////////////////////////////////////////////////////////////
+//
+
+AFButton::AFButton()
+{
+  m_text="";
+}
+
+AFButton::~AFButton()
+{
+  DestroyObject();
+}
+
+void AFButton::DestroyObject()
+{
+  AFGadget::DestroyObject();
+}
+
+void
+AFButton::FillGadgetStruct(LPExtGadget psgadget)
+{
+  AFRastPort rp(m_pwindow);
+  TEXTEXTENT te;
+  WORD w,h;
+
+	AFGadget::FillGadgetStruct(psgadget);
+	
+	// Fill in coordinates to draw border
+	w=m_rect.Width()-1;
+	h=m_rect.Height()-1;
+	m_xyshine[0]=m_xyshine[2]=m_xyshine[3]=m_xyshine[5]=0;
+	m_xyshine[1]=h;
+	m_xyshine[4]=w;
+
+	m_xyshadow[0]=1;
+	m_xyshadow[1]=m_xyshadow[3]=h;
+	m_xyshadow[2]=m_xyshadow[4]=w;
+	m_xyshadow[5]=0;
+
+	// Fill in Border Structure
+	m_gborder.LeftEdge = m_gborder2.LeftEdge = 0;
+	m_gborder.TopEdge = m_gborder2.TopEdge = 0;
+	m_gborder.FrontPen = 2;
+	m_gborder2.FrontPen = 1;
+	m_gborder.BackPen = m_gborder2.BackPen = 0;
+	m_gborder.DrawMode = m_gborder2.DrawMode = JAM1;
+	m_gborder.Count = m_gborder2.Count = 3;
+	m_gborder.XY = m_xyshine;
+	m_gborder2.XY = m_xyshadow; 
+	m_gborder.NextBorder = &m_gborder2;
+	m_gborder2.NextBorder = NULL;
+
+	m_sborder.LeftEdge = m_sborder2.LeftEdge = 0;
+	m_sborder.TopEdge = m_sborder2.TopEdge = 0;
+	m_sborder.FrontPen = 1;
+	m_sborder2.FrontPen = 2;
+	m_sborder.BackPen = m_sborder2.BackPen = 0;
+	m_sborder.DrawMode = m_sborder2.DrawMode = JAM1;
+	m_sborder.Count = m_sborder2.Count = 3;
+	m_sborder.XY = m_xyshine;
+	m_sborder2.XY = m_xyshadow; 
+	m_sborder.NextBorder = &m_sborder2;
+	m_sborder2.NextBorder = NULL;
+
+	// Fill IntuiText Structure
+	rp.TextExtent(m_text.data(),m_text.length(),&te);
+	m_IntuiText.FrontPen = 1;
+	m_IntuiText.DrawMode = JAM1;
+	m_IntuiText.LeftEdge = ( m_rect.Width() - te.te_Width )/2;
+	m_IntuiText.TopEdge = ( m_rect.Height() - te.te_Height )/2 ;
+	m_IntuiText.ITextFont = &m_pwindow->m_textattr;
+	m_IntuiText.IText = (UBYTE*)m_text.data();
+	m_IntuiText.NextText = NULL;
+
+	// Attach IntuiText Struct and Border Struct to gadget Struct
+	m_pgadget->GadgetText = &m_IntuiText;
+	m_pgadget->GadgetRender = &m_gborder;
+	m_pgadget->SelectRender = &m_sborder;
+	m_pgadget->Flags = GFLG_GADGHIMAGE | GFLG_EXTENDED;
+}
+
+void AFButton::Create(char *text, AFWindow* pwindow, AFRect *rect, ULONG id)
+{
+  // Create string for the text
+  m_rect=*rect;
+  m_text=text;
+
+  // Create the gadget
+  AFGadget::Create(pwindow,rect,id);
+}
+
+void
+AFButton::SetText(char* text)
+{
+	m_text = text;
+
+	// refresh gadget
+}

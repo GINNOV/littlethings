@@ -1,0 +1,90 @@
+Short:        Complete C sources for XModule
+Author:       bernie@shock.nervous.com (Bernardo Innocenti)
+Uploader:     bernie shock nervous com (Bernardo Innocenti)
+Type:         dev/src
+Architecture: m68k-amigaos
+
+
+XModule release 3.4.
+
+What is XModule?
+================
+
+ A music module editor, converter, optimizer and processor featuring
+a nice multiwindow, font sensitive GUI, ARexx port, AmigaGuide docs,
+DataTypes support, transparent XPK and LhA decrunching and much more.
+
+
+ o Module Conversion
+   -----------------
+
+     XModule reads and writes modules in these formats:
+
+         - Sound/Noise/ProTracker
+         - StarTrekker
+         - TakeTracker (1-32 channels)
+         - ScreamTracker (up to 16 channels)
+         - Oktalyzer (4-8 channels)
+         - MED
+         - OctaMED (MMD1 only)
+         - MIDI files
+
+
+ o Module Optimization
+   -------------------
+
+     XModule can optimize modules by removing all unused or duplicate
+    patterns and instruments.  Additionally XModule can optimize
+    instruments which have long tails made of zeroes or which extend
+    beyond the loop part.
+
+
+ o Module Processing
+   -----------------
+
+     XModule can process modules in several powerful ways.  For
+    instance, you can `join' two modules together, or you can `merge'
+    two modules so that they will be played at the same time.
+    Instruments can be remapped to remove all the empty slots between
+    them.
+
+
+ o Pattern Editor
+   --------------
+
+     As of version 3.2, XModule features a powerful BOOPSI pattern
+    editor in a resizable window.  Simple editing functions are
+    provided.  More powerful features will come in a later release.
+
+
+ o 32 Channels, 14-bit Player.
+   ---------------------------
+
+     A replayer for XModule is still under development and will be
+    based on Jarno Paanen's PS3M as well as Peter Kunath's DeliTracker
+    replayers.  When this player will be done, XModule will become a
+    full music editor and I will probably rename it to `XTracker'.
+
+
+Main changes from release 3.0 to release 3.4:
+=============================================
+
+ADD:    Full featured Pattern Editor!!!  Another big step towards a
+        complete n-channels music editor...
+
+ADD:    New loader for ScreamTracker 3.01! Conversion is not very good,
+        but at least it works.
+
+ADD:    Supports loading and saving TakeTracker with up to 32 channels.
+
+ADD:    Locale support.  There is only an italian catalog yet, translated
+        by my friend Steven Cantini.  If you want more translations, please
+        do them yourself and return the .ct files to me! :-)
+
+ADD:    Added support for MMD1 (OctaMED) modules.  Improved MED loader and
+        saver.
+
+ADD:    Context sensitive help in all windows: pressing HELP now brings up
+        help on the active window.
+
+FIX:    Hopefully, all reported bugs have been fixed.

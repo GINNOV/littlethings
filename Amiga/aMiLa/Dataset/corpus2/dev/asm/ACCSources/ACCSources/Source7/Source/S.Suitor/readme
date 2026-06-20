@@ -1,0 +1,12 @@
+
+ The intro shown below is a rehash of an intro by M.Flemans on disc 5. This
+shows what can be done with a little thought. Also there is an interesting
+tip on how to use some of the hardware registers to generate special effects,
+see Colours !
+
+ I have not looked at the blitter scroller properly, anyone else want to work
+on this so it will display larger fonts ?
+
+ As a last note, there are two boot loaders for the intro. To use these it is
+necessary to assemble them, then stick them on yer boot block. The intro has
+to be assembled to $30000 for this to work ( ORG $30000 ).

@@ -1,0 +1,1356 @@
+
+            ----- SOMMARIO DEGLI ARGOMENTI -----
+
+ - Premessa
+
+ - Cenni sul formato dei numeri in virgola fissa
+
+ - Cos'e' il texture mapping
+
+ - Come viene implementato il texture mapping in applicazioni real-time ?
+   - Un primo semplice esempio
+   - Passiamo a qualcosa di piu' concreto
+   - Pavimenti e soffitti
+
+ - Il calcolo della scena da tracciare
+   - Ray-casting
+   - BSP trees
+
+ - Saliamo le scale !
+
+ - Illuminiamo il nostro mondo
+
+ - Texture mapping e Amiga
+   - Conversione chunky to planar
+   - Il copper chunky
+
+
+----------------------------------------------------------------------
+
+
+PREMESSA
+--------
+
+ Questo  articolo ha lo scopo (e la pretesa) di spiegare nella maniera
+più  semplice  possibile  i  principi alla base del texture mapping in
+real  time, con particolare riferimento ad alcune delle tecniche da me
+utilizzate  nella  realizzazione del motore del videogioco BREATHLESS.
+Esso   è   stato  scritto  nel  poco  tempo  lasciatomi  libero  dalla
+programmazione  di  Breathless,  dagli  impegni  di lavoro e dalla mia
+ragazza,  per cui non può e non deve essere considerato come una fonte
+inesauribile  di  conoscenza, ma solo come un ottimo punto di partenza
+per  un argomento così affascinante ed attuale.  Ciò nonostante, posso
+assicurare  senza  dubbio  alcuno  che  i  lettori  di questo articolo
+risparmieranno  una  notevole  quantità di notti insonni, notti che io
+stesso  ho  passato nel disperato tentativo di capire come hanno fatto
+quelli della Id software a realizzare quel capolavoro che è Doom.
+
+ Data la complessità dell'argomento si presuppone una certa esperienza
+nella  programmazione  in  assembly e, comunque, un'abbondante dose di
+buona  volontà.   Il  mio  consiglio  è  quello  di  leggere più volte
+l'articolo,  nonchè i sorgenti e la documentazione allegata.  Per ogni
+approfondimento,  relativo anche al 3D in generale, rimando a libri ed
+articoli specifici.
+
+ Per  una buona lettura di questo articolo non è possibile prescindere
+da  una  buona  conoscenza  della  struttura  di Amiga e dell'assembly
+68000+.    Si   suppone   quindi   che  il  lettore  abbia  una  certa
+dimestichezza  con  tali  argomenti,  essendo  impossibile,  per  ovvi
+motivi, soffermarsi su di essi.
+
+ L'articolo  è volutamente scritto in maniera molto semplice, cercando
+di  evitare  disquisizioni  troppo complesse o troppo vicine al rigido
+formalismo  matematico,  questo  per permettere una agevole lettura al
+maggior numero possibile di persone.
+
+ Se  non  diversamente specificato, tutti i riferimenti riguardanti la
+parte hardware sono relativi alle macchine AGA.
+
+ Gli  esempi  di  codice riportati, sono scritti in pseudo-linguaggio,
+oppure  in  assembly,  e hanno scopo esclusivamente didattico.  Questo
+significa  che  non  sono  ottimizzati nel migliore dei modi e che non
+sono stati testati, per cui la presenza di errori non è esclusa.
+
+ Gli  assi del sistema di riferimento nello spazio sono orientati come
+segue:
+
+      Y ^
+        |
+        |
+        |
+        | 
+        +--------> X
+       /
+      /
+     /
+    Z
+
+
+
+
+CENNI SUL FORMATO DEI NUMERI IN VIRGOLA FISSA
+---------------------------------------------
+
+ Nell'elaborazione  di oggetti tridimensionali si ha spessissimo a che
+fare  con  numeri  non  interi.   Tale  tipo  di  dato  è  comunemente
+implementato  nei  linguaggi  ad  alto  livello  come il C e il BASIC,
+tramite  il  formato  in virgola mobile.  Con tale formato è possibile
+rappresentare un ampio insieme di numeri decimali, perdendo precisione
+solo quando strettamente necessario.
+
+  In  Assembly le cose stanno in maniera decisamente diversa e, a meno
+che non si abbia a disposizione una FPU, è assolutamente improponibile
+l'utilizzo  del formato in virgola mobile dei numeri, perchè anche una
+semplice  addizione  dovrebbe  essere realizzata da una routine di una
+certa complessità.
+
+ Si  ricorre  allora  al  formato  in  virgola  fissa  con  il quale è
+possibile  rappresentare  numeri decimali utilizzando i normali numeri
+interi  e  quindi  i  registri  del  68000.   Risulta  però necessario
+decidere in anticipo quanti bit si vogliono dedicare alla parte intera
+e  quanti  alla  parte  frazionaria  e  ciò  si  traduce in una scarsa
+flessibilità  di  questo  tipo di rappresentazione.  Il nostro scopo è
+però quello di eseguire il più velocemente possibile le operazioni sui
+numeri decimali, per cui bisogna sottostare a qualche compromesso.
+
+ Indicando che un numero è nel formato a virgola fissa, bisogna quindi
+specificare di quanti bit è composta la parte intera e di quanti bit è
+composta  la  parte  frazionaria.   In genere si utilizza la notazione
+x.y,  dove  x  è  il  numero  di bit dedicati alla parte intera e y il
+numero di bit per la parte frazionaria.  Quindi, ad esempio, scrivendo
+24.8 si vuole indicare che il numero è composto da 24 bit per la parte
+intera  e da 8 bit per la parte frazionaria.  In genere il formato più
+utilizzato è 16.16 (16 bit di parte intera e 16 di parte frazionaria),
+ed  è  quello  a cui verrà fatto riferimento qui di seguito.  Per ovvi
+motivi  è conveniente che la somma del numero di bit dedicati alle due
+parti  sia  pari  al  numero  di  bit  della  più  lunga parola che il
+processore è in grado di trattare, nel nostro caso 32.
+
+ La  conversione da un numero decimale ad un numero in virgola fissa e
+viceversa si effettua tenendo conto della semplice formuletta:
+
+ virgola_fissa = INT(decimale * 2^bit_parte_frazionaria)
+
+ Ad esempio il numero decimale 12.3456, convertito nel formato 16.16 è
+pari  a  12.3456*65536=809081  (la  parte  frazionaria  ovviamente  si
+perde),  mentre all'inverso si avrà 809081/65536=12.34559631.  Come si
+può  notare  c'è  una  perdita di precisione che è tanto più contenuta
+quanto più alto è il numero di bit dedicati alla parte frazionaria.
+
+ La  somma  di  due  numeri  in virgola fissa si effettua senza nessun
+particolare accorgimento rispetto ai numeri interi. L'istruzione
+
+    add.l  d0,d1
+
+ é  tutto  quello  che  serve  per sommare due numeri in virgola fissa
+contenuti rispettivamente in d0 e d1.
+
+ Il  discorso è un pò più complesso per quel che riguarda le divisioni
+e le moltiplicazioni.  Mi si conceda l'approssimazione contenuta nella
+seguente  affermazione:   un  numero  decimale  A,  nella sua forma in
+virgola  fissa è pari ad A*K, dove K vale 2^bit_parte_frazionaria.  Il
+prodotto  dei  due numeri decimali A e B nel formato in virgola fissa,
+vale:
+
+    A*K * B*K = (A * B) * K^2
+
+ Per ottenere il risultato cercato (A*B*K), si rende quindi necessaria
+una divisione per K (o meglio, uno shift a destra di 16 bit).
+
+ Analogamente, la divisione di due numeri A e B, vale:
+
+    A*K / B*K = A / B
+
+ Per  evitare  che  la parte frazionaria venga annullata è sufficiente
+moltiplicare il dividendo per K:
+
+    A*K*K / B*K = (A / B) * K
+
+ I  microprocessori  dal  68020  in poi sono particolarmente versatili
+rispetto  all'implementazione  dei  numeri in virgola fissa, in quanto
+dotati  di  istruzioni  di  moltiplicazione  e  divisione a precisione
+estesa. Non bisogna però dimenticare che tali istruzioni sono comunque
+più  lente  di  quelle  normali,  per  cui  in  certi  casi può essere
+preferibile utilizzare numeri in virgola fissa che entrino in una word
+piuttosto che in una long word.
+
+
+
+COS'E' IL TEXTURE MAPPING
+-------------------------
+
+ Il  texture mapping è una tecnica per "attaccare" un'immagine grafica
+in  bitmap  (brush)  o  un'immagine calcolata matematicamente (texture
+algoritmica)  ai  poligoni o, più in generale, ad una qualunque entità
+tridimensionale.
+ La  normale grafica vettoriale appare alquanto spoglia ed irreale, in
+quanto  ogni  oggetto è composto da un insieme di poligoni, ognuno dei
+quali è riempito con un unico colore.
+ Il texture mapping aggiunge ai semplici poligoni un maggiore realismo
+ed   una  maggiore  profondità,  consentendo  di  realizzare  ambienti
+virtuali molto più verosomiglianti e, quindi, più spettacolari.
+
+ Abbiamo   quindi   a   disposizione   un'immagine  bidimensionale  di
+dimensioni  note  (la nostra texture), a cui possiamo accedere tramite
+coordinate (u,v) per conoscere il colore di un punto.  Per ovvi motivi
+la texture è conservata in memoria in formato chunky pixel (ogni pixel
+xorrisponde ad un byte), ovvero come una matrice di byte.
+ Volendo  mappare  la  texture  su  un poligono nello spazio, dobbiamo
+trovare  un sistema che ci permetta di associare ad ogni punto (x,y,z)
+del poligono nello spazio, un punto (u,v) della texture.
+ Il  poligono  nello spazio appartiene ad un piano, a cui associamo un
+sistema di riferimento bidimensionale, definito da un'origine e da due
+versori.
+ Se  il poligono è un rettangolo, è sufficiente scegliere come origine
+il  primo  vertice e calcolare le componenti dei versori a partire dai
+due lati che hanno in comune il primo vertice.
+
+ Detti quindi:
+
+  P(x,y,z) il generico punto del poligono di cui vogliamo calcolare il
+           colore;
+
+  T(u,v)   il punto della texture associato a P;
+
+  O        l'origine del sistema di riferimento del poligono;
+
+  i, j     i versori del sistema di riferimento del poligono;
+
+  *        il simbolo di prodotto scalare;
+
+ possiamo scrivere:
+
+  T = ((P-O)*i,(P-O)*j)
+
+ Conosciamo  ora le coordinate del punto T(u,v) che possiamo usare per
+leggere dalla texture il colore del punto P.
+
+ Come si può notare i calcoli da effettuare per ogni punto sono troppo
+complessi   per   un'applicazione  in  real-time.   Come  è  possibile
+semplificare e velocizzare il tutto ?
+
+ Un  primo  importante  passo  è  la semplificazione del problema.  Lo
+scopo  che  ci  prefiggiamo  è  quello  di realizzare un motore che ci
+permetta  di  "passeggiare" all'interno di un mondo tridimensionale, e
+per  fare  ciò  è  sufficiente  avere  la possibilità di muoversi e di
+ruotare  lo  sguardo  a  destra  o a sinistra.  Questo porta ad alcune
+semplificazioni che renderanno il motore notevolmente più veloce:
+
+ a) muri e pavimenti devono essere tra loro perpendicolari
+ b) è possibile variare la posizione  dell'osservatore solo sugli assi
+    X e Z e non sull'asse Y
+ c) è possibile ruotare lo sguardo solo intorno all'asse Y
+
+   Questo  significa  che il nostro mondo è in effetti bidimensionale.
+Il nostro intento è quello di farlo sembrare tridimensionale.
+
+
+
+COME VIENE IMPLEMENTATO IL TEXTURE MAPPING IN APPLICAZIONI REAL-TIME ?
+----------------------------------------------------------------------
+
+UN PRIMO SEMPLICE ESEMPIO
+-------------------------
+
+ Supponiamo di voler utilizzare come texture un brush dalle dimensioni
+di 128x128 pixel e di volerlo mappare su un poligono di forma quadrata
+che,  una  volta  ruotato, traslato e proiettato in 2d, appare a video
+come  un  quadrato  dalle  dimensioni  di  64x64  pixel.   Banalmente,
+bisognerà  tracciare  sul  quadrato  a  video  solo  un  pixel  ogni 2
+(2=128/64).   Se  invece  il  quadrato  a video ha dimensioni di 32x32
+pixel, basta tracciare un pixel ogni 4 (4=128/32).
+ E' quindi facile intuire l'importanza della semplice relazione:
+
+   Step = BrushDim / ScreenDim
+
+ dove:
+
+   Step      : Passo (si tratta di un numero con virgola)
+   BrushDim  : Dimensione iniziale del brush
+   ScreenDim : Dimensione a video del brush
+
+ Volendo  infatti  mappare  la texture su un quadrato a video, di lato
+pari a ScreenDim, potremmo scrivere qualcosa del tipo:
+
+ Step = BrushDim / ScreenDim
+ for y=0 to ScreenDim 
+     v = y * Step;
+     for x=0 to ScreenDim
+         u = x * Step
+         WriteScreenPixel(x,y,ReadTexturePixel(u,v))
+     endfor
+ endfor
+
+dove:
+
+ Step, u, v               sono variabili in floating point
+
+ ReadTexturePixel(u,v)    è la funzione che legge  il colore del pixel
+                          di coordinate (u,v) della texture;
+
+ WriteScreenPixel(x,y,c)  è la funzione che scrive  un pixel di colore
+                          c a video, alle coordinate (x,y).
+
+ Ma  quello  che ci interessa è la velocità, e questa routine è ancora
+decisamente  lenta.   C'è prima di tutto bisogno di un accesso diretto
+alla  memoria,  e  di  eliminare  dai  cicli  le  istruzioni lente (le
+moltiplicazioni):
+
+ Step = BrushDim / ScreenDim
+ v = 0
+ for y=0 to ScreenDim
+     u = 0
+     screen = ScreenBase + 320 * y
+     for x=0 to ScreenDim
+         screen[x] = texture[v][u]
+         u += Step
+     endfor
+     v += Step
+ endfor
+
+dove:
+
+ ScreenBase    è l'indirizzo di uno schermo in chunky pixel;
+
+ Come  si  può  notare,  le  moltiplicazioni  sono state sostituite da
+somme, mentre per la lettura di pixel dalla texture e per la scrittura
+a  video  sono  stati utilizzati accessi diretti alla memoria, tramite
+gli  array  screen[]  e  texture[][].   Inoltre  sia la texture che lo
+schermo sono organizzati in chunky pixel.
+
+ Per fare di meglio è più conveniente passare all'assembly:
+
+;a0 = ptr alla texture
+;a1 = ptr allo schermo chunky
+;d0 = u (nel formato 16.16, cioè 16 bit interi e 16 bit frazionari)
+;d1 = v (nel formato 16.16)
+;d2 = offset all'interno della texture
+;d4 = Step (nel formato 16.16)
+;d5 = ScreenDim * 320
+;d6 = x
+;d7 = y
+
+        moveq   #0,d1           ;v=0
+        move.w  ScreenDim,d5
+        mulu.w  #320,d5         ;Sapete come si ottimizza questo, no ?
+        moveq   #0,d7           ;inizializza x
+loopy   moveq   #0,d0           ;u=0
+        move.l  ScreenBase,a0
+        add.l   d7,a0           ;a0=ptr alla riga attuale a schermo
+        move.l  d1,d2
+        clr.w   d2
+        swap    d2
+        lsl.w   #8,d2           ;d2=offset riga attuale della texture
+        move.w  ScreenDim,d6
+        subq.w  #1,d6           ;inizializza y
+loopx   swap    d0
+        move.b  d0,d2
+        swap    d0
+        move.b  (a1,d2.l),(a0)+	;Copia pixel da texture a schermo
+        add.l   d4,d0           ;u+=Step
+        dbra    d6,loopx
+        add.l   d4,d1           ;v+=Step
+        add.l   #320,d7
+        cmp.l   d5,d7
+        bne     loopy
+
+
+ Come  si può facilmente intuire, l'esempio qui riportato non effettua
+altro  che  lo  zoom  di  un  brush,  al  variare  di  ScreenDim, ma è
+estremamente  significativo  per la comprensione dei principi che sono
+alla  base  del  texture  mapping  e  di  una  sua  implementazione in
+applicazioni real-time.
+
+ E'  importante  fare attenzione al fatto che il quadrato di cui sopra
+viene suddiviso in una serie di trattini orizzontali.  Ogni trattino è
+a  sua  volta  composto da un certo numero di pixel.  A questo punto i
+pixel  da  tracciare  a  schermo vengono "campionati" dal brush ad una
+distanza gli uni dagli altri pari a Step.
+
+ Si  osservi  questo  semplice  esempio  in cui il brush originario ha
+dimensioni di 10x10 pixel, mentre le dimensioni a video sono di 5x5.
+ Il  valore  di  Step  è,  ovviamente,  10  / 5 = 2 per cui, dal brush
+saranno   scelti   solo  i  trattini  orizzontali  di  posto  pari  e,
+all'interno di ogni trattino, solo i pixel di posto pari:
+
+
+         Brush 10x10               A video 5x5
+
+     A . B . C . D . E .
+     . . . . . . . . . .
+     F . G . H . I . J .            A B C D E
+     . . . . . . . . . .            F G H I J
+     K . L . M . N . O .     --->   K L M N O
+     . . . . . . . . . .            P Q R S T
+     P . Q . R . S . T .            U V W X Y
+     . . . . . . . . . .
+     U . V . W . X . Y .
+     . . . . . . . . . .
+
+
+ Se, invece, le dimensioni a video sono di 4x4, Step avrà valore pari
+a 10 / 4 = 2.5 e il risultato sarà:
+
+
+         Brush 10x10               A video 4x4
+
+     A . B . . C . D . .
+     . . . . . . . . . .
+     E . F . . G . H . .            A B C D
+     . . . . . . . . . .            E F G H
+     . . . . . . . . . .     --->   I J K L
+     I . J . . K . L . .            M N O P
+     . . . . . . . . . .
+     M . N . . O . P . .
+     . . . . . . . . . .
+     . . . . . . . . . .
+
+
+
+
+PASSIAMO A QUALCOSA DI PIU' CONCRETO
+------------------------------------
+
+ E'  stato  già  detto  che  il  mondo  tridimensionale in cui abbiamo
+intenzione  di  muoverci  ha  solo  muri verticali e l'unica rotazione
+permessa  è  quella  intorno  all'asse  Y.   Ogni  muro  è  banalmente
+rappresentato  da  un  poligono;  lo  stesso  dicasi per ogni pezzo di
+pavimento o soffitto.
+
+ Supponiamo  quindi di dover mappare la texture su un quadrato ruotato
+intorno  all'asse  Y.   Il  quadrato  appare  a video come un trapezio
+ruotato di 90 gradi e rappresenta un muro:
+
+     |\
+     | \
+     |  \
+     |   \
+     |    |
+     |    |
+     |    |
+     |   /
+     |  /
+     | /
+     |/
+
+ Come  si  può facilmente notare, questa figura è formata da una serie
+di  trattini verticali di lunghezza decrescente, ovvero composti da un
+numero   di   pixel   decrescente.   Per  ogni  trattino  verticale  è
+sufficiente eseguire un ciclo simile al seguente:
+
+
+loop    move.b  (a0,d0.w),(a1)  ;Copia il pixel
+        add.w   d3,d1           ;Somma la parte frazionaria
+        addx.w  d2,d0           ;Somma la parte intera (+ riporto)
+        adda.l  d4,a1           ;Sposta il ptr. allo schermo
+        dbra    d7,loop
+
+dove:
+
+ d0 = parte intera del contatore
+ d1 = parte frazionaria del contatore
+ d2 = parte intera dello Step
+ d3 = parte frazionaria dello Step
+ d4 = numero di pixel per ogni riga di shermo
+ d7 = numero di pixel da tracciare per il trattino corrente
+ a0 = ptr. alla colonna della texture corrispondente al trattino
+ a1 = ptr. al pixel corrente nello schermo
+
+ La  texture  è conservata in memoria come una matrice organizzata per
+colonne, questo per semplificare l'accesso ad ogni pixel della colonna
+corrente  della  texture.   Il  calcolo della colonna della texture da
+visualizzare, va fatto tenendo conto delle leggi della prospettiva.
+
+
+
+
+PAVIMENTI E SOFFITTI
+--------------------
+
+ Nel tipo di motore 3D che si intende realizzare, pavimenti e soffitti
+sono perfettamente orizzontali, nonchè perpendicolari ai muri.
+ Il texture mapping di poligoni di questo genere è un pò più complesso
+di  quello dei muri in quanto è necessario scorrere la texture secondo
+linee  oblique.   Inoltre  è necessario effettuare il tracciamento per
+strisce orizzontali di pixel e non verticali, come avviene per i muri.
+Si  osservi  la  seguente  figura, rappresentante la texture (da 64x64
+pixel) da mappare su un pezzo di pavimento (o soffitto):
+
+         ____________________________ 
+        |                            |
+        |                            |
+        |                            |
+        |                         ***|
+        |                      ***   |
+        |                    **      |
+        |                 ***        |
+        |              ***           |
+        |           ***              |
+        |         **                 |
+        |      ***                   |
+        |   ***                      |
+        |***                         |
+        |____________________________|
+
+
+ Per  ogni striscia orizzontale di pavimento (o soffitto) è necessario
+scorrere  la texture secondo una linea non necessariamente orizzontale
+o  verticale.   Tale  linea  è  rappresentata  in  figura per mezzo di
+asterischi  (*).   Il  loop di texture mapping è qualcosa di simile al
+seguente:
+
+        for x = x1 to x2
+            WriteScreenPixel(x,y,ReadTexturePixel(u & 63, v & 63))
+            u += du
+            v += dv
+        endfor
+
+dove:
+
+ x1   = colonna iniziale della striscia orizzontale di pixel
+ x2   = colonna finale della striscia orizzontale di pixel
+ y    = riga su cui si trova la striscia di pixel
+ u, v = coordinate all'interno della texture
+ du   = valore di somma per u
+ dv   = valore di somma per v
+
+ Il  problema,  a  questo  punto,  è costituito dal calcolo dei valori
+iniziali  di u, v, du, dv.  La tecnica adottata per il calcolo di tali
+valori  dipende  dall'approccio  utilizzato  nella  realizzazione  del
+motore.
+
+ Per  chiarire un pò meglio le idee, si tenga presente che il poligono
+da  tracciare appartiene al pavimento e, quindi, ad un piano.  Su tale
+piano  sono  "incollate",  una  vicino  all'altra, le texture da 64x64
+pixel,  in  modo  da  coprirlo per intero.  Ogni punto di tale piano è
+individuato  tramite  la  coppia  di  coordinate  (u,v) e, seguendo le
+regole   della  prospettiva,  corrisponde  ad  un  pixel  a  video  di
+coordinate  (x,y).   
+
+Le  coordinate  a  video  del  punto iniziale e del punto finale della
+striscia  orizzontale di pixel sono noti e sono rispettivamente (x1,y)
+e  (x2,y).   A  tali punti corrispondono i punti (u1,v1) e (u2,v2) nel
+piano di texture che vanno calcolati.  Il valore iniziale della coppia
+(u,v) è proprio (u1,v1), mentre il valore di (du,dv) è dato da:
+
+        du=(u2-u1)/(x2-x1+1)
+        dv=(v2-v1)/(x2-x1+1)
+
+
+ A  titolo  di esempio, consiglio di dare un'occhiata al sorgente AMOS
+presente nel file "TMapFloor.lha".
+
+
+
+
+IL CALCOLO DELLA SCENA DA TRACCIARE
+-----------------------------------
+
+ Riguardo  al  texture  mapping  sono  molto  utilizzati i due termini
+"ray-casting"  e  "BSP",  ma  non  tutti  sanno  a cosa esattamente si
+riferiscano.
+ Per  tracciare a video una scena, non c'è solo bisogno di sapere come
+tracciarla, ma anche e soprattutto di sapere cosa tracciare.
+ Il  ray-casting  e  i  BSP  tree  sono due dei metodi più diffusi per
+calcolare cosa tracciare in base al punto di vista dell'osservatore.
+ In  un classico labirinto alla Wolfestein è contenuto un numero molto
+elevato  di  poligoni,  e  volerli analizzare tutti per decidere quali
+fanno  effettivamente  parte  della  scena da visualizzare, è assurdo.
+C'è  bisogno di tecniche più veloci e sia il ray-casting che i BSP, ci
+vengono in aiuto.
+
+
+RAY-CASTING
+-----------
+
+ Viene  spontaneo  notare  che il ray-casting ha un nome simile al più
+famoso   ray-tracing   (l'algoritmo   utilizzato   per   immagini   3D
+fotorealistiche), ed in effetti la somiglianza non si ferma al nome.
+ L'algoritmo  dell  ray-tracing  consiste nel tracciare un raggio (una
+linea)  tra  l'osservatore  ed  ognuno  dei  pixel  che  compongono lo
+schermo.   Per ognuno di questi raggi vengono poi calcolate collisioni
+e rifrazioni in modo da ricavare il colore del pixel corrispondente.
+
+ Il  ray-casting  non è altro che una semplificazione del ray-tracing:
+viene  tracciato  un  solo  raggio per ogni colonna dello schermo.  Il
+guadagno  in  termini  di velocità risulta subito evidente se si pensa
+che  per  calcolare  un frame a 320x200 pixel sono necessari 320 raggi
+all'algoritmo del ray-casting contro i 64000 del ray-tracing !
+
+ Quella  che  potrebbe sembrare una esagerata approssimazione è invece
+un'idea   tanto   semplice   quanto   geniale.   Non  bisogna  infatti
+dimenticare  che il mondo che intendiamo visualizzare è soggetto a dei
+limiti  per  cui  pavimenti e pareti sono tra loro perpendicolari.  In
+più  è  possibile  muoversi  solo su un piano (la coordinata Y non può
+variare).
+
+ Si osservi il grafico seguente:
+
+       0    64  128  192  256  320  384  448  512 X
+        +----+----+----+----+----+----+----+----+--->
+        |XXXX|XXXX|XXXX|XXXX|XXXX|XXXX|XXXX|XXXX|
+        |XXXX|XXXX|XXXX|XXXX|XXXX|XXXX|XXXX|XXXX|
+     64 +----+----+----+----+----+----+----+----+
+        |XXXX|    |    |    |    |    |    |XXXX|
+        |XXXX|    |    |    |    |    |    |XXXX|
+    128 +----+----+----+----+----+----+----+----+
+        |XXXX|    |XXXX|XXXX|    |XXXX|    |XXXX|
+        |XXXX|    |XXXX|XXXX|    |XXXX|    |XXXX|
+    192 +----+----+----+----+----+----+----+----+
+        |XXXX|    |XXXX|    |    |XXXX|    |XXXX|
+        |XXXX|    |XXXX|    |    |XXXX|    |XXXX|
+    256 +----+----+----+----+----+----+----+----+
+        |XXXX|    |XXXX|    |    |XXXX|    |XXXX|
+        |XXXX|    |XXXX|    |    |XXXX|    |XXXX|
+    320 +----+----+----+----+----+----+----+----+
+        |XXXX|    |XXXX|XXXX|XXXX|XXXX|    |XXXX|
+        |XXXX|    |XXXX|XXXX|XXXX|XXXX|    |XXXX|
+    384 +----+----+----+----+----+----+----+----+
+        |XXXX|    |    |    |    |    |    |XXXX|
+        |XXXX|O-> |    |    |    |    |    |XXXX|
+    448 +----+----+----+----+----+----+----+----+
+        |XXXX|XXXX|XXXX|XXXX|XXXX|XXXX|XXXX|XXXX|
+        |XXXX|XXXX|XXXX|XXXX|XXXX|XXXX|XXXX|XXXX|
+    512 +----+----+----+----+----+----+----+----+
+        |
+      Z |
+        V
+
+
+ Esso  rappresenta  una  semplice mappa bidimensionale organizzata per
+blocchi  che  possono  essere  pieni o vuoti.  Un blocco pieno non può
+essere  attraversato,  un  blocco  vuoto  si.  Ogni blocco deve essere
+immaginato  come  una specie di cubo di dimensioni fisse, in genere 64
+unità  (o pixel) per lato, la cui faccia inferiore poggia sulla mappa,
+nella  posizione indicata dalla griglia.  La faccia inferiore e quella
+superiore  rappresentano  rispettivamente  pavimento  e  soffitto  dei
+blocchi   vuoti.    Le   quattro  facce  perpendicolari  al  pavimento
+rappresentano  altrettanti  pezzi di muro.  Ad ogni faccia è associata
+una texture di dimensioni 64x64 pixel.
+
+ Un  blocco  ha, quindi, sei parametri:  un puntatore alla texture del
+pavimento,  un puntatore alla texture del soffitto e quattro puntatori
+alle texture delle rimanenti quattro facce.  Se il blocco è pieno, non
+ha  bisogno  dei  puntatori alle texture di soffitto e pavimento (sono
+posti  a  zero),  mentre se è vuoto, non ha bisogno dei puntatori alle
+texture dei quattro pezzi di muro.
+
+ L'osservatore  ha tre parametri:  coordinata x, coordinata z e angolo
+di osservazione.  Nel grafico precedente l'osservatore è rappresentato
+da  una  O  e  da  una  freccia che indica la direzione dello sguardo.
+Dividendo le coordinate x e z per la dimensione dei blocchi si calcola
+facilmente su quale blocco si trova l'osservatore.
+
+ Si  immagini ora lo schermo come composto da 320 colonne da 200 pixel
+ciascuna.
+
+ L'algoritmo del ray-casting si può riassumere nei seguenti passi:
+
+   1) Tenendo conto  dell'angolo di osservazione,  calcolare il raggio
+      (la retta)  da tracciare tra  l'osservatore e  ognuna  delle 320
+      colonne che compongono lo schermo.
+
+   2) A partire dal  blocco  su cui  si trova  l'osservatore  e usando
+      l'algoritmo di tracciamento  delle linee di Bresenham, esaminare
+      ogni blocco attraverso  cui passa il raggio  corrente finchè non
+      se ne trova uno pieno.
+
+   3) Se il blocco  è pieno, vuol dire  che c'è un'intersezione tra il
+      raggio e due dei 4 lati del blocco.  Calcolare le coordinate del
+      punto di intersezione  del lato più  vicino all'osservatore.  In
+      questo modo, grazie ad  una semplice operazione di and,  è anche
+      possibile calcolare quale dei  64 pixel del lato è stato colpito
+      dal raggio.  Questo date è estremamente utile durante il texture
+      mapping vero e proprio.
+
+   4) Calcolare  la   distanza  tra  l'osservatore   ed  il  punto  di
+      intersezione.
+
+   5) Calcolare l'altezza del muro in pixel (tenendo conto delle leggi
+      della prospettiva) nel punto di intersezione.
+
+   6) Tracciare a schermo, nella colonna corrente, tramite una routine
+      di texture mapping, il pezzo di muro intersecato.
+
+   7) Tornare al punto 2 finchè non sono stati tracciati i 320 raggi.
+
+ L'algoritmo,  come  si può notare, è molto semplice, ma implementarlo
+in  maniera efficace è tutt'altro discorso.  A tal proposito consiglio
+di  studiare  i  sorgenti  e,  soprattutto,  il file di documentazione
+"notes.txt"  contenuti  nell'archivio  "ack3d.zip"  allegato  a questo
+articolo.   Tale  archivio  contiene,  oltre  ai  sorgenti, un'analisi
+approfondita di una delle possibili implementazioni dell'algoritmo del
+ray-casting.   A  quanti  riuscissero  ad implementare in un programma
+funzionante le soluzioni proposte dall'autore dell'archivio, consiglio
+di  studiare  nuove e più efficienti strade per raggiungere i medesimi
+risultati.   Posso testimoniare in prima persona che si può fare molto
+di meglio.
+
+ I sorgenti sono per PC, ma il loro valore didattico resta immutato.
+
+
+
+BSP TREES
+---------
+
+ Più  complessa,  invece,  è  l'idea  di  base dei BSP tree.  Prima di
+tutto,  BSP  tree  significa  per  esteso:   Binary SPlit tree, ovvero
+alberi binari di divisione.
+
+ Vediamo come funzionano:
+
+ Si osservi la seguente figura, in cui 3 linee risiedono sul piano:
+
+
+
+                       ------------------
+                             linea 1
+                    \
+                     \
+                      \
+                       \ linea 2
+        ------------    \
+           linea 3       \
+                          \
+
+                       ^
+                       Osservatore
+
+
+
+ Volendo  disegnare  la  scena  utilizzando  il classico algoritmo del
+pittore,  bisognerebbe  prima  di tutto ordinare le linee in base alla
+distanza,  quindi  tracciarle  in  ordine  dalla  più lontana alla più
+vicina.   Questa  tecnica,  oltre ad essere decisamente lenta, è anche
+soggetta  a  notevoli  errore  di  imprecisione  spesso  difficili  da
+eliminare.
+
+ Utilizzando i BSP, il calcolo dell'ordine di tracciamento viene fatto
+una  volta  per  tutte  al  di  fuori del motore 3D, creando un albero
+binario  contenente  tutte  le  informazioni  necessarie  a  tracciare
+nell'ordine    giusto   le   linee,   qualunque   sia   la   posizione
+dell'osservatore.
+
+ Prima  di  tutto  si  noti che, dato un qualunque punto (x,y), si può
+sempre dire se esso si trova su un lato o sull'altro di una linea.  Se
+il  punto  dovesse  appartenere alla linea, lo si può considerare come
+appartenente ad uno dei due lati.
+
+ L'albero  binario  dei  BSP  è  costituito  da  una serie di nodi che
+rappresentano le linee che si vogliono tracciare.  Alla destra di ogni
+nodo  si mettono tutte le linee che si trovano su un lato, mentre alla
+sinistra  si  mettono  tutte  le linee che si trovano sull'altro lato.
+Così, riguardo all'esempio precedente, l'albero potrebbe essere:
+
+         1
+        /
+       2
+      /
+     3
+
+ Ma è possibile utilizzare qualunque altra linea come nodo di testa:
+
+         2
+        / \
+       3   1
+
+ Volendo  però  utilizzare  la  linea  3  come nodo di testa, sorge un
+problema:  su quale lato della linea 3 si trova la linea 2 ?
+ La   risposta   è  semplice:   su  entrambi.   Si  procede  allora  a
+suddividere la linea 2 in due parti, tagliate a metà dal prolungamento
+della linea 3. L'albero assume, quindi, questo aspetto:
+
+         3
+        / \
+       2a  2b
+            \
+             1
+
+ Le  linee  2a e 2b sono porzioni dell'originaria linea 2.  Tracciando
+entrambe le linee a video, si otterrà esattamente la linea 2.
+
+ Durante  la  creazione  di  un  albero  BSP  è  necessario cercare di
+minimizzare  il  numero  di  suddivisioni  di  linee,  pena un aumento
+spropositatto  delle dimensioni dell'albero stesso, e quindi del tempo
+necessario al tracciamento di una scena.
+
+ Per tracciare una scena bisogna partire dal nodo di testa e calcolare
+su  quale  lato  della linea è posto l'osservatore.  Si visita il nodo
+relativo all'altro lato, si traccia la linea corrente, e poi si visita
+il  nodo  relativo  al lato su cui si trova l'osservatore, il tutto in
+maniera ricorsiva. Ad esempio, il seguente albero:
+
+                5
+              /   \
+             /     \
+            3       6
+           / \     /
+          1   2   4
+
+ genera  la  seguente  sequenza  se l'osservatore si trova a destra di
+tutte le linee:
+
+   4 - 6 - 5 - 2 - 3 - 1
+
+
+ L'estensione  di questi concetti al 3D è semplice.  Si considerino al
+posto delle linee, dei poligoni e si supponga che il poligono 1 sia il
+nodo  di  testa.  Per sapere dove inserire il poligono 2 nell'albero è
+sufficiente  calcolare  su  quale  lato  si trovano tutti i suoi punti
+rispetto al poligono 1.  Se una parte del poligono 2 dovesse essere su
+un  lato  e  l'altra parte sull'altro lato del poligono 1, si dovrebbe
+dividere  il  poligono  2  in  due  parti.  Per fare ciò è sufficiente
+prendere  in  considerazione la linea formata dall'intersezione tra il
+poligono 2 e il piano a cui appartiene il poligono 1 e suddividere
+il poligono 2 lungo questa linea.
+
+ E'  però  da  notare  che  per  realizzare un motore simile a Doom, è
+sufficiente  utilizzare i BSP tree nel caso bidimensionale.  Il motivo
+risulterà chiaro dopo aver letto il paragrafo successivo.
+
+
+
+ Come  si  può  facilmente  comprendere,  i  BSP  tree  hanno notevoli
+vantaggi  sul  ray-casting:   sono più veloci, danno la possibilità di
+tracciare  muri obliqui e di ogni dimensione e, più in generale, danno
+la possibilità di realizzare ambienti più complessi e realistici.
+ Per contro c'è da indicare un maggiore difficoltà d'uso
+
+
+
+
+SALIAMO LE SCALE !
+------------------
+
+ Le  tecniche descritte fino a questo punto permettono di visualizzare
+scene tratte da un mondo sostanzialmente bidimensionale. Non si tratta
+cioè di vero 3D, ma solo di una parvenza.
+
+ Un  passo  avanti nella realizzazione di un mondo tridimensionale più
+realistico  può  essere fatto con una tecnica abbastanza semplice.  Si
+prenda   in   considerazione   un   blocco  vuoto  dell'algoritmo  del
+ray-casting  descritto poco prima.  Se l'osservatore fosse nel blocco,
+ovviamente,  si  troverebbe  tra  pavimento  e  soffitto.   La sezione
+laterale del blocco si presenta così:
+
+
+                     soffitto
+                     ________
+                    |        |
+                    |        |
+                    |        |
+                    |________|
+
+                     pavimento
+
+  Sempre  considerando una sezione laterale, si accostino 2 blocchi al
+precedente:
+                1        2        3
+            ________.________.________
+           |                          |
+           |  O->                     |
+           |                          |
+           |________.________.________|
+
+
+ L'osservatore, che  si trova sul blocco 1, vede (approssimativamente)
+questa scena (un corridoio):
+
+               _____________________
+              |\                   /|
+              |  \               /  |
+              |    \           /    |
+              |      \ _____ /      |
+              |       |     |       |
+              |       |     |       |
+              |       |_____|       |
+              |      /       \      |
+              |    /           \    |
+              |  /               \  |
+              |/___________________\|
+
+
+
+
+ I  tre  blocchi si trovano alla stessa altezza ma cosa succede se, ad
+esempio,  il  blocco centrale si trova più in alto rispetto agli altri
+due ?
+
+                1        2        3
+                     ________
+            ________|        |________
+           |                          |
+           |  O->                     |
+           |         ________         |
+           |________|        |________|
+
+
+
+ L'osservatore  non vede più solo un semplice corridoio, ma vede anche
+un gradino.  Innalzando il blocco 3 rispetto al blocco 2 si avrà:
+
+
+                1        2        3
+                              ________
+                     ________|        |
+            ________|                 |
+           |                          |
+           |  O->             ________|
+           |         ________|
+           |________|        
+
+
+ L'osservatore,  a  questo punto, vede una piccola scalinata, composta
+da  due  gradini.   Questo  significa che ai sei parametri del blocco,
+bisogna aggiungere l'altezza del pavimento e l'altezza del soffitto.
+
+ C'è  però  un  piccolo  problema:   tra  due  pavimenti  (o soffitti)
+adiacenti che si trovano a differente altezza, rimane dello spazio che
+deve  essere  riempito in qualche modo.  Si giunge allora ad una nuova
+definizione del blocco ed all'aggiunta di altri parametri.  Si osservi
+la seguente figura, rappresentante la sezione laterale di un blocco in
+quella che è la sua nuova definizione:
+
+                    .         .
+                    .         .
+                    |soffitto | <-- Upper texture
+                    |_________|
+                    |         |
+                    |         | <-- Normal texture
+                    |         |
+                    |_________|
+                    |pavimento|
+                    |         | <-- Lower texture
+                    .         .
+                    .         .
+
+
+ Per  ognuna delle quattro facce laterali (quindi per ogni muro), sono
+ora definite tre texture:
+
+  - Normal : è la texture  visualizzata  tra soffitto  e pavimento, se
+             il blocco è pieno;
+
+  - Upper  : è la texture visualizzata  tra due soffitti adiacenti che
+             si trovano altezza differente;
+
+  - Lower  : è la texture visualizzata tra due pavimenti adiacenti che
+             si trovano altezza differente;
+
+ Il  numero  di  parametri  di  ogni  blocco è a questo punto salito a
+sedici.
+
+ Per chiarire meglio le idee, si osservi la seguente figura:
+
+                                    Upper texture
+                   Upper texture    del blocco 2
+                   del blocco 1      |
+                            |        |
+                            |        V________
+                            V________|        |
+                    ________|          blocco | <- Normal texture
+                   |          blocco     3    |     del blocco 3
+ Normal texture -> | blocco     2     ________|
+  del blocco 1     |   1     ________|
+                   |________|        ^ 
+                            ^        |
+                            |        | Lower texture
+                            |          del blocco 3
+                        Lower texture
+                        del blocco 2
+
+
+ Come  si può notare, il mondo risultante da questa nuova definizione,
+è  anch'esso  sostanzialmente  bidimensionale.   Il  realismo  è però
+sicuramente superiore.  Ne è prova l'enorme successo riscosso da Doom.
+
+ L'applicazione ai BSP tree dei concetti descritti in questo paragrafo
+è  semplice.  Prima di tutto l'unità fondamentale non è costituita dai
+blocchi  ma,  ovviamente, dalle linee.  Ogni linea rappresenta un muro
+ed  è  quindi  dotata  delle  tre texture (upper, normal e lower).  Le
+linee costituiscono i lati di poligoni detti settori.  Ogni settore ha
+come parametri l'altezza e la texture di pavimento e soffitto.
+
+ Per un maggiore approfondimento consiglio la lettura delle specifiche
+dei file WAD di Doom, contenute nel file "DoomSpecs.guide".
+
+
+
+
+LA "TECNICA DEL PITTORE"
+------------------------
+
+ Siamo  ora  a  conoscenza  delle due tecniche più usate per decidere
+cosa tracciare per visualizzare una scena.
+ Utilizzando  il ray-casting, ci ritroveremo con una lista di trattini
+verticali,  ognuno relativo ad un muro, mentre utilizzando i BSP tree,
+ci  ritroveremo  con  una  lista  di  facce,  scomponibili in trattini
+verticali.
+
+[DA COMPLETARE]
+
+
+
+ILLUMINIAMO IL NOSTRO MONDO
+---------------------------
+
+ E'  possibile dotare i blocchi (nel caso del ray-casting) o i settori
+(nel  caso  dei  BSP)  del parametro di illuminazione.  Tale parametro
+viene  utilizzato  durante  il  texture  mapping  per  accedere ad una
+tabella  di  illuminazione e variare la luminosità di ogni pixel delle
+texture del blocco.
+
+ Si  supponga che le texture siano a 256 colori.  Questo significa che
+ogni  pixel  di una qualunque texture può assumere valori tra 0 e 255.
+La  palette  di  256 colori deve essere composta da un certo numero di
+sfumature  di  un certo numero di colori di base (ad esempio 32 grigi,
+32 marroni, 32 rossi, 16 blu, etc.), in modo da coprire un pò tutte le
+esigenze  cromatiche  di una qualunque immagine.  Quindi ogni colore è
+presente più volte nella palette ma con intensità luminosa diversa.
+
+ E'  quindi possibile costruire una tabella che associa ad ogni colore
+della  palette un altro colore della palette stessa, ma con differente
+luminosità.   Gli  elementi  di  questa  tabella assumono, ovviamente,
+valori tra 0 e 255.
+
+ Costruendo  M  tabelle di questo tipo, ognuna relativa ad una diversa
+luminosità  (compresa  tra  100%  e 0%), si ottiene una matrice N x M,
+dove  N  è il numero di colori della palette (256).  Con 32 livelli di
+illuminazione  (e quindi 32 tabelle) si ottiene una matrice che occupa
+quindi 256*32=8192 bytes.
+
+ Supponendo  che il colore 0 della palette sia il nero, la matrice può
+essere così presentata:
+
+                              COLORI DELLA PALETTE
+                    
+                     0   1   2   3  ............  253 254 255
+                 +--------------------------------------------+
+           100%  |   0   1   2   3  ............  253 254 255 |
+            .    |   .   .   .   .  ............    .   .   . |
+            .    |   .   .   .   .  ............    .   .   . |
+    L       .    |   .   .   .   .  ............    .   .   . |
+    U       75%  |   .   .   .   .  ............    .   .   . |
+    M       .    |   .   .   .   .  ............    .   .   . |
+    I       .    |   .   .   .   .  ............    .   .   . |
+    N       .    |   .   .   .   .  ............    .   .   . |
+    O       50%  |   .   .   .   .  ............    .   .   . |
+    S       .    |   .   .   .   .  ............    .   .   . |
+    I       .    |   .   .   .   .  ............    .   .   . |
+    T       .    |   .   .   .   .  ............    .   .   . |
+    A'      25%  |   .   .   .   .  ............    .   .   . |
+            .    |   .   .   .   .  ............    .   .   . |
+            .    |   .   .   .   .  ............    .   .   . |
+            .    |   .   .   .   .  ............    .   .   . |
+            0%   |   0   0   0   0  ............    0   0   0 |
+                 +--------------------------------------------+
+
+
+ Come si può notare, la prima tabella (quella relativa alla luminosità
+100%) fa corrispondere ad ogni colore della palette, il colore stesso,
+per  cui  in  teoria  si  potrebbe  evitare  di accedere alla tabella.
+L'ultima   tabella,   relativa   alla  luminosità  minima,  fa  invece
+corrispondere  ad  ogni  colore della palette, il colore zero, cioè il
+nero.   Le  tabelle  intermedie  devono  essere  calcolate tramite una
+routine apposita.  Allegato a questo articolo c'è un sorgente C adatto
+allo scopo.  Il suo nome è:  MakeLTable.c
+
+ Per   gestire   l'illuminazione,  il  ciclo  di  texture  mapping  va
+modificato in questo modo:
+
+	moveq	#0,d5
+loop    move.b  (a0,d0.w),d5	;Legge il pixel dalla texture
+	move.b  (a2,d5.l),(a1)  ;Legge dalla light table e scrive
+        add.w   d3,d1           ;Somma la parte frazionaria
+        addx.w  d2,d0           ;Somma la parte intera (+ riporto)
+        adda.l  d4,a1           ;Sposta il ptr. allo schermo
+        dbra    d7,loop
+
+ dove  a2  è  il  puntatore  alla  tabella  di  illuminazione che deve
+ovviamente essere calcolato al di fuori del ciclo, tenendo conto della
+luminosità  del mondo in quel punto e della distanza dall'osservatore.
+In un ambiente al massimo della luminosità, a2 punta sempre alla prima
+tabella, mentre in un ambiente totalmente buio punta all'ultima.
+
+
+
+
+TEXTURE MAPPING E AMIGA
+-----------------------
+
+ Penso  sia  noto  a  tutti  che  la  Id,  la  casa di software che ha
+realizzato  Doom, ha sempre creduto che fosse impossibile portare Doom
+su  Amiga.   Secondo  loro, il 4000/40 sarebbe sufficientemente veloce
+per  Doom  se  non  fosse  per  la mancanza di una modalità grafica in
+chunky  pixel  e per l'elevato prezzo di tale macchina.  Di realizzare
+Doom per un 1200, neanche a parlarne.  Hanno ragione ?
+ In  parte  si.   Doom  è  realizzato  principalmente in C, e solo una
+minima  parte  del  codice è stata scritta in assembly, per cui solo i
+processori più veloci possono farlo girare ad una velocità decente.
+ Riscriverlo  interamente  in assembly per l'Amiga non sarebbe affatto
+conveniente,  per  cui  la  Id  ha preferito evitare di realizzare una
+conversione.
+ Dal  punto  di  vista della convenienza commerciale, quindi, la Id ha
+sicuramente ragione, ma dal punto di vista puramente tecnico ?
+ Come  afferma  la Id, i problemi sono sostanzialmente due:  la scarsa
+diffusione di processori veloci (e di conseguenza, di costo elevato) e
+la mancanza di un modo grafico in chunky pixel.
+
+ Contrariamente  a  quello  che si crede, la mancanza del chunky pixel
+non  è  il  problema principale del texture mapping su Amiga.  Sono in
+molti  a  credere  che i modi grafici planari siano ben otto volte più
+lenti  dei  corrispettivi  modi  in  chunky pixel, ma questo non è del
+tutto  vero.  E' vero che se si vuole scrivere un solo pixel per volta
+in  uno  schermo planare, bisogna accedere otto volte alla memoria per
+scrivere  ognuno degli otto bit che compongono il pixel, ma è pur vero
+che  è in certe applicazioni non è affatto necessario scrivere un solo
+pixel per volta.
+ Esistono  infatti  tecniche  che  permettono di ottimizzare l'accesso
+alla  memoria  video  e  che  permettono  di  avvicinarsi  in  maniera
+soddisfacente  alle  prestazioni  delle  modalità  grafiche  in chunky
+pixel. E' questo il caso della conversione "chunky to planar".
+
+
+
+
+CONVERSIONE CHUNKY TO PLANAR
+----------------------------
+
+ Questa  tecnica prevede l'uso di un finto buffer in chunky pixel, che
+il  programma  tratta  come  se fosse un vero schermo in chunky pixel.
+Terminata  l'elaborazione  di un frame, basta eseguire una routine che
+si  occupa  di  convertire,  il  più  velocemente  possibile, il finto
+schermo  chunky  pixel nello schermo planare visualizzato dal chip-set
+di Amiga.
+ Esistono diverse tecniche (e varianti delle stesse) per effettuare la
+conversione,  ed  è  possibile  trovare  nel pubblico dominio un certo
+numero di routine già pronte e complete di sorgenti.
+ In  generale  si può dire che esistono due grandi famiglie di routine
+di  conversione:  quelle che utilizzano il blitter e quelle che non ne
+fanno  uso.   Le  prime sono ottime per le macchine non troppo veloci,
+come  il  1200  base  o  il  1200  con fast.  Le seconde sono, invece,
+preferibili  su  macchine  veloci,  quelle  dotate di 68030 50Mhz o di
+68040.  Cerchiamo di capire perchè.
+
+ E'  risaputo  che  la  memoria chip è molto più lenta della fast, sia
+perchè  rallentata  dagli  accessi  DMA, sia perchè funzionante con un
+clock  di  soli 7 Mhz.  Il 68040 25Mhz, che potrebbe accedere alla RAM
+in  soli  2 cicli (80ns), ha bisogno di qualcosa come 16 cicli (640ns)
+per accedere alla chip (vengono cioè inseriti 14 cicli di attesa):  il
+collo  di  bottiglia è proprio li, nell'accesso alla chip RAM.  Grazie
+alla  pipeline  ,  dopo  una  operazione  di accesso in scrittura alla
+memoria,  i  processori  dal  68020  in  su  possono passare subito ad
+eseguire  altre  istruzioni  che  non  accedano  alla  memoria,  senza
+attendere  che la scrittura sia terminata, questo sempre che il codice
+da  eseguire  sia  nella  cache.   Le  istruzioni eseguite "all'ombra"
+dell'istruzione   di   accesso   in  scrittura  alla  memoria  vengono
+comunemente chiamate "free instructions" o istruzioni gratuite.
+ Data  la maggiore velocità del 68040 rispetto al 68020 e tenuto conto
+del   collo  di  bottiglia  rappresentato  dalla  chip  RAM,  si  nota
+facilmente  come  il  68040 sia in grado di eseguire un buon numero di
+istruzioni  gratuite.   Volendo fare un semplice esempio, l'insieme di
+istruzioni:
+
+ move.l d0,(a0)+
+ move.l d1,(a0)+
+
+è veloce quanto il seguente:
+
+ move.l d0,(a0)+
+ add.l	d2,d0            <--- istruzione gratuita
+ move.l d1,(a0)+
+
+ Il  numero  di  istruzioni gratuite varia in dipendenza dal numero di
+cicli di attesa imposti al processore, e dalla velocità del processore
+stesso.    Maggiori  sono  questi  due  parametri,  maggiori  sono  le
+limitazioni  imposte  dal  collo di bottiglia rappresentato dalla chip
+RAM.  Di conseguenza il numero di istruzioni gratuite aumenta.
+
+ Tutto  questo  significa  che  insieme  ad una semplice copia di dati
+dalla  fast  alla  chip  RAM,  è  possibile eseguire, su un processore
+veloce,  anche  un'elaborazione  dei dati stessi, il tutto senza tempi
+aggiuntivi.
+
+ Purtroppo, per quanto riguarda la conversione chunky to planar, non è
+possibile  scrivere  tutto  il  codice  in  modo  tale  che  tutte  le
+istruzioni  che  non  accedono  alla  memoria  siano  gratuite,  ma  è
+possibile andare vicino a questo risultato.
+
+ Come  se  non  bastasse,  sembra che il blitter sia sensibilmente più
+lento sulle macchine dotate di processori più veloci.
+
+ In conclusione, riporto un confronto dei tempi di esecuzione, su 1200
+e  4000, della routine di chunky to planar che utilizzo per il 1200, e
+che sfrutta sia il blitter, sia il processore:
+
+ - A1200+fast:
+          68020   :  41 msec
+          Blitter :  66 msec
+          ------------------
+          Totale  : 107 msec
+
+ - A4000:
+          68040   :  24 msec
+          Blitter :  80 msec
+          ------------------
+          Totale  : 104 msec
+
+ Come  si può notare, il Blitter del 4000 è sensibilmente più lento di
+quello  del  1200, per cui le prestazioni globali di questa routine di
+chunky to planar sono quasi identiche tra 1200 e 4000.
+ In  verità sul 4000 le cose vanno comunque meglio che sul 1200, dato
+che  la parte di conversione affidata al processore è di 17 msec più
+veloce.
+
+
+
+
+COPPER CHUNKY
+-------------
+
+ Esiste  un  trucco  per  ottenere  una  specie di modalità grafica in
+chunky pixel su Amiga:  si tratta del "copper chunky".
+ Vediamo un pò di cosa si tratta.
+ Sappiamo bene che il copper è in grado di modificare il contenuto dei
+registri colore e, quindi, dei pixel sullo schermo.
+ Proviamo  allora  a  scrivere una copper list che cambi il colore del
+fondo in questo modo:
+
+ $0180, $0f00
+ $0180, $0000
+ $0180, $0f00
+ $0180, $0000
+ $0180, $0f00
+ $0180, $0000
+ $0180, $0f00
+ $0180, $0000
+ $0180, $0f00
+ $0180, $0000
+
+ Come si può notare, questo pezzo di copper list alterna il rosso e il
+nero  come  colore di fondo.  Si potrebbe allora accedere alla seconda
+word  di  ogni istruzione copper come se fosse un pixel di uno schermo
+chunky.
+ La velocità del copper impone però un limite costituito dal numero di
+pixel  di  diverso  colore  visualizzabili  e  dalla  dimensione degli
+stessi.   Infatti,  la  copper list dell'esempio, cambia il colore del
+fondo ogni 8 pixel in bassa risoluzione, per cui potremmo ottenere uno
+schermo  chunky  di  soli  40  pixel  di dimensioni 8x1:  praticamente
+inservibile, sia per il ridotto numero di pixel, sia per le dimensioni
+degli stessi.
+ Possiamo allora provare a modificare anche gli altri registri colore,
+per  è necessario uno schermo che contenga, su ogni riga, qualcosa del
+genere:
+
+ Colore0,Colore1,Colore2,Colore3,......
+
+ La copper list corrispondente ad ogni riga dello schermo potrà quindi
+essere:
+
+ $0180, $0rgb
+ $0182, $0rgb
+ $0184, $0rgb
+ $0186, $0rgb
+ .....  .....
+
+ Purtroppo  il copper non riesce ad eseguire più di una cinquantina di
+istruzioni  per  riga,  per  cui il numero di pixel del nostro schermo
+chunky  risulterà essere comunque troppo basso.  Questo però significa
+anche  che  in  due  righe,  il  copper  può  eseguire un centinaio di
+istruzioni  e,  quindi, modificare un numero soddisfacente di registri
+colore  (poco  meno  di  100).  Possiamo quindi aprire uno schermo a 7
+bitplane, in cui ogni riga sia, ad esempio, del tipo:
+
+ Colore0,Colore0,Colore1,Colore1,Colore2,Colore2,...,Colore95,Colore95
+
+ e  scrivere  una  copper  list  che,  ogni  due  righe,  modifichi il
+contenuto  dei  96 registri colore (ovviamente utilizzando il registro
+BPLCON3=$dff106 per modificare il banco dei registri colore).
+ Avremo  così realizzato un schermo copper chunky con pixel da 2x2 che
+però,  purtroppo,  non funziona ancora nel migliore dei modi.  Infatti
+ogni  pixel  da  2x2  non appare di un unico colore, proprio perchè il
+copper   non   riesce   a   cambiare  i  registri  colore  in  maniera
+sufficientemente veloce.  Servirebbe una specie di double-buffering.
+ Per  fortuna  ci  viene  in  aiuto una caratteristica del chipset AGA
+costituita   dalla   possibilità   di  cambiare  l'insieme  di  colori
+utilizzati per la visualizzazione.
+ Ogni  volta  che  lo  hardware video deve visualizzare un pixel, deve
+leggerne  il  colore  RGB  da uno dei 256 registri colore.  Infatti il
+valore  scritto  nei  bitplane non è altro che un indice nella tabella
+dei  registri  colore.   Prima  di  effettuare  l'accesso  ai registri
+colore,  viene  effettuato  un  OR  esclusivo  tra il valore letto dai
+bitplane e il contenuto degli 8 bit alti del registro BPLCON4=$dff10c.
+Gli  8 bit alti di BPLCON4 vengono chiamati BPLAMx (dove x = 1-8).  E'
+facile  quindi  capire  che,  ponendo BPLAM=$80, i colori visualizzati
+saranno quelli da 128 a 255, piuttosto che quelli da 0 a 127.
+
+ La  copper  list,  quindi,  sarà  scritta  in maniera da modificare i
+colori  da 0 a 95, mentre sono visualizzati quelli da 128 in poi, e da
+modificare i colori da 129 a 224, mentre sono visualizzati quelli da 0
+in poi:
+
+ $010c,$8000          ;visualizza i colori da 128 a 255
+ $0106,$0020          ;seleziona il primo banco di 32 colori
+ $0180,$0rgb          ;modifica il colore del registro 0
+ $0182,$0rgb          ;modifica il colore del registro 1
+ $0184,$0rgb          ;modifica il colore del registro 2
+ $0186,$0rgb          ;modifica il colore del registro 3
+ ...........           .................................
+ $01be,$0rgb          ;modifica il colore del registro 31
+ $0106,$2020          ;seleziona il secondo banco di 32 colori
+ $0180,$0rgb          ;modifica il colore del registro 32
+ $0182,$0rgb          ;modifica il colore del registro 33
+ $0184,$0rgb          ;modifica il colore del registro 34
+ $0186,$0rgb          ;modifica il colore del registro 35
+ ...........           .................................
+ $01be,$0rgb          ;modifica il colore del registro 63
+ $0106,$6020          ;seleziona il terzo banco di 32 colori
+ $0180,$0rgb          ;modifica il colore del registro 64
+ $0182,$0rgb          ;modifica il colore del registro 65
+ $0184,$0rgb          ;modifica il colore del registro 66
+ $0186,$0rgb          ;modifica il colore del registro 67
+ ...........           .................................
+ $01be,$0rgb          ;modifica il colore del registro 95
+
+ $xx01,$fffe          ;attende la prossima riga da 2 pixel
+ $010c,$0000          ;visualizza i colori da 0 a 127
+ $0106,$8020          ;seleziona il quinto banco di 32 colori
+ $0180,$0rgb          ;modifica il colore del registro 128
+ $0182,$0rgb          ;modifica il colore del registro 129
+ $0184,$0rgb          ;modifica il colore del registro 130
+ $0186,$0rgb          ;modifica il colore del registro 131
+ ...........           .................................
+ $01be,$0rgb          ;modifica il colore del registro 159
+ $0106,$a020          ;seleziona il sesto banco di 32 colori
+ $0180,$0rgb          ;modifica il colore del registro 160
+ $0182,$0rgb          ;modifica il colore del registro 161
+ $0184,$0rgb          ;modifica il colore del registro 162
+ $0186,$0rgb          ;modifica il colore del registro 163
+ ...........           .................................
+ $01be,$0rgb          ;modifica il colore del registro 191
+ $0106,$e020          ;seleziona il settimo banco di 32 colori
+ $0180,$0rgb          ;modifica il colore del registro 192
+ $0182,$0rgb          ;modifica il colore del registro 193
+ $0184,$0rgb          ;modifica il colore del registro 194
+ $0186,$0rgb          ;modifica il colore del registro 195
+ ...........           .................................
+ $01be,$0rgb          ;modifica il colore del registro 223
+
+
+ Un  buon esempio della tecnica del copper chunky è contenuta nel file
+"chunky.lha" allegato a questo articolo.
+
+
+
+
+
+
+---------------------------------------------------------------------
+
+ Alberto Longo   --- Fields of Vision   software design ---
+
+
+  fidonet:   Alberto Longo   2:335/206.15
+
+  e-mail:    alblon@maxonline.it
+

@@ -1,0 +1,38 @@
+Short: Draw a textured 3D object with 148 lines of code
+Author: thellier@free.fr (Alain Thellier) 
+Uploader: thellier@free.fr 
+Type: dev/src 
+Version: 1 
+Requires: StormMesa libraries,Warp3D or Wazp3D library,68040 
+Architecture: m68k-amigaos >= 3.0.0; 
+http://aminet.net/package/dev/src/StarShip     
+
+DESCRIPTION 
+StarShip.c : Draw a textured 3D object with 148 lines of code
+Compiled with GCC. Use StormMesa libraries (needed)
+This Free Source example come from Dream/Login Magazine #69	
+Alain Thellier enhanced it a lot in August 2008			
+This example show how to use the						
+super-function glDrawElements() to draw a textured object	
+with OpenGL/StormMesa the simplest way	with 148 lines of code	
+If OpenGL was too difficult for you this example will change your mind
+
+StarShip.c : Trace un objet 3D texture avec 148 lignes de code
+Compile avec GCC. Bibliotheques StormMesa necessaire
+Cet exemple libre provenait du Magazine Dream/Login n°69		
+Alain Thellier l'a beaucoup ameliore en Aout 2008			
+Cet exemple montre comment en utilisant la 				
+super-fonction glDrawElements() on peut tracer un objet+texture
+avec OpenGL/StormMesa le plus simplement en 148 lignes de code	
+Si OpenGL etait trop complique pour toi Tu changera d'avis avec cet exemple
+
+
+LICENSE 
+GNU General Public License (GNU GPL) 
+Alain THELLIER - Paris - FRANCE - Septembre 2008 
+
+INSTALLATION 
+Install StormMesa libraries
+Install Warp3D or Wazp3D library
+copy StarShip and the texture StarShip.raw where you want
+

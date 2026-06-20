@@ -1,0 +1,19 @@
+Short:        intl.library for MorphOS
+Author:       Various, Ilkka Lehtoranta (ilkleht@isoveli.org)
+Uploader:     Ilkka Lehtoranta (ilkleht isoveli org)
+Type:         dev/c
+Version:      1.1
+Architecture: ppc-morphos
+
+Shared runtime library version of libintl. The library is part of gettext
+package but other gettext tools are not included.
+
+The library is based on 0.14.5 version of gettext sources. It requires
+iconv.library to work:
+
+Developer archive:
+  http://aminet.net/package/dev/c/iconv-morphos-dev
+
+User archive:
+  http://aminet.net/package/util/libs/iconv-morphos
+

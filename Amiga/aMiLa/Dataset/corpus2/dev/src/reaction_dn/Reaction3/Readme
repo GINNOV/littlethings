@@ -1,0 +1,15 @@
+
+This directory contains some Reaction examples that are
+ready to compile on OS4. They have been compiled with
+gcc 3.4.4 and tested on OS4 pre3.
+
+The layout of the source code in each of the examples have
+followed the same layout as the Reaction example in the SDK.
+This should make it a relativity easy task to copy and paste
+the objects, and their IDs, into the supplied template to
+create a working GUI (hopefully).
+
+The examples are public domain.
+
+Dave Norris (DaveN).
+

@@ -1,0 +1,108 @@
+HAAGE&PARTNER Computer GmbH
+Mainzer  Straße 10A
+61191 Rosbach
+Germany
+
+Tel: +49 (0) 6007 - 93 00 50
+FAX: +49 (0) 6007 - 75 43
+
+Internet: 100654.3133@compuserve.com
+
+Homepage: http://ourworld.compuserve.com/homepages/haage_partner
+
+
+Dear StormC customer,
+
+enclosed you will find a program to patch program to update
+StormC version 2.00.1 (12.11.96) to the current release
+2.00.4 (07.12.96).
+
+The process is started by a double click on the icon
+
+StormC2.0-1.Patch.BAT
+
+
+Please take note that the old version of StormC must be in the drawer
+
+StormC:StormSYS
+
+
+Best wishes
+
+HAAGE&PARTNER Support Team
+
+
+
+History of StormC
+============================
+
+12.11.96 (V 2.00.01)
+
+* "static" functions with option "Own hunk for every function" were not really
+  static.
+
+
+18.11.96
+
+* Sometimes there was no code generated for "inline" functions that had not to
+  be called inline -> "Assembler failed"
+
+* Sometimes "inline" functions were called "non-inline".
+
+* Some registers got messed up while converting (short)int->double
+
+
+19.11.96
+
+* Linker names of functions which were imported within functions by "extern"
+  got the scope of the imported function.
+
+
+20.11.96
+
++ Support for keyword "__interrupt". Special wish of the NASA.
+
+
+22.11.96
+
+* In the small data model the base pointers of shared libraries were
+  accessed with "far".
+
+
+23.11.96
+
+* Multiple assigns to strucs ("a=b=c;" instead of "b=c;a=b;") did not work.
+
+
+24.11.96 (V 2.00.02)
+
+* The creation of pre-compiled header files was very slow.
+
+* On vectors of class objects - virtual pointers were not registered.
+
+
+01.12.96
+
+* Adress offset trouble on hanging of virtual tables into classes which own
+  basis classes with virtuel functions and which are members of another class
+  (new since about release 1.10.08)
+
+
+02.12.96 (V 2.00.03)
+
+* Optimisations of structs assings (of 23.11.96) caused some side effects at
+  functions which give back structs.
+
+  -> Example "pi.c" can not be compiled any more.
+
+
+07.12.96 (V 2.00.04)
+
+* The tricky algorithm of 17.09.96 (because of call of IEEE library functions)
+  had a blackout when both arguments of the function call were the same register
+  variable (e.g. multiplication of a double variable with itself).
+
+* On the initialisation of a static object with a pointer on another object
+  created unnessesare _INIT_ functions.
+
+

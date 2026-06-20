@@ -1,0 +1,2444 @@
+B   FUNCTIONS
+
+B.1  INTRODUCTION
+
+Here is the complete list of all functions described in the
+Manual.
+
+
+
+B.2  INTUITION LIBRARY
+
+The Intuition Library must have been opened before you may call
+these functions, and you will probably have to include the file
+"intution.h". For example:
+
+#include <intuition/intuition.h>
+
+struct IntuitionBase *IntuitionBase;
+
+main()
+{
+  /* Open the Intuition Library: */
+  IntuitionBase = (struct IntuitionBase *)
+    OpenLibrary( "intuition.library", 0 );
+  
+  if( IntuitionBase == NULL )
+    exit(); /* Could NOT open the Intuition Library! */
+
+
+  ... ...
+
+
+  /* Close the Intuition Library: */
+  CloseLibrary( IntuitionBase );
+}
+
+
+AddGadget()
+
+  This function adds a gadget to the gadget list.
+
+  Synopsis: result = AddGadget( window, gadget, position );
+  
+  result:   (long) The actual position of the gadget when it
+            has been added.
+
+  window:   (struct Window *) Pointer to the window, to which
+            the gadget should be added.
+
+  gadget:   (struct Gadget *) Pointer to the gadget which will
+            be added.  
+
+  position: (long) Position in the gadget list. (Starts from
+            zero). Eg:
+              0 -> Before all other gadgets.
+              1 -> After the first gadget, but before the
+                   second.
+              If a too big value is entered (or -1), the gadget
+              will be placed last in the list.
+
+
+  Important, after your program has added the necessary
+  gadgets, you need to call the function RefreshGadgets() in
+  order to see your changes. You may add (or take away) several
+  gadgets, but when you are finished you must call that
+  function.
+
+
+
+AddVSprite()
+
+  This function will add a VSprite to the VSprite list.
+
+  Synopsis: AddVSprite( vsprite, rp );
+
+  vsprite:  (struct VSprite *) Pointer to an initialized
+            VSprite structure.
+
+  rp:       (struct RastPort *) Pointer to the RastPort.
+
+
+
+AllocRemember()
+
+  This function allocates both memory (same as AllocMem), but
+  will also allocate space for a Remember structure which are
+  initialized with the size of the allocated memory, and a
+  pointer to that memory. Each time the program allocates
+  memory with this function, the Remember structures are linked
+  together.
+  
+  Since the Remember structures contains all necessary
+  information about the memory, and are linked together, all
+  memory can be deallocated with one single function call
+  (FreeRemember()).
+
+  Synopsis: memory = AllocRemember( remember, size, type );
+
+  memory:   (char *) Pointer to the new allocated memory, or
+            NULL if no memory could be allocated. Remember!
+            Never use memory which you have not successfully
+            allocated.
+
+  remember: (struct Remember **) Address of a pointer to a
+            Remember structure. Before you call the
+            AllocRemember() function for the first time you
+            should set this pointer to NULL. (Note that it is
+            a pointer to a pointer!)
+
+  size:     (long) The size (in bytes) of the memory you want.
+            (AllocMem() always allocates memory in multiples of
+            eight bytes. So if you only ask for 9 bytes, Exec
+            would actually give you 16 Bytes (2*8).)
+
+  type:     (long) You need to choose one of the three
+            following types of memory (see chapter 0
+            INTRODUCTION for more information about Chip and
+            Fast memory):
+
+            MEMF_CHIP   Chip memory. This memory can be
+                        accessed by both the main processor, as
+                        well as the Chips. Graphics/Sound data
+                        MUST therefore be placed in Chip memory.
+                        If it does not matter what type of 
+                        memory you get (Fast or Chip), you
+                        should try to allocate Fast memory
+                        before you allocate Chip memory. (Chip
+                        memory is more valuable than Fast
+                        memory.)
+
+            MEMF_FAST   Fast memory. This memory can only be
+                        accessed by the main processor.
+                        (Graphics and Sound data can NOT be
+                        stored in Fast memory, use Chip memory.)
+                        This memory is normally a little bit
+                        faster than Chip memory, since only the
+                        main processor is working with it, and
+                        it is not disturbed by the Chips.
+
+            MEMF_PUBLIC If it does not matter what type of
+                        memory you get (you do not intend to
+                        use the memory for Graphics/Sound data),
+                        you should use Fast memory. However,
+                        all Amigas do not have Fast memory,
+                        since you need to by a memory expansion
+                        in order to get it. If want to tell
+                        Exec that you would like to use Fast
+                        memory if there is any, else use Chip
+                        memory, you should ask for MEMF_PUBLIC.
+
+            If you want the allocated memory to be cleared
+            (initialized to zeros), you should set the flag
+            MEMF_CLEAR.
+
+
+
+AutoRequest()
+
+  This function opens a Simple requester. Intuition will
+  automatically activate it and take care of the response from
+  the user. It will return TRUE if the left gadget was
+  selected, and FALSE if the right gadget was selected.
+
+  Synopsis:  result = AutoRequest( my_window, info_txt, pos_txt,
+                                   neg_txt, pos_IDCMP, neg_IDCMP,
+                                   width, height );
+
+  my_window: (struct Window *) Pointer to a window if there
+             exist one, else NULL.
+
+  info_txt:  (struct IntuiText *) Pointer to an IntuiText
+             structure containing the "body text".
+
+  pos_txt:   (struct IntuiText *) Pointer to an IntuiText
+             structure containing the "positive text". Eg:
+             "TRUE", "YES", "RETRY" etc. (Optional)
+
+  neg_txt:   (struct IntuiText *) Pointer to an IntuiText
+             structure containing the "negative text". Eg:
+             "FALSE", "NO", "CANCEL" etc.
+
+  pos_IDCMP: (long) IDCMP flags which satisfy the "positive"
+             gadget. (The flag RELVERIFY is already set.)
+
+  pos_IDCMP: (long) IDCMP flags which satisfy the "negative"
+             gadget. (The flag RELVERIFY is already set.)
+
+  width:     (long) How many pixels wide the requester should
+             be.
+
+  height:    (long) How many lines high the requester should
+             be.
+
+  result:    (long) Boolean value. The function returns TRUE if
+             the positive gadget was satisfied, and FALSE if
+             the negative gadget was satisfied.
+
+
+
+BeginRefresh()
+
+  This function will speed up your redrawing of the window. You
+  should call this function before you start to refresh the
+  window, and only the parts that needs to be redrawn are
+  redrawn.
+
+  Synopsis:  BeginRefresh( my_window );
+
+  my_window: (struct Window *) Pointer to a Window structure
+             which has previously been initialized by an
+             OpenWindow() call.
+
+
+
+ClearDMRequest()
+
+  This function disables a Double-menu requester. The user can
+  not open the requester any more.
+  
+  Synopsis:     result = ClearDMRequest( my_window );
+
+  my_window:    (struct Window *) Pointer to the Window
+                structure which the requester is connected to.
+                The DMRequest pointer in the Window structure
+                is set to NULL.
+
+  result:       (long) If the function could disable the
+                DM-requester it returns TRUE, else (something
+                went wrong, the requester is in use etc) it
+                returns FALSE.
+
+
+
+ClearMenuStrip()
+
+  This function removes a menu strip from a window. Remember to
+  always remove the menu strip before you close the window, or
+  changes the menu strip.
+
+  Synopsis:   ClearMenuStrip( my_window );
+
+  my_window:  (struct Window *) Pointer to the window which
+              menu strip should be removed.
+
+
+
+ClearPointer()
+
+  This will remove the "custom" pointer, and replace it with
+  Intuition's default pointer.
+  
+  Synopsis:  ClearPointer( my_window );
+
+  my_window: (struct Window *) Pointer to a Window structure
+             which has previously been initialized by an
+             OpenWindow() call.
+
+
+
+CloseScreen()
+
+  This function will close a Custom Screen which you have
+  previously opened.
+  
+  Synopsis:      CloseScreen( my_screen );
+  
+  my_screen:     (struct Screen *) Pointer to an already opened
+                 screen.
+
+  All windows (See chapter 2 WINDOWS for more information) on
+  your Screen MUST have been closed before you may close the
+  screen. If you close a window after the screen has been
+  closed, the system will crash. (Not recommended.)
+  
+  If there does not exist any more screens when you close
+  yours, Intuition will automatically reopen the Workbench
+  Screen.
+
+
+
+CloseWindow()
+
+  This function will close a window you have previously opened.
+  Remember that you need to close all windows connected to a
+  screen before you may close the screen, and all opened
+  windows must have been closed before your program quits.
+
+  Synopsis:  CloseWindow( my_window );
+
+  my_window: (struct Window *) Pointer to a Window structure
+             which has previously been initialized by an
+             OpenWindow() call.
+
+
+
+CloseWorkBench()
+
+  This function will try to close the Workbench Screen if
+  possible. If any other programs is using the Workbench
+  Screen, the function can not close it. Closing the Workbench
+  will free some memory, and can therefore be used if your
+  program needs more memory.
+  
+  (Remember to reopen the Workbench Screen when your program
+  terminates.)
+
+  Synopsis:      result = CloseWorkBench();
+  
+  result:        (long) A boolean value which tell us if the
+                 Workbench screen has been (or already was)
+                 closed (TRUE), or not (FALSE).
+
+
+
+CurrentTime()
+
+  This function gives the current time.
+
+  Synopsis: CurrentTime( seconds, micros );
+
+  seconds:  (long *) Pointer to an ULONG variable which will be
+            initialized with the current seconds stamp.
+
+  micros:   (long *) Pointer to an ULONG variable which will be
+            initialized with the current micros stamp.
+
+
+
+DisplayAlert()
+
+  This function activates an Alert message.
+
+  Synopsis: result = DisplayAlert( nr, message, height ); 
+
+  nr:       (long)  Value which describes if it is a
+            RECOVERY_ALERT or a DEADEND_ALERT.
+
+  message:  (char *) Pointer to an array of characters (char). It
+            contains the strings we want to display, and some
+            extra information (position etc). The string itself
+            is divided into substrings, which all contain
+            information about its position etc.
+          
+            - 2 bytes (16-bit) which are used for the x position
+              of the text.
+            - 1 byte (8-bit) which is used for the y position of
+              the text.
+            - The text string which ends with a NULL ('\0') sign.
+            - A Continuation byte. If it is TRUE there is another
+              substring after this one, else this was the last
+              substring.
+
+  height:   (long) The height of the Alert box.
+
+  result:   (long) The function DisplayAlert() returns a boolean
+            value. If it is a RECOVERY_ALERT and the user pressed
+            the left mouse button it returns TRUE else, if the
+            user pressed the right mouse button, it returns
+            FALSE. If it is a DEADEND_ALERT the function will
+            immediate return FALSE.
+
+
+
+DisplayBeep()
+
+  This function flashes the screen's colours. Can be used
+  whenever you want to catch the user's attention.
+
+  Synopsis: DisplayBeep( screen );
+   
+  screen:   (struct Screen *) Pointer to the screen, which
+            colours you want to flash. If you have not opened
+            a screen yourself (you are using the Workbench
+            Screen), you can find a pointer to that screen
+            in the Window structure: (my_window is a pointer
+            to an opened window)
+            DisplayBeep( my_window->WScreen );
+
+
+
+DoubleClick()
+
+  This function checks if the user double-clicked on one of the
+  mouse buttons. You give the function the current as well as
+  the previous time when the button was pressed, and it will
+  check the preferences and return TRUE if the two button
+  events happened within the time limit.
+
+  Synopsis: double = DoubleClick( sec1, mic1, sec2, mic2 );
+
+  double:   (long) If the two button events happened within the
+            current time limit, the function will return TRUE,
+            else it will return FALSE.
+
+  sec1:     (long) Time (seconds) when the button was pressed
+            for the first time.
+
+  mic1:     (long) Time (micros) when the button was pressed
+            for the first time.
+
+  sec2:     (long) Current time (seconds).
+
+  mic2:     (long) Current Time (micros).
+
+
+
+DrawBorder()
+
+  This function draws the specified Borders into a RastPort
+  (Screen/Window).
+
+  Synopsis:  DrawBorder( rast_port, border, x, y );
+
+  rast_port: (struct RastPort *) Pointer to a RastPort.
+
+             If the lines should be drawn in a window, and
+             my_window is a pointer to that window, you write:
+             my_window->RPort.
+          
+             If the lines should be drawn in a Screen, and
+             my_screen is a pointer to that screen, you write:
+             my_screen->RastPort.
+
+  border:    (struct Border *) Pointer to a Border structure
+             which has been initialized with your requirements.
+
+  x:         (long) Number of pixels added to the x coordinates.
+
+  y:         (long) Number of lines added to the y coordinates.
+
+
+
+DrawGList()
+
+  This function will draw the VSprites into the specified
+  Rastport.
+
+  Synopsis: DrawGList( rp, vp );
+
+  rp:       (struct RastPort *) Pointer to the RastPort.
+
+  vp:       (struct ViewPort *) Pointer to the ViewPort.
+
+
+
+DrawImage()
+
+  This function draws the specified images into a RastPort
+  (Screen/Window).
+
+  Synopsis:  DrawImage( rast_port, image, x, y );
+
+  rast_port: (struct RastPort *) Pointer to a RastPort.
+
+             If the images should be drawn in a window, and
+             my_window is a pointer to that window, you write:
+             my_window->RPort.
+
+             If the images should be drawn in a Screen, and
+             my_screen is a pointer to that screen, you write:
+             my_screen->RastPort.
+
+  image:     (struct Image *) Pointer to an Image structure
+             which has been initialized with your requirements.
+
+  x:         (long) Number of pixels added to the x position of
+             the image.
+
+  y:         (long) Number of lines added to the y position of
+             the image.
+
+
+
+EndRefresh()
+
+  This function will tell Intuition that you have finished with
+  your redrawings. IMPORTANT! If you receive a REFRESHWINDOW
+  message, you must call the functions BeginRefresh() and
+  EndRefresh(), even if you do not want to redraw anything.
+  
+  Synopsis:  EndRefresh( my_window );
+
+  my_window: (struct Window *) Pointer to a Window structure
+             which has previously been initialized by an
+             OpenWindow() call.
+
+
+
+EndRequest()
+
+  This function deactivates a requester which has been
+  activated.
+  
+  Synopsis:     EndRequest( my_requester, my_window );
+
+  my_requester: (struct Requester *) Pointer to the Requester
+                structure which will be removed.
+
+  my_window:    (struct Window *) Pointer to the Window
+                structure which the requester is connected to.
+
+
+
+FreeRemember()
+
+  This function deallocates all memory which has been allocated
+  by the AllocRemember() function. Note, you can deallocate all
+  Remember structures only, and deallocate the memory yourself,
+  if you want to.
+
+  Synopsis:   FreeRemember( remember, everything );
+
+  remember:   (struct Remember **) Address of a pointer to the
+              first Remember structure (initialized by the
+              AllocRemember() function). (Note that it is a
+              pointer to a pointer!)
+
+  everything: (long) A boolean value. If everything is equal
+              to TRUE, all memory (both the allocated memory
+              and the Remember structures) are deallocated.
+              However, if everything is equal to FALSE, only
+              the Remember structures are deallocated, and you
+              have to deallocate the memory yourself.
+
+
+
+GetDefPrefs()
+
+  This function makes a copy of the default Preferences
+  structure.
+
+  Synopsis: pref = GetPrefs( buffer, size );
+
+  pref:     (struct Preferences *) Pointer to the default
+            preferences. If the function could not make a copy
+            of the preferences, the function returns NULL.
+
+  buffer:   (struct Preferences *) Pointer to the memory buffer
+            which should be used to store a copy of the default
+            preferences in.
+
+  size:     (long) The number of bytes you want to copy to the
+            buffer. Important, the buffer must be at least as
+            big as the number of bytes you want to copy.
+
+
+
+GetMsg()
+
+  This function tries to get a message from a message port.
+
+  Synopsis:        my_message = GetMsg( my_message_port );
+
+  my_message:      (struct Message *) Pointer to a Message
+                   structure, in this case a pointer to an
+                   IntuiMessage structure, or NULL if no
+                   message was collected.
+
+  my_message_port: (struct MsgPort *) Pointer to an MsgPort. If
+                   you have opened a window, you can find your
+                   window's message port in the Window
+                   structure. ( my_window->UserPort )
+
+
+
+GetPrefs()
+
+  This function makes a copy of the Preferences structure.
+
+  Synopsis: pref = GetPrefs( buffer, size );
+
+  pref:     (struct Preferences *) Pointer to your preferences.
+            Same as your memory pointer (buffer), but is
+            returned so you can check if you got a copy or not.
+            If you could not get a copy of the preferences, the
+            function returns NULL.
+
+  buffer:   (struct Preferences *) Pointer to the memory buffer
+            which should be used to store a copy of the
+            preferences in.
+
+  size:     (long) The number of bytes you want to copy to the
+            buffer. Important, the buffer must be at least as
+            big as the number of bytes you want to copy.
+
+
+
+InitGels()
+
+  This function "gives" an already prepared GelsInfo structure
+  to the system.
+
+  Synopsis: InitGels( head, tail, ginfo );
+
+  head:     (struct VSprite *) Pointer to the first "dummy"
+            VSprite structure.
+
+  tail:     (struct VSprite *) Pointer to the second "dummy"
+            VSprite structure.
+
+  ginfo:    (struct GelsInfo *) Pointer to an initialized GelsInfo
+            structure.
+
+
+
+ItemAddress()
+
+  This function returns a pointer to the Menu or Item
+  structure which is specified by the menu number.
+  
+  Synopsis:    ItemAddress( my_menu, menu_number );
+  
+  my_menu:     (struct Menu *) Pointer to the first Menu
+               structure in the menu strip.
+
+  menu_number: (USHORT) This menu number specifies a subitem/
+               item/menu.
+
+
+Lock()
+
+  This function "locks" a file so no other processes may alter
+  the contents (SHARED_LOCK). You can even prevent other
+  processes to read the file (EXCLUSIVE_LOCK).
+
+  Synopsis: lock = Lock( name, mode );
+
+  lock:     (BPTR) Actually a pointer to a FileLock structure.
+
+  name:     (char *) Pointer to a text string which contains
+            the file/directory name.
+
+  mode:     (long) Accessmode:
+              SHARED_LOCK:     Other tasks may read the file.
+              ACCESS_READ:                 - " -
+              EXCLUSIVE_LOCK:  No other tasks may use this f.
+              ACCESS_WRITE:                - " -
+
+
+
+ModifyIDCMP()
+
+  This function changes the Window structure's IDCMPFlags
+  field.
+
+  Synopsis:  ModifyIDCMP( my_window, IDCMPFlags );
+  
+  my_window:  (struct Window *) Pointer to an already opened
+              window.
+
+  IDCMPFlags: (long) None or more IDCMP flags.
+
+  If you call this function with no IDCMP flags set, the
+  window's IDCMP Ports will be closed. On the other hand, if
+  you call this function, with one or more IDCMP flags set, a
+  Port will be, if necessary, opened for you.
+
+
+
+ModifyProp()
+
+  This function modifies a proportional gadget's values and
+  knob. For example, if your program is reading files from the
+  disk, VertBody was maybe equal to 0xFFFF (MAXBODY) in the
+  beginning, but as more files are collected from the disk, you
+  maybe want to change the size of the knob etc. You then
+  simply call this function and it will change the values as
+  well as redraw the gadget.
+  
+  Synopsis:    ModifyProp( gadget, window, requester, flags,
+               horiz_pot, vert_pot, horiz_body, vert_body ); 
+
+  gadget:      (struct Gadget *) Pointer to the proportional
+               gadget which should be changed and redrawn.
+
+  window:      (struct Window *) Pointer to the window which
+               the proportional gadget is connected to.
+  
+  requester:   (struct Requester *) If the gadget is connected
+               to a requester, set this pointer to point to
+               that requester, else NULL. Important, if this
+               gadget is connected to a requester, it must be
+               displayed when you execute this command!
+
+  flags:       (long) Here is the list of all flags you may
+               use:
+  
+                 FREEHORIZ      Set this bit if you want the
+                                user to be able to move the
+                                knob horizontally.
+
+                 FREEVERT       Set this bit if you want the
+                                user to be able to move the
+                                knob vertically.
+
+                 AUTOKNOB       Set this bit if you want that
+                                the size of the knob to be
+                                controlled by Intuition.
+                                (HorizBody and VertBody
+                                affects the size of the
+                                Autoknob.)
+
+                                - If you want to use
+                                Intuition's Autoknob you
+                                should give GadgetRender a
+                                pointer to an Image structure.
+                                (You do not need to initialize
+                                the Image structure since
+                                Intuition takes care of it.)
+
+                                - If you on the other hand
+                                would like to use your own
+                                knob image, you give
+                                GadgetRender a pointer to your
+                                Image structure, which you have
+                                initialized yourself.
+
+                 PROPBORDERLESS Set this bit if you do not
+                                want any border around the
+                                container. 
+
+               (See chapter 4.7 for more information.)
+
+  horiz_pot:   (long) This variable contains the actual
+               (horizontally) proportional value. If the knob
+               should be moved 25% to the right, HorizPot
+               should be set to 25% of MAXPOT (0xFFFF).
+               (0xFFFF * 0.25 = 0x3FFF)
+
+  vert_pot:    (long) Same as HorizPot except that this is the
+               vertically proportional value.
+
+  horiz_body:  (long) Describes how much HorizPot should change
+               every time the user clicks inside the container.
+               If the volume of a melody can be between 0-63
+               (64 steps), HorizPot should change 1/64 each
+               time. The HorizBody should therefore be set to:
+               1/64 * MAXBODY (0xFFFF) == 3FF
+
+               HorizBody describes also how much the user can
+               see/use of the entire data. For example, if you
+               have a list of 32 file names, and the user only
+               can see 8 names at one time (25%), the knob
+               (AUTOKNOB) should fill 25% of the container.
+               HorizBody should in this case be set to:
+               MAXBODY * 8 / 32 (25% of 0xFFFF) == 3FFFF
+
+
+  vert_body:   Same as HorizBody except that it affects
+               VertPot, and the vertical size of the knob
+               (AUTOKNOB).
+
+
+
+MoveScreen()
+
+  This function will move the screen. For the moment you may
+  only move it vertically.
+
+  Synopsis:      MoveScreen( my_screen, delta_x, delta_y );
+
+  my_screen:     (struct Screen *) Pointer to the screen which
+                 you want to move.
+
+  delta_x:       (long) Number of pixels which the screen
+                 should move horizontally. For the moment you
+                 may not move a screen horizontally, set it
+                 therefore to 0.
+
+  delta_y:       (long) Number of lines which the screen should
+                 move vertically.
+
+
+
+MoveWindow()
+
+  This function will move a window. It has the same effect as
+  if the user would have moved the window by using the Drag
+  Gadget.
+
+  Synopsis:  MoveWindow( my_window, delta_x, delta_y );
+
+  my_window: (struct Window *) Pointer to a Window structure
+             which has previously been initialized by an
+             OpenWindow() call.
+
+  delta_x:   (long) Deltamovement horizontally.
+
+  delta_y:   (long) Deltamovement vertically.
+
+
+
+MrgCop()
+
+  This function reorganizes the Copper list. This is why each
+  VSprite can have its own individual colour values.
+
+  Synopsis: MrgCop( view );
+
+  view:     (struct View *) Pointer to the View structure which
+            copper list should be changed.
+
+
+
+OffGadget()
+
+  This function disables a gadget (sets the GADGDISABLED bit in
+  the gadget structure's Flags field):
+  
+  Synopsis:  OffGadget( gadget, window, requester );
+
+  gadget:    (struct Gadget *) Pointer to the gadget which will
+             be disabled.
+
+  window:    (struct Window *) Pointer to the window that the
+             gadget is attached to.
+
+  requester: (struct Requester *) If the gadget is connected to
+             a requester, set this pointer to point to that
+             requester, else NULL. Important, if this gadget is
+             connected to a requester, it must be displayed
+             when you execute this command!
+
+
+
+OnGadget()
+
+  This function enables a gadget (removes the GADGDISABLED bit
+  in the gadget structure's Flags field):
+  
+  Synopsis: OnGadget( gadget, window, requester );
+
+  gadget:     (struct Gadget *) Pointer to the gadget which
+              will be enabled.
+
+  window:     (struct Window *) Pointer to the window that the
+              gadget is attached to.
+  
+  requester:  (struct Requester *) If the gadget is connected
+              to a requester, set this pointer to point to that
+              requester, else NULL. Important, if this gadget
+              is connected to a requester, it must be displayed
+              when you execute this command!
+
+  Remember, as long as the gadget is disabled the user can not
+  select it, and it will not broadcast any messages. A disabled
+  gadget is drawn as usual except that it "ghosted".
+
+
+
+OffMenu()
+
+  This function can disable a subitem, an item or even a whole
+  menu. The image or text of the disabled items etc will be
+  "ghosted", and the user can not select them.
+  
+  Synopsis:    OffMenu( my_window, menu_number );
+
+  my_window:   (struct Window *) Pointer to the window which
+               the menu strip is connected to.
+  
+  menu_number: (USHORT) This menu number specifies what should
+               be disabled. Use the macros SHIFTMENU, SHIFTITEM
+               and SHIFTSUB to calculate the correct menu
+               number. If you just specify a menu, all items
+               to that menu will be disabled. If you specify
+               a menu and an item, that item will be disabled,
+               and so all subitems connected to it if there are
+               any.
+
+
+
+OnMenu()
+
+  This function can enable a subitem, an item or even a whole
+  menu. The image or text of the enabled items etc, will become
+  normal (not "ghosted") and the user can now select them.
+  
+  Synopsis:    OnMenu( my_window, menu_number );
+
+  my_window:   (struct Window *) Pointer to the window which
+               the menu strip is connected to.
+  
+  menu_number: (USHORT) This menu number specifies what should
+               be enabled. Use the macros SHIFTMENU, SHIFTITEM
+               and SHIFTSUB to calculate the correct menu
+               number. If you just specify a menu, all items to
+               that menu will be enabled. If you specify a menu
+               and an item, that item will be enabled, so all
+               subitem connected to it if there are any.
+
+
+
+OpenScreen()
+
+  This function will open a Custom Screen with your
+  requirements.
+
+  Synopsis:      my_screen = OpenScreen( my_new_screen );
+  
+  my_screen:     (struct Screen *) Pointer to a Screen
+                 structure. It will point to your newly opened
+                 screen or be equal to NULL if the screen could
+                 not be opened.
+
+  my_new_screen: (struct NewScreen *) Pointer to a NewScreen
+                 structure which contains your preferences.
+
+
+
+OpenWindow()
+
+  This function will open a window with the characteristics
+  defined in the NewWindow structure. It returns a pointer
+  to a Window structure.
+  
+  If you are going to use the Workbench screen, and it has
+  been closed, it will automatically reopen. If you on the
+  other hand is going to connect the window to a Custom screen,
+  you need to open it yourself before calling the OpenWindow()
+  function.
+  
+  Synopsis:      my_window = OpenWindow( my_new_window );
+
+  my_window:     (struct Window *) Pointer to a Window structure
+                 or NULL if the window could not be opened.
+
+  my_new_window: (struct NewWindow *) Pointer to a NewWindow
+                 structure which has been initialized with
+                 your requirements.
+
+
+
+OpenWorkBench()
+
+  This function will try to open the Workbench Screen if there
+  exist enough memory.
+  
+  Synopsis:      result = OpenWorkBench();
+  
+  result:        (long) A boolean value which tell us if the
+                 Workbench Screen has been (or already was)
+                 opened (TRUE), or not (FALSE).
+
+
+
+PrintIText()
+
+  This function prints text into a RastPort (Screen/Window).
+
+  Synopsis:   PrintIText( rast_port, intui_text, x, y );
+
+  rast_port:  (struct RastPort *) Pointer to a RastPort.
+
+              If the text should be printed in a window, and
+              my_window is a pointer to that window, you write:
+              my_window->RPort.
+          
+              If the text should be printed in a Screen, and
+              my_screen is a pointer to that screen, you write:
+              my_screen->RastPort.
+
+  intui_text: (struct IntuiText *) Pointer to a IntuiText
+              structure which has been initialized with your
+              requirements.
+
+  x:          (long) Number of pixels added to the x position
+              of the characters.
+
+  y:          (long) Number of lines added to the y position
+              of the characters.
+
+
+
+RefreshGadgets()
+
+  This function redraws all the gadgets in the list, starting
+  by the specified gadget. If you for example has added or
+  deleted a gadget you need to call this function to see the
+  changes. On the other hand, if you have changed the imagery
+  of a gadget, or the gadget's image has been trashed by
+  something, you can also use this function to refresh the
+  display.
+  
+  Synopsis:  RefreshGadgets( gadget, window, requester);
+
+  gadget:    (struct Gadget *) Pointer to the gadget where the
+             redrawing should start. This gadget, and all the
+             following gadgets in the list will be redrawn.
+
+  window:    (struct Window *) Pointer to the window which the
+             gadgets are connected to.
+  
+  requester: (struct Requester *) If the gadget is connected to
+             a requester, set this pointer to point to that
+             requester, else NULL. Important, if this gadget is
+             connected to a requester, it must be displayed
+             when you execute this command! (See chapter 5
+             REQUESTERS for more information about requesters.)
+
+
+
+RemoveGadget()
+
+  This function removes a gadget from the list:
+  
+  Synopsis: result = RemoveGadget( window, gadget );
+
+  result:   (long) The position of the removed gadget or -1 if
+            something went wrong.
+
+  window:   (struct Window *) Pointer to the window that the
+            gadget is connected to.
+
+  gadget:   (struct Gadget *) Pointer to the gadget which will
+            be removed.  
+
+
+  Important, after your program has removed the necessary
+  gadgets, you need to call the function RefreshGadgets() in
+  order to see your changes. You may take away (or add) several
+  gadgets, but when you are finished you must call that
+  function.
+
+
+
+ReplyMsg()
+
+  This function tells Intuition that you have finished reading
+  the message. Remember, once you have replied you may not
+  examine or change the IntuiMessage structure any more.
+  
+  Synopsis:   ReplyMsg( my_message );
+  
+  my_message: (struct Message *) Pointer to a Message
+              structure, in this case a pointer to an
+              IntuiMessage structure.
+
+
+
+ReportMouse()
+
+  You can call this function if you want the window to start/
+  stop reporting the mouse position. (See chapter 8 IDCMP for
+  more information about REPORTMOUSE.)
+  
+  Synopsis:  ReportMouse( my_window, boolean );
+
+  my_window: (struct Window *) Pointer to a Window structure
+             which has previously been initialized by an
+             OpenWindow() call.
+
+  boolean:   (long) Set to TRUE if you want the window to start
+             reporting mouse position, else set to FALSE, and
+             the window will stop reporting.
+
+
+
+Request()
+
+  This function activates a requester connected to a window.
+  
+  Synopsis:     result = Request( my_requester, my_window );
+
+  my_requester: (struct Requester *) Pointer to the Requester
+                structure.
+
+  my_window:    (struct Window *) Pointer to the Window
+                structure which the requester should be
+                connected to.
+
+  result:       (long) Boolean value returned. If Intuition
+                could successfully open the requester the
+                function returns TRUE, else (something went
+                wrong, not enough memory etc) the function
+                returns FALSE.
+
+
+
+ScreenToBack()
+
+  This will move the screen behind all other screens.
+  
+  Synopsis:      ScreenToBack( my_screen );
+
+  my_screen:     (struct Screen *) Pointer to the screen which
+                 you want to move.
+
+
+
+ScreenToFront()
+
+  This will move the screen in front of all other screens.
+  
+  Synopsis:      ScreenToFront( my_screen );
+
+  my_screen:     (struct Screen *) Pointer to the screen which
+                 you want to move.
+
+
+
+SetDMRequest()
+
+  This function allows the user to activate a Double-menu
+  requester by clicking twice on the mouse menu button.
+
+  Synopsis:  result = SetDMRequest( window, requester );
+
+  window:    (struct Window *) Pointer to the Window structure
+             which the requester should be connected to.
+
+  requester: (struct Requester *) Pointer to the Requester
+             structure.
+
+  result:    (long) Boolean value returned. If Intuition could
+             successfully open the requester the function
+             returns TRUE, else (something went wrong, not
+             enough memory or a DM requester is already
+             connected to the window, etc) the function returns
+             FALSE.
+
+
+
+SetMenuStrip()
+
+  This function connects a menu strip to a window. Remember
+  that the window must have been opened before you may connect
+  a menu strip to that window.
+
+  Synopsis:   SetMenuStrip( my_window, my_menu );
+
+  my_window:  (struct Window *) Pointer to the window which the
+              menu strip should be connected to.
+
+  my_menu:    (struct Menu *) Pointer to the first Menu
+              structure in the menu strip.
+
+
+
+SetPointer()
+
+  This function allows you to change the window's pointer.
+  
+  Synopsis:  SetPointer( my_window, data, height, width, x, y );
+
+  my_window: (struct Window *) Pointer to a Window structure
+             which has previously been initialized by an
+             OpenWindow() call.
+
+  data:      (short *) Pointer to the Sprite data.
+
+  width:     (long) The width of the pointer. Less or equal
+             to 16.
+
+  height:    (long) The height of the pointer. Can be any
+             height.
+
+  x:        (long) The pointer's "Hot Spot" x position.
+
+  y:        (long) The pointer's "Hot Spot" y position.
+
+
+
+SetPrefs()
+
+  This function saves a modified preferences structure. Do NOT
+  change the preferences unless the user really WANTS to!
+
+  Synopsis: SetPrefs( pref, size, doit );
+
+  pref:     (struct Preferences *) Pointer to your modified
+            Preferences structure.
+
+  size:     (long) The number of bytes you want to change.
+
+  doit:     (long) Boolean value which if FALSE, changes the
+            preferences, but will not send a NEWPREFS message.
+            If doit is equal to TRUE, the settings will be
+            changed, and a NEWPREFS message will be sent.
+            As long as the user is changing the values, doit
+            should be FALSE, but when the user has finished,
+            set it to TRUE, and all programs will get a NEWPREFS
+            message.
+
+
+
+SetWindowTitles()
+
+  This function allows you to change the window title after the
+  window has been opened.
+  
+  Synopsis:  SetWindowTitles( my_window, window_t, screen_t );
+  
+  my_window: (struct Window *) Pointer to a Window structure
+             which has previously been initialized by an
+             OpenWindow() call.
+
+  window_t:  (char *) Pointer to a NULL-terminated string which
+             will become the window's title, or
+                0 : clear title bar, or
+               -1 : keep the old title.
+
+  screen_t:  (char *) Pointer to a NULL-terminated string which
+             will become the window's screen title, or
+                0 : clear title bar, or
+               -1 : keep the old title.
+
+
+
+ShowTitle()
+
+  This function will make the screen's Title appear above or
+  behind any Backdrop Windows (See chapter 2 WINDOWS for more
+  information about Backdrop Windows). (The screen's title
+  appear always behind normal windows.)
+
+  Synopsis:      ShowTitle( my_screen, show_it );
+
+  my_screen:     (struct Screen *) Pointer to the screen.
+
+  show_it:       (long) A boolean value which can be:
+                 TRUE:  The title will be in front of any
+                        Backdrop Windows, but behind any
+                        other windows.
+                 FALSE: The Title will be behind any windows
+
+
+
+SizeWindow()
+
+  This function will change the size of the window as desired.
+  It has the same effect as if the user would have resized the
+  window by using the Size Gadget.
+
+  Synopsis:  SizeWindow( my_window, delta_x, delta_y );
+
+  my_window: (struct Window *) Pointer to a Window structure
+             which has previously been initialized by an
+             OpenWindow() call.
+
+  delta_x:   (long) Number of pixels the horizontally size of
+             the window will change.
+
+  delta_y:   (long) Number of pixels the vertically size of the
+             window will change.
+
+
+
+SortGList()
+
+  This function will reorganize the VSprite list so that the
+  further down on the display the sprites are positioned the
+  later they will appear in the list.
+
+  Synopsis: SortGList( rp );
+
+  rp:       (struct RastPort *) Pointer to the RastPort.
+
+
+
+WBenchToBack()
+
+  This will move the Workbench Screen behind all other screens.
+  
+  Synopsis:      result = WBenchToBack();
+
+  result:        (long) A boolean value which is TRUE if the
+                 Workbench screen was open, or FALSE it it was
+                 not.
+
+
+
+WBenchToFront()
+
+  This will move the Workbench Screen in front of all other
+  screens.
+
+  Synopsis:      result = WBenchToFront();
+
+  result:        (long) A boolean value which is TRUE if the
+                 Workbench screen was open, or FALSE it it was
+                 not.
+
+
+
+WindowLimits()
+
+  This function will change the maximum/minimum size limits of
+  the window. Any values which are set to 0 will remain
+  unchanged.
+
+  Synopsis:  WindowLimits( my_window, min_w, min_h, max_w, max_h );
+
+  my_window: (struct Window *) Pointer to a Window structure
+             which has previously been initialized by an
+             OpenWindow() call.
+
+  min_w:     (long) Minimum width of the window.
+
+  min_h:     (long) Minimum height of the window.
+
+  max_w:     (long) Maximum width of the window.
+
+  max_h:     (long) Maximum height of the window.
+
+
+
+WindowToFront()
+
+  This function will put the window in front of all other
+  windows.
+
+  Synopsis:  WindowToFront( my_window );
+
+  my_window: (struct Window *) Pointer to a Window structure
+             which has previously been initialized by an
+             OpenWindow() call.
+
+
+
+WindowToBack()
+
+  This function will push the window behind all other windows.
+
+  Synopsis:  WindowToBack( my_window );
+
+  my_window: (struct Window *) Pointer to a Window structure
+             which has previously been initialized by an
+             OpenWindow() call.
+
+
+
+B.3  GRAPHICS LIBRARY
+
+The Graphics Library must have been opened before you may call
+these functions. For example:
+
+struct GfxBase *GfxBase;
+
+main()
+{
+  /* Open the Graphics Library: */
+  GfxBase = (struct GfxBase *)
+    OpenLibrary( "graphics.library", 0 );
+  
+  if( GfxBase == NULL )
+    exit(); /* Could NOT open the Graphics Library! */
+
+
+  ... ...
+
+
+  /* Close the Graphics Library: */
+  CloseLibrary( GfxBase );
+}
+
+
+AllocRaster()
+
+  This function reserves display memory (one BitPlane).
+
+  Synopsis: pointer = AllocRaster( width, height );
+
+  pointer   (PLANEPTR) Pointer to the allocated memory or NULL
+            if enough memory could not be reserved.
+
+  width:    (long) The width of the BitMap.
+
+  height:   (long) The height of the BitMap.
+
+
+
+AreaDraw()
+
+  This function will add a new vertex to the vector list. 
+
+  Synopsis:  AreaDraw( rast_port, x, y );
+
+  rast_port: (struct RastPort *) Pointer to the RastPort that
+             should be affected.
+
+  x:         (long) New X position.
+
+  y:         (long) New Y position.
+
+
+
+AreaEnd()
+
+  This function will close, draw and fill the polygon.
+
+  Synopsis:  AreaEnd( rast_port );
+
+  rast_port: (struct RastPort *) Pointer to the RastPort that
+             should be affected.
+
+
+
+AreaMove()
+
+  This function will start a new polygon.
+
+  Synopsis:  AreaMove( rast_port, x, y );
+
+  rast_port: (struct RastPort *) Pointer to the RastPort that
+             should be affected.
+
+  x:         (long) Start X position.
+
+  y:         (long) Start Y position.
+
+
+
+BltBitMap()
+
+  This function copies parts of BitMaps directly without
+  worrying about overlapping layers.
+
+  Synopsis: BltBitMap( sb, sx, sy, db, dx, dy, w, h, fl, m, t );
+
+  sb:       (struct BitMap *) Pointer to the "source" BitMap.
+
+  sx:       (long) X offset, source.
+
+  sy:       (long) Y offset, source.
+
+  db:       (struct BitMap *) Pointer to the "destination"
+            BitMap.
+
+  dx:       (long) X offset, destination.
+
+  dy:       (long) Y offset, destination.
+
+  w:        (long) The width of the memory area that should be
+            copied.
+
+  h:        (long) The height of the memory area that should be
+            copied.
+
+  fl:       (long) The four leftmost bits tells the blitter
+            what kind of logically operations should be done.
+
+  m:        (long) You can here define a BitMap mask, and tell
+            the blitter which BitPlanes should be used, and
+            which should not. The first bit represents the
+            first BitPlane, the second bit the second BitPlane
+            and so on. If the bit is on (1) the corresponding
+            BitPlane will be used, else (0) the BitPlane will
+            not be used. To turn off BitPlane zero and two, set
+            the mask value to 0xFA (11111010). To use all
+            BitPlanes set the mask value to 0xFF (11111111).
+
+  t:        (char *) If the copy overlaps and this pointer
+            points to some chip-memory, the memory will be used
+            to store the temporary area in. However, normally
+            you do not need to bother about this value.
+
+
+
+BltClear()
+
+  This function clears large rectangular memory areas. This
+  function work together with the blitter and is therefore very
+  fast.
+
+  Synopsis: BltClear( pointer, bytes, flags );
+
+  pointer   (char *) Pointer to the memory.
+
+  bytes:    (long) The lower 16 bits tells the blitter how many
+            bytes per row, and the upper 16 bits how many rows.
+            This value is automatically calculated for you with
+            help of the macro RASSIZE(). Just give RASSIZE()
+            the correct width and height and it will return the
+            correct value. [RASSIZE() is defined in file
+            "gfx.h".]
+
+  flags:    (long) Set bit 0 to force the function to wait
+            until the Blitter has finished with your request.
+
+
+
+BNDROFF()
+
+  This macro (declared in file "gfxmacro.h") will turn off the
+  outline mode.
+
+  Synopsis:  BNDROFF( rast_port );
+
+  rast_port: Pointer to the RastPort which outlinefunction
+             should be turned off.
+
+
+
+ClipBlit()
+
+  This function copies parts of BitMaps with help of Rastports
+  and will therefore care about overlapping layers, and should
+  be used if you have windows on your display.
+
+  Synopsis: ClipBlit( srp, sx, sy, drp, dx, dy, w, h, flag );
+
+  srp:      (struct RastPort *) Pointer to the "source"
+            RastPort.
+
+  sx:       (long) X offset, source.
+
+  sy:       (long) Y offset, source.
+
+  drp:      (struct RastPort *) Pointer to the "destination"
+            RastPort.
+
+  dx:       (long) X offset, destination.
+
+  dy:       (long) Y offset, destination.
+
+  w:        (long) The width of the memory area that should be
+            copied.
+
+  h:        (long) The height of the memory area that should be
+            copied.
+
+  flag:     (long) This value tells the blitter what kind of
+            logically operations should be done. See below for
+            more information.
+
+
+
+Draw()
+
+  This function draws single lines from the current position
+  to the new specified position.
+
+  Synopsis:  Draw( rast_port, x, y );
+
+  rast_port: (struct RastPort *) Pointer to the RastPort that
+             should be affected.
+
+  x:         (long) The new X position. 
+
+  y:         (long) The new Y position.
+
+
+
+Flood()
+
+  This function will flood fill complicated objects.
+
+  Synopsis:  Flood( rast_port, mode, x, y ); 
+
+  rast_port: (struct RastPort *) Pointer to the RastPort that
+             should be affected.
+
+  mode:      (long) Which mode should be used. If you want to
+             use the Colour mode set the mode variable to 1, to
+             get the Outline mode set the mode variable to 0.
+
+  x:         (long) X position where the flood fill should
+             start.
+
+  y:         (long) Y position where the flood fill should
+             start.
+
+
+
+FreeColorMap()
+
+  This function deallocates the memory that was allocated by
+  the GetColorMap() function. Remember to deallocate all memory
+  that you allocate. For every GetColorMap() function there
+  should be one FreeColorMap() function.
+
+  FreeColorMap( colormap );
+
+  colormap: (struct ColorMap *) Pointer to a ColorMap structure
+            that GetColorMap() returned and you now want to
+            deallocate.
+
+
+
+FreeCprList()
+
+  This function will return all memory that was automatically
+  allocated by the MrgCop() function.
+
+  Synopsis: FreeCprList( cprlist );
+
+  cprlist:  (struct cprlist *) Pointer to the View's cprlist
+            (LOFCprList) structure. If the View was interlaced
+            you must also call the FreeCprList function with a
+            pointer to the SHFCprList.
+
+
+
+FreeRaster()
+
+  This function will deallocate display memory (BitPlane).
+  Remember to deallocate all BitPlanes!
+
+  Synopsis: FreeRaster( bitplane, width, height );
+
+  bitplane: (PLANEPTR) Pointer to a Bitplane.
+
+  width:    (long) The Bitplane's width.
+
+  height:   (long) The Bitplane's height.
+
+
+
+FreeVPortCopLists()
+
+  This function will return all memory that was automatically
+  allocated by the MakeVPort() function. Remember to call
+  FreeVPortCopLists() for every ViewPort you have created!
+
+  Synopsis: FreeVPortCopLists( viewport );
+
+  view:     (struct ViewPort *) Pointer to the ViewPort.
+
+
+
+GetColorMap()
+
+  This function allocates and initializes a ColorMap structure.
+
+  Synopsis: colormap = GetColorMap( colours );
+
+  colormap: (struct ColorMap *) GetColorMap returns a pointer
+            to the ColorMap structure it has allocated and
+            initialized, or NULL if not enough memory.
+
+  colours:  (long) A value specifying how many colours you
+            want that the ColorMap structure should store.
+            (1, 2, 4, 8, 16, 32)
+
+
+
+InitBitMap()
+
+  This function initializes a BitMap structure.
+
+  Synopsis: InitBitMap( bitmap, depth, width, height );
+
+  bitmap: (struct BitMap *) Pointer to the BitMap.
+
+  depth:  (long) How many BitPlanes used.
+
+  width:  (long) The width of the raster.
+
+  height: (long) The height of the raster.
+
+
+
+InitRastPort()
+
+  This function initializes a RastPort.
+
+  Synopsis:  InitRastPort( rast_port );
+
+  rast_port: (RastPort *) Pointer to the RastPort that should
+             be Initialized.
+
+
+
+InitView()
+
+  This function will initialize a View structure.
+
+  Synopsis: InitView( view );
+  
+  view:     (struct View *) Pointer to the View that should be
+            initialized.
+
+
+
+InitVPort()
+
+  This function will initialize a ViewPort structure.
+
+  Synopsis:  InitVPort( view_port );
+  
+  view_port: (struct ViewPort *) Pointer to the ViewPort that
+             should be initialized.
+
+
+
+MakeVPort()
+
+  This function prepares the Amiga's hardware (especially the
+  Copper) to display a ViewPort. NOTE! You have to prepare
+  EVERY ViewPort you are going to use!
+
+  Synopsis: MakeVPort( view, viewport ); 
+
+  view:     (struct View *) Pointer to the ViewPort's View.
+
+  viewport: (struct ViewPort *) Pointer to the ViewPort.
+
+
+
+Move()
+
+  This function moves the cursor.
+
+  Synopsis:  Move( rast_port, x, y );
+
+  rast_port: (struct RastPort *) Pointer to the RastPort that
+             should be affected.
+
+  x:         (long) The new X position. 
+
+  y:         (long) The new Y position.
+
+
+
+MrgCop()
+
+  This function puts together all displayinstructions and
+  prepares the view to be showed.
+
+  Synopsis: MrgCop( view );
+
+  view:     (struct View *) Pointer to the View.
+
+
+
+LoadView()
+
+  This function will start showing a View. Remember that when
+  you close your View you must switch back to the old view.
+  (See examples for more details.)
+
+  Synopsis: LoadView( view );
+
+  view:     (struct View *) Pointer to the View.
+
+
+
+PolyDraw()
+
+  This function will draw multiple lines.
+
+  Synopsis:    PolyDraw( rast_port, number, coordinates );
+
+  rast_port:   (struct RastPort *) Pointer to the RastPort that
+               should be affected.
+
+  number:      (long) The number of coordinates (x,y) defined
+               in the array.
+
+  coordinates: (short *) Pointer to an array of coordinates.
+
+
+
+ReadPixel()
+
+  This function reads the colour value of a pixel.
+
+  Synopsis:  colour = ReadPixel( rast_port, x, y );
+
+  colour:    (long) ReadPixel returns the colour value of the
+             specified pixel (colour 0 - 255 ) or -1 if the
+             coordinates were outside the Raster.
+
+  rast_port: (struct RastPort *) Pointer to the RastPort which
+             contain the pixel you want to examine.
+
+  x:         (long) X position of the pixel. 
+
+  y:         (long) Y position of the pixel.
+
+
+
+RectFill()
+
+  This function will draw filled rectangles.
+
+  Synopsis:  RectFill( rast_port, minx, miny, maxx, maxy );
+
+  rast_port: (struct RastPort *) Pointer to the RastPort that
+             should be affected.
+
+  minx:      (long) Left position of the rectangle.
+
+  miny:      (long) Top          - " -
+
+  maxx:      (long) Right        - " -
+
+  maxy:      (long) Bottom       - " -
+
+
+
+SetAfPt()
+
+  This function will set the area pattern:
+
+  Synopsis:     SetAfPt( rast_port, area_pattern, pow2 );
+
+  rast_port:    (struct RastPort *) Pointer to the RastPort
+                that should be affected.
+
+  area_pattern: (UWORD) Pointer to an array of UWORDS that
+                generate the pattern. Each bit in the array
+                represents one dot.
+
+  pow2:         (BYTE) The pattern must be two to the power of
+                pow2 lines tall. If the pattern is one line tall
+                 pow2 should be set to 0, if the pattern is two
+                lines tall pow2 should be set to 1, if the
+                pattern is four lines tall pow2 should be set to
+                2, and so on. (If you use multicoloured patterns
+                the pow2 should be negative. A sixteen lines
+                tall multicoloured pattern should therefore have
+                the pow2 value set to -4 [2^4 = 16].)
+
+
+
+SetAPen()
+
+  This function will change the FgPen's colour.
+
+  Synopsis:   SetAPen( rast_port, new_colour );
+
+  rast_port:  (struct RastPort *) Pointer to the RastPort that
+              should be affected.
+
+  new_colour: (long) A new colour value.
+
+
+
+SetBPen()
+
+  This function will change the BgPen's colour.
+
+  Synopsis:   SetBPen( rast_port, new_colour );
+
+  rast_port:  (struct RastPort *) Pointer to the RastPort that
+              should be affected.
+
+  new_colour: (long) A new colour value.
+
+
+
+SetDrMd()
+
+  This function will change the drawing mode.
+
+  Synopsis:  SetDrMd( rast_port, new_mode );
+
+  rast_port: (struct RastPort *) Pointer to the RastPort that
+             should be affected.
+
+  new_mode:  (long) The new drawing mode. Set one of the
+             following: JAM1, JAM2, COMPLEMENT, INVERSVID|JAM1
+             or INVERSVID|JAM2.
+
+             JAM1           The FgPen will be used, the
+                            background unchanged. (One colour
+                            jammed into a Raster.)
+
+             JAM2           The FgPen will be used as foreground
+                            pen while the background (when you
+                            are writing text for example) will
+                            be filled with the BgPen's colour.
+                            (Two colours are jammed into a
+                            Raster.)
+
+             COMPLEMENT     Each pixel affected will be drawn
+                            with the binary complement colour.
+                            Where you write 1's the
+                            corresponding bit in the Raster
+                            will be reversed.
+
+             INVERSVID|JAM1 This mode is only use together with
+                            text. Only the background of the
+                            text will be drawn with the FgPen.
+
+             INVERSVID|JAM2 This mode is only use together with
+                            text. The background of the text
+                            will be drawn with the FgPen, and
+                            the characters itself with the
+                            BgPen.
+
+
+
+SetDrPt()
+
+  This function will set the line pattern.
+
+  Synopsis:     SetDrPt( rast_port, line_pattern );
+
+  rast_port:    (struct RastPort *) Pointer to the RastPort
+                that should be affected.
+
+  line_pattern: (UWORD) The pattern. Each bit represents one
+                dot. To generate solid lines you set the
+                pattern value to 0xFFFF [hex] (1111111111111111
+                [bin]).
+
+
+
+SetOPen()
+
+  This macro will change the AOlPen's colour. Note! This is not
+  a function. It is actually a macro that is defined in the
+  header file "gfxmacros.h". If you want to use this function
+  you have to remember to include this file.
+
+  Synopsis:   SetOPen( rast_port, new_colour );
+
+  rast_port:  (struct RastPort *) Pointer to the RastPort that
+              should be affected.
+
+  new_colour: (long) A new colour value.
+
+
+
+SetRast()
+
+  This function sets a whole Raster to a specific colour.
+
+  Synopsis:  SetRast( rast_port, colour );
+
+  rast_port: (struct RastPort *) Pointer to the RastPort that
+             should be affected.
+
+  colour:    (long) The colour reg. you want to fill the whole
+             raster with.
+
+
+
+SetRGB4()
+
+  This function allows you to change your screen's colours.
+  Each colour may be picked out of a 4096 colour palette. (16
+  levels of red, 16 levels of green and 16 levels of blue;
+  16*16*16 = 4096.)
+
+  IMPORTANT! Before you may use this function you must have
+  opened the Graphics Library. (All other functions are in the
+  Intuition Library.) (See chapter 0 AMIGA for more
+  information.)
+
+  Synopsis:   SetRGB4( viewport, register, red, green, blue );
+           
+  viewport:   (struct ViewPort *) Pointer to a ViewPort which
+              colour registers we are going to change. We can
+              find the screen's ViewPort in the Screen
+              structure. (If my_screen is a pointer to a Screen
+              structure, this will get us a pointer to that
+              screen's ViewPort: &my_screen->ViewPort)
+
+  register:   (long) The colour register you want to change.
+              The screen's Depth decides how many colour
+              registers the screen have:
+
+              Depth  Colour Registers
+              -----------------------
+              1      0 - 1
+              2      0 - 3
+              3      0 - 7
+              4      0 - 15
+              5      0 - 31
+              6      0 - 63
+
+  red:        Amount of red. (0 - 15)
+
+  green:      Amount of green. (0 - 15 )
+
+  blue:       Amount of blue. (0 - 15 )
+
+  Eg: SetRGB4( &my_screen->ViewPort, 2, 15, 15, 0 ); will
+  change colour register 2 to be light yellow. (Red and green
+  together will be yellow.)
+
+
+
+ScrollRaster()
+
+  This function will scroll a rectangular area of a raster.
+
+  Synopsis:  ScrollRaster( rp, dx, dy, minx, miny, maxx, maxy );
+
+  rp:        (struct RastPort *) Pointer to the RastPort that
+             should be affected.
+
+
+  dx:        (long) Delta X movement. (A positive number moves
+             the area to the right, a negative number to the
+             left.)
+
+  dy:        (long) Delta Y movement. (A positive number moves
+             the area down, a negative number up.)
+
+  minx:      (long) Left edge of the rectangle.
+
+  miny:      (long) Top edge of the rectangle.
+
+  maxx:      (long) Right edge of the rectangle.
+
+  maxy:      (long) Bottom edge of the rectangle.
+
+
+
+Text()
+
+  This function prints text into a Raster.
+
+  Synopsis:  Text( rast_port, string, nr_of_chr );
+
+  rast_port: (struct RastPort *) Pointer to the RastPort that
+             should be affected.
+
+  string:    (char *) Pointer to a text string that will be
+             printed.
+
+  nr_of_chr: (long) The number of characters that should be
+             printed.
+
+
+
+WritePixel()
+
+  This function will draw a single pixel.
+
+  Synopsis:  WritePixel( rast_port, x, y );
+
+  rast_port: (struct RastPort *) Pointer to the RastPort that
+             should be affected.
+
+  x:         (long) X position of the pixel. 
+
+  y:         (long) Y position of the pixel.
+
+
+
+B.4  EXEC LIBRARY
+
+AllocMem()
+
+  This function allocates memory. You specifies what type and
+  how much you want, and it returns a pointer to the allocated
+  memory, or NULL if there did not exist enough memory.
+
+  Synopsis: memory = AllocMem( size, type );
+
+  memory:   (void *) Pointer to the new allocated memory, or
+            NULL if no memory could be allocated. Remember!
+            Never use memory which you have not successfully
+            allocated.
+
+  size:     (long) The size (in bytes) of the memory you want.
+            (AllocMem() always allocates memory in multiples of
+            eight bytes. So if you only ask for 9 bytes, Exec
+            would actually give you 16 Bytes (2*8).)
+
+  type:     (long) You need to choose one of the three
+            following types of memory (see chapter 0
+            INTRODUCTION for more information about Chip and
+            Fast memory):
+
+            MEMF_CHIP   Chip memory. This memory can be
+                        accessed by both the main processor, as
+                        well as the Chips. Graphics/Sound data
+                        MUST therefore be placed in Chip memory.
+                        If it does not matter what type of 
+                        memory you get (Fast or Chip), you
+                        should try to allocate Fast memory
+                        before you allocate Chip memory. (Chip
+                        memory is more valuable than Fast
+                        memory.)
+
+            MEMF_FAST   Fast memory. This memory can only be
+                        accessed by the main processor.
+                        (Graphics and Sound data can NOT be
+                        stored in Fast memory, use Chip memory.)
+                        This memory is normally a little bit
+                        faster than Chip memory, since only the
+                        main processor is working with it, and
+                        it is not disturbed by the Chips.
+
+            MEMF_PUBLIC If it does not matter what type of
+                        memory you get (you do not intend to
+                        use the memory for Graphics/Sound data),
+                        you should use Fast memory. However,
+                        all Amigas do not have Fast memory,
+                        since you need to by a memory expansion
+                        in order to get it. If want to tell
+                        Exec that you would like to use Fast
+                        memory if there is any, else use Chip
+                        memory, you should ask for MEMF_PUBLIC.
+
+            If you want the allocated memory to be cleared
+            (initialized to zeros), you should set the flag
+            MEMF_CLEAR.
+
+
+
+FreeMem()
+
+  This function deallocated previously allocated memory.
+  Remember to deallocate all memory you have taken, and never
+  deallocate memory which you have not taken.
+
+  Synopsis: FreeMem( memory, size );
+
+  memory    (void *) Pointer to some memory which has
+            previously been allocated. Remember! never use
+            memory which has been deallocated.
+
+  size      (long) The size (in bytes) of the memory you want
+            to deallocate.
+
+
+
+B.5  AMIGA DOS LIBRARY
+
+Close()
+
+  This function closes an already opened file. Remember to
+  close ALL files you have opened!
+
+  Synopsis:    Close( file_handle );
+
+  file_handle: (BPTR) Actually a pointer to a FileHandle
+               structure which has been initialized by a
+               previous Open() call.
+
+
+
+CreateDir()
+
+  This function creates a new directory, AND "locks" is
+  automatically. (Remember to unlock the directory later on.)
+
+  Synopsis: lock = CreateDir( name );
+
+  lock:     (BPTR) Actually a pointer to a FileLock structure.
+            If lock is equal to NULL, AmigaDOS have not been
+            able to create the new directory.
+
+  name:     (char *) Pointer to a string containing the name
+            of the new directory.
+
+
+
+CurrentDir()
+
+  This function makes a specified directory "current
+  directory". You need to lock the new directory (new_lock)
+  before you can make it the current directory. The function
+  returns the old current directories lock so you can unlock
+  it if necessary.
+  
+  Synopsis: old_lock = CurrentDir( new_lock );
+  
+  old_lock: (BPTR) Actually a pointer to a FileLock structure.
+            It is the old current directory lock.
+  
+  new_lock: (BPTR) Actually a pointer to a FileLock structure.
+            The new current directory lock.
+
+
+
+DeleteFile()
+
+  This function deletes a file or directory. Remember that
+  a directory must be empty before it can be deleted.
+
+  Synopsis: ok = DeleteFile( name );
+
+  ok:       (long) Actually a Boolean. It is TRUE if AmigaDOS
+            could delete the file/directory, else FALSE which
+            means something went wrong. (Eg. disk write-
+            protected, directory not empty etc.)
+
+  name:     (char *) Pointer to a string containing the name
+            of the file/directory you want to delete. 
+
+
+
+Info()
+
+  This function returns information about a specified disk. You
+  specify which disk by either lock that disk, or a file/
+  directory on that disk.
+
+  Synopsis:  ok = Info( lock, info_data );
+  
+  ok:        (long) Actually a Boolean. It is TRUE if AmigaDOS
+             could get information about the disk, else FALSE
+             which means something went wrong.
+
+  lock:      (BPTR) Actually a pointer to a FileLock structure.
+
+  info_data: (struct InfoData *) Pointer to an InfoData
+             structure which will be initialized by the Info()
+             function. The problem with this structure is that
+             it must be on a four byte boundary, so you need
+             to use the function AllocMem() to get the right
+             type of memory for the structure. (See Example.)
+
+
+
+IoErr()
+
+  This function can be used to get more information about an
+  error message. Whenever you have used an AmigaDOS function
+  which did not work properly (you have received an error
+  message), you call this function and it will return an
+  explanation.
+  
+  Synopsis: error = IoErr();
+  
+  error:    (long) This field contains a flag returned by
+            IoErr() which can be: (I do not think I need
+            to explain what they mean.)
+
+            ERROR_NO_FREE_STORE
+            ERROR_TASK_TABLE_FULL
+            ERROR_LINE_TOO_LONG
+            ERROR_FILE_NOT_OBJECT
+            ERROR_INVALID_RESIDENT_LIBRARY
+            ERROR_NO_DEFAULT_DIR
+            ERROR_OBJECT_IN_USE
+            ERROR_OBJECT_EXISTS
+            ERROR_DIR_NOT_FOUND
+            ERROR_OBJECT_NOT_FOUND
+            ERROR_BAD_STREAM_NAME
+            ERROR_OBJECT_TOO_LARGE
+            ERROR_ACTION_NOT_KNOWN
+            ERROR_INVALID_COMPONENT_NAME
+            ERROR_INVALID_LOCK
+            ERROR_OBJECT_WRONG_TYPE
+            ERROR_DISK_NOT_VALIDATED
+            ERROR_DISK_WRITE_PROTECTED
+            ERROR_RENAME_ACROSS_DEVICES
+            ERROR_DIRECTORY_NOT_EMPTY
+            ERROR_TOO_MANY_LEVELS
+            ERROR_DEVICE_NOT_MOUNTED
+            ERROR_SEEK_ERROR
+            ERROR_COMMENT_TOO_BIG
+            ERROR_DISK_FULL
+            ERROR_DELETE_PROTECTED
+            ERROR_WRITE_PROTECTED
+            ERROR_READ_PROTECTED
+            ERROR_NOT_A_DOS_DISK
+            ERROR_NO_DISK
+            ERROR_NO_MORE_ENTRIES
+
+
+
+Open()
+
+  This function opens a file. Remember, before you can read/
+  write files you have to open them. 
+
+  Synopsis:    file_handle = Open( file_name, mode );
+
+  file_handle: (BPTR) Actually a pointer to a FileHandle
+               structure. If the system could not open the file
+               with our requirements Open() returns NULL.
+
+  file_name:   (char *) Pointer to a text string which contains
+               the file name including any necessary devices/
+               directories.
+
+  mode:        (long) When you open a file you need to tell the
+               system what you are going to do with it. This
+               field should therefore contain one of the
+               following flags:
+
+               MODE_OLDFILE:   Opens an existing file for
+                               reading and writing.
+
+               MODE_NEWFILE:   Opens a new file for writing.
+                               (If the file already exist it
+                               is deleted.)
+
+               MODE_READWRITE: Opens an old file with an
+                               exclusive lock. (The file is
+                               automatically locked with an
+                               EXCLUSIVE_LOCK.)
+
+               MODE_READONLY:  Same as MODE_OLDFILE.
+
+
+
+Read()
+
+  This function reads a specified number of bytes from a file.
+
+  Synopsis:    bytes_read = Read( file_handle, buffer, size );
+
+  bytes_read:  (long) Number of bytes actually read. Even if
+               you tell AmigaDOS that you want to read x
+               number of bytes, it is not certain that you
+               actually can do it. The file is maybe corrupted,
+               not as big as you thought etc.
+
+  file_handle: (BPTR) Actually a pointer to a FileHandle
+               structure which has been initialized by a
+               previous Open() call.
+
+  buffer:      (char *) Pointer to the data buffer you want to
+               read the data into.
+
+  size:        (long) Number of bytes you want to read.
+
+
+
+Rename()
+
+  This function renames a file or directory. You can even
+  move a file between directories by renaming it. (For example,
+  Rename( "df0:Documents/Sale.doc", "df0:Letters/Sale.doc" );
+  will move the file Sale.doc from the directory "Documents"
+  to directory "Letters". Note! You can not rename a file from
+  one volume to another.)
+  
+  Synopsis: ok = Rename( old_name, new_name );
+  
+  ok:       (long) Actually a Boolean. It is TRUE if AmigaDOS
+            could rename the file/directory, else FALSE which
+            means something went wrong. (Eg. disk write
+            -protected.)
+
+  old_name: (char *) Pointer to a string containing the old
+            file/directory name.
+
+  new_name: (char *) Pointer to a string containing the new
+            file/directory name.
+
+
+
+Seek()
+
+  This function moves the "file cursor" inside a file:
+
+  Synopsis:    old_pos = Seek( file_handle, new_pos, mode );
+
+  old_pos:     (long) Previous position in the file, or -1 if
+               an error occurred.
+
+  file_handle: (BPTR) Actually a pointer to a FileHandle
+               structure which has been initialized by a
+               previous Open() call.
+
+  new_pos:     (long) New position relative to the "mode".
+
+  mode:        (long) The new_pos can be relative to:
+                 OFFSET_BEGINNING: Beginning of the file.
+                 OFFSET_CURRENT:   Current position.
+                 OFFSET_END:       The end of the file.
+
+
+
+SetComment
+
+  This function attach a comment to a file or directory.
+
+  Synopsis: ok = SetComment( name, comment );
+
+  ok:       (long) Actually a Boolean. It is TRUE if AmigaDOS
+            could attach the new comment, else FALSE which
+            means something went wrong. (Eg. disk write-
+            protected.)
+
+  name:     (char *) Pointer to a string containing the name
+            of the file/directory you want to attach the
+            comment to.
+
+  comment:  (char *) Pointer to a string containing the
+            comment. (A comment may be up to 80 characters
+            long.)
+
+
+
+SetProtection()
+
+  This function alters the protection bits of a file.
+  You can set following flags:
+  
+  FIBF_DELETE  : the file/directory can not be deleted.
+  FIBF_EXECUTE : the file can not be executed.
+  FIBF_WRITE   : you can not write to the file.
+  FIBF_READ    : you can not read the file.
+  FIBF_ARCHIVE : Archive bit.
+  FIBF_PURE    : Pure bit.
+  FIBF_SCRIPT  : Script bit.
+
+  (Note! All of the flags are for the moment not working!)
+  
+  Synopsis: ok = SetProtection( name, mask );
+  
+  ok:       (long) Actually a Boolean. It is TRUE if AmigaDOS
+            could alter the protection bits, else FALSE which
+            means something went wrong. (Eg. disk write-
+            protected.)
+
+  name:     (char *) Pointer to a string containing the name
+            of the file/directory you want to change the
+            protection bits.
+ 
+  mask:     (long) The protection bits. (For example, if you
+            want to make the file/directory not deletable,
+            and that it can not be executed you should set the
+            protection bits: FIBF_DELETE | FIBF_EXECUTE.)
+
+
+
+UnLock()
+
+  This function unlocks a previously locked file: (Remember to
+  unlock ALL files you have locked!)
+
+  Synopsis: Unlock( lock );
+
+  lock:     (BPTR) Actually a pointer to FileLock structure
+            which has been initialized by a previous Lock()
+            call.
+
+
+
+Write()
+
+  This function writes a specified number of bytes to a file.
+
+  Synopsis:  bytes_wr = Write( file_handle, buffer, size );
+
+  bytes_wr:    (long) Number of bytes actually written. Even if
+               you tell AmigaDOS that you want to write x number
+               of bytes, it is not certain that you actually
+               can do it. Maybe the disk was full, write-
+               protected etc.
+
+  file_handle: (BPTR) Actually a pointer to a FileHandle
+               structure which has been initialized by a
+               previous Open() call.
+
+  buffer:      (char *) Pointer to the data buffer which you
+               want to write.
+
+  size:        (long) Number of bytes you want to write.

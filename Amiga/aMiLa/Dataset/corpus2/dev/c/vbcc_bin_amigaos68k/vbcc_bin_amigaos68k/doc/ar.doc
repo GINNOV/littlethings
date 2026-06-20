@@ -1,0 +1,80 @@
+INTRODUCTION
+
+    ar is a portable tool to handle file-archives, which are mostly
+    used for linker libraries with the ".a" suffix.
+
+    The functionality and options supported are designed to be more
+    or less the same as with usual Unix-ar implementations. This ar
+    version supports BSD-style and GNU-style archive formats.
+
+
+LEGAL
+
+    ar is public domain.
+
+
+USAGE
+
+    ar is called as:
+
+        ar Command[Options] [PosFileName] ArchiveName FileName [MoreFiles...]
+
+    Commands may be the following:
+
+        d - Delete files from the archive.
+
+        m - Move file to the end of the archive or insert at a specific
+            position. When using the options 'a', 'b' or 'i' you have to
+            add a PosFileName from the archive for relative positioning.
+
+        p - Print files from the archive to standard output.
+
+        q - Quick append files to the archive, without further checks.
+
+        r - Replace files from the archive with new files, or append
+            them when not already present. Similar to the m-command
+            you may specifiy a relative position with PosFileName.
+
+        t - Show the archive's table of contents with all file
+            names and attributes.
+
+        x - Extract files from the archive. With option 'D' the path
+            in the PosFileName position is used as destination
+            directory for the extraction.
+
+    Supported options / modifiers:
+
+        a - Insert/replace after the given file name (commands m, r).
+
+        b - Insert/replace before the given file name (commands m, r).
+
+        c - Create the archive without warning, when it doesn't exist
+            (commands q, r).
+
+        i - Insert/replace before the given file name (same as 'b').
+
+        o - Preserve the original dates on extraction (command x).
+
+        u - Only update files in the archive which are older (command r).
+
+        v - Be verbose during the operation (all commands).
+
+        B - Select BSD archive format (commands d, m, q, r).
+
+        D - Specify destination directory for extraction (command x).
+
+        S - Do not generate symbol table (commands d, m, q, r).
+
+        T - Truncate file names to 15 characters, so no BSD or GNU
+            long-name extensions are needed (all commands).
+
+    One or more file names may be specified. Also wildcards are allowed.
+
+
+BUGS
+
+    Only few commands are already implemented: q, t, x.
+
+
+
+Frank                               V0.3b               frank@phoenix.owl.de

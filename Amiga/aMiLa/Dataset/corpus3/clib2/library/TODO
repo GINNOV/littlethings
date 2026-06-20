@@ -1,0 +1,5 @@
+C99 math functions:
+
+	fma() and fmaf() should be implemented as a true "fused" multiply
+	and add function rather than the sequential operation implied in the
+	current implementation.

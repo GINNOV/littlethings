@@ -1,0 +1,51 @@
+                                cmacros V2.0
+
+                    Copyright © 1995-1998 by Stefan Kost
+
+This is a collection of some nice macros for c-programmers. Not much today,
+but I hope you help me to let it grows.
+
+How to use it ?
+---------------
+
+Simply copy it anywhere in your includepath and #include it.
+
+I think it`s not necessary to describe the macros (You find a short description
+in the include-file.).
+
+
+Why use it ?
+------------
+
+Macros helping you to write a better readable source-code. Further you may
+learn some new tricks by reading the include file.
+
+Support
+-------
+
+Please mail me or write me and sending me more macros or ideas.
+
+Copyright !
+-----------
+
+cmacros are Copyright © 1995 ENSONIC of TRINOMIC and are's freely distributable
+as long as all of its files are included in their original form without addit-
+ions, deletions, or modifications of any kind, and only a nominal fee is char-
+ged for its distribution. This software is provided "AS IS" without warranty of
+any kind, either expressed or implied. By using cmacros, you agree to accept
+the entire risk as to the quality and performance of the collection.
+
+Comments, complaints, desiderata are welcome.
+
+		Stefan Kost
+		Prager Straﬂe 279
+		Phone : (Germany 0341) 8613540
+		04289 Leipzig
+
+		Holbeinstrasse 1
+		Phone : (Germany 0341) 4801589
+		04229 Leipzig
+
+		E-Mail: kost@imn.htwk-leipzig.de
+		WWW   : http://www.imn.htwk-leipzig.de
+		Germany

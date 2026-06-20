@@ -1,0 +1,24 @@
+Short:        Data/Sprite/ANSI/Palette/Image/Mask source generator
+Author:       Stefano Reksten (GUNDAM) of 3AM
+Uploader:     rekststef unisi it
+Type:         dev/src
+Architecture: m68k-amigaos
+
+Long:
+ This program  is written to  allow the user  to transform  any picture file
+ (providing that you use 3.0+ and have the appropriate  datatypes installed,
+ otherwise just IFF ILBM files, sorry... ;-) in C (or Assembler) source code
+ for Image structures  along with their data,  or in sprite data (for 16, 32
+ and 64 bit wide AGA sprites!) or in ANSI escape sequences to draw a picture
+ by simply typing the file to your CLI window.
+ It is also possible to save the picture's palette in a wide range of tables
+ like those used for the LoadRGB4/LoadRGB32/SetRB4/SetRGB32,  or even create
+ an ECS copperlist, or an AGA one. The program is also capable of creating a
+ mask of the picture (for blitter use) and to select or deselect one or more
+ bitplanes, and much more.
+ You can save in C, in Assembler or in Raw data everything you want to, just
+ in three global files or each picture in his "source" files.  If you prefer
+ to save Raw data in one global file, the program will give you the possibi-
+ ty to write to disk the offsets from the beginning of that source file.
+ Data compression is supported via two internal compressors, PowerPacker and
+ XPK.

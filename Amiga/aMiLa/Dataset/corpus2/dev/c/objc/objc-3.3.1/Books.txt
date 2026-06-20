@@ -1,0 +1,20 @@
+
+1.  Object Oriented Programming: An Evolutionary Approach. (2nd ed.)
+	Brad J. Cox, Andrew J. Novobilski
+	Addison-Wesley Publishing Company, Reading,
+	Massachusetts, 1986,1991. ISBN: 0-201-54834-8.
+    
+    (Spanish: ISBN 0-201-60112-5 Japanese: ISBN 4-8101-8046-8)
+
+2.  An Introduction to Object-Oriented Programming.
+        Timothy Budd
+	Addison-Wesley Publishing Company, Reading,
+	Massachusetts, 1991.  ISBN 0-201-54709-0.
+
+   2nd Edition 1997
+
+3.  Objective-C: Object Oriented Programming Techniques
+	Lewis J. Pinson, Richard S. Wiener
+	Addison-Wesley Publishing Company, Reading,
+	Massachusetts, 1991. ISBN 0-201-50828-1.
+

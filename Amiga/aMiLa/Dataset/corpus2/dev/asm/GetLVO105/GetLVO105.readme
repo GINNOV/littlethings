@@ -1,0 +1,31 @@
+Short:        Old but good asm development tool
+Author:       kas@mink.ping.dk (Klaus Alexander Seistrup)
+Uploader:     kas mink ping dk (Klaus Alexander Seistrup)
+Type:         dev/asm
+Architecture: m68k-amigaos
+
+
+   FUNCTION
+	GetLVO first of all attempts to get a path to the *_lib.fd files
+	contained in the environment variable 'GETLVO'. If this fails, it
+	uses its default setting: 'FD:'.
+	Next it scans the libName_lib.fd file and any matches to 'funcName'
+	is sent to stdout in this format:
+
+	        _LVOfuncName EQU -$XXXX ; (parms,...)(regs,...)
+
+	GetLVO might be useful as a quick reference to functions that you
+	only vaguely remember or for creating *.i files ready to use with
+	your assembler (use <GetLVO libName *> for a total list of funct-
+	ions). 
+
+
+-- 
+
+ "Examine yourselves, whether ye be in the faith; prove your own selves. Know
+  ye not your own selves, how that Jesus Christ is in you, except ye be
+  reprobates?"
+
+                                                         (2 Corinthians 13:5)
+
+

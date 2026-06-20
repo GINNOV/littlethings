@@ -1,0 +1,67 @@
+==========================================================================
+                    \
+     ,ØØØØØø.        \______________              øØ
+     ØØØ´  ¬ğø              .       \            ØØ³ __
+     ØØØ    ØØ              oğ       \           ØØ (__)
+     ØØØ   oØØ,øØØØØø.   ,  ·Oğ   ,øØØØø. øØ.oOğ ØØ       øØØØø.  ,øØØØø.
+     ØØø.øØ×° ØØ´  ¬ğØ øØ    ·Øğ  ØØ´ °ğ¾ ØØø°`× ØØ  ØØ  ØØ°  °ğğ ØØ´ °ğ¾
+     ØØ·¬     ¤Ø    ØØ ØØ  .  ¦Øø ØØ,  ØØ 0Ø     ØØ  ØØ  ØØ    ØØ ØØ,  ØØ
+\    Ø·Ø       ¬  .oØ× ØØ.,Oo,ØØ° °Øø m×°\ØØ     ØØ  ØØ  ØØ   .ØØ °Øø m×°
+ \   ×ØØ       .øØØO¤  ¤ØO°¬OØØ°   `Øø.   ØØ     ØØ  ØØ  ØØ   øØ´  `Øø.
+  \_________                         `Øø   \                ,o×´     `Øø
+            \                               \
+             \    [--»  Hardl¡ne · Aga¡nst · Hardl¡ne  «--]
+ [·Gunr¡der·] \                               \
+==========================================================================
+
+                   Apathy - The Complete Source Code
+                   =================================
+                        Released in April 1996
+
+
+COPYRIGHTS
+¯¯¯¯¯¯¯¯¯¯
+Apathy was released at The Party 5. The reason for releasing its source
+code is that I know how hard it can be to find sources that are up to date.
+There are however some restrictions.
+
+The contents of this package are fully copyrighted by Henrik Magnusson
+(RayLight) of PowerL¡ne, except for The Player replay routine (Copyrighted 
+by Jarno Paananen / Guru of Sahara Surfers). You may NOT use anything in 
+this package in order to produce similar effects/graphics/intros/demos 
+without having my permission. (Which shouldn't be hard to get...)
+
+
+COMPILING THE SOURCES
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+You have to make an assign to this directory, named "!intro:". The sources
+were compiled using PhxAss 4.2x and slink 6.50. The scripts that were used,
+uses these programs. The scripts are:
+
+MakeDotTunnel
+MakeIntroIntro
+MakeIntroLoader
+MakeIntroSupport
+MakeMiniWall
+MakeWriter
+MakeIntro
+
+Run the scripts in this order to generate the executable. It's the 
+"MakeIntro" script that links the objectfiles and creates the actual .exe
+file.
+
+
+THANKS TO
+¯¯¯¯¯¯¯¯¯
+Thanks to Guru of Sahara Surfers for his terrific player and to Frank
+Wille for his wonderful assembler!
+
+
+/Henrik Magnusson (RayLight)
+
+
+CONTACT US
+¯¯¯¯¯¯¯¯¯¯
+     E-Mail: Chip - chip@toaster.joy.se
+             Mad Druid - druid.powerline@goteborg.mail.telia.com
+             GunRider - johnny@cd.chalmers.se

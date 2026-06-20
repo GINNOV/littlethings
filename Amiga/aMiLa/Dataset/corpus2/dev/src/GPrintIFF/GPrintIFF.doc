@@ -1,0 +1,62 @@
+------------------------------------------------------------------------------
+ GPrintIFF V1.0! - ©1996 by Giambattista Bloisi
+------------------------------------------------------------------------------
+
+
+	Introduzione
+
+Questo semplice programma è stato scritto per visualizzare ed eventualmente
+stampare una immagine salvata in formato IFF ILBM.
+E' supportata la compatibilità con i vecchi chip set grafici e probabilmente
+sarà compatibile con future versioni del S.O.
+
+
+	Utilizzo
+
+Per avviare il programma basta semplicemente cliccare sulla sua icona oppure
+da shell digitare:
+
+1. Progdir> GPrintIFF <nome del file da visualizzare>
+
+Nel caso in cui non venga specificato alcun file, allora il programma si
+incaricherà di aprire un comodo ASL Requester dove l'utente può selezionare
+l'immagine che desidera visualizzare. L'ASL Requester verrà comunque aperto
+nel caso in cui il programma venga fatto partire da Workbench.
+L'immagine verrà visualizzata su uno schermo custom dal quale, attraverso
+il menu, si possono selezionare una serie di azioni:
+
+Carica		- Per caricare una nuova immagine.
+Stampa		- Per stamapare l'immagine visualizzata
+		  (Il programma usa il driver di stampa del Workbench
+		  e le impostazioni selezionate tramite le preferences)
+Fine		- Per uscire dal programma.
+
+
+        Note Legali
+
+In NESSUN caso l'autore si assume la responsabilità per qualsiasi danno,
+inclusa la perdita di dati o ogni altro danno commerciale, causati dal proprio
+prodotto. L'autore si riserva il diritto di apporre modifiche o di sviluppare
+nuove versioni del proprio prodotto senza l'obbligo di informare qualsivoglia
+persona.
+
+GIAMBY PRINT IFF SOFTWARE IS PROVIDED "AS-IS" AND SUBJECT TO CHANGE;
+NO WARRANTIES ARE MADE.  ALL USE IS AT YOUR OWN RISK.
+NO LIABILITY OR RESPONSIBILITY IS ASSUMED.
+
+
+        L'Autore
+
+Giamby Print IFF! è stato scritto da:
+        Giambattista Bloisi
+        Via XXV Aprile, 107
+        85045 Lauria Sup. (PZ)
+                        ITALY
+        Tel. 0973/823600
+
+------------------------------------------------------------------------------
+|       ///                                                     |||||        |
+|  \\\ ///           Only Amiga makes it possible!              |- ·|        |
+|   \\///                                                        \­/         |
+------------------------------------------------------------------------------
+

@@ -1,0 +1,245 @@
+First, the original copyright of the compiler:
+
+/* Copyright (c) 1988,1989,1991 by Sozobon, Limited.  Author: Johann Ruegg
+ *
+ * Permission is granted to anyone to use this software for any purpose
+ * on any computer system, and to redistribute it freely, with the
+ * following restrictions:
+ * 1) No charge may be made other than reasonable charges for reproduction.
+ * 2) Modified versions must be clearly marked as such.
+ * 3) The authors are not responsible for any harmful consequences
+ *    of using this software, even if they result from defects in it.
+ */
+
+Then, the original copyright of the optimizer:
+
+/* Copyright (c) 1988,1989,1991 by Sozobon, Limited.  Author: Tony Andrews
+ *
+ * Permission is granted to anyone to use this software for any purpose
+ * on any computer system, and to redistribute it freely, with the
+ * following restrictions:
+ * 1) No charge may be made other than reasonable charges for reproduction.
+ * 2) Modified versions must be clearly marked as such.
+ * 3) The authors are not responsible for any harmful consequences
+ *    of using this software, even if they result from defects in it.
+ */
+
+Then, my copyright:
+
+HCC 2.0 Amiga version 1.1 and TOP 2.0 Amiga version 1.1. I declare the work
+done by me as Public Domain. Detlef Wuerkner.
+
+Contents:
+---------
+Compiler HCC with source, Optimizer TOP with source, Assembler A68k from Fish
+#314, Linker BLink from Fish #314, C library CClib.library from Fish #399,
+C header files, Startup Code HCC.o, Linker libraries HCC.lib with source
+and Stubs.lib, Tool FD2Stubs with source.
+
+Not included:
+-------------
+Make utility, cc frontend, and other tools. I have never seen a system()
+function that returns the returncode of the called program (Execute() returns
+whether or not c:Run could be loaded). If you have one (public domain, with
+source), let me know.
+
+Also not included:
+------------------
+The Commodore include files, Commodore linker library amiga.lib.
+You will need them when writing Amiga-specific (but non-portable) programs.
+Let me cite Jeff Lydiatt (Fish 314):
+The include files are available from commodore for a nominal $20 fee.
+Write to:
+		Commodore Business Machines
+		Software Department
+		1200 Wilson Drive
+		West Chester, PA 19380
+Ask for the "AmigaDos 1.3 Native Developer Upgrade".  The kit contains all
+the assembler and C include files, the libraries, autodocs, readme files,
+alink, and the library offsets.  It comes on 3 or 4 disks - well worth the
+$20.
+Jeff Lydiatt.
+
+I got the include files from Commodore Germany, Frankfurt. Thanks Commodore!
+The file amiga.lib, the autodocs and some tools came also with them.
+You should also try to get them from your National Commodore office.
+
+
+
+If this is your first contact to C:
+-----------------------------------
+Here you will find NO manual about the language itself. You should buy a book
+about C, for example, Kernighan/Ritchie, The C Programming Language. This book
+is also available now in the second edition, ANSI C. This here is not an ANSI C
+compiler, but the book should be useful to you at all. It is also available in
+german language, I don't know which other languages are available. Of course,
+if you won't spend too much money, you first could try the courses published in
+several computer magazines.
+
+
+If you are not familiar with C programming on the Amiga:
+--------------------------------------------------------
+Look for 'CManual' on Fish #337 from Anders Bjerin. Let me cite him:
+
+'This is the complete C manual for the Amiga which describes
+how to open and work with Screens, Windows, Graphics, Gadgets,
+Requesters, Alerts, Menus, IDCMP, Sprites etc. The manual
+consists of 11 chapters together with more than 70 fully
+executable examples with source code.
+
+The examples are written in Lattice C V5.02, but will compile
+perfectly with older versions, as well as with other C
+compilers.'
+
+OK, this compiler is tested with all examples. It will NOT compile the programs
+in directories 'tool' and 'filewindow' without small changes.
+
+You also should try to get the includes and autodocs from Commodore, as
+described above. Without the include files, you can't compile the 'CManual',
+and many PD programs written in C make use of that files.
+
+
+If you have enough money:
+-------------------------
+There are commercial C compilers available for the Amiga which should be, of
+course, better than this one. I've not enough money, so I use HCC. This
+compiler makes no function prototyping, no stack overflow checking, no array
+range checking, few warnings, few meaningful error messages, etc. Although it
+comes with full source, it's not easy to improve it, since the number of
+comments in the source is nearly zero (for HCC. TOP is documented a little bit
+better). If you already have Lattice C: I would be interested if it's possible
+to link object files of Lattice and HCC together (object file format, stack
+frame, register useage, etc. I heard that Aztec C uses a different object file
+format.). Please let me know!
+
+
+If you want to make money:
+--------------------------
+If you plan to write commercial or shareware programs with this compiler,
+let me cite Robert W. Albrecht Jr., the author of CClib.library:
+'   THIS IS NOT PUBLIC DOMAIN. You can however create public domain programs
+    that use it, but you MUST pay a $50 license fee for Version 2.0 or above
+    to use it with commercial software.'
+(Robert W. Albrecht allowed me to distribute CClib.library with HCC, the
+actual version is 3.0.)
+So, for commercial use, pay your $50 for CClib.library or use another standard
+C library. For Public Domain Programs, feel free to use this compiler.
+
+
+If you want to install this compiler:
+-------------------------------------
+See the file 'Installation' in the docs directory.
+
+
+If you are confused about the many PD C Compilers for the Amiga:
+----------------------------------------------------------------
+Up to Fish #430, there are four main types of C Compilers available:
+SmallC, PDC, DICE, and the Sozobon Compiler.
+I dont want to tell you the history of the first three, but the Sozobon
+Compiler has this history (and names):
+
+Sozobon-C	Atari ST version of what appears to be a full K&R freeware
+(Fish 171)	C-compiler, assembler and linker.
+		...
+		Amiga port should be relatively easy.	
+		Author:  Sozobon, Limited.
+
+Zc		This is a modified version of the Sozobon C compiler
+(Fish 193)	from disk 171.  It has been modified to generate code
+		compatible with the A68k assembler from disk 186 and
+		a new frontend control program makes it easy to use
+		like the UNIX "cc" frontend.  Version 1.01, includes
+		source.
+		Author:  Johann Ruegg; Amiga work by Joe Montgomery
+
+Zc		A full K&R C compiler based on a port of the Atari ST
+(Fish 314)	version of the Sozobon-C compiler.  Includes the C compiler
+		main pass written by Johann Ruegg with fixes and enhancements
+		by Joe Montgomery and Jeff Lydiatt, a cc front end written
+		by Fred Fish with enhancements by Jeff Lydiatt and Ralph
+		Babel, an optimizer written by Tony Andrews, an assembler
+		written by Brian Anderson and Charlie Gibb, a linker written
+		by the Software Distillery, generic include files, and a C
+		runtime library written by Dale Schumacher and ported by
+		Jeff Lydiatt.  This is version 1.01, an update to disks 171
+		and 193.
+		Author:  Various, see documentation.
+
+NorthC		A complete freely redistributable C environment for the
+(Fish 340)	Amiga based on the Sozobon Ltd C compiler, Charlie Gibb's
+		assembler, the Software Distillery's linker, and portions
+		from other sources.  Steve has pulled everything together
+		and added some enhancements in the process.  Version 1.0,
+		partial source only.
+		Author:  Steve Hawtin, et. al.
+
+NorthC		...
+(Fish 353)	version 1.1, an update to version 1.0 on disk 340.
+		Partial source only.
+		Author:  Steve Hawtin, et. al.
+
+NorthC		...
+(Fish 384)	version 1.2, an
+		update to version 1.1 on disk 353.  Changes include extra
+		examples, many bug fixes, further documentation and some
+		improvements.  The environment is supplied compressed and
+		unpacks to two disks.  Partial source is included.
+		Author:  Steve Hawtin, Charlie Gibbs, Sozobon Ltd, The
+			 Software Distilary and many others.
+
+Now what is HCC ? HCC was based on Zc from Fish 193. I improved it until it
+could compile itself. Then Sozobon Ltd sent me version 1.2 of the original
+Atari compiler (Yes, on the Atari there exist also different versions!).
+After implementing the changes in the compiler and portating the optimizer (can
+now 'registerize' variables!), the name was changed to HCC (This is the original
+name of it). Then the C library used was changed from my personal dLibs hack to
+CClib.library from Robert W. Albrecht. This required implementation of 32 bit
+ints and modification of register usage. I could release that version, but I
+didn't, since it contained some bugs I couldn't find, especially with (now 32
+bit) bit fields. This bit field bugs seem to be fixed now, since the Atari
+version 2.0 reached me some weeks ago from Sozobon Ltd. From Zc on Fish 314 I
+implemented a few modifications done by Jeff Lydiatt. From NorthC I could not
+implement anything, since... partial source only (No source of compiler) !
+
+Special note to Jeff Lydiatt and Steve Hawtin: Feel free to implement the
+changes in your compilers. Contact me if you think the number of versions should
+be reduced (I think so). But I want a compiler that completely compiles itself
+(without Aztec library functions), has full source code and documented changes.
+
+If you want to improve this compiler:
+-------------------------------------
+Feel free! And, if you really fixed a bug or made some enhancements, don't make
+this for your own, there are other Amiga users which would be pleased about.
+But, to prevent Fred Fish from including yet another version of HCC in his
+library every two weeks, I think it would be best if you would do this two
+things:
+
+--- Do not change the source without a little comment. There will be, of
+course, different versions, for Atari and for Amiga (and UNIX and MSDOS), in the
+future, and it was difficult enough for me to implement the Atari 2.0
+enhancements in my Amiga version, since they were not commented. The next Atari
+version will also be not commented, I think. It was also not easy to find the
+differences between Zc from Fish #314 and Zc from Fish #193, since only Jeff
+Lydiatt commented his changes (Thanks Jeff!). So, please, comment your changes,
+even something like /* Mr. X */ would help me to find them for inclusion in the
+next version of HCC.
+--- Of course, you can send your improvements directly to Fred Fish. For major
+enhancements, this would be the best way. But, please, send minor enhancements,
+especially such of HCC and TOP itself, to me for collecting them and inclusion
+in the next release of HCC to prevent too much different versions. One version
+with all enhancements is better than 27 versions with less enhancements. I would
+be pleased even about very little improvements, and I will mention them together
+with the names of the authors. This applys, of course, also for bug reports. I
+can't guarantee a personal response to each of you, since this is the first time
+I release something in the PD, and I can't say how many letters will drop in.
+But I'll try to do my best.
+
+
+
+Greetings to all AMIGA freaks,
+
+Detlef Wuerkner
+Werrastrasse 7
+D-6300 Giessen
+GERMANY
+

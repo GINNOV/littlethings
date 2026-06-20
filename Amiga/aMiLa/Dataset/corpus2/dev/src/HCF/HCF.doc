@@ -1,0 +1,32 @@
+HCF
+
+HCF is a program written in FALSE (source code included) which determines
+the highest common factor of two numbers using Euclid's algorithm.
+
+This states that the lower number should be divided into the higher one, and
+the remainder noted. The higher number should be replaced by the lower one,
+and the lower by the remainder. This should be repeated until the remainder is
+equal to 0. The lower number would be the highest common factor.
+
+This is shown in the code as "@[$0~][[\$@$@>~][$@\-\]#\]#\.". If you want to
+know how it is done, e-mail me, or better still, work it out for yourself.
+The FALSE language, with an explanation of the code, should be here
+somewhere.
+
+If you understand the language, you may think that there's some sort of check
+for non-numerical characters. There is supposed to be, but it doesn't seem to
+work properly, and it'd be too much hassle deleting it. If you're a complete
+masochist, you can always try to sort it out for me...
+
+Finally, this program was primarily written to give me something to upload to
+Aminet, and even no-one ever needs it, it doesn't take up much space,
+probably less than is left free on the CD. And if I'm wasting Washington
+University's hard disk space and money, I can only see this as a good thing.
+
+I can be contacted at the addresses below, if you can think of a reason why
+you'd want to contact me...
+
+ksches@rmplc.co.uk
+Kieron.Dunbar@p3.pillarbox.fido.zetnet.co.uk
+Kieron.Dunbar@p3.f19.n102.z959.cu-amiga.demon.co.uk
+

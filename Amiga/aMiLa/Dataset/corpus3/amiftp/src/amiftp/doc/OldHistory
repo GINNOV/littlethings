@@ -1,0 +1,217 @@
+
+   Bug in sitelist-window fixed.
+
+   'AmiFTP sitename' (like 'AmiFTP ftp.luth,se') from the command-line now
+   works again.
+
+   AmiFTP now looks for AmiFTP.prefs in the following order:
+   Current directory
+   PROGDIR: (the directory where the AmiFTP-binary resides)
+   ENVARC:
+   ~user/
+
+   AmiFTP doesn't need amigaguide.library to work any more, but if you don't
+   have it you won't be able to get any online help.
+
+   All catalogs are now uptodate.
+
+   -- Beta versions below --
+
+   0.1299
+   ======
+
+   Reload-gadget added. Will re-read the current directory from the server.
+
+   Added alphabetically Sorting of the sitenames.
+
+   AmiFTP tries to figure out the correct filesize for links when transferring
+   them. That means the size shown in the filelist will not be the actual size
+   of the file that the link is pointin to, but it the size information in the
+   TransferWindow will be correct. 
+
+   The Danish and German catalogs have not been changed since the last version.
+   Check the WWW-page for updates.
+
+   0.1261b
+   =======
+
+   I accidentally included some old versions of the gadgets in the 0.1261 
+   archive, this release contains the correct versions.
+
+   0.1261
+   ======
+
+   AmiFTP should work on 68000/010 systems with the new gadgets/images supplied
+   in this archive.
+
+   0.1258
+   ======
+
+   I forgot to update the hotlist-menu when a new preferences file was loaded
+   or when the sitelist was edited, now fixed.
+
+   Also, current AmiFTP doesn't seem to work on 68000/010 systems. If you do
+   have a 000/010 and got AmiFTP to work please contact me.
+
+   0.1235
+   ======
+
+   Moved from gadtools-gui to a ClassAct-gui.
+   **NOTE** If you already have any ClassAct gadgets installed, you have
+   to make sure they are atleast as new as the ones in this archive.
+   ClassAct is (C) Phantom Development
+
+   There is not much new in the release compared to 0.864 in terms of
+   features.
+
+   This version will probably work with AmigaOS 2.x, I haven't been able
+   to verify this yet.
+
+
+   0.864
+   =====
+
+   Getting of entire directory trees added. So if you have problems
+   filling up your HD just do a cd to /pub on any aminet-site and
+   select the aminet-dir and press 'Get' :)
+
+   A primitive logwindow has been added, it's just a CON: window 
+   at the moment. You can open/close it via 'Settings/Log window'.
+
+   It's now possible to add the current site you're connected to
+   to the sitelist via the menu 'Project/Add current to sitelist'.
+
+   Added online-help, when you press HELP the correct section in
+   AmiFTP.guide will be displayed by AmigaGuide.
+
+   Added default download directory.
+
+   0.776
+   =====
+
+   The download-function didn't handle filenames longer than
+   32 characters correct.
+
+   The View-function now handles filenames with spaces in.
+
+   When you save the settings via the menu AmiFTP also save the
+   window size and position.
+
+   Added ARexx function DELETE, and added the switch FILELIST to 
+   GETATTR which returns the current filelist in the STEM-variable. 
+
+   FIXEDFONTNAME/SIZE argument was broken.
+
+   0.699
+   =====
+
+   CPS wasn't cleared after each file uploaded.
+
+   Hrm, this time AmiFTP-as225 should really work with mlink (tried
+   it myself).
+
+   0.691
+   =====
+
+   Links were "View"-ed twice, now fixed.
+
+   Workaround for the V39/gadtools.library bug so the Transfer Window
+   looks good on V39 too.
+
+   The 'Bytes transffered' and 'CPS' was updated one time to much.
+
+   Minor things fixed (I forgot to remove some DEBUG-output before
+   the previous release).
+
+   0.664
+   =====
+
+   When downloading multiple files AmiFTP forgot to unmark them.
+
+   Abort gadget in 'Transfer window' was ghosted after the first file.
+
+   SETATTR USERNAME/PASSWORD works from ARexx now.
+
+   0.648
+   =====
+
+   You can now switch transfermodes from the menu (Binary/ASCII),
+   default is BINARY.
+
+   The GUI now uses the screens (proportional) font for everything
+   but the files-listview. Use the PROPFONTNAME/PROPFONTSIZE and
+   FIXEDFONTNAME/FIXEDFONTSIZE Tooltypes/cli arguments to change fonts.
+
+   Lots of small fixes...
+
+   0.535
+   =====
+
+   SETTINGS tooltype/cli arguments now works again, it was broken in
+   0.533.
+
+   0.533
+   =====
+
+   Resume transfer when downloading files added. When AmiFTP ask for
+   Overwriting an existing file you can now select between Overwrite,
+   Resume transfer, and Cancel.
+
+   Settings-menu added, from where you reach load/save-settings and
+   edit hotlist and the old preferences (now renamed to "Global").
+
+   AmiFTP now looks for the prefs-file in the following directories
+   (and in this order): Current directory, PROGDIR: (the directory
+   where the AmiFTP binary resides), ENV:, ~user/ .
+
+   Default when saving (that is, if AmiFTP couldn't find a prefs-file
+   at startup) is PROGDIR:
+
+   AmiFTP is now localized.
+
+   Password-gadget added, AmiFTP will send this password when you're
+   not logging in as anonymous.
+
+   0.348
+   =====
+
+   The gadgets in SiteList-window got messed up.
+
+   0.345
+   =====
+
+   AmiFTP now clones the path when started from Workbench.
+
+   AmiFTP remembers the size and position of the window when iconifying
+   it.
+
+   Added directory-cache, AmiFTP will cache up to ten dirs. If you
+   enter a directory via the Directory stringgadget in the main
+   window the directory will be read from the server, not from the
+   cache.
+
+   A special version of AmiFTP now works with mlink, though you can't
+   abort filetransfers with it. That version is available from
+   http://www.lysator.liu.se/~lilja/AmiFTPmlink.lha
+
+   You can now delete remote files with a new menu-function. A
+   requester will pop up asking you if you're really want to delete
+   the selected file(s). (I accidentally deleted some files when I
+   was testing this function :).
+
+   Select all/unselect all functions available via the menu.
+
+   Links are now shown with (link) in the listview.
+
+   Upload via ARexx added (PUT/MPUT).
+
+   Minor layout-bugs fixed.
+
+   0.275
+   =====
+
+   ARexx port added, not all functions are implemented or finished
+   yet.
+
+   When View-ing files AmiFTP now downloads them to T: and when
+   AmiFTP quits the files will be deleted.

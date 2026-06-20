@@ -1,0 +1,9 @@
+
+ Blaine has supplied three sprite sources this month, along with the source
+for his game. The game source will appear next time round. The sprite
+examples have been well commented and demonstrate smooth sprite movement.
+
+ There may be a problem with one or more routine not freeing up memory
+correctly. This may cause problems when trying to asemble code after
+running one of these examples and you will have to reset the computer.
+

@@ -1,0 +1,16 @@
+	.set	LVOTransferSetup,-30
+	.global	LVOTransferSetup
+	.set	LVOReceiveFile,-36
+	.global	LVOReceiveFile
+	.set	LVOSendFile,-42
+	.global	LVOSendFile
+	.set	LVOGetOptions,-48
+	.global	LVOGetOptions
+	.set	LVOSetOptions,-54
+	.global	LVOSetOptions
+	.set	LVOTransferSetupShared,-60
+	.global	LVOTransferSetupShared
+	.set	LVOInstallTransferNote,-66
+	.global	LVOInstallTransferNote
+	.set	LVOSendMultipleFiles,-72
+	.global	LVOSendMultipleFiles

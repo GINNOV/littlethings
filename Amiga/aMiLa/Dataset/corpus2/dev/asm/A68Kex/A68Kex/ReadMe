@@ -1,0 +1,51 @@
+These are a couple of small examples written with A68k.
+
+boing:     Another of those annoying, useless boing things.
+
+Cell-Auto: Cellular automats as models of complexity
+
+cmp:       Binary compare of two files
+
+dm:        Leo Schwabs DiskMapper in assembly
+
+dump:      Dump memory contents
+
+evil:      Maps of prime numbers
+
+Lissajous: Display Lissajous figures
+
+Lorenz:    The Lorenz attractor
+
+moire:     Moire from AmigaLibDisk9 in assembly
+
+plane:     A random flight
+
+say:       Speak a text file
+
+SlowMe:    Changes the disk parameters so that the grinding sound the
+           disk makes, becomes a whining sound
+
+
+THANKS TO:
+
+Charlie Gibbs for A68k
+
+Matt Dillon for dme
+
+The Software Distillery for BLink
+
+Fabice Lienhardt for the file requester
+
+Peter Wypianski for the multitasking CONTROL C
+
+Scott Ballantyne for moire
+
+Leo Schwab for DiskMapper
+
+Steve Beats, Commodore Technology for rnd.s
+
+E. Lenz
+Johann-Fichte-Strasse 11
+8 Munich 40
+Germany
+

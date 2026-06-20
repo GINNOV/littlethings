@@ -1,0 +1,23 @@
+About cpost
+===========
+cpost is a pretty-printer for `C' source and header files which produces
+PostScript output. Unlike other tools that promise to do this job, it
+does not just translate the ASCII text into another ASCII text with
+line numbers in front of each line. cpost highlights keywords and
+comments by using different fonts and text attributes. Also, it highlights
+the structure of the file by marking matching curly braces.
+
+About the Amiga port
+====================
+After writing an Amiga specific makefile, cpost compiled straight
+out of the box. While I hope that the resulting program works as
+it should, one can never be certain. If you find bugs or other
+nuisances I might be responsible for, feel free to contact me:
+
+   Olaf Barthel
+   Brabeckstrasse 35
+   D-30559 Hannover
+
+   Federal Republic of Germany
+
+   <olsen@sourcery.han.de>

@@ -1,0 +1,53 @@
+Short:        VBCC MSG Browser env. using GoldEd/Cubic
+Author:       mbergmann-sh@gmx.de (Michael Bergmann)
+Uploader:     Michael Bergmann
+Type:         dev/c
+Version:      1.9
+Requires:     dev/c/vbcc_bin_amigaos68k.lha; dev/c/vbcc_target_m68k-amiga.lha; dev/misc/NDK3.2.lha; GoldEd or Cubic IDE
+Architecture: m68k-amigaos
+Distribution: Aminet
+
+---------- Description (english) ----------------------
+About this archive:
+===================
+VBCC has a nice feature ("vbrowse") that allows the usage of a SAS/C Message
+Browser-like frontend. Once started, it catches messages that might occur
+during vbcc compiling process and displays them, featuring error explanations
+and the option to click on them in order to open an editor and jump to error
+lines.
+
+Installation:
+=============
+1. Simply unpack the archive and copy the contents of vbrowse/S to your S:
+   directory. Make sure that the "script" protection bit is set for both
+   'startvc' and 'vcompile'.
+2: If not using GoldEd/Cubic as your editor, adjust s:startvc to your needs.
+
+Usage:
+======
+1. Open a Shell. Type "startvc" + <Enter> - this sets up the environment.
+2. Compile your source: vc +aos68k -o <your_exe> <your_source.c>
+   You may also use the provided 'vcompile' script in order to do the job:
+   vcompile <your_source> (without the .c suffix!) - this produces the
+   executable <your_exe>_vc.
+3. If any messages or errors occur, double-click on them in order to
+   display error explanations or open an editor and jump to the error line.
+   
+   
+Disclaimer:
+===========
+These scripts are povided "as is". Use them at your own risk. I am in
+no way to be held responsible for damage or data loss.
+
+Bug reports:
+============
+Please send bug reports to:
+mbergmann-sh@gmx.de
+
+Michael Bergmann,
+April 2023
+
+
+
+---------- Beschreibung (deutsch) ---------------------
+Sorry, no german description available.

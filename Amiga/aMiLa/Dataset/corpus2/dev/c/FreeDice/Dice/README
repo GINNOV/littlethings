@@ -1,0 +1,221 @@
+
+				 DICE SYSTEM
+
+				   V2.06.37
+				 9 Oct 1991
+
+			      Obvious Implementations Corporation
+			      P.O. Box 4487
+			      Cary, N.C. 27519-4487
+			      USA
+
+			      USENET: sales@oic.com
+
+    DICE (c)Copyright 1990-1991 by Matthew Dillon, All Rights Reserved
+    DICE (c)Copyright 1993-1994 by Obvious Implementations Corp, All Rights Reserved
+
+    Please read COPYRIGHT.DOC for info on all copyrights, trademarks, and
+    other items refered to an included in the DICE distribution.  This file
+    exists on both distribution disks.
+
+    This is the public distribution release for DICE.  Under no
+    circumstances may you redistribute a modified version of the
+    distribution.  Period. No exceptions (please?).  I cannot allow this to
+    get out of control.  Neither may any redistribution for profit be made
+    (you can charge up to $6 beyond your cost for your time)
+
+    DICE consists of a frontend, preprocessor, C compiler, assembler, and
+    linker, and support libraries all written by myself.  A generated
+    (non-commodore) 2.0 amiga.lib is included with this distribution.  Note
+    that you may compile 1.3 programs with the 2.0 amiga.lib as long as
+    you avoid 2.0-specific calls.
+
+    Source to the DICE binaries is not included (Most except the compiler,
+    linker, and assembler are included in the commercial version)
+
+    Source to C*.LIB and other link libraries is not included for the
+    Freeware version ... they are included for the commercial version.
+
+    DICE also includes my DMAKE make utility (though it should be noted
+    that DMAKE is extremely difficult to learn how to use).  Source is not
+    available (it isn't fit to be distributed).  DMAKE works best running
+    under 2.0 due to the available of new system calls.
+
+    This is the unregistered FreeWare version.	If you find yourself using
+    DICE seriously, you should consider the commercial version. Refer to the
+    doc/REGISTER.DOC for information on commercial version.
+
+    This is the unregistered FreeWare version of DICE, obtained from the
+    public nets, and it is missing one vital item:  the AMIGA INCLUDES.
+    Most developers will already have these but if you do not you can
+    obtain them from the Commodore Amiga Technical Support group:
+
+	Commodore
+	Dept. C
+	1200 Wilson Drive
+	West Chester, PA.  19380
+	USA
+
+	(215)431-9100
+
+    *** TO PURCHASE THE AMIGA INCLUDES **
+
+	Include a check for $20 and request that you want the AmigaDOS V1.3
+	Native Developer Update.  THIS IS A NEW ADDRESS.  THE OLD CATS ADDRESS
+	NO LONGER HANDLES SUPPORT MATERIAL PURCHASES.
+
+	NOTE THAT THE AMIGA INCLUDES AND LIBRARIES ARE INCLUDED IN THE
+	COMMERCIAL VERSION OF DICE, BUT THE AUTODOCS ARE NOT.  THEREFORE,
+	IF YOU INTEND TO PURCHASE IT YOU PROBABLY DO *NOT* WANT TO PURCHASE
+	THE NATIVE DEVELOPER UPDATE FROM COMMODORE.
+
+    ***
+
+    NOTE:   The unregistered version of DICE comes with an AMIGAS13.LIB
+	    library which implements most of the 1.3 AMIGA.LIB, and
+	    AMIGAS20.LIB which implements most of the 2.0 AMIGA.LIB. Some
+	    Functions, such as afp(), CreateTask(), and DeleteTask() are
+	    missing. The utility FDTOLIB was used to generate the library
+	    from the 1.3 and 2.0 .FD files plus some additional source.
+	    (part of the commercial distribution)
+
+    NOTE:   without the commodore includes you are somewhat limited in
+	    what you can do with the freeware version.	Note that the
+	    Commercial version comes with the commodore includes and full
+	    amiga.lib .  Since the Commodore includes are Commodore's, I
+	    cannot distribute them freely, only through my license which
+	    restricts distribution to the Commercial version of DICE.
+
+    IF YOU OBTAIN THE COMMODORE AMIGA.LIB, you will want to use it to
+    get whatever was left out in the distributed compatible.  To use
+    the commodore amiga.lib, you must run it through the LIBTOS program:
+
+	1> libtos amiga.lib dlib:amigas13.lib		(1.3 amiga.lib)
+	1> libtos amiga.lib dlib:amigas20.lib		(2.0 amiga.lib)
+
+	(note that 's' in the destination name -- small-data model version
+	of amiga.lib is called amigas.lib).
+
+	Since the commodore amiga.lib is more complete than the ones
+	distributed here you will want to do this if you have them.
+
+    --------------------------	SETTING UP DICE  -------------------------
+
+    DICE requires a few things to be set up properly.  There are two
+    principle assignments:
+
+    DINCLUDE:	    assign to DICE's include directory
+    DLIB:	    assign to DICE's dlib directory
+
+    and there is one enviroment variable
+
+    ENV:DCCOPTS     DCC core compiler options
+
+    Specifically, you want one of the following in your startup-sequence
+    to set up the DCCOPTS enviroment variable.	Since only the 2.0 amiga.lib
+    is included you must specify the -2.0 option or DICE will be unable to
+    link.
+
+    1> setenv DCCOPTS "-2.0"
+    1> setenv DCCOPTS "-2.0 -f"
+
+    You can use "-f" ONLY if you are running the standard commodore shell,
+    this speeds up execution of RESIDENT DICE executables as well as hacks
+    in ^C handling under 1.3.  The -f option has no effect under 2.0
+
+    DICE uses the -1.3/-2.0 option to define it's search path for the
+    includes and amiga.lib.  If -1.3 is selected, DINCLUDE:AMIGA13 is added
+    to the includes search path and DLIB:AMIGAS13.LIB is used for the
+    amiga.lib.	If -2.0 is selected, DINCLUDE:AMIGA20 is adde to the
+    includes search path and DLIB:AMIGAS20.LIB is used for the amiga.lib ..
+    the freeware release of DICE cannot include these commodore includes.
+
+    If you have obtained the amiga includes, you want to set them up as
+    follows (example for the 1.3 includes):
+
+	DINCLUDE:			(ANSI DICE and other DICE includes)
+	DINCLUDE:AMIGA13/		where the 1.3 includes go
+	DINCLUDE:AMIGA13/EXEC/*.H	       .
+	DINCLUDE:AMIGA13/LIBRARIES/*.H	       .
+	    etc...
+
+    Basically you Copy Includes1.3: DINCLUDE:AMIGA13 CLONE ALL
+    (or similar copy for the 2.0 includes if you have them)
+
+    If you obtain the 1.3 amiga.lib from commodore you may create DICE
+    compatible amiga.lib's by:
+
+	copy amiga.lib dlib:
+	cd dlib:
+	rename amiga.lib amigal13.lib	    ; convert to DICE nomenclature
+	libtos amigal13.lib amigas13.lib    ; generate small-data version
+
+    If you obtain and setup the commodore 1.3 includes/amiga.lib you will
+    want to change your DCCOPTS '-2.0' option to '-1.3' so DICE can find
+    them.  If, on the otherhand, you obtain the commodore 2.0
+    includes/amiga.lib you will want to leave DCCOPTS set to '-2.0'.
+
+
+    --------------------------	DYNAMIC.LIBRARY  -------------------------
+
+    The subdirectory 'dynamic' contains a new dynamic object management
+    library to go with DICE's new __dynamic keyword.  If you are interested
+    in fooling around with it please CD into dynamic and read the
+    documentation, and try out some of the test programs in DYNAMIC/BIN/
+
+    Note that this may be lharc'd.  To unarchive:
+
+    1> lharc -r -x -a x dynamic
+
+    dynamic.library may be more of use for machine-global shared variables
+    then for machine-global shared subroutines.
+
+				    !!
+
+    --------------------------	     MISC	 -------------------------
+
+    Please read DOC/COMPILER.DOC for further installation instructions
+
+    The documents you want to read first are:
+
+	DOC/BEGINNER_README.DOC For Beginners
+	DOC/COMPILER.DOC	SETUP and features (overview)
+	DOC/KnownBugs		Things not implemented yet and known bugs
+	DOC/DCC.DOC		operation
+	DOC/*			other documentation
+
+	MAN/*			manual pages are available to commercial
+				users.
+
+    DISABLED IN THE UNREGISTERED (FREEWARE) VERSION OF DICE,
+    BUT EXISTS IN THE COMMERCIAL VERSION OF DICE
+
+	* regargs
+	* floating point
+	* bit fields
+	* Visual make environment
+	* Source Line debugger
+	* manual pages for c.lib
+	* source to the entire c.lib and other libraries
+	* several type qualifier extensions (see EXTENSIONS.DOC)
+	* source to many of the utilities (as examples)
+	* Many additional utilities exist in the commercial version
+	* the commodore includes are not included in the freeware
+	  version but are in the Commercial version
+
+    DICE stands for:
+
+	Dillon's Integrated C Enviroment
+
+    (name thought up by Dan Wallach)
+
+				--------------
+
+    The unregistered shareware version of DICE may be redistributed only in
+    whole.  Do not delete or modify any files.	You may add files according
+    to whatever distribution method you use or, for example, to translate
+    documentation to another language, but original documentation must
+    remain as well.
+
+    The commercial version of DICE may NOT be redistributed.
+

@@ -1,0 +1,260 @@
+Short:        DEMO Memory Editing Suite Using ARexx.
+Author:       wisecracker@tesco.net (Barry Walker)
+Uploader:     wisecracker@tesco.net (Barry Walker)
+Type:         dev/src
+Version:      00.00.40
+Architecture: generic, m68k-amigaos
+
+Distribution: Public Domain, Emailware.
+
+============================================================================
+
+  Minimum Requirements Are:-
+  --------------------------
+
+           Any Classic Amiga, including WinUAE.
+           FULL, standard Kickstart 3.0x and Workbench 3.0x or better.
+           (NOTE:- FULL OS2.xx ONLY for MEM-EDIT itself.)
+           RexxMast running, and RX in the path.
+
+----------------------------------------------------------------------------
+
+  History:-
+  ---------
+
+  07.06.2010.
+  -----------
+  Version 00.00.40. Added MEM-COPY.rexx to copy a block of memory to
+                    another memory location. It's over to you lot now. :)
+
+  23-05-2010.
+  -----------
+  Version 00.00.30. Added MEM-CLEAR.rexx to clear a block of memory.
+                    Added MEM-FILL.rexx to fill a block of memory.
+                    Modified MEM-EDIT.rexx to have a large amount of error
+                    checking and correction.
+
+  01-07-2009.
+  -----------
+  Version 00.00.20. Added Join.rexx to be called from MEM-EDIT.rexx.
+                    Modified Join.rexx to look prettier.
+
+  01-06-2009.
+  -----------
+  Version 00.00.15. Added a VERY SIMPLE method of joining files together.
+
+  05-05-2009.
+  -----------
+  Version 00.00.10. First upload to AMINET. 
+
+----------------------------------------------------------------------------
+
+  IMPORTANT NOTE:-
+  ----------------
+
+  The text files inside the archive are from the online magazine that is
+  now officially closed. The site is still accessible from the WWW......
+
+                      http://www.thecryptmag.com/
+
+  ......and these can be read from there too.
+
+  Overview:-
+  ----------
+
+  I have no idea what use this is in the real world but someone asked me to
+  write a HEX memory reader and writer using nothing but a standard classic
+  AMIGA OS and ARexx. This code will read VALID RAM and ROM addresses and
+  write to VALID RAM addresses.
+
+  It could be said that this ARexx script is the eqivalent of PEEKing a 256
+  byte dump FROM a given VALID memory address and POKEing a SINGLE BYTE
+  value TO a given VALID memory address.
+
+  Read the ARexx script to find any further information.
+
+  DO NOT TRY TO READ AND WRITE HARDWARE REGISTERS WITH THIS AREXX CODE!!!
+
+  (I hope you enjoy messing with it like I do... :)
+
+  Enjoy finding simple solutions to often very difficult problems... :)
+
+----------------------------------------------------------------------------
+
+  Usage:-
+  -------
+
+  The window size is set to 640 x 200 from inside the project icon.
+  To set to 640 x 256, change the 200 value in the 'WINDOW' TOOLTYPE inside
+  the project icon to 256 and save. This will make it very slightly more
+  user friendly. This icon uses IconX as its 'Default Tool'.
+
+  This code now has some error detection and correction!!!
+  Invalid values might stop the ARexx script at best OR GIVE A COMPLETE
+  SYSTEM CRASH AT WORST... SO BEWARE!!!
+
+  However it DOES have built in confirmation prompts as a basic means of
+  error checking so that IF you DO make a typo, then you can go back to the
+  selection screen and try again.
+
+  It will NOT write to ANY drive however UNLESS the INPUTTED values are
+  VALID. However it WILL read and write, from and to ENFORCER addresses, so
+  DON'T do this unless you know EXACTLY what you are doing!!!
+
+  Just double click on the MEM-EDIT icon and away you go.
+  The first screen is just a reminder of some of what is written here.
+  Press <RETURN/ENTER> to continue to the next screen.
+
+  I suggest that you use numbers (2) and (0) until you get used to your
+  potential typos and when you feel up to really messing about use number
+  (1) also.
+
+  !!!USE NUMBER (3) COMPLETELY AT YOUR OWN RISK!!!
+
+  Use the remaining numbers for the other facilities available, BUT, ensure
+  that the relevant files are in the same drawer as MEM-EDIT(.rexx)!
+
+  All saved dumps are sent to 'S:' and have the ASCII 'eqivalent' of the
+  HEX address you have typed in for the filename. For example 'S:00F80000'.
+
+  The VOLUME 'T:' MUST be available also at ALL times so make sure you have
+  'T:' assigned to something, usually a RAMDISK.
+
+  OS3.xx IS needed for 'Join.rexx' to work otherwise OS2.xx will suffice for
+  all of the other facilities.
+
+  It goes without saying that 'Join.rexx' could easily be included into
+  'MEM-EDIT.rexx' to make a whole single package along with other additions,
+  see below...
+
+----------------------------------------------------------------------------
+
+  The archive is Public Domain/Emailware and you may modify it/them as you
+  please for your OWN experiments.
+
+----------------------------------------------------------------------------
+
+  Finally Other Ideas... :)
+  -------------------------
+
+  How about a 680x0 disassembler using ARexx?
+  How about a 680x0 assembler using ARexx?
+  Anyone game for doing those tasks, I wonder?
+
+----------------------------------------------------------------------------
+
+  Last But Not Least, (Don't Laugh)...  :D
+  ----------------------------------------
+
+  This was the original _TEST_ code that was sent to the above guy in
+  question.
+
+  The dump was saved to the 'T:' VOLUME instead of the 'S:' VOLUME as it
+  was just a taster script.
+
+  Before you say it I realised my intital error of using WRITELN instead
+  of WRITECH, anyhow I have picked that one up now... :)
+
+  The Original ARexx Code:-
+  -------------------------
+
+/* This is a DEMO only and dumps a 256+1 byte dump to T:MEMDUMP. */
+/* The EOF will add an extra character "0A" at the end! */
+/* This is NOT a bug and can be cured easily if so required. */
+/* By Barry Walker, G0LCU. No copyright as it is offered as PD. */
+
+/* Set up variables. */
+dumplength = 256
+
+/* Note this variable MUST be a string representation of a */
+/* hexadecimal EVEN address. The leading zeros and trailing "x" */
+/* ARE IMPORTANT!!! NOTE the demo address is in ROM. */
+dumpstartaddress = '00F80000'x
+
+/* Generate a NULL string to save. */
+dumpstring = ''
+
+/* Fetch the 256 byte binary string. */
+dumpstring = IMPORT(dumpstartaddress, dumplength)
+
+/* Open up a filename to save to. */
+OPEN('myfile', 'T:MEMDUMP', 'W')
+/* Save the filename... */
+WRITELN('myfile', dumpstring)
+/* Immediately close the file when dumped - REMEMBER - the file */
+/* adds an extra character "0A" at the end!!! */
+CLOSE('myfile')
+
+/* Do a simple print to the screen of what is saved in hexadecimal */
+/* ASCII readable format. */
+ECHO C2X(dumpstring)
+
+/* Clean exit... */
+EXIT(0)
+/* Program end. */
+
+----------------------------------------------------------------------------
+
+                                IMPORTANT:-
+                                -----------
+
+    The Legal Stuff:-
+    -----------------
+
+    These programs are Public Domain and no profit will be made from them,
+    also all of the files must remain unaltered and intact including this
+    one. The author is not responsible for any damage to, or loss of, or
+    failure of equipment or data caused in any way by the use of these
+    programs. There is NO warranty with the use of these software releases
+    and YOU USE THEM AT YOUR OWN RISK.
+
+----------------------------------------------------------------------------
+
+    Testing Evaluation:-
+    --------------------
+
+    An A1200 in 2MB, 6MB and 10MB modes using trapdoor memory AND/OR PCMCIA
+    memory expansions. WinUAE version 1.5.3 in classic Workbench 3.1x mode. 
+
+    All test conditions were/are running STANDARD OS3.xx, and using standard
+    ~topaz 8~ fonts throughout.
+
+    I have no idea what a strange configuration setup will create so refer
+    to the ~The Legal Stuff~ above.
+
+----------------------------------------------------------------------------
+
+                                 WARNING.
+                                 --------
+
+  1) DISCONNECT any faulty equipment under test from the MAINS supply.
+  2) If a DC supply is used do NOT reverse polarity the connections.
+  3) Do NOT power up any electronic item until it is safe to do so.
+  4) CHECK and RECHECK all of your construction and repair work thoroughly.
+  5) Handle ALL tools used with care.
+  6) Beware of ALL types of solvents, glues and etching fluids.
+  7) NEVER leave a soldering iron switched on unattended.
+  8) KEEP everything OUT of the reach of small children.
+  9) Switch OFF the AMIGA before disconnecting or connecting any hardware.
+ 10) And finally read 1) to 9) again.
+
+----------------------------------------------------------------------------
+
+   Contact:-
+   ---------
+
+   Mr Barry Walker, G0LCU,
+
+   Email:-     wisecracker@tesco.net
+   URL:-       http://homepages.tesco.net/wisecracker/G0LCU.HTM
+
+   Author of the ~TestGear?~ projects in the ~docs/hard~ drawer of AMINET.
+
+----------------------------------------------------------------------------
+
+   A very useful HardWare related site, (C) Anthony Hoffman, for
+   modifications, schematics, repairs and the like is:-
+
+                          http://amiga.serveftp.net/
+
+============================================================================

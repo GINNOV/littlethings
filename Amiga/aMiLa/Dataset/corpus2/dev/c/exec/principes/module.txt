@@ -1,0 +1,16 @@
+
+Les modules utilisables par plusieurs tâches doivent être
+compilés sans vérification de pile (option -v du SAS-C)
+Le code de vérification de pile est très court:
+   CMPA.L __base,A7
+   BCS    __xcovf ; il y a retenu si A7 est en dessous de __base.
+Celui-ci est généré au début de chaque fonction quand il n'y a
+pas l'option -v.
+
+Les modules sont compilés avec l'option -ma pour être exploitables
+par n'importe quel processeur 680x0. De plus, une optimisation de
+code pour le 68020 est faite.
+
+Les options -csw+ (sw+) servent à la compatibilité entre le C qu'accepte
+le compilateur SAS-C habituellement et le code C généré par CFront.
+

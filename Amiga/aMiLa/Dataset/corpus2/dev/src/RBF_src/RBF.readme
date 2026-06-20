@@ -1,0 +1,37 @@
+Short: C++ source for easy TileCoding of vectors using RBFs
+Author: olethros@geocities.com (Christos Dimitrakakis)
+Uploader: olethros@geocities.com (Christos Dimitrakakis)
+Requires: C++ compiler
+
+
+Copyright and stuff:
+--------------------
+This source is freely distributable. If you find it useful, please do drop me a
+line.
+
+
+
+RBF function used
+-----------------
+The RBF function used is semi-linear (triangular for in-between nodes and
+sigmoid-linear for outside nodes) with each dimension treated independently.
+Look at the code.
+
+
+Limitations
+-----------
+The radius of an RBF that is extreme in a particular dimension is always 1 for
+that dimension. You could change that by having an extra field in the RBFNode
+class that tells the node what type of membership function it should use.
+I guess this does not matter much though :)
+
+Bugs
+----
+Send bug reports to olethros@geocities.com with a subject beginning
+with BUG.
+
+
+Notes:
+------
+No make file is supplied. However, I guess it is easy to make one (maybe even
+mkmk will work!)

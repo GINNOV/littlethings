@@ -1,0 +1,17 @@
+
+Archive du tutoriel Obligement "Animation d'une image en langage C et SDL2 sur MorphOS" :
+
+http://obligement.free.fr/articles/animation_image_c_sdl2_morphos.php
+
+Tutoriel développé et écrit par Sébastien 'Jedi' Jeudy en Mars 2024.
+
+Contenu de l'archive :
+
+- Butterfly : fichier exécutable du programme étudié (exécutable MorphOS)
+- Butterfly.bmp : image utilisée dans le programme
+- Butterfly.c : code source du programme
+- Butterfly.gif : image animée du résultat
+- Butterfly.png : capture d'écran du résultat
+- Butterfly.readme : ce texte ;)
+- compilation : commande de compilation du programme
+

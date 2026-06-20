@@ -1,0 +1,18 @@
+Short:        Shared library source creator
+Author:       Joerg van de Loo, Frank Wille
+Uploader:     joergloo aol com
+Type:         dev/c
+Version:      4.7
+Requires:     68020+ (classic)
+Architecture: m68k-amigaos >= 2.0.4; ppc-amigaos; ppc-morphos; i386-aros
+
+
+Allows  to create the source code composed in C for the creation of a shared
+library  (frame)  where  the  needed information to build such a library are
+taken from a SFD file.
+In addition, it can produce the user required CLIB, DEFINE, PROTO, IFACE and
+some more format files.
+
+Weaver  was  developed  using  vbcc  and  the results created by Weaver were
+tested using different platforms and by using different compilers.
+

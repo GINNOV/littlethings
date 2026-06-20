@@ -1,0 +1,43 @@
+
+; Example 9: Examaning the Screen structure.
+
+		include		int_start.i
+
+; Open an Intuition Custom Screen
+
+Main		lea		MyScreen,a0		NewScreen struct
+		CALLINT		OpenScreen		open it
+		move.l		d0,screen.ptr		save pointer
+		beq.s		error			quit if error
+
+; Wait for mouse to be moved into top line of screen
+
+		move.l		screen.ptr,a0		a0->Screen struct
+Loop		move.w		sc_MouseY(a0),d0	d0=mouse y coordinate
+		bne.s		Loop			loop if not 0
+		
+; Close the screen
+
+		move.l		screen.ptr,a0		a0->screen struct
+		CALLINT		CloseScreen		close it
+
+error		rts					and exit
+
+; Static Intuition structures and variables
+
+MyScreen
+	dc.w	0,0		;screen XY origin relative to View
+	dc.w	640,256		;screen width and height
+	dc.w	4		;screen depth (number of bitplanes)
+	dc.b	3,8		;detail and block pens
+	dc.w	V_HIRES		;display modes for this screen
+	dc.w	CUSTOMSCREEN	;screen type
+	dc.l	0		;pointer to default screen font
+	dc.l	.Title		;pointer to screen title
+	dc.l	0		;first in list of custom screen gadgets
+	dc.l	0		;pointer to custom BitMap structure
+
+.Title	dc.b	'Move mouse pointer into top line to quit!',0
+	even
+
+screen.ptr	dc.l		0

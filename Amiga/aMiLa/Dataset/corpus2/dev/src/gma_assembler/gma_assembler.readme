@@ -1,0 +1,22 @@
+Short:        Assembler examples
+Author:       galbrech@csmd.cs.uni-magdeburg.de (Gerrit M. Albrecht)
+Type:         dev/src
+Version:      1.0
+Replaces:     -
+Architecture: m68k-amigaos
+
+See also:  http://www.cs.uni-magdeburg.de/~galbrech/galbrech.html
+
+In diesem Archiv koennt Ihr ein paar wirklich einfache
+Assembler-Programme finden. Als Assembler wurde O.M.A. 3.0
+verwendet, aber auch der A68k sollte damit - nach eventuell minimalen
+Aenderungen - keine Probleme bekommen.
+Schickt mir einfach eine Mail, wenn Ihr ein Problem mit einem meiner
+Programme haben solltet. Fuer den A68k liegt ein Make-Skript bei.
+
+test.asm         Demonstriert die Verwendung von Startup-Dateien.
+text.asm         Textausgabe. Einfacher geht's nicht.
+
+Ich hoffe, es kann jemand etwas damit anfangen.
+
+Gerrit.

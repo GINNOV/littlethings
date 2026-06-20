@@ -1,0 +1,255 @@
+
+                        WindowMaker Manual 
+                        ~~~~~~~~~~~~~~~~~~ 
+ 
+ Function 
+ ~~~~~~~~ 
+    WindowMaker is a utility designed to simplify the creation of source code 
+for an Intuition Window. At present  only  Devpac2  assembly source format is 
+supported, but this will be  improved  on  to  cover A68K assembly format and 
+also a C format. 
+ 
+    Using this program  you  can  design  an  Intuition  window  to  your own 
+requirements. Setting  the  appropriate  IDCMP  and window flags. The correct 
+position, width and height. The correct pen colours. The correct title. 
+ 
+    All this is achieved by simple menu  and  gadget selection. At most times 
+the window you are designing  is  displayed  for  you,  this means you get it 
+right first time. 
+ 
+    The biggest advantage is that the source is ready for inclusion into your  
+program. No longer do you need to  keep  referring  to books when designing a 
+window. 
+ 
+    Projects may  be  saved  for  later  use.  If  you  decide  to  alter the 
+appearance of your window, simply  load  it back into WindowMaker and off you 
+go. 
+ 
+ Starting 
+ ~~~~~~~~ 
+    The program can be run from the CLI  by  typing  it`s name. No parameters 
+are required and none are  supported.  Once  started  in this way the program 
+frees itself from the CLI. 
+ 
+    The program may also be started from the  WorkBench by double-clicking on 
+it`s icon. 
+ 
+ The Two Windows 
+ ~~~~~~~~~~~~~~~ 
+    The program starts by opening  two  windows,  a  Status window and a User 
+window. The Status window is used by  the  program to report progress back to 
+you. There is a single pull down menu  available  from  the Status window and 
+the functions supported from this will be covered shortly. 
+ 
+    The User window is a representation of the  window you are designing. The 
+program initially opens a default  window  for  you that is equipped with all 
+the standard Intuition gadgets. 
+ 
+    The size and position of the User window  are reflected in the source the 
+program generates for your window, so you  may move and re-size the window to 
+your own requirements. 
+ 
+ The Status Line 
+ ~~~~~~~~~~~~~~~ 
+    The program communicates the  success/failure  of  all operations through 
+the Status window. All operations  accessed  through  the pull-down menu will 
+cause a message to be displayed in this window. The status will normally read 
+`Ok.`. Some routines, such  as  disc  operations,  will  expand  on  this and 
+confirm an action. Below is a  list  of  all  current  messages followed by a 
+brief explanation. 
+ 
+    `Ok.` 
+    This message is used to inform you that no errors have occurred. 
+ 
+    `Could not open a new window for editing.` 
+    This message will appear if memory is sparse  and the program cannot open 
+a User window for you to manipulate. 
+ 
+    `Could not form a correct pathname from selection!` 
+    This message is displayed due to misuse of the file requester. 
+ 
+    `Operation aborted, CANCEL selected!` 
+    If you select the cancel gadget  to  abort  a  Load/Save  operation, this 
+message will be displayed. 
+ 
+    `Could not open Edit window.` 
+    If you select Edit from  the  pull-down  menu,  but there is insufficient 
+memory for the program to open the Edit window, this message is displayed. 
+ 
+    `Could not open file for writing.` 
+    There was a problem trying to open a  raw  data  file to save your window 
+definition into. One of a  number  of  reasons  could  cause  this message to 
+appear: 
+              1/ The disc was write protected. 
+              2/ A file with the same name exists and is protected from 
+                deletion. 
+              3/ A file with the same name exists and is already open. 
+              4/ The pathname you specified was incorrect, eg. typing df3: 
+                with only one external drive attached. 
+ 
+    `Could not open file for reading.` 
+    This message will usually appear if the  raw data file you specified does 
+not exist, though it may be the file is protected against reading. 
+ 
+    `Could not open source file for writing.` 
+    When attempting to save a source  file,  the file you specified could not 
+be opened. The reasons for this could be one of the following: 
+ 
+              1/ The disc was write protected. 
+              2/ A file with the same name exists and is protected from 
+                deletion. 
+              3/ A file with the same name exists and is already open. 
+              4/ The pathname you specified was incorrect, eg. typing df3: 
+                with only one external drive attached. 
+ 
+    `Load aborted, not a WindowMaker data file!` 
+    When trying to load a raw data file,  you  have  specified a file that is 
+not compatible with the program.  WindowMaker  saves a header at the start of 
+all raw data files so it can recognise them at a later date. 
+ 
+    `Data file saved Ok.` 
+    Informing you that the data file has been saved. 
+ 
+    `Source file saved Ok.` 
+    Informing you the source file has been successfully generated. 
+ 
+    `Opened new window for editing.` 
+    Informs you that a User window has been  opened. This should be displayed 
+after New or Load have been selected from the pull-down menu. 
+ 
+    `Programmed by Mark Meany, © December 91.` 
+    This is displayed when About is selected from the pull-down menu. 
+ 
+ The Pull-Down Menu 
+ ~~~~~~~~~~~~~~~~~~ 
+    WindowMaker has only one menu,  the  Project  menu.  It is from this menu 
+that all the required function are accessed. Below is a list of the functions 
+available at present: 
+ 
+              New            Trashes the User window being worked on and 
+                             supplies a new default window. 
+ 
+              Edit           Allows you to edit the User windows fields. 
+ 
+              Load           Loads a previous project. 
+ 
+              Save           Saves the current window in a format that can 
+                             be loaded back at a later date. 
+ 
+              Save Source    Generates an assembly source file for inclusion 
+                             into your program. 
+ 
+              About          My calling card! 
+ 
+              Quit           Exits the program. 
+ 
+    I will now cover each option in more detail. 
+ 
+ New 
+ ~~~ 
+    To scrap the window you  are  currently  editing,  use this function. The 
+current window is replaced with the default window displayed when the program 
+first starts. 
+ 
+    WARNING :- There is no confirmation  mechanism  on this option, selecting 
+it will loose the window being edited. 
+ 
+ Edit 
+ ~~~~ 
+    This is where the program saves the most time. Selecting this option will  
+cause a full screen window to  open.  This  window  contains numerous gadgets 
+that define the characteristics of your window. 
+ 
+    There are two banks of gadgets, one  for  IDCMP  flags and one for Window 
+Flags. All selected  gadget  mean  that  field  is  required in the assembler 
+source. 
+ 
+    As well as the two banks, there are also a number of Text/Integer gadgets 
+that allow you to specify the name, width,  height, max & min width and max & 
+min height. I hope this is obvious from the display! 
+ 
+    There are also CANCEL and OK gadgets.  Selecting  CANCEL will restore the 
+window you were working on prior to selecting Edit, selecting OK will cause a  
+new window to be displayed that echos the requirements you defined. 
+ 
+    NOTE :-  There is no mechanism  for  user  confirmation  written for this 
+routine! The window originally being edited is lost. 
+ 
+    Also note that IDCMP flags may be  specified,  but are not catered for in 
+the window displayed. They are saved out as part of the code however. 
+ 
+ Load 
+ ~~~~ 
+    To make development of programs  easier,  you  can load/save intermediate 
+projects. A window is saved in a format  that WindowMaker will recognise at a 
+later date. 
+ 
+    The ARP file requester is used to allow  easy selection of a name for the 
+data file that will be saved. I assume that all programmers are familiar with 
+the use of this requester! 
+ 
+ Save 
+ ~~~~ 
+    To save your work in a format that can be  loaded back at some later date 
+use this option. Again the ARP file requester is used to allow easy selection 
+of the data file to load. 
+ 
+    Attempting to load a file not created by  WindowMaker will cause an error 
+message to be displayed. 
+ 
+    When the file has loaded, the window  currently  being edited is scrapped 
+and the window defined by  the  raw  data  file  is  displayed.  If Cancel is 
+selected from the file requester, the  window  currently being edited will be 
+preserved. 
+ 
+    WARNING :- There is no confirmation  mechanism  on this option, selecting 
+it will loose the window being edited. 
+ 
+ Save Source 
+ ~~~~~~~~~~~ 
+    When you are happy with your creation  and  wish to put it to use, select 
+this option. The ARP file requester is displayed  to allow you to specify the 
+name of the file to create. 
+ 
+    The source code generated is also  commented  so if you do need to make a 
+minor alteration, it can be done by using  a simple text editor as opposed to 
+having to reload WindowMaker. 
+ 
+ About 
+ ~~~~~ 
+ This is a simple ego trip! 
+ 
+ Quit 
+ ~~~~ 
+ An alternative way of exiting from the program, changes are ignored. 
+ 
+ 
+ 
+    I hope you find this file useful in creating Intuitiøn windows, 
+ 
+ 
+                                            Mark. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 

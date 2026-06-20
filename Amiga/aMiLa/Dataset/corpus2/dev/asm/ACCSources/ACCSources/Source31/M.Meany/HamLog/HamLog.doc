@@ -1,0 +1,17 @@
+
+
+			HamLog Source Notes
+			~~~~~~~~~~~~~~~~~~~
+
+ A couple of my friends are Ametuer Radio users and wanted a log book
+program written. Well I've not had much time free of late, but this is the
+starting point of the program. At present I've only added Operator handling
+code and have not yet progressed onto the log propper. The source has been
+included as an example of how to use the Random.i include file for
+accessing Random Access Files.
+
+ When complete, full source for this program will be made available.
+
+								Mark.
+
+

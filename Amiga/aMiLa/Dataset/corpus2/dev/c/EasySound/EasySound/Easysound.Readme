@@ -1,0 +1,131 @@
+                              EasySound V1.1
+                              ==============
+
+Hiya, welcome to EasySound V1.0. This stuff is some piece of code which 
+I've written for my MuiPingPong. But now I've had the idea to give this 
+IMHO useful toolkit to all of you, and the best thing, I don't want any 
+money for it -> it's  Freeware.  I don't  even collect  cash for  MAJOR
+UPDATES (because there won't be any) ;-)
+
+What can you do with EasySound ?
+================================
+
+EasySound is a toolkit to include 8SVX samples in your programs without
+too much work. All you have to do is take your favorite sample, turn it
+to an include file with iff2src and place 2 easy function calls in your
+own program.
+
+NEW for EasySound V1.1:
+
+    - Plays samples direct off disk.
+
+Requirements:
+=============
+
+I've  compiled  this  stuff  with  the  Dice 3.0 compiler. Therefor the
+structure in  the sources  will follow the Dice conventions for storage
+qualifiers. If
+
+    __chip BYTE foobar_data[] = {
+            ...
+            ...
+    }
+
+If you're using the SAS C compiler it must look like
+
+    BYTE __chip foobar_data[] = {
+            ...
+            ...
+    }
+
+All you have to do is changing the printf in  the sources and recompile
+it.
+
+Installation:
+=============
+
+I've  decided to  realize this thing as Link Libraries. All you have to
+do is  copying the  .lib  files to  your dlib:  directory.  When you're
+compiling  your  own  program  you'll  have  to  link  the library with
+-leasysound .
+
+e.g.
+    dcc example.c -leasysound
+
+The functions:
+==============
+
+Read the easysound.doc file. It contains my own autodocs. :-)
+
+Iff2Src:
+========
+
+It's quite simple, all you need is an 8svx sample.
+
+    iff2src infile name_of_the_array > outfile
+
+This will create a header file containing an array like:
+
+__chip BYTE name_of_the_array_data[] = {
+    .....
+};
+
+struct SoundInfo *name_of_the_header = {
+    name_of_the_header_data, ... , ...
+};
+
+History:
+========
+
+V1.0 - First release. (5.8.94)
+
+V1.1 - (7.8.94) Added a function to play samples directly off the disk.
+       Added another functiom to flush a sample.
+
+Legal stuff:
+============
+
+This stuff is Freeware. Do with it whatever you want, but  please be so 
+kind and leave my name in the sources and perhaps you could state me in 
+your docs.
+
+IMPORTANT !! If you want to use this lib for a program that is released
+as a SASG program you'll have to send me a free copy  and free  updates
+of your program. Sorry folks, but reading the SASG conditions I'll have
+to do something like this too.
+
+Thank you:
+==========
+
+A thank you goes to:
+
+    All the people at #amigager for a  lot of fun, I don't mention your 
+    names because I'd leave out many  names and I'd like to mention all 
+    of you.
+
+    But I'd like to say thanks to some people in general.
+
+    Jochen Wiedmann for a lot of really useful tools. (flexcat, easylibs, 
+        xtract, ...)
+
+    Stefan Becker for his incredible Toolmanager.
+
+    Dietmar Eilert for GoldED.
+
+    Matt Dillon, Dave Baker, Andy Finkel, John Mainwaring,
+    Bryce Nesbitt, Mark Schnell & John Toebes for DICE 3.0
+
+    My catering service (thanx Mom)
+
+    Matthias "DrMabuse" Lühr for Nerv V1.0 (I can't live without it) ;-)
+
+    All the people who believe in SUCKS.
+
+    and many many many many more.
+
+--------------------------------------------------------------------------
+Michael Bauer - EMail: bauermichael@student.uni-tuebingen.de
+Hegelstr.27     WWW:   http://hp09.zdv.uni-tuebingen.de:4711/
+72072 Tuebingen  Gutgolf@Nightfall , Gutgolf@IRC
+Germany
+

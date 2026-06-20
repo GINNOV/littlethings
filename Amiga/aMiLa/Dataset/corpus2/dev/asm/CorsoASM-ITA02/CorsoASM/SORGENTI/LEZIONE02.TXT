@@ -1,0 +1,705 @@
+
+ CORSO DI ASSEMBLER - LEZIONE 2
+
+Avete capito esattamente come funziona il sorgente LEZIONE1a.s???
+Se non lo avete capito allora siete da neuro, e dovete smettere il corso.
+
+Ora andiamo ad approfondire il linguaggio del 68000. Ho voluto anticipare
+col primo sorgente il fatto che il processore serve grossomodo per
+organizzare tutte le cose, ma che da solo non fa che cambiare valori
+nella sua memoria; mettendo certi valori in aree particolari di memoria
+come $dffxxx o $bfexxx si da corrente ai piedini dei chip della grafica,
+del suono e delle porte, e di conseguenza si puo', come nell'esempio
+precedente, cambiare il colore dello schermo, o leggendo queste locazioni
+sapere a che linea il pennello elettronico sia arrivato o se il bottone del
+mouse e' premuto. Per fare un gioco o una demo e' necessario usare un gran
+numero di questi indirizzi, detti REGISTRI, e quindi e' necessario conoscerli
+almeno quanto il linguaggio del 68000, (MOVE,JSR,ADD,SUB etc.) con cui si
+impostano.
+Per la programmazione di questo tipo come ho gia detto non si usano le LIBRERIE
+del ROM kickstart 1.2/1.3/2.0/3.0 (Ovvero le sue routines, o sottoprogrammi
+che consentono di aprire una finestra workbench o leggere un file, ad esempio)
+cioe' si usano pochissimo: ad esempio per evitare di far andare in guru il
+workbench o per disabilitare il multitasking.
+Ritengo necessario quindi in questa lezione n.2 di approfondire l'uso del
+68000, una volta che si e' capito quale sia il suo ruolo.
+
+La cosa piu' importante da imparare sono i modi di indirizzamento del
+processore, piu' che i comandi in se, infatti una volta imparato quello,
+ogni comando usa la stessa sintassi per l'indirizzamento e basta sapere
+che cosa fa il comando. Abbiamo gia detto che il processore opera sulla
+memoria che e' divisa in locazioni o indirizzi, la cui unita' di misura
+e' il byte, e solitamente l'indirizzo e' in formato esadecimale, cioe' in
+un formato numerico diverso da quello decimale, avendo infatti base 16.
+Questo non e' assolutamente un problema: mentre con i numeri decimali una
+sequenza di 30 numeri ad esempio fa: 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15 etc,
+in esadecimale fa 1,2,3,4,5,6,7,8,9,a,b,c,d,e,f,10,11,12,13,14,15,16,17,18,
+19,1a,1b,1c,1d,1e etc., cioe' nei numeri esadecimali si trovano anche le prime
+6 lettere dell'alfabeto come se a fosse un 10, b un 11 eccetera; per convertire
+un numero da esadecimale a decimale o viceversa basta usare il comando "?"
+dell'asmone: per esempio facendo "?10000" si otterra' $2710, il corrispondente
+valore in esadecimale (i numeri esadecimali cominciano col $, quelli decimali
+non sono preceduti da niente e quelli binari da un %). I numeri esadecimali
+sono usati perche' sono piu' vicini al modo di pensare del computer che e'
+ovviamente BINARIO, cioe' composto di soli 0 ed 1.
+Come esempio per iniziare a capire i vari modi di indirizzamento del 68000
+useremo il comando CLR, che azzera la locazione di memoria indicata:
+
+	CLR.B	$40000		; vi ricordate la differenza tra .B, .W e .L?
+
+Questa istruzione "pulira'", cioe' azzerera' il byte n. $40000, ossia
+l'indirizzo $40000. Questo e' il caso piu' semplice, detto ASSOLUTO; cioe'
+si indica direttamente in che indirizzo fare il CLR; nell'assemblatore sono
+in uso le LABEL, che servono ad identificare un punto del programma, in
+cui puo' esserci per esempio un byte da indicare: in questo caso invece di
+scrivere l'indirizzo si scrivera' il nome della LABEL; l'assemblatore allora
+scrivera' l'indirizzo effettivo del byte in questione: ad esempio, se
+modificassimo cosi' il nostro primo listato:
+
+Waitmouse:
+	move.w	$dff006,$dff180	; metti il valore di $dff106 in $dff180
+				; cioe' il VHPOSR nel COLOR0
+	btst	#6,$bfe001	; tasto sinistro del mouse premuto?
+	bne.s	Waitmouse	; se no ritorna a waitmouse e ripeti
+				; (il .s e' un equivalente del .b per questo
+				; tipo di comandi: bne.s = bne.b)
+	clr.b	dato1		; AZZERA DATO1
+	rts			; esci
+
+dato1:
+	dc.b	$30	; dc.b significa METTI IN MEMORIA IL SEGUENTE BYTE
+			; in questo caso viene messo un $30 sotto dato1:
+
+Prima di uscire con l'RTS si azzererebbe il byte contrassegnato con la label
+dato1:, che sarebbe allocato nella fase di assemblaggio (o compilazione)
+a qualche indirizzo assoluto ben preciso, ad esempio se il programma
+fosse assemblato dall'ASMONE a partire da $50000, si troverebbe in memoria
+dopo l'assemblaggio un CLR.B $5001c, cioe' l'indirizzo reale di dato1: ,
+non certo CLR.B DATO1, essendo dato1: un nome dato dal programmatore per
+contrassegnare il dc.b $30; di qui si intuisce anche l'utilita' delle label,
+infatti se si dovesse scrivere il listato indicando l'indirizzo numerico
+tutte le volte, nel caso che si aggiungesse una routine nel mezzo del
+programma si dovrebbero riscrivere tutti gli indirizzi. Per vedere a quale
+indirizzo vengono assemblate le label, basta usare il comando D dell'ASMONE:
+ad esempio dopo aver assemblato LEZIONE1a.s facendo "D waitmouse" otterrete il
+disassemblato della memoria a partire da waitmouse, e nel listato non
+appariranno le label, ma gli indirizzi reali.
+
+Nei sorgenti esempio del corso noterete che non vengono mai indicati indirizzi
+numerici, ma solo LABEL, a parte gli indirizzi speciali come $dffxxx o $bfexxx.
+Nell'ultimo esempio ho usato un dc.b, che e' un comando dell'assemblatore che
+serve per inserire bytes definiti; per esempio per inserire un $12345678 in
+un dato punto del programma, dovro' usare il comando DC, e lo posso usare
+nelle 3 forme .B (BYTE), .W (WORD) e .L (LONGWORD):
+
+	dc.b	$12,$34,$56,$78	; in bytes
+
+	dc.w	$1234,$5678	; in words
+
+	dc.l	$12345678	; in longwords
+
+Questo comando si usa anche per mettere delle frasi in memoria, ad esempio
+per mettere nel listato il testo che dovra' essere stampato a video da una
+routine di PRINT che stampi cio' che e' alla label TESTO:
+
+TESTO:
+	dc.b	"tanti saluti"
+
+oppure:
+	dc.b	'tanti saluti'
+
+Di solito si termina il testo con uno zero:
+
+	dc.b	"tanti saluti",0
+
+Bisogna ricordarsi di mettere il testo tra virgolette e di usare il dc.b,
+non il dc.w o il dc.l!! I caratteri sono lunghi un byte ciascuno, e
+corrispondono ad un certo byte: ad esempio provate a fare ?"a" , e vedrete
+che corrisponde a $61, quindi scrivere dc.b "a" sara' equivalente a
+scrivere dc.b $61. Attenzione che le lettere grandi hanno valore diverso!
+un "A" per esempio e' $41. L'uso piu' comune del dc.b e' quello di definire
+byte, word, o zone piu' grandi dove verranno tenuti dei dati, ad esempio
+se si volesse fare un programma che registri il numero di volte che si preme
+un certo tasto, bisognera' definire una label seguita per esempio da un byte
+azzerato, ed ogni volta si aggiungera' 1 con il comando ADD a quella label,
+ossia a quel byte sotto la label, e all'uscita bastera' leggere il valore
+del byte:
+
+	; se il tasto e' premuto allora ADDQ.B #1,NUMPREMUTO, ossia
+	; aggiungi uno al byte sotto la label numpremuto.
+
+NUMPREMUTO:
+	dc.b	0
+
+All'uscita del programma lo 0 iniziale sara' cambiato nel numero di volte
+che il tasto e' stato premuto. Un esempio simile e' in LEZIONE2a.s, che
+contiene anche un ampio commento. Vi consiglio di caricarlo in un altro
+buffer di testo: per selezionare uno dei 10 disponibili basta premere un
+tasto da F1 a F10, se per esempio avete LEZIONE2.TXT nel buffer di F1,
+premete F2, e caricateci LEZIONE2a.s con il comando "R". In seguito potete
+caricare LEZIONE2b.s e i seguenti nel buffer di F3,F4..., in modo da averli
+sempre a disposizione premendo un solo tasto; e' meglio comunque se seguite
+la LEZIONE.TXT, e man mano che trovate l'indicazione del sorgente esempio,
+continuate caricandolo in un altro buffer, eseguendolo e verificandolo,
+dopodiche' ritornate a leggere la LEZIONE da dove eravate: questo credo
+sia il miglior sistema per imparare, infatti si fa un po di teoria e si
+verifica subito.
+
+Avete letto i commenti di LEZIONE2a.S?
+
+Avrete visto l'importanza che hanno il byte, la word e la longword: per
+quanto riguarda il binario, per contare i bit, si comincia da destra e
+si va verso sinistra, al "contrario" insomma, e si parte da 0, non da 1, dunque
+un byte (che ha 8 bit) parte 0 e va fino al 7. Per esempio in questo numero:
+
+  %000100010000
+
+Sono "accesi" i bit 4 e 8. Per aiutarvi a numerarli potete fare cosi':
+
+                ;5432109876543210	- un utilizzo intelligente del ;
+      move.w   #%0011000000100100,$dffxxx
+
+In questo caso sono "accesi" i bit 2,5,12 e 13 della WORD.
+Ricordo che un byte ha 8 bit, una word ne ha 16 (da 0 a 15), una longword ne
+ha 32 (da 0 a 31).
+Nell'istruzione
+
+  BTST #6,$bfe001
+
+Si controlla se il bit 6 del byte $bfe001 e' azzerato: se fosse:
+
+   ;76543210
+   %01000000
+
+Il bit 6 e' invece ad 1, dunque il mouse non e' premuto!!!
+
+Per ricapitolare, un BYTE e' fatto di 8 bit: per indicarli, il primo a destra
+e' il bit 0, detto anche BIT MENO SIGNIFICATIVO. La numerazione procede da
+destra verso sinistra fino al 7, (ossia l'ottavo perche' si parte da 0 anziche'
+da 1: 01234567, ossia 8 bit); il bit 7 e' detto BIT PIU' SIGNIFICATIVO.
+E' piu' significativo perche' conta di piu' allo stesso modo in cui conta di
+piu', nel bigliettone da centomila, l'uno piu' a sinistra degli zeri piu' a
+destra.
+Un byte, al massimo puo' valere 255, ossia %11111111.
+
+Una WORD invece e' fatto di 16 bit, ovvero due byte, allo stesso modo si parte
+da destra col bit 0, sempre il meno significativo, fino al bit 15 ultimo a
+sinistra, il piu' significativo. Al massimo puo' contenere 65535.
+
+Una LongWord e' fatta di 32 bit, da 0 a 31, ossia 4 bytes, o 2 word, o se
+preferite una word e 2 bytes, insomma sempre 32 bit attaccati l'uno all'altro
+che al massimo possono contenere 4294967299 (4 miliardi!! come la lotteria!).
+
+Ora procederemo con diversi modi di indirizzare: abbiamo visto che se
+facciamo ad esempio un CLR.W $100, azzereremo le locazioni $100 e $101,
+ossia una word a partire da $100 (essendo una word 2 bytes, e le locazioni
+divise in bytes, puliremo 2 bytes!!). Allo stesso modo un MOVE.B $100,$200
+copiera' il contenuto di $100 in $200. Questo si puo' indicare anche con
+le LABEL invece di specificare l'indirizzo, ad esempio MOVE.B LABEL1,LABEL2,
+ovvero copia il byte di LABEL1 in LABEL2. Ci sono pero' anche diversi modi
+di indirizzare, infatti posso fare un MOVE.L #$50000,LABEL2, ossia mettere
+un valore FISSO in LABEL2. Se ad esempio LABEL2 fosse all'indirizzo $60000,
+muoveremmo il valore $00050000 in $60000, ovvero i bytes facendo un M $60000:
+00 05 00 00. Infatti quando c'e' il simbolo del cancelletto (#) prima di
+un numero o di una label significa che si sta muovendo un valore stabilito,
+e non il valore contenuto nell'indirizzo indicato con quel valore, come
+avviene se non ci sono cancelletti prima del numero o della LABEL. Per
+esempio analizziamo questi 2 casi:
+
+1)	MOVE.L	$50000,$60000	; il valore contenuto negli indirizzi
+				; di memoria $50000,$50001,$50002,$50003
+				; vengono copiati in $60000,
+				; $60001,$60002,$60003, ossia una longword
+				; composta di 4 bytes viene copiata da un
+				; indirizzo all'altro.
+
+2)	MOVE.L	#$50000,$60000	; Questa volta in $60000 viene messo il
+				; numero indicato dopo il cancelletto,
+				; ossia $50000. Da notare che questa
+				; volta l'indirizzo $50000 non viene letto
+				; e non c'entra assolutamente, viene
+				; implicato solo il $60000.
+
+Se si usano delle label, non ci sono cambiamenti:
+
+1)	MOVE.L	CANE,GATTO	; Il contenuto della longword cane, ossia
+				; $00123456 viene copiato nella longword
+				; GATTO (infatti $123456 e' la prima cosa
+				; sotto la label CANE)
+
+prima dell'istruzione:
+
+CANE:
+	dc.l	$123456
+
+GATTO:
+	dc.l	0
+
+dopo l'istruzione:
+
+CANE:
+	dc.l	$123456
+
+GATTO:
+	dc.l	$123456
+
+2)	MOVE.L	#CANE,GATTO	; Questa volta l'INDIRIZZO della label
+				; CANE viene copiato nella label GATTO
+
+prima dell'istruzione:	; SUPPONIAMO CHE LA LABEL CANE: sia alla locazione
+			; $34500, cioe' facendo un M CANE dopo aver assemblato
+			; compare un :
+			; 00034500 00 12 34 56 00 00 00 00 .....
+			;          (cane)      (gatto)
+
+CANE:
+	dc.l	$123456
+
+GATTO:
+	dc.l	0
+
+dopo l'istruzione:
+
+CANE:
+	dc.l	$123456
+
+GATTO:
+	dc.l	$34500	; ossia DOVE E' LA LABEL CANE IN MEMORIA.
+
+Da notare che se si faceva un MOVE.W #CANE,GATTO o un MOVE.B #CANE,GATTO
+l'assemblatore avrebbe dato un errore, in quanto un INDIRIZZO e' lungo
+una LONGWORD. In memoria un MOVE.L #LABEL,LABEL si trasforma in un istruzione
+del tipo MOVE.L #$12345,$12345, ossia l'assemblatore scrive l'indirizzo
+reale al posto delle label. Questo lo potete verificare con LEZIONE2b.s.
+
+Ora affronteremo gli altri indirizzamenti con i registri (che sono piu'
+difficili); come avevo gia' accennato, ci sono 8 registri dati e 8 registri
+indirizzi: ossia D0,D1,D2,D3,D4,D5,D6,D7 sono i registri DATI, mentre
+a0,a1,a2,a3,a4,a5,a6,a7 sono i registri indirizzi. Premetto che il registro
+A7 e' detto anche SP o STACK POINTER, ed e' un registro particolare di cui
+parleremo dopo, quindi considerate di usare i registri indirizzi solo fino ad
+a6. questi indirizzi sono lunghi una longword ciascuno, ed sono in pratica
+una piccola memoria dentro il 68000, che di conseguenza e' molto veloce.
+Tramite i registri si possono fare varie cose, infatti esiste una sintassi
+particolare per i registri. Innanzitutto non si puo' lavorare per byte
+con i registri INDIRIZZI: per esempio un move.b LABEL,a0 da un messaggio
+di errore. Con i registri indirizzi a0,a1,etc si puo' dunque lavorare per
+longword o per word. Con i registri Dati D0,D1,etc, invece si possono usare
+sia .b che .w che .l. I registri indirizzi sono dedicati a contenere indirizzi,
+ed hanno comandi dedicati, come il LEA, che significa LOAD ENTIRE ADDRESS,
+ovvero carica l'indirizzo interamente nel registro (infatti questo comando non
+puo' essere lea.b, lea.w o lea.l, ma solo LEA essendo sempre .L)
+Per esempio, per mettere un valore nei registri indirizzi si possono usare
+2 metodi:
+
+1)	MOVE.L	#$50000,A0	(oppure MOVE.L #LABEL,a0)
+
+2)	LEA	$50000,a0	(oppure LEA LABEL,A0)
+
+Mentre il primo metodo si puo' usare sia con gli indirizzi che con i registri
+(es: move.l #$50000,d0 - move.l #$50000,LABEL - MOVE.L #$LABEL,LABEL...)
+
+P.S: scrivere move.l #$50000,d0 o MOVE.L #$50000,D0 e' identico, si puo'
+     scrivere anche MoVe.L #$50000,d0, il risultato a livello di programma
+     e' identico, solo che esteticamente potete creare delle situazioni
+     simpatiche o orribili. Va fatto un discorso diverso per le LABEL: le
+     label possono essere identificate anche se in un punto del listato le
+     scrivete in minuscolo e in un'altro in maiuscolo, questo pero' solo
+     perche' e' settata nelle preferenze del TRASH'M-ONE questa opzione,
+     che e' UCase=UCase nel menu' "Assembler/Assemble..", che significa
+     "Upper Case=Lower Case, ossia lettere grandi=lettere piccole".
+     Se togliete questa opzione, nel riconoscimento delle label sara' tenuto
+     presente anche il maiuscolo/minuscolo, per cui Cane: sara' diverso da
+     CANE: o da cAne: o da caNe, eccetera eccetera.
+
+il secondo metodo con il LEA si puo' usare solo con i registri indirizzi,
+di conseguenza si intuisce che questo modo e' piu' veloce: ricordatevi quindi
+che se volete mettere un indirizzo in un registro a0,a1... dovete usare il
+LEA seguito dall'indirizzo SENZA CANCELLETTO e dal registro in questione.
+Fate attenzione a questi 2 esempi:
+
+1)	MOVE.L	$50000,a0	; metti in a0 il valore contenuto nella
+				; locazione $50000 (+$50001,$50002 e $50003
+				; in quanto 1 locazione e' lunga 1 byte, ed
+				; il move.l copia 4 bytes = 4 locazioni a
+				; partire in questo caso da $50000
+
+2)	LEA	$50000,a0	; metti il numero $50000 in a0
+
+State attenti quindi a maneggiare i MOVE con o senza il cancelletto ed i LEA,
+perche' e' facile nei primi tempi sbagliarsi e mettere l'indirizzo invece del
+valore di quell'indirizzo nel registro o viceversa. Come ulteriore commento
+di questa differenza consultate il programmino esempio LEZIONE2c.s
+
+Con i registri indirizzi sono possibili vari tipi di indirizzamento:
+Per cominciare analizziamo queste 2 istruzioni:
+
+	move.l	a0,d0	; Metti il numero contenuto in a0 nel registro d0
+	move.l	(a0),d0 ; Metti la longword contenuta dall'indirizzo in a0
+			; nel registro d0
+
+L'indirizzamento tra parentesi si dice INDIRETTO, perche' anziche' venir
+copiato DIRETTAMENTE il valore in a0 viene copiato il valore contenuto
+nell'indirizzo che e' in a0. Un esempio pratico e' in LEZIONE2d.s
+
+Usando l'indirizzamento indiretto si puo' agire sugli indirizzi INDIRETTAMENTE,
+ad esempio mettendo l'indirizzo del tasto del mouse e del colore 1 nei registri
+si puo' riscrivere il listato della lezione 1. Cosi' ho fatto in LEZIONE2e.s
+                          
+                         
+Facciamo gli ultimi esempi per togliere gli eventuali dubbi sull'indirizzamento
+indiretto:
+
+	move.l a0,d0		; copia il valore di A0 nel reg. d0
+	move.b (a0),d0		; copia il byte contenuto nell'indirizzo
+				; in a0 nel reg. d0
+	move.w (a0),(a1) 	; copia la word contenuta dall'indirizzo
+				; in a0 all'indirizzo contenuto in a1
+				; (e seguente, essendo una word fatta di
+				; 2 bytes, ossia 2 indirizzi!)
+	clr.w	(a3)		; pulisce (azzera) la word (2 bytes) "dentro"
+				; l'indirizzo in a3 - Piu' precisamente,
+				; viene azzerato il byte  dell'indirizzo in
+				; a3 e l'indirizzo seguente.
+	clr.l	(a3)		; Come sopra, ma sono azzerati 4 indirizzi
+				; (una long = 4 bytes = 4 indirizzi)
+	move.l	d0,(a5)		; viene copiato il valore di d0 nell'indirizzo
+				; contenuto in a5 ( piu' precisamente dovrei
+				; dire nell'indirizzo in a5, e nei 3 seguenti,
+				; in quanto una long occupa 4 indirizzi)
+	move.l	d0,a5		; viene copiato il valore di d0 in a5
+
+Mi raccomando! Toglietevi ogni dubbio sugli indirizzamenti fin qui studiati,
+consultando anche i sorgenti fino a LEZIONE2e.s, perche' gli indirizzamenti
+di cui parlero' ora si basano su quelli indiretti normali.
+
+Vi comunico che questa e' la parte piu' astratta della lezione2, in quanto
+si devono imparare gli ultimi indirizzamenti del processore, ma vi assicuro
+che gia' dalla lezione 3 metterete in pratica il tutto e visualizzerete degli
+effetti video col copper!, quindi considerate che passata questa parte il resto
+del corso sara' tutto piu' PRATICO: a ogni spiegazione corrispondera' un nuovo
+effetto speciale o colore ultravivace, dunque fate lo sforzo di non annoiarvi
+e di non lasciar perdere ora, perche' io stesso lasciai perdere all'incirca
+a questo punto la prima volta che tentai di imparare a programmare in ASM,
+proprio perche' ero scoraggiato dal CASINO di comandi e parentesi aperte e
+chiuse che poi non riuscivo piu' a seguire. Vi assicuro pero' che una volta
+imparato a leggere i comandi, potete partire come una fucilata e imparare
+da voi leggendo listati qua' e la', facendo passi sempre piu' grandi: e'
+come imparare le regole di uno sport: uno che non conosce il set di
+istruzioni del 68000 e' come uno che non conosce le regole, ad esempio,
+del calcio: guardando le partite (i listati) costui non capira' nulla di
+cosa stanno facendo quegli scalmanati in un campo a dare calci ad una palla,
+e si annoiera' a morte, ma una volta capite le regole (indirizzamenti) potra'
+interpretare le fasi delle partite ed imparare sempre di piu' le tecniche
+di gioco (i trucchi della programmazione ed i registri della grafica).
+
+Vediamo altri 2 modi di indirizzamento:
+                              
+	move.l	(a0)+,d0	; Indiretto con post-incremento
+	move.l	-(a0),d0	; Indiretto con pre-decremento
+
+Analizziamo il primo indirizzamento ipotizzando questa situazione:
+
+	lea	NONNO,a0	; mettiamo in a0 l'indirizzo di NONNO:
+	MOVE.L	(a0)+,d0	; mettiamo in d0 il valore .L contenuto
+				; dall'indirizzo in a0, ossia $3231020
+				; (come un normale MOVE.L (a0),d0)
+				; dopodiche' AGGIUNGIAMO 4 AL VALORE IN a0
+				; ovvero andiamo a PUNTARE alla long seguente
+				; con l'indirizzo in a0; se fosse stato un
+				; move.w (a0)+,d0 ad a0 DOPO (POST-INCREMENTO)
+				; sarebbe stato aggiunto 2 (una word=2),
+				; mentre nel caso di un MOVE.B (a0)+,d0
+				; sarebbe stato aggiunto 1, (un byte),
+				; ovvero sarebbe andato a puntare l'indirizzo
+				; seguente.
+	MOVE.L	(a0)+,d1	; stessa cosa: copia in d1 il valore .L
+				; contenuto nell'indirizzo in a0, che ora
+				; contiene l'indirizzo di NONNO+una longword,
+				; ovvero NONNO+4, ossia $13478.
+	rts			; ESCE!
+
+NONNO:
+	dc.l	$3231020,$13478
+
+	END
+
+Possiamo tradurre questo tipo di indirizzamento con un 2 istruzioni:
+
+1)	MOVE.L	(a0)+,LABEL
+
+E' equivalente a:
+
+1b)	MOVE.L	(A0),LABEL	; copia una long dall'indirizzo in a0
+				; nella label
+	ADDQ.W	#4,a0		; Aggiungi 4 ad a0 (.L=4)
+				; NOTA: se si addiziona un numero minore di
+				; 9 si usa il comando ADDQ invece di ADD
+				; perche' e' dedicato a tali numeri e veloce.
+				; Inoltre su registri INDIRIZZI se il numero
+				; che aggiungiamo o sottraiamo e' minore di
+				; $FFFF, ossia una word, si puo' usare il .W
+				; anziche' il .L, e si agira' comunque su
+				; tutta la longword dell'indirizzo.
+Allo stesso modo:
+
+2)	MOVE.W	(a0)+,LABEL
+
+E' equivalente a:
+
+2b)	MOVE.W	(A0),LABEL	; copia una word dall'indirizzo in a0
+				; nella label
+	ADDQ.W	#2,a0		; Aggiungi 2 ad a0 (.W=2)
+
+Allo stesso modo:
+
+3)	MOVE.B	(a0)+,LABEL
+
+E' equivalente a:
+
+3b)	MOVE.B	(A0),LABEL	; copia il byte contenuto nell'indirizzo
+				; in a0 nella label
+	ADDQ.W	#1,a0		; Aggiungi 1 ad a0 (.B=1)
+
+Dunque, riassumendo in altri termini, l'indirizzamento indiretto con post
+incremento si puo' paragonare ad un operaio di una catena di montaggio
+che PRIMA esegue il suo MOVE o la sua istruzione sul pezzo che sta sul nastro
+trasportatore, e ogni volta che ha fatto il suo lavoro sul pezzo sposta
+AVANTI il nastro trasportatore(l'indirizzo in a0) con un pedale (il +).
+Un esempio di loop puo' risultare piu' chiaro:
+
+Inizio:
+	lea	$60000,a0	; inizio pulizia
+	lea	$62000,a1	; fine pulizia
+CLELOOP:
+	clr.l	(a0)+	; azzera una long dall'indirizzo in A0 e aumenta a0
+			; di una long, ossia di 4 indirizzi, in altre
+			; parole pulisci una long e vai alla prossima
+	cmp.l	a0,a1	; A0 e' arrivato a $62000? Ossia, a0 e' uguale ad a1?
+	bne.s	CLELOOP ; se non ancora, continua con un altro ciclo CLELOOP
+	rts
+
+Come si vede, questo programmino pulisce la memoria dall'indirizzo $60000 a
+$62000, utilizzando un clr (a0)+ ripetuto fino a che non si e' arrivati
+all'indirizzo desiderato. Un esempio simile lo potete trovare in Lezione2f.s
+
+Ora impareremo l'indirizzamento indiretto con pre-decremento, ossia un
+indirizzamento opposto a quello appena descritto, infatti invece di aumentare
+l'indirizzo contenuto rel registro dopo aver eseguito l'operazione, con
+un clr.l -(a0), per esempio, prima viene decrementato a0, poi viene eseguita
+l'istruzione sul nuovo indirizzo (in questo caso a0-4). Esempio:
+
+	lea	NONNO,a0	; mettiamo in a0 l'indirizzo di NONNO:
+	MOVE.L	-(a0),d0	; a0 viene decrementato, in questo caso
+	rts			; essendo un istruzione .L viene decrementato
+				; di 4, dopodiche' viene copiato in d0
+				; il valore .L contenuto dall'indirizzo
+				; in a0, ossia $12345678, cioe' NONNO-4
+				; (nel registro rimane il valore iniziale-4)
+	dc.l	$12345678	; se fosse stato un
+NONNO:				; move.w -(a0),d0 ad a0 PRIMA (PRE-INCREMENTO)
+	dc.l	$ffff0f0f	; sarebbe stato sottratto 2 (una word=2),
+				; mentre nel caso di un MOVE.B -(a0),d0
+	END			; sarebbe stato sottratto 1, (un byte),
+				; ovvero sarebbe andato a puntare l'indirizzo
+				; precedente.
+
+Possiamo tradurre questo tipo di indirizzamento con un 2 istruzioni:
+
+1)	MOVE.L	-(a0),LABEL
+
+E' equivalente a:
+
+1b)	SUBQ.W	#4,a0		; Sottrai 4 ad a0 (.L=4)
+				; NOTA: se si sottrae un numero minore di
+				; 9 si usa il comando SUBQ invece di SUB
+				; perche' e' dedicato a tali numeri e veloce.
+
+	MOVE.L	(A0),LABEL	; copia una long dall'indirizzo in a0
+				; nella label
+Allo stesso modo:
+
+2)	MOVE.W	-(a0),LABEL
+
+E' equivalente a:
+
+2b)	SUBQ.W	#2,a0		; Sottrai 2 ad a0 (.W=2)
+	MOVE.W	(A0),LABEL	; copia una word dall'indirizzo in a0
+				; nella label
+
+Allo stesso modo:
+
+3)	MOVE.B	-(a0),LABEL
+
+E' equivalente a:
+
+3b)	SUBQ.W	#1,a0		; sottrai 1 ad a0 (.B=1)
+	MOVE.B	(A0),LABEL	; copia il byte contenuto nell'indirizzo
+				; in a0 nella label
+
+Riassumendo con l'operaio come prima, l'indirizzamento indiretto con pre
+decremento si puo' paragonare sempre ad un operaio di una catena di montaggio
+che PRIMA sposta INDIETRO il nastro trasportatore(l'indirizzo in a0) con un
+pedale (il -), POI esegue il suo MOVE o la sua istruzione sul pezzo che sta
+sul nastro trasportatore. Un esempio di loop:
+
+Inizio:
+	lea	$62000,a0	; inizio pulizia
+	lea	$60000,a1	; fine pulizia
+CLELOOP:
+	clr.l	-(a0)	; diminuisci a0 di una long e azzera quella long
+			; in altre parole vai alla precedente long e puliscila
+	cmp.l	a0,a1	; A0 e' arrivato a $60000? Ossia, a0 e' uguale ad a1?
+	bne.s	CLELOOP ; se non ancora, continua con un altro ciclo CLELOOP
+	rts
+
+Come si vede, questo programmino pulisce la memoria dall'indirizzo $62000 a
+$60000, utilizzando un clr -(a0) ripetuto fino a che non si e' arrivati
+all'indirizzo desiderato (All'indietro pero'! mentre con (a0)+ si parte da
+$60000 e di 4 in 4 si arriva a $62000, in questo caso si parte da $62000
+e si arriva a $60000 indietreggiando di 4 in 4).
+Vedete Lezione2g.s e Lezione2h.s per verificare gli ultimi 2 indirizzamenti.
+
+Ora impareremo come usare la distanza di indirizzamento:
+un MOVE.L $100(a0),d0 copia in d0 la long contenuta dall'indirizzo in a0+$100,
+ossia: se per esempio in A0 avevamo l'indirizzo $60200, in d0 ci andra' la
+longword contenuta dall'indirizzo $60300.
+Allo stesso modo un MOVE.L -$100(a0),d0 copiera' in d0 la long a partire
+dall'indirizzo $60100. Da notare che a0 non cambia di valore: semplicemente
+il processore calcola ogni volta a che indirizzo operare, facendo la somma
+tra il valore prima della parentesi e l'indirizzo nel registro tra parentesi.
+La massima distanza di indirizzamento e' da -32768 a 32767 (-$7FFF, $8000)
+Un esempio su questo tipo di indirizzamento e' Lezione2i.s
+
+L'ultimo tipo di indirizzamento e' questo:
+
+	MOVE.L	50(a0,d0),label
+
+che ha sia una DISTANZA DI INDIRIZZAMENTO (il 50) che un INDICE (il d0):
+la distanza di indirizzamento e il contenuto di d0 sono tutti sommati per
+definire l'indirizzo da cui copiare il contenuto. In pratica e' come la
+distanza di indirizzamento, ma in piu' viene aggiunto anche il contenuto
+dell'altro registro alla distanza di indirizzamento, che in questo caso
+pero' va da un minimo di -128 ad un massimo di +128.
+non vi voglio annoiare con altri esempi su questo indirizzamento, potrete
+verificarlo quando lo troverete nei prossimi listati.
+
+Per terminare la LEZIONE2, che se avete seguito bene vi rende in grado di
+seguire le operazioni di un qualsiasi programma in ASM, e' indispensabile
+spiegare il ciclo DBRA, che e' usato moltissimo: usando un registro dati
+si possono far eseguire delle istruzioni varie volte, basta mettere nel
+registro dati (sia esso d0,d1...) il numero di volte-1.
+Ad esempio la routine che pulisce la memoria fatta con il CLR.l (a0)+ puo'
+essere modificata con un loop DBRA che faccia eseguire la pulizia il
+numero desiderato di volte:
+
+Inizio:
+	lea	$60000,a0	; Inizio
+	move.l	#($2000/4)-1,d0	; Metti in d0 il numero di cicli necessari
+				; per cancellare $2000 bytes: cioe'
+				; $2000/4 (ovvero DIVISO 4, perche' ogni
+				; clr.l pulisce 4 bytes), il tutto -1,
+				; perche' il loop viene eseguito una volta
+				; in piu'.
+CLEARLOOP:
+	CLR.L	(a0)+
+	DBRA	d0,CLEARLOOP
+	rts
+
+Questa routine pulisce da $60000 a $62000 come l'esempio precedente in cui
+con il comando CMP si COMPARA a0 con a1, ossia si verifica se siamo arrivati
+a $62000 che e' in a1. In questo caso invece viene eseguito il CLR 2047 volte,
+provate infatti a fare ?($2000/4)-1 da ASMONE. Il DBRA funziona in questo modo:
+se per esempio la prima volta in d0 viene messo 2047, viene eseguito il CLR,
+poi arrivati al DBRA d0 viene diminuito di 1 e il processore salta nuovamente
+al CLR, lo esegue eccetera, fino a che d0 e' esaurito. Bisogna mettere il
+numero di cicli necessari meno uno perche' la prima volta il ciclo viene
+eseguito senza decrementare d0.
+
+Come ultimo esempio studiatevi Lezione2l.s, che ha delle subroutines richiamate
+con il BSR e il ciclo DBRA in azione, utile per capire la struttura di un
+programma complesso.
+
+Per terminare vorrei farvi notare la differenza tra un BSR ed un BEQ/BNE:
+nel caso del BSR label, il processore salta ad eseguire la routine sotto la
+label, fino a che non trova l'RTS, che lo fa tornare ad eseguire l'istruzione
+sotto il BSR label, dunque si puo' dire che ha eseguito una SOTTOROUTINE, cioe'
+una routine eseguita in mezzo ad un'altra routine:
+
+principale:
+	move.l	roba1,d0
+
+	move.l	roba2,d1
+
+	bsr.s	sottoposto
+
+	move.l	roba3,d2
+
+	move.l	roba4,d3
+
+	rts	; FINE DELLA ROUTINE PRINCIPALE, TORNA ALL'ASMONE
+
+
+sottoposto:
+	move.l	robaccia,d4
+
+	move.l	robaccia2,d5
+
+	rts	; FINE DELLA SOTTOROUTINE, TORNA A  "move.l roba3,d2", ossia
+		; sotto il bsr.s sottoposto
+
+
+Nel caso di una DIRAMAZIONE beq/bne invece si prende O una strada O l'altra:
+
+
+principale:
+	move.l	roba1,d0
+
+	move.l	roba2,a0
+
+	cmp.b	d0,a0
+	bne.s	strada2
+
+	move.l	roba3,d1
+
+	cmp.b	d1,a0
+	beq.s	strada3
+
+	move.l	roba4,d0
+
+	rts	; FINE DELLA ROUTINE PRINCIPALE, TORNA ALL'ASMONE
+
+
+strada2:
+	move.l	robaccia,d5
+
+	move.l	robaccia2,d6
+
+	rts	; FINE ROUTINE, TORNA ALL'ASMONE, non sotto il bne!!!
+		; qua abbiamo scelto questa strada, e come si trova un RTS
+		; si torna all'ASMONE!!!
+
+
+strada3:
+	move.l	robaccia3,d1
+
+	move.l	robaccia4,d2
+
+	rts	; FINE ROUTINE, TORNA ALL'ASMONE, non sotto il beq!!!
+		; qua abbiamo scelto questa strada, e come si trova un RTS
+		; si torna all'ASMONE!!!
+
+Lo stesso vale per il BRA label, che significa SALTA A label, equivalente
+del JMP, per cui e' come un treno che trova uno scambio ai binari, non torna
+allo scambio quando ha finito il binario!! Arriva alla fine del binario e
+basta, senza teletrasporti alla star trek all'indietro.
+
+Per un'ultima precisazione sui registri indirizzi, vedetevi Lezione2m.s
+
+Per caricare la LEZIONE3.TXT potete fare in due modi: o scrivete "R" e
+andate a capo, facendo aprire il requester dove potete selezionare col mouse
+quale testo caricare (in questo caso df0:SORGENTI/LEZIONE3.TXT), oppure
+dovete assicurarvi di trovarvi nella directory giusta con un "V df0:LEZIONI"
+e potete caricarla in seguito con un semplice "R LEZIONE3.TXT"
+
++

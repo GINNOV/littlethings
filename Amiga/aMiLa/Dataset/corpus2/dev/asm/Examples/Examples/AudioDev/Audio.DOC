@@ -1,0 +1,97 @@
+  This is a direct replacement for KickStart's audio device. This replacement
+is both smaller and faster than Commodore's official release. When KickStart
+is booted, the audio.device is loaded into an area (of the Amiga 1000) which
+is thereafter write-protected. It is not possible to overwrite, or delete
+the functions of the device (aside from creating a custom KickStart disc). On
+the Amiga 2000 and 500, KickStart is already in system ROM and no part of
+it (including the audio device) can be altered.
+  Exec automatically creates the device's function table and Base structure
+during the boot procedure, and links its node into the list of devices
+thereby making its existance "known" to the system. Unfortunately, the
+replacement device cannot be opened as "audio.device" while the original
+exists (even if the version number is different). We could call the device
+something besides "audio.device", but then applications would have to be
+rewritten to open this new device explicitly. By finding some way of fooling
+Exec into thinking that the replacement is the original, all applications
+will be directed to this replacement automatically. Calling the function
+RemLibrary to remove the original would seem to be the answer. For some
+bizarre reason, Exec's OpenDevice "knows" that the audio device's functions
+can be found in the protected memory even after the original is removed from
+Exec's list of devices. The result is that instead of looking for the
+(replacement) device in the devs drawer of the bootdisk (as it should),
+Exec always creates a function table for the original functions in the pro-
+tected memory. Net result, you can't get rid of the fucker using the standard
+(i.e. the official, documented) procedure.
+  We need to open the original device, and replace each one of its vectors
+in the function table (Open, Close, Expunge, BeginIO, and AbortIO) with the
+replacement's vectors (via SetFunction). Furthermore, we need to replace the
+assembly language "audio block done" handlers as they are also tighter than
+the originals. Finally, we must not allow this new device to be expunged
+(i.e. removed when no more tasks have it open). If another task tried to
+open the audio device after it had been expunged, Exec would construct the
+original device all over again. Stupid? Of course! Many of the lame-brained
+bugs in the Amiga operating system are due to the fact that too many C
+programmers were allowed to write the operating system. Aside from the speed
+penalties of not using assembly language, much of the operating system was
+compiled with the Amiga C compiler which had a fatal bug as demonstated in
+the following code. This code was extracted directly from the version 33.4
+audio device which is what is on KickStart 1.2.
+
+.1 move.l  a2,-(a7)
+   bsr.s   someFunction
+   clr.b   $1e(a2)
+.2 tst.b   $1f(a2) ;test some value for 0
+.3 addq.l  #8,a7   ;Oooppps! Someone didn't realize that this affects the Z flag
+.4 beq.s   .5      ;Uh oh. We aren't branching as a result of the test at .2
+
+  At label .1, the contents of register a2 are pushed onto the stack. This
+is how C code passes values between functions. A call is made to someFunction.
+Now, when returning from someFunction, the stack needs to be re-adjusted
+because of that previous push. The Amiga C Compiler always adjusts for the
+stack only before a branch needs to be taken, or before an rts. In this way,
+the stack can be readjusted for several calls in one instruction instead of
+after each individual call. This is perfectly good if the adjustment is made
+using the lea instruction {as in lea  12(a7),a7}. Unfortunately, whoever
+wrote the C compiler also used the addq instruction to make adjustments to
+the stack. This instruction affects ALL the status register flags. Note that
+this instruction is sandwiched inbetween the tst instruction and the beq.
+Obviously, the stack isn't ever going to be zero when we add 8 to it. Conse-
+quently, the branch on equal to .5 WILL NEVER BE TAKEN. Since a large part
+of the amiga operating system is written in C (particularly Intuition) and
+compiled with this compiler, and this original code is still part of the
+1.2 operating system, one can understand why mysterious GURU crashes still
+occur. Don't necessarily blame the application software.
+  Also, the audio device's Expunge routine seems to be completely illogical.
+Exec is only allowed to Expunge when the device's OpenCnt (# of tasks which
+have it open) is NOT 0! If you open the device and call RemLibrary, Exec
+will indeed remove it from under your nose. Imagine that a task has the
+audio device open, the amount of free memory is low, and some task makes an
+allocation request for a block larger than currently available. Exec will
+snake through its list of devices, calling the Expunge routine of each in an
+attempt to remove those that are no longer being used. A device's Expunge
+routine is supposed to fail (i.e. return 0) if the device is being used, but
+in this case, Exec is allowed to remove the audio device and use its memory.
+Now what happens when that poor task who thinks that he has the audio device
+open tries to call a device function that may have been overwritten? BANG!!!
+Something ugly is probably going to happen though its anyone's guess exactly
+what. By the way, the audio device's (version 33.4) Expunge routine is
+written in C.
+  I undertook to rewrite the device in assembly for 2 reasons:
+1). A realtime function (i.e. audio output) should be written in the most
+    efficient language available. (That's assembly, not C).
+2). Someone had to correct the bugs in the C code.
+  In order to replace the original device after KickStart is loaded, I wrote
+a program called NewAudio. Since this program needs to be executed only
+once, a good place to execute it is in the startup-sequence (probably last
+after all the dust has settled). This program installs the new functions and
+handlers, and assures that the device cannot be expunged under any circumstances.
+This results in approximately 3K being dedicated to a permanent audio
+device. I think that this is worth having a faster device (most all programs
+that feature sound use the audio device instead of manipulating the hardware
+directly), and one that won't cause a possible system crash.
+  Alternately, after booting the computer, you can double click on the
+NewAudio icon. Just be sure that you do this as soon as Workbench comes up
+(i.e. before you run any program that uses the audio device). You need only
+do this once.
+
+   JEFF GLATT     dissidents

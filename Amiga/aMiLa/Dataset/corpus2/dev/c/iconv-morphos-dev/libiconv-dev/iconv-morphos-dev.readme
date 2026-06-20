@@ -1,0 +1,46 @@
+Short:        Character set conversion library
+Author:       Bruno Haible, Ilkka Lehtoranta (ilkleht@isoveli.org), Sigbjørn Skjæret
+Uploader:     Ilkka Lehtoranta (ilkleht@isoveli.org)
+Type:         dev/c
+Version:      3.0
+Architecture: ppc-morphos
+
+This is MorphOS port of libiconv character set conversion library.
+The port provides standard shared runtime library (iconv.library)
+based on libiconv 1.11.
+
+The archive contains libiconv.a in three flawours:
+
+lib/libiconv.a
+libb32/libiconv.a (libnix)
+ixemul/libiconv.a
+
+
+ [Installing]
+
+
+Use Install.MorphOS script for GCC and VBCC install.
+
+(VBCC install assumes you are using a VBCC: assign.)
+
+
+ [Using iconv.library in your programs]
+
+
+To use iconv.library you must have
+
+#include <iconv.h>
+
+and link against libiconv.a (-liconv).
+
+Optionally you can just use inlines:
+
+#include <proto/iconv.h>
+
+This is little faster but not recommended for ports.
+
+
+ [Building library]
+
+
+Run make and wait.

@@ -1,0 +1,11 @@
+Short:        m68000 Instruction Set Quick Ref. Guide
+Author:       alien@zikzak.apana.org.au (Diego Barros)
+Uploader:     alien zikzak apana org au (Diego Barros)
+Type:         dev/asm
+Architecture: generic
+
+Motorola 68000 Instruction Set Quick Reference Guide.
+
+Text file containing a list of all op-codes, descriptions, assembler
+syntax, affected condition flags. Use of the CMP (compare) instruction
+and addressing modes.

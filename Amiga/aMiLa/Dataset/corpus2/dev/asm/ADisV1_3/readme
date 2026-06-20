@@ -1,0 +1,11 @@
+Short: 'Intelligent' Disassembler. Includes source
+Uploader: apel@physik.uni-kl.de
+
+This  is  version  1.3  of ADis, an 'intelligent' disassembler for the
+Amiga.   There  are no major modifications relative to V1.2 except the
+addition  of  the  missing  68040  FPU opcodes.  I have decided not to
+develop ADis any further myself and thus release it with source code.
+Unfortunately this is compiled with GCC using ixemul.library again.  I
+have  tried to compile it with libnix, but it didn't work correctly so
+I  assume a bug in libnix.  If you don't like this recompile ADis with
+your favourite compiler.

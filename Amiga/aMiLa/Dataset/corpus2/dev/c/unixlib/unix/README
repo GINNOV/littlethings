@@ -1,0 +1,21 @@
+Short:    'unix emulation' library for SAS/C
+Uploader: enrico@com.unipr.it (Enrico Forestieri)
+Author:   David Gay dgay@di.epfl.ch, Enrico Forestieri
+Type:     dev/c
+Requires: util/misc/fifolib38_2.lha, util/shell/APipe_37_7.lha
+
+This is the unix compatibility library which I used for porting
+various packages (ghostscript, ghostview, xfig, xv, xdvi, tar).
+The library is written for SAS/C 6.55+ and provides a more unix-like
+environment for programs compiled with it, along with a number of C
+functions which I needed to compile the above programs. These are
+either new or replacements for similar functions in the SAS/C library
+(where these functions lacked some features or were buggy).
+The library has also support for programs using sockets, but you need
+also AmiTCP as it relies on bsdsocket.library to provide this
+functionality.
+
+In the scc directory of this archive you can also find a front end to sc
+which uses a semi-unix syntax. It is very useful if you use a Makefile
+written for GNU make as it solves a small problem related to passing
+quoted arguments from GNU make to programs not using ixemul.library.

@@ -1,0 +1,553 @@
+TABLE OF CONTENTS
+
+PDA_Accept
+PDA_AddSyncLogEntry
+PDA_CloseSocket
+PDA_EndOfSync
+PDA_Explain
+PDA_GetBaudRate
+PDA_GetDBInfo
+PDA_GetStorageInfo
+PDA_GetSysInfo
+PDA_LastError
+PDA_NetSyncInfo
+PDA_OpenConduit
+PDA_OpenSocket
+PDA_ResetLastSyncPC
+PDA_ResetSystem
+PDA_SysTime
+PDA_UserInfo
+
+PDA_Accept
+
+   NAME
+        PDA_Accept -- accept a connection
+
+   SYNTAX
+        PDA_Accept(socket,<parameters>)
+
+   FUNCTION
+        Wait for a connection request from Palm, and accept it. If
+        there was no connection until Timeout, a timeout error will be
+        returned.
+
+        Usually, the connection is started by pressing the HotSync button
+        on the cradle.
+
+   INPUT
+        socket          -- socket name
+
+   PARAMETERS
+        TIMEOUT/K/N     -- Timeout until this function returns, in seconds.
+                Defaults to 30 seconds.
+
+   RESULT
+        nothing
+
+   NOTE
+
+   BUGS
+
+   SEE
+ 
+PDA_AddSyncLogEntry
+
+   NAME
+        PDA_AddSyncLogEntry -- add an entry to the HotSync log
+
+   SYNTAX
+        PDA_AddSyncLogEntry(socket,<parameters>)
+
+   FUNCTION
+        Add an entry to the HotSync log. The user can read the last HotSync
+        log with the HotSync tool of the Palm.
+
+   INPUT
+        socket          -- socket name
+
+   PARAMETERS
+        ENTRY/A         -- Entry to be added to the HotSync log
+        NOLF/S          -- Do not add a line feed to the entry
+
+   RESULT
+
+   NOTE
+
+   BUGS
+
+   SEE
+ 
+PDA_CloseSocket
+
+   NAME
+        PDA_CloseSocket -- close a socket to a Palm
+
+   SYNTAX
+        PDA_CloseConduit(socket)
+
+   FUNCTION
+        Close a socket to a Palm. Make sure to close all data bases
+        before. PdaLink won't do this for you.
+
+   INPUT
+        socket          -- socket name of the socket to be closed
+
+   RESULT
+        nothing
+
+   NOTE
+        Make sure to close the socket even if an ARexx error occured
+        and the script is aborted. Otherwise you will not be able to
+        connect to this socket again!
+
+   BUGS
+        Currently, a socket name is global and shared by all ARexx
+        scripts running. Please be careful not to produce a clash,
+        make sure only one script is running simultaneously.
+
+   SEE
+        PDA_OpenSocket
+ 
+PDA_EndOfSync
+
+   NAME
+        PDA_EndOfSync -- terminate all database accesses
+
+   SYNTAX
+        PDA_EndOfSync(socket,<parameters>)
+
+   FUNCTION
+        Closes the Pilot database. After you called this function, you
+        should close the connection.
+
+        *NEVER* forget to call PDA_EndOfSync when you called
+        PDA_OpenConduit. PdaLink won't do this for you.
+
+   INPUT
+        socket          -- socket name
+
+   PARAMETERS
+        STATUS/N        -- Status code, optional.
+
+   RESULT
+        nothing
+
+   NOTE
+
+   BUGS
+
+   SEE
+ 
+PDA_Explain
+
+   NAME
+        PDA_Explain -- explain an error code
+
+   SYNTAX
+        PDA_Explain(socket,<parameters>)
+
+   FUNCTION
+        Explains the provided error code.
+
+        If the error was a DOS error code, it will be explained as
+        well, using dos.library.
+
+   INPUT
+        socket          -- socket name
+
+   PARAMETERS
+        CODE/A          -- error code to be explained
+
+   RESULT
+        Explained error code
+
+   NOTE
+
+   BUGS
+
+   SEE
+ 
+PDA_GetBaudRate
+
+   NAME
+        PDA_GetBaudRate -- get negotiated baud rate
+
+   SYNTAX
+        PDA_GetBaudRate(socket)
+
+   FUNCTION
+        The currently negotiated baud rate with the Palm is
+        returned. Only valid after PDA_Accept has returned.
+
+   INPUT
+        socket          -- socket name
+
+   RESULT
+        Negotiated baud rate.
+
+   NOTE
+
+   BUGS
+
+   SEE
+ 
+PDA_GetDBInfo
+
+   NAME
+        PDA_GetDBInfo -- get information about the database
+
+   SYNTAX
+        PDA_GetDBInfo(socket,<parameters>,stem)
+
+   FUNCTION
+        The passed stem variable is filled with information
+        about the database with the number provided in INDEX.
+
+   INPUT
+        socket          -- socket name
+        stem            -- name of the stem variable to be filled
+
+   PARAMETERS
+        INDEX/N/A       -- Index of the database entry to be read.
+                Start with 0, then traverse with STEM.INDEX+1.
+        ROM/S           -- If passed, all ROM databases are read
+                instead of the RAM databases
+        CARD/K/N        -- Select the card to be read. Defaults to
+                card 0.
+
+   STEM
+        NAME            -- Name of the entry
+        INDEX           -- Index of this entry
+        CREATED         -- Creation date (YYYY-MM-DD HH:MM:SS)
+        MODIFIED        -- Modification date (YYYY-MM-DD HH:MM:SS)
+        BACKUPPED       -- Backup date (YYYY-MM-DD HH:MM:SS, or ---)
+        VERSION         -- Version number
+        CREATOR         -- Creator ID
+        TYPE            -- Type ID
+        FLAGS           -- Flags (as decimal, see include file)
+        EXCLUDE         -- Exclude flags (as decimal, see include file)
+
+   RESULT
+        0 if there are no further entries, else any other number
+
+   NOTE
+
+   BUGS
+
+   SEE
+ 
+PDA_GetStorageInfo
+
+   NAME
+        PDA_GetStorageInfo -- get information about a card
+
+   SYNTAX
+        PDA_GetStorageInfo(socket,<parameters>,stem)
+
+   FUNCTION
+        The passed stem variable is filled with information
+        about the card with the number provided in CARD.
+
+   INPUT
+        socket          -- socket name
+        stem            -- name of the stem variable to be filled
+
+   PARAMETERS
+        CARD/N          -- Select the card to be read. Defaults to
+                card 0.
+
+   STEM
+        NAME            -- Name of the card
+        MANUFACTURER    -- Card manufacturer
+        CARDNO          -- Number of the current card. Iterate with
+                CARD=CARDNO+1
+        VERSION         -- Version
+        CREATED         -- Creation time (YYYY-MM-DD HH:MM:SS)
+        ROMSIZE         -- Size of permanent memory
+        RAMSIZE         -- Size of volatile memory
+        RAMFREE         -- Size of free RAM space
+
+   RESULT
+        0 if there are no further entries, else any other number
+
+   NOTE
+
+   BUGS
+
+   SEE
+ 
+PDA_GetSysInfo
+
+   NAME
+        PDA_GetSysInfo -- get information about the system
+
+   SYNTAX
+        PDA_GetSysInfo(socket,stem)
+
+   FUNCTION
+        The passed stem variable is filled with information
+        about the system.
+
+   INPUT
+        socket          -- socket name
+        stem            -- name of the stem variable to be filled
+
+   STEM
+        SYSNAME         -- Name of the system
+        ROMVERSION      -- Version of the OS
+        LOCALIZION      -- Localizion code
+
+   RESULT
+
+   NOTE
+
+   BUGS
+
+   SEE
+ 
+PDA_LastError
+
+   NAME
+        PDA_LastError -- return the last error code
+
+   SYNTAX
+        PDA_LastError(socket)
+
+   FUNCTION
+        Return the code of the last error. Negative codes are PdaLink
+        errors. Positive are DLP error codes.
+
+   INPUT
+        socket          -- socket name
+
+   RESULT
+        error code
+
+   NOTE
+
+   BUGS
+
+   SEE
+ 
+PDA_NetSyncInfo
+
+   NAME
+        PDA_NetSyncInfo -- get/set information about netsync
+
+   SYNTAX
+        PDA_NetSyncInfo(socket,<parameters>,stem)
+
+   FUNCTION
+        The passed stem variable is filled with information
+        about the netsync. Optionally, some fields can be changed
+        first, using the parameters.
+
+   INPUT
+        socket          -- socket name
+        stem            -- name of the stem variable to be filled
+
+   PARAMETERS
+        LANSYNC/K/N     -- Lansync code (?)
+        HOSTNAME/K      -- Host name
+        HOSTADDRESS/K   -- Host address
+        HOSTSUBNETMASK/K -- Host subnet mask
+
+   STEM
+        LANSYNC         -- Lansync code (?)
+        HOSTNAME        -- Host name
+        HOSTADDRESS     -- Host address
+        HOSTSUBNETMASK  -- Host subnet mask
+
+   RESULT
+
+   NOTE
+
+   BUGS
+
+   SEE
+ 
+PDA_OpenConduit
+
+   NAME
+        PDA_OpenConduit -- Initialize database access
+
+   SYNTAX
+        PDA_OpenConduit(socket)
+
+   FUNCTION
+        Open the Pilot database for access. You must call this function
+        after a successful PDA_Accept.
+
+   INPUT
+        socket          -- socket name
+
+   RESULT
+        nothing
+
+   NOTE
+
+   BUGS
+
+   SEE
+ 
+PDA_OpenSocket
+
+   NAME
+        PDA_OpenSocket -- open a socket to a Palm
+
+   SYNTAX
+        PDA_OpenSocket(socket,<parameters>)
+
+   FUNCTION
+        Open a new socket to a Palm. The Pilot must be connected to
+        a serial port. As default, the internal serial port is used.
+
+   INPUT
+        socket          -- socket name of the socket to be opened
+
+   PARAMETERS
+        SD=DEVICE/K     -- serial device the pilot is connected to
+        SU=UNIT/K/N     -- serial unit
+        SB=MAXBAUD/K/N  -- maximum baud rate supported by the device
+
+   RESULT
+        nothing
+
+   NOTE
+
+   BUGS
+        Currently, a socket name is global and shared by all ARexx
+        scripts running. Please be careful not to produce a clash,
+        make sure only one script is running simultaneously.
+
+   SEE
+        PDA_CloseSocket
+ 
+PDA_ResetLastSyncPC
+
+   NAME
+        PDA_ResetLastSyncPC -- clear LastSyncPC
+
+   SYNTAX
+        PDA_ResetLastSyncPC(socket)
+
+   FUNCTION
+        Reset the LastSyncPC field in the UserInfo.
+
+   INPUT
+        socket          -- socket name
+
+   RESULT
+        nothing
+
+   NOTE
+
+   BUGS
+
+   SEE
+ 
+PDA_ResetSystem
+
+   NAME
+        PDA_ResetSystem -- reset the Palm
+
+   SYNTAX
+        PDA_ResetSystem(socket)
+
+   FUNCTION
+        Reset the Palm when the connection is closed.
+
+   INPUT
+        socket          -- socket name
+
+   RESULT
+        nothing
+
+   NOTE
+
+   BUGS
+
+   SEE
+ 
+PDA_SysTime
+
+   NAME
+        PDA_SysTime -- get/set system time
+
+   SYNTAX
+        PDA_SysTime(socket,<parameters>,stem)
+
+   FUNCTION
+        The passed stem variable is filled with information
+        about the system time. Optionally, some fields can be changed
+        first, using the parameters.
+
+   INPUT
+        socket          -- socket name
+        stem            -- name of the stem variable to be filled
+
+   PARAMETERS
+        D=DAY/K/N       -- Change the day
+        MO=MONTH/K/N    -- Change the month (1..12)
+        Y=YEAR/K/N      -- Change the year (please use 4 digits!)
+        H=HOUR/K/N      -- Change the hour
+        MI=MINUTE/K/N   -- Change the minute
+        S=SECOND/K/N    -- Change the second
+
+   STEM
+        TIME            -- Current time (YYYY-MM-DD HH:MM:SS)
+        SECOND          -- Current second
+        MINUTE          -- Current minute
+        HOUR            -- Current hour
+        DAY             -- Current Day
+        MONTH           -- Current Month (1..12)
+        YEAR            -- Current Year (4 digits)
+
+   RESULT
+
+   NOTE
+
+   BUGS
+
+   SEE
+ 
+PDA_UserInfo
+
+   NAME
+        PDA_UserInfo -- get/set information about the user
+
+   SYNTAX
+        PDA_UserInfo(socket,<parameters>,stem)
+
+   FUNCTION
+        The passed stem variable is filled with information
+        about the user. Optionally, some fields can be changed
+        first, using the parameters.
+
+   INPUT
+        socket          -- socket name
+        stem            -- name of the stem variable to be filled
+
+   PARAMETERS
+        USERNAME/K      -- Set a new user name
+        PASSWORD/K      -- Set a new password (Encrypted)
+
+   STEM
+        USERID          -- User ID
+        VIEWERID        -- Viewer ID
+        LASTSYNCPC      -- LastSyncPC code
+        LASTSYNC        -- Time of last sync attempt (YYYY-MM-DD HH:MM:SS)
+        SUCCESSFULSYNC  -- Time of last successful sync (YYYY-MM-DD HH:MM:SS)
+        USERNAME        -- User name
+        PASSWORD        -- Password (Encrypted)
+
+   RESULT
+
+   NOTE
+
+   BUGS
+
+   SEE
+        PDA_ResetLastSyncPC
+ 
+

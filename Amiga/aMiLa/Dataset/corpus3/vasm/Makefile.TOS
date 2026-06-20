@@ -1,0 +1,16 @@
+# Atari TOS 68000 low memory
+
+TARGET = _TOS
+TARGETEXTENSION = .ttp
+
+CC = vc +tos
+CCOUT = -o=
+CFLAGS = -c -merge-strings -O1 -size -DATARI -DLOWMEM -DOUTBIN -DOUTAOUT -DOUTTOS -DOUTVOBJ
+
+LD = $(CC)
+LDOUT = $(CCOUT)
+LDFLAGS = -lm
+
+RM = rm -f
+
+include make.rules

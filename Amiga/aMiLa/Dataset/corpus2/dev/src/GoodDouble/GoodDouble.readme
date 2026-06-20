@@ -1,0 +1,8 @@
+Short:        Sample code for double clicks. V0.3
+Architecture: m68k-amigaos
+Source:       Fred Fish
+
+GoodDouble	Some sample source using a couple of functions that make for
+		MUCH EASIER handling of double clicks with ALL buttons.  Works
+		perfectly! (at least with DICE...).  Version 0.3
+		Author:  Piotr Obminski

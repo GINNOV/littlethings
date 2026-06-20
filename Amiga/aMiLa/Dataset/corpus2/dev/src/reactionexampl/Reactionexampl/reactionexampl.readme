@@ -1,0 +1,45 @@
+Short:    ReAction examples
+Uploader: mrustler@t-online.de (Matthias Rustler)
+Author:   mrustler@t-online.de (Matthias Rustler)
+Type:     dev/src
+Requires: OS3.9, ANSI-C-Compiler
+Version:  0.3
+
+This archive contains some ReAction examples as C source code. If you have VBCC, you
+can compile all examples with the CompileVbcc script.
+
+reactiondemo.c  a port of the classactdemo to Reaction. To compile this with
+                VBCC, you need Stephan Rupprecht's Reactionlib replacement. You can
+                download it from http://www.stephan-rupprecht.de
+                It's not necessary to create a linker lib. I've just compiled
+                with the C-source of reactionlib:
+                vc -c99 reactiondemo.c images.c reactionlib.c -o reactiondemo
+                If you want to compile with another compiler than VBCC,
+                you must probably change the register parameters of the hook funktions.
+                Legal status: I've tried to contact Finale Development.
+                The e-mail addresses classact@finale-dev.com and
+                webmaster@finale-dev.com bounced.
+
+clicktab.c      a clicktab gadget with a page gadget
+
+listbrowser.c   a listbrowser gadget
+
+imagebutton.c   a button gadget with 2 images
+
+drawlist.c      buttons with Drawlist image
+
+bitmap.c        creates a Bitmap gadget with a self created bitmap
+
+getfile.c       shows the use of a Getfile gadget
+
+History
+-------
+0.3 2003-03-13
+reactiondemo.c, clicktab.c, listbrowser.c and imagebutton.c added
+
+0.2 2002-09-28
+drawlist.c added, getfile.c bugfixed
+
+0.1 2002-05-24
+first release
+

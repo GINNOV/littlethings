@@ -1,0 +1,87 @@
+Short:        A python script to swap bytes.
+Author:       B2k_ad (florian beusse)
+Uploader:     flofu0815 googlemail com
+Type:         dev/src
+Version:      0.5
+Requires:     A System running: dev/lang/Python20
+Architecture: generic
+
+Short:
+-------
+E-ROMATO
+
+Eeasy ROM Altering TOol..... you see i will never regret that name .... ever.
+
+
+This is my first script as i learn Python. If your Computer Explodes using it... blame somebody else!
+
+Somehow thanks to AI help and lot of trial and error it actually works!
+
+
+Why?
+----
+Why not Use REMUS ?
+Haven't got a clue ! 
+This script is easy i guess apart from Python 2.0 and two drawers in: "SYS:" it won't need anything. 
+
+
+What it actually does
+---------------------
+It will swap bytes of any file you throw at it,
+very useful for Kickstart Files that you want to burn on Flash Roms for instance.
+
+Rom files in the path "SYS:PYIN/unswapped.rom" will be swapped and stored in "SYS:PYOUT/swapped.bin"
+ 
+If you want to burn Kickstart 1.3 as it might happen, the resulting .bin file will be doubled
+to match a 512KB Flash ROM 
+
+
+
+
+Requirements
+------------
+Python 2.0 and any system to run it at measureable speed.
+
+A Drawer in SYS: called "PYIN" and one called "PYOUT"
+ 
+IF you don't use AMIGA OS, "SYS:" obviously won't work!
+For that you may alter the script.
+
+
+
+
+NOTE
+----
+This release is missing features that i plan to add.
+Once my python skills are a bit less limited, if that ever happens
+ 
+
+INSTALL
+-------
+
+Make Directory SYS:PYIN
+Make Directory SYS:PYOUT
+
+Copy E-ROMATO.py to your Python main drawer (this will allow to call "E-ROMATO.py" very easy) 
+
+Copy E-ROMATO.info anywhere you want
+
+
+USAGE: 
+------
+
+Copy the Kickrom file in question to SYS:PYIN and rename it "unswapped.rom"
+
+Klick the Tomato
+
+OR open a shell
+OR the Execute window by pressing Left Amiga + E and type python E-ROMATO.py
+
+WAIT..... it takes some time.
+
+After it's done swapped.bin will appear in SYS:PYOUT you can burn this to your ROM chip now.
+
+
+Winner don't use stolen ROMs!
+Thats all
+B2k_ad

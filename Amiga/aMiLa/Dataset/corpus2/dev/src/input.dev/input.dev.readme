@@ -1,0 +1,11 @@
+Short:        Trap keyboard or mouse events.
+Author:       Rob Peck 12/1/85
+Architecture: m68k-amigaos
+Source:       Fish collection
+
+In combination with hander.interface.asm (supplied), lets a user trap
+keyboard or mouse events before they get to Intuition and if desired,
+install new (phony/ generated/other-devices-mouse-simulations) into the
+input stream.  Handler.interface.asm is needed to convert the calling
+sequence performed by the input.task for the input stream management into
+something that a C program can understand.  

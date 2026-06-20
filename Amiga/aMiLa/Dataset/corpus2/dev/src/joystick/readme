@@ -1,0 +1,17 @@
+joy.c
+-----
+This Source Code is 100% Public Domain. 
+
+	This is an Example program on how to read joystick values 
+quickly.  The system gameport.device is nice but it's not
+ideally suited for grabbing joystick values in a hurry, as
+is often done in arcade games, etc.  This function is less
+friendly than using the gameport.device because it's designed
+to be called from a loop, which may not be the best thing
+to do in a multitasking situation.  Use this function with
+caution as it does read the hardware directly.
+This source can read from joysticks in either port
+and understands the second fire button used on Sega
+style joysticks.
+
+Send Questions, Comments, etc to : gfm@gnu.ai.mit.edu

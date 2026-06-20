@@ -1,0 +1,1018 @@
+TABLE OF CONTENTS
+
+BitMap24/---background--
+BitMap24/BitMap24
+BitMap24/~BitMap24
+BitMap24/GetError
+BitMap24/HasError
+BitMap24/ResetError
+BitMap24/GetErrorStr
+BitMap24/GetWidth
+BitMap24/GetHeight
+BitMap24/GetRealWidth
+BitMap24/GetRealHeight
+BitMap24/GetColour
+BitMap24/GetRed
+BitMap24/GetGreen
+BitMap24/GetBlue
+BitMap24/SetColour
+BitMap24/GetWidthFast
+BitMap24/GetHeightFast
+BitMap24/GetRealWidthFast
+BitMap24/GetRealHeightFast
+BitMap24/GetColourFast
+BitMap24/GetRedFast
+BitMap24/GetGreenFast
+BitMap24/GetBlueFast
+BitMap24/SetColourFast
+BitMap24/WriteBitMap
+BitMap24/ReadBitMap
+BitMap24/GetBitMap
+BitMap24/SetSize
+BitMap24/BoundsCheck
+
+
+BitMap24/--background--                               BitMap24/--background--
+
+   NAME
+        BitMap24 - A 24 bit bitmap class with IFF loading and saving
+
+   PURPOSE
+        This document describes the BitMap24 class, which handles 24 bit
+        bitmap data.
+
+        The class can be roughly split in two parts. There are the normal
+        methods, which include error checking for out of bound data, and the
+        fast inline versions with no error checking.
+
+        Bitmaps can also be saved in 24 bit IFF format, as well as loaded.
+        Note that for loading, the bitmap must also be 24 bit. Loading and
+        saving is implemented using IFFParse library routines.
+
+   LICENSE
+        This document is Copyright (C) 1999 Jarno van der Linden
+        jarno@kcbbs.gen.nz
+
+           Permission is granted to make and distribute verbatim copies of
+        this manual provided the copyright notice and this permission notice
+        are preserved on all copies.
+
+           Permission is granted to copy and distribute modified versions of
+        this manual under the conditions for verbatim copying, provided also
+        that the entire resulting derived work is distributed under the terms
+        of a permission notice identical to this one.
+
+           Permission is granted to copy and distribute translations of this
+        manual into another language, under the above conditions for modified
+        versions.
+
+
+        The BitMap24 library is Copyright (C) 1999  Jarno van der Linden
+        jarno@kcbbs.gen.nz
+
+        This library is free software; you can redistribute it and/or
+        modify it under the terms of the GNU Library General Public
+        License as published by the Free Software Foundation; either
+        version 2 of the License, or (at your option) any later version.
+
+        This library is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+        Library General Public License for more details.
+
+        You should have received a copy of the GNU Library General Public
+        License along with this library; if not, write to the
+        Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+        Cambridge, MA 02139, USA.
+
+
+
+BitMap24/BitMap24                                           BitMap24/BitMap24
+
+   NAME
+        BitMap24 - Class constructor
+
+   SYNOPSIS
+        BitMap24()
+        
+        BitMap24(void);
+        
+        BitMap24(filename)
+        
+        BitMap24(char *);
+
+   FUNCTION
+        A new instance of the class is created. The width and height can be
+        anything. Internally, the bitmap will be enlarged to a multiple of
+        16 in width. The bitmap will be zeroed.
+        
+        The first form creates a bitmap object. It must be initialized by
+        setting a size with SetSize(), or loading a bitmap from a file.
+        The second form attempts to load a bitmap from a 24 bit ILBM IFF
+        file.
+
+   INPUTS
+        filename - Name of a 24 bit ILBM IFF file to read bitmap from
+
+   RESULTS
+        A very cute bouncy healthy bitmap object
+
+   ERRORS SET
+        If the bitmap fails to allocate, BITMAP24_ERROR_NOBITMAP will be set.
+        If the bitmap is read from a file, the errors listed for the
+        ReadBitMap() method also apply.
+
+   BUGS
+        Strange things might happen if width or height is set to zero
+
+   SEE ALSO
+        ~BitMap24()
+
+
+BitMap24/~BitMap24                                         BitMap24/~BitMap24
+
+   NAME
+        ~BitMap24 - Class destructor
+
+   SYNOPSIS
+        ~BitMap24()
+
+        ~BitMap24(void);
+
+   FUNCTION
+        The instance of the class is deleted. Any memory allocated for the
+        object will be deleted.
+
+   INPUTS
+        None
+
+   RESULTS
+        The complete and utter destruction
+
+   ERRORS SET
+        None
+
+   BUGS
+        None
+
+   SEE ALSO
+        BitMap24()
+
+
+BitMap24/GetError                                           BitMap24/GetError
+
+   NAME
+        GetError - Obtain the error code currently set
+
+   SYNOPSIS
+        result = GetError()
+
+        int GetError(void);
+
+   FUNCTION
+        Some method calls may set an error code of something bad happens.
+        This method returns the currently set error code. Note that error
+        codes don't accumulate, but are overwritten by subsequent errors.
+
+   INPUTS
+        None
+
+   RESULTS
+        result - A (non-)error code. Currently defined are:
+             BITMAP24_ERROR_NONE         : No error
+             BITMAP24_ERROR_NOBITMAP     : BitMap couldn't be allocated
+             BITMAP24_ERROR_FILEOPEN     : Error opening output file
+             BITMAP24_ERROR_OUTOFBOUNDS  : Out of bounds coordinate used
+             BITMAP24_ERROR_ALLOCFAILURE : Memory allocation failure
+             BITMAP24_ERROR_FILEFORMAT   : File format not what expected
+             BITMAP24_ERROR_PARSE        : Error during parsing
+             BITMAP24_ERROR_PREPARSE     : Error during parsing
+
+   ERRORS SET
+        None
+
+   BUGS
+        None
+
+   SEE ALSO
+        HasError(), GetErrorStr(), ResetError()
+
+
+BitMap24/HasError                                           BitMap24/HasError
+
+   NAME
+        HasError - Checks if an error is set
+
+   SYNOPSIS
+        result = HasError()
+
+        BOOL HasError(void);
+
+   FUNCTION
+        Checks to see if an error has occured.
+
+   INPUTS
+        None
+
+   RESULTS
+        result - TRUE if there is an error, FALSE otherwise
+
+   ERRORS SET
+        None
+
+   BUGS
+        None
+
+   SEE ALSO
+        GetError(), GetErrorStr(), ResetError()
+
+
+BitMap24/ResetError                                       BitMap24/ResetError
+
+   NAME
+        ResetError - Retrieve current error value and reset
+
+   SYNOPSIS
+        result = ResetError()
+
+        int ResetError(void);
+
+   FUNCTION
+        This is similar to GetError(), except that the internal error
+        indicator is also reset to BITMAP24_ERROR_NONE.
+
+   INPUTS
+        None
+
+   RESULTS
+        result - The error code set at the time of the call
+
+   ERRORS SET
+        Current error is always set to BITMAP24_ERROR_NONE
+
+   BUGS
+        None
+
+   SEE ALSO
+        GetError(), HasError(), GetErrorStr()
+
+
+BitMap24/GetErrorStr                                     BitMap24/GetErrorStr
+
+   NAME
+        GetErrorStr - Obtain a string explaining an error
+
+   SYNOPSIS
+        GetErrorStr(error)
+
+        char *GetErrorStr(int);
+
+        GetErrorStr()
+
+        char *GetErrorStr(void);
+
+   FUNCTION
+        The first form results in a pointer to a string giving a short
+        explanation of the given error code.
+        The second form does the same thing, but using the currently set
+        error code.
+
+   INPUTS
+        error - The error code for which to get an explanation. See
+                GetError() for a list of valid error codes.
+
+   RESULTS
+        result - String explaining the error
+
+   ERRORS SET
+        None
+
+   BUGS
+        None
+
+   SEE ALSO
+        GetError(), ResetError()
+
+
+BitMap24/GetWidth                                           BitMap24/GetWidth
+
+   NAME
+        GetWidth - Obtain BitMap width
+
+   SYNOPSIS
+        result = GetWidth()
+
+        UWORD GetWidth(void);
+
+   FUNCTION
+        Gets the width of the bitmap. This is the actual width with which the
+        bitmap was allocated. Generally it is different from the width passed
+        in the constructor.
+
+   INPUTS
+        None
+
+   RESULTS
+        result - The width of the bitmap
+
+   ERRORS SET
+        None
+
+   BUGS
+        None
+
+   SEE ALSO
+        GetWidthFast(), GetRealWidth(), GetHeight()
+
+
+BitMap24/GetHeight                                         BitMap24/GetHeight
+
+   NAME
+        GetHeight - Obtain BitMap height
+
+   SYNOPSIS
+        result = GetHeight()
+
+        UWORD GetHeight(void);
+
+   FUNCTION
+        Gets the height of the bitmap. This is the actual height with which
+        the bitmap was allocated. Generally it is different from the height
+        passed in the constructor.
+
+   INPUTS
+        None
+
+   RESULTS
+        result - The height of the bitmap
+
+   ERRORS SET
+        None
+
+   BUGS
+        None
+
+   SEE ALSO
+        GetHeightFast(), GetRealHeight(), GetWidth()
+
+
+BitMap24/GetRealWidth                                   BitMap24/GetRealWidth
+
+   NAME
+        GetRealWidth - Obtain requested BitMap width
+
+   SYNOPSIS
+        result = GetRealWidth()
+
+        UWORD GetRealWidth(void);
+
+   FUNCTION
+        Gets the width of the bitmap as requested in the constructor. This is
+        the width on which bounds checking is done.
+
+   INPUTS
+        None
+
+   RESULTS
+        result - The real width of the bitmap
+
+   ERRORS SET
+        None
+
+   BUGS
+        None
+
+   SEE ALSO
+        GetRealWidthFast(). GetWidth(), GetRealHeight()
+
+
+BitMap24/GetRealHeight                                 BitMap24/GetRealHeight
+
+   NAME
+        GetRealHeight - Obtain requested BitMap height
+
+   SYNOPSIS
+        result = GetRealHeight()
+
+        UWORD GetRealHeight(void);
+
+   FUNCTION
+        Gets the height of the bitmap as requested in the constructor. This
+        is the height on which bounds checking is done.
+
+   INPUTS
+        None
+
+   RESULTS
+        result - The real height of the bitmap
+
+   ERRORS SET
+        None
+
+   BUGS
+        None
+
+   SEE ALSO
+        GetRealHeightFast(), GetHeight(), GetRealWidth()
+
+
+BitMap24/GetColour                                         BitMap24/GetColour
+
+   NAME
+        GetColour - Obtain the colour at a point in the bitmap
+
+   SYNOPSIS
+        GetColour(colour, x, y)
+
+        void GetColour(Colour *, int, int);
+
+   FUNCTION
+        Gets the colour set at a given point in the bitmap.
+
+   INPUTS
+        colour - Pointer to memory where the obtained colour can be stored
+        x, y - BitMap coordinates from where to obtain the colour
+
+   RESULTS
+        None
+
+   ERRORS SET
+        BITMAP24_ERROR_OUTOFBOUNDS if the coordinate is outside the drawable
+        area of the bitmap.
+
+   BUGS
+        None
+
+   SEE ALSO
+        GetColourFast(), GetRed(), GetGreen(), GetBlue(), SetColour()
+
+
+BitMap24/GetRed                                               BitMap24/GetRed
+
+   NAME
+        GetRed - Obtain the red component at a point in the bitmap
+
+   SYNOPSIS
+        result = GetRed(x, y)
+
+        UBYTE GetRed(int, int);
+
+   FUNCTION
+        Gets the red component set at a given point in the bitmap.
+
+   INPUTS
+        x, y - BitMap coordinates from where to obtain the colour
+
+   RESULTS
+        result - Red component at the given coordinate
+
+   ERRORS SET
+        BITMAP24_ERROR_OUTOFBOUNDS if the coordinate is outside the drawable
+        area of the bitmap.
+
+   BUGS
+        None
+
+   SEE ALSO
+        GetRedFast(), GetGreen(), GetBlue(), GetColour()
+
+
+BitMap24/GetGreen                                           BitMap24/GetGreen
+
+   NAME
+        GetGreen - Obtain the green component at a point in the bitmap
+
+   SYNOPSIS
+        result = GetGreen(x, y)
+
+        UBYTE GetGreen(int, int);
+
+   FUNCTION
+        Gets the green component set at a given point in the bitmap.
+
+   INPUTS
+        x, y - BitMap coordinates from where to obtain the colour
+
+   RESULTS
+        result - Green component at the given coordinate
+
+   ERRORS SET
+        BITMAP24_ERROR_OUTOFBOUNDS if the coordinate is outside the drawable
+        area of the bitmap.
+
+   BUGS
+        None
+
+   SEE ALSO
+        GetGreenFast(), GetRed(), GetBlue(), GetColour()
+
+
+BitMap24/GetBlue                                             BitMap24/GetBlue
+
+   NAME
+        GetBlue - Obtain the blue component at a point in the bitmap
+
+   SYNOPSIS
+        result = GetBlue(x, y)
+
+        UBYTE GetBlue(int, int);
+
+   FUNCTION
+        Gets the blue component set at a given point in the bitmap.
+
+   INPUTS
+        x, y - BitMap coordinates from where to obtain the colour
+
+   RESULTS
+        result - Blue component at the given coordinate
+
+   ERRORS SET
+        BITMAP24_ERROR_OUTOFBOUNDS if the coordinate is outside the drawable
+        area of the bitmap.
+
+   BUGS
+        None
+
+   SEE ALSO
+        GetBlueFast(), GetRed(), GetGreen(), GetColour()
+
+
+BitMap24/SetColour                                         BitMap24/SetColour
+
+   NAME
+        SetColour - Set the colour at a position in the bitmap
+
+   SYNOPSIS
+        SetColour(r, g, b, x, y)
+
+        void SetColour(UBYTE, UBYTE, UBYTE, int, int);
+
+        SetColour(colour, x, y)
+
+        void SetColour(const Colour &, int, int);
+
+   FUNCTION
+        Sets the colour at a specific position in the bitmap.
+
+   INPUTS
+        r, g, b - Colour to set
+        colour - Colour to set
+        x, y - BitMap coordinates where to colour is to be set
+
+   RESULTS
+        None
+
+   ERRORS SET
+        BITMAP24_ERROR_OUTOFBOUNDS if the coordinate is outside the drawable
+        area of the bitmap.
+
+   BUGS
+        None
+
+   SEE ALSO
+        SetColourFast(), SetRed(), SetGreen(), SetBlue()
+
+
+BitMap24/GetWidthFast                                   BitMap24/GetWidthFast
+
+   NAME
+        GetWidthFast - Obtain BitMap width, inlined
+
+   SYNOPSIS
+        result = GetWidthFast()
+
+        inline UWORD GetWidthFast(void);
+
+   FUNCTION
+        Inlined version of GetWidth().
+
+   INPUTS
+        None
+
+   RESULTS
+        result - The width of the bitmap
+
+   ERRORS SET
+        None
+
+   BUGS
+        None
+
+   SEE ALSO
+        GetWidth(), GetRealWidthFast(), GetHeightFast()
+
+
+BitMap24/GetHeightFast                                 BitMap24/GetHeightFast
+
+   NAME
+        GetHeightFast - Obtain BitMap height, inlined
+
+   SYNOPSIS
+        result = GetHeightFast()
+
+        inline UWORD GetHeightFast(void);
+
+   FUNCTION
+        Inlined version of GetHeight().
+
+   INPUTS
+        None
+
+   RESULTS
+        result - The height of the bitmap
+
+   ERRORS SET
+        None
+
+   BUGS
+        None
+
+   SEE ALSO
+        GetHeight(), GetRealHeightFast(), GetWidthFast()
+
+
+BitMap24/GetRealWidthFast                           BitMap24/GetRealWidthFast
+
+   NAME
+        GetRealWidthFast - Obtain requested BitMap width, inlined
+
+   SYNOPSIS
+        result = GetRealWidthFast()
+
+        inline UWORD GetRealWidthFast(void);
+
+   FUNCTION
+        Inlined version of GetRealWidth().
+
+   INPUTS
+        None
+
+   RESULTS
+        result - The real width of the bitmap
+
+   ERRORS SET
+        None
+
+   BUGS
+        None
+
+   SEE ALSO
+        GetRealWidth(), GetWidthFast(), GetRealHeightFast()
+
+
+BitMap24/GetRealHeightFast                         BitMap24/GetRealHeightFast
+
+   NAME
+        GetRealHeightFast - Obtain requested BitMap height, inlined
+
+   SYNOPSIS
+        result = GetRealHeightFast()
+
+        inline UWORD GetRealHeightFast(void);
+
+   FUNCTION
+        Inlined version of GetHeightWidth().
+
+   INPUTS
+        None
+
+   RESULTS
+        result - The real height of the bitmap
+
+   ERRORS SET
+        None
+
+   BUGS
+        None
+
+   SEE ALSO
+        GetRealHeight, GetHeightFast(), GetRealWidthFast()
+
+
+BitMap24/GetColourFast                                 BitMap24/GetColourFast
+
+   NAME
+        GetColourFast - Obtain the colour at a point in the bitmap, inlined
+
+   SYNOPSIS
+        GetColourFast(colour, x, y)
+
+        inline void GetColourFast(Colour *, int, int);
+
+   FUNCTION
+        Inlined version of GetColour(). No error checking is done.
+
+   INPUTS
+        colour - Pointer to memory where the obtained colour can be stored
+        x, y - BitMap coordinates from where to obtain the colour
+
+   RESULTS
+        None
+
+   ERRORS SET
+        None
+
+   BUGS
+        None
+
+   SEE ALSO
+        GetColour(), GetRedFast(), GetGreenFast(), GetBlueFast(),
+        SetColourFast()
+
+
+BitMap24/GetRedFast                                       BitMap24/GetRedFast
+
+   NAME
+        GetRedFast - Obtain the red component at a point in the bitmap,
+                     inlined
+
+   SYNOPSIS
+        result = GetRedFast(x, y)
+
+        inline UBYTE GetRedFast(int, int);
+
+   FUNCTION
+        Inlined version of GetRed(). No error checking is done.
+
+   INPUTS
+        x, y - BitMap coordinates from where to obtain the colour
+
+   RESULTS
+        result - Red component at the given coordinate
+
+   ERRORS SET
+        None
+
+   BUGS
+        None
+
+   SEE ALSO
+        GetRed(), GetGreenFast(), GetBlueFast(), GetColourFast()
+
+
+BitMap24/GetGreenFast                                   BitMap24/GetGreenFast
+
+   NAME
+        GetGreenFast - Obtain the green component at a point in the bitmap,
+                       inlined
+
+   SYNOPSIS
+        result = GetGreenFast(x, y)
+
+        inline UBYTE GetGreenFast(int, int);
+
+   FUNCTION
+        Inlined version of GetGreen(). No error checking is done.
+
+   INPUTS
+        x, y - BitMap coordinates from where to obtain the colour
+
+   RESULTS
+        result - Green component at the given coordinate
+
+   ERRORS SET
+        None
+
+   BUGS
+        None
+
+   SEE ALSO
+        GetGreen(), GetRedFast(), GetBlueFast(), GetColourFast()
+
+
+BitMap24/GetBlueFast                                     BitMap24/GetBlueFast
+
+   NAME
+        GetBlueFast - Obtain the blue component at a point in the bitmap,
+                      inlined
+
+   SYNOPSIS
+        result = GetBlueFast(x, y)
+
+        UBYTE GetBlueFast(int, int);
+
+   FUNCTION
+        Inlined version of GetBlue(). No error checking is done.
+
+   INPUTS
+        x, y - BitMap coordinates from where to obtain the colour
+
+   RESULTS
+        result - Blue component at the given coordinate
+
+   ERRORS SET
+        None
+
+   BUGS
+        None
+
+   SEE ALSO
+        GetBlue(), GetRedFast(), GetGreenFast(), GetColourFast()
+
+
+BitMap24/SetColourFast                                 BitMap24/SetColourFast
+
+   NAME
+        SetColourFast - Set the colour at a position in the bitmap, inlined
+
+   SYNOPSIS
+        SetColourFast(r, g, b, x, y)
+
+        void SetColourFast(UBYTE, UBYTE, UBYTE, int, int);
+
+        SetColourFast(colour, x, y)
+
+        void SetColourFast(const Colour &, int, int);
+
+   FUNCTION
+        Inlined version of SetColour(). No error checking is done.
+
+   INPUTS
+        r, g, b - Colour to set
+        colour - Colour to set
+        x, y - BitMap coordinates where to colour is to be set
+
+   RESULTS
+        None
+
+   ERRORS SET
+        None
+
+   BUGS
+        None
+
+   SEE ALSO
+        SetColour(), SetRedFast(), SetGreenFast(), SetBlueFast()
+
+
+BitMap24/WriteBitMap                                     BitMap24/WriteBitMap
+
+   NAME
+        WriteBitMap - Write the bitmap to a 24 bit ILBM IFF file
+
+   SYNOPSIS
+        WriteBitMap(filename)
+
+        void WriteBitMap(char *);
+
+   FUNCTION
+        The bitmap is written to a new 24 bit IFF ILBM file. This uses the
+        IFFParse library, and isn't particularly fast.
+
+   INPUTS
+        filename - Name of the new file to write to
+
+   RESULTS
+        None
+
+   ERRORS SET
+        If the IFF handle failed to allocate, BITMAP24_ERROR_ALLOCFAILURE
+        will be set. If the file failed to open for writing, the error code
+        BITMAP24_ERROR_FILEOPEN is set.
+
+   BUGS
+        There is no error checking while writing to a file.
+
+   SEE ALSO
+        ReadBitMap()
+
+
+BitMap24/ReadBitMap                                       BitMap24/ReadBitMap
+
+   NAME
+        ReadBitMap - Read bitmap from a 24 bit ILBM IFF file
+
+   SYNOPSIS
+        ReadBitMap(filename)
+
+        void ReadBitMap(char *);
+
+   FUNCTION
+        The bitmap is read from an existing 24 bit IFF ILBM file. This uses
+        the IFFParse library, and isn't particularly fast.
+        Any bitmap data already present in the class instance will be
+        deleted. The size of the bitmap will also be reset to match the
+        bitmap in the file.
+        Both compressed and uncompressed 24 bit ILBM IFF files are supported.
+
+   INPUTS
+        filename - Name of the file from which to read bitmap data
+
+   RESULTS
+        None
+
+   ERRORS SET
+        If the IFF handle failed to allocate, BITMAP24_ERROR_ALLOCFAILURE
+        will be set. If the file failed to open for reading, the error code
+        BITMAP24_ERROR_FILEOPEN is set. If something went wrong while setting
+        up the parser, BITMAP24_ERROR_PREPARSE is set. If an error occured
+        during parsing, BITMAP24_ERROR_PARSE is indicated. If the file
+        appears not to be a 24 bit ILBM IFF file, the error is set to
+        BITMAP24_ERROR_FILEFORMAT. As the bitmap internal to the class
+        instance is reallocated, you can also expect BITMAP24_ERROR_NOBITMAP.
+
+   BUGS
+        None
+
+   SEE ALSO
+        WriteBitMap()
+
+
+BitMap24/GetBitMap                                         BitMap24/GetBitMap
+
+   NAME
+        GetBitMap - Get a pointer to the bitmap data, inlined
+
+   SYNOPSIS
+        result = GetBitMap()
+
+        inline UBYTE *GetBitMap(void);
+
+   FUNCTION
+        If for some reason you really need to have access to the raw bitmap
+        data, this will get you a pointer to it. Use the GetWidth() and
+        GetHeight() functions (or the inlined versions) to get the size of
+        the bitmap array.
+        The bitmap is constructed as a row major array of RGB values. The
+        useable area of the bitmap is given by GetRealWidth() and
+        GetRealHeight() (or the inlined versions).
+
+   INPUTS
+        None
+
+   RESULTS
+        result - Pointer to raw bitmap data
+
+   ERRORS SET
+        None
+
+   BUGS
+        None
+
+   SEE ALSO
+
+
+BitMap24/SetSize                                             BitMap24/SetSize
+
+   NAME
+        SetSize - Set the bitmap size to something else
+
+   SYNOPSIS
+        SetSize(width, height)
+
+        void SetSize(UWORD, UWORD);
+
+   FUNCTION
+        The current bitmap data is destroyed, and a new bitmap of
+        approximately the requested size is allocated. Internally, the bitmap
+        will be enlarged to a multiple of 16 in width. The bitmap will be
+        zeroed.
+
+   INPUTS
+        width - Requested bitmap width
+        height - Requested bitmap height
+
+   RESULTS
+        None
+
+   ERRORS SET
+        If the new bitmap failed to allocate, BITMAP24_ERROR_NOBITMAP will be
+        set. Note that if this occurs, your old bitmap data will be gone.
+
+   BUGS
+        None
+
+   SEE ALSO
+
+
+BitMap24/BoundsCheck                                     BitMap24/BoundsCheck
+
+   NAME
+        BoundsCheck - Check if coordinates are within the bitmap
+
+   SYNOPSIS
+        result = BoundsCheck(x, y)
+
+        BOOL BoundsCheck(int, int);
+
+   FUNCTION
+        The given coordinates are compared with the bitmap size. If the
+        coordinates fall within the drawable area of the bitmap (as defined
+        by the Get{Width|Height}[Fast]() methods), the call will succeed.
+
+   INPUTS
+        x, y - Coordinate to check
+
+   RESULTS
+        result - TRUE if coordinate is within the bitmap bounds, FALSE
+                 otherwise
+
+   ERRORS SET
+        If the coordinate is outside the bounds of the bitmap, the error
+        BITMAP24_ERROR_OUTOFBOUNDS is set.
+
+   BUGS
+        None
+
+   SEE ALSO
+

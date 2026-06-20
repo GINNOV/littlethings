@@ -1,0 +1,28 @@
+ccrc v0.2.2 Copyright (c) 2004 mypapit.
+ccrc is previously known as CRC32.
+Simple program which sole purpose is to calculate the crc32/adler32 checksum of files
+
+This package also includes minicrc class. A C++ class that helps to calculate crc32 checksums.
+
+The crc32 algorithm were taken from zlib data compression library (http://www.gzip.org/zlib).
+The Adler-32 algorithm were taken from RFC 1950 (the gzip compression format).
+
+This software is designed to be simple enough to be usable as well as educational for the curious mind of the internal working of crc32 and adler32 checksum algorithm implemented in C. The program can be compile also under 16bit and 32bit environment, using Turbo C++ 1.01 and Microsoft Visual C 6.0 respectively.It should be compiled fine under other ANSI C compliant compiler.
+
+The CCRC C++ class with some examples is located inside minicrc/ directory. The CCRC class documentation is included in the minicrc/html/
+
+Source code and the latest version of this software can be obtained at : 
+
+project pages :
+http://sarovar.org/projects/minicrc
+
+related page :
+http://ppsplit.sourceforge.net
+http://papit.cjb.net
+
+Author's email : 
+
+papit58@yahoo.com
+papit01@lycos.com
+
+

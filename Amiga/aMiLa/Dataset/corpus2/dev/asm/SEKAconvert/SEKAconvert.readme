@@ -1,0 +1,9 @@
+Short:        converts SEKA source to MCC source
+Uploader:     stenuit vm1 rice ucl ac be
+Type:         dev/asm
+Architecture: m68k-amigaos
+
+
+Converts a source file written in SEKA (most old european demos) to a source
+file generating no or little errors when compiled with a Metacomco-like
+compiler (Devpac for instance).

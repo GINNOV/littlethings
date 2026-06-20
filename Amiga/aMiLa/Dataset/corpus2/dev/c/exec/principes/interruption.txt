@@ -1,0 +1,7 @@
+Voir le fichier <exec/interruption.h>
+
+Remarque: si des niveaux d'interruptions élevées sont utilisés, il est
+meilleur, pour tout le système d'interruption de l'Amiga, de différer
+l'interruption par une interruption logicielle. Elle a précédence sur la
+commutation de tâche et s'exécuterait comme un interruption normale.
+

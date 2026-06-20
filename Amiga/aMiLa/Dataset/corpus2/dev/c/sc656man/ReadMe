@@ -1,0 +1,55 @@
+	Using AmigaGuide AutoDocs inside SE
+	-----------------------------------
+	
+	In order to accomplish this task you should have:
+	
+	- SAS/C v6.50+ fully installed
+	- Amiga AutoDocs (.doc files) from Commodore
+	- ARexx
+	- AD2AG from Commodore
+	
+	You can find both AD2AG and the Amiga AutoDocs for v40.68 in the Amiga Developer CD v1.1. GET THIS CD!
+It is ESSENTIAL in order to program the Amiga correctly.
+
+	Updating your SE:
+	-----------------
+	
+	1. Copy the supplied file "man.se" in your SC:Rexx directory.
+	2. Load up SE and select the Configuration Screen. Assign to a key the macro
+				RM "sc:rexx/man.se"
+	3. Select SAVE.
+	
+	Now everytime the cursor is in an Amiga or library function, by pressing the assigned key you will
+get information about the specified function.
+
+	Creating the AmigaGuide AutoDocs
+	--------------------------------
+	
+	1. Copy ALL your AutoDocs in a directory. The files should have the filename extension .doc.
+	2. CD to that directory.
+	3. Type (in a Shell): 		AD2AG "" xref Include Include:
+		(don't forget the "" or the program will complain about missing AutoDocs). The program will scan
+		ALL the autodocs in current directory and the include files in your Include: assign. It will create
+		the Cross-Reference file "autodocs.xref".
+	4. Now, type again in the Shell:
+				AD2AG "" TO <destination-directory> XRefFile autodocs.xref Contents AutoDocs.guide
+	   The program will start the conversion progress. Be warned: if you have A LOT of autodocs, this
+	   operation will take some time. On my A3000/25 for all the Amiga AutoDocs & MUI AutoDocs, it took
+	   about 40 minutes.
+	   
+	   After the conversion is over, you'll find in the <destination-directory> ALL your AutoDocs files in
+	   AmigaGuide format, PLUS the file AutoDocs.guide which will contain listings of all your autodocs functions.
+	
+	5. Copy the file "AutoDocs.XRef" to the directory where the Autodocs.Guide file is.
+	   
+	   NOTE: it is advised that <destination-directory> should be SC:Help/AutoDocs; otherwise you'll have to
+	   change the decleration in the file "man.se" in order to find the file "AutoDocs.guide".
+	 
+	 
+Manolis S Pappas
+Infinity Labs Administrator
+Thermopilon 24
+14231 Nea Ionia
+Athens
+GREECE
+mpappas@ba.aegean.gr

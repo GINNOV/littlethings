@@ -1,0 +1,60 @@
+*****************************************************************
+*                                                               *
+*          The files in this drawer are Public-Domain           *
+*                                                               *
+*                        Dieter Bruns                           *
+*                                                               *
+*                                                               *
+*****************************************************************
+
+                  CONTENTS of this drawer
+
+PlayHit :  For demo
+-------------------
+Created with following commands:
+lc PlayHit.c
+blink lib:c.o PlayHit.o Hit.o lib lib:lc.lib
+
+
+PlayBeep : For demo
+-------------------
+Created with following commands:
+lc PlayBeep.c
+blink lib:c.o PlayBeep.o Hit.o lib lib:lc.lib
+
+
+Hit.asm  Beep.asm : Source
+----------------
+Written with Devpac
+Result: Hit.o  Beep.o
+
+Hit.o  Beep.o : Linkfiles for Blink
+-------------------------
+Link this files to your programm, if you want use
+it with e.g: Lattice-C.
+
+
+PlayHit.c PlayHit.asm PlayBeep.c PlayBeep.asm
+---------------------------------------------
+These files show you, how to call Hit() and Beep() from Lattice-C
+or Assembler.
+
+
+Beep Hit
+--------
+They are the result of:
+Blink Hit.o
+Blink Beep.o
+
+This will automatically load the audio-data into CHIP-RAM !
+
+
+
+address :
+
+Dieter Bruns                  Dieter Bruns
+Lilienweg 131        or       Rebenring 63/0521
+2725 Hemsbünde                3300 Braunschweig
+WEST-GERMANY                  WEST-GERMANY
+Tel.: 04266-677               Tel.: 0531-344416
+

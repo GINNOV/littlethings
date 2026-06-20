@@ -1,0 +1,82 @@
+
+ *=-----------------------------------------------------------------------=*
+
+                             The PLLB-C2P Demo's
+
+                   Written (hacked together) by Kevin Picone
+
+            (c) copyright 1996, Kevin Picone, Of Underware Design
+
+                         Lasted Updated: 27-4-1996
+
+ *=-----------------------------------------------------------------------=*
+
+ 
+
+ Zrotate/Flexer:   256/64 & 16 colours, 320*256, Pixel Res of 1x*2y
+ ===============
+
+ With this routine and the type of image that it uses, I've selected
+ to use the Normal Pllb-C2P mode in all three demos.  If the Image was
+ less complex (ie. more solid colour areas) or moved less, well I would
+ have been better suited to use the DELTA modes.
+
+ Unfortunately, the code that renders the rotated Scanlines is quite slow.
+ Here is an example of the code render just a single pixel in the rotated
+ line.
+
+ ; a0 = pointer to chunky buffer
+ ; a2 ='s pointer to Picture's address ie. picture is (256*256 pixels)
+
+ ;	Render Pixel	
+
+	move.w d2,d4		; backup X position
+	move.w d3,d5		: Backup Y position
+
+	lsr.w #8,d4		; shift x position into lower Byte 
+	move.b d4,d5		; move X position into y pos
+
+	move.b (a2,d5.l),(a0)+		; Grab & output pixel
+
+	add.w d0,d2		; add X fraction to X offset!
+	add.w d1,d3		; add Y fraction to Y offset!
+
+
+ On my A1200/020 14mhz+fastram it's runs at an Average of 6.8 Fps
+
+
+
+
+
+ Gouraud Cube:     256 colours, 320*256, Pixel Res of 1x*2y 
+ =============
+
+ In these little demos, I've selected to use a both the NULLSKIP C2P,
+ and the new DELTANULLSKIP c2p routines, which are denoted NS & DNS
+ respectively in the filenames. I've select these since there is obviously
+ quite a large amount of unused screen space, and not to mention that
+ this C2P mode also clears the chunky buffer for me.
+
+ Unfortunately again, the Gouraud code is extremely slow, with the inner
+ draw gouraud scanline loop looking something like this..
+ 
+ DrawGouraudScanLine_lp:
+            move.w d4,d0
+            lsr.w #8,d0
+            move.b d0,(a5)+
+            add.w d5,d4
+
+        dbf d7,DrawGouraudScanLine_lp
+
+
+ On my A1200/020 14mhz+fastram it's runs at an Average of 14.2 Fps
+
+
+ *=-----------------------------------------------------------------------=*
+
+                               T H E   E N D
+
+ *=-----------------------------------------------------------------------=*
+
+
+

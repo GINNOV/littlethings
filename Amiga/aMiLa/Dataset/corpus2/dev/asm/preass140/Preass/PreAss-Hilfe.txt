@@ -1,0 +1,240 @@
+
+
+                        Warum? - Wieso? - Weshalb? 
+                       ----------------------------
+
+      Einige Antworten die ihnen das Fehlersuchen erleichtern sollen
+
+    Problem: In meinem Assemblersourcecode finde ich ganz komische
+             Kombinationen von Move-Befehlen,die so sicher nicht geplant
+             waren!
+
+    Abhilfe: Irgendwo bei den Eingabeparametern der OS-Funktion im P-Source
+             hat sich ein Fehler eingeschlichen,ein Komma ist falsch
+             gesetzt oder ein ganzer Parameter fehlt!
+
+
+
+    Problem: Meine alten Preass-Sources laufen nicht mehr.Der Assembler
+             findet einige Stringnamen nicht mehr die Preass selbst er-
+             stellt hat.
+
+    Antwort: AB V1.30 von Preass wird eine andere Routine verwendet die
+             es unmöglich machen sollte,das Dupes auftauchen,es ist daher
+             nicht mehr nötig mehrfach Strings einmalig und dann mit der
+             internen Bezeichnung zu benutzen.
+             Außer man benutzt {* STRING: Name="Hallo"*}
+
+    Lösung:  Einfach alle String korrekt schreiben.
+
+    Beispiel: 
+
+    ALT: Write(fh,"Hilfe",?)
+         Write(fh1,#Hilfename,?)
+         Write(Fh2,#Hilfename,?)
+
+    Neu: Write(Fh,"Hilfe",?)
+         Write(Fh1,"Hilfe",?)
+         Write(Fh2,"Hilfe",?)
+    
+
+    Problem: Ständig wird meine IF-Anweisung als fehlerhaft abgebrochen.
+    
+    1.Frage: Ist es eine Multi-Anweisung ?
+
+    2.Frage: Wenn Ja,ist auch überall ein Doppelpunkt gesetzt?
+
+    3.Frage: Wenn Ja,ist auch bei jeder Anweisung eine Funktionseinleitung
+             (DO , CALC , --->) dabei?
+
+    4.Frage: Ist auch der Name der Funktion laenger als 7 Zeichen?
+
+    Antwort: Wenn 4 = Nein & Rest Ja, dann liegts daran das der Compiler
+             in der Zeile etwas überschreibt und dann ggf. wichtige 
+             Erkennungsmerkmale "( ) :" überschreibt und mist baut.
+             Name von Prozeduren einfach verlaengern.
+
+    Antwort: Wenn 3 , Ja, dann sollten sie mal entweder die Anweisung oder
+             den Vergleich überprüfen,ob sie in Ordnung sind.
+
+    Antwort: Wenn 3, Nein, dann Nachbessern.
+
+    Antwort: Wenn 2, Nein, schleunigst nachholen.
+
+    Antwort: Wenn 1, Nein, dann erstmal 3 checken.
+
+    Hilfe:   Wenn trotzdem nur Müll rauskommt, dann VOR dem(n) Doppelpunkt(en)
+    -----    ein Space einfügen.
+
+
+    Problem: Warum meckert mein Assembler immer,daß ich Doppelte Labels
+             habe?
+
+    Antwort: Weil Du irgendwo z.b.! zwei mal dieselbe TAGLISTE angegeben
+             hast. z.B.: >tagliste:TAGDone,Null) ...
+                         >Tagliste:TAGDone,Null) ....
+             
+             In dem Fall entweder die Tagliste umbenennen oder die zweite
+             (eigentlich egal welche von beiden!)so umschreiben:
+
+               ....,#TagListe)
+
+             Das heisst nun,dass der Assembler einen Zeiger auf die Tagliste
+             benutzt statt die Tagliste neu zu erstellen.
+
+
+
+    Problem: Meine Tagliste wird nicht korrekt abgehandelt.
+
+    Antwort: Hast Du evt. ein "|" vergessen ?
+
+
+    Problem: Warum wird der Parameter, in einer OS-Funktion ,der nach der
+             Tagliste steht nicht erkannt ?
+
+    Antwort: Weil Du wohl vergessen hast ein "|," statt eines Kommas zu 
+             verwenden.Ein Tag muss ,falls noch etwas folgt,immer mit "|"
+             abgeschlossen werden.Das Komma zeigt dann an,daß die Tagliste
+             zu ende ist und ein Eintrag für die OS-Funktion folgt.
+
+    Problem: Wie setze ich C Taglisten um , die eine Funktion als Taginhalt
+             haben?
+
+    Antwort: so:
+
+             C:  ... Tag1,TagData1
+                     Tag2,Read(fh,&Puffer,1000)
+                     Tag3,....
+
+             PreASS: ist ganz einfach:
+
+             Anzahl=Read(fh,#Puffer,1000)
+             lea Tagliste,a0
+             Move.l Anzahl,4(a0)
+             Funktion(....,>Tagliste:Tag2,0|
+                                     Tag1,TagData1|
+                                     Tag3,....|
+                                     Tag_Done,Null)
+
+             Bei Taglisten ist es völlig egal wo ein Tag steht,also
+             die Reihenfolge der Tags,deshalb kann man Tag2 vor Tag1
+             bringen.LEA und MOVE schreiben nun die Variable ANZAHL
+             in die Tagliste ,bevor sie von der Funktion benutzt wird.
+             C macht dies prinzipell genauso.Eins ist sicher ich werde
+             diese Funktion in Absehbarerer Zeit NICHT einbauen.Sie kommt
+             einfach zu selten vor.
+
+
+    Hinweis: Diese Methode funktioniert natürlich nur bei Funktionen.
+             Es gibt unter C aber auch die Möglichkeit MACROS (wie ich sie
+             hasse :-) ) als TAG_DATA zu benutzen.Da kommt es dann aufs Macro
+             an!
+
+
+    Problem: Mein Programm stürzt ständig ab,obwohl weder PreAss noch 
+             der Assembler einen Fehler melden.
+
+    Antwort: 1. Entweder Du hast einen BUG gebastelt,in Form von falschen
+                Variablen (z.b. statt eines Zeigers auf etwas,eine Variable
+                genommen) oder
+             2. Du hast Dein Programm sogeschrieben,daß Preass zwar alle
+                Librarybases setzt,aber Du so unglücklich in der Routine
+                rumspringst ,daß eine falsche Base gesetzt wird.
+                Dies passiert häufig bei LokalenLabels.Bei GlobalenLabels
+                wird automatisch die geforderte Base benutzt,aber ansonsten
+                nur wenn IN DER ABFOLGE DES SOURCES eine andere Library
+                benutzt wird. Beispiel für so einen Fehler:
+
+                SUB:   Filehandle=Open("Hilfe",#Mode_OldFile)
+      --->             Checkf Filehandle,.ende2    <-----
+                       Filehandle2=.....
+                       .....
+                       Closelibrary(intu..)     EXEC
+                .ende1:Checkf GfxBase,.ende2
+                       Closelibrary(gfx..)      EXEC
+                .ende2:checkf Dosbase,.ende3
+                       Closelibary(Dos..)       EXEC !!!!
+                ..........................................
+
+                Bei einem Fehler von OPEN() ist die DOSBASE der aktuelle
+                Librarypointer.Beim Fehler wird nach .ende2 gesprungen.
+                Weil aber VOR .ende2 eine Funktion der EXECBase liegt
+                ist es nicht nötig die EXECBase erneut nach A6 zu schreiben.
+                Das Problem ist,wenn beim Fehler nun nach .ende2 gesprungen
+                wird,wird die Funktion CLOSELIBRARY als DOSFunktion benutzt,
+                was zum Fehlerverhalten bzw. zum Absturz führt.
+
+                Währen allerdings alle LABELS GLOBAL!,dann würde jedesmal
+                die Librarybase neu gesetzt,egal ob vorher eine Funktion 
+                derselben Lib stand.
+
+                Bei sowas muss man aufpassen.Passiert mir aber auch hin
+                und wieder ,wenn ichs eilig habe :-)
+
+    
+    Problem:    Mein Assembler mault ständig rum,das irgendwo son
+                RELATIVMODE Error auftritt.Was kann das sein?
+
+    Antwort:    Das hab ich mich auch lange gefragt.Das lag bei mir daran,
+                daß ich einen LVO Sprungvektor als VARIABLE benutzen wollte.
+                Also das ist so , wenn man eine OS-Funktion hat,die z.b. 
+                FLASH heisst, darf man diese nicht als KONSTANTE,Variable,
+                oder LABEL benutzen,das gibt dann den Relativemodeerror!
+
+    Problem:    Warum kommt laufend die Fehlermeldung `Double Symbol`?
+
+    Antwort:    Könnte es sein,daß die Funktion AutoLVO aktiv ist und
+                Du noch selber LVO`s includest? 
+
+    Abhilfe:    Die eigenen LVO-Includes löschen.PreAss vergißt schon
+                keinen.
+
+    Hinweis:    Die Funktion `LibNamesAus` unterbindet die Funktionen
+                AutoLVO & Autolib . Dann müssen die LVO`s von Hand in-
+                cludet werden.
+
+    Problem:    Warum funktioniert meine For-Next-Schleife nicht?
+
+    Antwort:    1.Weil das = nicht hinter der Variable steht?
+                1.Syntax: For I=1 to 10 [Step -2]
+
+                2.Weil du beim NEXT ein - für Rückwärts vergessen?
+                2.Syntax: For I=100 to 1 Step -2
+                          Next I-
+
+                3.Weil das NEXT und das For nicht in einer Routine
+                  stehen
+
+                4.Weil mehrmals dieselbe Variablenschleife benutzt hast,
+                  daß gibt mehrmals dasselbe LABEL!
+
+    Problem:    Warum bekomme ich bei geschachtelten If-Anweisungen nicht
+                das,was ich wollte?
+
+    Antwort:    If Anweiungen die Blöcke benutzen, dürfen noch nicht ge-
+                schachtelt werden.
+
+                Beispiel:
+
+                If A=#1 { Output()
+                          If B=#2 { DisplayBeep()
+                                    {* Returnq 0*}}
+                          {* Returnq 1*}}
+                
+                So darfs nicht gemacht werden.Das liegt am Aufbau der
+                Blockfunktion.
+
+                {* PROBLEM GELÖST! VERGEßT ES! *}
+
+
+    Problem:    Warum wird mein Array nicht erstellt, ich krieg nicht mal
+                ne Meldung , daß es nicht geklappt hat?
+                
+    Antwort:    Weil ich mich in der Anleitung vertippt habe und IncArray,statt
+                Array, geschrieben habe und weil ich ne dumme Routine
+                produziert habe, die auf [....] besteht statt auf [.] und
+                die es nicht selbst zu gibt :-))
+                Also eine korrekte Zeile sieht so aus :
+
+                {* Array[Long]: Mxlabs,M1,M2,M3,...,0*}
+               

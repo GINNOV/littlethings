@@ -1,0 +1,21 @@
+
+Und hier noch einige Worte vom Author :)
+
+....
+
+das ist also der AGD (AmigaGuideDesigner). AGD ist das Hauptprogramm, AGDPrefs der 
+Voreinsteller. Bei mir lief das ganze Ding mit 6MB (2 Chip + 4 Fast) und mit 512 KB 
+(simuliert mit FakeMem und NoFastMem).
+
+Es ist natürlich noch nicht fertig, teilweise noch verbugt und recht langsam. 
+Benutzte *niemals* die Funktionen Project/Save & Project/Save As, weil ich an denen 
+als letztes gearbeitet habe und die am wenigsten absturzsicher sind.
+
+Ein Doc gibt`s leider nicht, weil ich so faul war und das Prog eh` nicht fertig 
+ist. Das meiste ist eigentlich selbsterklärend. Die Oberfläche ist leider recht 
+inkonsequent, mal englisch, mal deutsch. Allgemein gilt: Alle Fenster sind englisch, 
+alle Requester deutsch. DOOF, NICH???!!!
+
+...
+
+   have fun!

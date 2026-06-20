@@ -1,0 +1,10 @@
+	This source code, written for Devpac2, is the framework for
+assembly programs on the amiga that wish to make full use of the copper,
+blitter etc. without having to reset the machine after trying out a program.
+It basically kills the operating system, allowing the program to run at full
+speed. Memory however must be allocated properly, and only this memory used.
+About 400K of free memory is avaliable with only an assembler running. 
+This code will be used to demonstrate particular routines from 'Menace' as 
+they are documented in future editions of Amiga Format.
+	A full description of the source is in this months issue.
+

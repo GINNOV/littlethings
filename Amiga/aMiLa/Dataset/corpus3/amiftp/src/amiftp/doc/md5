@@ -1,0 +1,17 @@
+Copy dh1:tcp/amiftp/doc/sigheader.txt T:md5sigs
+work:pgpamiga/contrib/md5sum/md5sum -b AmiFTP AmiFTP.info AmiFTP_as225 AmiFTP_as225.info AmiFTP2.prefs >>T:md5sigs
+work:pgpamiga/contrib/md5sum/md5sum AmiFTP.guide >>T:md5sigs
+work:pgpamiga/contrib/md5sum/md5sum -b AmiFTP.guide.info >>T:md5sigs
+work:pgpamiga/contrib/md5sum/md5sum ReadMe >>T:md5sigs
+work:pgpamiga/contrib/md5sum/md5sum -b ReadMe.info >>T:md5sigs
+work:pgpamiga/contrib/md5sum/md5sum HISTORY >>T:md5sigs
+work:pgpamiga/contrib/md5sum/md5sum -b HISTORY.info >>T:md5sigs
+work:pgpamiga/contrib/md5sum/md5sum Catalogs/Newcatalog.ct >>T:md5sigs
+work:pgpamiga/contrib/md5sum/md5sum -b Catalogs/Dansk/AmiFTP.catalog >>T:md5sigs
+work:pgpamiga/contrib/md5sum/md5sum -b Catalogs/Deutsch/AmiFTP.catalog >>T:md5sigs
+work:pgpamiga/contrib/md5sum/md5sum -b Catalogs/Italiano/AmiFTP.catalog >>T:md5sigs
+work:pgpamiga/contrib/md5sum/md5sum -b Catalogs/Nederlands/AmiFTP.catalog >>T:md5sigs
+work:pgpamiga/contrib/md5sum/md5sum -b Catalogs/Norsk/AmiFTP.catalog >>T:md5sigs
+work:pgpamiga/contrib/md5sum/md5sum -b Catalogs/Svenska/AmiFTP.catalog >>T:md5sigs
+
+pgp -as +clearsig=on +textmode=on T:md5sigs

@@ -1,0 +1,339 @@
+		Lezione di MATEMATICA by Antonello Mincone
+		
+
+Per tutti quelli che aspirano a fare giochi tipo DOOM,ELITE,o comunque un qual-
+siasi gioco che richieda l'uso di poligoni, o addiritura di quella che e' uno
+degli effetti ormai diventati uno standard nei DEMOS, cioe' il texture-mapping,
+credo sia essenziale sapere alcune di quelle che sono le formule basilari di
+matematica,in particolare quelle relative alla geometria analitica e alla tri-
+gonometria.
+Se a scuola non avete mai digerito questi argomenti,o semplicemente non li ave-
+te mai affrontati e ne avete sempre sentito parlare come qualcosa di incredibil
+mente complicato, posso asicurarvi che non e' assolutamente vero.La vera diffi-
+colta' sta' nel seguire attentamente l'argomento, ma soprattutto nel capirlo.
+In pratica il consiglio che vi do e' di fare (anche in base alle conoscenze che
+avete) poco alla volta sia con questa lezione che con il corso in generale, da-
+to che in realta' potete possedere tutti i libri di informatica e matematica di
+questo mondo, ma questi costuiscono solo la base essenziale(ma non sufficiente)
+per scrivere un programma valido:si diventa bravi soprattutto con l'esperienza,
+provando e riprovando le routine, modificandole, facendo insomma degli esperi-
+menti.
+In base a cio' ho deciso di scrivere quest' articolo non insegnandovi una parti
+colare tecnica di 3D (anch perche' per quella c'e' una lezione apposta), ma le
+basi che vi permetteranno di ricavarvi da soli le formule anche solo per farvi 
+la tabella pre-calcolata adatta alle vostre esigenze.
+Partiro' quindi da zero (beh non proprio, dato che spero conosciate le quattro
+operazioni fondamentali,anche perche' se no,non dovete fare il corso ma le ele-
+mentari), non si stupisca quindi tutta quella gente che conosce gia' l'argomen-
+to e magari avrebbe qualcosa da obbiettarmi sullo stile di esposizione.
+Inanzi tutto parliamo di quello che viene chiamato dagli esperti in materia 
+"SISTEMA DI RIFERIMENTO CARTESIANO ORTOGONALE".In realta' sotto questo nome si
+nasconde una cosa semplicissima: due comuni rette (si dice RETTA una linea di 
+cui non c'e' ne un inizio e ne una fine, si dice SEMI-RETTA una linea che ha un
+inizio ma non una fine, si dice SEGMENTO una linea che ha un inizio e una fine)
+disposte in modo che, incrociate tra loro, formino quattro angoli di 90 gradi,
+che hanno convenzionalmente i nomi di X e Y.In pratica disposte cosi:
+
+
+                           ^
+                         Y | 
+                           |
+                           |
+                           |
+                           |
+                           |
+                           |
+              -------------+-------------------->
+                          O|                   X
+                           |
+                           |
+                           |
+                           |
+                           |
+                           |
+                           
+
+                           
+
+Il punto O corrisponde all' incrocio degli assi ed e' chiamato ORIGINE.
+Gli assi X e Y sono chiamati rispettivamente asse delle ascisse e asse delle
+ordinate, e servono a darci dei riferimenti ad ogni punto, che si ottengono 
+tracciando la parallela all'asse X e quella all'asse Y, e che in pratica ci di-
+cono l'altezza del punto rispetto ad X e la sua distanza da Y, che esprimeremo
+scegliendo un'unita' di misura e vedendo quante volote questa unita' entra nel-
+la misura considerata: quando cioe' vogliamo indicare dove si trova un determi-
+nato punto dovremmo definire la sua distanza con l'asse X e con l'asse Y (piu'
+precisamente la sua ordinata e la sua ascissa).Immaginiamo ad esempio di avere 
+un punto P :
+
+
+
+                              ^     
+                            Y |
+                              |
+                              |  x1  
+                              |-----.P
+                              |     |
+                              |     |y1
+                              |     |
+                --------------+------------------>
+                             O|                 X
+                              |
+                              |
+                              |
+                              |
+                              |
+                              |
+                              |
+                              
+
+
+
+Il segmento contrassegnato con x1 indica la sua ascissa mentre quello contras-
+segnato con y1 la sua ordinata.Tralasceremo l'unita' di misura dato che  con l'
+AMIGA userete il pixel.
+Badate bene che quando il punto si trova a destra dell'asse Y l'ascissa e' posi
+tiva (e' cioe' maggiore di 0), mentre quando si trova a sinistra e' negativa 
+(e' cioe' minore di 0); caso limite quando si trova sull'asse Y,dove sara' u-
+guale a 0.Allo stesso modo per l'asse X: quando il punto si trova sopra di que-
+sto l'ordinata e' positiva, sotto e' negativa, sull' asse x e' 0.  
+Se pero' rapportiamo il tutto alla realta`,ci accorgiamo che due dimensioni non
+sono sufficienti, dato che tutti gli oggetti, hanno, oltre ad una larghezza e
+una larghezza, anche una profondita`.Abbiamo quindi bisogno di una terza dimen-
+sione, appunto la profondita', che ci permette di rapportare anche il singolo  
+punto allo spazio.Un grafico quindi che ci voglia dare un completo quadro di un
+oggetto nello spazio sara` di questo genere:
+
+		
+			^
+		      Y	|
+			|
+			|
+			|         
+			|        /
+       			|     P / z1
+		  x1 ___|_____./
+		    	|     |
+		    	|     |
+		    	|     |y1
+		    	|     | 
+		       O+-----+---------------------->   
+ 		       /      |			    X                       
+ 		      /	      |	 
+		     /	      |
+		    /                                
+		   /
+		  /
+		 /
+	      Z /
+	       	
+
+Il nuovo asse, Z, indica la nuova dimensione.E' da tener presente che, nello 
+spazio, l' angolo situato tra l'asse X e l'asse Z e quello tra l'asse Y e l' 
+asse Z, e' retto, cioe' di 90 gradi, che purtroppo si deformano in proiezione
+assonometrica (che e' appunto quella con cui sono rappresentati tutti i grafi-
+ci).  
+Finora abbiamo parlato solo di punti, mentre lo spazio che ci ciroconda e' fat-
+to da oggetti ben piu' complessi, che in genere sono fatti da linee che unisco-
+no gli spigoli che li  determinano.Molte volte e' necessario dover rappresenta-
+re oggetti curvilinei, quali il semplice cerchio o curve piu' complesse, deter-
+minate da complicate formule goniometriche: in questi casi con l'AMIGA consi-  
+glio sempre di ridurre la curva a un poligono, magari anche con 20 lati, ma che
+risulta certamente piu' veloce da disegnare e da calcolare in rotazioni o tra-
+slazioni (movimenti che comportano solo lo spostamento),comunque troverete alla
+fine della lezione le formule delle piu' importanti curve.
+Per unire i punti dei poligoni generalmente si puo' ricorrere alla funzione LI-
+NE del blitter, ma non sempre questa e' la piu' veloce, e potrebbe essere ne-
+cessario affidare questo lavoro al processore: e' quindi utile conoscere le 
+formule principali legate al tracciamento delle rette.
+Iniziamo col dire che ogni retta e' individuata sugli assi cartesiani dalla for
+mula :
+		Y = m*X + q
+		 
+La formula in questione ci da le ordinate di tutti i punti della retta a secon-
+da della sua ascissa, basta insomma sostituire la x con un qualsiasi valore per
+ottenere la corrispondente y della retta.I termini m e q che compaiono nella 
+formula sono delle costanti: la prima m e' detto coefficiente angolare e deter-
+mina l'angolo che la retta forma con l'asse X (piu' precisamente e' la tangente
+di quell' angolo, ma affronteremo questo argomento piu' avanti), piu' grande 
+sara' m e piu' grande sara' l'angolo formato; q determina invece il punto dove
+la retta incrocia l'asse y, in sostanza il punto della retta che ha coordinate:
+(0,q), da cio' e' facile capire che se q=0, allora la retta passa per l'origine
+degli assi.
+Esiste poi una formula che a mio parere e' importantissima per fare un program-
+ma 3D. Dato un punto P1 di coordinate (P1x,P1y), e un punto P2 di coordinate 
+(P2x,P2y), possiamo ricavare la retta passante per questi due punti con la for-
+mula :
+		
+		Y-P1y = (P2y-P1y)/(P2x-P1x)*(X-P1x)
+
+Dalla formula in questione ricaviamo che :
+
+		Y = (P2y-P1y)/(P2x-P1x)*X + (-P1x*(P2y-P1y)/(P2x-P1x))+P1y
+		
+Questa e' appunto la formula della retta passante per i punti presi in conside-
+razione.Il termine che compare prima della X corrisponde alla m, mentre tutta 
+la formulaccia che compare dopo sarebbe la q, ma naturalmente questo calcolo 
+sara' fatto una sola volta per ogni retta.Applicazioni della stessa formula 
+possono servire ad esempio, per una linea che esce dallo schermo: avendo gli 
+estremi di questa possiamo trovare la formula che la determina e quindi, sosti-
+tuendo alla X la ascissa dei bordi dello schermo, possiamo trovare le coordina-
+te dei punti estremi del segmento visibile.
+
+Altre formule che spesso si rivelano utili conoscendo le coordinate di due pun-
+ti P1 (P1x,P1y) e P2 (P2x,P2y) sono:
+
+1)Quella per trovare la loro distanza (che e' in pratica un' applicazione del 
+teorema di Pitagora che troverete piu'avanti):
+
+	distanza = sqr((P2x-P1x)^2+(P2y-P1y)^2)
+
+(sqr non e' altro che l'istruzione usata dalla maggior parte dei linguaggi di
+alto livello per indicare la radice quadrata, mentre il simbolo ^ significa e- 
+levato: in questo caso leggeta quindi la distanza e' uguale alla radice quadra-
+ta della differenza delle ascisse elevata al quadrato sommata alla differenza
+delle ordinate elevata al qudrato, in simboli:
+
+                         _________________________________________
+                        /
+                       / (P2x-P1x)*(P2x-P1x)+(P2y-P1y)*(P2y-P1y)
+                   \  /
+                    \/
+
+Cercate di capire bene Sqr e ^  perche' in seguito li riuseremo spesso) 
+
+
+Questa formula e' utile ad esempio per trovare la lunghezza di un  lato di un 
+qualsiasi poligono cononoscendo i due spigoli 
+
+
+
+2)Conoscendo isoliti due punti P1(Px1,Py1) e P2(Px2,Py2) possiamo trovare le 
+coordinate del punto medio M(XM,YM) con la formula:
+
+           XM = (Px1 + Px2)/2
+
+	   YM = (Py1 + Py2)/2	   
+
+******************************************************************************
+A questo punto direi che potete anche fare la lezione di prospettiva, dato che
+ora siete capaci di rappresentare un qualunque oggetto nello spazio (basta in-
+fatti disegnarvi gli spigoli e unirli col Blitter in modo da formare una figura
+piana o un solido).Badate bene pero' che con queste conoscenze non potete anco-
+ra routare gli oggetti, ma solo zoomarli (per far questo basta aumentare o dimi
+nuire la Z di ogni punto). 
+Per ruotare un punto dobbiamo entrare nella trigonometria intoducendo il coseno
+e il seno.Questi due non sono altro che l'ascissa e l'ordinata di un punto che
+ha la caratteristica di trovarsi su una circonferenza che ha come centro l'ori-
+gine.
+
+                           ^ 
+   			 Y |
+   			   |
+   			   |
+   			   |
+   			___|___
+   		       /   |   \.P
+   		      |	   |    |
+   	     ---------+----+----+-------->
+   		      |	  O|    |       X
+   		       \___|___/
+   			   | 
+   			   |
+   			   |
+   			   |	
+				
+Anche se quello che ho disegnato e' un ottagono irregolare (ma che ci volete 
+fare con i caratteri ASCII non sono riuscito a fare di meglio), con un po' di 
+fantasia dovreste avere un'idea di quello che voglio dire.In breve il coseno e 
+la distanza del punto P con l'asse Y, mentre il seno la distanza del punto P 
+con l'asse X. Per convenzione (ma non solo per quello) il raggio del cerchio 
+viene considerato pari ad 1.In questo modo sia il seno che il coseno 
+oscilleranno sempre tra valori compresi tra 1 e -1 (in sostanza numeri 
+decimali). 
+Da notare inoltre che il punto P individua anche un angolo sulla circonferenza,
+l' angolo cioe' formato tra l'asse X e la retta passante per il punto P e l'ori
+gine degli assi.
+Se ad esempio diciamo che il seno di 30 gradi e' 0.5, cio' significa che il 
+punto P che, unito con O (origine degli assi), che forma con l'asse X un 
+angolo di 30 gradi, dista dall'asse X 0.5.
+Per trovarci anche ilcoseno dell'angolo considerato possiamo fare una semplice 
+osservazione, basandoci sul teorema di Pitagora (non il Coder).
+Per chi non conosce questo, che e' uno dei principali teoremi di geometria ecco
+qui una veloce spiegazione:
+dato un triangolo rettangolo (che ha cioe' un angolo di 90 gradi), sapendo la
+lunghezza dei due cateti (che sarebbero i lati piu' corti), possiamo trovare l'
+ipotenusa (il lato oiu' lungo), sapendo che questa e' uguale alla radice 
+quadrata della somma dei quadrati dei due cateti.  
+
+
+                |\
+                | \
+                |  \
+                |   \  c
+              a |    \ 
+                |     \
+                |      \
+                |       \
+                |________\
+                    
+                    b 
+
+
+In questo caso a e b sono i cateti, per trovare c dovremo calcolare la radice
+quadrata di a*a+b*b (che possiamo anche scrivere a^2+b^2).
+In generale quindi:
+
+                    c^2 = a^2 + b^2
+
+Tornando alla circonferenza che stavamo considerando, notiamo anche qui la 
+presenza di un triangolo rettangolo che ha come cateti l'ascissa e l'ordinata 
+del punto P, e come ipotenusa il segmento OP, che in pratica e' uguale al 
+raggio, e quindi ad 1.Nell'esempio di prima, dove conoscevamo il seno di 30 
+gradi, possiamo trovare il corrispondente coseno (che sarebbe in pratica 
+l'ascissa):
+  
+                             ^
+                           Y |
+ 			     |
+ 			     |
+ 			     |
+ 			     |
+ 			  ___|___
+ 			 /   |___\.P 
+ 			|    | b  |a 
+ 	   -------------+----+----+-------------->
+ 			|   O|    |             X
+ 			 \___|___/ 
+ 			     |
+ 			     |
+ 			     |
+ 			     |
+ 			     |
+ 			     |
+ 			     |
+ 			     
+ 			     	
+In questo caso infatti a=0.5 ed OP (che non ho disegnato per motivi grafici) e'
+uguale ad 1.Esseno quindi l'angolo tra a e b di 90 gradi, sostituendo i termini
+noti nell'equazione precedente abbiamo che :
+
+                      1^2 = 0.5^2 + b^2
+                       
+Sostituendo a 0.5 la forma frazionaria 1/2 possiamo scrivere:
+
+                      1 = 1/2^2 + b^2
+                      
+Da cui :
+                     
+		      1 = 1/4 + b^2
+
+Quindi:
+
+		      b^2= 1 - 1/4
+
+                      b^2= 3/4
+
+Possiamo concludere che b = sqr(3)/2 (sqr non e' altro che l'istruzione usa- 
+ta dalla maggior parte dei linguaggi di alto livello per indicare la radice qua
+drata, nel nostro caso leggete quindi b e' uguale a radice di 3 fratto 2)     

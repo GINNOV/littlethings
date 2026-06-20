@@ -1,0 +1,46 @@
+Short:        24-bit paint package (source)
+Author:       portrait@usurper.freeserve.co.uk
+Uploader:     portrait usurper freeserve co uk
+Type:         dev/src
+Architecture: m68k-amigaos
+
+This is the source code to version 1.3 of the 24-bit paint package 'Portrait'
+written by Christopher January. The files contained in this archive as well
+as this 'readme' file are Copyright © Christopher January and Atomice Software
+1997-1999.
+The most recent sources are available from:
+http://portrait.fr.eu.org/atomice/archives
+This contains the sources for 'Portrait' as well as other programs written
+for the Amiga platform.
+
+If you are a developer you may wish to register at:
+http://portrait.fr.eu.org/atomice/programmers.html
+which contains a list of active Amiga developers.
+
+Distribution copies of 'Portrait' may be found on Aminet in gfx/edit, on
+Aminet CD 30 in gfx/edit and on Amiga Format CD 35.
+
+These files are for educational purposes only. If you have any queries then
+don't hesitate to send me an E-mail at:
+archives@atomice.fr.eu.org
+
+ALL FILES IN THE ARCHIVES 'portraitsrc.lha' AND 'portrait.lha' AND THE FILES
+'portraitsrc.reamde' AND 'portrait.readme' ARE COPYRIGHT © CHRISTOPHER
+JANUARY & ATOMICE SOFTWARE 1997-1999.
+THESE FILES MAY NOT BE DISTRIBUTED WITHOUT THE EXPRESS PERMISSION OF THE
+AUTHOR WITH THE FOLLOWING EXCEPTIONS:
+Aminet/Aminet CDs.
+Magazine Cover-mounted CDs.
+ALL OTHER RIGHTS RESERVED.
+YOU MAY NOT DISTRIBUTE MODIFIED VERSIONS OF THESE FILES.
+MODIFIED FILES MAY BE UPLOADED AT THE WWW SITE:
+http://portrait.fr.eu.org/atomice/sources/
+WHERE THEY MAY BE CONSOLIDATED WITH THIS ARCHIVE AT THE AUTHOR'S
+DISCRETION.
+YOU MAY NOT DISTRIBUTE ANY FILES COMPILED FROM ALL OR PART OF THESE
+SOURCES.
+THE AUTHOR (CHRISTOPHER JANUARY) AND SUBSEQUENT CONTRIBUTORS ACCEPT NO
+RESPONSIBILITY FOR DAMAGE INCURRED BY THE USE OR MISUSE OF THESE FILES.
+YOU USE THESE FILES AT YOUR OWN RISK.
+
+Amiga is a registered trademark of Gateway 2000.

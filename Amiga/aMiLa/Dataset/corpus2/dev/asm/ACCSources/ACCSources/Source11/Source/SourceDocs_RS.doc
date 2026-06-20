@@ -1,0 +1,74 @@
+
+			SOURCE DOCUMENTS
+		     ----------------------
+
+  This month I've sent 8 pieces of code. Only 3 of which are mine. Here is
+the run down on what each one does.
+
+ DEMO
+------
+At last I've done my first demo. It may not appear to be that stunning, but
+it does utilise alot of techniques (all the different kind of sprite teqniques
+I think!). The demo will only assemble on 1meg. Sorry!  However I did send 
+Mark an assembled copy (which I doubt he'll use!!) so if any 512k owners want
+to see it complain to Mark (it'll do you good tro have a laugh at my feeble 
+attempt!)
+   If you actualy view the demo you'll notice it lacks 2 major things. The 
+first is double buffering (see below) and the second is to stop the mousy ptr
+corrupting! How the hell do you stop the mouse ptr corrupting?  There seems to
+be another problem. when the demo is run a few times it seems to slow the sys
+down & weird things happen to the bobs!!  I know most of the routines are 
+probably lame!!!
+
+ DOUBLE BUFFERING
+------------------
+The demo I'm working on at the moment is huge!! Nots done some ace grafix!!
+However this un will need DB so I had an attempt. This is what I came up 
+with! As well as demonstrating to you a technique for double buffering, I
+sent this so Mike Cross, Mark & all the other old timers could check it out
+& tell me if it will be O.K. to use this to double buffer.
+    For those interested all this does is to swap the screens ever 50th of
+a second (during the vbl gap). screenc is a counter (1=screen 2 is being
+displyed & 0 = screen 1 is being displayed) Screen is used to hold the
+address of the actual screen to use. 
+    If you don't know what double buffering is then listen close. When you
+use BOBs (Blitter Objects) they tend to flicker (especially if there are lots
+of BOBs near the top of the screen!). The reason for this is that the screen
+is being drwan before the blitter has finished (& the blitter is supposed to
+be fast!). to get round this problem you use 2 screens (& consequectly more
+memory!). The one being shown is known as the physicall screen, while the
+other is the logical screen. You do all your blits, etc on the logical screen
+The 2 screens are swapped ever VBL & so you get smooth, flicker free 
+movement. Its used in many games!!!  See Dave Edwards, ACC6 for more info.
+
+ SPRITE & PLAYFIELD PRIORITY
+-----------------------------
+Having played Nitro for about 4 hours I decided to how i could make a car
+go under a bridge. The only way I could think (apart from using the copper
+to change sprite priority) is to use dualplayfield. Now listen closely
+Sprite 0-1 has the greatest priority, Playfield 2 next, then speite 2-3
+& finally playfield 1.  Playfield 2 is the bridge & playfield 1 is the
+normal road. So untill the car (sprite2) gets to the bridge it has highest
+priority. When it gets to the bridge it loses priority to playfield 2 & so
+disappears (looks as though it go under the bridge). It then comes out
+the other side of playfield 2 & regains priority. Thing get more complicated
+when u see the other car (sprite0) travelling across the bridge but I wont
+go  into that. See Dave Edwards, ACC6 for more!!
+
+Here is the diagram for the above info
+PRIORITY 
+	HIGHEST 				  LOWEST
+	Sprite0+1   PLAYFIELD 2   SPRITE 2+3    PLAYFIELD 1
+
+ JOYSTICK & MOUSE POINTERS
+---------------------------
+Just a sprite being moved by mouse or joystick. Done by treebeard (previously
+known as Hearwig). Don't ask for more docs please!!
+
+ MULTI-LOAD
+------------
+As i said our next demo is huge!! We'll need a multi-load system. This is
+one attempt!
+
+
+				Raistlin........(Doodle)

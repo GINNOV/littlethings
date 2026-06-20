@@ -1,0 +1,121 @@
+Short:    A C Language PLANAR to Chunky functtion by PJ.
+Author:   Paymaan Jafari (payman@ctools.pp.se)
+Uploader: Paymaan Jafari (payman@ctools.pp.se)
+type:     dev/c
+Requires: Amiga!!!
+
+Long:
+
+   For  My  OCR  project,  I  have  been  required  a C function to convert
+bitplanes data to a chunky one.  So I wrote this function.  The Algorith is
+simple and because of such an algorithm, The program can't be quick.
+
+   AmigaOS  graphics.library  has  some  alike functions like ReadPixel#?()
+functions,  but  they all need a RastPort other than a bitmap.  My function
+just  needs  the  BitMap.Planes  address  and  converts the data using that
+address.
+
+-- How to use:
+  ------------
+
+   Include the .c and .h files of this archive (except the test.c) in
+your program and use the function.
+
+-- To Do:
+  -------
+
+ - New algorithms, More Speed!!!
+
+ - An assembly version.
+
+ - Your move! Any idea?
+
+-- DISCLAIMER:
+  ------------
+  As  a programmer I have some requests, You'r free to do whatever you want
+but I don't like my written program to be used in some special categories.
+
+  1) Please don't use this program in any work related to WAR, Making Guns
+     Bio/MicroBialogical  warcrafts  and/or Athomic,  Neutronical Bombs Or
+     even transfering their plans and maps.
+
+  2) Please don't use it for transferring Sexual materials, except if it is
+     about  your  own  partner  (Wife,  Husband).  See, I am an open-minded
+     person but I don't beleive that open sex is of being mind open.
+
+  3) Nothing against GOD, Humanity, Earth, Peace, and love.
+
+  THIS  SOFTWARE  IS  PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR IMPLIED
+WARRANTIES,  INCLUDING,  WITHOUT  LIMITATION,  THE  IMPLIED  WARRANTIES  OF
+MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+
+-- History:
+  ---------
+
+
+	Wednesday 18-Jun-97 11:57:01
+
+	V0.1	- The first prototype.
+		- Supports up to 8 Planes.
+		- The Algorithm is:
+
+-- Author:
+  --------
+
+  I am Paymaan Jafari Taayemeh of PALAPAL Amiga Programmers Group, Iran.  I
+am  about 7 years for the Amiga computers and also I am a hardware designer
+(dongles!    &^)   )   studying   at   Azad   university   of   Tehran   in
+Computer-Science/Hardware.  Since when I was in high school, I have written
+programs  for  C64  (the  best  of  the best home computer ever) and Amiga.
+Please visit my homepage to know more about me.
+
+-- Copyright Notices:
+  -------------------
+
+  All  files  in  this  archive  are freely redistributable but Copyrighted
+  (C) 1996-1997 By Paymaan Jafari.  All rights reserved.
+
+  All  Other programs and trademarks mentioned in above text have their own
+  respective owners.
+
+    **    This program is provided AS IS and I am not responsible   **
+    **     for any damage or loss of data it may  cause.            **
+    **                     USE AT YOUR OWN RISK                     **
+
+-- About PALAPAL Amiga Programmers Group:
+  ---------------------------------------
+  We  are  an  Amiga  programmer  group  in Iran, normally working on Amiga
+stuff,  but  If requiered, We also can program for others.
+
+  Support  our  group  with  your Emails, Cards (Postal ofcourse, not Credit
+:)),  money  and  any  other thing  you  can,  to  make us work more for the
+Amiga community.
+
+-- Suggestions:
+  -------------
+
+  Is  there  any of your needs that you think we can offer?  Any bug in our
+programs?  Any idea for a good program?  just contact our group or directly
+to myself.
+
+-- Updates:
+  ---------
+
+ The  latest  version  of  the program will be in our Homepage, at Programs
+page.
+
+---------------------------------------------------------------------------
+  Paymaan Jafari, Computer Hardware Student/Azad university of Tehran,
+                  PALAPAL Amiga Programmers Group,
+                  Tehran, Iran.
+
+  Email: <payman@ctools.pp.se>
+         <palapal@ctools.pp.se>
+
+  Snail Mail:
+         Paymaan Jafari,
+         P.O.Box 17845-343,
+         Tehran, Iran.
+
+  HomePage: http://www.ctools.pp.se/palapal/
+---------------------------------------------------------------------------

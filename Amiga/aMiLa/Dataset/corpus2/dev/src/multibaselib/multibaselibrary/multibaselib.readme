@@ -1,0 +1,30 @@
+Short:        An example to create multibase shared libraries
+Author:       Ilkka Lehtoranta (ilkleht@yahoo.com)
+Uploader:     Ilkka Lehtoranta (ilkleht@yahoo.com)
+Type:         dev/src
+Version:      1.0
+Architecture: generic
+
+This is an example how to create multibase libraries for Amiga. The example is
+written for MorphOS but should compile without modifications for other Amigas.
+It also provides an optional semaphore protection if you wish to use disk I/O.
+
+Some general remarks:
+
+ * LIB_Init()
+
+   Do not open any 3rd party libraries here. While it is possible there is
+   risk that you run into stack underflow situations on some systems and
+   crash.
+
+ * LIB_Open()/LIB_Close()
+
+   This is executed in Forbid() state but if your code breaks Forbid() you
+   can use semaphore protection. On this example code you can enable
+   semaphore protection with HAVE_USER_INIT define.
+
+ * LIB_Expunge()
+
+   It is illegal to break Forbid() here. You must only perform operations
+   which dont involve disk I/O or wont call directly or indirectly
+   Wait()/WaitPort(). Closing any 3rd party library at LIB_Expunge() is unsafe.

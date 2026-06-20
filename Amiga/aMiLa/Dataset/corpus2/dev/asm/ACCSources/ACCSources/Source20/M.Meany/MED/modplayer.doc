@@ -1,0 +1,252 @@
+     Instructions for using "modplayer.a", the stand-alone playroutine
+     of OctaMED V2.0
+
+"modplayer" is a piece of code (about 3 - 5 KBytes, depending on your needs)
+which is linked with your program and plays modules made in OctaMED.
+
+"modplayer" contains the following routines:
+	InitPlayer
+	RemPlayer
+	PlayModule
+	ContModule
+	StopPlayer
+	SetTempo
+
+The arguments are passed in registers, and return values are returned in d0.
+These routines will trash registers d0-d1 and a0-a1.
+
+And now the descriptions of each one:
+--------------------------------------------------------------------------
+InitPlayer -- initialize everything
+
+Before you can call the other functions, you must call this function.
+It allocates the audio channels, timer, serial port (if MIDI) etc...
+
+ARGUMENTS:	none
+
+RETURNS:	0 if everything is ok, otherwise something failed.
+		If something failed, you can still call the other
+		routines - they just don't do anything.
+--------------------------------------------------------------------------
+RemPlayer -- return everything back
+
+Call this when your program exits. It frees the audio channels etc. etc.
+
+ARGUMENTS:	none
+
+RETURNS:	nothing
+--------------------------------------------------------------------------
+PlayModule -- start playing a module
+
+When you want to start playing call this.
+
+ARGUMENTS:	a0 = pointer to the module. Where to get that pointer?
+		Don't panic, it's explained later....
+
+RETURNS:	nothing
+--------------------------------------------------------------------------
+StopPlayer -- stop playing
+
+ARGUMENTS:	no arguments
+
+RETURNS:	nothing
+--------------------------------------------------------------------------
+ContModule -- continue playing
+
+This routine continues playing the module from the point it was stopped.
+
+ARGUMENTS:	a0 = pointer to the module
+
+RETURNS:	nothing
+--------------------------------------------------------------------------
+SetTempo -- set the playback tempo
+
+ARGUMENTS:	d0 = new tempo (1 - 240)
+
+RETURNS:	nothing
+--------------------------------------------------------------------------
+
+"modplayer.a" also supports multi-modules. It defines a UWORD modnum
+(in assembler: _modnum). Set this variable to the number of the song
+you want to play before calling PlayModule (0 is the first, 1 is the
+second song etc..). For example:
+	#include "modplayer.h" /* defines 'modnum' */
+	...
+	modnum = 1; /* Play the second module */
+	PlayModule(module);
+	...
+Assembler:
+	xref	_modnum
+	xref	_PlayModule
+	...
+	move.w	#1,_modnum
+	lea	_module,a0
+	jsr	_PlayModule(pc)
+	...
+
+"modplayer.a" is the source code of the music routine. It contains stuff
+that may be unnecessary for your purposes, that just takes time and memory.
+There are some "switches" at the beginning of the source, that allow you
+to turn off features you don't need. They are:
+
+MIDI		If the song(s) use(s) only the Amiga audio channels, set
+		this to 0.
+AUDDEV		For some purposes, you may want to disable the code that
+		allocates the audio channels using "audio.device", e.g.
+		in a non-multitasking environment. Normally this should
+		be 1.
+SYNTH		If the song(s) doesn't use synth/hybrid sounds, then this
+		can be set to zero.
+CHECK		This does some checkings to ensure that several values are
+		correct (e.g. is the sample in memory, no Amiga effects on
+		MIDI-tracks etc..). If you know that the song is correct,
+		you can safely turn the checks off.
+RELVOL		If you don't need the "relative volume", this can be zero.
+IFF53		If the song doesn't contain IFF 3- or 5-octave samples,
+		this can be zero.
+HOLD		This turns off the hold/decay features.
+
+Timing
+======
+If you need vertical blanking timing, you can set VBLANK to 1 and CIAB to 0.
+In normal use this is not recommended (because of the 16 % difference in
+playing speed with NTSC and PAL Amigas).
+
+Assembling
+==========
+Now you must assemble this file. The "modplayer.a" is directly compatible
+with A68k V2.61 (or later...) and HiSoft Devpac 2. Other assemblers may need
+some small work to assemble it correctly. The A68k V2.61 is available e.g.
+on Fred Fish disk 314.
+
+The result is an object file. Link this file with your program (add the name
+of the .o-file to the .lnk-file)
+
+Now you have the player, but there's still something missing...guess??...
+that's right: the music.
+
+You have two ways to get the music:
+1. Include the module in your final executable.
+2. Save the module as a separate disk file and load it when needed
+   (this is probably the best way if you have more than one song, and
+    you don't want to use multi-modules).
+
+First I cover the first method:
+--------------------------------------------------------------------------
+Including the module in your final executable:
+
+The direct object file saving is removed now (you can still use the previous
+versions which support it, if you want). There's now another way to convert
+the song to an object file.
+
+There's a new utility, Objconv, which loads the module and dumps it into an
+object file. Here's an example how to use it:
+
+- Save the song as a module (MED module!).
+- Use Objconv e.g. objconv medmodule mod.o
+- Objconv requests the symbol name, enter "song" (without "'s).
+- Now there's a file 'mod.o'. Link this file, and the file 'reloc.o'
+  with your program.
+- In your program, you define the module:
+	#include "modplayer.h"
+	...
+	extern struct MMD0 far song;
+  You must relocate the module before it's used. Do this only once!
+  This is done by
+	RelocModule(&song);
+  RelocModule expects the argument in stack, so use __stdargs, if you're
+  using regargs.
+
+In assembler, you'd do exactly in the same way, except:
+	xref	_song
+	xref	_RelocModule
+	xref	_PlayModule
+
+	... (assuming all init stuff is here)
+
+	lea	_song,a0
+	move.l	a0,-(sp)	;push in stack
+	jsr	_RelocModule(pc)
+	lea	_song,a0	;this is passed in register a0
+	jsr	_PlayModule
+	...
+
+And the second method (loading modules from disk):
+--------------------------------------------------------------------------
+File "loadmod.a" contains three routines:
+	LoadModule
+	UnLoadModule
+	RelocModule (not external)
+
+You usually need only the first two of them. RelocModule is used by
+LoadModule.
+
+--------------------------------------------------------------------------
+LoadModule -- loads a module from disk
+
+Loads and relocates module.
+
+ARGUMENTS:	a0 = pointer to file name
+
+RETURNS:	d0 = pointer to the module, if something failed: 0
+--------------------------------------------------------------------------
+UnLoadModule -- free the module from memory
+
+Frees the module. Remember to StopPlayer() before you unload the module
+that is currently playing. Also remember to free all modules you've loaded
+before you exit the program.
+
+ARGUMENTS:	a0 = pointer to the module (may be 0)
+
+RETURNS:	nothing, nothing and nothing
+--------------------------------------------------------------------------
+
+Just call LoadModule to load the module and send the returned pointer to
+PlayModule. Easy??
+
+==========================================================================
+
+REMEMBER:	All functions expect the arguments in registers. This is
+		automatically (??) handled by you when you program in
+		assembler, but it is not automatically handled when you
+		program in C.
+
+If you have Lattice/SAS C V5.xx, this is done automatically if you include
+"modplayer.h" in all your code modules which call modplayer. If you
+have a compiler which doesn't support argument passing in registers,
+then you have to write the stub routines in assembler.
+
+That was it. See also the small example sources.
+
+==========================================================================
+
+	easyplayer.a -- easy-to-use player for demos etc.
+
+This is a player designed for playing a single song. It works on Devpac 2
+(not on A68k, because it doesn't have INCBIN-command). To use it, insert
+it into your code (or assemble separately and link). The name of the module
+must be written into the INCBIN-statement. At the beginning of the program,
+call _startmusic, when you're ready to finish, call _endmusic. That's all.
+
+==========================================================================
+==========================================================================
+
+	mod8player.a
+	~~~~~~~~~~~~
+
+"mod8player.a" is the play-routine for OctaMED 5 - 8 channel songs. This
+can be used exactly in the same way as "modplayer.a". The functions just
+have slightly different names:
+	InitPlayer8
+	RemPlayer8
+	PlayModule8
+	ContModule8
+	StopPlayer8
+	modnum8
+
+Note that this player have some restrictions, as opposed to "modplayer.a".
+They're listed in OctaMED documents. It also takes LOTS of processor time,
+depending on how many splitted channels there are.
+
+You can use the same RelocModule() and (Un)LoadModule() routines with
+5 - 8 channel songs.

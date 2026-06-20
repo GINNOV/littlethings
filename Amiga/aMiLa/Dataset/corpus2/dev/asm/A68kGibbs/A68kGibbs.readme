@@ -1,0 +1,20 @@
+Short:        Last version of "A68k" by Charlie Gibbs
+Author:       Charlie Gibbs
+Uploader:     willik bellatlantic net (Willi Kusche)
+Type:         dev/asm
+Replaces:     a68k271.lzh
+Architecture: m68k-amigaos
+
+
+    This archive is a repackaging of the contents of "a68k271.lzh" on Fred Fish
+disk number 521.  It contains all three files that make up the
+"dev/asm/a68k271.lzh" currently available on Aminet.  In addition, it contains
+all the source files needed to compile the executable.
+    I am uploading this archive because I was sure that the current
+"a68k271.lzh" available on Aminet already contained the source because the
+archive on Aminet had the same name as the archive on Fred Fish disk number
+521.  It wasn't until someone responding to my message in the archive
+"A68kEnh.lha" made me realize that the current "a68k271.lzh" did not contain
+source.
+    See "A68kEnh.lha" for the latest version of "A68kN", my attempt to
+modernize "A68k".

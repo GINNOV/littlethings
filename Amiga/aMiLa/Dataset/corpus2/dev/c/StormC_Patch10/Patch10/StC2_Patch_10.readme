@@ -1,0 +1,103 @@
+HAAGE&PARTNER Computer GmbH
+Mainzer Straße 10 A
+61191 Rosbach
+Germany
+
+Phone: +49 (0) 6007 - 93 00 50
+FAX:   +49 (0) 6007 - 75 43
+
+Internet: storm-support@haage-partner.com
+
+Homepage: http://www.haage-partner.com
+
+
+Dear StormC customer,
+
+enclosed you will find a patch program to update
+StormC version 2.00.14 (03.05.97) to the current release
+2.00.23 (29.08.97).
+
+The process is started by a double click on the icon
+
+StormC2.0-10.Patch.BAT
+
+
+Please take note that the old version of StormC must be in the drawer
+
+StormC:StormSYS
+
+
+Best wishes
+
+HAAGE&PARTNER Support Team
+
+
+
+History of StormC
+============================
+
+06.06.97 (V 2.00.15)
+
+* When address of a static variable were used, absolute references were
+  created in the Small Data Model.
+
+* Option "-t" did not work correct: The Compiler tried to create faulty
+  Template functions -> Crash or Panic!
+
+16.06.97
+
+* When a constant in the area 0x08000 to 0x7ffff was loaded into an
+  A-register a MOVE.W was generated instead of MOVE.L.
+
+17.06.97 (V 2.00.16)
+
+* The Operators <<= and >>= sometimes created the wrong code (non-
+  existing 68K address type)
+
+28.06.97 (V 2.00.18)
+
+* sometimes wrong use of registers during Integer conversion
+
+* bug on signs in switch statements
+
+30.06.97
+
+* SPrep: macros with empty parameter list ("#define X() Horrido(42)")
+  did not work.
+
+* misleading error message when a #pragma amicall or something similar
+  redefined a function
+
+01.07.97 (V 2.00.19)
+
+* Non-FPU-Floats did not use a0 and a1 on lib calls as scratch registers
+
+14.07.97
+
+* Again an error on "switch": wrong mask on extension by AND when the
+  switch statement was Byte or Word and the value of the jump table was
+  more than 127 or 32767 values
+
+20.07.97 (V 2.00.20)
+
+* On write access to bitfield members with more than 16 Bit the upper
+  8 bits of the long-word -in which the member was stored- were deleted
+  although other bitfield members were inside it.
+
+14.08.97 (V 2.00.22)
+
+* Comparisons on "long long" did not work when the high long-words
+  were identical and the lower long-word bit 31 was set.
+
+* Just another "Switch" error on ULONG with small or big (bit 31 set)
+  case-tables (resulted from the bug above)
+
+28.08.97
+
+* Up from optimisation level 5 it was possible to create "lea -(aN),aN"
+  by "*--p = x" expressions.
+
+29.08.97  (2.00.23)
+
+* It was possible to create the illegal instruction "TST.L #x".
+

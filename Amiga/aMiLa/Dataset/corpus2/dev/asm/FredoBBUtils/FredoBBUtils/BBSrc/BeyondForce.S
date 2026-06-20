@@ -1,0 +1,242 @@
+* BEYOND FORCE Bootblock
+* Resourced by Frédo
+* doesn't seem to work under 2.0+
+* (not system friendly)
+
+LB_0000
+	dc.b	'DOS',0
+LB_0004	dc.l	0
+	dc.l	$370
+Start:
+	move.l	4.w,a6
+
+	movem.l	d0-a6,-(sp)
+	LEA	$00DFF002,A5
+	LEA	$0004(A5),A6
+	LEA	LB_01F2(PC),A0
+	LEA	$00028000,A2		;aargh!! :-)
+	MOVE	#$0C00,D4
+	MOVEQ	#$7F,D7
+LB_002A	MOVE	#$4400,D5
+	MOVE	(A0),D0
+	MULS	D4,D0
+	MOVE.L	D0,D2
+	DIVS	D5,D0
+	MOVE	$0080(A0),D1
+	MULS	D4,D1
+	MOVE.L	D1,D3
+	DIVS	D5,D1
+	MOVE	(A6),D6
+	ANDI	#$003F,D6
+	MULU	#$0070,D6
+	SUB	D6,D5
+	DIVS	D5,D2
+	DIVS	D5,D3
+	SUB	D2,D0
+	SUB	D3,D1
+	MOVE	#$4400,D5
+	MOVEQ	#$7F,D6
+LB_005A	MOVE	(A0),D2
+	MULS	D4,D2
+	DIVS	D5,D2
+	MOVE	$0080(A0),D3
+	MULS	D4,D3
+	DIVS	D5,D3
+	ADD	D0,D2
+	ADD	D1,D3
+	CMPI	#$00A0,D2
+	BGE.B	LB_00BE
+	CMPI	#$FF60,D2
+	BLE.B	LB_00BE
+	CMPI	#$0080,D3
+	BGE.B	LB_00BE
+	TST	D3
+	BMI.B	LB_00BE
+	NEG	D3
+	ADDI	#$00A0,D2
+	ADDI	#$007F,D3
+	MULU	#$0050,D3
+	ADD.L	LB_03C6(PC),D3
+	MOVE.L	D3,A1
+	MOVE	D2,D3
+	LSR	#3,D3
+	ADDA	D3,A1
+	NOT.B	D2
+	ANDI.B	#$07,D2
+	MOVEQ	#$00,D3
+	BSET	D2,D3
+	MOVE.L	D3,D2
+	SWAP	D3
+	CMPI	#$0040,D6
+	BLE.B	LB_00B4
+	OR.L	D3,D2
+	BRA.B	LB_00C2
+LB_00B4	CMPI	#$0020,D6
+	BLE.B	LB_00C2
+	MOVE.L	D3,D2
+	BRA.B	LB_00C2
+LB_00BE	LEA	LB_0004(PC),A1
+LB_00C2	MOVE.L	D2,(A2)+
+	MOVE.L	A1,(A2)+
+	SUBI	#$0070,D5
+	DBF	D6,LB_005A
+	ADDQ.L	#2,A0
+	DBF	D7,LB_002A
+	MOVE.L	LB_03D2(PC),A0
+	MOVE	#$0293,D7
+LB_00DC	MOVE	(A6),D1
+	EOR	D1,D0
+	ROR	#8,D0
+	LSL	#3,D0
+	MOVE	D0,(A0)+
+	ADD.B	(A6),D0
+	DBF	D7,LB_00DC
+;start DMA
+	MOVE	#$3FFF,$0098(A5)	;intena
+	MOVE	#$3FFF,$0094(A5)	;dmacon
+	MOVE	#$83C0,$0094(A5)	;dmacon
+	LEA	LB_0372(PC),A0		;copperlist
+	MOVE.L	A0,$007E(A5)		;cop1lch (initialize copperlist)
+LB_0106
+	MOVE.L	$0002(A5),D0
+	ANDI.L	#$0001FF00,D0
+	BNE.B	LB_0106
+	LEA	LB_03CA(PC),A0
+	LEA	LB_03CE(PC),A1
+	MOVE.L	(A1),D0
+	MOVE.L	(A0),(A1)
+	MOVE.L	D0,(A0)
+LB_0120	BTST	#$06,(A5)
+	BNE.B	LB_0120
+	MOVE.L	#$01000000,$003E(A5)	;bltcon0
+;	MOVE	#$0000,$0064(A5)	;bltdmod
+	clr	$64(a5)
+	MOVE.L	D0,$0052(A5)		;bltdpth
+	MOVE	#$1400,$0056(A5)	;bltsize (set blit size & start blitter)
+
+	MOVE.L	LB_03D2(PC),A0
+	LEA	$00028000,A1
+	LEA	$00038000,A3
+	MOVE.L	LB_03CA(PC),D2
+	SUB.L	LB_03C6(PC),D2
+	MOVEQ	#$08,D4
+	MOVEQ	#$00,D0
+	MOVE	#$0293,D7
+LB_015E	BTST	#$06,(A5)
+	BNE.B	LB_015E
+LB_0164	MOVE	(A0),D0
+	ADD	D4,(A0)+
+	MOVEM.L	$00(A1,D0.L),D1/A2
+	ADDA.L	D2,A2
+	OR.B	D1,(A2)
+	SWAP	D1
+	OR.B	D1,$0028(A2)
+	MOVEM.L	$00(A3,D0.L),D1/A2
+	ADDA.L	D2,A2
+	OR.B	D1,(A2)
+	SWAP	D1
+	OR.B	D1,$0028(A2)
+	DBF	D7,LB_0164
+	LEA	LB_0392(PC),A0
+	MOVE.L	LB_03CA(PC),D0
+	MOVE	D0,$0006(A0)
+	SWAP	D0
+	MOVE	D0,$0002(A0)
+	SWAP	D0
+	ADDI.L	#$00000028,D0
+	MOVE	D0,$000E(A0)
+	SWAP	D0
+	MOVE	D0,$000A(A0)
+	MOVE.B	#$22,$0012(A0)
+	BTST	#$06,$00BFE001		;test leftmouse
+	BNE	LB_0106
+;restore system coplist and boot AmigaDOS
+	MOVE.L	$0004.W,A6
+	MOVE.L	$009C(A6),A0		;Execbase->gfxbase
+	MOVE.L	$0026(A0),$007E(A5)	;restore coplist
+	MOVE	#$83F0,$0094(A5)	;restore dma
+	MOVE	#$E02C,$0098(A5)	;restore intena
+	MOVEM.L	(A7)+,D0-A6
+	LEA	LB_03D6(PC),A1
+	JSR	-$0060(A6)
+	MOVE.L	D0,A0
+	MOVE.L	$0016(A0),A0
+	MOVEQ	#$00,D0
+	RTS	
+
+;some data
+LB_01F2
+	DC.B	$FF,$42,$FF,$42,$FF,$42,$FF,$43
+	DC.B	$FF,$43,$FF,$44,$FF,$44,$FF,$45
+	DC.B	$FF,$46,$FF,$47,$FF,$48,$FF,$4A
+	DC.B	$FF,$4B,$FF,$4C,$FF,$4E,$FF,$50
+	DC.B	$FF,$51,$FF,$53,$FF,$55,$FF,$57
+	DC.B	$FF,$5A,$FF,$5C,$FF,$5E,$FF,$61
+	DC.B	$FF,$63,$FF,$66,$FF,$69,$FF,$6C
+	DC.B	$FF,$6F,$FF,$72,$FF,$75,$FF,$78
+	DC.B	$FF,$7B,$FF,$7F,$FF,$82,$FF,$86
+	DC.B	$FF,$89,$FF,$8D,$FF,$91,$FF,$95
+	DC.B	$FF,$98,$FF,$9C,$FF,$A0,$FF,$A4
+	DC.B	$FF,$A8,$FF,$AD,$FF,$B1,$FF,$B5
+	DC.B	$FF,$B9,$FF,$BE,$FF,$C2,$FF,$C7
+	DC.B	$FF,$CB,$FF,$D0,$FF,$D4,$FF,$D9
+	DC.B	$FF,$DD,$FF,$E2,$FF,$E6,$FF,$EB
+	DC.B	$FF,$F0,$FF,$F4,$FF,$F9,$FF,$FE
+	DC.B	$00,$02,$00,$07,$00,$0C,$00,$10
+	DC.B	$00,$15,$00,$1A,$00,$1E,$00,$23
+	DC.B	$00,$27,$00,$2C,$00,$30,$00,$35
+	DC.B	$00,$39,$00,$3E,$00,$42,$00,$47
+	DC.B	$00,$4B,$00,$4F,$00,$53,$00,$58
+	DC.B	$00,$5C,$00,$60,$00,$64,$00,$68
+	DC.B	$00,$6B,$00,$6F,$00,$73,$00,$77
+	DC.B	$00,$7A,$00,$7E,$00,$81,$00,$85
+	DC.B	$00,$88,$00,$8B,$00,$8E,$00,$91
+	DC.B	$00,$94,$00,$97,$00,$9A,$00,$9D
+	DC.B	$00,$9F,$00,$A2,$00,$A4,$00,$A6
+	DC.B	$00,$A9,$00,$AB,$00,$AD,$00,$AF
+	DC.B	$00,$B0,$00,$B2,$00,$B4,$00,$B5
+	DC.B	$00,$B6,$00,$B8,$00,$B9,$00,$BA
+	DC.B	$00,$BB,$00,$BC,$00,$BC,$00,$BD
+	DC.B	$00,$BD,$00,$BE,$00,$BE,$00,$BE
+	DC.B	$00,$BE,$00,$BE,$00,$BE,$00,$BD
+	DC.B	$00,$BD,$00,$BC,$00,$BC,$00,$BB
+	DC.B	$00,$BA,$00,$B9,$00,$B8,$00,$B6
+	DC.B	$00,$B5,$00,$B4,$00,$B2,$00,$B0
+	DC.B	$00,$AF,$00,$AD,$00,$AB,$00,$A9
+	DC.B	$00,$A6,$00,$A4,$00,$A2,$00,$9F
+	DC.B	$00,$9D,$00,$9A,$00,$97,$00,$94
+	DC.B	$00,$91,$00,$8E,$00,$8B,$00,$88
+	DC.B	$00,$85,$00,$81,$00,$7E,$00,$7A
+	DC.B	$00,$77,$00,$73,$00,$6F,$00,$6B
+	DC.B	$00,$68,$00,$64,$00,$60,$00,$5C
+	DC.B	$00,$58,$00,$53,$00,$4F,$00,$4B
+	DC.B	$00,$47,$00,$42,$00,$3E,$00,$39
+	DC.B	$00,$35,$00,$30,$00,$2C,$00,$27
+	DC.B	$00,$23,$00,$1E,$00,$1A,$00,$15
+	DC.B	$00,$10,$00,$0C,$00,$07,$00,$02
+
+;copperlist data
+LB_0372
+	DC.B	$01,$80,$00,$00,$01,$82,$0F,$FF
+	DC.B	$01,$84,$0A,$AA,$01,$86,$08,$88
+	DC.B	$00,$8E,$29,$81,$00,$90,$28,$C1
+	DC.B	$00,$92,$00,$38,$00,$94,$00,$D0
+LB_0392
+	DC.B	$00,$E0,$00,$00,$00,$E2,$00,$00
+	DC.B	$00,$E4,$00,$00,$00,$E6,$00,$00
+	DC.B	$01,$00,$02,$00,$01,$02,$00,$00
+	DC.B	$01,$04,$00,$00,$01,$08,$00,$28
+	DC.B	$01,$0A,$00,$28,$A8,$09,$FF,$FE
+	DC.B	$01,$08,$FF,$88,$01,$0A,$FF,$88
+	DC.B	$FF,$FF,$FF,$FE		;end of coplist
+LB_03C6
+	DC.B	$00,$02,$00,$00
+LB_03CA
+	DC.B	$00,$02,$00,$00
+LB_03CE
+	DC.B	$00,$02,$28,$00
+LB_03D2
+	DC.B	$00,$02,$50,$00
+LB_03D6
+	dc.b	'dos.library',0
+	DC.B	'Email:vanhanen@vipunen.hut'

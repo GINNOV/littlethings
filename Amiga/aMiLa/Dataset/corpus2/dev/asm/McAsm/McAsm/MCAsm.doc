@@ -1,0 +1,4818 @@
+
+
+
+
+
+
+
+	1	The MCAsm Editor
+	2	The MCAsm 68000 Macro Assembler
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	1	The MCAsm Editor                                                 
+
+
+
+	
+	1.1	Inserting & deleting text
+	1.2	Blocks
+	1.3	Moving the cursor
+	1.4	Search and replace
+	1.5	Projects
+	1.6	The Environment
+	1.7	Memory functions
+	1.8	Loading and saving binary data
+	1.9	Summary of the MCAsm Editor key sequences
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	1.1	Inserting & deleting text                                                   
+
+The Editor is always in INSERT mode, any ordinary ASCII characters you type
+will be inserted at the current cursor position, it has no OVERWRITE mode.
+If you wish to replace something you must first delete the unwanted text
+and then insert the new, or vice versa. It is not recommended that an
+assembler source line is more than 255 characters, however - the Editor
+will allow a line length of 999 characters. If you try to insert one more
+you will get an error; Line to long.
+If you wish to make a new blank line under the current one press Shift Alt Down
+or move the cursor to the end of the line and press return.
+If you have typed something in the wrong case there are three functions to
+help you out:
+
+	Amiga ^	Change (flip) case on the word to the right of the cursor
+	Amiga &	Make the word to the right of the cursor in lower case
+	Amiga *	Make the word to the right of the cursor in upper case
+
+If the cursor is positioned on a white space it will first be moved to the
+right until an non white space is found and then that word will be changed,
+if possible - e.g using Amiga & on a word already in lower case, or a
+number, has no effect other than moving the cursor to the end of the word.
+
+BACKSPACE and DEL are used to delete one or a few characters and to delete
+larger quantities you can use these functions:
+
+	Amiga y	Delete all text from the cursor to the end of the line.
+	Amiga Y	Delete all text from the left of the cursor to start of line.
+	Amiga k	Delete the entire current line. When using this function the
+		line deleted is saved in an undo-buffer so it may be
+		re-inserted if deleted by mistake.
+
+If you delete an entire line by mistake with Amiga k you may restore it
+by pressing Amiga l. When doing so the line in the undo-buffer is inserted
+at the current line. The line in the undo-buffer may be inserted at any
+line and as may times as you wish.
+
+There is also another form of restoring a line, Amiga L - undo all changes.
+Doing this will restore the current line to the state it was in when you
+first entered it. However, Amiga L is only useful as long as you don't
+leave the line since this undo-buffer is updated every time you move from
+one line to another.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	1.2	Blocks                                                           
+
+To cut, copy, delete or insert text you use the block commands. You may
+also save or print the text currently held in the clip buffer and some
+other things. Below is a description of all the block commands.
+
+	Amiga b	Mark block. This will turn block on, or off if block is
+		already on, you use this command to mark the beginning of a
+		block. You may also turn block on/off by clicking on the
+		cursor. Once you have marked the beginning of the block you
+		move the cursor to the end of the area you wish to operate on
+		and select one of the following block functions. When block is
+		on most other functions are locked out, for example -  you
+		can't type anything if block is on.
+
+	Amiga c	Copy block. This will copy the selected area to the clip-
+		buffer. The previous contents in the clip-buffer is lost.
+		Nothing will happen with the text-file. Using this function
+		also turns block off.
+
+	Amiga X	Delete block. This will delete the selected area from the
+		text-file. The contents in the clip-buffer is not affected.
+		Using this function also turns block off.
+
+	Amiga x	Cut block. This function will first copy the selected area to
+		the clip-buffer and then delete the selected area from the
+		text-file. The previous contents in the clip-buffer is lost.
+		Using this function also turns block off.
+
+	Amiga i	Insert block. This function will insert the contents of the
+		clip-buffer into the text-file at the current cursor position.
+		The cursor will be positioned at the end of the inserted area.
+		The contents of the clip-buffer is not affected so you may
+		insert it as many times as you wish. This function can only be
+		used if block is off.
+
+	Amiga (	Change case block. This function will change (flip) the case
+		on all alphabetical characters within the selected area.
+		Using this function alsos turn block off.
+
+	Amiga )	Make block lower case. This will make all alphabetical
+		characters in the selected area lower case.
+		Using this function also turns block off.
+
+	Amiga _	Make block upper case. This will make all alphabetical
+		characters in the selected area upper case.
+		Using this function also turns block off.
+
+	Amiga C	Clear clip buffer. This function does not affect the selected
+		area. It will clear the clip-buffer, freeing all the memory
+		it currently occupies.
+
+	Amiga Z	Save clip. This function does not affect the selected area or
+		the contents of the clip-buffer. It will merely save the
+		contents of the clip-buffer to a file, specified by you.
+
+	Amiga P	Print clip. This function does not affect the selected area
+		or the contents of the clip-buffer. It will only print the
+		contents of the clip-buffer.
+
+
+
+
+
+
+
+	1.3	Moving the cursor                                                
+
+To move the cursor one character in any direction, Up, Down, Left or Right,
+you press the appropriate arrow key. Normally this will just move the
+cursor on character but if the cursor is at the edge of the screen and
+there is more text in the direction you are moving the screen will be
+scrolled.
+
+If you hold down any of the Alt keys when you press the arrow keys you will
+cause the cursor to move 12 characters in the chosen direction:
+
+		Alt	Up	move cursor 12 line up
+		Alt	Down	move cursor 12 lines down
+		Alt	Left	move cursor 12 characters left
+		Alt	Right	move cursor 12 characters right
+
+You may also move the cursor word by word, to do this hold down the Ctrl
+key when you move the cursor:
+
+		Ctrl	Left	move cursor one word to the left
+		Ctrl	Right	move cursor one word to the right
+
+The following functions are used to move fast over large areas:
+
+		Ctrl	Up	move cursor to top of file
+		Ctrl	Down	move cursor to end of file
+		Shift	Up	move cursor to top of screen
+		Shift	Down	move cursor to end of screen
+		Shift	Left	move cursor to beginning of line
+		Shift	Right	move cursor to end of line
+
+You may also position the cursor anywhere on the screen, inside the text,
+just by clicking on the character with the mouse. If you keep pressing the
+left mouse button the cursor will follow the mouse when you move it and
+scroll the text vertically if you move the mouse off the top or bottom of
+the screen.
+
+NOTE,	horizontal scrolling is not possible when moving the cursor with the
+	mouse.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	1.4	Search and replace                                               
+
+To search for a particular piece of text, and maybe replace all occurrences
+of that text with something else, or mark a special line in the text so you
+can jump to it immediately you use the functions in the Search menu.
+
+	Amiga S	Search for. When you use this function the Search for window is
+		opened for you so you can define the string to search for, and
+		whether or not the editor shall treat upper and lower case as
+		the same and if the search is to be made forward or backwards.
+
+		If the Editor can't find the specified string it will notify
+		you with an error:
+
+					Not found:
+					string
+
+
+	Amiga s	Repeat Search Forward. This does just what it says, it will
+		start a forward search for the string defined with Search for..
+		without opening the Search for window.
+
+	Amiga a	Repeat Search Backwards. This will start a backwards search for
+		the string defined with Search for.. without opening the
+		Search for window.
+
+	Amiga R	Replace. This function is very similar to Search for.., the
+		Search for window is opened but now you should enter the 
+		string that is to replace the search string as well.
+		When the Editor finds the search string an inquiry will be
+		displayed at the left in the menu bar. To go on from here you
+		must press a key and the keys to press are the first in the
+		answers.
+
+		Yes	Pressing y or Y means that it is ok to replace this
+			occurrence of the search string with the replace
+			string and then continue the search.
+
+		No	Pressing n or N means that this occurrence of the
+			search string shall not be replaced with the replace
+			string but the search shall continue.
+
+		Global	Pressing g or G means that this and all occurrences
+			of the search string found after this one shall be 
+			replaced with the replace string without asking for 
+			permission to do so.
+
+		Quit	Pressing q or Q aborts the operation.
+
+		Last	Pressing l or L means that it is ok to replace this
+			occurrence of the search string with the replace
+			string but then the operation is aborted.
+
+	Amiga r	Repeat Replace Forward. This functions is the same as Repeat
+		Search Forward except that this will go on with the replace
+		procedure described above if the search string is found.
+
+	Amiga A	Repeat Replace Backwards. This is the same as Repeat Replace
+		Forward but backwards instead.
+
+	Ctrl Fx	Search for ;Fx. To make it easier for you to move between
+		different sections in your text you may insert special marks in
+		the text that the Editor can search for automatically, when
+		pressing Ctrl Fx (F1-F10).
+		These special marks consists of a semicolon (;) an upper case F
+		and a digit 0 - 9, for example ;F4. If the Editor is to find
+		these marks they must be put at column 1 and they may not
+		have any trailing text. Since they start with a semicolon they
+		are treated as remarks by the assembler. When searching for a
+		;Fx the Editor always start the search from top of file, so
+		only the first occurrence of a mark is used - all sequel marks
+		of the same type will never be found. If the Editor can't find
+		the mark you are searching for the cursor will be left at the
+		position where it was when you started the search.
+		These marks have the advantage that they will be saved when you
+		save you text - after loading you don't have to mark the lines
+		to be able to search for them. The disadvantage is that if it
+		is a large file it may take some time for the Editor to scan
+		through the text in search for a ;Fx.
+
+	Amiga j	Jump to line. This function will open a window for you asking
+		for a line to jump to. If the line you specify is outside the
+		file it will jump to the top or bottom respectively. If you
+		just press return without typing anything the operation is
+		aborted.
+
+	Amiga J	Jump to Error. If any you get any errors or warnings during
+		assembly you can use this function to jump to those lines, in
+		the same order as the errors/warnings occurred.
+
+		NOTE, if you insert or delete any lines this function will not
+		      jump to the correct lines.
+
+	Amiga !
+	Amiga @
+	Amiga #
+	Amiga $
+	Amiga %	Mark a line. Using one of these functions will cause the Editor
+		to remember the location of the current line. If you use the
+		same function more than once the old line will be forgotten. 
+
+	Amiga 1
+	Amiga 2
+	Amiga 3
+	Amiga 4
+	Amiga 5	Jump to line. Using one of these will cause the Editor to jump
+		to one of the lines it has remembered. These functions operate
+		in pairs with the once described above, for example:
+
+		use Amiga ! to remember a line, Amiga 1 to jump to it.
+
+		Compared with the Search for ;Fx function these functions have
+		the advantage that they jump to the marked line instead of
+		searching for a mark, which is much faster if the text-file is
+		large. However, you must mark the lines before you can jump to
+		them.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	1.5	Projects
+
+This section will describe the functions in the project menu.
+
+	Amiga ?	About MCAsm. Using this function simply opens a window
+		containing the copyright texts. To make the window go away just
+		click in it or press return.
+
+	Amiga /	Clear file. This will clear the entire text-file, returning all
+		allocated memory used for the text to the system memory pool.
+		However, if any changes have been made to the text you must
+		confirm that you really want to clear it all away.
+
+	Amiga o	Open file. This will load a new text-file. If the file selected
+		by you for some reason can't be opened the operation is aborted
+		with an error, else the old file will be cleared and the
+		selected one loaded, but if an error occurs during the load
+		the operation will be aborted with an error and the loaded part
+		is cleared away. If any changes have been made to the text you
+		must confirm that you want to load a new file without saving
+		the changes.
+
+	Amiga O	Include file. This is very similar to Insert Block, but now it
+		is not the contents of the clip-buffer that is inserted but a
+		file. If the file selected for some reason can't be opened or
+		loaded the operation is aborted with an error, else the loaded
+		file is inserted in the text-file at the current cursor
+		position.
+
+	Amiga w	Save file. This will save the text-file, immediately - without
+		opening the FileRequester, with the same name used to load it.
+		(unless the name has been changed with Save File As).
+
+	Amiga W	Save file As. This will also save the text-file, but to a file
+		selected by you. If the file already exist you must confirm
+		that you wish to overwrite it, else the operation is aborted.
+
+	Amiga p	Print file. This will print the entire text-file to whatever
+		device/file you select. If the selected device/file for some
+		reason can't be opened the operation will be aborted with an
+		error. After selecting the output print device a new window is
+		opened for you so you may specify the indent amount and choose
+		whether or not you want the tabs (ASCII 9) to be converted to a
+		number of spaces, specified by the tab-distance. If an error
+		occurs during printing the operation is aborted with an
+		error.
+
+	Amiga D	Delete file. This function will delete the selected file.
+		However, you must confirm that you really want to delete it. If
+		the file for some reason can't be deleted an error is reported.
+
+	Amiga d	Current directory. This function lets you specify the current
+		directory used by MCAsm. If the selected directory can't be
+		found an error will be reported and the old current directory
+		will remain.
+
+		NOTE, you must choose a directory, not a file. 
+
+	Amiga '	Show registers. This function will open the window that
+		shows the return values of the registers. This window is
+		automatically opened every time you have executed a program in
+		memory. However, should you later wish to see the registers
+		again, just use this function. To exit click on the close
+		gadget or press return.
+
+
+	Amiga <	Show symbol table. This function allows you to scan through the
+		symbol table. It is very useful if you wish to check if a
+		certain symbol exists or what value it has. To move through the
+		symbol list you use the slider gadget at the right side, or
+		the cursor keys.
+		You may also press any alpha-numerical character, causing the
+		symbol listing to jump to the first symbol starting with the
+		character you pressed. To exit this function click on the close
+		gadget or press return.
+
+	Amiga >	Show macro table. This function is similar to Show Symbol Table
+		but lists the contents of the macro table instead.
+
+	Amiga q	Save and quit. This function will first save the text-file,
+		immediately, without opening the FileRequester, with the same
+		name used to load it (unless it has been changed with Save File
+		As), and then killing the MCAsm task, returning all memory
+		allocated by MCAsm to the system memory pool, closing all
+		windows, screens and other things used.
+
+	Amiga Q	Quit. This function will kill the MCAsm task, return all memory
+		allocated to the system memory pool and close down all
+		resources used. If any changes have been made to the text you
+		must confirm that you really want to quit without saving.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	1.6	The Environment
+
+All the environmental settings for the Editor and the user-definable
+assembler defaults are located in the Environment menu.
+
+	Shift F2
+	Shift F3
+	Shift F4
+	Shift F5
+	Shift F6
+	Shift F7
+	Shift F8
+	Shift F9
+	Shift F10	Tab Distance. Using one of these functions will set the
+			tab-distance to the selected value.
+
+	Amiga t	Customize Tab Distance. When selecting this function a window
+		is opened containing a ruler and the current tab settings. To
+		toggle the tab-mark on a certain column click on it with the
+		mouse. When you're happy press any key to exit.
+
+	Amiga H	Load Environment Specify. Using this function opens the
+		FileRequester for you to select an environment file to load.
+		The FileRequester is always initialized with the default
+		environment file S:MCAsmDefaults. Don't load a file that is not
+		a MCAsm environment file. If the selected file doesn't exist
+		the operation is aborted with an error.
+
+	Amiga e	Load Environment Default. This will load the default
+		environment file S:MCAsmDefaults immediately without opening
+		the FileRequester.
+
+	Amiga 6	Specify Symbol Table. You use this function to specify how many
+		symbols the symbol-table may hold and the size of the symbol
+		storage area. In the Max gadget you specify the maximum number
+		of labels allowed in the table, this number must be an even 2^n
+		but if you enter something that isn't it is automatically
+		adjusted. In the Size gadget you specify the byte-size of the
+		symbol storage area - that's where the actual symbol names are
+		stored. When you redefine the symbol-table all the symbols hold
+		in it are lost. If you ask for a big table or storage and it
+		can't be allocated - first an error is reported and then MCAsm
+		tries to re-allocated the old area. If that fails to another
+		error is reported and then it will allocate 256 bytes. In
+		either case you probably have to redefine the table again.
+
+	Amiga 7	Specify Macro Table. This function operates in an identical way
+		to the one above, but on the macro-table instead.
+
+	Amiga 8	Default Section Size. With this function you specify the
+		default byte-size of the area to allocate for each section
+		during assembly, if not specified with the SECTION directive,
+		see section 2.10.8 Section Control.
+
+		Screen Height. In the sub-menu to this item you may define the
+		height of the screen. When changing the screen MCAsm will first
+		try to open the new screen and then close down to old one. If
+		the new screen can't be opened an error is reported and the
+		operation aborted.
+
+	Amiga ,	Source-listing File. This function will open the FileRequester
+		to allow you to select the file to which the source-listing, if
+		selected, shall be sent during assembly.
+
+
+
+	Amiga .	Error-listing File. This function will open the FileRequester
+		to allow you to select the file to which the errors and
+		warnings, if any, are sent during assembly.
+		NOTE, fatal errors are always sent to the screen.
+
+	Amiga ;	Symbol-listing File. This function will open the FileRequester
+		to allow you to select the file to which the symbol-listing, if
+		selected, shall be sent after assembly.
+
+	Amiga :	Default Include Dir. This function will open the FileRequester
+		to allow you to select the default include directory, which is
+		normally I: but you may change it to whatever you like.
+		NOTE, you must select a directory, not a file.
+
+		Default Source List Ctrl. All the settings in the sub-menu to
+		this item are the default source-list settings for the FORMAT
+		directive, see 2.10.6 Listing control, 2.4 Listing outputs and
+		2.4.1 Source listing for a further discussion of the format and
+		control of the source-listing.
+
+		Default Symbol List Ctrl. The settings in the sub-menu to this
+		item are the default symbol-list settings for the FORMAT
+		directive, see 2.10.6 Listing control, 2.4 Listing outputs and
+		2.4.3 Symbol listing for a further discussion of the format and
+		control of the symbol-listing.
+
+		Default Assembler Options. In the sub-menu to this item you
+		set the defaults for most of the assembler options, see section
+		2.10.1 Assembly control - OPT directive for a complete
+		description of all the assembler options.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	1.7	Memory functions                                                      
+
+	Amiga h	Allocator. This function is used to allocate and free memory
+		from and to the system memory pool. In the allocator window
+		there are two lists, the Free Mem List to the left and the
+		Alloc Mem List	to the right. The Alloc and Free gadgets and
+		the five string gadgets - Alloc Addr, Alloc Size, Pre Addr, Pre
+		Size and Free Addr. All numbers, addresses and sizes, in the
+		Allocator are in hexadecimal notation.
+
+	Free Mem List	This list simply shows the current system memory
+			free list as is and it is updated every time you
+			call on the Allocator. To scan through the list
+			use the slider gadget. When you find a suitable
+			area that you wish to allocate just click on it
+			and it will be copied down to the Alloc Addr &
+			Alloc Size gadgets, then click on the Alloc
+			gadget and the area is allocated and also shown
+			in the Alloc Mem List.
+			NOTE,since the list is only updated when the
+			Allocator is call upon, you may end up in the
+			situation where you can't allocate a memory
+			block shown in the Free Mem List, due to it has
+			been allocated by the system or some other task
+			after opening the Allocator.
+
+	Alloc Mem List	This list shows all the areas allocated by
+			MCAsm. It is only updated when you allocate a
+			new area or free an already allocated one.
+			If you wish to free an area click on
+			it and the address is copied down to the Free
+			Addr gadget, then click on the Free gadget and
+			the area is returned to the system memory pool
+			and no longer shown in the Alloc Mem List but in
+			the Free Mem List.
+
+	Alloc 		Click on this gadget to allocate the area
+			specified in the Alloc Addr & Alloc Size
+			gadgets. If the area can't be allocated an error
+			is reported. If the cursor is in the Alloc Size
+			gadget you may press return instead of clicking
+			on this gadget.
+
+	Free		Click on this gadget to free the area starting
+			at the address given in the Free Addr gadget.
+			You don't have to specify the size of the area
+			to free, the Allocator will do that for you. If
+			the cursor is in the Free Addr gadget you may
+			press return instead of clicking on this gadget.
+			NOTE, you can only free areas allocated by MCAsm
+
+	Alloc Addr	In this gadget you specify the attributes of the
+			area to allocate. If you wish to allocate an
+			absolute area you give an address, if you want
+			public memory you leave it clear, if you want
+			chip memory you type 'chip', in lower case, and if
+			you want fast you type 'fast', in lower case.
+
+	Alloc Size	In this gadget you specify the byte size of the
+			area you wish to allocate. When you press
+			return, or click on the Alloc gadget the
+			allocated will try to allocated the area
+			specified in this and the Alloc Addr gadgets. If
+			successful it will be shown in the Alloc Mem List,
+			else an error is reported.
+
+	Free Addr	In this gadget you specify the address of the
+			area to free. The address must be to one of the
+			areas shown in the Alloc Mem List or an error is
+			reported when you try to free it, by pressing
+			return or clicking on the Free gadget.
+
+	Pre Addr	In this gadget you specify the attributes of the
+			pre-allocated area. If you wish to allocate an
+			absolute area you give an address, if you want
+			public memory you leave it clear, if you want
+			chip memory you type 'chip', in lower case, and if
+			you want fast you type 'fast', in lower case.
+
+	Pre Size	In this gadget you specify the byte size of the
+			pre-allocated area. If you alter this definition
+			and you want to use it you must save the
+			environment so this new definition is saved in
+			the environment file S:MCAsmDefaults. When you
+			load MCAsm the first thing it does, after having
+			loaded the environment file, is to try to
+			allocate the area specified in the Pre Addr &
+			Pre Size gadgets. If successful it will be shown
+			in the Alloc Mem List, else an error is given.
+
+	Amiga 9	Editor. This function allows you to look at and edit the
+		contents of the entire memory area, (where there is any memory,
+		e.g NO hardware register) it does not check if the memory
+		you a tampering with is allocated by MCAsm or not. When you
+		select this function first a window is opened asking for the
+		address of the area to edit. If you enter a NULL string or
+		click the close gadget the operation is aborted, else another
+		window is opened displaying 11 lines with 16 bytes of data. The
+		cursor is positioned at the address you gave. Use the cursor
+		keys to move the cursor around. When the cursor is in the area
+		of the window showing hexadecimal data you may alter the
+		contents of a locating, a nibble at time, by pressing a
+		hexadecimal character (0-9 a-f and A-F). When the cursor is in
+		the area of the window showing ASCII data you may alter the
+		contents of a location, a byte at time, by pressing any normal
+		ASCII character (" "-~) plus TAB and ENTER. This function
+		may be very useful when looking at structures, list, etc - but
+		it can also take you on a short-cut to a system crash if you're
+		not careful when altering things in memory, especially if you
+		didn't allocate it. However, as long as you are just looking
+		nothing can happen. If you wish to look at a new address press
+		the DEL key to bring up the address window. To close down the
+		memory-editor click on the close gadget or press return.
+
+	Amiga 0	Dis-Assembler. When using the dis-assembler, first a window
+		will be opened asking for the address of the area to dis-
+		assemble. If you enter a NULL string or click on the close
+		gadget the dis-assembly is aborted, else a another window is
+		opened showing 20 lines of dis-assembled code starting at the
+		address you gave. To move one instruction forward in the code
+		press the Down cursor key and to move one word backwards in the
+		code press the Up cursor key. When you don't want to dis-
+		assemble any more click on the close gadget or press the return
+		key. If you wish to start a dis-assembly at another address
+		press the DEL key to bring up the address window.
+
+		NOTE, With this dis-assembler you can't do anything except just
+		dis-assemble. However, the intention with the dis-assembler is
+		not to provide you with a full featured symbolic debugger but 
+		simply to fill the basic need, that sometimes occur, of being
+		able to dis-assembler a few lines of code.
+
+	1.8	Loading & saving binary data
+
+	Amiga {	Load Data. This function will open the FileRequester so you can
+		select a file to load, binary into memory. After having
+		selected a file you will be asked to specify the start and end
+		address of the buffer into which the file is to be loaded. If
+		you don't specify any end address you have no limit and the
+		entire file will be loaded, regardless of how large it is. No
+		checks are made to ensure that the file is loaded into memory 
+		allocated by MCAsm, so this function should be used with great 
+		care. If you use a symbol not defined in an address or an 	
+		illegal operator or an expression that MCAsm can't handle - 
+		then the operation is aborted with an error.
+
+	Amiga }	Save Data. This function works the same way as Load Data except
+		that this one saves data instead. Also - you must specify the
+		end address when using this function.
+
+	Amiga [	Exec BLoad. This will execute the BLOAD list build up during
+		assembly with the BLOAD directive, loading all the files
+		selected into the specified buffers. If a file can't be opened
+		or loaded an error will be reported and then the next file in
+		the list will be loaded.
+
+	Amiga ]	Exec BSave. This will execute the BSAVE list build up during
+		assembly with the BSAVE directive, saving all the specified
+		areas to the selected files. If, for some reason, a file can't
+		be saved an error is reported and then the next entry in the
+		list is processed.
+
+
+		NOTE, the BLOAD & BSAVE directives are fully described later in
+		      chapter 2, section 2.10.10 Binary include.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	1.9	Summary of the MCAsm Editor key sequences                        
+
+This is a summary of all key sequences in menu order.
+
+
+		-- PROJECT MENU --
+
+	Amiga ?			Some info about MCAsm
+	Amiga /			Clear file
+	Amiga o			Open file
+	Amiga O			Include file
+	Amiga w			Save file
+	Amiga W			Save file as
+	Amiga p			Print file
+	Amiga D			Delete file
+	Amiga d			Select current directory
+	Amiga C			Clear clip-buffer
+	Amiga Z			Save block as
+	Amiga P			Print block
+	Amiga '			Show register
+	Amiga <			Show symbol table
+	Amiga >			Show macro table
+	Amiga q			Save file and quit
+	Amiga Q			Quit
+
+
+		-- ENVIRONMENT MENU --
+
+	Shift F2		Set tab-distance to 2
+	Shift F3		Set tab-distance to 3
+	Shift F4		Set tab-distance to 4
+	Shift F5		Set tab-distance to 5
+	Shift F6		Set tab-distance to 6
+	Shift F7		Set tab-distance to 7
+	Shift F8		Set tab-distance to 8
+	Shift F9		Set tab-distance to 9
+	Shift F10		Set tab-distance to 10
+	Amiga t			Customize tab-distance
+	Amiga e			Load default environment
+	Amiga H			Load specific environment
+	Amiga E			Save environment
+	Amiga 6			Specify symbol table
+	Amiga 7			Specify macro table
+	Amiga 8			Specify default section code size
+	Amiga ,			Define source-listing filename
+	Amiga .			Define error-listing filename
+	Amiga ;			Define symbol-listing filename
+	Amiga :			Specify default include directory
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		-- ASSEMBLE MENU --
+
+	F1			Assemble, no options
+	F2			Assemble, symbol-list on
+	F3			Assemble, source-list on
+	F4			Assemble, source- and symbol-list on
+	F5			Assemble, warnings on
+	F6			Assemble, warnings & symbol-list on
+	F7			Assemble, warnings & source-list on
+	F8			Assemble, warnings, source- and symbol-list on
+	F9			Assemble, execute if assembly successful
+	F10			Assemble, warnings on, execute if assembly successful
+	Amiga G			Execute program in memory
+	Alt	 F1		Select File as assembler output
+	Alt	 F2		Select Memory as assembler output
+	Alt	 F3		Select None as assembler output
+	Alt	 F6		Set code-type to Absolute
+	Alt	 F7		Set code-type to Executable
+	Alt	 F8		Set code-type to Linkable
+
+
+		-- BLOCK MENU --
+
+	Amiga b			Mark block
+	Amiga c			Copy block to clip
+	Amiga x			Cut block
+	Amiga i			Insert block
+	Amiga X			Delete block
+	Amiga C			Clear clip-buffer
+	Amiga Z			Save block as
+	Amiga P			Print block
+	Amiga k			Delete line
+	Amiga l			Un-Delete line
+	Amiga L			Restore line
+	Amiga y			Delete to end of line
+	Amiga Y			Delete to beginning of line
+	Amiga ^			Change case on word
+	Amiga &			Make word upper case
+	Amiga *			Make word lower case
+	Amiga (			Change case on block
+	Amiga )			Make block upper case
+	Amiga _			Make block lower case
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		-- SEARCH MENU --
+
+	Amiga S			Search for..
+	Ctrl  F1		Jump to ;F1 mark
+	Ctrl  F2		Jump to ;F2 mark
+	Ctrl  F3		Jump to ;F3 mark
+	Ctrl  F4		Jump to ;F4 mark
+	Ctrl  F5		Jump to ;F5 mark
+	Ctrl  F6		Jump to ;F6 mark
+	Ctrl  F7		Jump to ;F7 mark
+	Ctrl  F8		Jump to ;F8 mark
+	Ctrl  F9		Jump to ;F9 mark
+	Ctrl  F10		Jump to ;F0 mark
+	Amiga s			Repeat search forward
+	Amiga a			Repeat search backwards
+	Amiga R			Replace..
+	Amiga r			Repeat replace forward
+	Amiga A			Repeat replace backwards
+	Amiga j			Jump to line
+	Amiga J			Jump to error-line
+	Amiga 1			Mark line #1
+	Amiga 2			Mark line #2
+	Amiga 3			Mark line #3
+	Amiga 4			Mark line #4
+	Amiga 5			Mark line #5
+	Amiga !			Jump to line #1
+	Amiga @			Jump to line #2
+	Amiga #			Jump to line #3
+	Amiga $			Jump to line #4
+	Amiga %			Jump to line #5
+
+
+		-- MEMORY MENU --
+
+	Amiga h			Memory allocator
+	Amiga 9			Memory editor
+	Amiga 0			Dis-assembler
+
+
+		-- DATA MENU --
+
+	Amiga {			Load binary data to memory
+	Amiga }			Save binary data from memory to disk
+	Amiga [			Execute the BLOAD list
+	Amiga ]			Execute the BSAVE list
+
+
+		-- MOVE MENU --
+
+	Alt   Up		Move cursor 12 lines up
+	Alt   Down		Move cursor 12 lines down
+	Alt   Left		Move cursor 12 characters left
+	Alt   Right		Move cursor 12 characters right
+	Ctrl  Up		Move cursor to top of file
+	Ctrl  Down		Move cursor to end of file
+	Ctrl  Left		Move cursor one word left
+	Ctrl  Right		Move cursor one word right
+	Shift Up		Move cursor to end of screen
+	Shift Down		Move cursor to end of screen
+	Shift Left		Move cursor to beginning of line
+	Shift Right		Move cursor to end of line
+
+
+
+
+
+		-- OTHER KEY-SEQUENCES --
+
+	Shift Ctrl Up		Move the entire screen one line up
+	Shift Ctrl Down		Move the entire screen one line down
+	Shift Ctrl Left		Move the entire screen two pixels left
+	Shift Ctrl Right	Move the entire screen two pixels right
+
+	Shift Alt  Down		Insert a blank line under this one
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	2	The MCAsm 68000 Macro Assembler
+
+
+
+
+	2.1	Introduction						
+	2.2	Invoking the Assembler				
+	2.3	Output code-type and destination		
+	2.4	Listing outputs					
+	2.4.1	Source listing						
+	2.4.2	Error listing						
+	2.4.3	Symbol listing						
+	2.5	Source code line format				
+	2.5.1	Label field						
+	2.5.2	Local labels						
+	2.5.3	Operation field					
+	2.5.4	Operand field						
+	2.5.5	Comments							
+	2.6	Expressions						
+	2.6.1	Operators							
+	2.6.2	Expression types					
+	2.6.3	Numbers							
+	2.6.4	Absolute long and absolute short		
+	2.7	Addressing modes
+	2.8	Instruction set
+	2.8.1	Instruction coding
+	2.8.2	Data movement instructions
+	2.8.3	Arithmetic instructions
+	2.8.4	Logical instructions
+	2.8.5	Bit operation instructions
+	2.8.6	Shift and rotate instructions
+	2.8.7	Branch instructions
+	2.8.8	Odd instructions
+	2.8.9	Copper instructions
+	2.9	Lattice users
+	2.10	Assembler directives
+	2.10.1	Assembly control
+	2.10.2	Symbol definition
+	2.10.3	Data definition
+	2.10.4	Repeat loops
+	2.10.5	Macros
+	2.10.6	Listing control
+	2.10.7	Conditional assembly
+	2.10.8	Section control
+	2.10.9	Linkable directives
+	2.10.10	Binary include
+	2.10.11	Absolute directives
+	2.10.12	Output directive
+	2.11	Errors and warnings
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	2.1	Introduction
+
+MCAsm is a fast and powerful assembler, available instantly from within the
+editor and it assembles the source code, text that is, into AmigaDOS files
+or directly into memory, for immediate execution from the editor.
+This chapter will tell you how to use the MCAsm 68000 Macro Assembler, e.g
+how to invoke it, what inputs it takes and what outputs it produces, how it
+handles numeric expressions, the addressing modes, how to code the
+instructions, what directives it uses and how to code them, etc.
+
+In this chapter,
+
+	< > 	angled brackets denotes a named item, such as
+			<filename>	<label>	<expression>
+
+	[ ]	square brackets indicate an optional piece, such as
+			[<label>]		[<size>]
+		
+	 -	is used to denote a range of choices, such as
+			0 - 9	A - F	a - z
+
+	 |	is used to denote 'this or that', such as
+			An|Dn	.B|.S|.W 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	2.2	Invoking the Assembler
+
+The Assembler is invoked by selecting one of the ten subitems from the
+Assemble item in the Assemble menu, or by pressing F1 - F10.
+The choices available are:
+
+		Warnings Listing Symbols Execute
+
+		OFF      OFF     OFF     OFF    F1
+		OFF      OFF     ON      OFF    F2
+		OFF      ON      OFF     OFF    F3
+		OFF      ON      ON      OFF    F4
+		ON       OFF     OFF     OFF    F5
+		ON       OFF     ON      OFF    F6
+		ON       ON      OFF     OFF    F7
+		ON       ON      ON      OFF    F8
+		OFF      OFF     OFF     ON     F9
+		ON       OFF     OFF     ON     F10
+
+With this form of invoking you can easily specify if you want the assembler to
+write out the warnings, if any, produce a source-listing and/or a
+symbol-listing and, if you wish, automatically execute the code, if assembled
+to memory and no errors are found - all at the touch of a button.
+All other assembler options/defaults are taken from the defaults specified
+in the Assemble and Environment menus. (Unless the defaults are overridden
+by certain directives in the source.)
+If any errors are found in the first pass the assembler will abort at the
+beginning of the second pass. At the end of assembly you will be asked to
+press any key, or click the left mouse button, to return to the editor.
+To abort the assembler, simply press CTRL C. To pause the assembler when it
+is writing to the screen, listings, warnings or errors, simply press SPACE
+and to resume press BACKSPACE
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	2.3	Output code-type and destination
+
+MCAsm is capable of producing three kinds of code, Absolute, Executable and
+Linkable and send it to either an AmigaDOS file, memory or nothing.
+The default is to create executable code and send it to nothing.
+Now a description of the different destinations, which are accessible in
+the Output to item in the Assemble menu or by pressing the key sequence
+shown after the destinations.
+
+	File		Alt F1
+
+This will output the code to whatever device selected. If an error has
+occurred during assembly no output will be written. If producing executable
+code the output file is an AmigaDOS load file, if producing linkable code
+it is an AmigaDOS object file and if producing absolute code the output is
+a standard AmigaDOS file, with a special structure in the beginning.
+
+	location	type		meaning
+	0		long		code origin address
+	4		long		code length
+	8		long		execute address
+
+For every ORG directive there will be one structure like this.
+If you are sending your code to a none storage device e.g SER: the
+<outname> has no meaning, else <outname> is calculated as follows.
+
+If a <filename> is given when selecting File as output then
+	<outname> = <filename>
+else
+	if OUTPUT has not been used then
+		<outname> = <source filename> without an extension or .o
+	else
+		if OUTPUT specifies an <extension> then
+			<outname> = <source filename> + OUTPUT <extension>
+		else
+			<outname> = OUTPUT <filename>
+
+NOTE,	the assembler will not give a warning if the output file already    
+	exists but simply overwrite it.
+NOTE,	the OUTPUT directive is described later in 2.10.12 Output directive.
+
+	Memory		Alt F2
+
+Programs assembled to memory can be executed be pressing Amiga G or by
+selecting Execute in the Assemble menu. Programs executed from the editor
+shall end with a RTS to return control to MCAsm. If you are writing task
+manipulating code it is MCAsm's task you are manipulating. Before executing
+a program MCAsm saves all system vectors, hardware registers dmaconr,
+intenar, adkconr and the initial copper pc, initializes system vectors 2,
+3, 4, 5, 6, 7, 9, 10 and 11 with the address to MCAsm's own guru-catcher.
+If a return is made to MCAsm through one of the vectors the hardware
+registers and vectors saved earlier are restored and then the CPU registers
+will be displayed with a line telling you what error caused the return. If
+the return was made by a RTS the PC and SR values will be invalid. If you
+must know the PC or SR value on return you can, temporarily, end you
+program with the ILLEGAL directive, but if you run that from AmigaDOS the
+system will crash. If producing executable code the assembler will allocate
+the necessary memory, if producing absolute code you must allocate memory
+yourself with the Allocator or ALLOC directive. Even if you can send
+linkable code to memory it is not the best thing to do since all external
+references are still unresolved.
+
+	None		Alt F3
+
+The assembler will not produce any output at all. Useful for test-assembly.
+
+The different code-types are accessible in the Type of code item in the
+Assemble menu or by pressing the key sequence shown after the types.
+
+	Absolute	Alt F6
+
+Absolute code is normally only used in games since these programs normally
+not use the Amiga in a normal way but tend to take over the entire machine
+and therefore can keep an absolute memory map. If you're using absolute
+code it is a smart thing to turn off type-checking so you can perform much
+more complex operations with the relative symbols since these are no longer
+relative, but absolute.
+
+	Executable	Alt F7
+
+If you are writing entirely in assembly language and the program is not to
+large then executable is the normal choice. It does not need any linking,
+it can be assembled directly to memory and executed to reduce development
+time.
+
+	Linkable		Alt F8
+
+If you are interfacing with a high-level language you have no choice but to
+use linkable code. Also, if you are writing a program as a team or the code
+is rather large, say 100k code, then linkable is the best suited form.
+
+
+
+	2.4	Listing outputs
+
+There are three different types of listings produced by the assembler:
+Source, Error and Symbol listing.
+Each line of listing can be up to 511 characters long, the default is 132,
+and the minimum is 38. The line length is controlled with the LLEN
+directive.
+The Source and Symbol listing output is paginated by default, it can be
+disabled with the NOPAGE directive and re-enabled with PAGEON, and the page
+length is either specified by the user with the PLEN directive,
+or 60 - the default.
+The format of each printed pages is:
+
+<heading>	MCAsm 68000 Macro Assembler Version 1.0	      Page : nn
+<title>		the <string> given with the TTL directive or if not given 
+		the name of the source-file.	
+<subtitle>	the <string> given with the SUBTTL directive or if not
+		given just an ASCII LF, e.g a blank line.
+ASCII LF	a blank line.
+<listing>	PLEN lines of either the source or symbol listing.
+ASCII FF	a formfeed character.
+
+Each listing may be sent to it's own file or all to the same. The filenames
+for the different listings are specified in the Environment menu.
+However, fatal errors are always written to the screen.
+
+NOTE,	if source-listing and/or symbol-listing are not selected when
+	starting the assembly the source-list and/or symbol-list file(s) are
+	not opened, so if you enable them later they will be sent to the
+	screen, regardless of what file specified.
+
+NOTE,	the TTL, SUBTTL and PLEN directives are described later in section  
+ 	2.10.6 Listing control.
+
+
+
+
+
+
+	2.4.1	Source listing
+
+A fully featured line of source listing have the following format:
+
+	Columns	Contents			Format
+
+	1-5	Line number		5-digit decimal
+	6	Blank
+	7-8	Section number		2-digit hexadecimal
+	9	Dot (.)
+	10-17	PC in hexadecimal	8-digit hexadecimal
+	18	Blank
+	19-29	PC in decimal		10-digit decimal
+	30	Blank or '+'		'+' if macro-list else blank
+	31-50	Generated code		20-digit hexadecimal
+	51	Blank
+	52-59	Flags			T S I X N Z V C
+	60	Blank
+	61-74	Execution time		T-states(reads/writes)
+	75	Blank
+	76-END	Source line		<label><operation><operand><comment>
+
+Every field except the source line itself can be either enabled or
+disabled. The form shown above have all fields enabled. In the simplest
+form, with all fields disabled, the source listing output only consists of
+the source line.
+
+	Columns	Contents			Format
+
+	1-END	Source line		<label><operation><operand><comment>
+
+The line number start at 1 for the first line in the main source file and
+is incremented by 1 for every line assembled in the main file. The line
+number is not normally increased in include-files and macros, but if you
+wish to do so you can do it either by setting the default line number
+increment method in the Default Program List Ctrl in the Environment menu,
+or by using the FORMAT directive, see section 2.10.6 Listing control.
+The section number simply shows the number of the current section if it is
+a CODE, DATA or BSS section. If it is an offset section the section number
+will show 'O  ', if it is a REPEAT loop it will show 'R  ' and if the
+directive on the line is defining a symbol the section number will show 
+'  ='.
+For instructions and non-symbol defining directives the PC field contain
+the current program counter value. For directives containing expressions
+whose value are of interest (EQU, SET, REG etc) the value of the expression
+is printed in the PC field.
+The Generated code field contain up to 5 words of data generated by an
+instruction or a data defining directive. If a directive generates more
+than 5 words of data these will not be seen. If a directive doesn't
+generate any code this field is left blank.
+The Flags field show what flags are affected by the instruction and this is
+only shown on instructions. The meaning of the characters are as follows:
+
+	- not affected, * affected, 0 cleared, 1 set, U undefined.
+
+The Execution time field show the number of T-states, (reads/ and writes)
+required to execute the instruction. However, in some cases it is not
+possible to compute the execution time at assembly, e.g dynamic shifts,
+mul, div etc. In these cases the time is shown either as a maximum value,
+e.g mul, div etc, or as a base time plus n * something, e.g shifts and n is
+the number of bits to shift.
+
+
+
+
+
+	2.4.2    Error listing                                                    
+
+The error listing has the following format:
+
+	<source line>	one line of source-listing, e.g the line with the error.
+	<error line>	a line with the error/warning message
+	ASCII LF
+
+
+The error/warning messages have the following format:
+
+*** Error nn: text
+** Warning nn: text
+
+where:
+		nn			is the error/warning number.
+		text			is a short text explaining the fault.
+
+
+
+	2.4.3    Symbol listing                                                   
+
+The symbol table listing is a sorted list of all symbols defined in the
+assembly. A fully featured line of symbol listing have the following
+format:
+
+	Columns	Contents					Format
+
+	1-9	Symbol value in hexadecimal	$ + 8-digit hexadecimal number
+	10	Blank
+	11-21	Symbol value in decimal		10-digit signed decimal number
+	22	Blank
+	23-26	Symbol type			4-character type
+	27	Blank
+	28-END	Symbol name
+
+All fields except the symbol name can be either enabled or disabled. Above
+all fields are enabled. The simplest form with all fields disabled only
+show the symbol name.
+
+The type field contain:
+
+	Type	Meaning
+
+	A	Absolute symbol, defined with EQU, RS or RC
+	AT	Absolute temporary symbol, defined by SET
+	sn.R	Relative symbol, e.g a label. sn is the section number
+	sn.T	Relative temporary symbol, defined by SET
+	Loc	Local label
+	RL	Register list symbol, defined by REG
+	SPEC	Special MCAsm symbols
+	E	Un-typed external symbol, defined by XREF
+	EA	Absolute external symbol, defined by XREF.A or XREF.L
+	E.R	Relative external symbol, defined by XREF.R
+
+
+
+
+
+
+
+
+
+
+
+
+	2.5	Source code line format
+
+This section describes the different forms of an input line. It is not
+recommended that an input line is more than 255 characters long.
+Basically a source line consists of four fields:
+
+	[<label>]	<operation>	[<operand(s)>]	[<comment>]
+
+	start	move.l	a7,init_sp	Save initial stack
+
+	label		Optional, but depends on the operation
+	operation	Optional
+	operand(s)	Optional, but depends on the operation
+	comment		Optional
+
+A source line can be blank, or entirely be a comment line - starting with
+an asterisk (*) or a semi-colon (;), in either case it is completely
+ignored by the assembler. Each field must be separated by any number of
+tabs or spaces, known as <white space>.
+
+
+
+	2.5.1	Label field
+
+If a line starts with one of the following combinations it contains a
+label:
+
+<symbol><white space>
+<symbol>:
+<white space><symbol>:
+
+Such a sequence is referred to elsewhere as a <label>.
+The normal starting position for a label is column 1, but if it is required
+to start in any other column it must end with a colon (:).
+If a line contains a label and nothing more, then the current values of the
+program and section counters will be assigned to the label and it's type
+will be relative (sn.R), otherwise the value and type to be assigned to the
+label depends on the operation.
+Labels are allowed on all instructions, optional on some directives,
+forbidden on some and necessary on others.
+A label may consist of any mixture of the characters A-Z, a-z, 0-9, the dot
+(.) and the underscore (_).
+For example:
+
+start, Text_2, main_1.0, _CX22, loop
+
+You must not use register names as labels.
+
+There are a few reserved symbols in MCAsm:
+
+__LK			3 = linkable, 4 = executable, 5 = absolute
+__RS			the current value of the rs_counter
+__RC			the base address for the RC definitions, rc_base
+NARG			the number of arguments supplied to the current macro
+PreAllocatedAddress	start-address of the pre-allocated area
+PreAllocatedSize	size of the pre-allocated area
+PreAllocatedEnd		end-address of the pre-allocated area
+AllocatedAddress_n	start-address of allocated area number n
+AllocatedSize_n		size of allocated area number n
+AllocatedEnd_n		end-address of allocated area number n
+
+
+
+
+
+
+	2.5.2	Local labels
+
+A local label can be defined many times in a program and they are normally
+used as loop labels. Local labels are only valid between two non local
+labels.
+For example:
+
+func1	move.l	#'    ',d1
+.loop	move.l	d1,(a1)+
+	clr.w	(a1)+
+	dbf	d0,.loop
+	rts
+func2	moveq	#0,d0
+.loop	move.l	d0,(a2)+
+	dbf	d1,.loop
+	rts
+
+Normally a local label begin with a dot (.) but if you wish to introduce a
+local label with an underscore (_) you can do so with OPT U+ and change
+back to the dot (.) with OPT U-. Also, a label made up of decimal
+characters and ending with a dollar-sing ($) is also accepted as a local
+label. For example:
+
+func2	moveq	#0,d0
+4$	move.l	d0,(a2)+
+	dbf	d1,4$
+	rts
+
+The local labels .L and .W should not be used to avoid confusion with the
+size specifiers absolute long and absolute short.
+
+
+
+	2.5.3	Operation field
+
+The Operation field follows the label field and the syntax is:
+
+<white space><operation>
+
+The operation is either an 68000 instruction, a macro, an assembler
+directive or blank.
+MCAsm is case-insensitive to operations, so MOVE is the save as move and
+MoVe and Dc is the save as dc and DC.
+
+
+
+	2.5.4	Operand field
+
+The syntax of the operand field depends on the operation and therefore the
+operand field syntax is described for every instruction and directive.
+MCAsm is case-insensitive to operands, unless it contains a symbol and
+OPT C+ is used.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	2.5.5	Comment field
+
+All text after the first not quoted <white space> after the operand field
+and all text after a non quoted semicolon (;), or asterisk (*) if it is the
+first character on the line, is taken as a comment. This text is ignored by
+the assembler.
+
+Some examples of source lines:
+
+; Hi, this is a comment line
+
+* so is this
+
+start	; a lonely label
+
+	move.l	a7,init_sp	save stack
+
+	test:	dc.b	'an indented label, note spaces allowed in quotes' comment
+
+start:lea	stack,a7
+
+GRAPHICS	=	$20000
+
+COPPER=$10000;The start address of the copper list
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	2.6	Expressions
+
+MCAsm allows complex expressions and supports full operator precedence. All
+expressions are made up of any number of symbols, numbers, operators and
+parentheses, and they are of two types - absolute and relative.
+Absolute expressions are constants, known at assembly time while Relative
+expressions are, as the name implies, relative and not known at assembly
+time, unless you are producing absolute code when all relative symbols
+actually are absolute, since the AmigaDOS loader can put the code anywhere
+it likes in memory when loading it.
+Some instructions and directives place restrictions on what types of
+expressions they can handle and some operators do not work with certain
+symbol combinations.
+
+
+
+	2.6.1	Operators
+
+The available operators are listed below in decreasing order of precedence.
+
+1. Unary operators	Unary plus (+), Unary minus (-), Logical not (~)
+2. Shift operators	Left shift (<<), Right Shift (>>)
+3. Binary operators	Binary and (&), Binary or (!or|), Binary xor (^)
+4. Multiply, Divide	Multiply (*), Divide (/)
+5. Add, Sub		Addition (+), Subtraction (-)
+6. Comparison		Equality (=), Less than (<), Greater than (>)
+
+To override the precedence of the operators, you must enclose sub-
+expressions in parentheses, ellipses () or square brackets []. Operators of
+equal precedence are evaluated from left to right. Spaces and tabs are not
+allowed in expressions, unless within quotes, since they are regarded as
+delimiters between fields.
+
+The comparison operators are signed and return -1 ($ffffffff) if true or 0
+if false.
+
+All expressions are evaluated using 32-bit signed integer arithmetic and no
+checks are made for overflow.
+
+
+
+	2.6.2	Expression types
+
+		 -----------------------------------------------
+		|           |             Operands              |
+		| Operators |-----------------------------------|
+		|           | A op A | A op R | R op A | R op R |
+		|-----------|--------|--------|--------|--------|
+		| Shift     |   A    |   *    |   *    |   *    |
+		|-----------|--------|--------|--------|--------|
+		| Binary    |   A    |   *    |   *    |   *    |
+		|-----------|--------|--------|--------|--------|
+		| Mul & Div |   A    |   *    |   *    |   *    |
+		|-----------|--------|--------|--------|--------|
+		| Add       |   A    |   R    |   R    |   *    |
+		|-----------|--------|--------|--------|--------|
+		| Sub       |   A    |   *    |   R    |   A    |
+		|-----------|--------|--------|--------|--------|
+		| Compare   |   A    |   *    |   *    |   A    |
+		 -----------------------------------------------
+
+		Figure 2.6.2 - Allowed types of expression combinations
+
+
+
+
+The table in Figure 2.6.2 shows the result produced by each operator for
+the different types of combination of parameters and which combinations are
+not allowed. A denotes absolute, R denotes relative and * denotes an error,
+e.g the operation is not allowed.
+NOTE, the unary operators are only allowed on absolute symbols.
+
+
+
+	2.6.3	Numbers
+
+Numbers may be used as a term of an expression or as a single value. All
+numbers are absolute quantities.
+The following formats are allowed for absolute numbers:
+
+	Decimal
+	(a string of decimal characters 0 - 9)
+	Example:	463
+
+	Hexadecimal
+	($ followed by a string of hexadecimal characters 0- 9, A - F, a - f)
+	Example:	$4afc
+
+	Octal
+	(@ followed by a string of octal characters 0 - 7)
+	Example:	@7345
+
+	Binary
+	(% followed by a string of binary characters 0 and 1)
+	Example:	%101010100
+
+	ASCII
+	(Up to 4 ASCII characters within single or double quotes)
+	Example:	'hi'
+
+The quote used to begin an ASCII number must also end it, e.g "hi' is
+illegal. To include a quote in the number, either enclose it with the other
+quote or type it twice. If less than 4 characters are used the number is
+justified to the right, padding it with zeros.
+Here are some more examples of ASCII numbers:
+
+	What		'What'
+	it's		'it''s'
+	it's		"it's"
+	
+The use of an asterisk (*) denotes the current value of the program counter
+and this is always a relative quantity.
+
+
+
+	2.6.4	Absolute long and absolute short
+
+The normal way of specifying absolute short addressing is to end the
+expression with .w
+
+		movea.l	AbsExecBase.w,a6
+
+However, this will give an error as the dot is supposed to be a part of the
+symbol. To get around this, expressions that are to be absolute short or
+forced to absolute long may be enclosed within parentheses ending with .w
+or .l, unless it is a single number where the normal way works just fine.
+
+		movea.l	(AbsExecBase).w,a6
+
+
+
+
+	2.7	Addressing modes
+
+The following table shows the addressing modes available. Dn represent one
+of the data registers D0 - D7, An represent one of the address registers
+A0 - A7, In represents an index register An or Dn with an optional size .W
+or .L and if not given .W is assumed. d represents a number.
+
+Mode		Meaning					Example
+
+Dn	  Data register direct				move.w d0,d1
+An	  Address register direct			move.l a1,a0
+(An)	  Address register indirect			clr.l  (a0)
+(An)+	  Address register indirect post increment	tst.w  (a0)+
+-(An)	  Address register indirect pre decrement	tst.w  -(a0)
+d(An)	  Address register indirect with displacement	tst.w  10(a0)
+d(An,In)  Address register indirect with index		tst.w  10(a0,d1.l)
+d.W	  Absolute short addressing			move.l 4.w,a6
+d.L	  Absolute long addressing			clr.l  $1000[.l]
+d(pc)	  Program counter relative with offset		move.b flag(pc),d0
+d(pc,In)  Program counter relative with index		jsr    tb(pc,d1.w)
+#d	  Immediate data				moveq  #0,d0
+
+In the table above SP may be specified instead of address register A7.
+For example:
+
+	move.l	a6,-(sp)
+
+When using Address register indirect with index the displacement must not
+be specified. For example:
+
+	jsr	(pc,d0.w)
+
+will be assembled as
+
+	jsr	0(pc,d0.w)
+
+There are also four special addressing modes only available with certain
+instructions and these addressing modes are:
+
+	USP	user stack pointer
+	SR	status register
+	CCR	condition code register (lower byte of SR)
+
+For example:
+
+	and.w	d0,sr
+	move	a0,usp
+	ori.b	#$10,ccr
+
+	and
+
+	Reg-list	register lists
+
+For example:
+
+func	movem.l	d1-d7/a0-a6,-(a7)
+	..
+	..
+	..
+	movem.l	(a7)+,d1-d7/a0-a6
+	rts
+
+
+
+
+
+	2.8	Instruction set
+
+Some instructions have an address variant (destination is an address
+register), immediate (source is immediate data), quick (source is immediate
+data in the range 0 < data < 9) and a memory variant (both operands are
+address register indirect post increment).
+If you wish to force a certain variant you may append A, Q, L or M to the
+instruction.
+
+NOTE,	the correct forms are always assembled faster than if the assembler
+	must make the conversion.
+
+In this case the assembler will use the specified variant, if it exists or
+give an error. If you don't specify a particular variant the assembler will
+automatically convert to the A, I or M variant where necessary, but not to
+the Q variant.
+For example:
+
+	add.l	d0,a0
+
+will be assembled as
+
+	adda.l	d0,a0
+
+The following is a table of the instructions that have variants and which:
+
+    ---------------------------------------
+   | Instr |   A   |   I   |   Q   |   M   |
+   |-------|-------|-------|-------|-------|
+   | move  | movea |   -   | moveq |   -   |
+   |-------|-------|-------|-------|-------|
+   | cmp   | cmpa  | cmpi  |   -   | cmpm  |
+   |-------|-------|-------|-------|-------|
+   | add   | adda  | addi  | addq  |   -   |
+   |-------|-------|-------|-------|-------|
+   | sub   | suba  | subi  | subq  |   -   |
+   |-------|-------|-------|-------|-------|
+   | and   |   -   | andi  |   -   |   -   |
+   |-------|-------|-------|-------|-------|
+   | or	   |   -   | ori   |   -   |   -   |
+   |-------|-------|-------|-------|-------|
+   | eor   |   -   | eori  |   -   |   -   |
+    ---------------------------------------
+
+There are two extensions to the normal condition codes; HS and LO,
+equivalent to CC and CS. These extensions are supported by all instructions
+using condition codes.
+
+All instructions and directives, except DC.B, DCB.B, DS.B, RC.B and RCB.B
+are always assembled on a word boundary. If any of the directives above are
+to be on an even address you may use the EVEN directive before it.
+
+NOTE,	even if instructions are always word aligned labels without a
+	directive are not. For example:
+
+		dc.b	0
+label
+		bra.s	label
+
+Here label will be assigned to an odd value and the generated code will not
+work. To help you find such errors you may use OPT E+ which will tell the
+assembler to check if the addresses used are even, or give an error if not.
+
+
+
+
+	2.8.1	Instruction coding
+
+This section will list all the instructions, and tell you how to code them.
+For a detailed description of all 68000 instructions you should consult a
+manual for the Motorola MC68000 processor.
+Instructions that can operate on different sizes end with a size specifier,
+referred to as <size> later in this section, and the allowed sizes are .L,
+.W, .B and .S. If no size is given the default size, normally .W, is used.
+If an instruction can only operate with one size it may optionally be
+defined anyway (in this case the one size allowed is also the default one).
+<ea> denotes a general effective address, However - what specific
+addressing modes allowed with the instruction in question is not described,
+<ea> simply indicates that those allowed are from the table described in
+section 3.7. Please note that MCAsm is case-insensitive with both
+instructions, sizes and addressing modes (unless the addressing mode chosen
+has a symbol and OPT C+ is in use). 
+
+
+
+	2.8.2	Data movement instructions
+
+The general form for the MOVE instruction is:
+
+	MOVE[<size>]	<ea>,<ea>
+
+Above all sizes are allowed, but if the destination <ea> is An only .L and
+.W are allowed and the assembler will generate the instruction:
+
+	MOVEA[<size>]	<ea>,An
+
+The quick form:
+
+	MOVEQ[.L]	#d,Dn
+
+and the special forms of the move instruction:
+
+	MOVE[.L]	An,USP
+	MOVE[.L]	USP,An
+	MOVE[.W|.B|.S]	<ea>,SR
+	MOVE[.W]	SR,<ea>
+	MOVE[.B|.S]	<ea>,CCR
+
+The move peripheral instruction, sizes allowed are .L and .W:
+
+	MOVEP[<size>]	Dn,d(An)
+	MOVEP[<size>]	d(An),Dn
+
+and the last form of the MOVE instruction, MOVEM, allowed sizes, .L and .W:
+
+	MOVEM[<size>]	Reg-list,<ea>
+	MOVEM[<size>]	<ea>,Reg-list
+
+Below are the other data movement instructions, swap, exchange, load
+effective address ,push effective address and clear:
+
+	SWAP[.W]	Dn
+	EXG[.L]		Dn|An,Dn|An
+	LEA[.L]		<ea>,An
+	PEA		<ea>
+	CLR[<size>]	<ea>
+
+
+
+
+
+
+	2.8.3	Arithmetic instructions
+
+The general forms of the ADD, SUB and CMP instructions are:
+
+	ADD[<size>]	<ea>,<ea>
+	SUB[<size>]	<ea>,<ea>
+	CMP[<size>]	<ea>,<ea>
+
+All sizes are allowed unless the destination is An when only .W and .L are
+allowed and the assembler generates the instructions:
+
+	ADDA[<size>]	<ea>,An
+	SUBA[<size>]	<ea>,An
+	CMPA[<size>]	<ea>,An
+
+The quick forms. Note the an An destination is allowed in the quick form if
+the size is .W or .L and that CMP has no quick form:
+
+	ADDQ[<size>]	#d,<ea>
+	SUBQ[<size>]	#d,<ea>
+
+The immediate forms:
+
+	ADDI[<size>]	#d,<ea>
+	SUBI[<size>]	#d,<ea>
+	CMPI[<size>]	#d,<ea>
+
+and for the CMP instruction, the memory form:
+
+	CMPM[<size>]	(An)+,(An)+
+
+The other arithmetic instructions, negate, extend, test, multiply and
+divide. All sizes allowed where nothing else is specified:
+
+	NEG[<size>]	<ea>
+	EXT[.W|.L]	Dn
+	TST[<size>]	<ea>
+	MULU[.W]	<ea>,Dn
+	MULS[.W]	<ea>,Dn
+	DIVU[.W]	<ea>,Dn
+	DIVS[.W]	<ea>,Dn
+		
+The extended arithmetic instructions, all sizes allowed:
+
+	ADDX[<size>]	Dn,Dn
+	ADDX[<size>]	-(An),-(An)
+	SUBX[<size>]	Dn,Dn
+	SUBX[<size>]	-(An),-(An)
+	NEGX[<size>]	<ea>
+
+and the decimal coded arithmetic instructions, allowed sizes are .B and .S:
+
+	ABCD[<size>]	Dn,Dn
+	ABCD[<size>]	-(An),-(An)
+	SBCD[<size>]	Dn,Dn
+	SBCD[<size>]	-(An),-(An)
+	NBCD[<size>]	<ea>
+
+
+
+
+
+
+
+
+
+	2.8.4	Logical instructions
+
+The general forms for the AND, OR and EOR instructions are as follows; all
+sizes are allowed:
+
+	AND[<size>]	Dn,<ea>
+	AND[<size>]	<ea>,Dn
+	AND[<size>]	#d,<ea>
+
+	OR[<size>]	Dn,<ea>
+	OR[<size>]	<ea>,Dn
+	OR[<size>]	#d,<ea>
+
+	EOR[<size>]	Dn,<ea>
+	EOR[<size>]	<ea>,Dn
+	EOR[<size>]	#d,<ea>
+
+If the source is an immediate value, e.g #d, the assembler will generate
+the immediate forms:
+
+	ANDI[<size>]	#d,<ea>
+	ORI[<size>]	#d,<ea>
+	EORI[<size>]	#d,<ea>
+
+The immediate forms also have the following special forms:
+
+	ANDI[.W|.B|.S]	#d,SR
+	ORI[.W|.B|.S]	#d,SR
+	EORI[.W|.B|.S]	#d,SR
+
+	ANDI[.B|.S]	#d,CCR
+	ORI[.B|.S]	#d,CCR
+	EORI[.B|.S]	#d,CCR
+
+
+
+	2.8.5	Bit operation instructions
+
+The available bit operation instructions are listed below.
+Note that if the destination is Dn the size is always .L, and .B | .S if
+the destination is anything else.
+However - you may specify it if you wish but the assembler ignores it.
+
+	BTST[<size>]	Dn,<ea>
+	BTST[<size>]	#d,<ea>
+
+	BSET[<size>]	Dn,<ea>
+	BSET[<size>]	#d,<ea>
+
+	BCLR[<size>]	Dn,<ea>
+	BCLR[<size>]	#d,<ea>
+
+	BCHG[<size>]	Dn,<ea>
+	BCHG[<size>]	#d,<ea>
+
+
+
+
+
+
+
+
+
+
+
+
+	2.8.6	Shift and rotate instructions
+
+These are the shift and rotate instructions available, all sizes allowed if
+nothing else is specified.
+
+	ASL[<size>]	Dn,Dn
+	ASL[<size>]	#d,Dn
+	ASL[.W]		<ea>
+
+	ASR[<size>]	Dn,Dn
+	ASR[<size>]	#d,Dn
+	ASR[.W]		<ea>
+
+	LSL[<size>]	Dn,Dn
+	LSL[<size>]	#d,Dn
+	LSL[.W]		<ea>
+
+	LSR[<size>]	Dn,Dn
+	LSR[<size>]	#d,Dn
+	LSR[.W]		<ea>
+
+	ROL[<size>]	Dn,Dn
+	ROL[<size>]	#d,Dn
+	ROL[.W]		<ea>
+
+	ROR[<size>]	Dn,Dn
+	ROR[<size>]	#d,Dn
+	ROR[.W]		<ea>
+
+	ROXL[<size>]	Dn,Dn
+	ROXL[<size>]	#d,Dn
+	ROXL[.W]	<ea>
+
+	ROXR[<size>]	Dn,Dn
+	ROXR[<size>]	#d,Dn
+	ROXR[.W]	<ea>
+
+
+
+	2.8.7	Branch instructions
+
+The branch instructions, except DBcc, may have the sizes .B or .S for short
+and .W for word branch. If .L is specified .W is used and a warning is
+given since .L is a 68020 and upwards branch size.
+If no size is specified .W is used.
+
+NOTE,	if you want to optimize branches you should not specify .W but leave
+	them with no size, since the optimizer doesn't optimize branches
+	specificly made .W - no matter how close they are.
+
+	Bcc[<size>]	<expr>
+	BRA[<size>]	<expr>
+	BSR[<size>]	<expr>
+	DBcc		Dn,<expr>
+
+The allowed condition codes for Bcc and DBcc are:
+
+	CC, CS, EQ, NE, GT, LT, GE, LE, HI, LO, HS, LS, MI, PL, VC, VS.
+
+for DBcc also:
+
+	F, T, RA.  RA is a synonym for F.
+
+
+
+
+	2.8.8	Other instructions
+
+These are the rest of the instruction:
+
+	CHK[.W]		<ea>,Dn
+
+	TRAP		#d
+	TRAPV
+
+	JMP		<ea>
+	JSR		<ea>
+
+	LINK		#d,An
+	UNLK		An
+
+	NOP
+
+	RESET
+
+	RTE
+	RTR
+	RTS
+
+	TAS		<ea>
+
+	STOP		#d
+
+	Scc		<ea>
+
+The condition codes allowed for Scc are the same as for DBcc except that RA
+is not supported as a synonym for F.
+
+
+
+	2.8.9	Copper instructions
+
+This is the copper instruction format accepted by MCAsm.
+
+	CMOVE	#d,Hardware_register
+
+	CWAIT	#vert_pos,#vert_mask,#hor_pos,#hor_mask,#wait_blitter_flag
+
+	CSKIP	#vert_pos,#vert_mask,#hor_pos,#hor_mask,#wait_blitter_flag
+
+See the Hardware Reference Manual for a description on how the copper and
+the copper instructions work.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	2.9	Lattice users
+
+If you do not write assembler programs that are to be linked together with
+a C module produced by the Lattice C compiler v4.0 or later, you do not
+have to read this section.
+
+Lattice have two external reference classes allowing
+relocatable locations to be accessed with d(An) or d(An,In).
+Normally all data in a C program are relative to address register A4,
+located in the section __MERGED.
+To allow the C program to access you assembler data and vice versa:
+
+		XDEF	_Pointer
+		XDEF	_Type,_Flag
+		XREF	_START,_END
+
+		SECTION	TEXT
+
+		movea.l	_Pointer(a4),a1
+		move.l	#_Type,(a1)
+		move.w	_Flag(a4),2(a1)
+		movea.l	_START(a4),a2
+		movea.l	_END(a4),a3
+		rts
+
+		SECTION	__MERGED,DATA
+
+_Pointer	dc.l	0
+_Type		dc.l	0
+_Flag		dc.w	1
+
+If you are interfacing with a C program, don't forget the underscores.
+This feature is only usable if you are producing linkable code, but don't
+try to use it with the version of Blink supplied with MCAsm or Alink. It
+only works with the Blink linker supplied with the Lattice C compiler v4.0
+and later.
+
+NOTE,	the labels used this way must be XDEFed and the base address
+	register properly initialized (this is normally done by the C
+	program).
+
+For further information on interfacing assembly-language with a C program,
+look in your Lattice C manual.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	2.10	Assembler Directives
+
+The directives are instructions to the assembler, rather than instructions
+that are translated into executable code. Listed below are all the
+directives that the assembler recognizes; after that is an individual
+description for each and every one.
+
+NOTE,	if nothing is said about the <label> type and value, the type is
+	relative and the value will be set to the current value of the
+	program counter.
+
+Assembly control	Directive	Description
+			
+			END		End of source
+			INCLUDE		Include a source file
+			INCDIR		Define INCLUDE directories
+			OPT		Option control
+			EVEN		Align to word boundary
+			CNOP		Align to whatever
+			FAIL		Generate an error
+			ILLEGAL		Generate an illegal instruction
+
+
+Symbol definition	Directive	Description
+
+			EQU		Assign permanent value
+			SET		Assign temporary value
+			REG		Assign permanent value, register list
+			RS		Assign permanent absolute value
+			RSSET		Set RS counter
+			RSRESET		Reset RS counter
+
+
+Data definition		Directive	Description
+
+			DC		Define constant
+			DCB		Define constant block
+			DS		Define storage
+			RC		Define constant, absolute label
+			RCB		Define constant block, absolute label 
+			RCSET		Set RC base
+			RCRESET		Reset RC base
+
+
+Repeat loops		Directive	Description
+
+			REPT		General repeat
+			ENDR		General end-repeat
+			FREPT		Fast repeat
+			ENDFR		End fast repeat
+			IREPT		Immediate repeat
+
+
+Macros 			Directive	Description
+
+			MACRO		Define a macro
+			ENDM		End a macro definition
+			MEXIT		Conditionally exit a macro
+
+
+
+
+
+
+
+
+Listing control		Directive	Description
+
+			PAGE		Start a new page
+			NOPAGE		Turn paging off
+			PAGEON		Turn paging on
+			LIST		Turn listing on
+			NOLIST		Turn listing off
+			TTL		Define title
+			SUBTTL		Define subtitle
+			PLEN		Define page length
+			LLEN		Define line length
+			SPC		Skip n blank lines
+			LISTCHAR	Send control characters
+			FORMAT		Define listing format
+
+
+Conditional assembly	Directive	Description
+
+			IFEQ		Assemble if zero
+			IFNE		Assemble if not zero
+			IFGT		Assemble if greater than
+			IFGE		Assemble if greater or equal
+			IFLT		Assemble if less than
+			IFLE		Assemble if less or equal
+			IFD		Assemble if symbol defined
+			IFND		Assemble if symbol not defined
+			IFC		Assemble if strings are equal
+			IFNC		Assemble if strings are not equal
+			ELSE		Switch assembly state
+			ELSEIF		Switch assembly state
+			ENDC		End conditional
+			ENDIF		End conditional
+			IF		Short form for IFNE
+			IIFEQ		Immediate IFEQ
+			IIFNE		Immediate IFNE
+			IIFGT		Immediate IFGT
+			IIFGE		Immediate IFGE
+			IIFLT		Immediate IFLT
+			IIFLE		Immediate IFLE
+			IIFD		Immediate IFD
+			IIFND		Immediate IFND
+			IIFC		Immediate IFC
+			IIFNC		Immediate IFNC
+			IIF		Immediate IF
+
+
+Section control		Directive	Description
+
+			SECTION		Program section
+			CODE		Program code section
+			DATA		Data section
+			BSS		Bss section
+			OFFSET		Absolute offsets
+
+
+Linkable directives	Directive	Description
+
+			IDNT		Define hunk_unit name
+			XREF		Reference external symbol
+			XDEF		Define external reference
+
+
+
+
+
+
+Binary include		Directive	Description
+
+			INCBIN		Include binary file
+			BLOAD		Load binary into memory
+			BSAVE		Save binary from memory
+
+
+Absolute directives	Directive	Description
+
+			ORG		Set program origin
+			ENT		Set program execution point
+			INITREG		Set register initial value
+			ALLOC		Allocate absolute memory
+
+
+Output directive	Directive	Description
+
+			OUTPUT		Define output filename
+
+
+					
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	2.10.1	Assembly control
+
+	END
+
+Tells the assembler that no more text is to be assembled and everything
+after this directive is ignored.
+END need not be specified, the assembler will find EOF anyway.
+
+	INCLUDE	<filename>
+
+This will cause the assembler to take the source code from the file named 
+<filename> (in normal AmigaDOS format). When EOF has been reached, assembly
+will continue at the line after the line with the INCLUDE directive.
+If a space is present in the filename it should be enclosed in single or
+double quotes. If no drive specifier is present e.g DF0:, the assembler
+will first look for the file in the default include directory, specified
+with the Default Include Dir item in the Environment menu, and after that
+in the directories specified with INCDIR. If the file isn't found the
+assembler will give an error. INCLUDE directives may be nested as deeply as
+memory allows.
+
+	INCDIR	<directory>[,<directory>]...
+
+This directive adds the directory(s) to the directory list used be INCLUDE
+and INCBIN. If the directory name contains a space it should be enclosed in
+single or double quotes. The directory name may or may not end with a slash
+(/).
+
+NOTE,	if INCDIR is to have any effect it must be given before the INCLUDE
+	directives.
+
+	OPT	<option>[,<option>]...
+
+This allows control over all the options within the assembler. The default
+state for most options may be user specified in the Default Assembler
+Options item in the Environment menu. Those who are not listed in the
+Default Assembler Options are options that affect something else than a
+pure option, such as OPT L - which is used to select executable or linkable
+code and therefore affect the code-type, which is selected in the Type of
+Code item in the Assemble menu. The allowed options are:
+
+Option A - Automatic PC-relative addressing.
+
+	lea	base,a6
+
+will automatically be transformed into
+
+	lea	base(pc),a6
+
+during assembly.
+
+Note that this is always done if the instruction allow it and before it is
+actually assembled, so if the address is out of range you will get an
+error. To override this you can force the assembler to use absolute long
+addressing by doing the following:
+
+	lea	(base).l,a6
+
+OPT A+ will turn this option on and OPT A- will turn it off. It may be used
+as many times as you wish.
+
+
+
+
+
+
+Option B - Automatic execution of BLOAD/BSAVE lists after assembly.
+
+B+	will turn on  execution for both BLOAD and BSAVE.
+B-	will turn off execution for both BLOAD and BSAVE.
+BL+	will turn on  execution for BLOAD.
+BL-	will turn off execution for BLOAD.
+BS+	will turn on  execution for BSAVE.
+BS-	will turn off execution for BSAVE.
+
+NOTE,	only the last given B option is taken into account.
+
+Option C - Case-sensitivity and number of significant characters.
+
+Using OPT C+ will make the assembler case-sensitive and OPT C- will make it 
+case-insensitive. The number of significant characters may be specified
+with a decimal number between the C and the sign, e.g OPT C8- denotes      
+case-insensitivity and 8 significant characters.
+
+NOTE,	this option is active on both symbols and macro-names and it should
+	only be used once at the beginning of the source, before any symbols
+	have been defined.
+
+Option D - Debugging information.
+
+AmigaDOS supports the inclusion of a debug_hunk in the binary output file.
+This may be useful if you are debugging your code with a symbolic debugger
+that can read the debug_hunk. Normally all the relative symbols are
+included in the debug_hunk but a special case arise if you use OPT X with
+linkable code, described later. Use OPT D+ to activate and OPT D- to
+deactivate.
+
+NOTE,	only the last given D option is taken into account.
+
+Option E - Even addresses.
+
+When this option is activated the assembler will check the addresses on
+instructions that use a word or longword access and see if they are even,
+if not - an error will be given. Use OPT E+ to activate and OPT E- to
+deactivate. This option may be used as often as you like.
+For example:
+
+	dc.b	0
+start
+	bra	start
+
+Since the label has an odd value the assembler will give an error.
+
+offset	equ	1
+
+	move.l	offset(a0),d0
+
+This will also give an error,
+
+	move.b	offset(a0),d0
+
+but this is ok.	
+
+NOTE,	if the address register holds an odd value an odd offset will result
+	in an even effective address and in that case the assemblers even
+	checks will report errors on the instructions that will work and
+	none on those who will crash. However, normally you do not use an
+	odd address as base for word or longword accesses. Also, this option
+	only make sense if you are using a 68000 processor, 68020 and
+	upwards allow word and longword accesses to odd addresses.
+
+
+Option F - Fast.
+
+This is the assembler speed control option, e.g how to handle include
+files.
+
+F1+	When this option is activated the assembler will read all of the
+	include files in one go and store them in memory for the second 	
+	pass. This uses up a lot of memory but it also speeds assembly,
+	especially during pass 2.
+
+F1-	When deactivated, the assembler will read include files in blocks of
+	488 bytes and not store them in memory. This saves memory but it's 
+	rather slow.
+
+F2+	Tells the assembler NOT to read any include file during pass 2.
+	Since all standard Amiga include-files only contain symbol
+	definitions there is no need to even scan them during the second
+	pass. This boosts assembly time during pass 2 a great deal.
+	However, this option can't be used with include-files containing any
+	code, of natural reasons.
+
+F2-	Deactivates the 'read include-file in pass one only' option.
+
+F3	Is not currently used.
+
+This option should only be used once in the beginning of the main source
+file.
+
+Option	I - Immediate data check.
+
+When this option is active the assembler will give an error on all
+instructions using absolute long addressing as the source operand, unless
+it's address 4, since the probable reason is a missing '#' (or perhaps a
+missing address-register (An)). This is a useful option when checking for
+typing errors. For example: 
+
+	or.b	$20,d0
+
+will give an error since the intended instruction was
+
+	or.b	#$20,d0
+
+You can force the assembler to use absolute addressing with the following:
+
+	move.w	(custom+intenar).l,d0
+
+Use OPT I+ to activate and OPT I- to deactivate. This option may be used as
+often as you wish.
+
+Option L - Linker mode
+
+OPT L+ will cause the assembler produce linkable code, OPT L- will cause it
+to produce executable code. This option MUST be specified before anything
+else is done.
+Option M - Macro expansion
+
+Using OPT M+ will make the assembler list the instructions in macros, if
+source-listing is on, when the macro is called. OPT M- will disable this.
+Instructions in macros are preceded by a '+' in the listing.
+The default setting for Option M is not in the Default Assembler Options
+item but in the Default Program List Ctrl item, both in the Environment
+menu. Only the last OPT M is taken into account.
+
+
+
+
+Option O - Optimizing.
+
+The assembler is capable of performing 8 different optimizations, causing
+certain statements to be faster and smaller.
+
+	OPT O+		will turn on  all optimizations and warnings.
+	OPT O-		will turn off all optimizations and warnings.
+	OPT OW+		will turn on  all warnings caused by optimization.
+	OPT OW-		will turn off all warnings caused by optimization.
+	OPT On+		will turn on  optimization n.
+	OPT On-		will turn off optimization n.	
+	OPT OWn+	will turn on  the warning for optimization n.
+	OPT OWn-	will turn off the warning for optimization n.
+
+If more than 100 optimizations are to be made you must turn off the
+warnings or the assembler will abort with the error: 
+"Maximum number of ERRORS/WARNINGS reached"
+
+If any optimizing has been done the number of optimizations made and bytes
+saved will be shown at the end of assembly.
+
+Below is a list of the different optimizations with a description of what
+they do:
+
+OPT O1+	will optimize backward branches to short if in range.
+	For example:
+
+	loop	tst.b	(a2)+
+		bne	loop
+
+	will be optimized to
+
+	loop	tst.b	(a2)+
+		bne.s	loop
+
+	NOTE, branches that are specified as word branches,
+	      e.g Bcc.w will not be optimized.
+
+OPT O2+	will optimize address register indirect with displacement
+	to address register indirect, if the displacement is zero.
+	For example:
+
+		tst.w	flag(a0)
+
+	will be optimized to:
+
+		tst.w	(a0)
+
+	if the symbol flag is zero.
+
+OPT O3+	will optimize absolute long addressing to absolute short
+	if the address is within range; -32769 < d < 32768.
+	For example:
+
+		movea.l	4,a6
+
+	will be optimized to
+
+		movea.l	4.w,a6
+
+	NOTE, if the address is specificly given as absolute long
+	no optimization will be made.
+
+
+
+
+OPT O4+	will optimize move.l #d,Dn to moveq #d,Dn if d is within
+	range; -129 < d < 128.
+	For example:
+
+		move.l	#MEMF_PUBLIC,d0	;MEMF_PUBLIC = 1
+
+	will be optimized to
+
+		moveq	#MEMF_PUBLIC,d0
+
+OPT O5+	will optimize ADD and SUB instructions to the quick form
+	if the source is an immediate number between 1 and 8.
+	For example:
+
+		add.b	#4,counter
+
+	will be optimized to
+
+		addq.b	#4,counter
+
+OPT O6+	this is not really an optimization. If this option is
+	active the assembler will give a warning on all branches
+	that can be made short.
+	For example:
+
+		bne	no_return
+		rts
+	no_return	...
+
+	above the bne instruction will generate a warning. You can
+	then yourself optimize it if you wish.
+	NOTE, even on branches specified as word, e.g Bcc.w.
+
+OPT O7+	will optimize backward absolute long addressing to 
+	PC-relative if within range.
+	For example:
+
+	main	pea	main	; push right return address
+
+	will be optimized to
+
+	main	pea	main(pc) ; push right return address
+
+	NOTE, if the address is specificly given as absolute long
+	no optimization will be made.
+
+OPT O8+	This is not really an optimization. If active the
+	assembler will give a warning on all instructions using
+	absolute long addressing that can be made PC-relative.
+	For example:
+
+		lea	base,a6
+		..
+		..
+	base	dc.l	0
+
+	above the lea instruction will generate a warning. You can
+	then yourself optimize it if you wish.
+	NOTE, even on addresses specified as absolute long.
+
+The default optimization may only be set to OPT O+ or OPT O- thus either
+enabling or disabling all optimizations, and the same for the optimization
+warnings OPT OW+ or OPT OW-.
+
+
+
+Option P - Position independent checks.
+
+If this option is enabled, with OPT P+, the assembler will give an error on
+all instructions that require relocation. This way you can check if the
+code MCAsm is producing is position-independent or not. This option can be
+disabled with OPT P-, and you may use it as much as you like.
+
+Option S - Symbol listing.
+
+OPT S+ will enable the printing of a symbol-listing at the end of assembly
+and OPT S- will disable this. Only the last used OPT S is taken into
+account.
+
+Option T - Type checking.
+
+With this option active the assembler checks for correct use of symbols and
+expressions.
+
+start	equ	10
+
+	bra	start
+
+This is not allowed since the label is an absolute symbol and Bcc requires
+a relative one.
+
+start	move.l	start(a0),d0
+
+This will also give an error since a displacement must be absolute
+(not really, see Lattice users) and start is relative.
+However, under certain circumstances the type-checking may be more of a
+hindrance than a help so it can be disabled with OPT T- and enabled with 
+OPT T+.
+
+Option U - Underlines for local labels.
+
+If you wish to use the underscore (_) rather than the dot (.) to introduce
+a local label use OPT U+ in the beginning of the main source file.
+The character used to introduce a local label always defaults to the
+dot (.). This option should only be used once.
+
+Option W - Warnings.
+
+If you wish to disable the warnings produced by the assembler - use OPT W-,
+and when you want to re-enable them use OPT W+. This option can be used as
+much as you like.
+
+Option X - Small debug.
+
+This is a special version of Option D (debug) which only outputs the XDEFed
+symbols in the debug-hunk. This option is only valid if producing linkable
+code - there are no XDEF in executable code.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Below is a summary of all the MCAsm options
+
+	A	Automatic PC-relative addressing
+	B	Automatic execution of BLOAD/BSAVE file-lists
+	C	Case-sensitivity and significant characters
+	D	Debug information (normal)	
+	E	Check for even addresses
+	F	Fast (how to handle include-files)
+	I	Immediate data check
+	L	Produce linkable or executable code
+	M	List macro expansions
+	O	Optimize
+	P	Position independent checks
+	S	Symbol-listing
+	T	Type-checking
+	U	Local label start character
+	W	Warnings
+	X	Small debug (only XDEFed symbols, only linkable code)
+
+
+[<label>]	EVEN
+
+This directive will force the program counter to be even. All instructions
+and directives except DS.B, DC.B, DCB.B, RC.B and RCB.B are automatically
+forced to an even address.
+
+[<label>]	CNOP	<exp1>,<exp2>
+
+CNOP is used to align code or data to any location you may want.
+<exp2> is the base used to compute the boundary and <exp1> is an offset
+from this boundary.
+
+	CNOP	0,2	aligns to the next word
+	CNOP	6,4	aligns to the next longword + 6
+	CNOP	13,64	aligns to the next 64 byte boundary + 13
+
+The start of each section is always guaranteed to be longword aligned.
+
+	FAIL
+
+This directive will force the assembler to produce an error.
+
+	ILLEGAL
+
+This directive will generate the standard user illegal opcode $4afc.
+
+
+
+	2.10.2	Symbol definitions
+
+<label>	EQU	<expression>
+
+EQU assigns the value and type, absolute or relative, of the <expression>
+in the operand field to the <label> and it is a permanent value, you can
+not redefine the label any where else. Do not use forward references or
+external symbols in the <expression>.
+
+<label>	=	<expression>
+
+Alternate form of EQU statement.
+
+NOTE,	no <white space> is necessary with this form:
+
+<label>=<expression>
+
+
+<label>	SET	<expression>
+
+SET assigns the value and type, absolute or relative, of the <expression>
+in the operand field to the <label> and it is a temporary value, you can
+redefine the label later in the program. Do not use forward references or
+external symbols in the <expression>.
+
+<label>	REG	<Reg-list>
+
+This allows a symbol to be defined as a MOVEM register list. A symbol
+defined with REG is treated as a permanent absolute symbol. However, in
+MOVEM instructions, only symbols defined with REG are valid.
+
+[<label>]	RS[<.size>]	<expression>
+
+This directive lets you create lists of constant symbols, very useful when
+creating structures referenced with register indirect with displacement
+addressing. For example:
+
+	rsreset
+Next	rs.l	1
+Flag	rs.b	1
+Name	rs.b	32
+
+can be accessed with
+
+	movea.l	Next(a0),a1
+	tst.b	Flag(a0)
+	beq.s	..
+	lea	Name(a0),a2
+
+When you use the directive the assembler assigns the current rs_counter
+value, the type is absolute, to the optional <label> and then increments
+the counter according to the <size> and the <expression>. <size> can be .L,
+.W, .B or .S. If not specified .W is assumed. No code is generated by the
+RS directive, only the <label> is defined. If you want to create
+initialized structures you must use the RC directive described later.
+
+[<label>]	RSSET	<expression>
+
+This sets the rs_counter to the value of <expression>.
+
+[<label>]	RSRESET
+
+This resets the rs_counter to zero.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	2.10.3	Data definition
+
+[<label>]	DC[<.size>]	<expression>[,<expression>]..
+
+DC defines constants in memory. It may have one or more operands, separated
+by commas (,). No more than 128 bytes can be defined with a single DC. If
+the size is .B or .S then the data can also be an ASCII string.
+For example:
+
+	dc.b	'Hello World'
+
+this will cause the ASCII string 'Hello World' to be defined in memory
+
+	dc.b	'b'-'a'
+
+this still works the 'normal' way and will produce one byte in memory with
+the value 1.
+
+Expressions and strings may be mixed in a single DC.B, separated with
+commas (,).
+The <size> is optional and can be .L, .W, .B or .S. If no size is given .W
+is assumed.
+
+[<label>]	DCB[<.size>]	<number>,<value>
+
+This directive allows constant blocks to be defined with the specified
+size. <number> specifies how many times <value> should be repeated.
+The <size> is optional an can be .L, .W, .B or .S. If not specified .W is
+assumed.
+For example:
+
+	dcb.b	80,0
+	dcb.w	40,0
+	dcb.l	20,0
+
+These directives all create a block with 80 bytes of zero.
+
+[<label>]	DS[<.size>]	<expression>
+
+DS will reserve memory locations and the contents will not be initialized.
+The <size> if optional and can be .L, .W, .B or .S. If not specified .W is
+assumed.
+For example:
+
+	ds.b	80
+	ds.w	40
+	ds.l	20
+
+These directives also create a block with 80 bytes (each) but this time the
+blocks are not initialized, this is why DS directives are faster to
+assemble than DCB directives. If you need to have the block initialised you
+must use the DCB directive.
+
+[<label>]	RCSET	<expression>
+
+This directive sets the rc_base to the current value of the program counter
+- <expression>.
+The label is made relative and its value will be the same as rc_base.
+
+
+
+
+
+
+
+
+[<label>]	RCRESET
+
+This directive sets the rc_base to the current value of the program
+counter.
+
+[<label>]	RC[<.size>]	<expression>[,<expression>]
+
+This directive is a mixture of the RS and DC directives. If you use RC or
+DC without the <label> there is no difference. The difference between these
+two directives is how and to what the <label> is defined. With the DC
+directive the label is set to the value the program counter had at the
+start of the constant block being defined and the type is relative. With
+the RC directive the label is first of all absolute as with RS, second -
+the value of the label is computed as the current value of PC - rc_base.
+
+[<label>]	RCB[<.size>]	<number>,<value>
+
+This directive is a mixture of the RS and DCB directives. The operation of
+the directive is the same as for DCB and the <label> assignment is made in
+the same manner as described for the RC directive. 
+
+A small example with the RC directive:
+
+PC
+
+0000	base	rcset	-4	; base = PC+4
+0000	l1	rc.l	0	; l1 = -4
+0004				; base actually points to this address
+0004		lea	base,a0	; lea 4,a0
+0008		move.l	l1(a0),d0	; l1 = -4 => l1(a0) = 0
+000c		move.l	l2(a0),d1	; l2 = $c => l2(a0) = $12
+0010		rts
+0012	l2	rc.l	-1	; l2 = $c
+
+If you use a negative expression of -32768 in rcset you can use the whole
+64K area accessible by register indirect with displacement addressing.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	2.10.4	Repeat loops
+
+Sometimes it is useful to be able to repeat instruction(s) a number of
+times, and there are 3 different repeat directives to help you with this.
+The instructions will be repeated the number of times specified in
+<expression>. If <expression> is zero or negative nothing will be repeated.
+It is not possible to nest repeat loops and no symbol definitions except
+SET are allowed to prevent "Redefined symbol" errors, however SET is only
+allowed in the general form of the repeat loop.
+
+[<label>]	REPT	<expression>
+		ENDR
+
+This is the general form of the repeat loop. Instructions to be repeated
+should be enclosed with REPT and ENDR.
+For example, to create a table with constants from 3 to 90 step 3:
+
+exp	set	3
+	rept	30
+	dc.l	exp
+exp	set	exp+3
+	endr
+
+This form of the repeat loop is assembled each and every loop.
+
+[<label>]	FREPT	<expression>
+		ENDFR
+
+This is the fast form of the repeat loop. Now the instructions are only
+assembled once and them copied <expression> times to the code.
+Instructions to be repeated should be enclosed with FREPT and ENDFR.
+
+	frept	10
+	move.l	d0,(a1)+
+	move.l	base,(a1)+
+	clr.l	(a1)+
+	endfr
+
+By natural causes the SET directive is not allowed in the FREPT loop, it is
+only assembled once.
+
+[<label>]	IREPT	<expression>
+
+This is the immediate form of the repeat loop and only repeats the next
+instruction, no END is necessary.
+
+	irept	512/4
+	move.l	(a0)+,(a1)+
+	
+Also, in the immediate form, instructions that require relocation are not
+allowed.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	2.10.5	Macros
+
+MCAsm is a macro assembler, which means that it can handle macros. Macros
+is a way of referencing frequently used instructions with a single symbol.
+The use of macros together with conditional assembly can make an assembler
+programers life much easier. Before a macro can be used it must be defined,
+and the directives below takes care of that.
+
+<label>	MACRO
+
+MACRO starts a macro definition. You must provide a symbol which the
+assembler uses as the name of the macro. A macro can contain any opcode,
+most directives and any already defined macro. Macro definitions may not be
+nested.
+
+	ENDM
+
+This directive terminates a macro definition.
+
+	MEXIT
+
+This directive is used to exit a macro during expansion.
+
+	NARG
+
+This is not a directive but a symbol, holding the number of arguments
+supplied to the current macro.
+
+
+
+Once a macro has been defined, you should only define a macro once, if may
+be called upon as many times as you wish and you may append a number of
+arguments (max 36  0-9 a-z or A-Z), separated by commas (,). The symbol
+backslash (\) has a special meaning. Backslash followed by a number "n"
+(0-9 a-z or A-Z) tells the assembler to replace the \n with the nth
+argument supplied to the macro when called or with nothing if the requested
+parameter is missing. Argument 0 is the size specification on the macro and
+arguments 1 - z are the arguments supplied as operands to the macro.
+If no size is specified argument 0 defaults to 'w'. A true \ may be
+included by specifying \\. If a macro parameter is to include a space or a
+tab then the parameter must be enclosed within angled brackets (< and >)
+and in this case a true > may be included by specifying >>.
+
+Macro calls may be nested as long as there is enough memory so recursion is
+allowed if required.
+
+There is special parameter starting with a backslash followed by "@". This
+sequence, \@, tells the assembler to generate the text "_nnnn" (or .nnnn if
+the underscore is used to introduce local labels), where nnnn is the macro
+call counter, in hexadecimal. This is used to generate unique labels within
+a macro.
+
+A special form allows the conversion of a symbol to ASCII decimal,
+hexadecimal or binary using the syntax \<symbol> for decimal, \<$symbol>
+for hex and \<%symbol> for binary. The symbol must be defined when the
+macro is expanded.
+
+Normally the assembler only shows the macro name in the source listing by
+if you wish to list the entire macro use OPT M+ or FORMAT 4+. All
+instructions/directives in a macro is preceded with a '+' in the
+source-listing.
+
+
+
+
+
+A few examples with macros:
+
+The normal way to call a library is:
+
+	movea.l	library_base,a6
+	jsr	_LVOfunction(a6)
+
+now, this can be done a little easier with a macro:
+
+CALL	macro
+	movea.l	\1,a6
+	jsr	_LVO\2(a6)
+	endm
+
+first define the macro
+
+	CALL	library_base,function
+
+then use it. Now let's se what happens; the assembler finds the symbol CALL
+in the macro table and it then scans the rest of the line to obtain the
+parameters supplied to the macro - and in this example:
+
+	\0	w
+	\1	library_base
+	\2	function
+
+after the assembler has inserted the parameters the macro looks like this
+
+	movea.l	library_base,a6
+	jsr	_LVOfunction(a6)
+	endm
+
+the macro is assembled and when the assembler finds the endm directive it
+resumes on the line after the line with the macro.
+
+Calling the library functions may be made even easier if you make special
+macros for each library and perhaps you want to save a6 as well:
+
+CALL_EXEC	macro
+		move.l	a6,-(sp)
+		movea.l	4.w,a6
+		jsr	_LVO\1(a6)
+		movea.l	(sp)+,a6
+		endm
+
+When this macro is used you do not need to specify which library, it always
+calls exec. For example, to allocate some memory:
+
+	moveq	#MEMF_CHIP,d1
+	moveq	#100,d0
+	CALL_EXEC	AllocMem
+	tst.l	d0
+	beq	error
+	..
+
+NOTE,	macros are no subroutines. Every time you use a macro it is
+	assembled and produce some code. If you have large macros, e.g
+	macros that produce much code, that only use a few or none arguments
+	and you use them heavily you should consider making them subroutines
+	instead.
+
+
+
+
+
+
+This example creates a macro that can do both ADDQ and SUBQ, depending on
+the parameters supplied:
+
+chgq	macro
+	iifeq	\2
+	mexit
+	iflt	\2
+	subq.\0	#-(\2),\1
+	else
+	addq.\0	#\2,\1
+	endc
+	endm
+
+and use it like this:
+
+	chgq.w	d0,-1	; decrease d0.w with one
+	chgq.l	a4,4	; increase a4.l with 4
+
+The macro first checks if the value to be added/subtracted is zero, if this
+is the case then the macro is terminated with the mexit directive.
+Next it checks if the value is negative, if so a subq is assembler, else an
+addq is assembled. Let's see what happens in the two examples above:
+
+	chgq.w	d0,-1
+
+the parameters are:	\0	w
+			\1	d0
+			\2	-1
+
+when the parameters are inserted the macro looks like this:
+
+	iifeq	-1	; is -1 EQ to 0
+	mexit		; no, so don't terminate
+	iflt	-1	; is -1 LT to 0
+	subq.w	#-(-1),d0	; Yes, insert parameters, -(-1) = 1
+	else		; toggle condition
+	addq.\0	#\2,\1	; nothing is done
+	endc		; end condition
+	endm		; end macro
+
+the other example:
+
+	chgq.l	a4,4
+
+the parameters are:	\0	l
+			\1	a4
+			\2	4
+
+and the macro looks like this with the parameters inserted:
+
+	iifeq	4	; is 4 EQ to 0
+	mexit		; no, so don't terminate
+	iflt	4	; is 4 LT to 0
+	subq.\0	#-(\2),\1	; no, so do nothing
+	else		; toggle condition
+	addq.l	#4,a4	; insert parameters
+	endc		; end condition
+	endm		; end macro
+
+NOTE,	if a subtraction is to be made, the value must start with a minus
+	(-) or an error will occur when the parameter is inserted in the
+	subq instruction.
+
+
+
+
+	2.10.6	Listing control
+
+	PAGE
+
+Cause a new page in the listing to be started, if paging is enabled.
+
+	NOPAGE
+
+The NOPAGE directive disables the printing of page headers.
+
+	PAGEON
+
+The PAGEON directive re-enables the printing of page headers.
+
+	LIST
+
+This will turn the source-listing on. If source-listing was selected at the
+start of assembly the listing will be outputed to whatever device selected
+or else to the screen. You can also change the source-listing  counter with
+LIST + and LIST -. LIST + adds 1 to the counter and LIST - subtracts 1. If
+the counter is zero or positive source-listing is on, if it is negative
+source-listing is off. The normal LIST sets the counter to 0.
+The default starting value (e.g no source-list) is -1, if source listing is
+initially selected the starting value is 0. This system allows greater
+control over the source-listing being or not being.
+
+	NOLIST
+
+This will turn of the source-listing. (putting -1 in the source-listing
+counter).
+
+	TTL	<string>
+
+This will set the title printed at top of each page to <string>. Only the
+first encountered TTL is used. If no title is specified the filename of the
+source file is used.
+
+	SUBTTL	<string>
+
+This will set the sub-title printed at top of each page to <string>. Only
+the first encountered SUBTTL is used. If no sub-title is specified nothing
+is printed.
+
+	PLEN	<expression>
+
+This will set the page length of the source- and symbol-listing to
+<expression> and it defaults to 60.
+
+	LLEN	<expression>
+
+This will set the line width of the source- and symbol-listing to
+<expression> and it defaults to 132. The <expression> must be between 38
+and 511. (if the listing is sent to the screen llen is always 80).
+
+	SPC	<expression>
+
+This will output <expression> number of blank lines in the source-listing.
+That is, if source-listing is enabled.
+
+
+
+
+
+
+
+
+	LISTCHAR	<expression>[,<expression>]...
+
+This will send the <expression>(s) to the listing device (if not the
+screen) and is intended to do things as setting the margins, character mode
+etc on the printer.
+
+		FORMAT	<option>[,<option>]...
+
+This allows control over the listed format. Each <option> controls a field
+in the listing.
+
+	0-	line number off
+	0+	line number on
+	1-	PC off
+	1+	PC on ( in hex )
+	1++	PC on ( in dec )
+	1+++	PC on ( in hex and dec )
+	2-	hex data off
+	2+	5 words of hex data
+	2++	3 words of hex data
+	2+++	1 word of hex data
+	3-	list off in include-files
+	3+	list on in include-files
+	4-	list off in macros (equal to opt m-)
+	4+	list on in macros (equal to opt m+)
+	5-	don't increase line number in include-files
+	5+	increase line number in include-files
+	6-	don't increase line number in macros
+	6+	increase line number in macros
+	7-	don't show flags
+	7+	show flags
+	8-	don't show execution time
+	8+	show execution time
+	9-	tabs to spaces
+	9+	tabs to tabs
+	A-	don't show symbol value ( in symbol listing )
+	A+	show symbol value in hex ( in symbol listing )
+	A++	show symbol value in dec ( in symbol listing )
+	A+++	show symbol value in hex and dec ( in symbol listing )
+	B-	don't show symbol type ( in symbol listing)
+	B+	show symbol type ( in symbol listing )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	2.10.7	Conditional assembly
+
+There are a wide range of directives concerning conditional assembly.
+At the start of a conditional block there is always one of many IFcc
+directives and at the end mostly a ENDC or ENDIF.
+
+	IFEQ	<expression>
+	IFNE	<expression>
+	IFGT	<expression>
+	IFGE	<expression>
+	IFLT	<expression>
+	IFLE	<expression>
+	IF	<expression>
+
+NOTE,	IF is a short form for IFNE.
+
+These directives will evaluate and compare <expression> with zero and then
+turn assembly on or off depending on the result. The conditions correspond
+exactly to the 68000 condition codes. For example:
+
+	ifeq	do_what
+	addq.l	#1,d0
+	endc
+	ifne	do_what
+	subq.l	#1,d0
+	endc
+
+If do_what is 0 the first condition will turn assembly on as 0 is EQ to 0
+and thereby increasing d0 with one, the second condition will not turn
+assembly on as 0 is NE to 0. The summary of it all is; if do_what is zero
+d0 will be increased with one, for all other values on do_what d0 will be
+decreased by one. Endc will terminate each condition.
+
+	IFC	'<string>','<string>'
+
+This directive compares two strings, both must be enclosed within single or
+double quotes, and if they are equal assembly will by turned on, else
+assembly is turned off.
+
+	IFNC	'<string>','<string>'
+
+This directive also compares two enclosed strings, but now assembly is
+turned on if the strings are not equal and off if they are equal.
+
+	IFD	<symbol>
+
+This directive will turn on assembly if the <symbol> is defined, else
+assembly is turned off.
+
+	IFND	<symbol>
+
+This directive will turn on assembly if the <symbol> is not defined, else
+assembly is turned off.
+
+
+	ENDC
+	ENDIF
+
+These directives will terminate the current level of conditional assembly.
+If the assembler finds more ENDC/ENDIF than it has previously found IFcc or
+if the number of IFccs doesn't match the number of ENDC/ENDIfs at the end
+off assembly, an error is given.
+
+
+
+
+	ELSEIF
+	ELSE
+
+These two directives toggles conditional assembly from on to off or vice
+versa. For example, another way to write the example used earlier in this
+section:
+
+	ifeq	do_what
+	addq.l	#1,d0
+	elseif
+	subq.l	#1,d0
+	endc
+
+If do_what is 0 the condition will turn assembly on as 0 is EQ to 0 and
+thereby increasing d0 with one, then elseif will toggle the conditional
+assembly to off, the subq will not be assembled and endc terminates the
+condition. If do_what is not 0 the condition will turn assembly off, elseif
+will turn it on and therefore assemble the subq. Endc will terminate the
+condition.
+
+	IIF	<expression>
+	IIFEQ	<expression>
+	IIFNE	<expression>
+	IIFGT	<expression>
+	IIFGE	<expression>
+	IIFLT	<expression>
+	IIFLE	<expression>
+	IIFC	'<string>','<string>'
+	IIFNC	'<string>','<string>'
+	IIFD	<symbol>
+	IIFND	<symbol>
+
+These are the immediate forms of the IFcc directives and they are only
+effective on the next instruction. No ENDC, ENDIF, ELSE or ELSEIF should be
+used with the immediate forms. So - yet another version of the example used
+earlier:
+
+	iifeq	do_what
+	addq.l	#1,d0
+	iifne	do_what
+	subq.l	#1,d0
+
+If do_what is 0 the first condition will turn assembly on as 0 is EQ to 0,
+the second condition will not turn assembly on as 0 is NE to 0. The summary
+of it all is still the same but now in only 4 lines.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	2.10.8	Section control
+
+	SECTION	 <name>[,<type>,<code_size>,<reloc_size>,<extern_size>]
+
+This directive switches to the section <name> or if this is the first time
+it's encountered, defines it. A program may consist of many sections which
+will be put together with other sections with the same name by the linker.
+The section name can be 32 characters and if it contains a space it should
+be enclosed within single of double quotes. The casing of the name is
+significant. The <type> can be one of the following and if no type is given
+CODE is selected.
+
+	CODE	code section, public memory
+	CODE_C	code section, chip memory
+	CODE_F	code section, fast memory
+	DATA	data section, public memory
+	DATA_C	data section, chip memory
+	DATA_F	data section, fast memory
+	BSS	bss  section, public memory
+	BSS_C	bss  section, chip memory
+	BSS_F	bss  section, fast memory
+
+CODE sections are used for executable code, DATA sections for initialised
+data and BSS sections for un-initialised data.
+CODE & DATA sections can contain any directive, BSS only DS.
+BSS sections take no disk-space. Only the bss_hunk and length is saved.
+When loading the area allocated is always filled with zero.
+
+<code_size> is the size of the code buffer, in bytes. If not present the
+default section size will be used.
+
+<reloc_size> is the size of the reloc-hunk buffer, in bytes. If not present
+reloc_size is computed as 1/5 of the code_size.
+
+<extern_size> is the size of the ext-hunk buffer, in bytes. If not present
+extern_size is computed as 1/5 of the code_size.
+For example:
+
+	section	text,code_c,50000,,3000
+
+This defines a code_c section with the name text, code_size is 50000,
+reloc_size is 10000 (50000/5) and extern_size is 3000.
+
+	CODE/DATA/BSS
+
+These directives are for compatibility only. They are the same as
+specifying the directive as the section name and type.
+
+	OFFSET	<expression>
+
+This switches to a special section to generate absolute labels. The
+<expression>, if given, sets the program counter for the start of this
+section. No code is generated and the only directive allowed is DS.
+For example, to define some 68000 vectors:
+
+		offset	0
+initial_sp	ds.l	1
+initial_pc	ds.l	1
+bus_error	ds.l	1
+address_error	ds.l	1
+illegal_instr	ds.l	1
+
+
+
+
+
+	2.10,9   Linkable directives                                              
+
+	XDEF	<label>[,<label>]..
+
+This defines the <label>(s) listed for export to other programs or
+sections. It is not possible to export local labels or temporary symbols.
+It's only effective if the code type is linkable. You should not XDEF a
+label more than once, if you do you will get a 'Redefined symbol error'
+when linking.
+
+	XREF[.R|.A|.L]	<symbol>[,<symbol>]..
+
+This defines symbols to be imported from other programs or sections.
+It's only effective if the code type is linkable. The type may be .R for
+relative imports and .L or .A for absolute imports. A XREF without any type
+defines un-typed imports that may be used either as relatives or absolutes.
+If you try to XREF a symbol that has already been defined you will get a
+'Redefined symbol error'. The same will happen if you XREF the same symbol
+more than once.
+
+	IDNT	<string>
+
+This will set the hunk_unit name to <string>. The name can be 32 characters
+long and if it contains spaces or tabs it should be enclosed within single
+or double quotes.
+
+
+
+	2.10.10	Binary include
+
+	INCBIN	<filename>
+
+This takes the file <filename> and includes it, binary, in the code at the
+current position. The data is always put on an even address and if the file
+is an odd number of bytes in length it is padded to an even length.
+If <filename> contains a space it should be enclosed in single or double
+quotes. See INCLUDE for a more detailed description on where the assembler
+looks for the file.
+
+	BLOAD	<filename>,<start>[,<end>]
+
+BLOAD loads binary data into the code starting at address <start>. If the
+<end> address is given the maximum file-length will be limited to
+<end>-<start>, else the entire file is loaded. If a space or tab is to be
+included in the <filename> it must be enclosed with single or double
+quotes. Since the data isn't loaded until after assembly the complete 
+file-name must be specified, e.g df0:graphics/lo-res/picture1. BLOAD does
+not reserve any memory for the data it loads, you must do so. For example:
+
+gfx	ds.b	1000
+	bload	df0:graphics/font,gfx
+
+The BLOAD directive must be placed in that same section as the destination
+of the data it is going to load, otherwise you will get a warning. If you
+do - do not execute the BLOAD list, the data may end up outside the area
+allocated for the section. However, if you are writing absolute code this
+might be just what you want. At last, BLOAD directives should be used, or
+to be correct, executed with care. Also - see Warning 04.
+
+	BSAVE	<filename>,<start>,<end>
+
+The same as BLOAD but this saves data instead, and <end> is not optional.
+
+
+
+
+	2.10.11	Absolute directives
+
+	ORG	<expression>
+
+This directive is only effective if the code type is absolute, if the code
+type is executable or linkable you will get a warning and then the
+directive is ignored. ORG will set the program counter to the value of
+<expression> which must evaluate and be absolute.
+
+	ENT	<expression>
+
+This directive is only effective if the code type is absolute, if the code
+type is executable or linkable you will get a warning and then the
+directive is ignored. ENT will set the program counter to the value of
+<expression> which must evaluate and be absolute.
+
+	INITREG	xn=<expression>
+
+This directive is only effective if output is memory. It is used to 
+pre-load data-registers d0-d7 or address-registers a0-a6 with the value
+<expression>. All data and address registers, except a7, are cleared by
+default before executing any code.
+
+[<label>]	ALLOC	<address>,<size>
+
+This is to make memory allocation easier. You can make a list of what
+memory you need in your source and then the assembler tries to allocate it
+the first time you assemble the source. If successful the allocated area is
+stored in the Allocators AllocMemList so that the assembler doesn't try to
+allocate the same area twice but take the address and size from the list in
+sequel assemblies. If the assembler can't allocate the area it will abort
+with a fatal error. If a label is present the address of the allocated area
+is assigned to the label and the type is absolute. Memory allocated with
+the ALLOC directive can be freed with the Allocator in the usual way.
+
+
+
+	2.10.12	Output directive
+
+	OUTPUT	<filename>
+
+This directive defines the output filename. If the output filename is
+already defined you will get a warning and then the directive is ignored.
+See section 3.3 Output code-type and destination for a more detailed
+description on how the output filename is built up.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	2.11	Errors and warnings
+
+This section lists all the errors and warnings and gives a short
+description of what that might have caused the error or warning.
+A fatal error means that assembly will be aborted if the error occur.
+
+
+*** Error 01: Symbol table is full.
+
+Fatal error. The allocated symbol table is full and you must increase it.
+This is done in the Specify Symbol Table item in the Environment menu.
+
+
+*** Error 02: Break.
+
+Fatal error. You pressed break - CTRL C.
+
+
+*** Error 03: FREPT buffer is full.
+
+Fatal error. The fast-repeat code buffer is full. The only thing you can do
+about this is to have less instructions/directives in this FREPT-loop.
+The size of the FREPT buffer is 128 bytes.
+
+
+*** Error 04: Can't allocate macro expansion space.
+
+Fatal error. Allocation memory for a macro expansion failed. This is
+usually a very small amount and therefore this error should never occur,
+but if it does - you are really out of memory.
+
+
+*** Error 05: Error reading include file.
+
+Fatal error. The assembler can't read an include file, probably due to
+disk-failure.
+
+
+*** Error 06: Error writing to symbol file.
+
+Fatal error. The assembler can't write the symbol listing to the specified
+file, normally because the disk is full but it may be something else.
+
+
+*** Error 07: Error writing to list file.
+
+Fatal error, same as Error 06 but this concerns the source listing file.
+
+
+*** Error 08: Error writing to error file.
+
+Fatal error, same as Error 06 but this concerns the error listing file.
+
+
+*** Error 09: Not enough memory for include file buffer.
+
+Fatal error. Allocating space for an include-file failed. This error should
+only occur if you are using OPT F1+, if so - try F1-, else you are really
+out of memory.
+
+
+*** Error 10: Symbol storage buffer is full.
+
+Fatal error. The symbol storage buffer, where the actual symbol names are
+held, is full. Proceed as with Error 01.
+
+*** Error 11: Macro table is full.
+
+Fatal error. The allocated macro table is full and you must increase it.
+This is done in the Specify Macro Table item in the Environment menu.
+
+
+*** Error 12: Macro storage buffer is full.
+
+Fatal error. The macro storage buffer, where the actual macro is held, is
+full. Proceed as with Error 11.
+
+
+*** Error 13: Maximum number of ERRORS/WARNINGS reached.
+
+Fatal error. The assembler have had enough and aborts, e.g 101 errors
+and/or warnings have been detected. Deal with those first.
+
+
+*** Error 14: REPT buffer is full.
+
+Fatal error. The REPT directive's source code buffer is full. You must use
+less instructions/directives in this REPT-loop.
+
+
+*** Error 15: Allocated code buffer is full.
+
+Fatal error. The code buffer allocated is full. If you are writing absolute
+code you must allocate a larger area. If writing executable or linkable you
+must increase the size of the code buffer requested when defining this
+section or increase the Default Section Size in the Environment menu.
+
+
+*** Error 16: Can't allocate code buffer.
+
+Fatal error. The area you want is to large, try a smaller if possible,
+if not - you must either remove something else from memory or buy more!!
+
+
+*** Error 17: Can't open output file.
+
+Fatal error. The assembler can not open the output file you have specified.
+The reasons may be many but must likely an invalid file-name.
+
+
+*** Error 18: Can't allocate reloc buffer.
+
+Fatal error, same as Error 16 but this is about the reloc-buffer.
+
+
+*** Error 19: Can't allocate extern buffer.
+
+Fatal error, same as Error 16 but this is about the external-buffer.
+
+
+*** Error 20: Allocated reloc buffer is full.
+
+Fatal error. The buffer allocated for reloc-information is full. You must
+increase the size of the reloc buffer requested when defining this section
+or increase the Default Section Size in the Environment menu.
+
+
+*** Error 21: Allocated extern buffer is full.
+
+Fatal error, same as Error 20 but this goes for the external buffer.
+
+
+*** Error 22: Missing operands.
+
+You have forgotten to specify one or more operands needed by the
+instruction/directive in question. For example:
+
+	MOVE.L	D0	; to what? - destination missing
+
+
+*** Error 23: To many operands.
+
+This time you have specified to much. This error will only occur if a DC
+directive becomes more than 128 bytes. Simply make two of it and the error
+is gone.
+
+
+*** Error 24: Invalid operand.
+
+The operand(s) specified are not valid for this instruction. For example:
+
+	DIVU	#10,A0	or	BRA.S	10(A0,D0.L)
+
+
+*** Error 25: Value out of range.
+
+This is the general 'Value out of range' error and it is reported where the
+more specific forms do not fit in. For example:
+
+	PLEN	-1000
+
+
+*** Error 26: XREF symbols not allowed here.
+
+You will get this error if you use a label defined with XREF in an EQU or
+SET expression.
+
+
+*** Error 27: A non SET symbol can not be redefined by SET.
+
+This will happen if you try to SET a symbol that has not originally been
+defined by SET. For example:
+
+symbol		EQU	10
+symbol		SET	20
+
+
+*** Error 28: 8-bit displacement value out of range.
+
+The displacement value is simple to big for 8 bits (signed). For example:
+
+	JSR	130(A0,D0.W)
+
+
+*** Error 29: Location out of range for short branch.
+
+To far away, use a word branch.
+
+
+*** Error 30: Location out of range for word branch.
+
+The location is more than 32k away. You must use JMP, or JSR if the branch
+was a BSR.
+
+
+
+
+
+*** Error 31: Number to large for 16-bit integer.
+
+For example:	MOVE.W	#100000,D0
+
+
+*** Error 32: number to large for 8-bit integer.
+
+For example:	MOVE.B	#256,D1
+
+
+*** Error 33: ENDC without matching IFcc.
+
+This error is give if an ENDC or ENDIF is found without a matching IFcc, or
+simpler - there are more ENDC/ENDIF than there are IFcc. This is most
+likely to happen if you are writing a program with a lot of nested
+conditions.
+
+
+*** Error 34: End of file without matching ENDC.
+
+This is the other way around, now you have more IFcc than ENDC/ENDIF
+
+
+*** Error 35: ENDM without any macro being defined.
+
+If the assembler finds a lonely ENDM it will give this error.
+
+
+*** Error 36: Missing symbol for assignment.
+
+If you don't supply a symbol to a directive that needs one this error will
+be reported. For example:
+
+	EQU	10	; EQU what?
+
+
+*** Error 37: Invalid arithmetic operand.
+
+If the assembler finds an operand that it can not handle it will give you
+this error. Note, normally this is due to typing errors. For example:
+
+	MOVE.L	#mask\op,D0	; should have been | - missed shift.
+
+
+*** Error 38: Unbalanced parentheses.
+
+This is just what it says; for example:
+
+	MOVE.L	10*((2+2),D0
+
+
+*** Error 39: Illegal decimal character.
+
+This error is reported if a character not valid for a decimal number, e.g
+outside 0 - 9, is present in a decimal number. For example:
+
+	MOVE.L	#1234a,D0
+
+
+*** Error 40: Illegal hexadecimal character.
+
+This error is reported if a character not valid for a hexadecimal number,
+e.g outside 0 - 9, A - F, a - f, is present in a hexadecimal number.
+For example:
+
+
+*** Error 41: Illegal binary character.
+
+This error is reported if any other character than 0 and 1 is found in a
+binary number. For example:
+
+	MOVE.L	#%10010k,D0
+
+
+*** Error 42: MEXIT outside macro.
+
+This error will be reported if the assembler finds a MEXIT that is not
+within a macro.
+
+
+*** Error 43: user error.
+
+This error is a result of the FAIL directive. For example:
+
+	FAIL
+
+
+*** Error 44: Illegal option selected.
+
+If you request an option that the assembler do not support, it will respond
+with this error. For example:
+
+	OPT	K+
+
+
+*** Error 45: Expression missing.
+
+This error will only occur if you leave out an expression in a DC.
+For example:
+
+	DC.B	10,,20
+
+
+*** Error 46: BSS and OFFSET sections can not contain data.
+
+You will get this error if you try to use a code generating directive or an
+instruction in a BSS or OFFSET section.
+
+
+*** Error 47: End of file with open REPEAT.
+
+This error will be reported if end of file is reached before an END-REPEAT
+in a REPEAT-loop.
+
+
+*** Error 48: REPEAT inside a REPEAT.
+
+You will get this error if you try to nest REPEAT-loops.
+
+
+*** Error 49: END-REPEAT without REPEAT.
+
+If the assembler finds an END-REPEAT and no REPEAT has been specified this
+error will be reported.
+
+
+*** Error 50: SET definitions only in REPT - ENDR.
+
+This will happen if you try to use a SET directive in a FREPT or IREPT
+loop.
+
+
+*** Error 51: Macro definitions not allowed in REPEAT.
+
+This error will be given it you try do define any macro in a REPEAT loop.
+
+
+*** Error 52: Label definitions not allowed in REPEAT.
+
+For example:
+
+	REPT	10
+start	...		; this will give the error
+
+
+*** Error 53: Permanent symbol definitions not allowed in REPEAT.
+
+For example:
+
+	REPT	10
+test	EQU	4	; this will give the error
+
+
+*** Error 54: Unable to open include file.
+
+If the assembler for some reason can't open the include-file requested it
+will report this error. The most likely reason is a mistyped filename or a
+wrong directory path.
+
+
+*** Error 55 Unknown instruction/directive.
+
+If the assembler finds an operation that is not one of the built in
+instructions/directives and that is not listed as a macro; then this error
+will be reported.
+
+
+*** Error 56: String to large or not terminated.
+
+This error will be given if a string is not terminated, if a string in a
+DC.B cause the total byte length for that DC.B to by more than 128 bytes or
+if a ASCII number is more that 4 letters. For example:
+
+	MOVE.L	#'TESTING',D0
+	DC.B	'TEST
+
+
+*** Error 57: Redefined symbol.
+
+The symbol in the label field on this line has already been defined
+elsewhere.
+
+
+*** Error 58: Undefined symbol ->
+
+However, this symbol (after the arrow ->) has not been defined anywhere.
+
+
+*** Error 59: Unknown section type requested.
+
+You have specified a section type that is not valid. Look under the SECTION
+directive for a list of valid section types.
+
+
+
+
+
+
+*** Error 60: Illegal size specification for this instruction.
+
+For example:
+
+	LEA.B	Start,A0
+
+
+*** Error 61: 16-bit displacement value out of range.
+
+An address register displacement is out of range or a PC-relative address
+is more than 32k away. For example:
+
+	MOVE.L	100000(A0),D0
+
+
+*** Error 62: Negative value not allowed here.
+
+In some places, negative values just can't exist. For example:
+
+	DS.B	-1	; negative storage length???
+
+
+*** Error 63: Illegal symbol character.
+
+If you try to define a symbol that includes a character that is not one of
+the following,  0 - 9, A - Z, a - z, (.), (_), you will get this error.
+For example:
+
+what?	EQU	4
+
+
+*** Error 64: Invalid type for XREF requested.
+
+You have used a type specifier with XREF that is not .R, .A or .L
+
+
+*** Error 65: Local and temporary symbols can't be exported.
+
+Don't try do XDEF locals and temporaries, if won't work.
+
+
+*** Error 66: Short bsr to next instruction.
+
+The only example:
+
+	BSR.S	next
+next	...
+
+
+*** Error 67: Address is NOT even.
+
+This error will only be reported if OPT E+ is used and the assembler finds
+and odd address in use with a word or longword access. For example:
+
+	MOVE.W	$1,D0	; error
+	MOVE.B	$1,D0	; ok
+
+
+*** Error 68: Positive or odd link offset.
+
+For example:
+
+	LINK	#33,A5
+
+
+
+*** Error 69: Expression must be absolute.
+
+You have used a relative expression, e.g something that needs relocation,
+where the assembler must have an absolute value. For example:
+
+empty	DS.L	empty	; the assembler must know the size of the area.
+
+
+*** Error 70: Linker format error.
+
+This error only occurs in executable code. You have made an illegal
+reference between two different sections. For example:
+
+	SECTION	ONE
+	BRA	START
+	SECTION	TWO
+START	...
+
+Since you don't know where the sections are loaded this is not allowed.
+
+
+*** Error 71: Expression must be relative.
+
+You have used a absolute value where the assembler expects a relative one.
+For example:
+
+	BRA	$10
+
+
+*** Error 72: Instruction needs relocation.
+
+If OPT P+ is in use and the assembler finds an instruction/directive that
+needs relocation, this error will be given.
+*** Error 73: Relative expressions not allowed.
+
+You will get this error if you use an relative expression in a place where
+relocation is impossible. For example:
+
+tt	DC.W	tt
+
+
+*** Error 74: '#' probably missing.
+
+This error will only be given if OPT I+ is in use and an absolute long
+source operand is given where it is not normally supposed to be.
+For example:
+
+	AND.B	$20,D0
+
+
+*** Error 75: Illegal octal character.
+
+If a character outside 0 - 7 is found in an octal number you will get this
+error. For example:
+
+	MOVE.L	#@1238,D0
+
+
+*** Error 76: Number out of range for 32-bit integer.
+
+For example:	MOVE.L	#17985783498423964397543,D0
+
+
+
+
+
+*** Error 77: Invalid monadic operator.
+
+The monadic operators allowed are +, - and ~. Any attempt to use any other
+operator as a monadic one will result in this error. For example:
+
+	MOVE.L	#/10,D0
+
+
+*** Error 78: Illegal operation with these symbol-types.
+
+Take a look at section 3.6.2 for detailed description of what is wrong if
+you get this error.
+
+
+*** Error 79: Local labels not allowed here.
+
+Local labels are only allowed under special conditions, see section 3.5.2,
+and if you use them anywhere else you will get this error. For example:
+
+4$	EQU	10	; oh no
+
+
+** Warning 01: 68010 and upwards instruction, Converted to MOVE SR,.
+
+If you try MOVE CCR, you will get this warning.
+
+
+** Warning 02: Garbage found after instruction.
+
+For example:	DS.B	10,20 ; ,20 is ignored but the syntax is wrong.
+
+** Warning 03: Directive has no effect in reloc-files.
+
+For example, if you use an ORG directive in an executable or linkable file
+you will get this warning, but the directive is ignored by the assembler.
+
+
+** Warning 04: BLOAD to outside allocated section.
+
+If you get this error when producing executable or linkable code you should
+not execute the BLOADs since the load address is outside the allocated
+space and loading binary data into memory owned by something else than
+MCAsm is generally not a very good idea, the system will most likely crash.
+If you are writing absolute code you may want to load something into memory
+not related to the actual code, say you have your code at $40000-$50000 and
+want to load some graphics into memory at $60000, in this case you can
+ignore the warning (if you have allocated the memory at $60000, else...).
+
+
+** Warning 05: BSAVE from outside allocated section.
+
+This is the same as for BLOAD except that the system can't crash if you
+just save something. The warning simply indicates the you may be saving the
+wrong data.
+
+
+** Warning 06: Directive has no effect in absolute files.
+
+For example, a SECTION directive has no effect in absolute code and is
+ignored, but this warning is given.
+
+
+
+
+
+
+** Warning 07: Output file-name has already been defined.
+
+If you give an output file-name when selecting FILE as output and then try
+to redefine the file-name with OUTPUT you will get this warning. The OUTPUT
+directive is ignored in this case.
+
+
+** Warning 08: Directive has no effect if output isn't a file.
+
+For example, if you use OUTPUT and the output is memory.
+
+
+** Warning 09: Directive has no effect if output isn't a linkable file.
+
+For example, if you use XREF in and don't produce linkable file.
+
+
+** Warning 10: 68020 and upwards branch size, '.W' should be used.
+
+If you used .L as branch size this warning will be given and the size
+converted to .W.
+
+** Warning 11: Short branch to next instruction, Converted to a NOP.
+
+For example:
+
+	BRA.S	next
+next	...
+
+
+The following warnings are optimisation warnings and only occur if the
+relevant optimisation and warning is enabled, and of course - the assembler
+have found something to optimise.
+
+** Warning 12: Branch made short.
+
+Backwards un-size branch made short.
+
+
+** Warning 13: Offset removed.
+
+The displacement d is zero, d(An), so it is removed and the address
+converted to (An).
+
+
+** Warning 14: Absolute long made absolute short.
+
+An absolute long address in range for absolute short was made short.
+
+
+** Warning 15: MOVE.L made to MOVEQ. 
+
+A MOVE.L #d,Dn had a d in range for MOVEQ. -129 < d < 128.
+
+
+** Warning 16: Quick form used.
+
+An ADD/SUB #d,<ea> had a d in range for the quick form. 0 < d < 9.
+
+
+** Warning 17: Branch can be made short.
+
+This warning will be given on all branches that can be made short.
+
+
+
+** Warning 18: Absolute long made PC-relative.
+
+An absolute long backward address were in range for PC-relative addressing.
+
+
+** Warning 19: Absolute long can be made PC-relative.
+
+This warning will be given on all absolute long addresses that are in range
+for PC-relative addressing.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

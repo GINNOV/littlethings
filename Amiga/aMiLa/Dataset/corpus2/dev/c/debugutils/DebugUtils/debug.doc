@@ -1,0 +1,319 @@
+
+Debug Utilities
+
+
+Enclosed are some tools I have found useful in debugging applications on the
+Amiga.  They comprise an integrated set which, when used with Enforcer and
+Mungwall, give the programmer a powerful and flexible means to disect source
+code.
+
+
+The files included here are:
+
+	Executable:		( Trace/bin )
+
+		debug     - Provides debugging output independent of application startup.
+		tDB       - Utility to change 'debug' internal parameters.
+		test.SAS  - Short program to test tool set.  Linked with SAStrace.lib.
+		test.Manx - Short program to test tool set.  Linked with Manxtrace.lib.
+
+
+	Libraries:		( Trace/libs )
+
+		SAStrace.lib  - Link library for SAS compiler environment.
+		Manxtrace.lib - Link library for Manx compiler environment.
+
+
+	Source:			( Trace )
+
+		debug.c - Source code for debug.
+		tDB.c   - Source code for tDB.
+		test.c  - Source code for test.
+		trace.c - Source code for library modules.
+		debug.h - Header for debugging.  Should be #include'd in application.
+		trace.h - Header for compiling Debug Utilities.
+
+		Make.Manx - Makefile for creating Manxtrace.lib.
+		Make.SAS  - Makefile for creating SAStrace.lib as well as executables.
+
+
+	Documentation:	( Trace )
+
+		debug.doc - This file.
+		Readme.db - 'Read this first' file.  Contains important info.
+
+
+These tools were written several years ago in an attempt to provide me with
+printf() type output capability for tasks created under Exec (ie: without
+AmigaDOS I/O capacity).  However, I soon abandoned them when I found that
+enabling the debug output often caused bugs to mysteriously vanish, only to
+reappear when the debug code was removed.
+
+Recently I discovered the wonders of Enforcer and Mungwall, and decided to
+re-evaluate these tools.  I was pleasantly surprised to find that with some
+minor modifications to allow output to the serial and parallel ports I could
+surround Enforcer and Mungwall output with very specific data regarding the
+location of the hits within my code.
+
+I hope you find them useful.
+
+			Mark Porter (fog...)			Friday 08-May-92 22:58:01
+			Phoenix,		AZ
+			BIX: fog
+
+
+
+
+
+Operation
+
+
+To obtain debug output the executable 'debug' should be started.  Generally
+it is easiest to start debug in the background by typing "run debug" at the
+CLI prompt.  Debug then opens a DOS console window and waits for messages to
+arrive at its MsgPort.
+
+The appropriate trace.lib should be linked with application code.  In the
+library is one function:  Trace().  The action of this function is to send
+an Exec Message to the MsgPort opened by debug.  Debug will then output this
+information to a DOS console window, as well as one or more of a disk file,
+serial port, or parallel port.
+
+To change any of the internal debug parameters the executable tDB is used.
+Several arguments are supported by tDB (see below).  tDB works much the same
+as Trace() in that it sends messages to debug.  The messages tell debug to
+adjust its parameters for future debug output.
+
+For interactive applications that spend much of their time waiting for user
+input, the above technique allows for changing output characteristics de-
+pending on which part of code one wishes to test.  See the file test.c for
+examples on how to use Trace().
+
+
+
+
+Detailed Descriptions
+
+
+
+	NAME
+
+	debug - Provides debugging output capability to user applications.
+
+
+	SYNOPSIS
+
+	debug [ level ]
+
+
+	DESCRIPTION
+
+	Debug outputs information handed it by applications calling Trace() from
+	the trace.lib link library.  The output is sent to a DOS console window
+	(default) as well as one or more of a disk file, serial port, or parallel
+	port.  It is designed to work in conjuction with the trace.lib and the
+	executable tDB (see below).
+
+	Several internal parameters are utilized by debug to screen incoming
+	messages for output.  These are:
+
+	Debug Output Destinations:
+
+		Debug information is always printed to the DOS console window (pro-
+		vided it meets the screening criteria presented below under DB_Function
+		List, DB_Screen, and DB_Level).  In addition the user can specify three
+		other destinations (see description of tDB below for further explana-
+		tion).
+
+		1. Disk File.
+			Disk file output is enabled using "tDB -w [ filename ]".
+
+		2. Serial Port.
+			Serial port output is enabled using "tDB -s".
+
+		3.	Parallel Port.
+			Parallel port output is enabled using "tDB -p".
+
+		The serial and parallel port output options were included to allow
+		debug to work in conjuction with Enforcer and Mungwall from Commodore.
+		Both of these utilities send output to the serial port (both also
+		have parallel port counterparts for users without terminal capability).
+
+		With either of these configurations Enforcer and/or Mungwall output
+		can be surrounded by debug information to help isolate the source of
+		bugs.  I highly recommend debug usage in conjunction with these tools.
+
+	DB_Function List:
+
+		Contains a list of function names (ASCII characters) which are presum-
+		bly functions within the application being debugged.  Output from code
+		executed within these functions is enabled based upon the setting of
+		DB_Screen (see below).
+
+		If the list is empty (default at startup), then output from within any
+		function is enabled, provided it meets the criteria for DB_Level.
+
+	DB_Screen:
+
+		This parameter can take on three settings:  db_none, db_include, or
+		db_exclude (implemented as enum variables within debug).
+
+		1. db_none.
+			DB_Screen is ignored when determining output enabling.
+
+		2. db_include.
+			If the message from Trace() is being executed within a function
+			whose name has been entered on the DB_Function List, output from
+			that message is enabled.  Any functions whose names do not appear
+			on the list will have their output disabled.
+
+		3. db_exclude.
+			Works opposite db_include.  In this case output from a particular
+			function is enabled only if its name does not appear on the
+			DB_Function List.
+
+		The default for DB_Screen is db_none.  When a function is added to
+		DB_Function List, DB_Screen is set to db_include.  To change values
+		after this use "tDB -t" to toggle between db_include and db_exclude.
+		If the DB_Function List becomes empty at any time, DB_Screen is reset
+		to db_none.
+
+	DB_Level:
+
+		The intent of this parameter is to indicate what nesting level from
+		within which the debug code is executing.  This allows the programmer
+		to turn on debugging within interior nested loops, or other constructs
+		as necessary.  Debug output will be disabled from any messages whose
+		level is less than DB_Level.
+
+		Screening from this variable is always turned on, and will over-ride
+		enabled output due to DB_Function List values.  The default value is
+		zero, and can be specified on the command line at debug startup.
+
+
+	BUGS
+
+	None known.
+
+
+
+
+	NAME
+
+	tDB - Provides a mechanism for changing debug internal parameters.
+
+
+	SYNOPSIS
+
+	tDB [ options ]
+
+
+	DESCRIPTION
+
+	This program passes messages to debug which tell the latter to change
+	the value of its internal screening parameters.  Below are listed all
+	tDB's options.
+
+		-e				Turn debug off.  Debug has no internal mechanism for
+						returning to the Operating System.  The message DB_QUIT
+						is sent from tDB when the -e option is specified.  Debug
+						will then free allocated resources and terminate.
+
+		-a <func>	Adds functions to DB_Function List.  The value <func> can
+						be a list of names separated by spaces.
+
+		-r <func>	Removes functions from DB_Function List.  The value of
+						<func> can be a list of names separated by spaces.
+
+		-c				Clears all entries from DB_Function List.
+
+		-t				Toggles DB_Screen between db_include and db_exclude.  If
+						DB_Screen is db_none, this parameter has no effect.
+
+		-l [num]		Resets DB_Level to num.  If num is not specified DB_Level
+						is taken as zero.
+
+		-w	[file]	Open disk file 'file' for debug output.  If 'file' is not
+						specified the name of the file becomes "DB.out".
+
+		-we			Terminate output to disk file and close it.
+
+		-s				Send debug output to serial port.
+
+		-se			Terminate debug output to serial port.
+
+		-p				Send debug output to parallel port.
+
+		-pe			Terminate debug output to parallel port.
+
+	If tDB is invoked with no command line arguments, debug internal status
+	is transmitted to tDB, which then outputs the information to the CLI.
+	This allows the user to check debug parameters whenever necessary.
+
+
+	BUGS
+
+	None known.
+
+
+
+	NAME
+
+	Trace
+
+
+	SYNOPSIS
+
+	Trace( level,function,message,arguments )
+
+		int		 level;
+		char		*function,
+					*message;
+		unsigned	 arguments;
+
+
+	DESCRIPTION
+
+	Trace() is found in the C link library trace.lib (two libraries called
+	SAStrace.lib and Manxtrace.lib are included in this distribution).  It
+	should be called from within application code where debugging output is
+	desired.
+
+	Argument descriptions:
+
+		level			Debug level at which to enable output (see tDB and debug
+						above).
+
+		function		Name of function within which Trace() is executing.  In
+						reality this can be any type of char *, but debug provides
+						for interpreting this string as a function name, and its
+						output is geared toward that end.
+
+		message		Output message.  This string can be formatted exactly as
+						the printf() style output mechanism.  For any run-time
+						evaluated variables the standard %s, %c, %d, %f, etc.
+						codes can be embedded.  The last parameter 'arguments'
+						should contain variables whose type matches the % sequences
+						in 'message' string.
+
+		arguments	Variables whose values should be printed in the % codes
+						of 'message' argument.
+
+	Trace() supports a variable number of arguments in exactly the same manner
+	as printf().
+
+	Trace() creates a MsgPort at each invocation.  Were this not the case,
+	the programmer would be forced to include some initialization and shut-
+	down code in the application, which I felt was undesireable.
+
+
+	REFERENCES
+
+	The book "Debugging C" by Robert Ward (Que Publishing Corp.) is an excel-
+	lent introduction to instrumenting C code.  I have used the concepts given
+	in the book when writing Trace().
+
+
+	BUGS
+
+	None known.

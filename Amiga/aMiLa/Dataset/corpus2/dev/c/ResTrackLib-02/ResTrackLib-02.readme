@@ -1,0 +1,25 @@
+Short:        Resource Tracking Library (incomplete yet)
+Author:       digulla@fh-konstanz.de
+Uploader:     digulla fh-konstanz de
+Type:         dev/c
+Architecture: m68k-amigaos
+
+This link library implements resource tracking for Amiga. Look at this:
+
+    void * ptr;
+    FILE * fptr;
+
+    ptr = AllocMem (500, 0);
+
+    /* some stuff */
+
+    Close (ptr);    /* just a typo */
+
+You will not only look memory, but may crash your whole machine. RTL now
+catches these problems and reports the error with filename and line. Just
+have a look at ResTrackLib/test.c which contains several test cases.
+
+This version does support almost all Exec-Stuff (Memory, Devices, etc) and
+Locks (DOS).
+
+Aaron "Optimizer" Digulla

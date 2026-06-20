@@ -1,0 +1,33 @@
+    Name: Lamer Protection v1.10
+  Author: Legionary / OldSk00l Crackers
+Uploader: Legionary / OldSk00l Crackers
+   Email: legionary3@gmail.com
+
+About
+-----
+Lamer Protection v1.10 "WAS" a relative nice tool to keep
+people away from decrunching my tools/intros. The program
+(LP110) works 100% best with Stonecracker v4.10.3, but
+other crunchers like CrunchMania may works, but might be
+unstable. I noticed the bug after some time, but i had
+lost the source and i didn't feel like deprotect it,
+decrunch and resource it to fix the bug, so i just stayed
+with stonecracker.
+
+How it worked
+-------------
+LP110 checks the hunk, move hunkdata 128 bytes down ($ver string)
+plus a few bytes for the extra code. I removes the "S404" sign to
+some garbage, adds 1 or 2 lines of code (i my memory serves me right)
+just to confuse and finally recalculates the hunk size before saving.
+
+I just gave this tool to a VERY FEW people as it was for my own private
+use, but today i give it away as freeware, although there's tools today
+which removes the protection and decrunches it.
+
+I just release it on Aminet as nice piece of the past.
+
+
+Coded back in 1995 by Legionary / OldSk00l Crackers
+
+Have Phun!

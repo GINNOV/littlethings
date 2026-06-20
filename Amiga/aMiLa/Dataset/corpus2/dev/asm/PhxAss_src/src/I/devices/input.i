@@ -1,0 +1,25 @@
+ ifnd DEVICES_INPUT_I
+DEVICES_INPUT_I set 1
+*
+*  devices/input.i
+*  Release 2.0
+*  for PhxAss
+*
+*  © copyright by F.Wille in 1994
+*
+
+ ifnd EXEC_IO_I
+ include "exec/io.i"
+ endc
+
+ DEVINIT
+ DEVCMD IND_ADDHANDLER
+ DEVCMD IND_REMHANDLER
+ DEVCMD IND_WRITEEVENT
+ DEVCMD IND_SETTHRESH
+ DEVCMD IND_SETPERIOD
+ DEVCMD IND_SETMPORT
+ DEVCMD IND_SETMTYPE
+ DEVCMD IND_SETMTRIG
+
+ endc

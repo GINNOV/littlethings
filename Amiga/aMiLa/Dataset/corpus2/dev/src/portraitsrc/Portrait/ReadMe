@@ -1,0 +1,26 @@
+THIS 'README' IS OUT OF DATE. NO INFORMATION IN THIS 'README' FILE
+MAY BE TAKEN AS CORRECT. IS IT FOR EXAMPLE PURPOSES ONLY AND DOES
+NOT FORM ANY PART OF THE DOCUMENTATION FOR THIS PROGRAM OR ITS SOURCES.
+
+Portrait
+
+These files represent  work-in-progress of a 24-bit paint package.
+
+I would be interested to receive feedback on the current state of
+development and any ideas which you feel may be useful to implement.
+I am also looking for people to form part of a development team.
+
+Email: EvieBarker@aol.com <- Try this one first
+             or
+       ajb@msn.com
+
+       Put "Forward to Christopher January" in the subject line
+
+Requirements:
+
+Kickstart 3.0+
+8-bit screens (AGA - may work with Gfx Cards, not tested)
+guigfx.library
+render.library
+
+

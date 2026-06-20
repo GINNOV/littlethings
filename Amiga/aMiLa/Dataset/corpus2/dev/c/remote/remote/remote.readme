@@ -1,0 +1,40 @@
+Short:     shared lib to launch remote apps
+Uploader:  dietmar@tomate.tng.oche.de (Dietmar Eilert)
+Author:    dietmar@tomate.tng.oche.de (Dietmar Eilert)
+Type:      dev/c
+Version:   RA 1.0 (BETA)
+
+AUTHOR
+
+  Dietmar Eilert
+  Mies-v-d-Rohe-Str.31, 52074 Aachen, Germany
+  WWW: http://www.clearlight.com/~dietmar
+  E-Mail: dietmar@tomate.tng.oche.de
+          Dietmar.Eilert@post.rwth-aachen.de
+  Tel: +49-(0)241-81665
+       +49-(0)2525-7776
+  Fax: +49-(0)241-81665
+
+COPYRIGHT
+
+  All executables and the library in this package  (remote.library,  remoteopen,
+  remoteconfig)  are  freely  distributable  public  domain  softare  and may be
+  included with other software. All other files (source  code,  install  script,
+  documentation,  etc.)  are  copyrighted  by the author and may not be included
+  with other software.
+
+DESCRIPTION
+
+  Shared library to open files in remote applications (e.g. a  browser)  without
+  knowledge  of  the  executable  name,  its location on disk or its ARexx port.
+  Example usage: add a go-online button to your application and use this library
+  to  run  the  browser  and to show your homepage. With less than five lines of
+  code.
+
+  The package includes freely distributable library frontends  (shell  commands)
+  for  use  in  installer scripts so that software authors can directly register
+  their programs as default application for appropriate application classes.
+
+INSTALLATION
+
+  Doubleclick at the installer script icon.

@@ -1,0 +1,38 @@
+Short:        An SDL tutorial on Fading for Varthall :)
+Author:       Patrick Kooman, AmigaOS 4.0 compile by Spot / Up Rough
+Uploader:     Varthall / Up Rough <varti02 hotpop com>
+Type:         dev/src
+Version:      3
+Architecture: ppc-amigaos >= 4.0.5
+
+Notes from Spot. Hi Varthall, I found what you need to finish that port.
+Enjoy!
+
+Thanks mate, much appreciated ^^ /Varthall
+
+-----
+
+Fading
+
+This little page is about fading. It describes the technique which slowly lets
+an image appear or disappear from the screen. A split-off from the "appear"
+techique is called a cross-fade. Most people (including myself) like these
+tricks because it looks so cool.
+
+The regular apprauch is that each frame during a fade, all RGB values of the
+pixels get modified by a certain amount, which makes the screen become darker or
+brighter (depends on the fade-option).
+
+There are two disadvantages to this apprauch:
+Pixel-operations are slow, especcialy when done in video memory
+Pixel-operations depend on the bit depth. Each bit-dept (8, 15/16, 24, 32) needs
+it's own implementation
+In this page, I'd like to show another way to make a fade. (I explain it for
+fading out, but for fading in it's just the other way around.) Alphablending. In
+stead of making the screen-surface darker, we go blend a black surface over it.
+If we slowly increase the aplha value from 0 (not visible ) to 255 (fully
+visible), the screen seems to get darker and darker, simulating a fade-out.
+
+When this technique is beeing used on a modern videocard, where alphablending is
+hardware accelerated, you have the fade almost for free, and for each bit-dept.
+:-)

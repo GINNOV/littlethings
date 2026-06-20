@@ -1,0 +1,54 @@
+TYPE
+    _main(R),_exit(R) - Resident Startup and Termination
+
+NAME
+    "resstart" - residentable programs
+
+SYNOPSIS
+    none
+
+DESCRIPTION
+    RESSTART allows your code to be made resident (by the AmigaDOS command),
+    by making your program's use of global variables pure and re-entrant.
+
+    Usually, a program's global data is located in a DATA segment, which
+    is allocated at load time.  Register a4 is then offset 32K from the
+    start of this data segment.
+
+    RESSTART instead allocates a data segment at run-time, and positions a4
+    relative to the start of the new segment.  It follows, that the exit
+    code frees the data segment when the program terminates.
+
+    Requirements
+    ~~~~~~~~~~~~
+        o   Small data model...global data limited to 64K in size.
+        o   Don't munge register a4, because you can't use geta4().
+        o   Don't bypass the exit code.
+
+    Recommendations
+    ~~~~~~~~~~~~~~~
+        o   Don't use the -r4 option when compiling.
+
+    Technical Details
+    ~~~~~~~~~~~~~~~~~
+    RESSTART is limited to small data model, because in this model, accesses
+    to global data is address relative to a4.  In the small data model, global
+    data is restricted to 64K in size.  a4 is offset 32K from the start of
+    global data because the displacement is signed.
+
+    Limitations
+    ~~~~~~~~~~~
+    In general, a co-process calling geta4() (to get the main program's module
+    base to it's global data) won't work.
+
+    In addition, RESSTART should not be used with the following functions:
+
+        o   misc: amisig (signals...trap handler)
+        o   sysio: fexec (load & start another program)
+        o   sysio: int_start,int_end (for installing an interrupt handler)
+
+    DATA & BSS sections must be in same segment.  I'm not sure in what cases
+    this isn't true, but you never know...
+
+SEE ALSO
+    "detach.readme", "detach.man"

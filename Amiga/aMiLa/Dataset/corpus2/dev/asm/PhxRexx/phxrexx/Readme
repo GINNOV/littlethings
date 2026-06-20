@@ -1,0 +1,70 @@
+Short:    PhxAss: Assembler arexx-script for CED
+Uploader: kennecni@idgOnline.no (Kenneth C. Nilsen)
+Author:   kennecni@idgOnline.no (Kenneth C. Nilsen)
+Type:     dev/asm 
+Replaces: dev/asm/PhxRexx*
+Requires: CygnusED 3.5, PhxAss 4.x
+
+
+Copyright (C) 1996 by Digital Surface.
+All rights reserved.
+
+Freeware!
+
+
+This package contain two arexx scripts for CygnusEd and PhxAss.
+
+1) PhxAss.ced
+
+        This script will help you assembler your source with PhxAss from
+        CygnusED.
+
+	Added two new features:
+
+	- Requesters can be turned off (see rexx script)
+	- Save to binary by inserting this line in top of the source:
+
+---
+*>C:MyProg
+
+[source]
+
+---
+	  If this line isn't present it will save to default ram:test.
+	  If requesters are on you will get as before:
+
+
+        - You now get a inputrequester asking you for a binary file name
+          Here you can set default name within the arexx script.
+        - Press return and the script will start 'PhxAss'
+          (change path to where you contain your PhxAss program)
+        - The assemble result will now pop up in another CED window.
+        - If any errors nothing more will happand
+        - If all went ok you will get a question about if you want to start
+          the binary file. If you press return (typed 'y') it will start with
+          a default output console which you can edit in the script.
+          If you press DEL and return (or ype anything else) the script will
+          stop.
+
+        For more information please read the arexx script itself.
+
+2) InsertAsmtext.ced
+
+        This script will format a whole page to assembler dc.b lines.
+
+        USAGE:
+
+        You need to open a new window. Use the whole field to edit your text.
+        When you're done start the script:
+        - The script will now insert <tab>dc.b<tab>" in front of each line
+          and add ",10 at every end of line.
+        - The script does not check " or ' in text. Use ' in your text or
+          change the "" of the beginning and end of line (or the arexx
+          script)
+        - Cut the whole block and quit. Insert the block in your data section
+          or the source. Assemble your source with PhxAss.ced
+
+
+Comments, suggestions, improvments can be sent to:
+
+        kennecni@IDGonline.no

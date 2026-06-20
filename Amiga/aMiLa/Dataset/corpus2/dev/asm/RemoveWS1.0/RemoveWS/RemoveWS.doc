@@ -1,0 +1,85 @@
+============================================================================
+
+                       RemoveWS v1.0 by Imre Szôllôsi
+                   Copyright © 1995 - All Rights Reserved
+
+============================================================================
+
+DISCLAIMER: No responsibility can be taken on the part of the author
+	for any consequences that may occur as a result of using this
+	program. Every part of the program has been thoroughly tested to
+	to its specified limits and any  known specific limitations of the
+	the program are stated within this documentation.
+
+COPYRIGHT: This program is PUBLIC DOMAIN. No kind of contributions
+	are required from anyone who uses this program, but if you want
+	the C language source code for this program, send me one
+	disk with PD, Shareware, Freeware and other freely distributable
+	programs plus return postage.
+
+	This program may not be sold for any profit (a nominal fee for
+	copying is accepted). The program may be freely distributed as long
+	as all files are distributed and unmodified.
+
+	This program may not be used as a part of any commercial packages
+	without my permission. The source code for this program may not be
+	reproduced by disassembling or reversing the development process in
+	any way.
+
+	About this program:
+	~~~~~~~~~~~~~~~~~~
+This program is useful for remove white spaces and comments
+from assembly includes and sources.
+
+	Installation/Requirements:
+	~~~~~~~~~~~~~~~~~~~~~~~~~
+The program can only be started from CLI. Use the run command to free
+the CLI prompt when running this program. To quit press Ctrl-C in the
+CLI window it was started from (if not started with run) or find the
+process number for RemoveWS and use the BREAK cli command to stop it.
+
+	Usage and Examples:
+	~~~~~~~~~~~~~~~~~~
+	RemoveWS infile.i outfile.i
+	-will RemoveWS from infile.i to outfile.i
+
+	RemoveWS infile.i
+	-will RemoveWS from infile.i to stdout (usually console window)
+
+	RemoveWS
+	-will RemoveWS from stdin to stdout ->You can piping. ;-)
+	like UN*X
+
+	PIPING:
+	~~~~~~
+	You can piping on Amigas too with:
+	-csh (you must download from AmiNET)
+
+	dir | removeWS
+	-will RemoveWS from directory list to stdout
+
+	dir | removeWS >outdirlist.txt
+	-will RemoveWS from directory list to outdirlist.txt file
+
+============================================================================
+
+This utility tested on A1200 only,
+with	420Megs Conner Peripherials HardDisk
+	4Megs FastRAM
+but I hope it'll run on any Amiga systems, too.
+
+I tested an 800k textfile, it tooks 42 sec in
+
+============================================================================
+
+ Ideas and bug reports are welcome.
+
+	Szôllôsi Imre
+	H-4130 Derecske
+	Nefelejcs 2/a
+	HUNGARY
+
+	or e-mail:	wolfram@tigris.klte.hu
+	or		szolim@dragon.klte.hu
+
+============================================================================

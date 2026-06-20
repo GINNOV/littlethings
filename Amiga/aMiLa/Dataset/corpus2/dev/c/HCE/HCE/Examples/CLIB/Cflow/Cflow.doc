@@ -1,0 +1,67 @@
+
+ CFLOW.C - A C Function Call Chart Generator
+ 
+  Version 1.00         December 21st, 1986
+ 
+  SYNOPSIS:
+ 
+  CFLOW accepts C source code via the standard input and
+  produces a listing of the hierarchy of C function calls
+  on the standard output. Recursive functions are explicitly
+  identified in the listing. The command line format is:
+ 
+       CFLOW <source_file
+ 
+  The output listing identifies all functions in the source
+  code and the functions they call (#include files are not
+  recognized). If only specific functions are of interest,
+  (e.g. - fcn1, fcn2, fcn3), a listing for these functions
+  only and the functions they call can be specified with the
+  command line:
+ 
+       CFLOW <source_file fcn1 fcn2 fcn3
+ 
+  MODIFICATIONS:
+ 
+    V1.00        - beta test release
+ 
+  Adapted from:  "CALLS.C"
+                 The C Programming Tutor
+                 L.A. Wortman & T.O. Sidebottom
+                 Prentice Hall Publishing
+ 
+  Adaptation by: Ian Ashdown
+                 byHeart Software
+                 620 Ballantree Road
+                 West Vancouver, B.C.
+                 Canada V7S 1W3
+ 
+  USAGE: CFLOW [function_name ...]
+ 
+  DIAGNOSTICS:
+ 
+  Exit status is 0 if no problems encountered, 2 otherwise.
+ 
+  BUGS:
+ 
+  Identifiers are limited to 32 characters in length.
+  Recursive calling depth is set at 25.
+
+ **********************************************************************
+ *                          LAST CHANGES                              *
+ **********************************************************************
+
+ 14 June, 1994 - Jason Petty
+ Now checks if called from CLI or if invalid file, shows usage then exits
+ with an error status. Does not use 'stdin' for input but instead
+ requires user to specify a filename on the command line.
+
+ To clear things up a bit here's the Usage:
+
+             CFLOW <source_filename> <function name 1> <funcn2> <funcn3>
+
+ If called:  CFLOW <source_filename>
+ without function name then the default is to list 'main()'. 
+
+
+ 

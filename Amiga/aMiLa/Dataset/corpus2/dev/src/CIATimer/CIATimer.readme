@@ -1,0 +1,7 @@
+Short:        Example CIA timer routines.
+Author:       Karl Lehenbauer
+Architecture: m68k-amigaos
+Source:       Fish collection
+
+Two versions of ciatimer routines to provide precise timing for
+applications requiring a high-accuracy real-time clock.

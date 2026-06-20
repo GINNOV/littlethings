@@ -1,0 +1,39 @@
+Short: BigNum package (PPC+68k)
+Type: dev/c
+Uploader: info@ar-kleinert.de
+Author: unknown
+
+ *************************************************************************
+
+ Routines to do Big Number Arithmetic. These are multi-precision, unsigned
+ natural numbers (0, 1, 2, ...).
+
+ Released to the public domain by Clifford Rhodes, June 15, 1995, with
+ no guarantees of any sort as to accuracy or fitness of use.
+
+ Each int in the Big Number array will hold a digit up to MODULUS - 1.
+ Choosing 10000 makes testing easy because each digit contains 4 decimal
+ places.
+
+ The Big Number is contained in a structure that has a length, nlen, and
+ an array, n[], of unsigned shorts to hold the 'digits'. The most
+ significant digit of the big number is at n[0]. The least significant
+ digit is at n[nlen - 1];
+
+ *************************************************************************
+
+ The Amiga 68k/PPC version comes with both, makefiles for 68k and PPC,
+ and test programs for both CPUs.
+
+ Note, that the test program doesn't seem to do anything useful as
+ far as user interaction is concerned: it just tests its internal
+ routines and then waits for a key to be pressed.
+
+ (Originally it would have run in an endless loop, but due to a missing
+  kbhit() function it's now just a single loop.)
+
+ If someone has need for large unsigned numbers (or likes to extend
+ this to signed numbers) - well...
+
+ --
+ ARK, 29/May/2000

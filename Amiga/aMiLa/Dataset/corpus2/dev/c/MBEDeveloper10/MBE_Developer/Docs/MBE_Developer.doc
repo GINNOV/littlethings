@@ -1,0 +1,176 @@
+
+
+              MBE - MUI-Brush Expander, Developer Archive
+
+                              Version 1.0
+
+                           Date: August 1994
+
+                        Author: Johannes Beigel
+
+                  Copyright © 1994 by Johannes Beigel
+
+                                GIFTWARE
+
+                           Developer's Guide
+
+
+Introduction
+************
+
+IMPORTANT: If you didn't do so, you should get the user archive  of  MBE
+  called  'MBE_xx' (where  xx is the version). You should install it and
+  read  the  doumenatation.  You  should   have   read   the   developer
+  documentation of MUI, too.
+
+MBE is a nice thing. But it's also a kind of a hack! So you  should  use
+MBE  only  if  you really need it. If you simply want to display a logo,
+you shouldn't use MBE but load an ILBM brush with Bodychunk class.
+
+The developer version of MBE is Giftware. That  means  that  you  should
+send  me  a  gift  if  you  use MBE in your application. I prefer money,
+CDs/LPs/MCs with (Hard-)Rock, Blues or Jazz music or FD  software  about
+MUI,  MagicWB,  C  programming and MIDI :) You should send at least your
+program that uses MBE on disk(s). My address is:
+
+                            Johannes Beigel
+                            Fliederstr. 43a
+                              65396 Walluf
+                                GERMANY
+
+I'm sorry, but I don't have a modem.
+
+NOTE: A nice gift would be translations the C  include  file  into  some
+other  programming  languages.  I only "speak" C (and a little bit C++),
+but it would be nice to have Oberon, M2, Assembler... includes  in  this
+archive.
+
+
+Requirements:
+*************
+
+You must own MBE ==> You must own at least MUI 2.1 ==> You must  own  at
+least OS 2.04.
+
+You have to be a registered user of MUI.
+
+
+Principle
+*********
+
+This is the way MBE works:
+
+- You create an MBE-image with the developer prefs editor of  MBE.  Then
+you save (or 'use') the settings.
+
+- You create an object of MBE class in your application, where you  pass
+the  ID  of your MBE-image. Since MBE class is a subclass of Image class
+(and Area class) you can create a button gadget or something  else  with
+your MBE-image.
+
+- MBE class loads the settings file at object-creation-time and searches
+for  the  given  ID.  If it finds an MBE-image with the ID, it loads the
+imagery and displays it.
+
+I think the principle is very simple and easy to understand. But the big
+advantage for the user is the ability to configure the MBE-images.
+
+
+The Developer Prefs-Editor
+**************************
+
+The developer prefs editor is almost the same program as the user  prefs
+editor of MBE. There are only three differences:
+
+1. The developer prefs editor  has  a  'New'  button  to  create  a  new
+  MBE-image.
+
+2. The developer prefs editor has a string gadget  for  the  ID  of  the
+  MBE-image and not just a text gadget.
+
+3. The of the about requester is different ;-)
+
+
+Giving an ID
+************
+
+Every MBE-image ID is a longword. You  have  to  take  your  MUI  serial
+number  as  upper  word but you mustn't set the highest bit. So you have
+65536 different ID's.
+
+Of course the MBE-image ID must be unique.
+
+
+Example
+-------
+
+Let's think of the serial number 12345.
+
+    1.    : ( 12345 << 16 )         = 0x30390000 = 809041920
+    2.    : ( 12345 << 16 ) | 1     = 0x30390001 = 809041921
+    3.    : ( 12345 << 16 ) | 2     = 0x30390002 = 809041922
+    .
+    .
+    .
+    65536.: ( 12345 << 16 ) | 65535 = 0x3039FFFF = 809107455
+
+
+Creating an MBE-object
+**********************
+
+First you have to include the include file  'MBE_mcc.h'.  Then  you  can
+create an MBE-object using macros.
+
+Examples
+--------
+
+mbe_button = MBEObject,
+  ButtonFrame,
+  MUIA_Background, MUII_ButtonBack,
+  MUIA_InputMode, MUIV_InputMode_RelVerify,
+  MUIA_MBE_ID, MY_ID,
+End,
+
+mbe_button = MBEButton( MY_ID )
+
+mbe_image = MBEImage( MY_ID )
+
+
+Distributing an MBE Application
+*******************************
+
+If you distribute an MBE-Application you either have to include the  MBE
+archive  into  your  archive (Its size is less than 40K.) or the user of
+your application has to get it her/himself.
+
+Of course  you  have  to  include  an  MBE  prefs  file  describing  the
+MBE-images  that  are needed for your application. If it is useful, you
+can include the MUI-brushes for these MBE-images, too.
+
+Don't forget to send me this application on disk :)
+
+
+Copyright
+*********
+
+The MBE developer archive is Giftware and copyright © 1994  by  Johannes
+Beigel. You are allowed to freely distribute this archive as long as you
+distribute the *whole* archive and as long as you don't take  more  than
+DM  5  (or  an  corresponding  amount  in  another standard). This price
+includes teh costs for a disk but not the postage.
+
+You are allowed to distribute the MBE developer  archive  together  with
+non-commercial  software.  If  you  want  to distribute it together with
+commercial software, you have to write me.
+
+The MBE developer archive can be included on PD disks or CD-ROMs.
+
+
+Thanks
+******
+
+I want to thank Stefan Stuntz, all  MUI-programmers,  Martin  Hutteloher
+and all people who draw these nice XEN-style icons, patterns...
+
+Thank you, Martin Schulze, for distributing all my stuff.
+

@@ -1,0 +1,100 @@
+
+Assembler-routine on how to check a 4-player-adapter
+(this was written on the fly but should work)
+
+JoyTest3        clr.l   Right3
+                clr.b   Fire3
+                btst    #2,$bfd000
+                bne.s   NoFire3
+                move.w  #-1,Fire3
+NoFire3         move.b  $bfe101,d0
+                btst    #3,d0
+                bne.s   NoRight3
+                move.b  #-1,Right3
+NoRight3        btst    #2,d0
+                bne.s   NoLeft3
+                move.b  #-1,Left3
+NoLeft3         btst    #1,d0
+                bne.s   NoDown3
+                move.b  #-1,Down3
+NoDown3         btst    #0,d0
+                bne.s   NoUp3
+                move.b  #-1,Up3
+NoUp3           rts
+
+Right3          dc.b    0
+Left3           dc.b    0
+Down3           dc.b    0
+Up3             dc.b    0
+Fire3           dc.b    0
+                even
+
+JoyTest4        clr.l   Right4
+                clr.b   Fire3
+                btst    #0,$bfd000
+                bne.s   NoFire4
+                move.w  #-1,Fire4
+NoFire4         move.b  $bfe101,d0
+                btst    #7,d0
+                bne.s   NoRight4
+                move.b  #-1,Right4
+NoRight4        btst    #6,d0
+                bne.s   NoLeft4
+                move.b  #-1,Left4
+NoLeft4         btst    #5,d0
+                bne.s   NoDown4
+                move.b  #-1,Down4
+NoDown4         btst    #4,d0
+                bne.s   NoUp4
+                move.b  #-1,Up4
+NoUp4           rts
+
+Right4          dc.b    0
+Left4           dc.b    0
+Down4           dc.b    0
+Up4             dc.b    0
+Fire4           dc.b    0
+                even
+
+
+How to build a 4-player adapter for MasterBlaster etc... :
+
+Joystick #3                parallel Port
+-----------                -------------
+
+   pin 1          ->          pin 6
+
+   pin 2          ->          pin 7
+
+   pin 3          ->          pin 8
+
+   pin 4          ->          pin 9
+
+   pin 5                        -
+
+   pin 6          ->          pin 13
+
+   pin 7          ->          +5 V
+
+   pin 8          ->          GND
+
+
+Joystick #4                parallel Port
+-----------                -------------
+
+   pin 1          ->          pin 2
+
+   pin 2          ->          pin 3
+
+   pin 3          ->          pin 4
+
+   pin 4          ->          pin 5
+
+   pin 5                        -
+
+   pin 6          ->          pin 11/12
+
+   pin 7          ->          +5 V
+
+   pin 8          ->          GND
+

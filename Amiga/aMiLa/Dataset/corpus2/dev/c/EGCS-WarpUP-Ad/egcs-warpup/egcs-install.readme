@@ -1,0 +1,216 @@
+1. Download
+
+ftp://ftp.uni-trier.de, Password ftp, username name@
+====================================================
+
+directory pub/amiga/ade/amiga/m68k/alpha/misc
+---------------------------------------------
+
+egcs-1.1b-bin020.tar.gz
+
+directory pub/amiga/ade/amiga/m68k/snapshots/current/bin/misc
+-------------------------------------------------------------
+
+ppctools-bin.tar.gz
+libamiga-bin.tgz
+fd2inline-1.11-bin.tgz
+ixemul-47.3-inc-bin.tgz
+ixemul-47.3-env-bin.tgz
+ixemul-47.3-bin.tgz
+tar-1.12-bin.tgz
+gzip-1.2.4-bin.tgz
+
+http://cs.tu-berlin.de/~paladin
+===============================
+
+libnixppc.lzx
+m68kcc1plus.lzx
+m68kcc1.lzx
+
+Note: You might already have a untar, but note, that some untar
+available on the net do not create subdirectories and just skip
+files if the needed directories are not present !!! Such untar
+utilities are of course of NO USE for the EGCS installation
+(unless you let snoopdos running with them, then create the
+directories, that failed, and then do the untar again). But
+i suggest to use the "official" GNU Tools tar and gzip. They
+do not have such problems !!!
+
+2. Base-Installation:
+
+a) Create a directory egcs and assign ade: to it.
+b) if you do not use the "official" tar, you have to
+   create the following directories (and maybe some more...
+   but well, i recommend using the "official" tar)
+
+   lib/gcc-lib
+   lib/gcc-lib/ppc-amigaos
+   ppc-amigaos
+   lib/gcc-lib/ppc-amigaos/2.7.2.1
+   lib/gcc-lib/ppc-amigaos/2.7.2.1/include/objc
+   ppc-amigaos-include
+   ppc-amigaos/lib
+   ppc-amigaos/lib/ldscripts
+   ppc-amigaos/bin
+   lib/gcc-lib/ppc-amigaos/2.7.2.1/include
+   include/inline
+   include/pragmas
+   include/proto
+
+b) Use:
+
+gzip -d ....
+tar -xf ...
+
+to depack the files. Start with the egcs archive, the order
+of the other files does not matter. Be inside the egcs directory
+when you deüack.
+
+c) Copy the includes of a C-Compiler of your choice to ade:include.
+   Do not overwrite the data in pragmas/pragma/proto/include !!!
+   There GCC/EGCS has it's own ones, present in fd2inline-1.11-bin.tgz !!!
+   Also do not copy stuff like stdio.h (the files in the main-include
+   directory of the other C Compiler...), EGCS provides it's own
+   ones... in ixemul-47.3-inc-bin.tgz and libnixPPC.lzx !!!
+
+   About the includes there will be still a modification at the end
+   of the installation, but until now this should be it...
+
+3. WarpUP Modification
+
+Now depack libnixPPC.lzx while you are in your base (ade:) directory.
+After this copy the specs file which is also inside this archive
+to:
+
+ade:lib/gcc-lib/ppc-amigaos/2.7.2.1
+
+Then depack the other two files of the paladin-site to the same
+directory (ade:lib/gcc-lib/ppc-amigaos/2.7.2.1)
+
+If you want to keep the possibility of doing alternatively programs
+for ppc.library also, instead:
+
+makedir ade:lib/gcc-lib/ppc-amigaos/egcs-2.91.57
+copy the three files (specs, cc1, cc1plus) to this directory now.
+
+Note: I did not check if this second method works like that, i
+overwrote the ppc.library crap... but as it is documented like that
+on the homepage of the EGCS WarpUP Author i guess it works :)
+
+These files mainly install:
+
+- WarpUP Includes/Linker-Libs (WarpUP Libnix)
+- New Compiler versions
+
+4. ENV-Settings
+
+Note: This assumes you overwrote the ppc.library crap like i did...
+if you didn't overwrite it modify the paths in the following like
+appropriate...
+
+do the following:
+
+setenv GCC_EXEC_ppc-amigaos ade:lib/gcc-lib/ppc-amigaos/2.7.2.1/
+setenv COMPILER_PATH ade:lib/gcc-lib/ppc-amigaos/2.7.2.1/
+setenv LIBRARY_PATH ade:lib/
+setenv C_INCLUDE_PATH ade:include/
+setenv CPLUS_INCLUDE_PATH ade:include/
+setenv OBJC_INCLUDE_PATH ade:lib/gcc-lib/ppc-amigaos/2.7.2.1/include/objc
+
+5. OS Specifics
+
+Sadly i noticed that the Includes done by Phase 5 do not work unmodified.
+Also the includes provided to me by the Author of EGCS WarpUP did not work
+either (there was a small bug inside them). Because of this i did my own
+inlines. My inline package is available on Aminet as dev/c/EGCS-WOS-Addon.lha
+You should now download this and install the following Installation structure:
+
+ade:include
+
+Here you put the "normal" Includes, or more likely your tar puts them there
+when you dearchive(d) the EGCS and other archives. You should not touch this
+directory ... with the exception of things like AmiTCP Includes which i also
+would put here.
+
+ade:os-includeppc
+
+Here all your OS-Includes are put, which you take from some C-Compiler you owned
+before. The EGCS Archives also provide new proto-files and new pragmas-files
+for this archive. And now comes the important thing: For the directories
+
+ade:os-includeppc/inline
+ade:os-includeppc/powerup
+ade:os-includeppc/powerpc
+
+EGCS WarpUP needs some "special" files, which are NOT the same like for other
+EGCS versions. These files are found in dev/c/EGCS-WOS-Addon.lha. It should be
+noted, that these files use #ifdef's in a way, that WarpUP and ppc.library versions
+of the compiler can be used parallel (with the exception of the inline-files, but
+here using the "version-number" trick shown above could be used.
+
+Well, now the Compiler is completely installed. It should be noted, that to
+access a OS-Lib you should include "proto/exec.h" (for exec.library, as an
+example... for other Libs of course other include-files).
+
+6. Other useful stuff:
+
+You should consider to download:
+
+ftp://ftp.uni-trier.de, Password ftp, username name@
+====================================================
+
+directory pub/amiga/ade/amiga/m68k/snapshots/current/bin/misc
+-------------------------------------------------------------
+
+autoconf-1.12-bin.tgz
+automake-1.2f-bin.tgz
+make-3.76.1-bin.tgz
+
+Rather useful stuff for users of the EGCS Compiler !!!
+
+7. Using EGCS WarpUP
+
+Compiling is done like:
+
+(I recommend doing a "path ade:bin add", BTW !!!)
+
+bin/ppc-amigaos-gcc -warpup ram:test.c
+
+Do never forget the -warpup, else you will get a ppc.library
+program (if you installed both parallel) or simply GARBAGE
+(if you overwrite it).
+
+To start the program you need the LoadElfWOS Tool, which you
+can download from the paladin-site.
+
+EGCS WarpUP uses the special "WarpUP ELF Format"... info about
+this format can be requested at the author of the paladin-page.
+He used this format as then EGCS was easier to be ported to
+WarpUP. There are no problems in running WarpUP ELF and normal
+WarpUP programs parallel. They both use the WarpUP Libs...
+
+It is recommended to download loadelfwos.lzx from the Paladin site,
+which includes since recently a utility to convert WarpUP-ELF
+to Amiga-Hunk-Format, so that LoadElfWOS is no longer needed...
+
+According to paladin@cs.tu-berlin.de you can also use WarpUP
+PPC Native Shared libs like Warp3D and rtgmaster.library, but
+you have to write your own includes for them, the standard
+includes are not enough.
+
+You cannot use ixemulPPC, neither can you use Linkerlibs from
+StormC PPC/vbcc-WarpOS. Other linker-libs from EGCS which are
+compiled for PPC and do *not* contain ppc.library specific
+things should be able to use, though.
+
+If there are still questions mail me at MagicSN@Birdland.es.bawue.de !!!
+
+Steffen Haeuser
+
+
+
+
+
+
+
+

@@ -1,0 +1,286 @@
+
+; Window and gadget defs for a SuperBitMap window ... Hello Layers!!!
+
+MyWindow	dc.w	150,55		window XY origin
+		dc.w	165,94		window width and height
+		dc.b	0,1		detail and block pens
+		dc.l	NEWSIZE+GADGETDOWN+GADGETUP+CLOSEWINDOW+INTUITICKS   IDCMP
+		dc.l	WINDOWSIZING+WINDOWDRAG+WINDOWDEPTH+WINDOWCLOSE+SUPER_BITMAP+GIMMEZEROZERO+NOCAREREFRESH	other window flags
+		dc.l	UpDownGadg	first gadget in gadget list
+		dc.l	0		custom CHECKMARK imagery
+		dc.l	.WindowName	window title
+		dc.l	0		custom screen pointer
+		dc.l	0		custom bitmap
+		dc.w	90,40		minimum width and height
+		dc.w	800,600		maximum width and height
+		dc.w	WBENCHSCREEN	destination screen type
+
+.WindowName	dc.b	"Yo, Baby! We've gone SuperBitMap",0
+		even
+
+UpDownGadg	dc.l	LeftRightGadg	next gadget
+		dc.w	-15,10		origin XY of hit box
+		dc.w	16,-18		hit box width and height
+		dc.w	GRELRIGHT+GRELHEIGHT	gadget flags
+		dc.w	RELVERIFY+GADGIMMEDIATE+RIGHTBORDER  activation flags
+		dc.w	PROPGADGET+GZZGADGET	gadget type flags
+		dc.l	Image1		gadget border or image to be rendered
+		dc.l	0		alternate imagery for selection
+		dc.l	0		first IntuiText structure
+		dc.l	0		gadget mutual-exclude long word
+		dc.l	Gadget1SInfo	SpecialInfo structure
+		dc.w	0		user-definable data
+		dc.l	DoUpDown	pointer to user-definable data
+
+Gadget1SInfo	dc.w	AUTOKNOB+FREEVERT	PROPINFO flags
+		dc.w	0,0		horizontal and vertical pot values
+		dc.w	-1,-1		horizontal and vertical body values
+		dc.w	0,0,0,0,0,0	(filled in by Intuition)
+
+Image1		dc.w	0,0		XY origin
+		dc.w	0,0		Image width and height in pixels
+		dc.w	0		number of bitplanes in Image
+		dc.l	0		pointer to ImageData
+		dc.b	$0000,$0000	PlanePick and PlaneOnOff
+		dc.l	0		next Image structure
+
+LeftRightGadg	dc.l	0		next gadget
+		dc.w	0,-8		origin XY of hit box
+		dc.w	-14,9		hit box width and height
+		dc.w	GRELBOTTOM+GRELWIDTH	gadget flags
+		dc.w	RELVERIFY+GADGIMMEDIATE+BOTTOMBORDER	activation flags
+		dc.w	PROPGADGET+GZZGADGET	gadget type flags
+		dc.l	Image2		gadget border or image to be rendered
+		dc.l	0		alternate imagery for selection
+		dc.l	0		first IntuiText structure
+		dc.l	0		gadget mutual-exclude long word
+		dc.l	Gadget2SInfo	SpecialInfo structure
+		dc.w	1		user-definable data
+		dc.l	DoLeftRight	pointer to user-definable data
+
+Gadget2SInfo	dc.w	AUTOKNOB+FREEHORIZ	PROPINFO flags
+		dc.w	0,0		horizontal and vertical pot values
+		dc.w	-1,-1		horizontal and vertical body values
+		dc.w	0,0,0,0,0,0	(filled in by Intuition)
+
+Image2		dc.w	0,0		XY origin
+		dc.w	0,0		Image width and height in pixels
+		dc.w	0		number of bitplanes in Image
+		dc.l	0		pointer to ImageData
+		dc.b	$0000,$0000	PlanePick and PlaneOnOff
+		dc.l	0		next Image structure
+
+RayImage	dc.w	0,0		;XY origin relative to container TopLeft
+		dc.w	156,81		;Image width and height in pixels
+		dc.w	2		;number of bitplanes in Image
+		dc.l	RayData		;pointer to ImageData
+		dc.b	$0003,$0000	;PlanePick and PlaneOnOff
+		dc.l	0		;next Image structure
+
+		section gfx,data_c
+
+RayData	dc.w	$0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000
+	dc.w	$0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000
+	dc.w	$0000,$0000,$0000,$0000,$000E,$0006,$0300,$C7FF
+	dc.w	$C038,$00F0,$060C,$303F,$FE0F,$F800,$003E,$0003
+	dc.w	$0601,$C700,$00F8,$01E0,$0E1C,$3878,$001E,$0000
+	dc.w	$0030,$0007,$8F01,$C400,$00C0,$0080,$0618,$1860
+	dc.w	$0018,$0000,$0008,$4007,$0E01,$C400,$4021,$0020
+	dc.w	$0618,$1801,$801C,$1800,$000C,$6007,$0E01,$C400
+	dc.w	$0031,$8031,$0618,$1801,$800C,$0000,$001C,$300E
+	dc.w	$0001,$C400,$0070,$C031,$8618,$1801,$8006,$0000
+	dc.w	$0018,$300C,$2081,$C401,$E060,$C030,$C630,$0C01
+	dc.w	$8003,$0000,$0038,$381C,$60C1,$C400,$C0E0,$E030
+	dc.w	$6630,$0C01,$8001,$8000,$0030,$1818,$70C1,$C600
+	dc.w	$C0C0,$6030,$7230,$0C01,$8000,$C000,$0079,$F838
+	dc.w	$20C1,$C600,$C1E7,$E030,$3020,$0601,$8000,$6000
+	dc.w	$0070,$0030,$0061,$C700,$C1C0,$0030,$1820,$0601
+	dc.w	$8000,$3000,$00E0,$0030,$0061,$C300,$C380,$0030
+	dc.w	$1C20,$0601,$8000,$1800,$00C0,$0C70,$0071,$C180
+	dc.w	$C300,$3030,$0C20,$0601,$8000,$0C00,$01C0,$0E60
+	dc.w	$0031,$C0C3,$C700,$3860,$0E33,$FE01,$8000,$0C00
+	dc.w	$0180,$0630,$0071,$C020,$0600,$1860,$0630,$0001
+	dc.w	$8000,$0C00,$0000,$0000,$0000,$0000,$0000,$00E0
+	dc.w	$0000,$0001,$8000,$1C00,$0000,$0000,$0000,$0000
+	dc.w	$0000,$00C0,$0000,$0001,$C000,$3800,$0000,$0000
+	dc.w	$0000,$0000,$0000,$0000,$0000,$0001,$8031,$F000
+	dc.w	$0000,$0000,$0000,$0000,$0000,$C000,$0000,$0000
+	dc.w	$0039,$C000,$0000,$0000,$0000,$0000,$000F,$FC00
+	dc.w	$0000,$0000,$0018,$0000,$0000,$0000,$0000,$0000
+	dc.w	$003F,$FF00,$0000,$0000,$0000,$0000,$0000,$0000
+	dc.w	$0000,$0000,$00FF,$FFC0,$0000,$0000,$0000,$0000
+	dc.w	$0000,$0000,$0000,$0000,$03FF,$FFF0,$0000,$0000
+	dc.w	$0000,$0000,$0000,$0000,$0000,$0000,$0FFF,$FFFC
+	dc.w	$0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000
+	dc.w	$3FFF,$FFFF,$0000,$0000,$0000,$0000,$0000,$0000
+	dc.w	$0000,$0000,$FFFF,$FFFF,$C000,$0000,$0000,$0000
+	dc.w	$0000,$0000,$0000,$0003,$FFFF,$FFFF,$F000,$0000
+	dc.w	$0000,$0000,$0000,$0000,$0000,$000F,$FFFF,$F3FF
+	dc.w	$FC00,$0000,$0000,$0000,$0000,$0000,$0000,$003F
+	dc.w	$FFFF,$C0F3,$FF00,$0000,$0000,$0000,$0000,$0000
+	dc.w	$0000,$00FF,$FFCF,$F3F0,$FFC0,$0000,$0000,$0000
+	dc.w	$0000,$0000,$0000,$03FF,$CF03,$FFFC,$3FF0,$0000
+	dc.w	$0000,$0000,$0000,$0000,$0000,$0FFF,$0FCF,$FFFF
+	dc.w	$0FFC,$0000,$0000,$0000,$0000,$0000,$0000,$3FFC
+	dc.w	$3FFF,$FFFF,$C3FF,$0000,$0000,$0000,$0000,$0000
+	dc.w	$0000,$FFF0,$FFFF,$3FFF,$F0FF,$C000,$0000,$0000
+	dc.w	$0000,$0000,$0003,$FFC0,$FFFC,$0FFF,$FC3F,$F000
+	dc.w	$0000,$0000,$0000,$0000,$000F,$FF03,$FFF0,$03FF
+	dc.w	$FC0F,$FC00,$0000,$0000,$0000,$0000,$0303,$FC03
+	dc.w	$FFC0,$00FF,$FC03,$FC00,$0000,$0000,$0000,$0000
+	dc.w	$0FFF,$F00F,$FF00,$000F,$FC00,$F00C,$0000,$0000
+	dc.w	$0000,$0000,$FC00,$000F,$FC00,$0000,$FC00,$00F0
+	dc.w	$3000,$0000,$0000,$0000,$03FF,$000F,$C003,$FC00
+	dc.w	$0000,$0C0C,$C000,$0000,$0000,$000C,$0FC0,$C003
+	dc.w	$00C0,$0030,$0000,$303F,$C000,$0000,$0000,$000F
+	dc.w	$CFC0,$0000,$00FF,$FFF0,$0000,$03FF,$FC00,$0000
+	dc.w	$0000,$003F,$FFC0,$0000,$003F,$33C0,$0000,$0C3F
+	dc.w	$FFC0,$0000,$0000,$00FF,$FFC0,$0000,$003F,$FFC0
+	dc.w	$0000,$300F,$FFF0,$0000,$0000,$03FF,$FF00,$0000
+	dc.w	$000F,$03C0,$0000,$0C0F,$FFF0,$0000,$0000,$03FF
+	dc.w	$FF3C,$0000,$0003,$FF00,$0000,$3F03,$FFFC,$0000
+	dc.w	$0000,$03FF,$FFFF,$0000,$0003,$CF00,$0000,$3FF3
+	dc.w	$FFFF,$0000,$0000,$00FF,$F3FF,$0000,$0000,$CC00
+	dc.w	$0000,$FFF0,$FFFF,$0000,$0000,$003F,$00FF,$C000
+	dc.w	$0000,$FC00,$0000,$FFC0,$3FFF,$0000,$0000,$0000
+	dc.w	$003F,$F000,$0000,$0000,$0003,$FF00,$0FFC,$0000
+	dc.w	$0000,$0000,$003F,$F000,$0000,$0000,$000F,$FF00
+	dc.w	$00F0,$0000,$0000,$0000,$000F,$FC00,$0000,$0000
+	dc.w	$003F,$FC00,$0000,$0000,$0000,$0000,$000F,$FFFF
+	dc.w	$FFF0,$00FF,$F0FF,$FC00,$0000,$0000,$0000,$0000
+	dc.w	$03FF,$FFFF,$FFFC,$00FF,$FFFF,$F000,$0000,$0000
+	dc.w	$0000,$0000,$FFFF,$FFFF,$FFFF,$FFFF,$FFFF,$FF00
+	dc.w	$0000,$0000,$0000,$000F,$FFFF,$FFFF,$FFFF,$FFFF
+	dc.w	$FFFF,$FFF0,$0000,$0000,$0000,$003F,$FFFF,$FFFF
+	dc.w	$FFFF,$FFFF,$FFFF,$FFFF,$0000,$0000,$0000,$003F
+	dc.w	$FFFF,$FFFF,$FFFF,$FFFF,$FFFF,$FFFF,$F000,$0000
+	dc.w	$0000,$0000,$0FFF,$FFFF,$FFFC,$00FF,$FFFF,$FFFF
+	dc.w	$FC00,$0000,$0000,$0000,$0FFC,$FFFF,$FFF0,$003F
+	dc.w	$FFFF,$FFFF,$FF00,$0000,$0000,$0000,$0FFC,$0003
+	dc.w	$FFF0,$003F,$FFFF,$FFFF,$F000,$0000,$0000,$0000
+	dc.w	$03FC,$0003,$FFF0,$00FF,$FC00,$0FFF,$0000,$0000
+	dc.w	$0000,$0000,$03FF,$0003,$FFF0,$00FF,$F000,$0FFF
+	dc.w	$0000,$0000,$0000,$0000,$03FF,$0000,$FFF0,$00FF
+	dc.w	$F000,$3FFF,$0000,$0000,$0000,$0000,$00FF,$0000
+	dc.w	$FFF0,$00FF,$F000,$3FFC,$0000,$0000,$0000,$0000
+	dc.w	$00FF,$C000,$FFF0,$00FF,$F000,$3FFC,$0000,$0000
+	dc.w	$0000,$0000,$003F,$C000,$FFF0,$00FF,$F000,$FFF0
+	dc.w	$0000,$0000,$0000,$0000,$003F,$F000,$3FF0,$00FF
+	dc.w	$C003,$FFC0,$0000,$0000,$0000,$0000,$000F,$F000
+	dc.w	$3FFC,$00FF,$C003,$FF00,$0000,$0000,$0000,$0000
+	dc.w	$000F,$FC00,$3FFC,$00FF,$C00F,$FC00,$0000,$0000
+	dc.w	$0000,$0000,$0003,$FC00,$0FFC,$00FF,$C03F,$F000
+	dc.w	$0000,$0000,$0000,$0000,$0000,$FF00,$03FC,$00FF
+	dc.w	$00FF,$C000,$0000,$0000,$0000,$0000,$0000,$3FC0
+	dc.w	$03FC,$03FF,$03FF,$0000,$0000,$0000,$0000,$0000
+	dc.w	$0000,$0FC0,$00FF,$03FC,$0FFC,$0000,$0000,$0000
+	dc.w	$0000,$0000,$0000,$00F0,$003F,$03F0,$3FC0,$0000
+	dc.w	$0000,$0000,$0000,$0000,$0000,$00FC,$003F,$03F0
+	dc.w	$FF00,$0000,$0000,$0000,$0000,$0000,$0000,$0003
+	dc.w	$C00F,$C3C3,$F000,$0000,$0000,$0000,$0000,$0000
+	dc.w	$0000,$0000,$0003,$CF0F,$C000,$0000,$0000,$0000
+	dc.w	$0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000
+	dc.w	$0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000
+	dc.w	$0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000
+	dc.w	$0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000
+	dc.w	$0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000
+	dc.w	$0001,$C000,$C060,$18FF,$F807,$001E,$00C1,$8607
+	dc.w	$FFC1,$FF00,$0007,$F000,$60C0,$39FF,$FC1F,$C03F
+	dc.w	$81C3,$870F,$FFE3,$FF80,$0006,$3800,$F1E0,$3980
+	dc.w	$1C18,$E017,$C0C3,$030C,$3063,$0780,$0001,$8C00
+	dc.w	$F1E0,$3980,$0806,$3006,$E0C3,$0300,$3003,$8300
+	dc.w	$0001,$8C00,$FBE0,$3980,$0006,$3006,$70C3,$0300
+	dc.w	$3001,$C000,$0003,$8601,$DB70,$3980,$000E,$1806
+	dc.w	$38C3,$0300,$3000,$E000,$0003,$0601,$9F30,$3980
+	dc.w	$3C0C,$1806,$18C6,$0180,$3000,$7000,$0007,$0703
+	dc.w	$8E38,$3980,$1C1C,$1C06,$0CC6,$0180,$3000,$3800
+	dc.w	$0006,$0303,$0E18,$39C0,$1818,$0C06,$0EC6,$0180
+	dc.w	$3000,$1C00,$000F,$FF07,$0418,$38C0,$183F,$FC06
+	dc.w	$06CC,$00C0,$3000,$0E00,$000F,$FF86,$000C,$38E0
+	dc.w	$183F,$FE06,$03CC,$00C0,$3000,$0700,$001C,$0186
+	dc.w	$000C,$3870,$1870,$0606,$03CC,$00C0,$3000,$0380
+	dc.w	$0018,$018E,$000E,$383C,$1860,$0606,$01CC,$00C0
+	dc.w	$3000,$0180,$0038,$01CC,$0006,$381F,$F8E0,$070C
+	dc.w	$01CF,$FFC0,$3000,$0180,$0030,$00CE,$000E,$3807
+	dc.w	$F0C0,$030C,$00C7,$FF80,$3000,$0180,$0000,$0000
+	dc.w	$0000,$0000,$0000,$001C,$0000,$0000,$3000,$0380
+	dc.w	$0000,$0000,$0000,$0000,$0000,$0018,$0000,$0000
+	dc.w	$3800,$0700,$0000,$0000,$0000,$0000,$0000,$0000
+	dc.w	$0000,$0000,$3006,$3E00,$0000,$0000,$0000,$0000
+	dc.w	$0000,$0000,$0000,$0000,$0007,$F800,$0000,$0000
+	dc.w	$0000,$0000,$0000,$0000,$0000,$0000,$0003,$C000
+	dc.w	$0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000
+	dc.w	$0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000
+	dc.w	$0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000
+	dc.w	$0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000
+	dc.w	$0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000
+	dc.w	$0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000
+	dc.w	$0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000
+	dc.w	$0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000
+	dc.w	$0000,$0C00,$0000,$0000,$0000,$0000,$0000,$0000
+	dc.w	$0000,$0000,$0000,$3300,$0000,$0000,$0000,$0000
+	dc.w	$0000,$0000,$0000,$0000,$0030,$0C00,$0000,$0000
+	dc.w	$0000,$0000,$0000,$0000,$0000,$0000,$00CC,$0000
+	dc.w	$0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000
+	dc.w	$0030,$0000,$0000,$0000,$0000,$0000,$0000,$0000
+	dc.w	$0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000
+	dc.w	$0000,$0000,$0000,$0000,$0000,$C000,$0000,$0000
+	dc.w	$0000,$0000,$0000,$0000,$00F0,$0000,$0003,$F000
+	dc.w	$0000,$0000,$0000,$0000,$0000,$0000,$03F0,$0000
+	dc.w	$000F,$FC00,$0000,$0000,$0000,$0000,$0000,$0000
+	dc.w	$3CFC,$0000,$003F,$FF00,$0000,$03FF,$0000,$0000
+	dc.w	$0000,$0000,$F000,$0000,$00FF,$FFF0,$0000,$0FF3
+	dc.w	$F000,$0000,$0000,$0003,$03FF,$C000,$03FF,$FFFF
+	dc.w	$0000,$3F0F,$CC00,$0000,$0000,$000F,$FC00,$F000
+	dc.w	$3FFC,$03FF,$F000,$33F3,$3F00,$0000,$0000,$0003
+	dc.w	$F03F,$0000,$FF3F,$FFCF,$F000,$0FC0,$3F00,$0000
+	dc.w	$0000,$0000,$303F,$C003,$FF00,$000F,$F000,$3C00
+	dc.w	$0300,$0000,$0000,$0000,$003F,$C000,$FFC0,$CC3F
+	dc.w	$C000,$33C0,$0000,$0000,$0000,$0000,$003F,$0000
+	dc.w	$FFC0,$003F,$C000,$0FF0,$0000,$0000,$0000,$0000
+	dc.w	$00FC,$0000,$3FF0,$FC3F,$0000,$03F0,$0000,$0000
+	dc.w	$0000,$0000,$00C0,$0000,$0FFC,$00FC,$0000,$00F0
+	dc.w	$0000,$0000,$0000,$0000,$0000,$0000,$0FFC,$30FC
+	dc.w	$0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000
+	dc.w	$03FF,$33F0,$0000,$0000,$0000,$0000,$0000,$0000
+	dc.w	$0000,$0000,$03FF,$03F0,$0000,$0000,$0000,$0000
+	dc.w	$0000,$0000,$0000,$0000,$00FF,$FFF0,$0000,$0000
+	dc.w	$0000,$0000,$0000,$0000,$0000,$0000,$003F,$FFC0
+	dc.w	$0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000
+	dc.w	$003F,$FFC0,$0000,$0000,$0000,$0000,$0000,$0000
+	dc.w	$0000,$0000,$000F,$FF00,$0000,$0000,$0000,$0000
+	dc.w	$0000,$0000,$0000,$0000,$0003,$FF00,$0000,$0000
+	dc.w	$0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000
+	dc.w	$0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000
+	dc.w	$0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000
+	dc.w	$0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000
+	dc.w	$0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000
+	dc.w	$0000,$0000,$0000,$003F,$F000,$0000,$0003,$FF00
+	dc.w	$0000,$0000,$0000,$0000,$0000,$000F,$F003,$0000
+	dc.w	$000F,$FFC0,$0000,$0000,$0000,$0000,$0000,$000F
+	dc.w	$F003,$FFFC,$000F,$FFC0,$0000,$0000,$0F00,$0000
+	dc.w	$0000,$000F,$FC03,$FFFC,$000F,$FF00,$03FF,$F000
+	dc.w	$FF00,$0000,$0000,$000F,$FC00,$FFFC,$000F,$FF00
+	dc.w	$0FFF,$F000,$FF00,$0000,$0000,$0003,$FC00,$FFFF
+	dc.w	$000F,$FF00,$0FFF,$C000,$FF00,$0000,$0000,$0003
+	dc.w	$FF00,$FFFF,$000F,$FF00,$0FFF,$C003,$FF00,$0000
+	dc.w	$0000,$0003,$FF00,$3FFF,$000F,$FF00,$0FFF,$C003
+	dc.w	$FC00,$0000,$0000,$0000,$FFC0,$3FFF,$000F,$FF00
+	dc.w	$0FFF,$000F,$FC00,$0000,$0000,$0000,$3FC0,$0FFF
+	dc.w	$C00F,$FF00,$3FFC,$003F,$F000,$0000,$0000,$0000
+	dc.w	$3FF0,$0FFF,$C003,$FF00,$3FFC,$00FF,$C000,$0000
+	dc.w	$0000,$0000,$0FF0,$03FF,$C003,$FF00,$3FF0,$03FF
+	dc.w	$0000,$0000,$0000,$0000,$03FC,$03FF,$F003,$FF00
+	dc.w	$3FC0,$0FFC,$0000,$0000,$0000,$0000,$00FF,$00FF
+	dc.w	$FC03,$FF00,$FF00,$3FF0,$0000,$0000,$0000,$0000
+	dc.w	$000F,$C03F,$FC03,$FC00,$FC00,$FFC0,$0000,$0000
+	dc.w	$0000,$0000,$0000,$F03F,$FF00,$FC03,$F003,$FC00
+	dc.w	$0000,$0000,$0000,$0000,$0000,$0F0F,$FFC0,$FC0F
+	dc.w	$C03F,$F000,$0000,$0000,$0000,$0000,$0000,$0003
+	dc.w	$FFC0,$FC0F,$00FF,$0000,$0000,$0000,$0000,$0000
+	dc.w	$0000,$0000,$3FF0,$3C3C,$0FF0,$0000,$0000,$0000
+	dc.w	$0000,$0000,$0000,$0000,$003C,$30F0,$3F00,$0000
+	dc.w	$0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000
+	dc.w	$0000,$0000,$0000,$0000
+
+		section		Skeleton,code

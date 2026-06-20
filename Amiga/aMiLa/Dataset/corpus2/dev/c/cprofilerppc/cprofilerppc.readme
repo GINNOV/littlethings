@@ -1,0 +1,26 @@
+Short:     Generate a Call-diagram for a program's source code.
+Uploader:  jimbot@frontiernet.net (Jim Steichen)
+Author:    jimbot@frontiernet.net (Jim Steichen)
+Requires:  PowerPC, AmigaOS4 or 68020+, V3.5+ Amiga OS
+Type:      dev/c
+Version:   2.0
+
+CProfilerPPC (c) 2005 by J. T. Steichen is a GUI program for generating
+a call diagram from a program's source code files.
+
+Please consider placing some of your source code in OS4Depot.net, if 
+you're a programmer.
+
+   HISTORY
+       2.0 - Added AmigaOS4 & PPC (gcc) support.
+       1.2 - CProfiler is now working correctly!
+
+   NOTES
+   
+   Originally written using GadToolsBox V37.300 & SAS-C V6.58 on an 
+   A4000T (OS3.5).  Newer version compiled with gcc V2.95 on an
+   AmigaOne PowerPC with AmigaOS4!
+   
+   Written by Jim Steichen (email:  jimbot@frontiernet.net)
+   
+/* -------------- END of CProfilerPPC.readme file! ----------------- */

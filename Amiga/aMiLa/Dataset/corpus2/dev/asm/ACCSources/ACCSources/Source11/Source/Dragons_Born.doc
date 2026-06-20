@@ -1,0 +1,269 @@
+								10.3.91
+			DRAGONS BORN DOCUMENTS
+		      -------------------------
+
+ I advise you to view the source while looking at this document!!
+ This is the 4th re-write of these documents (its becoming very irritating)
+There are a few problems with the demo. To get round the majority of these
+problems make sure the demo is the first thing you run. 512k owners will
+need to use magic to get the demo to work on there machines! I expect
+those reading this doc to be competent at machine code! (That means I cant
+read it!!)
+
+ IN THE BEGGINING
+------------------
+There was man & a demo named Dragons Born! 
+	You will see the very first piece of code is the include for 
+hardware.i. I have not used any other includes & so, according to Mark,
+ my code is very hard to read & only those of you that speak Japanees will 
+be able to understand it! So will all you English people get lost!!
+	Right heres how my start-up works. a5 is used as my hardware base
+I fobid (why am I using I? Surely I'm not the program?) multi-tasking &
+then load the grafix library.
+
+ DO THE INTRO
+--------------
+Many hours went into comming up with a better idea. But none worked!
+This is the standard bitplane set-up. The screen is the same size the
+screen. The sample player is not mine & so I cant document it (or wont!)
+But basically what happens is the intro screen is shown. The sample is played
+& then the progy gets underway!
+
+ SET_UP THE PLAYFIELD
+---------------------
+I'm so bored! Again the bitplanes are loaded. Here 5 bitplane ptrs
+are loaded. The size of each bitplane is 40*163 & so to get to each
+bitplane 40*163 is added to d0. The more astute of you may say,"Hey,
+the top half of the screen is blank! Why use so much memory when 1
+bitplane would do the job?" Simple I'm going to blit bobs onto this part
+of the screen, each bob is 5 bitplanes deep! And if you dont already know
+Bobs are actualy built into the background!
+	You should know be looking at the second logo. "How come there are
+2 screens on at once?" I hear you say. Normally you only have 1 screen.
+However skillfull (giving myself a bit of an ego boost here!) programing
+of the copper alows us (me at least!) to split the screen up into many
+different screens (or in this case 2!!) See the 'COPPERLIST' to see how
+it works!! Notice that each bitplanr is 40*93. Using very complex maths
+we can see that that height of the first screen (163) added to the height
+of the second screen (93) gives us a total of 256 (the total height of the
+screen, without overscan!).
+
+ THE SPRITE POINTERS
+---------------------
+The first sprite pointer is for the star field. Some of you may be saying
+(How do I know what you are saying all the time? MAGIC my friend!!), "How
+do you make all those sprites with only one sprite channel?" Its done by
+re-using the sprite channel. This means that instead of ending the sprite
+data with two null words you enter the next set of control words for the next
+sprite. However there must be at least 1 horizontal line between the sprites
+using the same channel (for more info see Dave Edwards reference material
+on ACC6 & look at the sprite data structure in this program!). The 2nd, 
+3rd and 4th sprite channels are loaded with basic sprites, ACC to be exact!
+Sprite channels 5,6,7 and 8 all go into one sprite. The reason so many
+sprite channels are being used for Marvin is becuase marvin is a 32bit wide,
+16 colour sprite. As you should know a sprite can only be a maximum of 16
+pixels wide. To get around this problem you place to sprites next to each
+other & get the illusion of 1 big sprite! To get the 16 colours (15 plus
+tansparent) instead of 3 (plus transparent) you overlap 2 sprites & set
+a bit called attach in the second sprite contol word. So 2 sprites have
+exactly the same sprite posistion, the second sprite has the attach bit
+set. Note sprites of the following combination can be attached 0 & 1,
+2 & 3, 4 & 5, 6 & 7. You cannot use any other combinations. Again to see
+how this works see the data structure & ACC 6.
+
+ THE INTERRUPTS
+----------------
+After loading the copper with my main copper list , enabling sprites &
+starting the music off the VBL interrupt is loaded with my interrupt.
+The VBL interrupt occurs every 50th of a second & (surprise, suprise)
+every vertical blank. This means that everything inside this interrupt
+is smoothly updated on the screen. If you dont understand VBL interrupts
+see Mike Cross tutorial on (ACC4 or ACC3).
+	Notice at the end of the interrupt the memory location 'VBL' is
+loaded with a 1. The reason for this is explained in a few lines!!
+
+ MAIN
+------
+At the address continue the value 200 is loaded into d0. D0 is used by the
+program as a pause counter for logos at the bottom of the screen. So
+the pause is for 200 50ths of a second or 4 seconds.
+	The main program has a main loop! this loop detects for the VBL.
+Note that because of my long interrupt routine (I think) the usual vbl
+waits where not working. So what I did was to get the progy to inset a 1
+in memory 'vbl' whenever a vbl interrupt occurs & the result is quite good.
+When the progy finds a 1 in 'VBL' it continues & puts a 0 in vbl for the
+next loop.
+	After branching to the sub-routines the progy tests for the LMB.
+If it is pressed it branches to clean-up. Otherwise it continues in a loop.
+
+ CHANGE-PICCY?
+---------------
+	After checking d0 to see if the pause for the curreny piccy is over
+the cprogy then either deletes the pause & returns to the main routine or
+checks to see which piccy is currently being shown (d1 is the picture counter
+& each piccy has its own ID, Raistlin = 0  Notman = 1  Caramon = 2 & 
+Marvin = 3) the progy then branches to the relevant piccy swap.
+
+ THE PICCY FLICK
+-----------------
+D7 is used to store the address of the piccy to show. The bitplane ptrs r
+loaded accordingly & the correct colours are then entered into the colour
+registers. The picture counter is updated & the program returns to the main
+routine.
+	Its the same for all the other piccys! simple eh? Can anyone tell
+me how I could  have faded the pictures?
+
+ THE BLITTER OBJECTS
+---------------------
+The blitter was unusually good for this demo! It didnt play-up ot anything.
+Must have been my threat of starving it of electricity.
+	Just to confuse the first thing that happens is a jump to the bob
+scroll routine!
+	Next the data for the bob is saved into registers & then a jump
+is made to the blitter
+(THE ACTUAL BLIT)
+Here the previously saved data is inserted into the relevant blitter 
+registers. Note that the same routine has been used for each blit! All
+that this requires is carefull planning (which I didn't do, I flooked
+this part!)
+
+THE SCROLL BOB ROUTINE
+-----------------------
+Each bob has its own scroll flag & counter. To get the movement all I did
+was to add an offset to the destination. To see if the bob is at the top
+or bottom of its path the destination counter for that bob is compared
+to the appropriate number. Depending on this result the scroll flag is
+then either changer or left alone. To move the bob up or down a pixel
+you must add (to go down or subtract to go up)40 to its destination register.
+This is beacuse there are 40 bytes per line. If you change the width of the
+bitplane then this value will change.
+	This routine is used for all the bobs. Sorry I havent documented 
+this part very well but the source for the blitter is straight forward!
+
+ SCROLL THE STARS
+------------------
+Before I go any further I'll have to tell you this routine is borrowed
+form Mark Femans!
+	To get the 3 distances of stars the stars are all scrolled at 
+different speeds (they are also coloured differecntly too). The 3 
+different speeds are 1,2,3. That basicaly it. D2 is a counter & the
+stars are moved 24 at a time (well 24 per loop)
+
+ SCROLL ACC
+------------
+A3 is loaded with the address of the relevant sprite (A,C or C). The
+sprite is at the top of its path if the first byte of its first control
+word is $36. So the program compares $36 to this control word. If the
+result is true the scroll flag is altered accordingly. The sprite is at
+the bottom of its path is the same applies for $81. so $81 is compared 
+to the first control word. If the result is true the scroll flag is
+altered accordingly.
+	The sprite is moved by adding/subtracting 1 from the first byte
+of its first control word. Because the movement is horizontal the same
+value must also be added to the VSTOP 2(a3).
+	The routine is the same for all 3 sprites
+
+ MOVE MARVIN
+-------------
+This is just a slight advancement over the ACC move routine.
+The 1st control word of the marvin sprite is moved into d4. We only want
+the vertical pos so ff00 is anded to this value. The value in d4 is
+then compared to b600 & de00 to see wether it is a the top or bottom of
+its travels. The relevant flag is then set. to move marvin verticaly a
+1 is added or subtracted to the vertical control word. The same value is
+then added/subtracted to the VSTOP. This is done for all marvins sprite
+channels.
+	To move marvin right is simplicity. 1 is added to the 2nd byte
+of the first control word for all marvins sprite channels
+
+ THE MOVING COPPER BARS
+------------------------
+The actual data to display the bars is in the copper list.
+I'm sure everyone knows this section. What basically happens is that
+2a01 is compared to the first wait value & 5b01 is compared to the second
+wait value. If either comparison returns true the scroll flag is set
+accordingly. To scroll up or down the value 200 is added/subtracted to all 
+the wait values.
+	To scroll the second bar much the same happens. The comparisons
+are obviously different. To make the bars move faster you would change
+the value 200 to something else (must always be on a hundred boundary!!)
+
+ SCROLL TEXT
+-------------
+I'll ask Rick if he'll document this!!
+And, like a fool, I did.  First of all, the characters available are
+ascii codes 32 to 90 (ie. space to Z).  They are all seven pixels (or
+bytes) high and come under the variable letters.  
+
+First of all the `text window' is scrolled one bit to the left.  This
+is done by scrolling the rightmost byte of each line left using asl, 
+putting 0s in the rightmost pixel (see later), and then using roxl for
+the rest of the bytes on the line so that the bits knocked off by the
+last roll are used in the next.  The leftmost bit disappears for ever
+when the final bit is rolled off on each line.
+
+Next the letters are plonked on.  But first of all a word (or long word)
+on the text pointers.  Variable tadd holds the address of letter that
+should be displayed (address of ascii code in other words).  presadd
+contains the address of the relevant part of my letter data (ie.  the
+address of the actual 7 bytes which make up the letter).  The program
+works out presadd from tadd by first of all getting the ascii code, 
+then subtracting 32 from it.  Since Raistlin insisted on using incbin
+for the text instead of using dc.b statements, if the ascii code is less
+than 32 (if when 32 is subtracted, the result is negative is how the
+routine sees it).  Then times by 7 and add the value of letters.  Since
+the text is scrolled a bit at a time, there needs to be more.  presbit
+stores the current bit which is to be put on (starting at 7, going to 0).
+Once all the bits of a letter have been printed, the routine gets the
+next ascii number, and prints that, and so on.  A null byte finishes
+the text and the routine starts again.
+
+To print the letters, the routine loads presbit (into d1), and checks
+if that bit is set in each byte of the letter, and ORing 1 onto the
+rightmost byte of the relevant line if so.
+
+I've managed to make this 3 times bigger than it could have been, but
+what did he expect?
+
+ CLEAN_UP & BYE!BYE!
+---------------------
+This is the cleanup section. The system vbl interrupt is restored. The music
+routine is told to take a hike. The graphics lib is used to restore the 
+system copper. Good old exec then permits multi-tasking & closes the gfx
+lib. The program then ends!!
+
+ COPPERLIST
+------------
+The data is forced into chip memory (for uslucky people that hvae 1 meg+)
+The only thing worth noting in the copper list is the wait fot $cf01.
+This is the wait command that splits the screen. If you look the bitplane
+pointers are then re-loaded. The rest of the list is the usual bars &
+screen data that I expect you already know.
+
+ SECOND COPPER LIST
+--------------------
+Even more basic than the previous one. A straight copper list that you
+SHOULD fully understand. The only point of note is that in both coppers
+I have loaded the colours manually! why? I don't really know. u'll have
+to think about it!!
+
+ SPRITE DATA
+-------------
+There is no way I'm going to go through this!! If you don't understand
+see ACC6 or the hardware reference manual. 1 point though. I didnee
+manualy insert marvins data (I'm not that lame!!). I used kefrens gfx
+converter (THANKS TO KEFRENS FORE MAKING MY LIFE EASY!!!).
+the data is pritty straight forward. All I will say is that if you look
+at marvin1 (sprite 4) & marvin2 (sprite 5) you'll see the only difference
+in the two control words is 80. This is how you attach sprites
+
+The program variables are obviously just storage areas & so no discusion
+is needed!!
+
+The replay routine is Mikes & so you'll have to nag him for a tutorial.
+I haven't got the foggiest how the audio device works!
+
+Thats it from me. Sorry if this document wasn't that helpfull, but the source
+is well commented!!
+
+				Raistlin............(ahum!!)

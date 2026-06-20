@@ -1,0 +1,62 @@
+# -----------------------------------------------------------------
+# MakeFile for:  CPGM:GlobalObjects/SrcFiles/
+# -----------------------------------------------------------------
+#
+LIBS = -lm -lamiga -lauto
+#
+CC    = SDK:gcc/bin/gcc
+#
+COPTS = -c -ISDK:Local/Include
+#
+DOPTS = -c -ggdb -ISDK:Local/Include
+#
+GLOB  = GlobalObjects/
+#
+# -----------------------------------------------------------------
+#
+ppcTargets :
+	SDK:c/make TimedSerialPPC.o
+	SDK:c/make TimedSerialPPCDbg.o
+#        
+TimedSerialPPC.o : TimedSerial.c TimedSerial.h
+	EnsureAscii TimedSerial.c RAM:TS.c
+	Copy        RAM:TS.c      TimedSerial.c    
+	Delete      RAM:TS.c
+	$(CC) $(COPTS) -o TimedSerialPPC.o TimedSerial.c
+	Copy   TimedSerialPPC.o CPGM:GlobalObjects/TimedSerialPPC.o QUIET
+#
+# ----------- DEBUG targets: ---------------------------------------
+#
+TimedSerialPPCDbg.o : TimedSerial.c TimedSerial.h
+	EnsureAscii TimedSerial.c RAM:TS.c
+	Copy        RAM:TS.c      TimedSerial.c    
+	Delete      RAM:TS.c
+	$(CC) $(DOPTS) -o TimedSerialPPCDbg.o TimedSerial.c
+	Copy   TimedSerialPPCDbg.o CPGM:GlobalObjects/TimedSerialPPCDbg.o QUIET
+#
+ACMD = LhArc
+#
+AOPTS = -x -a 
+#
+TimedSerial.lha : TimedSerial.c TimedSerial.o TimedSerial.h TimedSerialPPC.o
+	$(ACMD) $(AOPTS) add TimedSerial.lha TimedSerial.readme
+	$(ACMD) $(AOPTS) add TimedSerial.lha TimedSerial.guide
+	$(ACMD) $(AOPTS) add TimedSerial.lha TimedSerial.guide.info
+	$(ACMD) $(AOPTS) add TimedSerial.lha TimedSerial.c
+	$(ACMD) $(AOPTS) add TimedSerial.lha TimedSerial.h
+	$(ACMD) $(AOPTS) add TimedSerial.lha TimedSerialPPC.o
+	$(ACMD) $(AOPTS) add TimedSerial.lha TimedSerial.o
+	$(ACMD) $(AOPTS) add TimedSerial.lha TimedSerialD.o
+	$(ACMD) $(AOPTS) add TimedSerial.lha TimedSerialPPCDbg.o
+	Copy MakeFile              RAM:M.bak
+	Copy MakeFile.timedserial  RAM:TS.make
+	Copy RAM:TS.make           MakeFile
+	$(ACMD) $(AOPTS) add TimedSerial.lha MakeFile
+	Copy RAM:M.bak             MakeFile
+	Copy SMakeFile             RAM:SM.bak
+	Copy SMakeFile.timedserial RAM:TS.make
+	Copy RAM:TS.make           SMakeFile
+	$(ACMD) $(AOPTS) add TimedSerial.lha SMakeFile
+	Copy RAM:SM.bak            SMakeFile
+	Delete RAM:SM.bak RAM:TS.make RAM:M.bak
+#

@@ -1,0 +1,229 @@
+<!doctype html>
+<html>
+	<head>
+		<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+		<meta http-equiv="Pragma" content="no-cache">
+		<meta http-equiv="Expires" content="0">
+		<meta http-equiv="content-type" content="text/html;charset=utf-8">
+		<script type="text/javascript" src="scripts/rand.js"></script>
+		<script type="text/javascript" src="scripts/utils.js"></script>
+		<script type="text/javascript" src="scripts/defs.js"></script>
+		<script type="text/javascript" src="scripts/tile_index.js"></script>
+		<script type="text/javascript" src="scripts/mineral_type.js"></script>
+		<script type="text/javascript" src="scripts/ground_layer.js"></script>
+		<script type="text/javascript" src="scripts/tile.js"></script>
+		<script type="text/javascript" src="scripts/tile_map.js"></script>
+		<script type="text/javascript" src="scripts/ending.js"></script>
+		<script type="text/javascript" src="scripts/quest_state.js"></script>
+		<script type="text/javascript" src="scripts/vehicle.js"></script>
+		<script type="text/javascript" src="scripts/plans.js"></script>
+		<script type="text/javascript" src="scripts/main.js"></script>
+		<link rel="stylesheet" type="text/css" href="style.css">
+	</head>
+	<body>
+		<div id="panel_container">
+			<div id="panel_left">
+				<table id="mine_preview"></table>
+			</div>
+			<div id="panel_messages">
+				<h2>Messages</h2>
+				<div id="messages_container"></div>
+			</div>
+			<div id="panel_right">
+				<h2>Defs</h2>
+				<div>
+					<label>Seed 1 <input type="number" name="defs_seed1" value="2184" min="1" max="65535"></label>
+					<label>Seed 2 <input type="number" name="defs_seed2" value="1911" min="1" max="65535"></label>
+					<label>Mine percent for plans <input type="number" name="defs_mine_percent_for_plans" value="75" min="1" max="100" step="1"></label>
+					<label>Min trailing mineral multiplier <input type="number" name="trailing_mineral_count_multiplier" value="0.2" min="0" max="5" step="0.1"></label>
+					<label>Days per plan <input type="number" name="defs_days_per_plan" value="25" min="1" max="65535"></label>
+					<label>Plans per accolade <input type="number" name="defs_plans_per_accoldade" value="10" min="1" max="65535"></label>
+					<label>Accolades <input type="number" name="defs_accolades" value="5" min="1" max="65535"></label>
+					<label>Rebukes <input type="number" name="defs_rebukes" value="3" min="1" max="65535"></label>
+					<label>Extra plan money <input type="number" name="extra_plan_money" min="0" max="65535" value="50"></label>
+					<label>Upgrade costs <input name="defs_upgrade_costs" value="100, 300, 600, 1000"></label>
+					<label>Hull price <input type="number" name="defs_hull_price" min="0" max="1000" value="2"></label>
+					<label>Drill amount in unit <input type="number" name="defs_drill_amount_in_unit" min="1" max="1000" value="200"></label>
+					<label>Drill unit price <input type="number" name="defs_drill_unit_price" min="0" max="1000" value="5"></label>
+					<label>Bribe base cost <input type="number" name="defs_bribe_base_cost" min="1" max="65535" step="1" value="100"></label>
+					<label>Bribe cost multiplier <input type="number" name="defs_bribe_cost_multiplier" min="0.1" max="1.0" step="0.1" value=".5"></label>
+					<label>Heat % add per accounting <input type="number" name="defs_heat_add_accounting" value="5"></label>
+					<label>Heat % decrement per plan <input type="number" name="defs_heat_remove_plan" value="3"></label>
+					<label>Heat from gate <input type="number" name="defs_heat_from_gate" value="10"></label>
+					<label>Dino depths <input name="defs_dino_depths" value="80, 200, 240, 310, 350, 410, 530, 610, 710"></label>
+					<label>Gate depths <input name="defs_gate_depths" value="520, 550, 580, 620, 650, 690, 740, 770, 800, 830, 860, 890, 920, 950, 980, 1000"></label>
+					<label>Crate depths <input name="defs_crate_depths" value="220, 260, 310, 360, 450, 490, 540, 600, 680, 750, 820, 900, 950"></label>
+					<label>Capsule depth <input name="defs_crate_capsule_depth" min="1" max="1023" step="1" value="1020"></label>
+					<label>Required crates for teleport <input type="number" name="defs_crate_teleport_cost" min="1" max="65535" step="1" value="5"></label>
+					<label>Required crates for capsule <input type="number" name="defs_crate_capsule_cost" min="1" max="65535" step="1" value="5"></label>
+					<label>Crate sell reward <input type="number" name="defs_crate_sell_reward" min="1" max="65535" step="50" value="500"></label>
+					<label>Crates to sell before escape <input type="number" name="defs_crate_sell_before_escape" min="1" max="65535" step="1" value="5"></label>
+					<label>Escape heat <input type="number" name="defs_escape_heat" min="1" max="65535" step="1" value="20"></label>
+					<label>Crate count for interrogation <input type="number" name="defs_crate_count_for_interrogation" min="1" max="65535" step="1" value="3"></label>
+					<label>Heat from crate questioning <input type="number" name="defs_heat_from_crate_questioning" min="1" max="65535" step="1" value="3"></label>
+					<button id="btn_game_reload" class="btn_large">Reload game</button>
+				</div>
+
+				<h2>Mine contents</h2>
+				<div>
+					<ul>
+						<li>
+							Silver: <span class="stat_value" id="minerals_silver">?</span>/<span class="stat_value" id="minerals_silver_total">?</span>,
+							in plans: <span class="stat_value" id="plan_total_silver">?</span>,
+							margin: <span class="stat_value" id="plan_margin_silver">?</span>
+						<li>
+							Gold: <span class="stat_value" id="minerals_gold">?</span>/<span class="stat_value" id="minerals_gold_total">?</span>,
+							in plans: <span class="stat_value" id="plan_total_gold">?</span>,
+							margin: <span class="stat_value" id="plan_margin_gold">?</span>
+						<li>
+							Emerald: <span class="stat_value" id="minerals_emerald">?</span>/<span class="stat_value" id="minerals_emerald_total">?</span>,
+							in plans: <span class="stat_value" id="plan_total_emerald">?</span>,
+							margin: <span class="stat_value" id="plan_margin_emerald">?</span>
+						<li>
+							Ruby: <span class="stat_value" id="minerals_ruby">?</span>/<span class="stat_value" id="minerals_ruby_total">?</span>,
+							in plans: <span class="stat_value" id="plan_total_ruby">?</span>,
+							margin: <span class="stat_value" id="plan_margin_ruby">?</span>
+						<li>
+							Moonstone: <span class="stat_value" id="minerals_moonstone">?</span>/<span class="stat_value" id="minerals_moonstone_total">?</span>,
+							in plans: <span class="stat_value" id="plan_total_moonstone">?</span>,
+							margin: <span class="stat_value" id="plan_margin_moonstone">?</span>
+						<li>
+							Bones: <span class="stat_value" id="minerals_bone">?</span>/<span class="stat_value" id="minerals_bone_total">?</span>,
+						<li>
+							Gates: <span class="stat_value" id="minerals_gate">?</span>/<span class="stat_value" id="minerals_gate_total">?</span>,
+						<li>
+							Crates: <span class="stat_value" id="minerals_crate">?</span>/<span class="stat_value" id="minerals_crate_total">?</span>,
+						<li>Money worth: <span class="stat_value" id="minerals_money">?</span>/<span class="stat_value" id="minerals_money_total">?</span>
+						<li>Total cost of upgrades: <span class="stat_value" id="upgrade_cost_total">?</span>
+						<li>Total cost of plans: <span class="stat_value" id="plan_cost_total">?</span>, costs: <span class="stat_value" id="separate_plan_costs"></span>
+					</ul>
+				</div>
+
+				<h2>Vehicle</h2>
+				<div>
+					<ul>
+						<li>
+							Hull mk <span class="stat_value" id="vehicle_hull_mk">?</span>: <span class="stat_value" id="vehicle_hull_curr">?</span>/<span class="stat_value" id="vehicle_hull_max">?</span>,
+							Upgrade cost: <span class="stat_value" id="vehicle_upgrade_hull_cost">?</span>$ <button id="vehicle_upgrade_hull">Upgrade</button>
+						<li>
+							Drill mk <span class="stat_value" id="vehicle_drill_mk">?</span>: <span class="stat_value" id="vehicle_drill_curr">?</span>/<span class="stat_value" id="vehicle_drill_max">?</span>,
+							Upgrade cost: <span class="stat_value" id="vehicle_upgrade_drill_cost">?</span>$ <button id="vehicle_upgrade_drill">Upgrade</button>
+						<li>
+							Cargo mk <span class="stat_value" id="vehicle_cargo_mk">?</span>: <span class="stat_value" id="vehicle_cargo_curr">?</span>/<span class="stat_value" id="vehicle_cargo_max">?</span>,
+							Upgrade cost: <span class="stat_value" id="vehicle_upgrade_cargo_cost">?</span>$ <button id="vehicle_upgrade_cargo">Upgrade</button>
+						<li>Money: <span class="stat_value" id="vehicle_money">?</span>$</li>
+						<li>Money spent on restock: <span class="stat_value" id="vehicle_money_spent_on_restock">?</span>$</li>
+					</ul>
+					<button id="btn_vehicle_restock" class="btn_large">Restock</button>
+				</div>
+
+				<h2>Office</h2>
+				<div>
+					<ul>
+						<li>Ending: <span class="stat_value" id="office_ending">?</span> <button id="ending_reset">Reset</button>
+						<li>Dino quest state: <span class="stat_value" id="office_dino_quest_state">?</span>, found bones: <span class="stat_value" id="office_dino_found_bones">?</span></li>
+						<li>Gate quest state: <span class="stat_value" id="office_gate_quest_state">?</span>, is reported: <span class="stat_value" id="office_gate_reported">?</span>, found gates: <span class="stat_value" id="office_gate_found_gates">?</span></li>
+						<li>Miner quest: is base reported: <span class="stat_value" id="office_miner_is_base_reported">?</span>, is agent reported: <span class="stat_value" id="office_miner_is_agent_reported">?</span>, is Jay found: <span class="stat_value" id="office_miner_is_jay_found">?</span></li>
+						<li>Held crates: <span class="stat_value" id="office_miner_held_crates">?</span>, spent crates: <span class="stat_value" id="office_miner_spent_crates">?</span>, sold crates: <span class="stat_value" id="office_miner_sold_crates">?</span></li>
+						<li>
+							Plan Index: <span class="stat_value" id="plan_index">?</span>,
+							started: <span class="stat_value" id="plan_started">?</span>,
+							extended: <span class="stat_value" id="plan_extended">?</span>,
+							time remaining: <span class="stat_value" id="plan_time_remaining">?</span> (<span class="stat_value" id="plan_time_remaining_days">?</span> days)
+						<li>Unlocked minerals: <span class="stat_value" id="plan_unlocked_minerals"></span>
+						<li>
+							Accolades: <span class="stat_value" id="office_accolades_curr">?</span>/<span class="stat_value" id="office_accolades_max">?</span>,
+							progress: <span class="stat_value" id="office_accolades_progress_curr">?</span>/<span class="stat_value" id="office_accolades_progress_max">?</span>
+						<li>Rebukes: <span class="stat_value" id="office_rebukes_curr">?</span>/<span class="stat_value" id="office_rebukes_max">?</span>
+						<li>Heat: <span id="office_heat">?</span>%
+						<li>Bribe op cost: <span id="office_bribe_cost">?</span>$
+					</ul>
+					<div class="button_row">
+						<button id="btn_favor" class="btn_large">Favor (Reroll plan)</buton>
+						<button id="btn_bribe" class="btn_large">Bribe (Add time to plan)</buton>
+						<button id="btn_accounting" class="btn_large">Accounting (force next plan)</buton>
+					</div>
+					<div class="button_row">
+						<button id="btn_sell_crate" class="btn_large">Sell crate</buton>
+						<button id="btn_escape_west" class="btn_large">Escape to the west</buton>
+						<button id="btn_report_agent" class="btn_large">Report agent</buton>
+						<button id="btn_teleport_west" class="btn_large">Teleport to the west</buton>
+						<button id="btn_open_capsule" class="btn_large">Open capsule</buton>
+						<button id="btn_report_base" class="btn_large">Report base</buton>
+					</div>
+				</div>
+
+				<h2>Warehouse</h2>
+				<div>
+					<table id="warehouse" class="comm_table">
+						<tr><th>Mineral</th><th>Sold</th><th>Sell</th><th>Stock</th><th>Plan</th></tr>
+						<tr>
+							<td>Silver</td>
+							<td><span id="sold_silver">?</span></td>
+							<td><span id="silver_price">?</span>$/pc <button id="btn_silver_sell_1">Sell 1</button> <button id="btn_silver_sell_10">Sell 10</button></td>
+							<td><span id="stock_silver">?</span></td>
+							<td>
+								<span id="plan_silver_spent">?</span>/<span id="plan_silver_required">?</span>
+								<button id="btn_silver_plan_1">Add 1</button>
+								<button id="btn_silver_plan_fill">Fill</button>
+							</td>
+						</tr>
+						<tr>
+							<td>Gold</td>
+							<td><span id="sold_gold">?</span></td>
+							<td><span id="gold_price">?</span>$/pc <button id="btn_gold_sell_1">Sell 1</button> <button id="btn_gold_sell_10">Sell 10</button></td>
+							<td><span id="stock_gold">?</span></td>
+							<td>
+								<span id="plan_gold_spent">?</span>/<span id="plan_gold_required">?</span>
+								<button id="btn_gold_plan_1">Add 1</button>
+								<button id="btn_gold_plan_fill">Fill</button>
+							</td>
+						</tr>
+						<tr>
+							<td>Emerald</td>
+							<td><span id="sold_emerald">?</span></td>
+							<td><span id="emerald_price">?</span>$/pc <button id="btn_emerald_sell_1">Sell 1</button> <button id="btn_emerald_sell_10">Sell 10</button></td>
+							<td><span id="stock_emerald">?</span></td>
+							<td>
+								<span id="plan_emerald_spent">?</span>/<span id="plan_emerald_required">?</span>
+								<button id="btn_emerald_plan_1">Add 1</button>
+								<button id="btn_emerald_plan_fill">Fill</button>
+							</td>
+						</tr>
+						<tr>
+							<td>Ruby</td>
+							<td><span id="sold_ruby">?</span></td>
+							<td><span id="ruby_price">?</span>$/pc <button id="btn_ruby_sell_1">Sell 1</button> <button id="btn_ruby_sell_10">Sell 10</button></td>
+							<td><span id="stock_ruby">?</span></td>
+							<td>
+								<span id="plan_ruby_spent">?</span>/<span id="plan_ruby_required">?</span>
+								<button id="btn_ruby_plan_1">Add 1</button>
+								<button id="btn_ruby_plan_fill">Fill</button>
+							</td>
+						</tr>
+						<tr>
+							<td>Moonstone</td>
+							<td><span id="sold_moonstone">?</span></td>
+							<td><span id="moonstone_price">?</span>$/pc <button id="btn_moonstone_sell_1">Sell 1</button> <button id="btn_moonstone_sell_10">Sell 10</button></td>
+							<td><span id="stock_moonstone">?</span></td>
+							<td>
+								<span id="plan_moonstone_spent">?</span>/<span id="plan_moonstone_required">?</span>
+								<button id="btn_moonstone_plan_1">Add 1</button>
+								<button id="btn_moonstone_plan_fill">Fill</button>
+							</td>
+						</tr>
+					</table>
+					<div class="button_row">
+						<button id="btn_sell_all" class="btn_large">Sell all</buton>
+						<button id="btn_fill_plan" class="btn_large">Fill plan</buton>
+					</div>
+				</div>
+
+				<h2>Black market</h2>
+				<table id="black_market_goods" class="comm_table">
+				</table>
+
+			</div>
+		</div>
+	</body>
+</html>

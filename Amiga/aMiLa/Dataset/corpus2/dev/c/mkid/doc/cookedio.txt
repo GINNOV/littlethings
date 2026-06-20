@@ -1,0 +1,13 @@
+
+The following code I cooked up (pun intended) to emulate the curses functions
+for putting the console into raw() or cooked() (they call it noraw()) modes.
+Note that it depends on knowing how the structure FILE * stores the internal
+amiga file handle. So this version will only work with the Lattice C compiler
+If someone would port it to Aztec C and post it that would be appreciated. 
+Anyway, it's short so I'll include it here. It's a shar file so cut off the 
+message and feed it to the unix shell, or the Amiga shar program (shar -u) 
+available on one of the Fish disks. Don't forget to remove the signature at 
+the end of the message.
+
+--Chuck
+

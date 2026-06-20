@@ -1,0 +1,94 @@
+HAAGE&PARTNER Computer GmbH
+Mainzer  Straße 10A
+61191 Rosbach
+Germany
+
+Tel: +49 (0) 6007 - 93 00 50
+FAX: +49 (0) 6007 - 75 43
+
+Internet: storm-support@haage-partner.com
+
+Homepage: http://www.haage-partner.com
+
+
+Dear StormC customer,
+
+enclosed you will find a patch program to update
+StormC version 2.00.23 (08.15.97) to the current release
+2.00.32 (02.11.98).
+
+The process is started by a double click on the icon
+
+StormC-v2.00.32.ptch
+
+Please take note that the old version of StormC must be in the drawer
+
+StormC:StormSYS
+
+
+Best wishes
+
+HAAGE&PARTNER Support Team
+
+
+
+History of StormC
+============================
+
+29.09.97 (2.00.25)
+
+  Bug fix on Off-by-one error while loading arguments for arithmetic
+  library funktions. It occured when an argument for a 32 bit multiplication
+  or division on a MC68000 was loaded by a pointer in a0.
+
+08.10.97 (2.00.26)
+
+  The logic NOT "!" with source and target type double/float generated
+  bad code on optimisation level 5 (PPC and 68k w/ FPU)
+
+11.10.97
+
+  When assigning a value of a function call (w/ result of type class) to
+  a class object the temporary object was deleted although the class had
+  a con/destructor.
+
+09.11.97 (V 2.00.29)
+
+  Listen-Initialisierungen für Bitfelder funktionierten überhaupt nicht
+ 
+13.12.97
+
+  Fixed another optimisation bug. It only occured when assembler output
+  and a debug file were created.
+
+11.01.98 (Release 30)
+24.01.98
+
+  Fixed bug on accessing big structures with operations +=, |= etc.
+  Was found during portation of MESA.
+
+25.01.98 (Release 31)
+
+  Fixed bug on initilisation of arrays. In some cases this caused an
+  Enforcer error (Word Read on 0).
+ 
+08.02.98
+
+  Type conversion enum -> double could only be done by int cast.
+
+  When an exception within a construtor the basic classes and members that
+  were already created before that were not destructed.
+  (Report Jochen 02.02.98)
+
+10.02.98
+
+  After a class has been created virtual funktions of that class could
+  no longer be declared as "inline" any more although they were not called
+  (error message: "inline used after definition or use of function.")
+
+  The linker names of VMT's of templet classes for all derived classes of
+  a template were identical, so wrong virtual functions were called in
+  template classes.
+  (Report Jochen 10.02.98)
+
+

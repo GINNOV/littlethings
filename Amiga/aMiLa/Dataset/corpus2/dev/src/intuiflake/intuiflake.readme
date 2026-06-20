@@ -1,0 +1,47 @@
+Short: Intuition fractal graphics
+Autor: walternn@studi.informatik.uni-stuttgart.de (Norman Walter)
+Uploader: walternn@studi.informatik.uni-stuttgart.de (Norman Walter)
+Type: dev/src
+Requires: C Compiler (e.g. gcc, StormC)
+
+
+Demonstration of recursive programming and Intuition primitives.
+I made the same example with OpenGL, but this time I use Intuition and
+the Amiga Graphic-Primitives out of the Kickstart-ROM.
+
+
+Literature:
+
+Brian W. Kernighan, Dennis M. Ritchie:
+The C Programming Language
+
+Peter Wollschlaeger:
+C auf dem Amiga
+
+Robert Segewick:
+Algorithms in C
+
+Amiga Intuition-Reference-Manual
+
+
+Useful CD Roms:
+
+Amiga Developer CD V2.1:
+Includes the full version of StormC 3.0
+and the Amiga Rom Kernel Reference Manual
+
+GeekGadgets May 98 Snapshot:
+Amiga Developers Enviroment
+
+
+World Wide Web:
+
+http://www.norman-interactive.com (my Homepage)
+
+http://www.informatik.uni-stuttgart.de (University Stuttgart, Dept. of Computer Science)
+
+http://www.ninemoons.com (GeekGadgets)
+
+http://www.haage-partner.com (Haage & Partner Homepage, 3D World)
+
+

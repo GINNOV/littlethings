@@ -1,0 +1,25 @@
+/* prcc.c */
+static void usage(void);
+void main(int argc, char **argv);
+static void ctags(void);
+static void maketag(int scope, int iscall);
+static tag_push(char *b);
+static tag_pop(char *b);
+static lex_gettoken(void);
+static cpp_open(char *name);
+static cpp_nonwhite(void);
+static cpp_getc(void);
+static int cpp_ungetc(int ch);
+static int file_open(char *name);
+static int file_getc(void);
+static file_ungetc(int ch);
+static void per_file_init(void);
+static void per_file_cleanup(void);
+static BOOLEAN name_redefined(int isvar);
+static void display_list(const char *type, char **words);
+static void show_all_lists(void);
+static BOOLEAN name_to_list(name_t **lp, char *lex_name);
+static BOOLEAN name_from_list(name_t **lp);
+static BOOLEAN name_in_list(name_t *l);
+static void free_list(name_t **lp);
+static void complain(int isvar);

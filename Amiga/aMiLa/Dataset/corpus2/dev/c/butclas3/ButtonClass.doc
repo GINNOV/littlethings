@@ -1,0 +1,145 @@
+
+                Boopsi Button and Progress Class 37.3
+
+                           February 6, 1994
+
+                      Written by Douglas Keller
+
+
+0.  Introduction
+----------------
+
+Buttonclass is a boopsi custom gadget which looks like a standard
+gadtools button gadget.  The buttonclass supports a couple of things
+gadtools does not, the foreground and background color of the gadget
+can be changed, and the gadget can be put into the selected state so
+the gadget looks depressed.
+
+Starting with 37.3 the button class supports a standard drawer image
+to signal it will open a file requester if pressed.
+
+Also starting with 37.3 a progress indicator gadget is included, it is
+used to show the progress of an operation from 0 to 100 percent.
+
+ButtonClass is based on the example in the RKM Libraries manual.
+
+
+1.  Files
+---------
+
+buttonclass.h    - public include file for buttonclass and progressclass
+
+buttonclass.c    - Sas/C 6.51 code for the buttonclass
+
+progressclass.c  - Sas/C 6.51 code for the progressclass
+
+ButtonClassNB.lib- scanned library containing the classes
+
+lmkfile          - Sas/C 6.51 makefile
+
+test             - test program that uses the classes
+
+test.c           - source to test program
+
+headers.h        - system headers for buttonclass.c and progressclass.c
+
+
+2.  Using the ButtonClass
+-------------------------
+
+The buttonclass includes a set of functions to initialize and free the
+buttonclass.
+
+    Class *initButtonGadgetClass ( struct Library *IntuitionBase,
+               struct Library *UtilityBase, struct Library *GfxBase );
+
+    BOOL freeButtonGadgetClass ( Class *cl );
+
+InitButtonGadgetClass() takes IntuitionBase, UtilityBase, and GfxBase
+as arguments.  The reason they are passed in rather then global is so
+the buttonclass can be used in a reentrant program which has no
+writable global data.
+
+To use the progress class, initProgressGadgetClass() and
+freeProgressGadgetClass() needs to be used.
+
+The Class returned by initButtonGadgetClass() is then passed to
+NewObject() to create the gadget.
+
+    gad = NewObject(buttonClass, NULL,
+        GA_ID,          1L,
+        GA_Top,         20
+        GA_Left,        20,
+        GA_Width,       100,
+        GA_Height,      11,
+        GA_Immediate,   TRUE,
+        GA_RelVerify,   TRUE,
+        BUT_Text,       "Label",
+        TAG_DONE);
+
+SetGadgetAttrs() can be used to change gadget attributes.
+
+    SetGadgetAttrs(gad, window, NULL,  /* make the gadget selected */
+        GA_Selected,    TRUE,
+        TAG_DONE);
+
+    SetGadgetAttrs(gad, window, NULL,  /* change gadget text */
+        BUT_Text,       "new text",
+        TAG_DONE);
+
+Buttonclass supports the following gadgets.
+
+    BUT_Text       - STRPTR used for the text of the gadget.
+    BUT_Color      - Foreground (text) color of the gadget.
+    BUT_Key        - char which should be underlined if found in BUT_Text.
+    BUT_BackColor  - Background color of the gadget.
+    BUT_TextFont   - TextFont struct to used for BUT_Text.
+
+    New of 37.2
+
+    BUT_Image      - Image to display in the unselected state, (struct Image *)
+    BUT_SelectImage- Image to display in the selected state, (struct Image *)
+    GA_Disabled    - Disabled TRUE or FALSE.
+
+    New of 37.3
+
+    BUT_Drawer     - BOOL, if TRUE show a standard drawer image in
+                     button.
+    PRO_Min        - The low value of the progress indicator, defaults to 0.
+    PRO_Max        - The high value of the progress indicator, defaults to 100.
+    PRO_Current    - The current value of the progress indicator, must
+                     between PRO_Min and PRO_Max.
+    PRO_ShowPercent- BOOL, if TRUE show percentage in indicator bar.
+    PRO_TextFont   - TextFont struct to used for PRO_ShowPercent.
+
+
+Currently the Images are drawn relative to the top left corner of
+the gadget using the TopEdge and LeftEdge of Image.  When I get some
+time I am going to add support for different justifications of the
+Images and Text.
+
+If only a BUT_Image is given, the image is draw in the selected state
+when it is selected.  This allows boopsi images to be drawn in the
+selected state.
+
+
+3.  Legal junk
+--------------
+
+Permission is granted to distribute this program and its documentation
+for non-commercial purposes.  This program may not be distributed for
+a profit without permission from Doug Keller.  Fred Fish has
+permission to distribute this program as part of the Fred Fish
+library.
+
+This code can be used for any purpose as long as credit is given.
+
+
+4.  Bugs and Info
+-----------------
+
+If you would like to get in touch with me I can be reached on the
+following:
+
+            Bix : dkeller
+        Internet: dkeller@vnet.ibm.com

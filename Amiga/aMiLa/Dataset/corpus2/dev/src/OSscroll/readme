@@ -1,0 +1,35 @@
+
+INTRODUCTION
+    OSScroll is scroller using graphics.library/ScrollVPort routine
+    synchronized by copper to achieve smoothest scrolling even on
+    plain A1200 with lots of free CPU time.
+
+    ___ALL ON INTUITION SCREEN,  YOU CAN DRAG IT BY MOUSE !!!!___
+
+USAGE
+    Roll the screen using JoyStick,  break it via sending CTRL-C
+    to the program.
+
+REQUIREMENTS
+    Requires KS3.0, asl V38, lowlevel.library V40 and ss.library
+    (included) to run.  B'coz of 256col, you need AGA or better.
+
+LEGAL
+    All the archive is Public Domain,  except the ss.library
+    ( © MJSoft,  No warranty,  see SSLib5.1 on Aminet to get more
+    info).  You can use parts or whole code in any way WITHOUT
+    RESTRICTIONS !  It would be cool, if you will mention my name
+    somewhere in the DOCs.
+
+INFO ABOUT SOURCECODE
+    All the code is OS-StyleGuide compliant.  Written using Genam.
+    The code is in quickly coded assembler,  almost not commented,
+    but using offset names and constants :^Q.
+    Don't be affraid to send me queries.
+    This has been tested with Enforcer and MungWall without problems.
+
+MY ADDRESS
+
+    Petr Mares              (my name)
+
+    E-Mail : mares1@menza.mff.cuni.cz

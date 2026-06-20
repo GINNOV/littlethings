@@ -1,0 +1,77 @@
+Short:        V2.13 Binary to C source converter
+Kurz:         V2.13 Binär nach C Quellcode Konvertierter
+Author:       geit@gmx.de (Guido Mersmann)
+Uploader:     geit@gmx.de (Guido Mersmann)
+Type:         dev/c
+Replaces:     dev/c/bintoc.lha
+Replaces:     dev/c/bintoc.lha
+Architecture: ppc-morphos >= 1.4.2; m68k-amigaos >= 2.1.0; ppc-amigaos >= 4.0.0
+Version:      2.13
+
+--- Die deutsche Version ist weiter unten ---
+
+
+--- English version ---
+
+BinToC is just another binary to C converter. I wrote it, because I needed
+additional features (especialy the TERM feature). So I decided to write my own
+tool.
+
+The usage is very easy:
+
+BIN/A,TO/A,BYTE/S,WORD/S,LONG/S,ARRAYNAME=AN,PERLINE=PL/N,TERMINATE=TERM/S
+
+BIN is the read file containing the binary.
+
+TO specifies the name of the #?.h file to be written.
+
+BYTE array type is BYTE (Default)
+
+WORD array type is WORD (padding byte my be added at the end)
+
+LONG array type is LONG (padding bytes my be added at the end)
+
+ARRAYNAME allows to specify the name of the array. By default this is the upper
+case filename without ".h" suffix. The chars "." and "," are replaced by "_". So
+having "data.h" specified as TO, the name of the ARRAY is "DATA", while "data.misc.h"
+create an array named "DATA_MISC"
+
+PERLINE defines the number of element per line. (Default is 8).
+
+TERMINATE adds a 0x00 byte at the end. Useful when dealing with text files.
+
+
+
+
+
+--- Deutsche Version ---
+
+BinToC ist nur ein weiterer Binär nach C Konvertierter. Ich hab ihn geschrieben,
+weil ich einige Funktionen benötigte (speziell die TERM Funktion). Daher war es
+einfacher schnell ein eigenes Programm zu schreiben.
+
+Die Benutzung ist sehr einfach:
+
+BIN/A,TO/A,BYTE/S,WORD/S,LONG/S,ARRAYNAME=AN,PERLINE=PL/N,TERMINATE=TERM/S
+
+BIN ist die zu lesende Binär-Datei.
+
+TO spezifiziert den zu schreibenden Header.
+
+BYTE Der Arraytyp wird auf BYTE gesetzt ( Vor eingestellt)
+
+WORD Der Arraytyp wird auf WORD gesetzt. (ggf. wird ein Füllbyte am Ende verwendet)
+
+LONG Der Arraytyp wird auf LONG gesetzt. (ggf. werden bis zu 3 Füllbytes am Ende verwendet)
+
+ARRAYNAME Der Name des Arrays kann mit diesem Schalter gesetzt werden.
+Defaultmäßig ist das der groß geschriebene Dateiname ohne ".h", wobei "." und
+"," durch "_" ersetzt werden. Ist also "Daten.h" bei TO angegeben, wird das
+Array "DATEN" genannt, während "Daten.Verschieden.h" ein Array mit dem Namen
+"DATEN_VERSCHIEDEN" erzeugt.
+
+PERLINE definiert die Anzahl der Elemente pro Zeile. (Vor eingestellt ist 8).
+
+TERMINATE hängt immer ein 0x00 an das Array ein. Sinnvoll, wenn man ASCII Texte Binär ablegen will.
+
+

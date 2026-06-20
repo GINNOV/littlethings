@@ -1,0 +1,267 @@
+Short:        POSIX compatibility library for vbcc
+Author:       Frank Wille, Peter Pettersson
+Uploader:     frank@phoenix.owl.de
+Type:         dev/c
+Version:      3.0
+Requires:     vbcc ANSI-C compiler V0.9 or greater
+Architecture: ppc-morphos; ppc-amigaos; ppc-powerup; ppc-warpup; m68k-amigaos >= 2.0.4
+
+INTRODUCTION
+
+The C-library of the vbcc compiler only includes those functions
+required by the ANSI/ISO-C standard and nothing more. But sometimes,
+especially when porting projects from the Unix world, you need more
+than that.
+
+This linker library contains the most important POSIX functions
+and some other useful UNIX functions, which are not in the standard
+C-library.
+
+The math functions (e.g. hypot()) require an FPU, which means you
+cannot run it on all 68000 systems.
+
+Since 2.0 it also includes the most important TCP/IP network
+functions, which are implemented through bsdsocket.library (only
+opened when really needed!). The main advantages in combining
+bsdsocket with PosixLib is the possibility to use a common set of
+file- and socket-descriptors as well as clean header files which
+don't conflict with vbcc's standard headers.
+
+Most of the modifications and new functions in 2.0 are a result of
+porting the latest 'cvs' to the Amiga.
+
+Most of the modifications and new functions in 3.0 are a result of
+Peter Pettersson's porting of 'libgit2' to the Amiga.
+
+
+LEGAL
+
+  PosixLib is copyright 2003-2022 by Frank Wille and Peter Pettersson.
+
+  This archive may be freely used for commercial and non-commercial
+  purposes and redistributed without modifications.
+
+
+This release includes:
+
+POSIX: access, basename, chdir, chmod, chown, close, creat,
+       dirname, dup, dup2, fclose, fcntl, fdopen, fileno, fopen,
+       freopen, fstat, getgid, getegid, getenv, geteuid, getgrnam,
+       getgrgid, getlogin, getlogin_r, getpid, getppid, getpwnam,
+       getpwuid, getpwuid_r, getuid, gmtime_r, kill, link,
+       localtime_r, lseek, lstat, mkdir, open, read, readlink,
+       rename, rmdir, setgid, setegid, seteuid, setuid, stat,
+       strcoll, strnlen, sysconf, umask, unlink
+
+Net:   accept, bind, connect, gethostbyaddr, gethostbyname,
+       gethostname, gethostid, getnetbyaddr, getnetbyname,
+       getprotobyname, getprotobynumber, getservbyname,
+       getservbyport, getpeername, getsockname, getsockopt,
+       inet_addr, inet_network, inet_lnaof, inet_makeaddr,
+       inet_netof, inet_ntoa, listen, recv, recvfrom, recvmsg,
+       send, sendto, sendmsg, setsockopt, shutdown, socket
+
+Termcap:
+       cgetcap, cgetclose, cgetent, cgetfirst, cgetmatch, cgetnext,
+       cgetnum, cgetset, cgetstr, cgetustr, tgetent, tgetstr, tgetflag,
+       tgetnum, tgoto, tputs, t_getent, t_getnum, t_getflag, t_getstr,
+       t_agetstr, t_getterm, t_goto, t_puts, t_freent, t_setinfo
+
+Other: alphasort, asprintf, bcmp, bcopy, bzero, closedir,
+       endgrent, endpwent, err, errx, fchdir, fchmod, fchown,
+       fgetln, ffs, fnmatch, fseeko, fstatfs, ftello,
+       ftruncate, futime, getcwd, getdtablesize, getgrent,
+       getopt, getopt_long, getpass, getpwent, gettimeofday,
+       glob, globfree, hypot, index, isatty, killpg, mkstemp,
+       mktemp, opendir, pclose, popen, pread, pwrite, random,
+       readdir, realpath, rewinddir, rindex, scandir, select,
+       setenv, setgrent, setpwent, settimeofday, sleep, statfs,
+       strcasecmp, strdup, strncasecmp, symlink, tzset, unsetenv,
+       utime, utimes, vasprintf, verr, verrx, vwarn, vwarnx, warn, warnx
+
+The list will continue to grow... :)
+
+
+CHANGES
+
+since 1.0:
+- New: getpid, getppid, kill, killpg.
+- Fixed gettimeofday, which was wrong by one hour.
+- Added POSIX string.h and signal.h header files, which include
+  the standard vbcc headers with the same name using #include_next.
+
+since 1.1:
+- New: fclose, fdopen, fileno, fopen, freopen.
+  fclose, fopen and freopen have to replace their counterparts from
+  vclib to make it work!
+- New: pclose, popen (using PIPE: device).
+- New: link, symlink. No readlink though, which is... special.
+- New: mktemp, mkstemp, fchmod.
+- New: tzset (no tzfiles supported, and much more is still missing).
+- New: select, but only supports sockets at the moment, and no
+  file descriptors.
+- New: getpass reads password from CONSOLE: without echoing typed chars.
+- New: Many network functions, based on bsdsocket.library V4.
+- New: err, errx, verr, verrx, warn, warnx, vwarn, vwarnx (BSD).
+- New: rename replaces vclib-rename, because POSIX allows destination
+  file to exist and replaces it.
+- New: getenv replaces vclib-getenv, because POSIX doesn't overwrite
+  the last returned variable, which is allowed in ANSI/ISO-C.
+- New: password and group functions: getlogin, getpwnam, getpwuid,
+  getpwent, setpwent, endpwent, getgrnam, getgrgid, getgrent, setgrent,
+  endgrent. Therefore usergroup.library is not required for most
+  applications.
+  The user is determined by the environment variables USER, LOGUSER or
+  USERNAME. Home directory is HOME or SYS:. Groups are always NULL.
+- stdint.h has to replace vbcc's stdint.h because it is not aware of
+  machine/int_types.h. Added machine/int_mwgwtypes.h, machine/int_const.h
+  and machine/int_limits.h for completeness.
+- More types in sys/types.h.
+- Owner and world protection mode flags of a file were swapped (caused
+  by open(), creat(), chmod()). Fixed.
+- open(): Fixed problems with O_TRUNC on existing files. Using
+  SetFileSize() now with fallback to Open(name,MODE_NEWFILE).
+- open(): All files, even O_WRONLY ones, are opened in shared access mode!
+  This allows to open a file multiple times for writing (POSIX does it
+  like that!).
+- Fixed chdir() and fchdir() which must not unlock and free the
+  process' original work directory! Now preserve it and restore on
+  exit.
+
+since 2.0:
+- Sorry! Forgot to include the new header directories netinet, arpa,
+  clib, libraries and net in the release archive!
+
+since 2.1:
+- New: random, hypot
+- New POSIX functions: basename and dirname.
+- Fixed rename(), which has to remove the target even when protected.
+- open() returns EFAULT when file name is NULL-pointer and works with
+  handlers which doesn't support Lock().
+- Fixed popen(), which didn't work at all. There is still the restriction
+  that pclose() doesn't wait for the process being terminated and doesn't
+  return the correct exit code.
+
+since 2.2:
+- New: fsync, usleep.
+- New: ioctl (for sockets only).
+- New string functions: strlcpy, strlcat, strsep.
+- New: flock. Based on LockRecord(), which means it doesn't work for
+  all file systems (e.g. not for SFS). WARNING: When not supported, the
+  flock-operation will be simulated as being always successful!
+- New: scandir, alphasort.
+- Included malloc.h header for compatibility (just includes stdlib.h).
+- Improved select(), which also supports non-blocking files and
+  interactive (blocking) input files - to some extent. Emulation is not
+  perfect though, and waiting for interactive files has to be done
+  sequentially by WaitForChar().
+- Fixed gethostbyaddr() macro, which was missing the last argument.
+- Fixed most functions operating on file-descriptors to return an
+  error when the descriptor is a socket.
+- Fixed accept(), which didn't return a valid PosixLib file-descriptor,
+  but the original AmiTCP descriptor.
+- Improved Unix-to-Amiga-path conversion routine.
+- RAND_MAX had to be increased to 0x7fffffff in stdlib.h for random().
+- Included rand() and srand() to overwrite vclib's functions, which
+  are compiled for RAND_MAX=0x7fff.
+- Fixed getcwd(), which always reported the original directory name.
+- Fixed problems with creating files in read-only mode. Unix allows
+  writing to them, AmigaOS does not. So setting the mode is delayed
+  until the file is closed.
+- Included features of latest (vbcc 0.8j) vclib.
+
+since 2.3:
+- New: strcoll (behaves identical to strcmp).
+- New: setenv() and unsetenv() set and delete local environment variables.
+- New: asprintf() and vasprintf() - allocate output buffer.
+- New: fgetln() reads line from file and allocates buffer for it.
+- New: termcap functions from NetBSD. A termcap can be defined by the
+  TERMCAP environment variable or the path to a termcap file by TERMPATH.
+  Default is to look for a termcap-file in PROGDIR:.termcap and in
+  ENV:termcap.
+  Implemented functions: tgetent, tgetstr, tgetflag, tgetnum, tgoto, tputs.
+  New BSD interface: t_getent, t_getnum, t_getflag, t_getstr, t_agetstr,
+  t_getterm, t_goto, t_puts, t_freent, t_setinfo.
+- Fixed evil memory deallocation bugs, caused by the stdio constructor
+  in the last version.
+
+since 2.4:
+- Included quad_t types in sys/types.h.
+- Added obsolete timezone in sys/time.h for compatibility.
+- Missing network headers: netinet/in_systm.h, netinet/ip.h, netinet/tcp.h.
+- Missing define from sys/stat.h: S_ISSOCK.
+- fstat() on sockets works now and sets st_mode to _S_IFSOCK.
+- Adapted for vbcc 0.9 and latest OS4 SDK.
+
+since 2.5:
+- Fixed bcopy().
+- lseek() does not longer extend a read-only file, when seeking past
+  the end of the file.
+- Some changes due to latest AmigaOS4 SDK. No guarantee that it still works.
+
+since 2.6:
+- Added fseeko() and ftello(), which have currently the same function as
+  fseek() and ftell().
+- New: ftruncate(), getlogin_r(), getpwuid_r(), gmtime_r(), localtime_r(),
+  lstat(), pread(), pwrite(), readlink(), realpath(), strlnlen(), sysconf().
+- unlink() now also deletes empty directories and soft-links.
+- Added header files to define endianess: _BYTE_ORDER, etc.
+- Fixed problem with hypot() assembler inlines in some targets.
+- mktemp() has to replace the trailing group of "X" only.
+- AmigaDOS delete- and write-protection flags should both map to POSIX
+  write-protection.
+
+
+INSTALLATION
+
+You will find linker libraries for any Amiga target supported by
+the vbcc compiler in its sub directory. You may pick those libraries
+you need and copy them into their appropriate vlibXXX: directory.
+Optionally you leave them where they are and just use the -L
+option to define the library-path.
+
+DON'T copy the PosixLib header files into vincludeXXX:! You would
+overwrite standard headers, like string.h, stdio.h, stdlib.h, etc. !
+You have to include the PosixLib header file path BEFORE the standard
+header file path, using the -I option, to make it work. Of course
+you may decide to make a special config file for PosixLib.
+
+It is recommended to use the -L and -I options of the compiler to
+locate libraries and header files of PosixLib.
+
+NOTE that this PosixLib is only compatible with vbcc's vclib from
+V0.9 and greater! The names of some internal variables have changed!
+
+Full source text is included. So feel free to recompile everything
+with the optimization- and CPU-settings of your choice, port it
+to a different compiler, or even add some more functions!
+
+
+KNOWN ISSUES
+
+errno
+-----
+Serveral functions set errno to 0. This is probably not a big problem.
+Since functions typically are allowed to set errno to non-zero on success
+the user can't rely on the errno value to determine if a function was
+successful.
+
+__make_ados_pattern
+-------------------
+Escaping doesn't handle [ and ? (should insert ' before, if escaped).
+AmigaDOS specific wildcards #%|~'() aren't handled.
+Negated character sets specified with [! aren't handled.
+
+gmtime_r / localtime_r
+----------------------
+Functions aren't threadsafe and modify the buffers used by gmtime and
+localtime.
+
+ftruncate
+---------
+ftruncate should zero out data if expanding a file, SetFileSize doesn't
+do this automatically.
+
+lseek
+-----
+lseek calls SetFileSize(). See ftruncate.

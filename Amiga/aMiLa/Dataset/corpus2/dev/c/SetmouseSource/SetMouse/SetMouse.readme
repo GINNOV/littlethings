@@ -1,0 +1,53 @@
+short: Centre mouse on screen at bootup
+type: util/misc
+author: Ketil Hunn (Ketil.Hunn@hiMolde.no)
+uploader: Ketil Hunn (Ketil.Hunn@hiMolde.no)
+
+
+TITLE
+
+  SetMouse
+
+VERSION
+
+  2.0   (07.12.95)
+
+AUTHOR
+
+  Ketil Hunn
+  Nabbetorpveien 35B
+  N-1632 Gamle Fredrikstad
+  Norway
+
+  E-Mail: Ketil.Hunn@hiMolde.no
+
+  http://www.himolde.no/~ketil/
+
+DESCRIPTION
+
+  Small utility to centre mousepointer on screen upon startup as in MS-Windows.
+  Nice if you have many programs in your WBStart-drawer (the wait-pointer will
+  be centered and well visible).
+
+  May also position/move mousepointer to any coordinates on a screen.
+
+NEW FEATURES
+
+  o SetMouse V2.0 can also generate a left, middle, right mouse button press
+    (or any combination of these).
+
+SPECIAL REQUIREMENTS
+
+  OS 2.04 or higher.
+
+AVAILABILITY
+
+  ftp://ftp.wustl.edu/pub/aminet/Shell/SetMouseV20.lha ()
+
+PRICE
+
+  Free.
+
+DISTRIBUTABILITY
+
+  Freeware.  Do with it as you please.

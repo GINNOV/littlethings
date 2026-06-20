@@ -1,0 +1,97 @@
+
+
+
+		Project:	The ACC Library
+		~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ I've been racking my brains out trying to come up with a programming
+project that any reader of ACC can participate in. The biggest problem lies
+in diffirent programming techniques and approaches.
+
+ Well, I think I have found the answer. Lets put together a custom library!
+The idea came to me while browsing Fred Fish Disc 463, kindly sent to me by
+Steve Marshall. The discs contains a great utility called LibTool, designed
+to take most of the hard work out of constructing a run-time library.
+
+ The library will contain any useful subroutines sent to me that obey a few
+simple rules which I will cover shortly. I don't care what function the
+routines have, just as long as they are useful and can be used to speed up
+program development.
+
+ To start the ball rolling, I have created the first version of the
+library. It only contains a few functions at present, but the example
+program shows how much it simplifies a program. At this stage there is only
+support for assembly language programmers, but I will update the .fd file
+so that all languages are supported ( Yes! using LibTool, the acc.library
+can be accessed from Amiga Basic. The implications are mind blowing ----
+complete hardware control from a BASIC program arrrrggggh ).
+
+ The doc file that will accompany the library will contain the names of all
+people who bother to get involved. 
+
+ The library will never gain world recognition in the same way as ARP, but
+it could prove useful to readers of ACC.
+
+ The Rules
+ ~~~~~~~~~
+ 1/ Your subroutine must not corrupt the registers d2-d7/a2-a6. Use movem.l
+    to preserve and restore any of these registers you use in your code.
+
+Start		movem.l		d2-d7/a2-a6,-(sp)	save registers
+
+		<< Your Subroutine >>
+
+End		movem.l		(sp)+,d2-d7/a2-a6	restore registers
+		rts
+
+ 2/ Variables must not be stored in absolute memory locations declared at
+    the time of assembly. For example, the following code is not permitted:
+
+		move.l		d0,sum
+
+		<< More Code >>
+
+sum		dc.l		0
+
+ 3/ Your library can call functions from the following libraries without
+    having to open the library:
+
+		Exec, DOS, Intuition and Graphics.
+
+    The acc.library opens these libraries when it is first opened. The base
+    pointers are stored in memory with the labels
+
+		$4.w, _DOSBase, _IntuitionBase and _GfxBase.  
+
+ 4/ The subroutine is all your own work!
+
+ That's it, so get writing.
+
+ I have put the source for acc.library on this disc. Do not worry about the
+XREF and XDEF declerations. If you are unfarmiliar with importing/exporting
+variables from linkable sources, just send me a working example of your
+routine, I will make the required alterations.
+
+ Ideas
+ ~~~~~
+ I intend to incorporate Steve Marshalls ILBM loader and the exec_support.i
+file sent to me by Dave Edwards.
+
+ If you are a relative beginner to assembly language, why not try writing
+conversion routines for ASCII to long word values and back again. This
+could be written as several individual routines or as a couple of
+intellegent routines ( ie if the ASCII string starts with % the digits
+following are in binary, if a # it's hex and if no qualifier it's decimal
+).
+
+ For any willing old hands, how about a simple file requester ( ho, ho ! ).
+
+ I look forward to receiving thousands of useful routines in the very near
+future!
+
+							Mark. 
+
+ PS. If anyone is interested in starting a library project dealing with a
+particular aspect of programming then get in touch. For example, how about
+a hardware programmers library ???
+

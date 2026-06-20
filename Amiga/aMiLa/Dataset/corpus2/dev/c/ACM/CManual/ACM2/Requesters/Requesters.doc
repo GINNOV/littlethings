@@ -1,0 +1,650 @@
+5    REQUESTERS
+
+5.1  INTRODUCTION
+
+Requesters are boxes filled with some sort of information which
+the user need to respond to. It can be as simple as a question
+to insert a disk in the internal drive, or a fully functional
+file requester. Requesters are like small windows with some
+gadgets connected to it, and they will first disappear when the
+user has "satisfied the request".
+
+
+
+5.2  DIFFERENT TYPES OF REQUESTERS
+
+There exist three different types of requesters:
+- System requesters
+- Application requesters
+- Double-menu requesters
+
+
+
+5.2.1  SYSTEM REQUESTERS
+
+System requesters are opened and maintained by Intuition, and
+your program has no control over them. If the user, for
+example, is trying to load a file from drive df1:, and there is
+no disk present, the operating system would open the following
+request:
+
+  -----------------------------------
+  | System Request ============[*][*]
+  -----------------------------------
+  | No disk present              |  |
+  | in unit  1                   |  |
+  |                              |  |
+  | ---------         ---------- |  |
+  | | Retry |         | Cancel | |  |
+  | ---------         ---------- |  |
+  --------------------------------[*]
+
+
+One important thing about System requesters is that they are
+like small windows. You can move around them, push them behind
+or in front of other windows/requesters, and resize them.
+
+
+
+5.2.2  APPLICATION REQUESTERS
+
+This is the type of requester your program can open. They can
+be of any size (limited only by the size of the screen), and
+can be as simple or as complicated as you want.
+
+If you only want a Yes/No (True/False) requester you can call
+the function AutoRequest(), and Intuition will open and take
+care of the rest. If you on the other hand want a more
+sophisticated requester you need to declare and initialize a
+Requester structure with your requirements, and call the
+function Request().
+
+It is important to notice that an Application requester can not
+be moved around, resized etc (the window containing the
+requester can still, of course, be moved around and resized).
+It is only the System requesters, and the very simple
+requesters opened by the AutoRequest function, which acts like
+small windows.
+
+There is also one other big difference. When an Application
+requester has been activated the user can no longer select
+gadgets connected to the window. The window has been "frozen".
+Eg. try Example4, and you will notice that you can not select
+the close-window gadget as long as the requester is active. On
+the other hand, if a System requester has been activated, the
+user can still click on the close-window gadget, and a
+CLOSEWINDOW message is sent.
+
+
+
+5.2.3  DOUBLE-MENU REQUESTERS
+
+Double-menu requesters are like normal Application requesters
+except that they will open first, and only, when the user
+double-clicks on the mouse menu button. To create a Double-menu
+requester you need to declare and initialize a Requester
+structure, and then call the function SetDMRequest(). Whenever
+the user from now on double-clicks on the menu button on the
+mouse, the requester will be opened. Call the function
+ClearDMRequest() when you do not want the user to be able to
+open the requester any more.
+
+Only one DM-requester may be connected to each window.
+
+
+
+5.3  GRAPHICS FOR REQUESTERS
+
+You can render a requester in two different ways. You can
+either tell Intuition what you want, and everything is rendered
+for you, or you can supply Intuition with your own customized
+Bitmap (which has been rendered by yourself).
+
+If you want Intuition to draw the requester for you, you only
+need to decide what colour the background of the requester
+should be filled with, and declare and initialize one or more
+Border and IntuiText structures.
+
+If you supply your own customized Bitmap Intuition will not
+draw anything itself. That means that all gadget connected to
+that requester does not need to have any Border/IntuiText/Image
+structures connected to them, since Intuition will not bother
+about them.
+
+
+
+5.4  POSITION
+
+The requester can either be positioned relative to the top left
+corner of the window, or relative to the pointer position. If
+you want to position the requester relative to the window, you
+simply set the LeftEdge and TopEdge variables as desired. If
+you, on the other hand, want it relative to the pointer
+position, set the POINTREL flag, and initialize RelLeft and
+RelTop as desired.
+
+
+
+5.5  REQUESTERS AND GADGETS
+
+When you create a requester, except when you call the function
+AutoRequest(), you need to connect at least one gadget to the
+requester. Gadgets connected to a requester works exactly the
+same as gadgets connected to a window but with two important
+differences:
+
+1. Every gadget connected to a requester MUST have the
+   REQGADGET flag set in the GadgetType field.
+
+2. At least one gadget must satisfy the request, which means at
+   least one gadget must have the ENDGADGET flag set in the
+   Activation field. (Once a gadget with an ENDGADGET flag set
+   is selected, the requester is satisfied, and will close.)
+
+Remember that the user should always be able to find a safe way
+to leave the requester without affecting anything. The "way out
+gadget" (CANCEL, RESUME etc) should also always be placed on
+the right side in the requester. Here is an example:
+
+  ---------------------------------------
+  | System Request ================[*][*]
+  ---------------------------------------
+  | Do you really want to quit?      |  |
+  |                                  |  |
+  |                                  |  |
+  | -------                   ------ |  |
+  | | Yes |                   | No | |  |
+  | -------                   ------ |  |
+  ------------------------------------[*]
+
+Note that the Yes/True/Retry button is always on the left side
+and that the No/False/Cancel button is always on the right side.
+
+IMPORTANT! Make sure that the Gadgets are inside the
+requester, since Intuition will not do any boundary checking.
+
+
+
+5.6  SIMPLE REQUESTERS
+
+If you just want a simple requester with a True/False (or just
+False) option, you can use the function AutoRequest(). You give
+Intuition some information about how the requester should look
+like (height, text etc), and Intuition takes care of everything
+else. It opens the requester, put your program to rest, and
+when finished, returns a boolean value which tells your program
+what the user selected. If the user selected the left gadget
+(positive) it returns TRUE, and if the user selected the right
+gadget (negative) it returns FALSE.
+
+Example:
+
+  result = AutoRequest( window, info_text, pos_text, neg_text,
+                        pos_IDCMP, neg_IDCMP, width, height );
+
+  window:    Pointer to a window if there exist one, else NULL.
+
+  info_text: Pointer to an IntuiText structure containing the
+             "body text".
+
+  pos_text:  Pointer to an IntuiText structure containing the
+             "positive text". Eg: "TRUE", "YES", "RETRY" etc.
+             (Optional)
+
+  neg_text:  Pointer to an IntuiText structure containing the
+             "negative text". Eg: "FALSE", "NO", "CANCEL" etc.
+
+  pos_IDCMP: The IDCMP flags which satisfy the "positive"
+             gadget. (The flag RELVERIFY is already set.)
+
+  pos_IDCMP: The IDCMP flags which satisfy the "negative"
+             gadget. (The flag RELVERIFY is already set.)
+
+  width:     How many pixels wide the requester should be.
+
+  height:    How many lines high the requester should be.
+
+
+
+5.7  OPEN A REQUESTERS
+
+If you want to use a more complicated requester instead of the
+Simple requester you need to:
+
+1. Declare and initialize a Requester structure with your
+   requirements.
+
+2. Declare and initialize the Gadget structures which are
+   going to be connected to the requester.
+
+3. Call the function Request() in order to display the
+   requester as a normal requester, or call the function
+   SetDMRequest() to enable the user to bring up the requester
+   as a Double-menu requester.
+
+
+
+5.7.1  INITIALIZE A REQUESTER
+
+If you want to use a requester you need to declare and
+initialize a Requester structure which look like this:
+
+struct Requester
+{
+  struct Requester *OlderRequest;
+  SHORT LeftEdge, TopEdge;
+  SHORT Width, Height;
+  SHORT RelLeft, RelTop;
+  struct Gadget *ReqGadget;
+  struct Border *ReqBorder;
+  struct IntuiText *ReqText;
+  USHORT Flags;
+  UBYTE BackFill;
+  struct Layer *ReqLayer;
+  UBYTE ReqPad1[32];
+  struct BitMap *ImageBMap;
+  struct Window *RWindow;
+  UBYTE ReqPad2[36];
+};
+
+OlderRequest:      Initialized and maintained by Intuition.
+                   Set to NULL.
+
+LeftEdge, TopEdge: Position of the requester relative to the
+                   top left corner of the window (if the
+                   POINTREL flag is not set).
+
+Width, Height:     Size of the requester.
+
+RelLeft, RelTop:   If the POINTREL flag is set, these values
+                   describes the position of the requester
+                   relative to the pointer.
+
+ReqGadget:         Pointer to the first gadget in the linked
+                   list. Remember, there must exist at least
+                   one gadget connected to the requester with
+                   the ENDGADGET flag set.
+
+ReqBorder:         Pointer to a Border structure used to render
+                   the requester.
+
+ReqText:           Pointer to an IntuiText structure used to
+                   print text in the requester.
+
+Flags:             There exist two flags which you may set:
+
+                   POINTREL: Set this flag if you want to
+                             position the requester relative to
+                             the pointer. Set the RelLeft,
+                             RelTop as desired.
+
+                   PREDRAWN: If you supply with your own
+                             customized Bitmap set this flag,
+                             and Intuition will not try to draw
+                             anything itself.
+
+                   Intuition sets these flags:
+                   
+                   REQACTIVE:    This flag is set when the
+                                 requester is activated, and
+                                 cleared when the requester is
+                                 closed (deactivated).
+
+                   REQOFFWINDOW: This flag is set if the
+                                 requester is active and
+                                 positioned outside the window.
+                                 (The user has maybe shrinked
+                                 the window so it is smaller
+                                 than you thought.)
+
+                   SYSREQUEST:   This flag is set if the
+                                 requester is of the type
+                                 System requester.
+
+BackFill:          Colour register used to fill the requester
+                   with before any drawing takes place. For
+                   example, if you want to render the graphics
+                   on an orange background, you set the
+                   BackFill field to 3 (orange, normal WB
+                   colours).
+
+ReqLayer:          Pointer to the Layer structure for this
+                   requester. Initialized and maintained by
+                   Intuition. Set to NULL.
+
+ReqPad1:           Initialized and maintained by Intuition. Set
+                   to NULL. (Used by the system.)
+
+ImageBMap:         If the bit PREDRAWN is set, this field
+                   should contain a pointer to a customized
+                   Bitmap, else NULL.
+
+RWindow:           Initialized and maintained by Intuition.
+                   Set to NULL. (Used by the system, points
+                   back to the Window which this requester is
+                   connected to.)
+
+ReqPad2:           Initialized and maintained by Intuition. Set
+                   to NULL. (Used by the system.)
+
+
+Here is an example of how to initialize a Requester structure:
+
+struct Requester my_requester=
+{
+  NULL,             /* OlderRequester, used by Intuition.   */
+  40, 20,           /* LeftEdge, TopEdge, 40 pixels out, 20 */
+                    /* lines down.                          */
+  320, 100,         /* Width, Height, 320 pixels wide, 100  */
+                    /* lines high.                          */
+  0, 0,             /* RelLeft, RelTop, Since POINTREL flag */
+                    /* is not set, Intuition ignores these  */
+                    /* values.                              */
+  &my_first_gadget, /* ReqGadget, pointer to the first      */
+                    /* gadget.                              */
+  &my_border,       /* ReqBorder, pointer to a Border       */
+                    /* structure.                           */
+  &my_text,         /* ReqText, pointer to a IntuiText      */
+                    /* structure.                           */
+  NULL,             /* Flags, no flags set.                 */
+  3,                /* BackFill, draw everything on an      */
+                    /* orange background.                   */
+  NULL,             /* ReqLayer, used by Intuition. Set to  */
+                    /* NULL.                                */
+  NULL,             /* ReqPad1, used by Intuition. Set to   */
+                    /* NULL.                                */
+  NULL,             /* ImageBMap, no predrawn Bitmap. Set   */
+                    /* to NULL. (The PREDRAWN flag was not  */
+                    /* set.)                                */
+  NULL,             /* RWindow, used by Intuition. Set to   */
+                    /* NULL.                                */
+  NULL              /* ReqPad2, used by Intuition. Set to   */
+                    /* NULL.                                */
+};
+
+
+If you would like to supply your own customized and predrawn
+Bitmap, instead of letting Intuition render the requester you
+need to:
+
+1. Set the flag PREDRAWN in the Flags field.
+
+2. Set the ImageBMap to point at your BitMap structure.
+
+Remember that Intuition will now not draw anything for you. The
+ReqBorder, ReqText and BackFill variables are ignored, and
+should therefore be set to NULL. Intuition will also not render
+the gadgets connected to the requester. Because of this it is
+important that the rendering of the Bitmap is done carefully,
+and that the graphics correspond to where the gadgets are etc.
+
+
+
+5.7.2  HOW TO ACTIVATE AN APPLICATION REQUESTER
+
+If you have declared and initialized a Requester structure you
+only need to call the function Request() in order to activate
+it.
+
+Example:
+
+  result = Request( my_requester, my_window );
+
+  my_requester: Pointer to the Requester structure.
+
+  my_window:    Pointer to the Window structure which the
+                requester should be connected to.
+
+  result:       Boolean value returned. If Intuition could
+                successfully open the requester the function
+                returns TRUE, else (something went wrong, not
+                enough memory etc) the function returns FALSE.
+
+
+If you on the other hand would like the requester to be a
+Double-menu requester you should call the function
+SetDMRequest(), which will allow the user to activate the
+requester by double clicking the mouse menu button.
+
+Example:
+
+  result = SetDMRequest( my_window, my_requester );
+
+  my_window:    Pointer to the Window structure which the
+                requester should be connected to.
+
+  my_requester: Pointer to the Requester structure.
+
+  result:       Boolean value returned. If Intuition could
+                successfully open the requester the function
+                returns TRUE, else (some thing went wrong, not
+                enough memory or the a DM requester is already
+                connected to the window etc) the function
+                returns FALSE.
+
+You can after you have called the SetDMRequest() function
+successfully, take away the ability for the user to open the
+requester by calling the function ClearDMRequest().
+
+Example:
+
+  result = ClearDMRequest( my_window );
+
+  my_window:    Pointer to the Window structure which the
+                requester is connected to.
+
+  result:       If the function could disable the user to
+                activate the DM-requester it returns TRUE, else
+                (something went wrong, the requester is in use
+                etc) it returns FALSE.
+
+
+
+5.8  IDCMP FLAGS
+
+There exist three IDCMP flags which are special for the
+requesters. When a requester is activated you can, if you want
+to, receive a message telling you that a requester was
+activated. This is especially useful if you are using Double-
+menu requesters, since this is the only way to check if the
+requester was opened.
+
+If you want to get a message every time a requester is
+activated, you need to set the flag REQSET in the IDCMPFlags
+field in the NewWindow structure. Set the flag REQCLEAR if you
+want to receive a message every time a requester is
+deactivated. See Example5 for more details.
+
+There exist also one special IDCMP flag called REQVERIFY. If
+you set this flag in the IDCMPFlags field in the NewWindow
+structure your program will receive a message when the user is
+trying to activate a Double-menu requester. The interesting
+thing about this flag is that the requester will not be opened
+until your program has replied, ReplyMsg(). Your program can
+therefore finish of something (like finish of with drawing
+something etc) before the requester is displayed, and when your
+program is ready, it can reply, and the requester is activated.
+See Example6 for more information.
+
+
+
+
+5.9 FUNCTIONS
+
+Here are some commonly used functions:
+
+AutoRequest()
+
+  This function opens a Simple requester. Intuition will
+  automatically activate it and take care of the response from
+  the user. It will return TRUE if the left gadget was
+  selected, and FALSE if the right gadget was selected.
+
+  Synopsis:  result = AutoRequest( my_window, info_txt, pos_txt,
+                                   neg_txt, pos_IDCMP, neg_IDCMP,
+                                   width, height );
+
+  my_window: (struct Window *) Pointer to a window if there
+             exist one, else NULL.
+
+  info_txt:  (struct IntuiText *) Pointer to an IntuiText
+             structure containing the "body text".
+
+  pos_txt:   (struct IntuiText *) Pointer to an IntuiText
+             structure containing the "positive text". Eg:
+             "TRUE", "YES", "RETRY" etc. (Optional)
+
+  neg_txt:   (struct IntuiText *) Pointer to an IntuiText
+             structure containing the "negative text". Eg:
+             "FALSE", "NO", "CANCEL" etc.
+
+  pos_IDCMP: (long) IDCMP flags which satisfy the "positive"
+             gadget. (The flag RELVERIFY is already set.)
+
+  pos_IDCMP: (long) IDCMP flags which satisfy the "negative"
+             gadget. (The flag RELVERIFY is already set.)
+
+  width:     (long) How many pixels wide the requester should
+             be.
+
+  height:    (long) How many lines high the requester should
+             be.
+
+  result:    (long) Boolean value. The function returns TRUE if
+             the positive gadget was satisfied, and FALSE if
+             the negative gadget was satisfied.
+
+
+Request()
+
+  This function activates a requester connected to a window.
+  
+  Synopsis:     result = Request( my_requester, my_window );
+
+  my_requester: (struct Requester *) Pointer to the Requester
+                structure.
+
+  my_window:    (struct Window *) Pointer to the Window
+                structure which the requester should be
+                connected to.
+
+  result:       (long) Boolean value returned. If Intuition
+                could successfully open the requester the
+                function returns TRUE, else (something went
+                wrong, not enough memory etc) the function
+                returns FALSE.
+
+
+EndRequest()
+
+  This function deactivates a requester which has been
+  activated.
+  
+  Synopsis:     EndRequest( my_requester, my_window );
+
+  my_requester: (struct Requester *) Pointer to the Requester
+                structure which will be removed.
+
+  my_window:    (struct Window *) Pointer to the Window
+                structure which the requester is connected to.
+
+
+SetDMRequest()
+
+  This function allows the user to activate a Double-menu
+  requester by clicking twice on the mouse menu button.
+
+  Synopsis:  result = SetDMRequest( window, requester );
+
+  window:    (struct Window *) Pointer to the Window structure
+             which the requester should be connected to.
+
+  requester: (struct Requester *) Pointer to the Requester
+             structure.
+
+  result:    (long) Boolean value returned. If Intuition could
+             successfully open the requester the function
+             returns TRUE, else (something went wrong, not
+             enough memory or a DM requester is already
+             connected to the window, etc) the function returns
+             FALSE.
+
+
+ClearDMRequest()
+
+  This function disables a Double-menu requester. The user can
+  not open the requester any more.
+  
+  Synopsis:     result = ClearDMRequest( my_window );
+
+  my_window:    (struct Window *) Pointer to the Window
+                structure which the requester is connected to.
+                The DMRequest pointer in the Window structure
+                is set to NULL.
+
+  result:       (long) If the function could disable the
+                DM-requester it returns TRUE, else (something
+                went wrong, the requester is in use etc) it
+                returns FALSE.
+
+
+
+5.10  EXAMPLES
+
+Example1
+  This example opens a Simple requester by calling the function
+  AutoRequest. It displays a message "This is a very simple
+  requester!", and has only one gadget connected to it (on the
+  right side of the requester) with the text "OK".
+
+Example2
+  Same as Example1, except that the requester displays a
+  message "Do you really want to quit?", and allows the user to
+  choose between "Yes" and "No". The program  will continue to
+  reopen the requester until the user has chosen "Yes".
+
+Example3
+  Same as Example1, except that this requester displays a
+  message "Insert a disk in any drive!", and allows the user to
+  choose between "Yes" and "No". The program will continue to
+  reopen the requester until the user has chosen "Yes" or
+  inserted a disk.
+
+Example4
+  This program will open a normal window which is connected to
+  the Workbench Screen. The window will use all System Gadgets,
+  and will close first when the user has selected the System
+  gadget Close window. Inside the window we have activated an
+  Application requester with a connecting gadget. The requester
+  will first be satisfied when the user has selected the
+  gadget, and will then be deactivated. The window can now be
+  closed.
+
+Example5
+  Same as Example4, except that the requester is first
+  activated when the user double-clicks on the right mouse
+  button. This example shows how to create a Double-menu
+  requester, and how to monitor the IDCMP flags REQSET and
+  REQCLEAR.
+
+Example6
+  Same as Example5, except that whenever the user double-
+  clicks on the right mouse button, we will receive a REQVERIFY
+  message, and first when we have replied, will the requester
+  be activated. This example shows how to use the REQVERIFY
+  flag.
+
+Example7
+  This program will open a normal window which is connected to
+  the Workbench Screen. The window will use all System Gadgets,
+  and will close first when the user has selected the System
+  gadget Close window. Inside the window we have activated an
+  Application requester with three connecting gadgets. Two are
+  Boolean gadgets ("OK and "CANCEL"), and one is a String
+  gadget.
+
+Example8
+  Same as Example7, except that it is an Integer gadget.
+
+Example9
+  Same as Example8, except that it is a Proportional gadget.

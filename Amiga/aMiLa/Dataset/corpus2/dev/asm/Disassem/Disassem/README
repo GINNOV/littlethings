@@ -1,0 +1,26 @@
+68000 Disassembler:
+
+    These files provide a simple 68000 disassembler.  The program "disassem"
+will read standard DOS object files, and disassemble the code sections. 
+Data sections are dumped in hex, symbol definitions are listed appropriately.
+My main interest was in dumping executable files, so I haven't integrated
+the symbols with the disassembled code.  The file "convert.c" is the 
+procedure which actually converts a single instruction to a text string.  If
+you want to disassemble information in memory, or from some other object
+file format it should be easy to change the disassem program.  The 
+disassembler will convert any valid instruction to text, it will not however
+notice all invalid combinations of addressing modes.  Thus, some invalid
+instruction codes may be printed as valid.  Main other problem with the
+program is that it can't be stopped, needs to notice control C, or the like.
+You may copy-change-use this program as you like.
+
+                                                   Bill Rogers
+                                                   Comp Sci Dept.
+                                                   University of WAIKATO
+
+
+Note: The control-C problem has been solved by using a Beta 3.04 version
+of Lattice C, which has control-C break enabled as the default.
+
+						   Fred Fish
+

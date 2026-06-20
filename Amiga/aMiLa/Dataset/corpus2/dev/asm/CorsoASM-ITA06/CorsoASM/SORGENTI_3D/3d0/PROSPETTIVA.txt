@@ -1,0 +1,649 @@
+
+
+Presentando un punto tridimensionale su uno schermo a 2 dimensioni
+------------------------------------------------------------------
+Pensa di avere un punto nello spazio (3d) che tu desideri fotografare.
+Una foto è 2d, e questo dovrebbe darci gia' una risposta.
+
+	Guarda questo disegno:
+
+    Punto
+   /   Schermo (="foto")
+  .  |/
+   \ | ^y
+    \| |
+     |\|
+ <---+-x <- Occhio dell'osservatore
+z    |
+     |
+     |
+     |
+
+Analizzando questo ricaviamo la seguente formula:
+
+Y Proiettato= Distanza dello schermo * Vecchia Y / ( Distanza del punto )
+(Le distanze sono naturalmente le coordinate Z dalla posizione degli Occhi)
+
+E in modo simile ricaviamo la proiezione di X.
+
+
+	  Nuovo	Y=k*y/(z+dist)
+
+		X=k*x/(z+dist)
+
+(dove k è una costante per questo schermo, dist è la distanza dal punto di
+ Rotazione all'Occhio sull'asse Z)
+
+	P¹T¹	    = (PT     * OT¹	   )/OT
+
+	Xproiettato = (Xspazio*DistZSchermo)/DistZPunto
+
+Occorre pero' dire che per trovare la distanza Z del punto P dall'osservatore,
+che abbiamo identifocato con OT (distZPunto), occorre fare una sottrazione:
+
+	DistZPunto = Zspazio - DistZSchermo
+
+Ossia dobbiamo sottrarre la distanza dell'oss. dallo schermo alla coordinata Z
+del punto P, infatti:
+
+		P
+	       |-_      |(quadro)
+	       |  -_    |
+	a      |    -_  |
+	s      |      -_|P¹
+	s      |	+_	
+	e      |	| -_
+	       |	|   -_
+	X      |	|     -_
+	       |	|       -_
+	       |T_______|T¹_______-O (occhio)
+		15	0	 -11
+
+		<---- asse Z ---->
+
+In questo caso abbiamo che il quadro si trova alla posizione Z = zero, mentre
+P alla coordinata Z = 15, e l'occhio a -11.
+Quindi abbiamo Zspazio = 15 e DistZSchermo = -11. La distanza da O a T pero'
+e' di 15+11=26, ottenibile facendo 15-(-11), ossia Zspazio-DistZschermo.
+
+La formula finale, quindi e':
+
+	P¹T¹	    = (PT     * OT¹	   )/OT
+
+	Xproiettato = (Xspazio*DistZSchermo)/(Zspazio-DistZschermo)
+
+Niente di preoccupante. La nostra "Pseudo-Routine" diventa:
+
+	move.w	Xspazio,d0
+	move.w	DistZSchermo,d1
+	muls.w	d0,d1		; Xspazio*DistZSchermo
+	move.w	DistZSchermo,d2
+	sub.w	Zspazio,d2	; Zspazio-DistZschermo = DistZPunto
+	divs.w	d2,d1		; (Xspazio*DistZSchermo)/DistZPunto
+				; In d1 abbiamo la coordinata X del punto P¹
+
+Notate che in entrata ci servono Xspazio e Zspazio, che sono le coordinate X
+e Z del punto P, e DistZSchermo, che e' la distanza dell'osservatore dallo
+schermo, che deve avere un valore simile alla distanza reale di chi guarda
+il monitor!
+
+; Executor3dwire
+
+	sub.w	D,d0			;sub an offset value (distance)
+	move.w	d0,(a5)+		;d0 -> store Z
+	move.w	d0,d2			;d0 -> d2
+	move.w	(a2),d0			;d0 = X
+	move.w	d4,d1			;d1 = Y
+	move.w	#$00f0,d4		;d4 = distance
+	move.w	d4,d5			;d4 -> d5
+	muls	d4,d0			;d0 = distance*x
+	muls	d4,d1			;d1 = distance*y
+	sub.w	d2,d5			;d5 = distance-z
+	divs	d5,d0			;d0 = x(relative)
+	divs	d5,d1			;d1 = y(relative)
+	move.w	d0,(a3)+		;d0 -> store X
+	move.w	d1,(a4)+		;d1 -> store Y
+	cmp.w	#0,a0			;move all points...
+
+;	Gabbrivec
+
+**************************** 3d to 2d projection *****************************
+    add.l   Observer_Z,d2 *>> z = z + observer_distance
+    add.l   #488,d2     *>>>> z = z + zcenter
+    asl.l   #8,d0       *>>>> x = x * 256
+    asl.l   #8,d1       *>>>> x = x * 256
+    divs    d2,d0       *>>>> Project X
+    divs    d2,d1       *>>>> Project Y
+    add.w   #160,d0     *>>>> x = x + xcenter
+    add.w   #100,d1     *>>>> y = y + ycenter
+    move.w  d0,(a1)+    *>>>> Store X
+    move.w  d1,(a1)+    *>>>> Store Y
+    dbf     d7,CalcLoop *>>>> Repeat...
+    rts
+
+; Lezione3d-1 e 2
+
+
+****************************************************************************
+* PROSPETTIVA, calcolata proiettando i punti traslati che si trovano nel   *
+* buffer (o tabella, se preferite) PuntiXYZtraslati.			   *
+* In uscita le coordinate proiettate X¹ e Y¹ di ogni punto sono salvate    *
+* nel buffer PuntiXYproiettati.						   *
+****************************************************************************
+
+PROSPETTIVA:
+	LEA	PuntiXYZtraslati(PC),A1	; indirizzo tab. delle X,Y,Z da
+					; proiettare dopo la traslazione
+
+	LEA	PuntiXYproiettati(PC),A4 ; tabella dove mettere le coordinate
+					 ; X¹,Y¹ proiettate.
+
+	MOVE.w	#NPuntiOggetto-1,D7	; numero di punti da proiettare
+PERLOP:
+	MOVEM.W	(a1)+,d0/d1/d2	; coord. X in d0, Y in d2, Z in d2
+	MOVE.w	d2,D5		; coordinata Z dell'oggetto
+	MOVE.w	D5,D6		; copiala anche in d6
+	MOVE.w	DIST(PC),D4	; distanza Z dell'oggetto, fattore di
+				; ingrandimento
+	SUB.w	D5,D4		; (distanza)-(coordinata Z dell'oggetto)
+	EXT.L 	D4
+	LSL.L 	#8,D4		; moltiplica *256
+	MOVE.w	ZOBS(PC),D3	; coordinata Z del centro di proiezione
+	EXT.L	D3
+
+	SUB.L	D6,D3		; meno la coordinata Z dell'oggetto
+	BNE.s	PROSPETTIVA1
+
+	ADDQ.w	#2*3,A1		; salta X,Y,Z
+	CLR.w	(A4)+		; val X Proiettato.
+	CLR.w	(A4)+		; val Y Proiettato.
+	BRA.s	PEREND1
+
+PROSPETTIVA1:
+	DIVS.w	D3,D4
+	MOVE.w	D4,D3
+				; Coordinata X dell'oggetto in d0...
+	MOVE.w	D0,D5
+	NEG.w	D0
+	MULS.w	D0,D3		; Moltiplica per il fattore di prospettiva
+	LSR.L	#8,D3		; dividi per 256
+
+	ADD.w	D3,D5		; aggiungi alla coordinata X
+
+	ADD.w	#LarghSchermo/2,D5 ; + posizione X dell centro dello schermo.
+				   ; questo per centrare: 320/2=160
+
+	MOVE.w	D5,(A4)+	; val X Proiettato
+
+				; Coordinata Y dell'oggetto in d1...
+	MOVE.w	D1,D5
+	NEG.w	D1
+	MULS.W	D1,D4
+	LSR.L	#8,D4		; dividi per 256
+
+	ADD.w	D4,D5
+	neg.w	d5		; Display offset, mirror of Y-Axis
+
+	ADD.W 	#LunghSchermo/2,D5 ; + posizione Y del centro dello schermo
+				   ; per centrare: 256/2 = 128
+
+	MOVE.w	D5,(A4)+	; val Y Proiettato
+PEREND1:
+	DBRA 	D7,PERLOP	; ripeti NumeroPunti volte per tutti i punti.
+	RTS			; fino a che non li hai proiettati tutti
+
+; Lezione3d-4c
+
+	swap	d2			;d2=z
+	swap	d0			;d0=x
+	swap	d1			;d1=y
+	
+	add.w	#256,d2
+	muls	Dist,d0			;Distance
+	muls	Dist,d1			;Distance
+	divs	d2,d0
+	divs	d2,d1
+	add.w	Centrex,d0		;add to center
+	add.w	Centrey,d1		;add to center
+	move.w	d0,(a3)+		;Save calc coords
+	move.w	d1,(a4)+
+		dbra	d5,CalcMoreCoords
+
+; Lezione3d-4d
+
+;----------------------------------------------
+;------- PERSPECTIVE --------------------------
+;----------------------------------------------
+
+	add.w	avs(PC),d2
+	muls	zoom(PC),d6
+	muls	zoom(PC),d1
+	divs	d2,d6
+	divs	d2,d1
+
+	addi.w	#160,d6
+	addi.w	#128,d1
+	move.w	d6,(a2)+
+	move.w	d1,(a2)+
+
+	dbf	d0,calcloop
+
+; Lezione3d-5
+
+	trigdiv d0		;FINAL X
+	trigdiv d1		;FINAL Y
+	trigdiv d2		;FINAL Z
+
+;-- Okay lets calculate perspective
+
+	add SZpos(a0),d2	;Add its Zposition
+
+	add #origindist,d2	;Calculate Perspective
+	muls #screendist,d0
+	muls #screendist,d1
+	divs d2,d0
+	divs d2,d1
+
+;-- Then lets move it to the right position (Translate)
+
+	add.w	SXpos(a0),d0	;Add Xpos
+	add.w	SYpos(a0),d1	;Add Ypos
+
+;- and put it into the list
+
+	move.w	d0,(a1)+
+	move.w	d1,(a1)+
+
+; Linevecs
+
+
+Projection:
+ lea RotateTab(pc),a0
+ lea ZweiDTab(pc),a1
+ move.l KoordPointer(Pc),a2
+ move.w (a2),d7
+ lea ZoomX(pc),a2
+ move.w #160,d3
+ move.w #128,d4
+.ProjectionLoop:
+ movem.w (A0)+,d0-d2
+ add.w (a2),d0
+ add.w 2(a2),d1
+ add.w 4(a2),d2
+ asl.l #8,d0
+ asl.l #8,d1
+ divs d2,d0
+ divs d2,d1
+ add.w d3,d0
+ add.w d4,d1
+ movem.w d0-d1,(a1)
+ addq.w #4,a1
+ dbf d7,.ProjectionLoop
+ RTS
+
+; LogoFX2.s
+
+		; 3d(x,y,z) - 2d(x,y)
+		moveq	#10,d6
+		move.w	#auge,d5	;auge
+		add.w	#obj,d2
+		sub.w	d5,d2
+		ext.l	d0
+		asl.l	d6,d0
+		divs	d2,d0		;punkt x*auge/(punkt z-auge)
+		neg.w	d0		;wert negieren
+		add.w	#160,d0		;x coord addi 
+		move.w	d0,(a6)+	;x
+		ext.l	d1
+		asl.l	d6,d1
+		divs	d2,d1		;punkt y*auge/(punkt z-auge)
+		add.w	#128,d1		;y coord addi
+		move.w	d1,(a6)+	;y
+
+; MartinProspett
+
+	swap	d0		; x'= d0/2^16
+	swap	d1		; y'= d1/2^16
+	swap	d2		; z'= d2/2^16
+
+; TRASLAZIONE
+	add.w	a1,d2		; traslazione in direzione z
+
+; PROIEZIONE  ( posizione osservatore = 256 )
+; massimo valore z per punti = 192
+
+	add.w	d2,d2		; proiezione
+	move.w	0(a4,d2.w),d2
+	muls	d2,d0
+	muls	d2,d1
+	asl.l	#3,d0
+	asl.l	#3,d1
+	swap	d0
+	swap	d1
+	add.w	a6,d0
+	add.w	d6,d1
+	move.w	d0,(a2)+	; x punto 2d
+	move.w	d1,(a2)+	; y	
+
+	dbra	d7,objaxi2
+
+; Mase_dotcube
+
+
+PROIEZ_CENTRALE:
+	LEA	X_COORD2(pc),A0
+	LEA	Y_COORD2(pc),A1
+	LEA	Z_COORD2(pc),A2
+	LEA	X_SCR(pc),A3
+	LEA	Y_SCR(pc),A4
+	LEA	MXY(pc),A5
+	MOVE.W	#$110,D4
+	MOVE.W	ZOOMF(pc),D7
+	MOVEQ	#8,D6
+;	MOVE.W	N_XYZCOORD(pc),D6
+	SUBQ	#1,D6
+PROIEZ_LOOP:
+	MOVE.W	(A0)+,D0
+	MOVE.W	(A1)+,D1
+	MOVE.W	(A2)+,D2
+	SUB.W	D7,D2
+	MOVE.W	d4,d5			;d4 -> d5
+
+	Muls.w	d4,d0			;d0 = distance*x
+	Muls.w	d4,d1			;d1 = distance*y
+	SUB.W	d2,d5			;d5 = distance-z
+	DIVS.W	d5,d0			;d0 = x(relative)
+	DIVS.W	d5,d1			;d1 = y(relative)
+
+	ADD.W	(A5),D0
+	ADD.W	2(A5),D1
+
+	move.w	d0,(a3)+		;d0 -> store X
+	move.w	d1,(a4)+		;d1 -> store Y
+	DBRA	D6,PROIEZ_LOOP
+	RTS	
+
+; Objected
+
+td_perspective:				; put in perspective
+	move.w	z3d(pc),d1
+	ext.l	d1
+	add.l	D3_Zoom(pc),d1
+	bne.s	td_nozero
+	moveq	#1,d1
+td_nozero:
+	move.w	x3d(pc),d0
+	ext.l	d0
+	asl.l	#8,d0
+	divs	d1,d0
+	move.w	d0,(a0)
+	move.w	y3d(pc),d0
+	ext.l	d0
+	asl.l	#8,d0
+	divs	d1,d0
+	move.w	d0,2(a0)	
+	move.w	d1,4(a0)
+	rts
+
+; ExecutorFill0
+
+	sub.w	D,d0			;sub an offset value (distance)
+	move.w	d0,(a5)+		;d0 -> store Z
+	move.w	d0,d2			;d0 -> d2
+	move.w	(a2),d0			;d0 = X
+	move.w	d4,d1			;d1 = Y
+	move.w	#$06f0,d4		;d4 = distance
+	move.w	d4,d5			;d4 -> d5
+	muls	d4,d0			;d0 = distance*x
+	muls	d4,d1			;d1 = distance*y
+	sub.w	d2,d5			;d5 = distance-z
+	divs	d5,d0			;d0 = x(relative)
+	divs	d5,d1			;d1 = y(relative)
+	move.w	d0,(a3)+		;d0 -> store X
+	move.w	d1,(a4)+		;d1 -> store Y
+	cmp.w	#0,a0			;move all points...
+	beq	EX
+	subq.w	#1,a0
+	bra	D_LOOP
+
+; FilledVectors
+
+ ext.l d0			; nach Zwischentabelle
+ ext.l d1
+ ext.l d2
+ add.l addx(pc),d0		; Verschiebung addieren
+ add.l addy(pc),d1
+ add.l addz(pc),d2
+ beq.s ptjend
+ moveq #10,d3			; Strahlensatz:
+ asl.l d3,d0			;      f*x
+ asl.l d3,d1			; x' = -
+ asr.l #3,d2			;       z
+ divs d2,d0
+ divs d2,d1			;        f*y
+ neg.w d0			; y' = - -
+ add.w #160*16,d0		;         z
+ add.w #74*16,d1		; Zentrieren
+ptjend:
+ movem.w d0-d1,(a3)		; und nach 2D-Tabelle speichern
+ addq.l #4,a3
+ dbf d5,translp
+
+; FILLED_1
+
+
+;------------------------------------------------------------------------
+
+; d0-d2	:	(x,y,z)
+; d3	:	reserved
+
+PROJECTION:	move.w	#K,d3
+		addi.w	#D,d2			; z+D
+		ble.s	PROJECTION1
+		muls	d3,d0			; x*K
+		muls	d3,d1			; y*K
+		divs	d2,d0			; x' = x*K / z+D
+		divs	d2,d1			; y' = y*K / z+D
+		addi.w	#Xc,d0
+		addi.w	#Yc,d1
+PROJECTION1:	rts
+
+; FILLED_VECTOR2
+
+;------ D5:X D6:Y D7:Z --------------------------
+PROJEC:
+	MULS.W	DFOC(PC),D5
+	DIVS.W	D7,D5
+	ADDI.W	#160,D5
+	MULS.W	DFOC(PC),D6
+	DIVS.W	D7,D6
+	SUBI.W	#100,D6
+	NEG.W	D6
+	RTS
+DFOC:	DC.W	256
+
+; FireFill
+
+	swap d0                 ;uj c1
+	swap d3                 ;uj c2
+	move.w d6,d1		
+	exg d0,d3                ;X csere Z-vel    Z=d3
+	moveq #11,d6             ;lekepezes 2D-re
+	move.w #$660,d2
+	sub.w d3,d2              ;$444-Z
+	muls d2,d0               ;z'*x
+	asr.l d6,d0              ;z'*x/2048=2D X
+	muls d2,d1               ;z'*y
+	asr.l d6,d1              ;z'*y/2048=2D Y
+	add.w #150,d0		 ;X=X+150     kozepre a kepernyon           
+	add.w #100,d1            ;Y=Y+100
+	move.w d0,(a2)+		 ;2D X tarolasa
+	move.w d1,(a2)+          ;2D Y tarolasa
+	dbf d7,h3                ;8-szor               
+
+; glenz1
+
+		movem.w	d1-d3,(a1)
+		addq.l	#6,a1
+zoom1		add.w	#-1200,d3			;z add
+		sub.w	#1024,d3			;pz-auge
+		ext.l	d1
+		ext.l	d2
+		moveq	#10,d7
+		asl.l	d7,d1
+		asl.l	d7,d2
+		divs	d3,d1			;px*auge/(pz-auge)
+		divs	d3,d2			;py*auge/(pz-auge)
+		neg.w	d1			;px = 0-px
+		add.w	#111,d1
+		add.w	#96+20,d2
+		move.w	d1,(a1)+
+		move.w	d2,(a1)+
+
+; glenz2
+
+compute_points_losange:				; coords 2d
+	lea	object_losange(pc),a1		; ptr objet
+	lea	buffer2d_losange(pc),a2		; stockage xe et ye
+	lea	distance(pc),a3
+	lea	table_division(pc),a4
+	move.w	(a1)+,d7		; nb points
+	moveq	#1,d3			; pour decaler
+compute_loop_losange:				
+	lea	matrix_losange(pc),a0
+	lea	distance(pc),a3
+	movem.w	(a1)+,d0-d2		; X Y Z
+
+	move.w	d0,d4			; x
+	muls	(a0)+,d4
+	move.w	d1,d5			; y
+	muls	(a0)+,d5
+	add.l	d5,d4
+	move.w	d2,d5			; z
+	muls	(a0)+,d5
+	add.l	d5,d4
+	asr.l	d3,d4			; X'
+	
+	move.w	d0,d5
+	muls	(a0)+,d5
+	move.w	d1,d6
+	muls	(a0)+,d6
+	add.l	d6,d5
+	move.w	d2,d6
+	muls	(a0)+,d6
+	add.l	d6,d5
+	asr.l	d3,d5
+
+	muls	(a0)+,d0
+	muls	(a0)+,d1
+	muls	(a0)+,d2
+	add.l	d0,d2
+	add.l	d1,d2
+	asr.l	#8,d2			; Z'
+	add.w	(a3)+,d2		; distance
+
+	add.w	d2,d2			; Z
+	move.w	(a4,d2.w),d2
+	muls 	d2,d4
+	muls 	d2,d5
+	lsl.l 	#2,d4
+	lsl.l 	#2,d5
+	swap 	d4
+	swap 	d5
+	add.w	(a3)+,d4		; centerx
+	add.w	(a3)+,d5		; centery
+	move.w	d4,(a2)+
+	move.w	d5,(a2)+
+	dbf	d7,compute_loop_losange
+
+; LIGHTSOURCED_NORMAL
+
+** CONVERT POINT FROM 3D TO 2D ************************************************
+
+	; d0,d1,d2 = X,Y,Z
+CONVERT:
+	ADD.W	ZCENTER(PC),D2
+	MULS	ZOOM(PC),D0
+	MULS	ZOOM(PC),D1
+	DIVS	D2,D0
+	DIVS	D2,D1
+	RTS
+
+; MelFill0
+
+**3d -> 2d
+	add.w	XCenter(pc),d5
+	add.w	YCenter(pc),d6
+	add.w	ZCenter(pc),d7
+	moveq	#9,d4
+	ext.l	d5
+	ext.l	d6
+	asl.l	d4,d5
+	asl.l	d4,d6
+	divs	d7,d5
+	divs	d7,d6
+
+	add.w	#Width/2,d5
+	add.w	#Height/2,d6
+
+	movem.w	d5-d6,(a6)
+	addq.w	#4,a6
+	bra.w	.nextpoint
+
+.ud:	rts
+
+; VectorEPS
+
+	muls	SinZ-labels(a4),d0		;d0 = x * sin(za)
+	muls	CosZ-labels(a4),d1		;d1 = y * cos(za)
+	add.l	d0,d1				;d1 = (y*cos(za))+(x*sin(za))
+	move.l	d5,d0
+
+	add	Scale-labels(a4),d2		
+	divs	d2,d0
+	divs	d2,d1
+
+	add	#160,d0
+	add	#100,d1
+
+	move	d0,(a1)+			;Store output coordinates
+	move	d1,(a1)+
+
+; V_convex
+
+	LEA	176.w,A3				; x-centre
+	LEA	134.w,A4				; y-centre
+
+	MOVE.W	O.WMXPTS(A5),D7		; Perspective all points
+	SUBQ.W	#1,D7
+PerspPoint_lp
+	MOVEM.W	(A0)+,D0-D2
+
+	MOVE.W	(A2,D2.W),D2
+	MULS	D2,D0				; f(z)*x
+	SWAP	D0
+	ADD.W	A3,D0   			; f(z)*x+xcentre
+	MULS	D2,D1   			; f(z)*y
+	SWAP	D1
+	ADD.W	A4,D1   			; f(z)*y+ycentre
+	MOVE.W	D0,(A1)+
+	MOVE.W	D1,(A1)+
+	DBRA	D7,PerspPoint_lp
+
+; Vecchunky2x2ok
+
+	add.w zcount,d3
+	move.l #256*256,d5		
+	move.w #256,d4			
+	add.w #1760,d3
+	sub.w d3,d4
+	divu d4,d5
+	muls d5,d0
+	asr.l #8,d0
+	add.w #80,d0
+	move.w	d0,(a1)+
+	muls d5,d1
+	asr.l #8,d1
+	add.w #64,d1
+	move.w	d1,(a1)+
+

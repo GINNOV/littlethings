@@ -1,0 +1,16 @@
+Short:        Collection of useful Cando source code.
+Author:       tron@mclv.net (Joey McDonald)
+Uploader:     tron mclv net (Joey McDonald)
+Type:         dev/misc
+Architecture: m68k-amigaos
+
+The full Cando source code to my Vortex program as well as
+an unfinished "deck" named Arc-Angel.
+
+There is a LOT of useful cando code in these decks. Requesters,
+directory scanning techniques, and MUCH more. Every cando
+programmer should take a look.. it could save you a LOT
+of time developing your own programs.
+
+tron@mclv.net
+Joey McDonald

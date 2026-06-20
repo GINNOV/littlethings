@@ -1,0 +1,32 @@
+Short:    Fast linear 18-bit Truecolor Chunky to Planar converter
+Uploader: Azure@poet.shnet.org
+Author:   juhpin@mail.freenet.hut.fi
+Type:     dev/asm
+Requires: AGA Chipset,68020
+
+-----------------------------------------------------------------------
+                       AsAc2p18bit.s  v1.5   05-10-96
+
+
+         a fast 18bit truecolor ham8 c2p routine by ASA/Cirion
+                Modified from Peter Mcgavins Gloom c2p
+  On 030/28Mhz machine this takes 1.6 frames from processor to convert
+                         ( 160*100 2x2 screen )
+         Then blitter is activated to do 1 blit for every plane
+                     Long word writes to chipmem !
+                           Double buffering !
+                                Linear !
+
+              Remember to thank me if you use this !  =)
+
+ Works nice... Used in an intro called Hope2 by Cirion at Skenery'96
+               Look at cirhope2.lzx....
+
+  Don't blame me if you destroy your computer/software with this ! ;)
+
+ My E-mail address:   juhpin@freenet.hut.fi
+
+               And get your ass to Demolition II -party
+                           at Joensuu !!!  22-24 NOV 96
+                  Read demolition.txt for more info !
+-----------------------------------------------------------------------

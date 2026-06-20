@@ -1,0 +1,188 @@
+---------------------------
+GenClasses Tool - ChangeLog
+---------------------------
+
+$Id$
+
+2011-01-28 Thore Böckelmann <tboeckel@gmx.de>
+
+  * gc.c: the generated clean up code now checks for still living objects of
+    each class. This effectively points to memory leaks in case objects are
+    created dynamically and don't belong to the application anymore when the
+    final cleanup happens.
+
+2010-11-09 Thore Böckelmann <tboeckel@gmx.de>
+
+  * gc.c: a .crc file will be created for each class. This makes it possible to
+    regenerate only those classes which really have been modified.
+
+2010-11-05 Thore Böckelmann <tboeckel@gmx.de>
+
+  * gc.c: each class now gets its own public header file to avoid depency of
+    lots of source file on one single generated classes.h file. The classes.h
+    file now contains the function prototypes used in classes.c only.
+    Furthermore added the new keyword INCLUDE to let classes specify additional
+    #include statements in case their method need definitions from other
+    headers.
+
+2010-10-21 Thore Böckelmann <tboeckel@gmx.de>
+
+  * gc.c: multiple dependencies from a private class were not handled correctly
+    and rejected as a dependency loop. Additionally the parent's class name will
+    now be included in the error message.
+
+2010-08-05 Thore Böckelmann <tboeckel@gmx.de>
+
+  * the .crc file is now written on every run, even if the checksum did not
+    change. This solves some dependency issues in YAM's Makefile.
+
+2010-08-04 Thore Böckelmann <tboeckel@gmx.de>
+
+  * CRC checksums are now used to check whether any class definition has
+    changed. Without any public change the sources will not be regenerated.
+
+2010-03-24 Thore Böckelmann <tboeckel@gmx.de>
+
+  * gc.c: even *VERY* dumb mistakes like a class being its own superclass are
+    now detected as dependency loops and will generate an "#error" statement.
+
+2010-03-23 Thore Böckelmann <tboeckel@gmx.de>
+
+  * gc.c: the ATTR() macro only creates the corresponding full attribute name
+    (i.e. MUIA_<class>_<attribute>) and no prepended "case" statement anymore.
+    This is much more intuitive if also foreign attributes are handled in an
+    OM_SET or OM_GET method. This also makes it possible to use ATTR() within
+    the class source instead of the full name whenever an attribute is being
+    used. Also added the METHOD() macro to enable the same convenience as with
+    attributes when invoking methods within the class source.
+
+2010-03-22 Thore Böckelmann <tboeckel@gmx.de>
+
+  * gc.c: classes without any instance data don't need to specify a Data
+    structure with an unused dummy variable anymore.
+
+2010-03-21 Thore Böckelmann <tboeckel@gmx.de>
+
+  * gc.c: the classes are now sorted alphabetically.
+
+2010-03-20 Thore Böckelmann <tboeckel@gmx.de>
+
+  * gc.c: renamed "SuperMCC" to "SuperMCCIndex" to make clear that the value in
+    fact is an index within the list structure. Also changed the layout of the
+    generated code a bit.
+
+2010-03-19 Thore Böckelmann <tboeckel@gmx.de>
+
+  * gc.c: reworked the source to add the usual ENTER() and RETURN() statements
+    to the generated class creation code. This makes it possible to output which
+    class exactly could not be created.
+  * gc.c: it is now possible to create private classes which are subclasses of
+    other private classes. Before only public classes could be used as super-
+    classes. The special order in which the classes must be created is properly
+    respected. Possible dependency loops will not be detected during the code
+    generation, but at runtime of the created code instead.
+  * gc.c: modified the code generation once more to detect possible class loops
+    and really make sure that all classes are created in the correct order (i.e.
+    superclasses before subclasses). In case of a loop the generated source will
+    contain an "#error" statement which contains the affected classes.
+
+2009-05-28  Jens Langner <Jens.Langner@light-speed.de>
+
+    * gc.c: changed to use the new SDISPATCHER() macro which creates
+      static dispatchers instead.
+
+2008-03-22  Jens Langner <Jens.Langner@light-speed.de>
+
+    * gc.c,lists.c: fixed a bug in the list_findname() function where
+      after the last fix the function didn't correctly find a named
+      node. In addition, a new "-q" option now prevents all standard
+      output as only fprintf(stderr,...) will be shown upon execution.
+
+2008-03-21  Thore Böckelmann <tboeckel@gmx.de>
+
+    * lists.c: fixed a memory leak due to a wrong linked list implementation.
+      There was always one node left in a list upon calling list_remhead()
+      until it returned NULL. Also added a sort functions for linked lists.
+
+2006-10-07  Jens Langner <Jens.Langner@light-speed.de>
+
+    * gc.c: use new DISPATCHER() macro instead of DISPATCHERPROTO()
+
+2006-09-27  Jens Langner <Jens.Langner@light-speed.de>
+
+    * gc.c: removed unnecessary STDARGS uses
+
+2006-09-05  Jens Langner <Jens.Langner@light-speed.de>
+
+    * gc.c: added workaround to catch cases where doubled ';' chars
+      in MUIP structures will be suppressed.
+    * gc.c: raised the default warning level to "-pedantic" for GCC
+      as we want to make sure it compiles on almost every system with
+      every compiler involved. However, the "-Wno-strict-aliasing" is
+      required as well or otherwise GCC will warn about some stupid
+      strict aliasing.
+
+2005-11-11  Jens Langner <Jens.Langner@light-speed.de>
+
+    * gc.c: replaced all 'long' datatype usages against 'int' as they
+      where anyway not required and caused quite some problems on
+      64bit system. There the hash generation code generated 64bit
+      values instead of 32bit ones, which is of course a requirement.
+      Also modified the whole tagvalue generation code to just generate
+      tag values that are between TAG_USER (0x80000000) and the MUI's
+      one (0x80010000) because otherwise we might run into problems.
+
+2005-11-06  Jens Langner <Jens.Langner@light-speed.de>
+
+    * gc.c: exported text will now be placed before the generated MUIP
+      structures because it may contain type definitions required by
+      the MUIP structures.
+
+2004-07-05  Jens Langner <Jens.Langner@light-speed.de>
+
+    * replace the va_list/va_start calls with the much more general
+      VA_LIST/VA_START macros out of the new SDI_stdarg.h
+      compatibility header file.
+
+2004-05-28  Jens Langner <Jens.Langner@light-speed.de>
+
+    * removed the special AmigaOS4 ASMSTUB handling again as the 51.4
+      kernel of AmigaOS4 seem to handle m68k<>PPC cross calls correctly
+      now.
+
+2004-01-24  Jens Langner <Jens.Langner@light-speed.de>
+
+    * added AmigaOS4 support. Now the _NewObject() varargs function
+      will take respect of the different varargs handling of AmigaOS4.
+
+2002-11-21  Gunther Nikl <gni@gecko.de>
+
+    * gc.c/processclasssrc(): fixed NULL pointer crash
+    * gc.c: fixed generated CleanupClasses to deal with NULL classes
+    * Makefile, smakefile: simplify
+
+2002-06-16  Jens Langner <Jens.Langner@htw-dresden.de>
+
+    * added STDARGS define to _NewObject()
+    * added MorphOS support. Now the _NewObject() varargs function
+      will take respect of the different vararg handling of MorphOS.
+
+2002-05-31  Jens Langner <Jens.Langner@htw-dresden.de>
+
+    * added gcc Makefile
+
+2002-05-06  Jens Langner <Jens.Langner@htw-dresden.de>
+
+    * added a cast to the MUI_CreateCustomClass() call to get rid of the
+      portability warnings #120 of SAS/C.
+
+2002-02-21  Gunther Nikl <gni@gecko.de>
+
+    * gc.c/gen_classheaders(): generated headername defaults to <name>_cl.h
+      to avoid potenntial name clashes
+
+2001-10-10  Jens Langner <Jens.Langner@htw-dresden.de>
+
+    * fixed mass of enforcer hits
+    * fixed serious list handling problem where it happened that
+      GenClasses were interating out of the list.

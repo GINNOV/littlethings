@@ -1,0 +1,32 @@
+PRO-PACK 2.06 PACKING LIST - 28.02.92
+=====================================
+
+PACK.EXE                   - file packer (286 version)
+MANUAL.DOC                 - PRO-PACK manual
+
+SOURCE (dir)               - Assembler unpack source files
+    MC68_1C.S              - MC68000 Method 1 Compact Version (consoles)
+    MC68_2C.S              - MC68000 Method 2 Compact Version (consoles)
+    MC68_1.S               - MC68000 Method 1
+    MC68_1K.S              - MC68000 Method 1 Key
+    MC68_1V.S              - MC68000 Method 1 Validate
+    MC68_1KV.S             - MC68000 Method 1 Key Validate
+    MC68_2.S               - MC68000 Method 2
+    MC68_2K.S              - MC68000 Method 2 Key
+    MC68_2V.S              - MC68000 Method 2 Validate
+    MC68_2KV.S             - MC68000 Method 2 Key Validate
+    C65816_2.S             - 65816   Method 2 (Super NES)
+    C6502_2.S              - 6502    Method 2
+
+OBJ (dir)                  - PC Linkable unpack object files
+    UNPK_1.OBJ             - 8086 Method 1
+    UNPK_1K.OBJ            - 8086 Method 1 Key
+    UNPK_1V.OBJ            - 8086 Method 1 Validate
+    UNPK_1KV.OBJ           - 8086 Method 1 Key Validate
+    UNPK_2.OBJ             - 8086 Method 2
+    UNPK_2K.OBJ            - 8086 Method 2 Key
+    UNPK_2V.OBJ            - 8086 Method 2 Validate
+    UNPK_2KV.OBJ           - 8086 Method 2 Key Validate
+
+BIN (dir)                  - PACK.EXE unpack support files
+

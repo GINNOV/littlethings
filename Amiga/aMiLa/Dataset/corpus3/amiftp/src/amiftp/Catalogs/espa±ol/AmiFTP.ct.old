@@ -1,0 +1,435 @@
+## version $VER: AmiFTP.catalog 2.0 (25.01.96)
+## language español
+## codeset 0
+; Catalog descriptor file for AmiFTP 
+; Copyright (C) 1995 by Magnus Lilja, All Rights Reserved.
+;
+; e-mail: lilja@lysator.liu.se
+;
+; Some notes for translators:
+;
+; In order to create a hotkey to activate a gadget insert
+; a _ in the string before the character that should be
+; the hotkey. ('Te_st' would result in 's' being the hotkey
+; for that particular gadget).
+;
+;
+; Note that menu shortcuts are defined differently:
+; A correct menu entry for 'Quit' with Amiga-Q as the
+; shortcut should look like this:
+; Q\000Quit
+;
+;
+;
+;
+; SiteList window
+;
+SLW_SiteListWindow
+Lista de sitios de AmiFTP
+;AmiFTP Sitelist
+SLW_SiteList
+Sitios de FTP
+;FTP Sites
+SLW_Connect
+_Conectar
+;_Connect
+SLW_New
+_Nuevo
+;_New
+SLW_Edit
+_Editar
+;_Edit
+SLW_Remove
+_Quitar
+;_Remove
+SLW_Cancel
+Cancelar
+;C_ancel
+SLW_OK
+_OK
+;_OK
+SLW_Up
+Arriba
+;Up
+SLW_Down
+Abajo
+;Down
+SLW_Top
+Primero
+;Top
+SLW_Bottom
+Ultimo
+;Bottom
+SLW_Newstring
+(Nuevo)
+;(New)
+SLW_Sort
+Ordenar
+;_Sort
+;
+; SiteConfiguration Window
+;
+SCW_SiteConfigurationWindow
+Configuración de Sitios de AmiFTP
+;AmiFTP Site Configuration
+SCW_Name
+Nombre
+;Na_me
+SCW_Site
+Sitio
+;_Site
+SCW_Port
+Puerto
+;_Port
+SCW_RemDir
+Auto-cd a directorio
+;_Auto-cd to directory
+SCW_LocDir
+Camino de bajada
+;_Download path
+SCW_Anonymous
+Login anónimo
+;A_nonymous login?
+SCW_LoginName
+Nombre de login
+;_Login name
+SCW_Password
+Clave
+;Pass_word
+SCW_OK
+OK
+;_OK
+SCW_Cancel
+Cancelar
+;Ca_ncel
+SCW_OS
+Sistema Operativo
+;Operating S_ystem
+SCW_Proxy
+Proxy
+;Pro_xy
+SCW_HotList
+Hotlist
+;_HotList
+;
+; Transfer window
+;
+TW_WinTitle
+Ventana de Transferencia de AmiFTP
+;AmiFTP Transfer window
+TW_RemoteFile
+Fichero remoto
+;Remote file
+TW_LocalFile
+Fichero local
+;Local file
+TW_Size
+Tamaño
+;Size
+TW_Cps
+CPS
+;CPS
+TW_DataTransferred
+Datos transferidos
+;Data transferred
+TW_Abort
+Transferencia Abortada
+;Abort transfer
+TW_FileExists
+El fichero '%s' existe actualmente.\n\El tamaño antiguo es: %ld bytes (nuevo %ld bytes).\n
+;File '%s' already exists.\nOld filesize is: %ld bytes (new %ld bytes).\n
+TW_Overwrite
+Sobreescribir
+;Overwrite
+TW_Resume
+Continuar transferencia
+;Resume transfer
+TW_CancelTransfer
+Cancelar transferencia
+;Cancel transfer
+TW_DownloadDir
+Está a punto de bajar un directorio.\n¿Está seguro de que quiera hacer esto?
+;You are about to download a directory tree.\nAre you sure you want to do this?
+TW_GetDir
+¡Si, traerlo!|Saltar este estrada
+;Yes, download it!|Skip this entry
+;
+; Main preferences window
+;
+MPW_WinTitle
+Preferencias Globales de AmiFTP
+;AmiFTP Global Preferences
+MPW_Password
+Clave anónima
+;_Anonymous password
+MPW_ViewCommand
+Comando para ver
+;_View command
+MPW_ProxyHost
+Anfitrión proxy
+;Proxy _host
+MPW_ProxyPort
+Puerto proxy
+;Proxy _port
+MPW_ProxyDefault
+¿Usar proxy por defecto?
+;Use pro_xy per default?
+MPW_DefDownloadDir
+Directorio de bajada por defecto
+;Default download directory
+MPW_IgnoreCase
+¿Ignorar mayúsculas/minúsculas?
+;_Ignore case?
+;
+; Main window
+;
+MW_SiteName
+Sitio actual:
+;Current _site:
+MW_DirName
+Directorio
+;D_irectory
+MW_DownloadDir
+Camino de bajada
+;D_ownload path
+MW_Parent
+Padre
+;_Parent
+MW_Get
+Coget
+;_Get
+MW_Put
+Poner
+;P_ut
+MW_View
+Ver
+;_View
+MW_Connect
+conectar a...
+;_Connect to...
+MW_Disconnect
+Desconectar
+;_Disconnect
+MW_DeleteRequest
+¿Está seguro de querer\n\
+borrar esos ficheros?
+;Are you sure you want to\ndelete these files?
+MW_DeleteCancel
+Borrar|Cancelar
+;Delete|Cancel
+MW_Reload
+Recargar
+;_Reload
+;
+; Connect window
+;
+CW_WinTitle
+Ventana de conexión de AmiFTP
+;AmiFTP Connect window
+CW_Abort
+Abortar
+;Abort
+CW_Site
+Sitio:
+;Site:
+CW_Status
+Estado:
+;Status:
+CW_Connecting
+Conectando...
+;Connecting...
+CW_ReadingDir
+Leyendo directorio...
+;Reading directory...
+CW_SendingLogin
+Enviando login...
+;Sending login...
+CW_SendingPassword
+Enviando clave...
+;Sending password...
+CW_ChangingDirectory
+Cambiando directorio...
+;Changing directory...
+;
+; Main menus
+;
+MENU_Project
+Proyecto
+;Project
+MENU_AddToSiteList
+Añadir actual a la lista de sitios
+;Add current to sitelist
+MENU_Reconnect
+Reconectar
+;Reconnect
+MENU_Iconify
+I\000Iconificar
+;I\000Iconify
+MENU_About
+?\000Sobre
+;?\000About
+MENU_Quit
+S\000Salir
+;Q\000Quit
+MENU_Files
+Ficheros
+;Files
+MENU_TagAll
+T\000Marcar todo
+;A\000Tag all
+MENU_UntagAll
+D\000Desmarcar todo
+;U\000Untag all
+MENU_TransferMode
+Modo de transferencia
+;Transfer mode
+MENU_Binary
+Binario
+;Binary
+MENU_ASCII
+ASCII
+;ASCII
+MENU_ClearCache
+Limpiar cache dir
+;Clear dir-cache
+MENU_Delete
+B\000Borrar
+;D\000Delete
+MENU_Move
+M\000Mover
+;M\000Move
+MENU_Sort
+Ordenar
+;Sort
+MENU_SortbyName
+por nombre
+;by name
+MENU_SortbyDate
+por fecha
+;by date
+MENU_Settings
+Valores
+;Settings
+MENU_Global
+1\00Global..
+;1\000Global...
+MENU_Hostlist
+2\00Hotlist
+;2\000Hostlist...
+MENU_LogWindow
+¿Ventana de vitácora?
+;Log window?
+MENU_ToggleDotFiles
+¿Ver ficheros que comiencen con punto?
+;Show dot-files?
+MENU_LoadSettings
+Cargar valores...
+;Load settings...
+MENU_SaveSettings
+Grabar valores
+;Save settings
+MENU_SaveSettingsAs
+Grabar valores como...
+;Save settings as...
+MENU_HotList
+Hotlist
+;Hotlist
+;
+; Other strings
+;
+Str_ErrorReadingDir
+Error trayendo dir\n
+;Error reading dir\n
+Str_CannotDLDirs
+¡No puedo traer directorios completos!\n
+;Cannot download entire directories!\n
+Str_SelectDLPath
+Seleccione camino para traer
+;Select download path
+Str_SelectULFiles
+Seleccione fichero(s) para dejar
+;Select file(s) to upload
+Str_CDFailedTimedout
+CD remoto falló:\nConexión expirada
+;Remote CD failed:\nConnection timed out
+Str_CDFailed
+CD remoto falló.
+;Remote CD failed.
+Str_AmiFTPError
+Error de AmiFTP
+;AmiFTP error
+Str_OK
+OK
+;OK
+Str_CANCEL
+Cancelar
+;Cancel
+Str_PasswordRequest
+Petición de clave de AmiFTP
+;AmiFTP Password request
+Str_PasswordEntry
+Estre clave para usuario:\n%s
+;Enter password for user:\n%s
+Str_ServiceNotAvail
+Servicio no disponible.
+;Service not available.
+Str_ConnectFailed
+Conexión falló.
+;Connect failed.
+Str_ConnectLoginFailed
+Conexión fallo, login desconocido.
+;Connect failed, login unknown.
+Str_Putfailed
+Poner %s falló.
+;Put of %s failed
+Str_RemoteWriteFailed
+Escritura falló (¿sistema de ficheros remoto lleno?)
+;Write failed (remote file system full?).
+Str_GetFailed
+Coger %s falló.
+;Get %s failed.
+Str_LocalfileError
+Error abriendo %s.
+;Error opening %s.
+Str_LocalWriteFailed
+Escritura falló: %s
+;Write failed: %s
+Str_NoSuchDir
+$s: No tal fichero o directorio.
+;%s: No such file or directory.
+Str_DisconnectedTimeout
+Desconectado (expirado)
+;Disconnected (timeout).
+Str_Outofmem
+Sin memoria
+;Out of memory
+Str_SelectSettingsFile
+Seleccione fichero de valores...
+;Select settings file...
+Str_NoRestart
+Comando continuar falló.
+;Resume command failed.
+Str_ConnectionTimedOut
+Conexión expirada
+;Connection timed out
+Str_AmiFTPRequest
+Petición de AmiFTP
+;AmiFTP Request
+Str_AboutAmiFTP
+Sobre AmiFTP...
+;About AmiFTP...
+Str_UnknownHost
+Anfitrión desconocido.
+;Unknown host
+Str_ErrorBuildingDirList
+Error construyendo lista de ficheros.
+;Error building filelist.
+Str_Translator
+Traducción al Castellano de\n\
+José Roberto González Rocha  <alu756@csi.ull.es>
+;
+; This string will show up in the about window telling the user who made 
+; the translation. I suggest the string should look like this:
+; 'English translation by\nMagnus Lilja\n' (and perhaps your emailaddress
+; too). Ofcourse the above string should be in the same language as
+; the rest of the translation.

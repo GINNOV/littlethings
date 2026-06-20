@@ -1,0 +1,472 @@
+
+
+            cPost - C language file formatter for PostScript
+
+                           by Patrick Mueller
+
+                          pmuellr@vnet.ibm.com
+
+
+----------------------------------------------------
+What is cPost?
+----------------------------------------------------
+
+cPost is a program which will take a number of c and h files as input
+and create a PostScript file.  The PostScript file will contain the
+contents of the input files that have been marked up so that various
+parts are highlighted.
+
+----------------------------------------------------
+cPost invocation and options
+----------------------------------------------------
+
+When cPost is invoked, it examines the command line for file names and
+options.  The file names may contain wildcards.  Running cPost with no
+file names or with a ? as the first parameter will write some brief help
+to standard error.
+
+Options are blank delimited 'words' which begin with a '-'.  The case of
+the character following the - is not significant.  Options may be placed
+before, after or in between file names.  If the same option is specified
+more than once on the command line, only the last option is used.
+Options may also be specified in the CPOST environment variable.
+Command line options override environment variable options.
+
+A typical invocation of cPost might be
+
+   cpost *.c *.h > project.ps
+
+This invocation will include all c and h files, use any options
+set in the CPOST environment variable, and write the output to the
+file 'project.ps'.
+
+Note that the options used in the environment variable are used as-is,
+which means that quote processing which is normally done on the OS/2
+commandline parameters is not done on environment variable values.
+Thus, it is not possible to use an option which has a value which
+includes spaces.
+
+You may also use a list file to determine the files to process.
+The list file is just a plain text file that contains the names of
+other files in it.  Prepend the list file name with a '@' when you
+use it on the command line.  The list file can contains any number
+of file names.  They can be entered on one line apiece, or multiple
+names can be on one line as long as they are separated with white
+space.  Blank lines, and lines that begin with a '#' character
+are ignored.  If a '@-' is given on the command line, file names
+to process will be read from stdin.
+
+Valid options are:
+
+    -b[+|-]
+    enable/disable bracketing level
+
+       Use -b+ to have all levels of braces within file bracketed.  Use
+       -b- to cause no bracketing.
+
+    -cext1,ext2,...
+    treat files with extension ext1 and ext2 as C files
+
+       For example, -cc,y,sqc will cause files with 'extensions' c, y,
+       and sqc (case insensitive) to be considered c files.  This
+       information is used to determine sorting order.  Note that the
+       'extension' is considered the text after the first '.' in the
+       name, up to the last character, or next '.' in the name.
+
+    -d[+|-]
+    enable/disable duplex
+
+       Duplex processing causes two things to happen:  the header1 proc
+       is used for odd number pages, and the header2 proc is used for
+       even number pages; and a blank page will be printed for files
+       that end on an odd numbered page.  If duplexing is not on, the
+       header1 proc is used for both even and odd pages, and extra blank
+       pages will not be printed.  The header1 and header2 procs may be
+       customized with the -i option.
+
+    -hext1,ext2,...
+    treat files with extension ext1 and ext2 as H files
+
+       For example, -hh,rh,sqh will cause files with 'extensions' h, rh,
+       and sqh (case insensitive) to be considered h files.  This
+       information is used to determine whether function definition and
+       usage are valid within the file, and to determine sorting order.
+       Note that the 'extension' is considered the text after the
+       first '.' in the name, up to the last character, or next '.' in
+       the name.
+
+    -ifile1;file2;...
+    imbed PostScript files into the output file
+
+       This option is used to redefine fonts, margins and headers for
+       your document.  Multiple files can be imbedded - they will be
+       imbedded in the order specified.  See Customization below.
+
+    -kkey1,key2,...
+    treat key1, key2, etc as reserved words
+
+       In addition to the ANSI reserved words, the following are
+       considered reserved (SAA extensions):  _Packed, _System,
+       _Optlink, _Far16, _Cdecl, _Pascal.  If one of the keys specified
+       is 'c++', the following tokens will be considered reserved words:
+       catch, class, delete, friend, inline, new, operator, private,
+       protected, public, template, this, throw, try, virtual.  To make
+       additional words reserved, use the -k option.  For instance,
+       -kNULL,FILE adds NULL and FILE as reserved words.  This option is
+       used merely to control the highlighting of the tokens.
+
+       You may also use a file that contains the keywords.  To do this,
+       prepend a '@' to the filename, and use that as a key on the -k
+       option.  The contents of the file should be in the same format
+       as list files, described above, except keywords are enclosed in
+       the file, and not filenames.
+
+    -n#
+    separate line numbers from lines with # spaces.
+
+       When 0 is specified, no line numbers are generated.
+
+    -ofileName
+    output written to the file named fileName.
+
+       Without this option, output is written to stdout.
+
+    -p[+|-]
+    enable/disable best-fit page break at functions
+
+       When this option is enabled, functions that can fit on a page by
+       themselves will be printed on a single page.  Basically this means
+       that page ejects occur between functions.  But if multiple
+       functions do fit on a page, they will be printed on a page
+       together.
+
+    -rfile1;file2;...
+    replace default PostScript procedures with those in another file
+
+       This option is used to replace the PostScript procedures
+       generated by cPost with your own.  This is for power-users
+       who think they can produce nicer looking output than I can!
+       See customization below.
+
+    -snt or -stn
+    sort files by name/type or type/name
+
+       When sorting by type, the files are first sorted by whether they
+       are c, h, or neither (see -c and -h options), and then by the
+       actual extension.  All sorting is done in a case insensitive
+       manner.
+
+    -t#
+    expand tabs to # columns
+
+       The default is 4, which causes the characters immediately
+       following tab characters to be placed in columns 5, 9, 13, ...
+
+    -xx,y
+    coordinates to with translate for page
+
+       This option is provided to help bridge the difference between
+       PostScript printers.  Because the printable area on printers is
+       different, you might create a set of margin and header
+       definitions that print fine on one printer, but are clipped on
+       another printer.  This option inserts a translate operation into
+       the PostScript file before a page is written to, to offset the
+       printing by a certain amount.  For example, -x0,18 would be used
+       to move the printout on the page up 1/4 inch.  The units must be
+       given in points (72 points/inch).
+
+    -ypath
+    path to use for temporary files
+
+       A copy of each input file read is created during the cPost run.
+       By default, these copies are created in your current directory.
+       This option allows you to specify a different location for the
+       temporary files.
+
+    -?
+    display online help
+
+
+The default options are
+
+    -b+ -d- -cc -hh -n2 -p+ -stn -t4 -x0,0
+
+----------------------------------------------------
+Customizing cPost output
+----------------------------------------------------
+
+Customization of the cPost output is done by including additional
+PostScript code in the output file, and optionally not adding some of
+the PostScript code normally written by cPost.  The code you add must be
+valid PostScript code - it is not checked or processed by cPost at all.
+The output of cPost can be used as a starting point for creating new
+code.  For an introduction to PostScript, see the "blue book" -
+PostScript Language Tutorial and CookBook, ISBN 0-201-10179-3.  That's
+all I used as a reference when writing cPost.
+
+Three options allow the use of alternate PostScript code:
+
+   -i option
+   -----------------
+
+      The -i option allows files containing PostScript code to be
+      imbedded into the output file, after the default fonts, colors,
+      page size, margins, and header procedures have been set.  The
+      code included can reset any of these values.  The values that may
+      be reset are:
+
+         /nFontName  - font name for normal text
+         /kFontName  - font name for keywords
+         /iFontName  - font name for identifiers
+         /fFontName  - font name for functions
+         /dFontName  - font name for functions in function definitions
+         /cFontName  - font name for comments
+         /pFontName  - font name for preprocessor directives
+         /lFontName  - font name for line numbers
+
+         /nFontSize  - font size for normal text
+         /kFontSize  - font size for keywords
+         /iFontSize  - font size for identifiers
+         /fFontSize  - font size for functions
+         /dFontSize  - font size for functions in function definitions
+         /cFontSize  - font size for comments
+         /pFontSize  - font size for preprocessor directives
+         /lFontSize  - font size for line numbers
+
+         /nColor     - color for normal text
+         /kColor     - color for keywords
+         /iColor     - color for identifiers
+         /fColor     - color for functions
+         /dColor     - color for function definitions
+         /cColor     - color for comments
+         /pColor     - color for preprocessor
+         /lColor     - color for line numbers
+
+            Colors should be specified as arrays of red, green, and
+            blue color values, from 0 to 1.  For instance, the following
+            definition makes the color for normal text red.  See the
+            color.ips file for an example of setting all the colors.
+
+               /nColor [ 1 0 0 ] def
+
+         /pLength    - page length
+         /pWidth     - page width
+
+         /lMargin    - margin: left
+         /rMargin    - margin: right
+         /tMargin    - margin: top
+         /bMargin    - margin: bottom
+
+         /header1    - procedure for header/footer on odd and even pages
+                       (no duplex) or odd pages (duplex)
+         /header2    - procedure for header/footer on even pages (duplex)
+
+      For instance, to change the font used for functions to Helvetica,
+      create a file with the following line:
+
+         /fFontName /Helvetica            def % font name for functions
+
+      The /headerX procedures are used for the header and footer of a page.
+      header1 is called for all pages when not printing duplex, and called
+      for odd pages when printing duplex.  header2 is not called at all
+      when not printing duplex, and called for even pages when printing
+      duplex.  The following variables are available to the header
+      procedures:
+
+         - margin sizes (lMargin, rMargin, tMargin, bMargin)
+         - page sizes   (pLength, pWidth)
+         - size of line number information (lineNoWidth)
+         - name of the current file (fileName)
+         - page number (pageNum)
+         - date/time of file (fileDateTime)
+         - date cPost run (printDate)
+         - last C function defined, up to bottom of the current page
+
+      The page and margin sizes need to be expressed in real world
+      coordinates.  This can either be points (the native unit within
+      PostScript) or in inches, centimeters, or millimeters, using the
+      Inch, Cm, and Mm procedures defined at the beginning of the
+      output file.  See the default cPost output for use of the Inch
+      procedure.
+
+      An example alternate set of header definitions is provided in the
+      file sample.ips.  This file prints the header like the default
+      header provided by cPost, except that it provides one line of text
+      across the top of the page, for company logos, security banners, etc.
+      Directions on how to customize it are provided as PostScript comments
+      within the file.
+
+      See the output of cPost for the default settings of the the values
+      described above.
+
+
+   -r option
+   -----------------
+
+      The -r option is used to replace the PostScript procedures
+      normally written to the output file with your own.  If more
+      customization than the header and footer areas is needed, this
+      is the way to do it.  None of the procedures written by cPost
+      are written to the output file.  Instead, the contents of
+      the files specified are written.  You will need to study the
+      existing PostScript procedures so that you can understand the
+      format of the formatted C code.  The format is fairly
+      straight-forward.  Note that any files specified with -i
+      option are written before (immediately before) those specified
+      with the -r option.
+
+
+   -w option
+   -----------------
+      The -w option is used to 'wrap' PostScript code around the cPost
+      output.  This would be useful if you had some PostScript code
+      you could wrap around an existing file to change the output in
+      some way. such as producing 2-up output.
+
+
+Note that cPost ALWAYS writes a %! header line FIRST to the output
+file, as well as commentary on the invocation, and some of the
+runtime option settings.
+
+----------------------------------------------------
+cPost processing
+----------------------------------------------------
+
+cPost is a two-pass translator.  It reads each file two times
+while generating the output file.  The first pass expands tabs
+and inserts bracketing characters in the input file.  A copy of
+the input file with these changes is written to a temporary file.
+The second pass writes the PostScript version of each of the input
+files to the output file.
+
+----------------------------------------------------
+anomolies
+----------------------------------------------------
+
+cPost is designed to be a fairly robust c tokenizer.  It understands
+valid C constructs, including c++ // comments.  cPost also attempts
+to recognize C function usage and definitions within C files.  It
+handles 'normal' function usage and definition well, but will not
+recognize functions defined or used in unusual ways.  For instance,
+the function usage
+
+   (malloc)(10);
+
+will not be recognized by cPost.
+
+The definition of 'normal' function usage and definition for cPost
+is:
+
+- function names can be followed by any amount of whitespace, comments,
+  and preprocessor statements, followed immediately by a left
+  parenthesis.
+
+- functions are only defined and used in c files, not h files (see
+  the -c and -h options for more information).
+
+- function definition vs. function usage is primarily determined by the
+  nested brace level.  If there are nested braces when the function
+  name is found, the function is a function usage; otherwise, it is a
+  function definition (a check is done to see if it's a function
+  prototype as well).
+
+Macros that take arguments will be printed as if they were function
+invocations.
+
+It is possible for cPost to misinterpret things as functions, such as
+complex variable and typedef definitions, and mangling of the C language
+such as:
+
+   #define LT <
+   if ( 2 LT (x + 2))
+
+In this case, cPost will misinterpret LT as a function.  Just as well,
+since you should not be committing these attrocities in the first place.
+
+cPost treats preprocessor statements as whitespace, so if brace
+levels get out of synch because of preprocessor statements, cPost
+will not generate correct bracketing characters, and will misinterpret
+function definitions and function usages.  For example, the following
+code chunk will not format properly with cPost:
+
+      {
+      i = 1;
+   #if defined(SOMETHING)
+      j = 2;
+      }
+   #else
+      j = 3;
+      }
+   #endif
+
+The following form should be used instead:
+
+      {
+      i = 1;
+   #if defined(SOMETHING)
+      j = 2;
+   #else
+      j = 3;
+   #endif
+      }
+
+cPost also currently does not handle preprocessor statements absolutely
+correctly.  It treats anything on a line after a preprocessor token as
+part of the preprocessor line.  The following line will be printed in
+the preprocessor font
+
+   #define X 5   /* define X to be 5 */
+
+It should really print the comment part in the comment font.
+
+The 'bracketing around braces' code does not handle having mixtures of
+left and right braces on the same line well.  Specifically, a right
+brace followed by a left brace.
+
+----------------------------------------------------
+history
+----------------------------------------------------
+
+version  1.4   - Jan 20 1993
+   - fixed bug where cPost would stop if same file specified more than
+     once (also if two files differed only in case for AIX)
+   - cPost now stops immediately if it can't open a temp file for writing
+
+version  1.3   - Sep 09 1993
+   - added color support
+
+version  1.2.1 - Apr 13 1993
+   - commented out calls to setvbuf() since it's broken in C Set/2.
+     This is an OS/2 version 2.x only release.
+
+version  1.2 - Feb 17 1993
+   - fix to make 'i' and 'd' fonts work (for good this time!)
+   - change Courier-Italic to Courier-Oblique
+
+version  1.1 - Feb 15 1993
+   - fix tab handling problem (thanks to Art Roberts for this)
+   - fix to make 'i' and 'd' fonts work
+   - don't echo command line parameters into output file anymore
+   - allow '@' file specs for -k and file names.
+
+version  1.0 - Feb  2 1993
+   - a few bug fixes, a few added diagnostics
+   - function definitions (can) now use different font than other
+     function tokens (usage and prototype).
+   - font for identifiers separated from 'n'ormal text
+   - added the -r option and -w option
+
+version  0.3 - Jan 18 1993
+
+   - configuration via imbed files with -i options
+   - all options added (most from cBook)
+   - added linefeed at end of file to prevent last line from not being
+     processed
+
+version  0.2
+
+   - lots of little fixes
+
+version  0.1
+
+   - initial version

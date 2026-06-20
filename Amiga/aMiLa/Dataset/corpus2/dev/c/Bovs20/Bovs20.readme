@@ -1,0 +1,49 @@
+Short:        Replacement overlay system and startup code for SAS/C
+Architecture: m68k-amigaos
+
+
+				Bovs
+			    Version 2.0
+			   By Bryan Ford
+
+
+	Bovs (pronounced "boffs") is an overlay system designed to replace
+the standard overlay system supplied with SAS/C.  It acts as both overlay
+supervisor and startup code.  It offers a very flexible dynamic overlay
+system instead of the standard rigid hierarchial system, using locking and
+automatic flushing on low memory.  Startup code can auto-detach at the
+application program's option, and automatically parses command-line
+arguments under 1.3.  A separate version is included without overlay
+support (just startup code).  Bovs is intended especially for large
+applications which need flexible and efficient use of memory.  (It is used
+in my Shareware music player, MultiPlayer.)
+
+	Note: Bovs comes with (and uses) MemMan, which is also distributed
+separately.  So if you want both, you only need to get Bovs.
+
+
+NEW FEATURES
+
+2.0 (10-Apr-92)
+    Removed the commercial license fee.  (All I require now for commercial use is a copy
+	of the commercial program when it is completed.)
+    Added PreStart call to allow program to avoid auto-detachment.
+    Added conditional assembly to allow Bovs to be assembled without auto-detach capability.
+    Changed 'argtemplate' to be a _pointer_ to a string, not an actual string.
+    Argument parsing on 2.0 now allows a client-defined extended help string ('argexthelp').
+    Renamed 'procname' to 'progname'.
+    Fixed a bug in setting priority when starting from Workbench.
+    Added 'argsparsed' flag which is set if the arguments were parsed with 2.0's ReadArgs().
+    Fixed a memory deallocation bug that could cause problems with programs linked in a
+	certain (unusual) way.
+
+
+REQUIREMENTS
+
+    BLink from SAS/C 5.10, or a compatible overlay linker.
+
+
+DISTRIBUTABILITY
+
+    Freeware.
+

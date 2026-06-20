@@ -1,0 +1,11 @@
+Short:  some byteswaping-functions (68k & PPC)
+Author:   ac-logic@freenet.de (Sven Ottemann)
+Uploader: ac-logic@freenet.de (sven Ottemann)
+Type:   dev/c
+
+
+This function are usefull for the 
+big_endian/little_endian-conversion. I use this functions 
+with StormGCC und GCC. 
+
+

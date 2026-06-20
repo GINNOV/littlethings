@@ -1,0 +1,232 @@
+
+                               Sas2Ced v2.24
+
+                                    By
+                                Doug Keller
+
+                   Copyright 1991,1992 Synthetic Technologies
+                              March 21, 1992
+
+
+     [0] Introduction
+
+|    Lines with changes since the last version of Sas2Ced have a | in the
+|    left margin.
+
+     Sas2Ced is a program to interface SAS/C 5.10b and CygnusEd 2.12.  If
+     an error is encountered while compiling, Ced will be pulled to the
+     front and the cursor put on the first line with an error.  Sas2Ced has
+     been tested on an A3000 under 2.04, SAS/C 5.10b, and CygnusEd 2.12.
+     Sas2Ced has been tested with _Enforcer_ and Mungwall.
+
+     This version of Sas2Ced also has the ability find a shell in the
+     system with a current directory the same as the file in Ced and type
+     a command to that shell.
+
+
+     [1] Idea behind Sas2Ced
+
+     When LC encounters an error and the -E switch is used LC looks for a
+     message port called 'Lse', if the port is found LC sends arexx
+     messages to the port telling it some information about the errors.  If
+     the port is not found Lse is loaded.  Sas2Ced works by opening a port
+     called 'Lse' and intercepts all the messages LC sends it.  It then
+     sends converted messages to Ced.  Since Sas2Ced opens a message port
+     called 'Lse', make sure Lse is not running when Sas2Ced is.
+
+     To find a shell with a certain current directory, Sas2Ced uses a new
+     2.0 function FindCliProc().  FindCliProc() returns a pointer to a
+     shell Process, which contains the current directory of the shell.
+     It then checks to make sure a program is not running in the shell,
+     sends console packet of ACTION_DISK_INFO which will return a pointer
+     to shell's window.  The mouse is then moved over the window for
+     sunmouse users, the window is activated and the screen the window is
+     on is pulled to the front.  The command is then typed into the input
+     stream.
+
+
+     [2] Usage
+
+     The best place to run Sas2Ced is in the startup-sequence.  Currently
+     Sas2Ced does not release itself from the CLI, so you must run it by
+     typing:
+
+         run >nil: <nil: sas2ced
+
+     When Sas2Ced is run it checks to see if Ced is running, if Ced is not
+     running it loads a dormant copy of it (ced -r).  This is the only time
+     it is checked to see if Ced is in memory, so you must have Ced
+     dormant.  Once Sas2Ced is running all you have to do is compile a
+     program with LC with the -E option.  If an error is encountered Ced
+     will be called to the front and the cursor will be put on the line and
+     column position.  A requester will then ask if you want to ReturnToCED
+     by pressing Y or go to the NextError with N.  If you return to Ced you
+     can get the next error by using the nexterror.s2c arexx program.
+
+     Instead of adding -E to all your makefiles it is easier to add an
+     environmental variable called 'sascopts' that contains -E.
+
+     Sas2Ced has four different command line options.  The first three
+     are mutually exclusive
+         next - (default)pops up the nexterror requester when an error is
+                found.
+         show - pops up the showerrors requester when an error is found.
+         quiet- moves the cursor to the first error when an error is found.
+         path - path to look for in an include file that has an error and
+                is not in the current dir.
+
+     Examples:
+         1> sas2ced next   ;nexterror requester
+         1> sas2ced        ;same as above
+         1> sas2ced show   ;showerrors requester
+         1> sas2ced quiet  ;no requester
+         1> sas2ced path "lc:/compiler_headers_2.04"
+
+     Sas2Ced can be quit three different ways; by running Sas2Ced again, by
+     sending an arexx message 'quit' to the port named 'sas2ced', or by
+     sending a control-c to the Sas2Ced process (pressing ctrl-c or break
+     cli#).
+
+
+     [3] AREXX interface
+
+     Currently Sas2Ced supports four arexx commands, 'quit', 'nexterror',
+     'showerrors', and 'compile'.
+         'quit' quits Sas2Ced.
+         'nexterror' moves the cursor to the next error and displays the
+                     error message, with an okay2 requester.
+         'showerrors' displays all the currently cached errors in an okay1
+                      requester.
+         'compile' takes two parameters, path and command.  The path is the
+                   current directory of the shell that Sas2Ced looks for.
+                   The path must have quotes around it so it can be parsed.
+                   The command is what you want typed in the shell.  If a
+                   shell could not be found with the correct current
+                   directory a return code of 5 will be return to arexx.
+
+|    For simple Arexx programs you can enter the Arexx program right in
+|    Ced's string gadget when it ask you to enter the Arexx program to
+|    execute.  Select 'Install Dos/Arexx command...', enter the key number,
+|    then instead of entering a filename, enter and Arexx program starting
+|    with a doublequote.  For example you could enter 'rexx:nexterror.s2c'
+|    or '"address SAS2CED nexterror', they both do the same thing.
+
+     See the Arexx programs that are included; quit.s2c, nexterror.s2c,
+     showerrors.s2c, and compile.s2c.
+
+
+     [4] How compile.s2c works
+
+     Compile.s2c is the Arexx program that will compile a C program from
+     Ced.  Compile.s2c should be attached to a key in Ced (I have it
+     attached to f10).  When it is executed it will do the following:
+          1.  If the file (current view) has been changed it will save it.
+          2.  Looks in the first 10 lines of the file for the string
+              'compile:', if it finds this string it will execute what
+              follows 'compile:' in the shell, more about this below.
+          3.  If it does not find 'compile:' in the file, it checks to
+              see if there is a lmkfile or makefile in the directory
+              where the .c files is, and executes 'lmk' if either one
+              is found.
+          4.  If it does not find 'compile:' or a makefile it executes
+              'lc -L filename'.
+          5.  If there is a shell in the system without a program running
+              in it and its current directory is the same as the .c,
+              the command will be executed in this shell.  If a shell
+              can not be found with the correct current directory a new
+              shell is opened with the correct current directory.  Where
+              the shell opens and what shell is used can be changed by
+              changing the 'UserShell' variable in compile.s2c.
+ 
+     In the 'compile:' line if '$*' is found it is replaced with the
+     current filename.  If you use '$*' the file will compile even
+     if the filename is changed.  See the example try_me.c file.
+
+     Example:
+     /*   compile: lc -rr -cusft -v -L $*
+     **
+     **   This will execute 'lc -rr -cusft -v -L filename'.
+     */
+
+|    If you are using WShell 2.0 you must use BRKMODE#2 option.  This
+|    will allow Sas2Ced to find the console window when it tries to compile
+|    a program.  The best thing to do is add BRKMODE#2 to you DHOpts line
+|    in you user-startup.
+|
+|    If you are NOT using WShell 2.0, get it, it is great.  You can order
+|    it from: Wishful Thinking Development Corp
+|             PO Box 308
+|             Maynard, MA  01754
+|             (508) 568-8695
+|
+|    Example:
+|        DHOpts CON:0/0/640/200/MENU#CNC-Menus/BRKMODE#2 MENU S:CNC-Menus
+|
+|    You should change the UserShell variable at the start of compile.s2c,
+|    so it opens the shell you are using.  The default it is to open a
+|    WShell.
+
+     [5] Limitations
+
+     When an error is found in a include file the path is not sent to
+     Sas2Ced, so it looks for the include file in the following order:
+          1.  absolute load
+          2.  directory where the .c is
+          3.  path you specified on the command line when Sas2Ced was started.
+              "lc:/compiler_headers_2.04" is a good path to use.
+          4.  opens up a file requester and asks you to load it
+
+
+     Sas2Ced tries its best to put the cursor on the error.  Since Sas2Ced
+     can only be as good as the output LC sends it, sometimes Sas2Ced puts
+     the cursor in the wrong column.
+
+
+     [6] What version of 2.0
+
+     This release of Sas2Ced only runs under 2.0, Workbench 37.67 and
+     Kickstart 37.175, or greater.
+
+
+     [7] Legal junk
+
+     Permission is granted to distribute this program and its documentation
+     for non-commercial purposes as long as the copyright notices are not
+     removed.  This program may not be distributed for a profit without
+     permission from Doug Keller.  Fred Fish has permission to distribute
+     this program as part of the Fred Fish library.
+
+
+     [8] Thanks
+
+     I would like to thank all the guys at C= that are working on 2.0, keep
+     up the good work, Bill Hawes for WShell 2.0, ASDG and CygnusSoft for
+     CygnusEd, SAS for their C compiler and for adding sending of the full
+     path when an error is encountered.
+
+     Thanks to Bryce Nesbitt for _Enforcer_ and Ewout Walraven for
+     MungWall, this program would not have been possible with out them.
+
+
+     [9] Future version of Sas2Ced
+
+|    Here are a few things I would like to add to Sas2Ced for the next
+|    version:
+|
+|      Arexx command to go to the previous error.
+|
+|      Autodoc and Include support, put the cursor on a word and press
+|      a key to load the autodoc or include for the word.
+|
+|    Any ideas for other enhancements are welcomed.
+
+
+     [10] Bugs and Info
+
+     If you would like to get in touch with me I can be reached on the
+     following
+
+                 Bix : dkeller
+             Internet: dkeller@lynx.northeastern.edu
+                       f303@nuvlsi.coe.northeastern.edu
+

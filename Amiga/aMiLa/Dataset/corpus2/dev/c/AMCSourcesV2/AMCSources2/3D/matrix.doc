@@ -1,0 +1,171 @@
+MATRIX FUNCTIONS
+----------------
+Nigel Salt
+25 Lower Station Rd
+Crayford
+Kent
+DA1 3PY
+UK
+
+Phone +44 322 553260
+
+Email nao@cix.compulink.co.uk
+
+The 3D graphics library requires a VGA display 
+You could convert the routines for other displays
+but then you would have to include aspect ratio calculations
+The VGA has a perfect aspect ratio
+
+There is a book on computer graphics which is dated and based on the
+Spectrum computer but nevertheless very good
+Advanced Graphics with teh Sinclair ZX Spectrum
+I.O.Angell & B.J.Jones
+Published Macmillan Press
+ISBN 0 333 35050
+
+Below are descriptions of the matrix and 3d geometry functions in
+this library of routines
+
+
+MATRIX FUNCTIONS
+
+/* Matrix structure */
+typedef struct
+{
+  int rows;
+  int cols;
+  double *block;
+} matrix,*matrixptr;
+
+/*   E.G. of Matrix declaration for a 4 x 4 matrix
+double b4x4A[4][4]=
+{
+  6,1,6,6,
+  1,6,6,0,
+  0,3,2,1,
+  8,6,1,9
+};
+matrix m4x4A={4,4,&b4x4A[0][0]};
+*/
+
+/* Function prototypes */
+void mprint(matrixptr);
+    Print out a matrix to stdout
+
+void smmult(matrixptr,double);
+    Scalar multiply a matrix by a value
+
+int madd(matrixptr m1,matrixptr m2,matrixptr dm);
+    Add matrix m1 to m2 giving dm
+
+int mmult(matrixptr m1,matrixptr m2,matrixptr dm);
+    Multiply matrix m1 by m2 giving dm
+
+int mcopy(matrixptr sm,matrixptr dm);
+    Copy matrix sm to dm
+
+int mtrans(matrixptr sm,matrixptr dm);
+    Transpose matrix sm and put result in dm
+
+double det(matrixptr m);
+    Find determinant of matrix m
+
+int minv(matrixptr sm,matrixptr dm);
+    Invert matrix sm and put result in dm
+
+int nsolve(int rows,double *data);
+    Solve equation in N unknowns
+
+int mid(matrixptr);
+    Set matrix to the identity matrix
+    EG 100
+       010
+       001
+
+void mzero(matrixptr);
+    Set all cells of matrix to Zero
+
+3D FUNCTIONS
+
+An object is defined as below
+
+typedef struct
+{
+int points;
+int lines;
+double *pdat;
+int  *ldat;
+} object,*objectptr;
+
+As an example a cube would be defined as follows
+
+double cubep[8][3]=
+{
+  1,1,1,
+  1,1,-1,
+  1,-1,-1,
+  1,-1,1,            Each row is an x,y,z coordinate
+  -1,1,1,
+  -1,1,-1,
+  -1,-1,-1,
+  -1,-1,1
+};
+
+int cubel[12][2]=
+{
+  0,1,               Each pair is a line between two of the cubep
+  1,2,               points
+  2,3,
+  3,0,
+  4,5,
+  5,6,
+  6,7,
+  7,4,
+  0,4,
+  1,5,
+  2,6,
+  3,7
+};
+
+Finally the object definition says that the cube object has 8 points
+and 12 lines joining them and gives the address of the data blocks
+for the lines and points
+
+object cube=
+{
+  8.0,12.0,&cubep[0][0],&cubel[0][0]
+};
+
+
+/* function prototypes */
+int tran3(matrixptr m,double tx,double ty,double tz);
+  Translate matrix m by tx ty tz
+
+int scale3(matrixptr m,double sx,double sy,double sz);
+  Scale matrix m by sx sy sz
+
+int rot3(matrixptr m,double theta,int axis);
+    Rotate matrix m by theta radians about axis
+    (1=x,2=y,3=z)
+    
+double angle(double ax,double ay);
+    Return arctangent of ax/ay in radians
+ 
+void p3mult(double *,matrixptr);
+    Multiply a point by a matrix
+
+int objcop(objectptr s,objectptr d);
+    Copy object pointed to by s to destination pointed to by d
+ 
+int init3d(void);
+    Set VGA graphics mode etc
+
+void objtran(objectptr o,matrixptr m);
+    translate an object by matrix m
+
+void objprin(objectptr o);
+    print out an object definition
+
+void objdraw(objectptr o);
+    draw the object on the screen
+

@@ -1,0 +1,102 @@
+Short:        Splint 3.1.2
+Author:       http://www.splint.org
+Type:         dev/c
+Requires:     AmigaOS4 and its SDK
+Architecture: ppc-amigaos
+Uploaded:     Mathias 'Corto' Parnaudeau
+Version:      3.1.2
+
+
+Splint (http://www.splint.org) is a tool for statically checking C programs
+for security vulnerabilities and coding mistakes.
+It is a great tool for developers to improve their code with rules stricter 
+than the compiler's ones (even gcc with -Wall).
+
+
+The short story about this port
+
+I compiled it years ago on MorphOS and recently I tried to port it to OS4. 
+I was not totally convinced by this quick and dirty port but some days later 
+Tcheko told me I've just ported splint 3.1.2 for MorphOS. I was pleased 
+to see an update for MorphOS too and I was motivated to improve the OS4 port. 
+So we started to talk with Tcheko, about our work and also about a common 
+release.
+     -- Corto--
+
+Yes, MorphOS and OS4 developers can work together to bring better sofware, 
+it was already the case with SQLite.
+
+We did separate archives but please consider them as a common port !
+
+
+Compilation (what I did)
+
+AmigaOS 4 is seen as UNIX when there are ifdef.
+
+Modified files in directory src/ :
+- Headers/osd.h : Changed the path separator, the temporary dir
+- llmain.c : fixed the detection of file ".splintrc"
+- osd.c : here are the major changed but that's logical, this is the source 
+related to OS dependant stuff
+- Makefile : added "-lm -lunix" in places where there was "-lfl"
+
+
+Standard installation (recommended)
+
+- Copy "splint" and ".splintrc" in "SDK:Local/C"
+- Create the directory "SDK:Local/share/splint"
+- Copy directories "lib" and "imports" into it
+- Define a CPATH setenv which indicates the system includes path :
+setenv CPATH "SDK:clib2/include"
+- Copy ENV:CPATH into ENVARC:
+Note : I added "-ISDK:Include/include_h" in ".splintrc"
+
+
+Custom installation
+
+- Unarchive where you want, let us call it MYDIR (for example "Work:splint")
+- Set environments variables :
+LARCH_PATH must be MYDIR/lib
+LCLIMPORTDIR must be MYDIR/imports
+- Set them in ENVARC :
+copy ENV:LARCH_PATH ENVARC:
+copy ENV:LCLIMPORTDIR ENVARC:
+- Create CPATH like described above
+
+splint also uses the file ".splintrc" if it exists, it defines some rules. 
+I did write some minimal rules that are mandatory, mainly for the parsing 
+of OS headers. For example, it defines these constants :
+-D__amigaos4__, -D__GNUC__ and -D__PPC__
+
+
+Launch
+
+Here I am explaining how to run splint trying to give you some advices.
+
+To run splint in a shell, basically :
+
+splint filetocheck.c
+
+Note that "-D__amigaos4__" is mandatory for a correct parsing of proto files. 
+The problem is that there are errors like "Function IDOS->Close called 
+with 1 args, expects 2". This is certainly due to interface declarations.
+If the program does not use explicit interface pointers, the error becomes 
+"Unrecognized identifier: Close".
+
+At the beginning I suggest you to add the command parameter "-weak" to set 
+splint in a mode less strict :
+
+splint -weak filetocheck.c
+
+
+Limitations
+
+- The problem of the number of parameters in function calls
+- Do not support relative file path with parent directories like 
+"splint //example.c". Just do "cd //" and "splint example.c" or use 
+the absolute path. Fix that would need deeper changes and that's not 
+a big constraint.
+- Tests on code warnings are almost all good running the whole testsuite ... 
+but it may be right enough for a normal behaviour. There is one spec warning 
+for each test with this message : "LSL signature parsing: can't find file 
+Work:splint/lib/CTrait.syms containing".

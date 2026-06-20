@@ -1,0 +1,141 @@
+******************************************************************************
+*                                                                            *
+* 68060 Upgrade Software Guide                                               *
+*                                                                            *
+* Copyright Ralph Schmidt                                                    *
+*                                                                            *
+* Phase5                                                                     *
+*                                                                            *
+* Rev 2 - Rev 1                                                                      *
+*
+* Forgot to mention the AFB_68060 Bit
+*
+* Rev 1
+*                                                                            *
+*                                                                            *
+* EMail: laire@uni-paderborn.de                                              *
+*                                                                            *
+******************************************************************************
+
+0) Phase5 will sell the first 060 accelerator,
+   namely the Cyberstorm 060, rather soon and wants to achieve a smooth
+   integration into the Amiga.
+   Therefore we hope that software companys and pd programmers
+   will adopt their software to deal with the 68060.
+
+1) 68060 Flag in ExecBase->AttnFlags
+
+;exec/execbase.i
+	BITDEF	AF,FPU40,6	; Set if 68040/68060 FPU
+	BITDEF	AF,68060,7	; Set if 68060
+
+;exec/execbase.h
+#define	AFF_68060	(1L<<7)
+
+
+2) Inststructions supported by the 68040 but not by the 68060 directly that
+   can hurt performance:
+
+ o divx.l (64bit divide)
+ o mulx.l (64bit multiply)
+ o fdbcc
+ o fscc
+ o movep
+ o There are other instructions that are not supported or have to
+   be emulated but these aren't relevant for user applications.
+
+3) Instructions supported by the 68060 in hardware that are emulated on
+   the 68040:
+
+ o fint
+ o fintrz
+
+4) Emulation limitations
+
+The emulation can't reliably emulate unsupported instructions
+that access the (ssp) in a way that it contradicts the basic
+definition of a stack. (ssp)=sp in supervisor mode.
+I don't think anybody is using such constructs in his software
+but I want to mention it to stop anybody from using these:
+
+div{u,s}.l		-(ssp),dr:dq
+mul{u,s}.l		-(ssp),dr:dq
+f<op>.p			-(ssp),fpn
+f<op>.p			fpn,(ssp)+
+f<op>.{b,w,l,s,d,x}	-(ssp),fpn
+fs<cc>.b		-(ssp)
+fmovem.x		-(ssp),dn
+fmovem.x		dn,(ssp)+
+f<op>.x			fpn,(ssp)+	;Underflow,SNAN exception
+f<op>.{b,w,l}		fpn,(ssp)+	;Enabled OPERR
+
+
+
+5) Other software problems.
+
+  o Don't use Aztec C.
+    It is not compatible with the 68060.
+    Popular applications with this problem: CED 2.02,CED 3.5,Mand2000D
+    *I fixed this by patching Supervisor()*,
+    so don't worry about your programs but
+    don't use it in future software if possible.
+
+    Here's the bad Code:
+
+	btst.b	#4,$129(a6)		;check for 68881 flag in AttnFlags
+	beq	1$			;skip if not
+	lea	2$,a5
+	jsr	-30(a6)			;do it in supervisor mode
+	bra	1$
+    2$
+	clr.l	-(sp)
+	frestore (sp)+			;reset the ffp stuff
+    ;The 68060 FRestore stackframe is 12 bytes long but it only created
+    ;a NULL frame with the size of 4 Bytes so the Stack is wrong afterwards.
+    ;RTE->jump into unknown regions...crash
+	rte				;and return
+
+6) New Stackframe format
+
+   These informations are only interesting for Debugger programmers
+   and kernel hackers.
+
+   o 3-Byte in the 1st Longword = 0 then NULL Stackframe.
+     xxxx00xx	;1st Longword of the FPU stackframe
+     xxxxxxxx	;2nd Longword of the FPU stackframe
+     xxxxxxxx	;3rd Longword of the FPU stackframe
+     xxxxxxxx	;PC
+     xxxx	;SR
+     d0-a6	;Registers
+
+
+   o 3-Byte in the 1st Longword !=0 then BUSY Stackframe.
+     ffffffff	;Busy Fake Longword
+     xxxxxxxx	;FPCR
+     xxxxxxxx	;FPSR
+     xxxxxxxx	;FPIAR
+     fp0-fp7	;FPU Registers
+     xxxxxxxx	;1st Longword of the FPU stackframe
+     xxxxxxxx	;2nd Longword of the FPU stackframe
+     xxxxxxxx	;3rd Longword of the FPU stackframe
+     xxxxxxxx	;PC
+     xxxx	;SR
+     d0-a6	;Registers   
+
+
+7) MMU Table differences
+
+   The 68040 and 68060 mmu tables are almost the same but there is
+   an important difference. For the 68060 the MMU-Tables have to
+   be placed into non-cached ram!!!!!!!
+   So if you manipulate the mmu-table you have to mark the pages
+   with your added tables as non-cacheable.
+   Another difference is that the Cyberstorm software uses the
+   area $ffff8000-$ffffffff for itself.
+   You are NOT allowed to change the mmu-table that this area
+   is touched in any way. This can lead to serious crashes.
+
+
+8) Barfly 1.20 is the first Assembler/Debugger that supports the
+   68060. It can be found on aminet:dev/asm/barfly1_20.lha
+

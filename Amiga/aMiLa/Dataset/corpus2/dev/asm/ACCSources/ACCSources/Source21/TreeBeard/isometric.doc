@@ -1,0 +1,69 @@
+
+ISOMETRIC 3-D
+~~~~~~~~~~~~~
+Bought the Zero mag, and was impressed with the Populous II demo (how long
+will it be before THAT's cracked?).  And I thought that a flat 3D landscape
+in the same vein as Populous shouldn't be too difficult.  This is the result.
+It hasn't been polished up since it is only intended to be part of a later
+project (it flickers since the whole screen is cleared instead of just the
+part which the landscape covers, and also it is in 32 colours, though less
+than 16 are used - will add more blocks (needing more colours) later.
+
+What are the advantages of this type of 3D?  Well, it looks pretty
+impressive (so you can get away with pretty naf graphics - as you'll
+see when you run it), and is the easiest type of 3D to do.  Its really
+just an extension of the good old tile screens.
+
+THE WAY IT WORKS
+
+The blocks: In this demo, the bases are 32 pixels wide by 15 down.  The
+	blocks can be as high as you like (within reason).  They are joined
+	together directly, ie. each block isn't presumed to be a certain size
+
+The map: You also need a map, laid out in the following way:
+
+	MAP ---	1 1 0 0 0 1 1
+		1 1 0 0 0 0 1
+		1 1 0 0 0 1 1
+		1 0 0 0 0 1 1
+		1 0 0 0 0 1 1
+		1 0 0 0 0 1 1
+
+	The 3D is just the map tilted at 45° to the right
+
+	3D ---		1
+		      1   1
+		    1   1   0
+		  1   1   0   0
+		1   0   0   0   0
+	      1   0   0   0   0   1
+		0   0   0   0   0
+		  0   0   0   1
+		    0   0   1
+		      0   1
+			1
+
+	Going horizontally, the number added to the current map pointer
+	is the Map's width -1.  In the top half, the start of the line
+	is on the left edge, in the bottom half it's on the bottom edge
+	So that's how you work out which block you're supposed to display
+
+Displaying the Block: The width of the block is 32, the height is 15
+	Since the blocks have got to mesh neatly together, in the top
+	half, you need to move down 8 (15/2) lines and left 16 pixels
+	(32/2) to get to the next line.  In the bottom half, move 8
+	pixels down and 16 right.
+
+	To display the block
+	1. Create the mask for the block you want to display
+	   - see Raistlin's Mask Maker on ACC15 (I think)
+	2. Since the blocks can be any height, the position on the
+	   screen must sometimes be modified:
+		eg. a totally flat block (soil, water, etc.) has
+		    a height of 15.  A block with a stick jutting out
+		    of it might have a height of 20.  If this is displayed
+		    at the same place as the soil would be, it would be too
+		    low - it should be displayed 5 (20-15) lines higher.
+	3. Display it using cookie cut routines
+
+P.S. WHAT IS THE CORRECT VERTICAL BLANKING ROUTINE?

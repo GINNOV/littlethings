@@ -1,0 +1,21 @@
+Short:        Coverter Binary->Source (GUI)
+Author:       dlife@pub.osf.lt (Sergej Kravcenko)
+Uploader:     dlife pub osf lt (Sergej Kravcenko)
+Type:         dev/c
+Version:      1.0
+Architecture: m68k-amigaos
+
+
+Converter Binary->Source.
+
+Features:
+
+1) Support BYTE,WORD,LONG datatypes.
+
+2) Support Chip memory.
+
+3) Full GUI+ASL
+
+Notes:
+
+ Required Kickstart 3.x

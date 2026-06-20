@@ -1,0 +1,25 @@
+History:
+--------
+
+Version 1.0 (26.3.2002)
+
+ - initial release
+
+
+Version 1.1 (29.3.2002)
+
+ - added AmigaOS requesters
+ - added zooming
+
+
+Version 1.2 (7.4.2002)
+
+ - added Joystick support
+ - no more unlimited acceleration
+
+
+
+
+
+
+

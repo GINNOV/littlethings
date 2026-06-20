@@ -1,0 +1,39 @@
+Short:    Creates C header files for SetFunction()
+Author:   andrea.vallinotto@torino.alpcom.it
+Uploader: andrea.vallinotto@torino.alpcom.it
+Type:     dev/c
+Version:  1.0
+
+This is a little tool I made for all programmers who need to call SetFunction()
+from C (or C++). It is intended to make life easier and to make source files more
+readable.
+
+Usually, when one want to use SetFunction(), he/she must look in .fd files or
+#pragma statements to find the LVO of each function he/she want to patch (*). This
+leads to source files difficult to understand and maintain, since each call to
+SetFunction() looks like:
+
+oldfunction=SetFunction(Execbase,-690,myfunction);
+
+where you can't understand very well which function is being patched, unless you
+add tons of comment lines to each call.
+
+(*)= All the system libraries offsets exist through amiga.lib, but 3rd party
+libraries don't. This is why I made FOCS!
+
+FOCS (that stands for Function Offset Creator for SetFunction() ), takes a file
+with LVOs and creates nice C header (.h) files, with a symbol definition for each
+function found in the LVO file.
+So the example above will look like:
+
+oldfunction=SetFunction( Execbase, FOS_FreeVec, myfunction );
+
+Nice, isn't it ?
+
+FOCS version 1.0 support the following file formats:
+ - SAS C #pragma files
+ - StormC #pragma files (similar but not the same stuff).
+ - FD files (those who started it all).
+ - GCC inline's (hopefully... only the new, preprocessor based format is
+   supported). 
+

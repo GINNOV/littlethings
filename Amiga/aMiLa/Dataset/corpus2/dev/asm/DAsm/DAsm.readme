@@ -1,0 +1,10 @@
+Short:        Multipass symbolic macro assembler. V2.12
+Author:       Matt Dillon
+Version:      2.12
+Architecture: m68k-amigaos
+Source:       Fish collection
+
+A multipass, symbolic, macro assembler for multiple target machines,
+including 6502, 68705, 6803, and 6811.  Supports conditional assembly,
+addressing mode overrides, arbitrary number of named segments, pseudo-ops
+for repeat loops, data generation, etc.  

@@ -1,0 +1,57 @@
+VICI (c) 1999,2000 by David Stes .  All Rights Reserved.
+
+VICI is an Objective-C interpreter and debugger, with a CURSES based Objective-C class browser.
+
+VICI shares a lot of code with the Portable Object Compiler, a pre-compiler (translator to C) for Objective-C. 
+
+It is possible to compile classes with the POC and then dynamically load them into VICI; compiled classes can send messages to interpreted classes and vice-versa, thanks to the indirection of the messenger.
+
+It is also possible to call compiled functions from within the interpreter, but not the other way around (you cannot call functions that are interpreted from compiled code).  There is no such restriction for methods (messages).
+
+LATEST VERSION
+--------------
+
+The latest version of VICI (and of the Portable Object Compiler) is at:
+
+	http://metalab.unc.edu/pub/Linux/devel/lang/objc
+
+You also need "cursel" which is available from the same directory.
+
+COMPILING
+---------
+
+Be sure to compile the POC (the 'oclib' directory, specifically).  VICI is using the objects in the ../../src/oclib/oclib.a library.
+
+If you don't have GNU readline on your system, configure as follows :
+
+	./configure --without-readline
+	
+If VICI doesn't compile, check first whether you have ../oclib/oclib.a and
+whether ./configure --without-readline helps.
+
+For compiling with support for dynamically loading classes, configure :
+
+	./configure --with-dlopen
+
+You have to compile ../src/oclib/oclib.a with -pic for dlopen() to work.
+
+EXAMPLE
+-------
+
+This directory contains a sample 'vicifile'.
+
+Run vici by typing : ./vici
+
+This will read commands from ./vicifile.
+
+LICENSE
+-------
+
+Read the LICENSE file (the "GNU General Public License").
+
+
+
+--
+David Stes
+Email: stes@pandora.be
+

@@ -1,0 +1,37 @@
+Short:        A PowerPC disassembler
+Author:       Frank Wille, AmigaOS 4.0 compile by Spot / Up Rough
+Uploader:     Varthall / Up Rough <varti02 hotpop com>
+Type:         dev/asm
+Version:      1.1
+Architecture: ppc-amigaos >= 4.0.5
+
+ppc_disasm.c V1.1 (19.02.2000)
+
+Disassembler module for the PowerPC microprocessor family
+Copyright (c) 1998-2000  Frank Wille
+
+ppc_disasm.c is freeware and may be freely redistributed as long as
+no modifications are made and nothing is charged for it.
+Non-commercial usage is allowed without any restrictions.
+EVERY PRODUCT OR PROGRAM DERIVED DIRECTLY FROM MY SOURCE MAY NOT BE
+SOLD COMMERCIALLY WITHOUT PERMISSION FROM THE AUTHOR.
+
+v1.1  (19.02.2000) phx
+      fabs wasn't recognized.
+v1.0  (30.01.2000) phx
+      stfsx, stfdx, lfsx, lfdx, stfsux, stfdux, lfsux, lfdux, etc.
+      printed "rd,ra,rb" as operands instead "fd,ra,rb".
+v0.4  (01.06.1999) phx
+      'stwm' shoud have been 'stmw'.
+v0.3  (17.11.1998) phx
+      The OE-types (e.g. addo, subfeo, etc.) didn't work for all
+      instructions.
+      AA-form branches have an absolute destination.
+      addze and subfze must not have a third operand.
+      sc was not recognized.
+v0.2  (29.05.1998) phx
+      Sign error. SUBI got negative immediate values.
+v0.1  (23.05.1998) phx
+      First version, which implements all PowerPC instructions.
+v0.0  (09.05.1998) phx
+      File created.

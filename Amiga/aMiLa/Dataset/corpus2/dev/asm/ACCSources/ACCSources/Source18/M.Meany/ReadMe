@@ -1,0 +1,66 @@
+
+				Source Notes
+				~~~~~~~~~~~~
+
+ I'm afraid I don't have much to offer this month, mainly due to what's
+been going on around me. Still here is a run down of what I've included:
+
+ virus.s
+ ~~~~~~~
+ As promised this is the amalgimation of my StopSaddam code and Mike
+Cross's virus killer source. Basically, a patch is added to the AllocAbs()
+exec library function to detect for the Saddam file virus and also exec
+vectors are checked to ensure no reset proof nasties are lurking in memory.
+
+ vilbm.s
+ ~~~~~~~
+ Cheating really! This is an adaption of Steve Marshalls ILBM.s source to
+act as a CLI based IFF viewer. You will have to refer to Steves docs on an
+earlier disc to understand this one.
+
+ Scribe.s
+ ~~~~~~~~
+ An example application of using DOS_Start.s. I wanted a quick way of
+removing the $0d bytes left by Scribble! when printing a document to disc.
+This was the result.
+
+ Clock.s
+ ~~~~~~~
+ Something I have wanted to do for ages, set up a title bar clock. This
+code uses the DOS library to read the date stamp, converts this to real
+time and then displays the result in the window title bar. The program
+relies on INTUITICKS messages from Intuition, so deactivating the window
+will disable clock updates. Upon reactivation, the correct time is again
+displayed.
+
+ Anyone fancy ading an alarm feature????
+
+ Boxes.s
+ ~~~~~~~
+ There I sat, browsing my early disc collection, and what do I find? An
+Amiga Basic disc. After digging the Extras disc out, I find a really crap
+routine called Boxes. ' Surely the Amiga can go faster than that! ' I says
+to myself.......
+
+ BuildDcb.s
+ ~~~~~~~~~~
+ This ones a subroutine. Use this to convert blocks of memory into dc.w
+statements in an open disc file. This code was written for inclusion in
+ImageMaker.
+
+ ImageMaker.s
+ ~~~~~~~~~~~~
+ A zombie! This util died a death ages ago when I lost interest in it. I
+have since resurected it and exterminated ( I hope ) the serious bugs in
+the image creation source.
+
+ The idea is, load an IFF brush, save the source for an image to display
+the brush. It works ..... see seperate tutorial for more instructions.
+
+ Follow2.s
+ ~~~~~~~~~
+ More bobs! This routine uses a dual playfield display, double buffered,
+and displays 80 animated bobs ( though they're really boring ). The idea
+was to create another linked bob list, it  works, but only just!
+
+

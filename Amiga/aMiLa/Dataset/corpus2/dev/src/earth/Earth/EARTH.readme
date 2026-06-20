@@ -1,0 +1,77 @@
+Short:   OpenGL rotating globe
+Uploader: walternn@rupert.informatik.uni-stuttgart.de (Norman Walter)
+Author:    walternn@rupert.informatik.uni-stuttgart.de (Norman Walter)
+Type:     dev/src
+Requires: C Compiler (e.g. gcc), StormMesa
+
+
+21st century and still satisfied with something like
+
+#include <stdio.h>
+main ()
+{
+  printf ("Hello World!\n");
+}
+
+as "Hello, World!" ?
+
+No?
+
+So try this!
+
+What about saying hello to the whole damn planet?
+
+This example source shows a textured and animated globe.
+You can also activate linear filtering via pulldown menu for
+smooth texture (you know this effect well, if you own a Nintendo 64 ;-) )
+
+You can replace the texture "earth_small.rgb" by any SGI rgb texture
+- for example a Mars or Venus texture or even a Boing-Ball ;-)
+
+You can modify this source for any purpose.
+Ideas:  Use a Moon-texture and add lighting for having a real-time rendered
+moon-phase clock. Add names and coordinates of citys and have a 3D-Worldmap.
+Implement a gravity routine and place satellites in the orbit.   
+
+The executable included in this archive require 68030 cpu and 68881 fpu or better.
+A 68060 or PowerPC CPU and a fast 3D-accelerator is highly recommended.
+
+Testet on Amiga 4000/30 with CyberVision64/3D,
+AmigaOS 3.5, CyberGraphX 3, Warp3D 3.
+
+
+Literature:
+
+Brian W. Kernighan, Dennis M. Ritchie:
+The C Programming Language
+
+Andrew Koenig: 
+C Traps and Pitfalls
+
+Robert Sedgewick:
+Algorithms in C
+
+Mason Woo, Jackie Neider, Tom David, Dave Shriner, Tom Davis:
+OpenGL 1.2 Programming Guide
+
+Renate Kempf and Chris Frazier:
+OpenGL Reference Manual
+
+Mark Kilgar:
+The OpenGL Utility Toolkit (GLUT) Programming Interface API
+
+
+
+World Wide Web:
+
+http://www.norman-interactive.com (my Homepage)
+
+http://www.informatik.uni-stuttgart.de (University Stuttgart, Dept. of Computer Science)
+
+http://www.ninemoons.com (GeekGadgets)
+
+http://www.haage-partner.com (Haage & Partner Homepage)
+
+http://www.sgi.com (Silicon Graphics - Inventor of OpenGL)
+
+http://www.OpenGL.org (OpenGL Homepage)

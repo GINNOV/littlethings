@@ -1,0 +1,25 @@
+Short:        Wolf3D clone demo
+Author:       russell@cpsc.ucalgary.ca (Terence Russell) Uploaded-to: ftp.etsu.edu (11 Apr 1994)
+Uploader:     russell cpsc ucalgary ca (Terence Russell)
+Architecture: m68k-amigaos
+Keywords:     wolfenstien doom graphics
+
++ VERSION: 0.4 april 8, 1994
++ Here's an executable with source of an alphaware Wolfenstien clone.
++ This archive is an update. It now includes:
++ - Runs under workbench 1.3/1.2
++ - Uses the mouse/joystick for movement
++ - The view is source scalable (change asm_lib and global.h VIEW_ values
++   to get a new view)
++ - includes executables for a 256x128 view, and a 128x64 view.
++ - includes the original C version of AsmRenderWorld for documentation purposes.
++
++ Requires: any Amiga (I hope) computer.
+
+    Terence Russell
+    #401 - 927 2nd Ave NW
+    Calgary, Ab
+    T2N 0E7
+    Canada
+
+

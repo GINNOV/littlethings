@@ -1,0 +1,36 @@
+1
+2
+3   Hello to the first page.
+4  Advance by pressing "enter"
+5
+*
+6    This is the second page.
+7    Go back with backspace.
+8
+9
+*
+10  It seems you pressed enter again instead of backspace ;)
+11
+12
+13
+14
+15
+16
+17  This time some more lines
+18
+19
+20
+*
+The fourth page
+*
+The fifth page
+*
+The sixth page
+*
+The seventh page
+************************************************|
+*
+*
+*
+*
+

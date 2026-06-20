@@ -1,0 +1,23 @@
+Short:        interface SAS/C 5.10b to CygnusEd 2.12
+Version:      2.24
+Architecture: m68k-amigaos
+
+                                    By
+                                Doug Keller
+
+                Copyright 1991,1992 Synthetic Technologies
+                              March 21, 1992
+
+
+Sas2Ced is a program to interface SAS/C 5.10b and CygnusEd 2.12.  If
+an error is encountered while compiling, Ced will be pulled to the
+front and the cursor put on the first line with an error.  Sas2Ced has
+been tested on an A3000 under 2.04, SAS/C 5.10b, and CygnusEd 2.12.
+Sas2Ced has been tested with _Enforcer_ and Mungwall.
+
+This version of Sas2Ced also has the ability find a shell in the
+system with a current directory the same as the file in Ced and type
+a command to that shell.
+
+This version requires AmigaOS 2.04 or greater (v37).
+

@@ -1,0 +1,113 @@
+                                    CFormat
+                                    =======
+
+                              C-Source-Formatter
+                              ==================
+
+                          (c) 1991 by Rüdiger Dreier
+
+                                 Version 3.10
+                                 ------------
+
+0. About
+========
+CFormat is FREEWARE, you may copy and spread it, as you want, but you MUST NOT
+earn any money with it.
+If you give this program to someone else, you have to copy the whole drawer,
+that means, it must consist of:
+ - the source
+ - this document
+ - a working copy of CFormat
+
+     THE AUTHOR  UNDERTAKES  NO  LIABILITY FOR  ANY  DAMAGE CAUSED  BY  THE
+     APPROPRIATE OR NOT APPROPRIATE USE OF THIS PROGRAM !
+
+     THE AUTHOR  UNDERTAKES  NO LIABILITY  FOR  THE FAULTLESSNESS  OF  THIS
+     PROGRAM !
+
+     USE IT AT YOUR OWN RISK !
+
+If you have hints, bug-reports, criticism, money or PD-soft for me, write to
+
+                            Rüdiger Dreier
+                            Gustav-Winkler Str. 40
+                     W-4800 Bielefeld 18
+                            Germany
+
+If you want an answer, please add postage !
+
+Until end of Oct 92, I can be reached via
+
+ uphya600@unibi.hrz.uni-bielefeld.de
+
+1. Introduction
+===============
+CFormat is used to format a C-source, so that one can read it better. E.g. you
+have the following "program":
+
+main(){#ifdef DEBUG
+printf("Start\n");
+#endif
+Testfun(1,2,3,4);
+#ifdef DEBUG
+printf("End\n");
+#endif
+}
+
+Testfun(LONG i,
+int a,
+SHORT b,
+char c){printf("%ld %d %d %c\n",i,a,b,c);}
+
+When you use CFormat, you will get:
+
+ main()
+  {
+   #ifdef DEBUG
+   printf("Start\n");
+#endif
+   Testfun(1,2,3,4);
+#ifdef DEBUG
+   printf("End\n");
+#endif
+  }
+
+ Testfun(LONG i,
+         int a,
+         SHORT b,
+         char c)
+  {
+   printf("%ld %d %d %c\n",i,a,b,c);
+  }
+
+Betterm isn't it ? (It is my favorite way to format as C-source)
+
+2. Using CFormat
+================
+CFormat can be used only from CLI. You have two possibilities:
+ 1. CFormat FROM TO  <RETURN>
+ 2. CFormat          <RETURN>
+If you use the second one, CFormat asks the name of the input and output file.
+If there was an I/O error, CFormat tells you >Cannot find file xyz< and quits.
+If all worked, CFormat prints
+ >Format from FROM to TO<
+A bit later, CFormat tells you
+ >All ok - no error<
+or prints something like:
+
+There is an error
+ '         : 0
+ "         : 0
+Comments   : 0
+ (..)      : 0
+ {..}      : 1
+
+That means, there was a { too much in the source. A -1 would mean too less.
+In TO is the formatted source (even if there was an error). Without errors, you
+can use this file as new sourcefile, after an error you can use it to find the
+error. CFormat find missing {} much faster than a C-compiler, so you can use it
+even as a precheck.
+
+                                  Enjoy it !
+
+

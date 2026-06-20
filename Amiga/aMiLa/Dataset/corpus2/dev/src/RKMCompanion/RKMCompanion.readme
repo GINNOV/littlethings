@@ -1,0 +1,12 @@
+Short:        Example pgms from 1.3 ROM Kernel Manual.
+Author:       Commodore Business Machines
+Architecture: m68k-amigaos
+Source:       Fish collection
+
+A two disk set of material created by Commodore for use with the 1.3
+revision of the Amiga ROM Kernel Reference Manual, Libraries and Devices,
+published by Addison-Wesley.  Almost 300 files, including C source code
+examples and executables, have been packed into two lharc archives, one for
+each disk of the two disk set.  These examples are not public domain, but
+may be used and distributed under the conditions specified in the
+copyrights.  

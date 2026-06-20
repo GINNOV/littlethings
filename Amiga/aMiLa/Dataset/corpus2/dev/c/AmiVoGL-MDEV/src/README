@@ -1,0 +1,8 @@
+
+This directory contains the src files for the upper level vogle interface. The
+directories ending in fort contain the fortran interfaces to the C routines.
+
+The sunpas directory contains the SUN Pascal interface.
+
+See the makefile appropriate to your machine for details on compilation.
+

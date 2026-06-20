@@ -1,0 +1,19 @@
+Short: sources of MMCMP xfdmaster client
+Author: Kyzer/CSG <kyzer@4u.net>, Olivier Lapicque <olivierl@jps.net>
+Uploader: Kyzer/CSG <kyzer@4u.net>
+Type: dev/src
+Requires: util/pack/xfdmaster.lha
+
+This is the source code of XFD's MMCMP slave, for the curious.
+
+MMCMP is a module compression format on the PC. It was created by Emmanuel
+Giasson (Zirconia). The code for this slave came from the xmp package, by
+Claudio Matsuoka <claudio@helllabs.org> et al, and originally came from
+Oliver Lapicque's MODPlug source code.
+
+The code has been tidied up and made endian-neutral. It still appears
+worryingly incomplete, but it's all I have to go on, so it'll have to do...
+
+This MMCMP slave has only been tested on a few files, so it may not be
+entirely perfect. If you have a file it can't extract correctly, please
+send it to me.

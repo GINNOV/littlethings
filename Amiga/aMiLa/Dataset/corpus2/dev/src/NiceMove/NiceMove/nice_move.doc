@@ -1,0 +1,48 @@
+
+                                nive_move
+                                *********
+
+
+1. Copyright
+************
+
+nice_move is public domain, do with it what you want.
+
+
+2. Warrenty
+***********
+
+YOU USE THIS PROGRAM COMPLETELY ON YOUR OWN RISK! If you destroy any file,
+your computer, your car or even the whole universe or any part of it while
+using it, do not blame me, it is not my fault!
+
+
+3. What is it?
+**************
+
+If you are a programmer, you perhaps used the MOUSEMOVE events from
+Intuition. In general there are no problems, but if you use a hires,
+interlaced screen with 16 colors, it is somewhat useless because the
+reaction is so very slow and your moving point runs after the mouse
+pointer.
+
+I tested a few different possibilities and commented them a bit. The
+program nice_move offers you the chance to test 3 different handlers. You
+can draw a line on a hires screen by pressing the LMB, moving the mouse and
+then releasing the LMB. Close the window to quit.
+
+nice_move runs on every Kickstart version and must be run from CLI/Shell.
+It takes two arguments. The first is the handler, the second optionally
+specifies the depth of the screen. The default is 4.
+
+
+Send hints, ideas and other goodies to:
+
+        Thies Wellpott
+        Moorhauser Weg 14
+        2948 Schortens 1
+
+        Germany
+
+        (no e-mail, sorry)
+

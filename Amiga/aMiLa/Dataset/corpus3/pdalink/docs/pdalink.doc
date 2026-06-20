@@ -1,0 +1,3337 @@
+TABLE OF CONTENTS
+
+pdalink.library/--background--
+pdalink.library/DLP_AddSyncLogEntry
+pdalink.library/DLP_CleanUpDatabase
+pdalink.library/DLP_CloseAllDB
+pdalink.library/DLP_CloseDB
+pdalink.library/DLP_CountDBEntries
+pdalink.library/DLP_CreateDB
+pdalink.library/DLP_DeleteCategory
+pdalink.library/DLP_DeleteDB
+pdalink.library/DLP_DeleteRecord
+pdalink.library/DLP_DeleteResource
+pdalink.library/DLP_EndOfSync
+pdalink.library/DLP_GetDBInfo
+pdalink.library/DLP_GetNetSyncInfo
+pdalink.library/DLP_GetRecordIDList
+pdalink.library/DLP_GetStorageInfo
+pdalink.library/DLP_GetSysInfo
+pdalink.library/DLP_GetSysTime
+pdalink.library/DLP_GetUserInfo
+pdalink.library/DLP_MoveCategory
+pdalink.library/DLP_OpenConduit
+pdalink.library/DLP_OpenDB
+pdalink.library/DLP_ReadAppBlock
+pdalink.library/DLP_ReadAppPreference
+pdalink.library/DLP_ReadNextCatRecord
+pdalink.library/DLP_ReadNextModifiedCatRecord
+pdalink.library/DLP_ReadRecordByID
+pdalink.library/DLP_ReadRecordByIndex
+pdalink.library/DLP_ReadResourceByIndex
+pdalink.library/DLP_ReadResourceByType
+pdalink.library/DLP_ReadSortBlock
+pdalink.library/DLP_ResetDBIndex
+pdalink.library/DLP_ResetLastSyncPC
+pdalink.library/DLP_ResetSyncFlags
+pdalink.library/DLP_ResetSystem
+pdalink.library/DLP_SetNetSyncInfo
+pdalink.library/DLP_SetSysTime
+pdalink.library/DLP_SetUserInfo
+pdalink.library/DLP_WriteAppBlock
+pdalink.library/DLP_WriteAppPreference
+pdalink.library/DLP_WriteRecord
+pdalink.library/DLP_WriteResource
+pdalink.library/DLP_WriteSortBlock
+pdalink.library/PL_Accept
+pdalink.library/PL_AddRexxHandle
+pdalink.library/PL_CloseSocket
+pdalink.library/PL_CMPAbort
+pdalink.library/PL_CMPInit
+pdalink.library/PL_CMPRead
+pdalink.library/PL_CMPWakeUp
+pdalink.library/PL_Connect
+pdalink.library/PL_DeleteRexxHandle
+pdalink.library/PL_DLPInit
+pdalink.library/PL_DLPRead
+pdalink.library/PL_DLPSend
+pdalink.library/PL_DLPTstWrite
+pdalink.library/PL_DLPWrite
+pdalink.library/PL_DLPWriteByte
+pdalink.library/PL_DLPWriteLong
+pdalink.library/PL_DLPWriteWord
+pdalink.library/PL_Explain
+pdalink.library/PL_FileAddRecord
+pdalink.library/PL_FileAddResorce
+pdalink.library/PL_FileClose
+pdalink.library/PL_FileGetAppInfo
+pdalink.library/PL_FileGetDBInfo
+pdalink.library/PL_FileGetSortInfo
+pdalink.library/PL_FileInstall
+pdalink.library/PL_FileMerge
+pdalink.library/PL_FileOpen
+pdalink.library/PL_FileReadRecord
+pdalink.library/PL_FileReadRecordID
+pdalink.library/PL_FileReadResorce
+pdalink.library/PL_FileRetrieve
+pdalink.library/PL_FileSetAppInfo
+pdalink.library/PL_FileSetDBInfo
+pdalink.library/PL_FileSetSortInfo
+pdalink.library/PL_FileUsedID
+pdalink.library/PL_FindRexxHandle
+pdalink.library/PL_GetBaudRate
+pdalink.library/PL_LastError
+pdalink.library/PL_OpenSocket
+pdalink.library/PL_PADPRead
+pdalink.library/PL_PADPWrite
+pdalink.library/PL_RawRead
+pdalink.library/PL_RawSetRate
+pdalink.library/PL_RawWrite
+pdalink.library/PL_Read
+pdalink.library/PL_SLPRead
+pdalink.library/PL_SLPWrite
+pdalink.library/PL_Tickle
+pdalink.library/PL_Write
+
+pdalink.library/--background--
+
+   NAME
+        pdalink.library
+
+   DESCRIPTION
+        This library provides a connection to Palm Inc. PDA with PalmOS
+        2.0 or later. With appropriate software, you are now able to use
+        the HotSync feature on your Amiga as well.
+
+   REQUIREMENTS
+        pdalink requires at least AmigaOS V2.04, a 68020 processor, and
+        a Palm organizer connected to any serial port of the Amiga. An
+        68000 version is also available.
+
+        The pdalink.library requires at least 8192 byte of Stack, so
+        be prepared! Currently, you must call all function from the same
+        task that opened the socket.
+
+   CONSTRUCTION
+        The lowest layer of pdalink is the serial device itself. It is
+        controlled by all PL_RAW commands.
+
+        Basing on the serial layer, the SLP (Serial Link Protocol) handles
+        the source and destination ID, and the message type. The maximum
+        size of SLP messages is 1024 byte.
+
+        The PADP (Packet Assembly Disassembly Protocol) splits or joins
+        the data packets, respectively. It also attaches a transaction
+        ID so the packets can be joined properly. Anyhow, even the PADP
+        data packages are limited to about 65536 byte.
+
+        The CMP (Connection Management Protocol) controls the connection
+        between the Palm and the Amiga, as e.g. the baud rate used.
+
+        Until here, the client usually does not need to call any functions.
+        The main API of the library consists of connection and data transfer
+        functions. They are based on BSD socket like functions, though they
+        are quite 'Amigized'.
+
+        A high level protocol is the SYSPKT protocol. It is used for
+        debugging purposes. Currently it is not implemented to pdalink.
+        I will only implement it upon significant request.
+
+        The client will use the DLP (Desktop Link Protocol) in most cases.
+        With this protocol, the Pilot's data base can be accessed and
+        manipulated. Basing on this, the client can do a backup of all
+        data as well as 'HotSync' the Scheduler, ToDo list, and other
+        data bases.
+
+        Additionally, there are some functions that provide access to '.prc'
+        and '.pdb' files as data bases.
+
+        For ARexx library programmers, basic handle managment is provided.
+
+   BUGS
+        Currently, pdalink calls its own functions by a direct call. Thus,
+        patching library functions does not show any effect. Please don't
+        patch anything until further notice.
+
+        The provided pointers are *not* checked against NULL yet. I strongly
+        suggest to use Enforcer during development.
+
+        PL_Connect() still does not work. I'm currently evaluating this bug.
+
+   IMPORTANT
+        · Make sure that the stack is large enough (8192 byte at least)
+        · Currently, you MUST use all functions within the same task that
+          opened the socket to the Palm organizer.
+        · Do not manipulate READ ONLY fields!
+        · Do not use PRIVATE stuff!
+        · Do not assume a special value for TRUE. TRUE is anything except 0.
+
+   COPYRIGHT
+        The pdalink.library is Copyright (C) 1998-2010 by Richard Körber.
+        All rights reserved. Please read the main guide for further
+        information and the copyright note.
+
+        For the latest release and source code, have a look at the pdalink
+        development page at:
+        
+          http://pdalink.shredzone.org
+
+        pdalink.library is Open Source Software and released under LGPLv3.
+        You can find a copy of the license at:
+        
+          http://www.gnu.org/licenses/lgpl.html
+
+   TRADEMARKS
+        Palm, PalmOS are trademarks of Palm Inc.
+        HotSync are registered trademarks of Palm Inc.
+        All other trademarks are held by their respective owners
+ 
+pdalink.library/DLP_AddSyncLogEntry
+
+   NAME
+        DLP_AddSyncLogEntry - Add an entry to the HotSync log
+
+   SYNOPSIS
+        Success = DLP_AddSyncLogEntry(Socket,Entry)
+          D0.l                         A0.l  A1.l
+
+        int DLP_AddSyncLogEntry(APTR,STRPTR);
+
+   FUNCTION
+        Add an entry to the HotSync log. The user can read the last HotSync
+        log with the HotSync tool of the Palm.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        Entry         -- (STRPTR) String to be added
+
+   RESULT
+        Success       -- (int) TRUE: Entry has been added
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+
+ 
+pdalink.library/DLP_CleanUpDatabase
+
+   NAME
+        DLP_CleanUpDatabase - Clean up the database
+
+   SYNOPSIS
+        Success = DLP_CleanUpDatabase(Socket,DBHandle)
+          D0.l                         A0.l    D0.l
+
+        int DLP_CleanUpDatabase(APTR,LONG);
+
+   FUNCTION
+        Clean up the database.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        DBHandle      -- (LONG) Handle of the database to be cleaned.
+
+   RESULT
+        Success       -- (int) TRUE: this call succeeded. FALSE: an
+                error occured (see PL_LastError()).
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+
+ 
+pdalink.library/DLP_CloseAllDB
+
+   NAME
+        DLP_CloseAllDB - Close all opened databases
+
+   SYNOPSIS
+        Success = DLP_CloseAllDB(Socket)
+          D0.l                    A0.l
+
+        int DLP_CloseAllDB(APTR);
+
+   FUNCTION
+        Closes all databases previously opened.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+
+   RESULT
+        Success       -- (int) TRUE: all DB have been closed successfully
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+        DLP_CloseDB()
+
+ 
+pdalink.library/DLP_CloseDB
+
+   NAME
+        DLP_CloseDB - Close a database
+
+   SYNOPSIS
+        Success = DLP_CloseDB(Socket,DBHandle)
+          D0.l                 A0.l    D0.l
+
+        int DLP_CloseDB(APTR,LONG);
+
+   FUNCTION
+        Close a database.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        DBHandle      -- (LONG) Handle of the database to close
+
+   RESULT
+        Success       -- (int) TRUE: DB has been closed successfully
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+        DLP_OpenDB(), DLP_CreateDB(), DLP_DeleteDB(), DLP_CloseAllDB()
+
+ 
+pdalink.library/DLP_CountDBEntries
+
+   NAME
+        DLP_CountDBEntries - Count the entries of a database
+
+   SYNOPSIS
+        Number = DLP_CountDBEntries(Socket,DBHandle)
+         D0.l                        A0.l    D0.l
+
+        LONG DLP_CountDBEntries(APTR,LONG);
+
+   FUNCTION
+        Count the number of entries of a database. Use this function e.g.
+        if you want to read all entries of the database.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        DBHandle      -- (LONG) Handle of the database to count
+
+   RESULT
+        Number        -- (LONG) Number of entries, or -1 if an error
+                occured (see PL_LastError()).
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+
+ 
+pdalink.library/DLP_CreateDB
+
+   NAME
+        DLP_CreateDB - Create a new database
+
+   SYNOPSIS
+        DBHandle = DLP_CreateDB(Socket,CardNo,Creator,Type,Flags,Version,Name)
+          D0.l                   A0.l   D0.b   D1.l   D2.l  D3.w  D4.w   A1.l
+
+        LONG DLP_CreateDB(APTR,UBYTE,ULONG,ULONG,UWORD,UWORD,STRPTR);
+
+   FUNCTION
+        Create a new database. The database handle is returned.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        CardNo        -- (UBYTE) Card number of the database (usually 0)
+        Creator       -- (ULONG) ID of the DB creator. For own developments,
+                you must register an ID from 3Com (see their web page).
+        Type          -- (ULONG) Type ID of the DB.
+        Flags         -- (UWORD) Flags (see includes)
+        Version       -- (UWORD) Version of the database
+        Name          -- (STRPTR) Name of the database to create
+
+   RESULT
+        DBHandle      -- (LONG) Handle of the created data base, or -1
+                if an error occured (see PL_LastError()).
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+        DLP_OpenDB(), DLP_DeleteDB(), DLP_CloseDB()
+
+ 
+pdalink.library/DLP_DeleteCategory
+
+   NAME
+        DLP_DeleteCategory - Delete a record category from the database
+
+   SYNOPSIS
+        Success = DLP_DeleteCategory(Socket,DBHandle,CatID)
+          D0.l                        A0.l    D0.l    D1.b
+
+        int DLP_DeleteCategory(APTR,ULONG,BOOL);
+
+   FUNCTION
+        Delete a record category from the database.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        DBHandle      -- (LONG) Database handle
+        CatID         -- (UBYTE) Category ID to delete
+
+   RESULT
+        Success       -- (int) TRUE: Category has been deleted.
+
+   NOTE
+        This function requires PalmOS 2.0 or higher. There is workaround
+        for OS 1.0, but since it is quite outdated, I see no reason to
+        implement it. If you require it, please get in contact with me.
+
+   BUGS
+
+   SEE ALSO
+
+ 
+pdalink.library/DLP_DeleteDB
+
+   NAME
+        DLP_DeleteDB - Delete a database
+
+   SYNOPSIS
+        Success = DLP_DeleteDB(Socket,CardNo,Name)
+          D0.l                  A0.l   D0.b  A1.l
+
+        int DLP_DeleteDB(APTR,UBYTE,STRPTR);
+
+   FUNCTION
+        Delete a database.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        CardNo        -- (UBYTE) Card number where the database is stored
+        Name          -- (STRPTR) Name of the database to be deleted
+
+   RESULT
+        Success       -- (int) TRUE: DB has been deleted successfully
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+        DLP_OpenDB(), DLP_CreateDB(), DLP_CloseDB()
+
+ 
+pdalink.library/DLP_DeleteRecord
+
+   NAME
+        DLP_DeleteRecord - Delete a record from the database
+
+   SYNOPSIS
+        Success = DLP_DeleteRecord(Socket,DBHandle,All,ID)
+          D0.l                      A0.l   D0.l    D1.b D2.l
+
+        int DLP_DeleteRecord(APTR,ULONG,BOOL,ULONG);
+
+   FUNCTION
+        Delete a record from the database.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        DBHandle      -- (LONG) Database handle
+        All           -- (BOOL) True: delete *all* records of this database
+        ID            -- (ULONG) Record ID to delete
+
+   RESULT
+        Success       -- (int) TRUE: Record has been deleted.
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+
+ 
+pdalink.library/DLP_DeleteResource
+
+   NAME
+        DLP_DeleteResource - Delete a resource from the database
+
+   SYNOPSIS
+        Success = DLP_DeleteResource(Socket,DBHandle,All,Type,ID)
+          D0.l                        A0.l   D0.l    D1.b D2.l D3.w
+
+        int DLP_DeleteResource(APTR,ULONG,BOOL,ULONG,UWORD);
+
+   FUNCTION
+        Delete a resource from the database.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        DBHandle      -- (LONG) Database handle
+        All           -- (BOOL) True: delete *all* resources of this database
+        Type          -- (ULONG) Resource Type
+        ID            -- (ULONG) Record ID
+
+   RESULT
+        Success       -- (int) TRUE: Resource has been deleted.
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+
+ 
+pdalink.library/DLP_EndOfSync
+
+   NAME
+        DLP_EndOfSync - Terminate all database accesses
+
+   SYNOPSIS
+        Success = DLP_EndOfSync(Socket,Status)
+          D0.l                   A0.l   D0.w
+
+        int DLP_EndOfSync(APTR,UWORD);
+
+   FUNCTION
+        Closes the Pilot database. After you called this function, you
+        should close the connection.
+
+        *NEVER* forget to call DLP_EndOfSync() when you called
+        DLP_OpenConduit(). pdalink won't do this for you.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        Status        -- (UWORD) Status code
+
+   RESULT
+        Success       -- (int) TRUE: this call succeeded. FALSE: an
+                error occured (see PL_LastError()).
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+        DLP_OpenConduit()
+
+ 
+pdalink.library/DLP_GetDBInfo
+
+   NAME
+        DLP_GetDBInfo - Get information about the database
+
+   SYNOPSIS
+        Success = DLP_GetDBInfo(Socket,CardNo,Flags,Index,Info)
+          D0.l                   A0.l   D0.b   D1.b  D2.w A1.l
+
+        int DLP_GetDBInfo(APTR,UBYTE,UBYTE,UWORD,struct DLP_DBInfo *);
+
+   FUNCTION
+        The passed DLP_DBInfo structure is filled with information
+        about the database with the number provided in Start.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        CardNo        -- (UBYTE) Card to select (usually 0)
+        Flags         -- (UBYTE) Access flags (RAM or ROM), see
+                include file.
+        Index         -- (UWORD) Database number to get information
+                about. Start with 0, then proceed with Info.Index+1
+                of each returned data base.
+        Info          -- (struct DLP_DBInfo *) DBInfo structure
+                to be filled
+
+   RESULT
+        Success       -- (int) TRUE: Information has been read.
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+
+ 
+pdalink.library/DLP_GetNetSyncInfo
+
+   NAME
+        DLP_GetNetSyncInfo - Get information about net sync
+
+   SYNOPSIS
+        Success = DLP_GetNetSyncInfo(Socket,NetSync)
+          D0.l                        A0.l   A1.l
+
+        int DLP_GetNetSyncInfo(APTR,struct DLP_NetSyncInfo *);
+
+   FUNCTION
+        Get information about net sync into the DLP_NetSyncInfo structure.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        NetSync       -- (struct DLP_NetSyncInfo *) Buffer space for the
+                NetSync structure.
+
+   RESULT
+        Success       -- (int) TRUE: NetSyncInfo has been get.
+
+   NOTE
+        This function requires PalmOS 2.0 or higher. There is workaround
+        for OS 1.0, but since it is quite outdated, I see no reason to
+        implement it. If you require it, please get in contact with me.
+
+   BUGS
+
+   SEE ALSO
+        DLP_SetNetSyncInfo()
+
+ 
+pdalink.library/DLP_GetRecordIDList
+
+   NAME
+        DLP_GetRecordIDList - Get a list of all record IDs of this database
+
+   SYNOPSIS
+        Number = DLP_GetRecordIDList(Socket,DBHandle,Sort,Start,Max,IDs)
+         D0.l                         A0.l    D0.l   D1.w D2.w  D3.w A1.l
+
+        LONG DLP_GetRecordIDList(APTR,LONG,BOOL,UWORD,UWORD,ULONG *);
+
+   FUNCTION
+        Get a list of all record IDs of this database.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        DBHandle      -- (LONG) Database handle
+        Sort          -- (BOOL) The list is sorted
+        Start         -- (UWORD) Start record index
+        Max           -- (UWORD) Maximum number of entries that fit into
+                the ID table
+        IDs           -- (ULONG *) ID table that will contain the record
+                IDs after this call
+
+   RESULT
+        Number        -- (LONG) Number of IDs that were written into the
+                table, or -1 on error.
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+
+ 
+pdalink.library/DLP_GetStorageInfo
+
+   NAME
+        DLP_GetStorageInfo - Get information about Pilot's memory
+
+   SYNOPSIS
+        Success = DLP_GetStorageInfo(Socket,CardNo,Info)
+          D0.l                        A0.l   D0.b  A1.l
+
+        int DLP_GetStorageInfo(APTR,UBYTE,struct DLP_StorageInfo *);
+
+   FUNCTION
+        The passed DLP_StorageInfo structure is filled with information
+        about the Pilot's built-in memory card.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        CardNo        -- (UBYTE) Card Nr. to be read. Start with 0, then
+                iterate with DLP_StorageInfo.cardNo+1.
+        Info          -- (struct DLP_StorageInfo *) StorageInfo structure
+                to be filled
+
+   RESULT
+        Success       -- (int) TRUE: Information has been read.
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+
+ 
+pdalink.library/DLP_GetSysInfo
+
+   NAME
+        DLP_GetSysInfo - Get information about the Pilot
+
+   SYNOPSIS
+        Success = DLP_GetSysInfo(Socket,Info)
+          D0.l                    A0.l  A1.l
+
+        int DLP_GetSysInfo(APTR,struct DLP_SysInfo *);
+
+   FUNCTION
+        The passed DLP_SysInfo structure is filled with information
+        about the Pilot's built-in memory cards.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        Info          -- (struct DLP_SysInfo *) SysInfo structure
+                to be filled
+
+   RESULT
+        Success       -- (int) TRUE: Information has been read.
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+
+ 
+pdalink.library/DLP_GetSysTime
+
+   NAME
+        DLP_GetSysTime - Get the Pilot system time
+
+   SYNOPSIS
+        Success = DLP_GetSysTime(Socket,Time)
+          D0.l                    A0.l  A1.l
+
+        int DLP_GetSysTime(APTR,struct DLP_SysTime *);
+
+   FUNCTION
+        The passed DLP_SysTime structure is filled with the current
+        time of the Pilot's internal clock.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        Time          -- (struct DLP_SysTime *) Time structure to be filled
+
+   RESULT
+        Success       -- (int) TRUE: Time has been read.
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+        DLP_SetSysTime()
+
+ 
+pdalink.library/DLP_GetUserInfo
+
+   NAME
+        DLP_GetUserInfo - Get information about the Pilot user
+
+   SYNOPSIS
+        Success = DLP_GetUserInfo(Socket,User)
+          D0.l                     A0.l  A1.l
+
+        int DLP_GetUserInfo(APTR,struct DLP_UserInfo *);
+
+   FUNCTION
+        Get information about the Pilot user (most probably you ;-)
+        into the DLP_UserInfo structure.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        User          -- (struct DLP_UserInfo *) Buffer space for
+                the UserInfo.
+
+   RESULT
+        Success       -- (int) TRUE: UserInfo has been get.
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+        DLP_SetUserInfo()
+
+ 
+pdalink.library/DLP_MoveCategory
+
+   NAME
+        DLP_MoveCategory - Change a record category ID
+
+   SYNOPSIS
+        Success = DLP_MoveCategory(Socket,DBHandle,OldID,NewID)
+         D0.l                       A0.l    D0.l    D1.b  D2.b
+
+        int DLP_MoveCategory(APTR,LONG,UBYTE,UBYTE);
+
+   FUNCTION
+        Changes a record cateogry ID of the selected database to the new
+        ID.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        DBHandle      -- (LONG) Handle of the database
+        OldID         -- (UBYTE) Old record category ID
+        NewID         -- (UBYTE) New record category ID
+
+   RESULT
+        Success       -- (int) TRUE: changed successfully
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+
+ 
+pdalink.library/DLP_OpenConduit
+
+   NAME
+        DLP_OpenConduit - Initialize a database access
+
+   SYNOPSIS
+        Success = DLP_OpenConduit(Socket)
+          D0.l                     A0.l
+
+        int DLP_OpenConduit(APTR);
+
+   FUNCTION
+        Open the Pilot database for access. You must call this function
+        once, before you call any other DLP_* function.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+
+   RESULT
+        Success       -- (int) FALSE: The Conduit couldn't be opened
+                (see PL_LastError()).
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+        DLP_EndOfSync()
+
+ 
+pdalink.library/DLP_OpenDB
+
+   NAME
+        DLP_OpenDB - Open an existing database
+
+   SYNOPSIS
+        DBHandle = DLP_OpenDB(Socket,CardNo,Mode,Name)
+          D0.l                 A0.l   D0.b  D1.b A1.l
+
+        LONG DLP_OpenDB(APTR,UBYTE,UBYTE,STRPTR);
+
+   FUNCTION
+        Open an existing database with the name Name and mode Mode. The
+        database handle is returned.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        CardNo        -- (UBYTE) Card number of the database (usually 0)
+        Mode          -- (UBYTE) Access mode (see includes)
+        Name          -- (STRPTR) Name of the database to open
+
+   RESULT
+        DBHandle      -- (LONG) Handle of the opened data base, or -1
+                if an error occured (see PL_LastError()).
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+        DLP_CreateDB(), DLP_DeleteDB(), DLP_CloseDB()
+
+ 
+pdalink.library/DLP_ReadAppBlock
+
+   NAME
+        DLP_ReadAppBlock - Read an application block
+
+   SYNOPSIS
+        Length = DLP_ReadAppBlock(Socket,DBHandle,Offset,Buffer,Length)
+          D0.l                     A0.l    D0.l    D1.w   A1.l   D2.w
+
+        LONG DLP_ReadAppBlock(APTR,LONG,UWORD,APTR,UWORD);
+
+   FUNCTION
+        Read the application block of the database.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        DBHandle      -- (LONG) Database handle
+        Offset        -- (UWORD) Offset into the application block
+        Buffer        -- (APTR) Buffer for the application block
+        Length        -- (UWORD) Length of the buffer. As you see, the maximum
+                size is 65535 byte.
+
+   RESULT
+        Length        -- (LONG) AppBlock bytes that were really read, or -1 if
+                an error occured.
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+
+ 
+pdalink.library/DLP_ReadAppPreference
+
+   NAME
+        DLP_ReadAppPreference - Read the preference of an application
+
+   SYNOPSIS
+        Length = DLP_ReadAppPreference(Socket,Creator,ID,Saved,MaxSize,Buffer,Size,Version)
+         D0.l                           A0.l   D0.l  D1.w D2.w  D3.w    A1.l  A2.l   A3.l
+
+        LONG DLP_ReadAppPreference(APTR,ULONG,UWORD,BOOL,UWORD,APTR,UWORD *,UWORD *);
+
+   FUNCTION
+        Read the preferences of an application. You can choose between the
+        saved and the temporary version of the preference.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        Creator       -- (ULONG) Creator of the application
+        ID            -- (UWORD) ID number of the preference (lets an
+                application have multiple preferences)
+        Saved         -- (BOOL) TRUE: use the saved preferences, FALSE: use
+                the current preferences.
+        MaxSize       -- (UWORD) Size of the buffer
+        Buffer        -- (APTR) Buffer where the preferences are stored
+        Size          -- (UWORD *) If a pointer is provided, the size of the
+                preference block is stored there. You may provide NULL.
+        Version       -- (UWORD *) If a pointer is provided, the version of
+                the preference block is stored there. You may provide NULL.
+
+   RESULT
+        Length        -- (LONG) Number of bytes that were really read, or -1
+                if an error occured.
+
+   NOTE
+        This function requires PalmOS 2.0 or higher. There is workaround
+        for OS 1.0, but since it is quite outdated, I see no reason to
+        implement it. If you require it, please get in contact with me.
+
+   BUGS
+
+   SEE ALSO
+
+ 
+pdalink.library/DLP_ReadNextCatRecord
+
+   NAME
+        DLP_ReadNextCatRecord - Read the next record of a category
+
+   SYNOPSIS
+        Length = DLP_ReadNextCatRecord(Socket,DBHandle,Cat,Buffer,ID,Index,Size,Attr)
+          D0.l                          A0.l    D0.l  D1.b  A1.l A2.l A3.l D2.l D3.l
+
+        LONG DLP_ReadNextCatRecord(APTR,ULONG,UBYTE,APTR,ULONG *,UWORD *,UWORD *,UBYTE *);
+
+   FUNCTION
+        Read the next record of a given category.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        DBHandle      -- (LONG) Database handle
+        Cat           -- (UBYTE) Category ID
+        Buffer        -- (APTR) Buffer for the record. The buffer must have
+                a sufficient size of 65535 byte.
+        ID            -- (ULONG *) If a pointer is provided, the record ID
+                is copied there. You may provide NULL.
+        Index         -- (UWORD *) If a pointer is provided, the record index
+                is copied there. You may provide NULL.
+        Size          -- (UWORD *) If a pointer is provided, the UWORD is filled
+                with the size of this resource. You may provide NULL.
+                Assembler users watch out: this is a pointer in a data register!
+        Attr          -- (UBYTE *) If a pointer is provided, the UBYTE is filled
+                with the record attributes. You may provide NULL.
+                Assembler users watch out: this is a pointer in a data register!
+
+   RESULT
+        Length        -- (LONG) Record bytes that were really read, or -1 if
+                an error occured.
+
+   NOTE
+        This function requires PalmOS 2.0 or higher. There is workaround
+        for OS 1.0, but since it is quite outdated, I see no reason to
+        implement it. If you require it, please get in contact with me.
+
+   BUGS
+
+   SEE ALSO
+
+ 
+pdalink.library/DLP_ReadNextModifiedCatRecord
+
+   NAME
+        DLP_ReadNextModifiedCatRecord - Read the next modified record of a category
+
+   SYNOPSIS
+        Length = DLP_ReadNextModifiedCatRecord(Socket,DBHandle,Cat,Buffer,ID,Index,Size,Attr)
+          D0.l                                  A0.l    D0.l  D1.b  A1.l A2.l A3.l D2.l D3.l
+
+        LONG DLP_ReadNextModifiedCatRecord(APTR,ULONG,UBYTE,APTR,ULONG *,UWORD *,UWORD *,UBYTE *);
+
+   FUNCTION
+        Read the next modified record of a given category.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        DBHandle      -- (LONG) Database handle
+        Cat           -- (UBYTE) Category ID
+        Buffer        -- (APTR) Buffer for the record. The buffer must have
+                a sufficient size of 65535 byte.
+        ID            -- (ULONG *) If a pointer is provided, the record ID
+                is copied there. You may provide NULL.
+        Index         -- (UWORD *) If a pointer is provided, the record index
+                is copied there. You may provide NULL.
+        Size          -- (UWORD *) If a pointer is provided, the UWORD is filled
+                with the size of this resource. You may provide NULL.
+                Assembler users watch out: this is a pointer in a data register!
+        Attr          -- (UBYTE *) If a pointer is provided, the UBYTE is filled
+                with the record attributes. You may provide NULL.
+                Assembler users watch out: this is a pointer in a data register!
+
+   RESULT
+        Length        -- (LONG) Record bytes that were really read, or -1 if
+                an error occured.
+
+   NOTE
+        This function requires PalmOS 2.0 or higher. There is workaround
+        for OS 1.0, but since it is quite outdated, I see no reason to
+        implement it. If you require it, please get in contact with me.
+
+        No, there is no longer function name in this library. ;-)
+
+   BUGS
+
+   SEE ALSO
+
+ 
+pdalink.library/DLP_ReadRecordByID
+
+   NAME
+        DLP_ReadRecordByID - Read a record by ID
+
+   SYNOPSIS
+        Length = DLP_ReadRecordByID(Socket,DBHandle,ID,Buffer,Index,Size,Attr,Cat);
+         D0.l                        A0.l    D0.l  D1.l A1.l  A2.l  A3.l D2.l D3.l
+
+        LONG DLP_ReadRecordByID(APTR,LONG,ULONG,APTR,UWORD *,UWORD *,UBYTE *,UBYTE *);
+
+   FUNCTION
+        Read a record from the database, by its ID.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        DBHandle      -- (LONG) Database handle
+        ID            -- (ULONG) Record ID
+        Buffer        -- (APTR) Buffer for the record. The buffer must have
+                a sufficient size of 65535 byte.
+        Index         -- (UWORD *) If a pointer is provided, the record index
+                is copied there. You may provide NULL.
+        Size          -- (UWORD *) If a pointer is provided, the UWORD is filled
+                with the size of this record. You may provide NULL.
+        Attr          -- (UBYTE *) If a pointer is provided, the record attribute
+                is copied there. You may provide NULL.
+                Assembler users watch out: this is a pointer in a data register!
+        Cat           -- (UBYTE *) If a pointer is provided, the record category
+                is copied there. You may provide NULL.
+                Assembler users watch out: this is a pointer in a data register!
+
+
+   RESULT
+        Length        -- (LONG) Record bytes that were really read, or -1 if
+                an error occured.
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+
+ 
+pdalink.library/DLP_ReadRecordByIndex
+
+   NAME
+        DLP_ReadRecordByIndex - Read a record by Index
+
+   SYNOPSIS
+        Length = DLP_ReadRecordByIndex(Socket,DBHandle,Index,Buffer,ID,Size,Attr,Cat);
+         D0.l                           A0.l    D0.l    D1.l A1.l  A2.l A3.l D2.l D3.l
+
+        LONG DLP_ReadRecordByIndex(APTR,LONG,UWORD,APTR,ULONG *,UWORD *,UBYTE *,UBYTE *);
+
+   FUNCTION
+        Read a record from the database, by its index.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        DBHandle      -- (LONG) Database handle
+        Index         -- (UWORD) Index of the record
+        Buffer        -- (APTR) Buffer for the record. The buffer must have
+                a sufficient size of 65535 byte.
+        ID            -- (ULONG *) If a pointer is provided, the record ID
+                is copied there. You may provide NULL.
+        Size          -- (UWORD *) If a pointer is provided, the UWORD is filled
+                with the size of this record. You may provide NULL.
+        Attr          -- (UBYTE *) If a pointer is provided, the record attribute
+                is copied there. You may provide NULL.
+                Assembler users watch out: this is a pointer in a data register!
+        Cat           -- (UBYTE *) If a pointer is provided, the record category
+                is copied there. You may provide NULL.
+                Assembler users watch out: this is a pointer in a data register!
+
+
+   RESULT
+        Length        -- (LONG) Record bytes that were really read, or -1 if
+                an error occured.
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+
+ 
+pdalink.library/DLP_ReadResourceByIndex
+
+   NAME
+        DLP_ReadResourceByIndex - Read a resource by index
+
+   SYNOPSIS
+        Length = DLP_ReadResourceByIndex(Socket,DBHandle,Index,Buffer,Type,ID,Size)
+          D0.l                            A0.l    D0.l    D1.w  A1.l  A2.l A3.l D2.l
+
+        LONG DLP_ReadResourceByIndex(APTR,LONG,UWORD,APTR,ULONG *,UWORD *,UWORD *);
+
+   FUNCTION
+        Read a resource from the database, by its index.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        DBHandle      -- (LONG) Database handle
+        Index         -- (UWORD) Index of the resource
+        Buffer        -- (APTR) Buffer for the resource. The buffer must have
+                a sufficient size of 65535 byte.
+        Type          -- (ULONG *) If a pointer is provided, the resource type
+                is copied there. You may provide NULL.
+        ID            -- (UWORD *) If a pointer is provided, the resource ID
+                is copied there. You may provide NULL.
+        Size          -- (UWORD *) If a pointer is provided, the UWORD is filled
+                with the size of this resource. You may provide NULL.
+                Assembler users watch out: this is a pointer in a data register!
+
+   RESULT
+        Length        -- (LONG) Resource bytes that were really read, or -1 if
+                an error occured.
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+
+ 
+pdalink.library/DLP_ReadResourceByType
+
+   NAME
+        DLP_ReadResourceByType - Read a resource by its type
+
+   SYNOPSIS
+        Length = DLP_ReadResourceByType(Socket,DBHandle,Type,ID,Buffer,Index,Size)
+          D0.l                           A0.l   D0.l    D1.l D2.w A1.l  A2.l A3.l
+
+        LONG DLP_ReadResourceByType(APTR,LONG,ULONG,UWORD,APTR,UWORD *,UWORD *);
+
+   FUNCTION
+        Read a resource from the database, by its type and ID.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        DBHandle      -- (LONG) Database handle
+        Type          -- (ULONG) Resource type
+        ID            -- (UWORD) Resource ID
+        Buffer        -- (APTR) Buffer for the resource. The buffer must have
+                a sufficient size of 65535 byte.
+        Index         -- (UWORD *) If a pointer is provided, the UWORD is filled
+                with the index of this resource. You may provide NULL.
+        Size          -- (UWORD *) If a pointer is provided, the UWORD is filled
+                with the size of this resource. You may provide NULL.
+
+   RESULT
+        Length        -- (LONG) Resource bytes that were really read, or -1 if
+                an error occured.
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+
+ 
+pdalink.library/DLP_ReadSortBlock
+
+   NAME
+        DLP_ReadSortBlock - Read a sort block
+
+   SYNOPSIS
+        Length = DLP_ReadSortBlock(Socket,DBHandle,Offset,Buffer,Length)
+          D0.l                      A0.l    D0.l    D1.w   A1.l   D2.w
+
+        LONG DLP_ReadSortBlock(APTR,LONG,UWORD,APTR,UWORD);
+
+   FUNCTION
+        Read the sort block of the database.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        DBHandle      -- (LONG) Database handle
+        Offset        -- (UWORD) Offset into the sort block
+        Buffer        -- (APTR) Buffer for the sort block
+        Length        -- (UWORD) Length of the buffer. As you see, the maximum
+                size is 65535 byte.
+
+   RESULT
+        Length        -- (LONG) SortBlock bytes that were really read, or -1 if
+                an error occured.
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+
+ 
+pdalink.library/DLP_ResetDBIndex
+
+   NAME
+        DLP_ResetDBIndex - Restart from the first DB entry
+
+   SYNOPSIS
+        Success = DLP_ResetDBIndex(Socket,DBHandle)
+          D0.l                      A0.l    D0.l
+
+        int DLP_ResetDBIndex(APTR,LONG);
+
+   FUNCTION
+        Resets the internal DB index counter to the start of the
+        database.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        DBHandle      -- (LONG) Database handle
+
+   RESULT
+        Success       -- (int) FALSE: an error occured, see PL_LastError()
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+
+ 
+pdalink.library/DLP_ResetLastSyncPC
+
+   NAME
+        DLP_ResetLastSyncPC - Clears the LastSyncPC
+
+   SYNOPSIS
+        Success = DLP_ResetLastSyncPC(Socket)
+          D0.l                         A0.l
+
+        int DLP_ResetLastSyncPC(APTR);
+
+   FUNCTION
+        Reset the LastSyncPC field in the UserInfo.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+
+   RESULT
+        Success       -- (int) FALSE: an error occured, see PL_LastError()
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+
+ 
+pdalink.library/DLP_ResetSyncFlags
+
+   NAME
+        DLP_ResetSyncFlags - Reset all sync flags of the database
+
+   SYNOPSIS
+        Success = DLP_ResetSyncFlags(Socket,DBHandle)
+          D0.l                        A0.l    D0.l
+
+        int DLP_ResetSyncFlags(APTR,LONG);
+
+   FUNCTION
+        All sync flags of the database are reset.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        DBHandle      -- (LONG) Handle of the database.
+
+   RESULT
+        Success       -- (int) TRUE: this call succeeded. FALSE: an
+                error occured (see PL_LastError()).
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+
+ 
+pdalink.library/DLP_ResetSystem
+
+   NAME
+        DLP_ResetSystem - Reset the Palm
+
+   SYNOPSIS
+        Success = DLP_ResetSystem(Socket)
+          D0.l                     A0.l
+
+        int DLP_ResetSystem(APTR);
+
+   FUNCTION
+        Reset the Palm when the connection is closed.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+
+   RESULT
+        Success       -- (int) FALSE: an error occured, see PL_LastError()
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+
+ 
+pdalink.library/DLP_SetNetSyncInfo
+
+   NAME
+        DLP_SetNetSyncInfo - Set information about net sync
+
+   SYNOPSIS
+        Success = DLP_SetNetSyncInfo(Socket,NetSync)
+          D0.l                        A0.l   A1.l
+
+        int DLP_SetNetSyncInfo(APTR,struct DLP_NetSyncInfo *);
+
+   FUNCTION
+        Set information about net sync from the DLP_NetSyncInfo structure.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        NetSync       -- (struct DLP_NetSyncInfo *) NetSync to be set
+
+   RESULT
+        Success       -- (int) TRUE: NetSyncInfo has been set.
+
+   NOTE
+        This function requires PalmOS 2.0 or higher. There is workaround
+        for OS 1.0, but since it is quite outdated, I see no reason to
+        implement it. If you require it, please get in contact with me.
+
+   BUGS
+
+   SEE ALSO
+        DLP_GetNetSyncInfo()
+
+ 
+pdalink.library/DLP_SetSysTime
+
+   NAME
+        DLP_SetSysTime - Set the Pilot system time
+
+   SYNOPSIS
+        Success = DLP_SetSysTime(Socket,Time)
+          D0.l                    A0.l  A1.l
+
+        int DLP_SetSysTime(APTR,struct DLP_SysTime *);
+
+   FUNCTION
+        The internal clock of the Palm is set according to the
+        passed DLP_SysTime structure.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        Time          -- (struct DLP_SysTime *) Time to set
+
+   RESULT
+        Success       -- (int) TRUE: Time has been set.
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+        DLP_GetSysTime()
+
+ 
+pdalink.library/DLP_SetUserInfo
+
+   NAME
+        DLP_SetUserInfo - Set information about the Pilot user
+
+   SYNOPSIS
+        Success = DLP_SetUserInfo(Socket,User)
+          D0.l                     A0.l  A1.l
+
+        int DLP_SetUserInfo(APTR,struct DLP_UserInfo *);
+
+   FUNCTION
+        Set information about the Pilot user (most probably you ;-)
+        from the DLP_UserInfo structure.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        User          -- (struct DLP_UserInfo *) UserInfo to be set
+
+   RESULT
+        Success       -- (int) TRUE: UserInfo has been set.
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+        DLP_GetUserInfo()
+
+ 
+pdalink.library/DLP_WriteAppBlock
+
+   NAME
+        DLP_WriteAppBlock - Write an application block
+
+   SYNOPSIS
+        Success = DLP_WriteAppBlock(Socket,DBHandle,Buffer,Length)
+          D0.l                      A0.l    D0.l    A1.l   D1.w
+
+        int DLP_WriteAppBlock(APTR,LONG,APTR,UWORD);
+
+   FUNCTION
+        Write the application block into the database.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        DBHandle      -- (LONG) Database handle
+        Buffer        -- (APTR) Buffer for the application block
+        Length        -- (UWORD) Length of the buffer. As you see, the maximum
+                size is 65535 byte.
+
+   RESULT
+        Success       -- (int) TRUE: AppBlock has been written successfully
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+
+ 
+pdalink.library/DLP_WriteAppPreference
+
+   NAME
+        DLP_WriteAppPreference - Write the preference of an application
+
+   SYNOPSIS
+        Success = DLP_WriteAppPreference(Socket,Creator,ID,Saved,Version,Buffer,Length)
+          D0.l                            A0.l   D0.l  D1.w D2.w  D3.w    A1.l   D4.w
+
+        int DLP_WriteAppPreference(APTR,ULONG,UWORD,BOOL,UWORD,APTR,UWORD);
+
+   FUNCTION
+        Write the preferences of an application. You can choose between the
+        saved and the temporary version of the preference.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        Creator       -- (ULONG) Creator of the application
+        ID            -- (UWORD) ID number of the preference (lets an
+                application have multiple preferences)
+        Saved         -- (BOOL) TRUE: save the preference, FALSE: use
+                the preference as current settings.
+        Version       -- (UWORD) Preference version
+        Buffer        -- (APTR) Buffer where the preferences are stored
+        Length        -- (UWORD) Length of the preference block
+
+   RESULT
+        Success       -- (int) TRUE: Preference has been set successfully.
+
+   NOTE
+        This function requires PalmOS 2.0 or higher. There is workaround
+        for OS 1.0, but since it is quite outdated, I see no reason to
+        implement it. If you require it, please get in contact with me.
+
+   BUGS
+
+   SEE ALSO
+
+ 
+pdalink.library/DLP_WriteRecord
+
+   NAME
+        DLP_WriteRecord - Write a record to the database
+
+   SYNOPSIS
+        Success = DLP_WriteRecord(Socket,DBHandle,Flags,ID,CatID,Buffer,Length,NewID)
+          D0.l                     A0.l   D0.l    D1.b D2.l D3.b  A1.l   D4.w   A2.l
+
+        int DLP_WriteRecord(APTR,LONG,UBYTE,ULONG,UBYTE,APTR,UWORD,ULONG *);
+
+   FUNCTION
+        Write a record to the database.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        DBHandle      -- (LONG) Database handle
+        Flags         -- (UBYTE) Write flags (see includes)
+        ID            -- (ULONG) Record ID
+        CatID         -- (UBYTE) Record Category ID
+        Buffer        -- (APTR) Data to write to the record
+        Length        -- (UWORD) Length of the buffer (as you see, a record
+                can only contain 65535 byte).
+        NewID         -- (ULONG *) The record ID that has been used can be
+                returned in this buffer. Provide NULL if you don't need it.
+
+   RESULT
+        Success       -- (int) TRUE: Record has bee written.
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+
+ 
+pdalink.library/DLP_WriteResource
+
+   NAME
+        DLP_WriteResource - Write a resource to the database
+
+   SYNOPSIS
+        Success = DLP_WriteResource(Socket,DBHandle,Type,ID,Buffer,Length)
+          D0.l                       A0.l   D0.l    D1.l D2.w A1.l  D3.w
+
+        int DLP_WriteResource(APTR,LONG,ULONG,UWORD,APTR,UWORD);
+
+   FUNCTION
+        Write a resource to the database.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        DBHandle      -- (LONG) Database handle
+        Type          -- (ULONG) Resource type
+        ID            -- (UWORD) Resource ID
+        Buffer        -- (APTR) Data to write to the resource
+        Length        -- (UWORD) Length of the buffer (as you see, a resource
+                can only contain 65535 byte).
+
+   RESULT
+        Success       -- (int) TRUE: Resource has been written.
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+
+ 
+pdalink.library/DLP_WriteSortBlock
+
+   NAME
+        DLP_WriteSortBlock - Write a sort block
+
+   SYNOPSIS
+        Success = DLP_WriteSortBlock(Socket,DBHandle,Buffer,Length)
+          D0.l                       A0.l    D0.l    A1.l   D1.w
+
+        int DLP_WriteSortBlock(APTR,LONG,APTR,UWORD);
+
+   FUNCTION
+        Write the sort block into the database.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        DBHandle      -- (LONG) Database handle
+        Buffer        -- (APTR) Buffer for the sort block
+        Length        -- (UWORD) Length of the buffer. As you see, the maximum
+                size is 65535 byte.
+
+   RESULT
+        Success       -- (int) TRUE: SortBlock has been written successfully
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+
+ 
+pdalink.library/PL_Accept
+
+   NAME
+        PL_Accept - accept a connection
+
+   SYNOPSIS
+        Success = PL_Accept(Socket, Timeout)
+        D0.l                 A0.l    D0.l
+
+        int PL_Accept(APTR, ULONG);
+
+   FUNCTION
+        Wait for a connection request from Palm, and accept it. If
+        there was no connection until Timeout, a timeout error will be
+        returned.
+
+        Usually, the connection is started by pressing the HotSync button
+        on the cradle.
+
+        You can read the error code using PL_LastError().
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        Timeout       -- (ULONG) Timeout (seconds) until this function
+                         returns.
+
+   RESULT
+        Success       -- (int) TRUE if a connection request has been
+                         accepted.
+
+   NOTE
+
+   BUGS
+        The timeout may be some seconds longer than provided.
+
+   SEE ALSO
+ 
+pdalink.library/PL_AddRexxHandle
+
+   NAME
+        PL_AddRexxHandle - Add an ARexx created handle
+
+   SYNOPSIS
+        PL_AddRexxHandle(Socket, Name)
+                         A0.l    A1.l
+
+        void PL_AddRexxHandle(APTR, STRPTR);
+
+   FUNCTION
+        After a socket has been created by an ARexx function, its handle
+        is maintained by the pdalink.library.
+
+        This function adds the new handle to the internal list.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        Name          -- (STRPTR) Name of the handle
+
+   RESULT
+
+   NOTE
+        This is a PRIVATE function. Do NOT use it. You have been warned! ;-)
+
+   BUGS
+        If the name does already exist, it will exist twice after this call.
+
+   SEE ALSO
+        PL_DeleteRexxHandle(), PL_FindRexxHandle()
+ 
+pdalink.library/PL_CloseSocket
+
+   NAME
+        PL_CloseSocket - close a socket to a Palm
+
+   SYNOPSIS
+        PL_CloseSocket(Socket)
+                        A0.l
+
+        void PL_CloseSocket(APTR);
+
+   FUNCTION
+        Close a socket to a Palm. Make sure to close all data bases
+        before. pdalink won't do this for you.
+
+   INPUTS
+        Socket        -- (APTR) Socket to be closed. NULL will do nothing.
+
+   RESULT
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+        PL_OpenSocket()
+
+ 
+pdalink.library/PL_CMPAbort
+
+   NAME
+        PL_CMPAbort - Abort a connection
+
+   SYNOPSIS
+        Success = PL_CMPAbort(Socket,Reason)
+        D0.l                   A0.l   D0.b
+
+        int PL_CMPAbort(APTR,UBYTE);
+
+   FUNCTION
+        Abort a connection, using CMP (Connection Management Protocol).
+        The appropriate reason is transmitted.
+
+        If this function fails (i.e. it returns false), you can read
+        the error code using PL_LastError().
+
+        This is a low level call, and is used by the pdalink.library
+        itself. Usually, you do not need to use this function.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        Reason        -- (UBYTE) Reason for the abortion
+
+   RESULT
+        Success       -- (int) TRUE: The abort request has been sent
+                successfully. FALSE: An error occured.
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+        PL_CMPRead(), PL_CMPInit(), PL_CMPWakeUp()
+
+ 
+pdalink.library/PL_CMPInit
+
+   NAME
+        PL_CMPInit - Initialize a connection
+
+   SYNOPSIS
+        Success = PL_CMPInit(Socket,Rate)
+        D0.l                  A0.l  D0.l
+
+        int PL_CMPInit(APTR,ULONG);
+
+   FUNCTION
+        After being waked up, the connection is initialized using
+        CMP (Connection Management Protocol). The desired baud rate
+        is passed. It must be below the maximum baud rate that has
+        been transmitted by the WakeUp packet. If the Palm does
+        not support the desired rate, this function will fail.
+
+        If this function fails (i.e. it returns false), you can read
+        the error code using PL_LastError().
+
+        This is a low level call, and is used by the pdalink.library
+        itself. Usually, you do not need to use this function.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        Rate          -- (ULONG) Desired baud rate, in bps
+
+   RESULT
+        Success       -- (int) TRUE: The initialization has been sent
+                successfully. FALSE: An error occured.
+
+   NOTE
+        It is guaranteed that the Palm supports 9600 bps. The
+        maximum baud rate (at least of the Palm III) is 57600 bps.
+
+        This call will not set the serial interface to the new baud
+        rate!
+
+   BUGS
+
+   SEE ALSO
+        PL_CMPRead(), PL_CMPAbort(), PL_CMPWakeUp()
+
+ 
+pdalink.library/PL_CMPRead
+
+   NAME
+        PL_CMPRead - read a packet using CMP
+
+   SYNOPSIS
+        Success = PL_CMPRead(Socket,CMP)
+        D0.l                  A0.l  A1.l
+
+        int PL_CMPRead(APTR,struct PL_CMP *);
+
+   FUNCTION
+        Read a CMP packet from the Palm. A space for the CMP
+        structure must be provided.
+
+        If this function fails (i.e. it returns false), you can read
+        the error code using PL_LastError().
+
+        This is a low level call, and is used by the pdalink.library
+        itself. Usually, you do not need to use this function.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        CMP           -- (struct PL_CMP *) CMP structure to be filled
+
+   RESULT
+        Success       -- (int) TRUE: The CMP structure has been read
+                successfully. FALSE: An error occured.
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+        PL_CMPInit(), PL_CMPAbort(), PL_CMPWakeUp()
+
+ 
+pdalink.library/PL_CMPWakeUp
+
+   NAME
+        PL_CMPWakeUp - Wake up the remote side
+
+   SYNOPSIS
+        Success = PL_CMPWakeUp(Socket,MaxRate)
+        D0.l                    A0.l   D0.l
+
+        int PL_CMPWakeUp(APTR,ULONG);
+
+   FUNCTION
+        Wake up the remote side of a connection, using CMP (Connection
+        Management Protocol). We pass the maximum baud rate we support.
+        The Palm will answer with a CMP Init packet, giving the
+        baud rate it will use for further communication.
+
+        If this function fails (i.e. it returns false), you can read
+        the error code using PL_LastError().
+
+        This is a low level call, and is used by the pdalink.library
+        itself. Usually, you do not need to use this function.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        MaxRate       -- (ULONG) Maximum baud rate, in bps
+
+   RESULT
+        Success       -- (int) TRUE: The wake up has been sent
+                successfully. FALSE: An error occured.
+
+   NOTE
+        This call will not set the serial interface to the new baud
+        rate!
+
+   BUGS
+
+   SEE ALSO
+        PL_CMPRead(), PL_CMPAbort(), PL_CMPInit()
+
+ 
+pdalink.library/PL_Connect
+
+   NAME
+        PL_Connect - initiate a connection to the Palm
+
+   SYNOPSIS
+        Success = PL_Connect(Socket)
+        D0.l                  A0.l
+
+        int PL_Connect(APTR);
+
+   FUNCTION
+        Initiate a connection to the Palm. If the connection could
+        not be established, or was refused, an error occures.
+
+        You can read the error code using PL_LastError().
+
+   INPUTS
+        Socket        -- (APTR) Socket
+
+   RESULT
+        Success       -- (int) TRUE if a connection has been established.
+
+   NOTE
+
+   BUGS
+        This function does not seem to work since the Palm does not
+        accept wakeup requests. I will have a look at this later. Anyhow
+        you should use PL_Accept() and let the user decide when he wants
+        to sync.
+
+   SEE ALSO
+ 
+pdalink.library/PL_DeleteRexxHandle
+
+   NAME
+        PL_DeleteRexxHandle - Deletes an ARexx created handle
+
+   SYNOPSIS
+        PL_DeleteRexxHandle(Name)
+                            A0.l
+
+        void PL_DeleteRexxHandle(STRPTR);
+
+   FUNCTION
+        After a socket has been created by an ARexx function, its handle
+        is maintained by the pdalink.library.
+
+        This function deletes an existing handle from the internal list.
+
+        If the handle did not exist, nothing will happen.
+
+   INPUTS
+        Name          -- (STRPTR) Name of the handle
+
+   RESULT
+
+   NOTE
+        This is a PRIVATE function. Do NOT use it. You have been warned! ;-)
+
+   BUGS
+
+   SEE ALSO
+        PL_AddRexxHandle(), PL_FindRexxHandle()
+ 
+pdalink.library/PL_DLPInit
+
+   NAME
+        PL_DLPInit - Initialize a DLP data transfer
+
+   SYNOPSIS
+        PL_DLPInit(Socket)
+                    A0.l
+
+        void PL_DLPInit(APTR);
+
+   FUNCTION
+        The internal DLP buffer is initialized and prepared for a
+        new DLP transmission.
+
+        This is a low level call, and is used by the pdalink.library
+        itself. Usually, you do not need to use this function.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+
+   RESULT
+
+   NOTE
+        The DLP buffer has sufficient space for a whole DLP packet
+        of 64KByte.
+
+   BUGS
+        There is no arbitration yet. Only the task that initiated the
+        socket is allowed to use this function.
+
+        Nested calls are not supported.
+
+        You must not patch this function.
+
+   SEE ALSO
+        PL_DLPWriteByte(), PL_DLPWriteWord(), PL_DLPWriteLong(),
+        PL_DLPWrite(), PL_DLPTstWrite(), PL_DLPSend(), PL_DLPRead()
+
+ 
+pdalink.library/PL_DLPRead
+
+   NAME
+        PL_DLPRead - Read the DLP reply
+
+   SYNOPSIS
+        Length = PL_DLPRead(Socket,Buffer,Length)
+         D0.l                A0.l   A1.l   D0.l
+
+        LONG PL_DLPRead(APTR,APTR,LONG);
+
+   FUNCTION
+        After a command has been sent using, PL_DLPSend(), you can use
+        this call to sequential read the reply. The current part is
+        copied into the buffer.
+
+        This is a low level call, and is used by the pdalink.library
+        itself. Usually, you do not need to use this function.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        Buffer        -- (APTR) Buffer that will contain the part of
+                the reply packet.
+        Length        -- (LONG) Length of the buffer
+
+   RESULT
+        Length        -- (LONG) Bytes that were really read.
+
+   NOTE
+
+   BUGS
+        Currently, the returned length always matches the buffer length,
+        regardless of the number of bytes that were really available.
+
+        You must not patch this function.
+
+   SEE ALSO
+        PL_DLPInit(), PL_DLPWriteByte(), PL_DLPWriteWord(),
+        PL_DLPWriteLong(), PL_DLPWrite(), PL_DLPTstWrite(), PL_DLPSend()
+
+ 
+pdalink.library/PL_DLPSend
+
+   NAME
+        PL_DLPSend - Send a command and the DLP buffer
+
+   SYNOPSIS
+        Length = PL_DLPSend(Socket,Cmd,Arg)
+         D0.l                A0.l  D0.b D1.b
+
+        LONG PL_DLPSend(APTR,UBYTE,UBYTE);
+
+   FUNCTION
+        The current DLP buffer is sent to the Pilot, and the provided
+        command is executed. The reply packet is stored into the DLP
+        buffer; its size is returned.
+
+        This is a low level call, and is used by the pdalink.library
+        itself. Usually, you do not need to use this function.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        Cmd           -- (UBYTE) Command code to be executed
+        Arg           -- (UBYTE) Argument to the command
+
+   RESULT
+        Length        -- (LONG) Length of the received reply. 0 if
+                the call succeeded but no reply was sent. -1 if the
+                call failed (see PL_LastError()).
+
+   NOTE
+
+   BUGS
+        You must not patch this function.
+
+   SEE ALSO
+        PL_DLPInit(), PL_DLPWriteByte(), PL_DLPWriteWord(),
+        PL_DLPWriteLong(), PL_DLPWrite(), PL_DLPTstWrite(), PL_DLPRead()
+
+ 
+pdalink.library/PL_DLPTstWrite
+
+   NAME
+        PL_DLPTstWrite - Test if there is sufficient space in the DLP buffer
+
+   SYNOPSIS
+        Success = PL_DLPTstWrite(Socket,Length)
+          D0.l                    A0.l   D0.l
+
+        int PL_DLPTstWrite(APTR,LONG);
+
+   FUNCTION
+        It is tested if a structure with the passed size will fit into
+        the current DLP buffer.
+
+        This is a low level call, and is used by the pdalink.library
+        itself. Usually, you do not need to use this function.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        Length        -- (LONG) Length of the structure
+
+   RESULT
+        Success       -- (int) TRUE: There is enough space left
+
+   NOTE
+
+   BUGS
+        You must not patch this function.
+
+   SEE ALSO
+        PL_DLPInit(), PL_DLPWriteByte(), PL_DLPWriteWord(),
+        PL_DLPWriteLong(), PL_DLPWrite(), PL_DLPSend(), PL_DLPRead()
+
+ 
+pdalink.library/PL_DLPWrite
+
+   NAME
+        PL_DLPWrite - Write a structure to the DLP buffer
+
+   SYNOPSIS
+        Length = PL_DLPWrite(Socket,Structure,Length)
+         D0.l                 A0.l    A1.l     D0.l
+
+        LONG PL_DLPWrite(APTR,APTR,LONG);
+
+   FUNCTION
+        The provided structure is added to the DLP buffer.
+
+        This is a low level call, and is used by the pdalink.library
+        itself. Usually, you do not need to use this function.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        Structure     -- (APTR) Data structure to be added
+        Length        -- (LONG) Length of the structure
+
+   RESULT
+        Length        -- (LONG) Current length of the DLP packet
+
+   NOTE
+
+   BUGS
+        pdalink does not check if the structure really fit into
+        the remaining DLP buffer space. If you are in doubt, use
+        PL_DLPTstWrite() before.
+
+        You must not patch this function.
+
+   SEE ALSO
+        PL_DLPInit(), PL_DLPWriteByte(), PL_DLPWriteWord(),
+        PL_DLPWriteLong(), PL_DLPTstWrite(), PL_DLPSend(), PL_DLPRead()
+
+ 
+pdalink.library/PL_DLPWriteByte
+
+   NAME
+        PL_DLPWriteByte - Write a byte to the DLP buffer
+
+   SYNOPSIS
+        Length = PL_DLPWriteByte(Socket,Data)
+         D0.l                     A0.l  D0.b
+
+        LONG PL_DLPWriteByte(APTR,BYTE);
+
+   FUNCTION
+        The provided byte is added to the DLP buffer.
+
+        This is a low level call, and is used by the pdalink.library
+        itself. Usually, you do not need to use this function.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        Data          -- (BYTE) Data to be added
+
+   RESULT
+        Length        -- (LONG) Current length of the DLP packet
+
+   NOTE
+
+   BUGS
+        You must not patch this function.
+
+   SEE ALSO
+        PL_DLPInit(), PL_DLPWriteWord(), PL_DLPWriteLong(),
+        PL_DLPWrite(), PL_DLPTstWrite(), PL_DLPSend(), PL_DLPRead()
+
+ 
+pdalink.library/PL_DLPWriteLong
+
+   NAME
+        PL_DLPWriteLong - Write a longword to the DLP buffer
+
+   SYNOPSIS
+        Length = PL_DLPWriteLong(Socket,Data)
+         D0.l                     A0.l  D0.l
+
+        LONG PL_DLPWriteLong(APTR,LONG);
+
+   FUNCTION
+        The provided longword is added to the DLP buffer.
+
+        This is a low level call, and is used by the pdalink.library
+        itself. Usually, you do not need to use this function.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        Data          -- (BYTE) Data to be added
+
+   RESULT
+        Length        -- (LONG) Current length of the DLP packet
+
+   NOTE
+
+   BUGS
+        You must not patch this function.
+
+   SEE ALSO
+        PL_DLPInit(), PL_DLPWriteByte(), PL_DLPWriteWord(),
+        PL_DLPWrite(), PL_DLPTstWrite(), PL_DLPSend(), PL_DLPRead()
+
+ 
+pdalink.library/PL_DLPWriteWord
+
+   NAME
+        PL_DLPWriteWord - Write a word to the DLP buffer
+
+   SYNOPSIS
+        Length = PL_DLPWriteWord(Socket,Data)
+         D0.l                     A0.l  D0.w
+
+        LONG PL_DLPWriteWord(APTR,WORD);
+
+   FUNCTION
+        The provided word is added to the DLP buffer.
+
+        This is a low level call, and is used by the pdalink.library
+        itself. Usually, you do not need to use this function.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        Data          -- (BYTE) Data to be added
+
+   RESULT
+        Length        -- (LONG) Current length of the DLP packet
+
+   NOTE
+
+   BUGS
+        You must not patch this function.
+
+   SEE ALSO
+        PL_DLPInit(), PL_DLPWriteByte(), PL_DLPWriteLong(),
+        PL_DLPWrite(), PL_DLPTstWrite(), PL_DLPSend(), PL_DLPRead()
+
+ 
+pdalink.library/PL_Explain
+
+   NAME
+        PL_Explain - Explain an error code
+
+   SYNOPSIS
+        PL_Explain(Error,Buffer,Length)
+                    A0.l  A1.l   D0.w
+
+        void PL_Explain(LONG,STRPTR,ULONG);
+
+   FUNCTION
+        Explains the provided error code. The explanation is copied
+        into the buffer space, until Length is reached.
+
+        If the error was a DOS error code, it will be explained as
+        well, using dos.library.
+
+   INPUTS
+        Error         -- (LONG) Error code to be explained
+        Buffer        -- (STRPTR) Buffer for the explanation
+        Length        -- (ULONG) Maximum buffer size, including the
+                null termination.
+
+   RESULT
+
+   NOTE
+
+   BUGS
+        The error code is provided in A0, not in a data register.
+        Anyhow, for compatibility reasons, this will be kept like that.
+
+   SEE ALSO
+
+ 
+pdalink.library/PL_FileAddRecord
+
+   NAME
+        PL_FileAddRecord - add a record to a new file
+
+   SYNOPSIS
+        Success = PL_FileAddRecord(FileHandle,Buffer,Size,Attr,UID)
+          D0.l                         A0.l    A1.l  D0.l D1.b D2.l
+
+        int PL_FileAddRecord(APTR,APTR,ULONG,UBYTE,ULONG);
+
+   FUNCTION
+        Write mode: add a record to the file.
+
+   INPUTS
+        FileHandle    -- (APTR) Handle of the file
+        Buffer        -- (APTR) Buffer containing the record data.
+                This buffer will be copied and can be changed after
+                that.
+        Size          -- (ULONG) Size of the record data.
+        Attr          -- (UBYTE) Record attribute. The attribute consists
+                of the attribute itself (upper nibble, 0xF0) and the category
+                ID (lower nibble, 0x0F).
+        UID           -- (ULONG) Record UID. Only the lower 3 bytes are used.
+
+   RESULT
+        Success       -- (int) TRUE: The new record has been added
+                successfully.
+
+   NOTE
+
+   BUGS
+        Currently, there is no way to find out the reason why this function
+        failed.
+
+   SEE ALSO
+ 
+pdalink.library/PL_FileAddResorce
+
+   NAME
+        PL_FileAddResource - add a resource to a new file
+
+   SYNOPSIS
+        Success = PL_FileAddResource(FileHandle,Buffer,Size,Type,ID)
+          D0.l                           A0.l    A1.l  D0.l D1.l D2.w
+
+        int PL_FileAddResource(APTR,APTR,ULONG,ULONG,UWORD);
+
+   FUNCTION
+        Write mode: add a resource to the file.
+
+   INPUTS
+        FileHandle    -- (APTR) Handle of the file
+        Buffer        -- (APTR) Buffer containing the resource data.
+                This buffer will be copied and can be changed after
+                that.
+        Size          -- (ULONG) Size of the resource data.
+        Type          -- (ULONG) Resource Type
+        ID            -- (UWORD) Resource ID
+
+   RESULT
+        Success       -- (int) TRUE: The new resource has been added
+                successfully.
+
+   NOTE
+
+   BUGS
+        Currently, there is no way to find out the reason why this function
+        failed.
+
+   SEE ALSO
+ 
+pdalink.library/PL_FileClose
+
+   NAME
+        PL_FileClose - close a .prc or .pdb file
+
+   SYNOPSIS
+        Success = PL_FileClose(FileHandle)
+         D0.l                    A0.l
+
+        int PL_FileClose(APTR);
+
+   FUNCTION
+        Close a .prc or .pdb file. If the file was openened for writing,
+        it will be created on close. Thus, if the file couldn't be written,
+        the error will occur here!
+
+   INPUTS
+        FileHandle    -- (APTR) FileHandle to close.
+
+   RESULT
+        Success       -- (int) TRUE: File was closed successfully
+
+   NOTE
+
+   BUGS
+        Currently, there is no way to find out the reason why this function
+        failed.
+
+   SEE ALSO
+ 
+pdalink.library/PL_FileGetAppInfo
+
+   NAME
+        PL_FileGetAppInfo - get the application info of this file
+
+   SYNOPSIS
+        AppInfo = PL_FileGetAppInfo(FileHandle,Size)
+          D0.l                       A0.l      A1.l
+
+        APTR PL_FileGetAppInfo(APTR,ULONG *);
+
+   FUNCTION
+        Read mode: Get the application info of the current file.
+
+   INPUTS
+        FileHandle    -- (APTR) Filehandle of the file
+        Size          -- (ULONG *) The size of the AppInfo is
+                written into the referenced ULONG.
+
+   RESULT
+        AppInfo       -- (APTR) Application info of the file.
+                This structure is READ ONLY!
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+ 
+pdalink.library/PL_FileGetDBInfo
+
+   NAME
+        PL_FileGetDBInfo - get the database info of this file
+
+   SYNOPSIS
+        DBInfo = PL_FileGetDBInfo(FileHandle)
+         D0.l                        A0.l
+
+        struct DLP_DBInfo *PL_FileGetDBInfo(APTR);
+
+   FUNCTION
+        Read mode: Get the database info of the current file.
+
+   INPUTS
+        FileHandle    -- (APTR) Filehandle of the file
+
+   RESULT
+        DBInfo        -- (struct DLP_DBInfo *) DBInfo of the file.
+                This structure is READ ONLY!
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+ 
+pdalink.library/PL_FileGetSortInfo
+
+   NAME
+        PL_FileGetSortInfo - get the sort info of this file
+
+   SYNOPSIS
+        SortInfo = PL_FileGetSortInfo(FileHandle,Size)
+          D0.l                         A0.l      A1.l
+
+        APTR PL_FileGetSortInfo(APTR,ULONG *);
+
+   FUNCTION
+        Read mode: Get the sort info of the current file.
+
+   INPUTS
+        FileHandle    -- (APTR) Filehandle of the file
+        Size          -- (ULONG *) The size of the SortInfo is
+                written into the referenced ULONG.
+
+   RESULT
+        SortInfo      -- (APTR) Sort info of the file.
+                This structure is READ ONLY!
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+ 
+pdalink.library/PL_FileInstall
+
+   NAME
+        PL_FileInstall - copy a database into the Pilot
+
+   SYNOPSIS
+        Success = PL_FileInstall(FileHandle,Socket,CardNo)
+         D0.l                       A0.l      A1.l   D0.b
+
+        int PL_FileInstall(APTR,APTR,UBYTE);
+
+   FUNCTION
+        Copy a database from this file into the Palm. The database is
+        selected via the current DBInfo.
+
+   INPUTS
+        FileHandle    -- (APTR) FileHandle
+        Socket        -- (APTR) Socket, connection to the Pilot
+        CardNo        -- (UBYTE) CardNo of the database
+
+   RESULT
+        Success       -- (int) TRUE: All data have been written successfully
+
+   NOTE
+        All socket errors can be read using PL_LastError().
+
+   BUGS
+        Currently, there is no way to find out the reason why this function
+        failed.
+
+   SEE ALSO
+ 
+pdalink.library/PL_FileMerge
+
+   NAME
+        PL_FileMerge - copy a database into the Pilot, keep old data
+
+   SYNOPSIS
+        Success = PL_FileMerge(FileHandle,Socket,CardNo)
+         D0.l                    A0.l      A1.l   D0.b
+
+        int PL_FileMerge(APTR,APTR,UBYTE);
+
+   FUNCTION
+        Copy a database from this file into the Palm. All old data
+        are kept, so new records are added to existing ones. The database is
+        selected via the current DBInfo.
+
+   INPUTS
+        FileHandle    -- (APTR) FileHandle
+        Socket        -- (APTR) Socket, connection to the Pilot
+        CardNo        -- (UBYTE) CardNo of the database
+
+   RESULT
+        Success       -- (int) TRUE: All data have been merged successfully
+
+   NOTE
+        All socket errors can be read using PL_LastError().
+
+   BUGS
+        Currently, there is no way to find out the reason why this function
+        failed.
+
+   SEE ALSO
+ 
+pdalink.library/PL_FileOpen
+
+   NAME
+        PL_FileOpen - open a .prc or .pdb file
+
+   SYNOPSIS
+        FileHandle = PL_FileOpen(Name,DBInfo)
+          D0.l                   A0.l  A1.l
+
+        APTR PL_FileOpen(STRPTR,struct DLP_DBInfo *);
+
+   FUNCTION
+        Open a .prc or .pdb file and grant a database like access to it.
+        The file is opened for reading if no DBInfo is provided (NULL),
+        else it is opened for writing.
+
+   INPUTS
+        Name          -- (STRPTR) Name of the DOS file
+        DBInfo        -- (struct DLP_DBInfo *) Database info for the
+                file to write, or NULL for read access.
+
+   RESULT
+        FileHandle    -- (APTR) Filehandle for this file, or NULL if
+                an error occured.
+
+   NOTE
+
+   BUGS
+        Currently, there is no way to find out the reason why this function
+        failed.
+
+   SEE ALSO
+ 
+pdalink.library/PL_FileReadRecord
+
+   NAME
+        PL_FileReadRecord - read a record
+
+   SYNOPSIS
+        Record = PL_FileReadRecord(FileHandle,Index,Size,Attr,UID)
+         D0.l                         A0.l     D0.w A1.l A2.l A3.l
+
+        APTR PL_FileReadRecord(APTR,UWORD,ULONG *,UBYTE *,ULONG *);
+
+   FUNCTION
+        Read a record out of the file.
+
+   INPUTS
+        FileHandle    -- (APTR) Handle of the file
+        Index         -- (UWORD) Index of the record
+        Size          -- (ULONG *) The size of the record is stored into
+                this ULONG reference.
+        Attr          -- (UBYTE *) The attribute of the record is stored
+                into this UBYTE reference. The attribute consists of the
+                attribute itself (upper nibble, 0xF0) and the category
+                ID (lower nibble, 0x0F).
+        UID           -- (ULONG *) The UID of the record is stored into
+                this ULONG reference. Only the lower 3 bytes are used.
+
+   RESULT
+        Record        -- (APTR) Record data. This data is READ ONLY.
+
+   NOTE
+
+   BUGS
+        Currently, there is no way to find out the reason why this function
+        failed.
+
+   SEE ALSO
+ 
+pdalink.library/PL_FileReadRecordID
+
+   NAME
+        PL_FileReadRecordID - read a record by its UID
+
+   SYNOPSIS
+        Record = PL_FileReadRecordID(FileHandle,UID,Size,Attr,Index)
+         D0.l                         A0.l     D0.l A1.l A2.l A3.l
+
+        APTR PL_FileReadRecordID(APTR,ULONG,ULONG *,UBYTE *,UWORD *);
+
+   FUNCTION
+        Read a record out of the file, by its UID.
+
+   INPUTS
+        FileHandle    -- (APTR) Handle of the file
+        UID           -- (ULONG) The UID of the desired record.
+        Size          -- (ULONG *) The size of the record is stored into
+                this ULONG reference.
+        Attr          -- (UBYTE *) The attribute of the record is stored
+                into this UBYTE reference. The attribute consists of the
+                attribute itself (upper nibble, 0xF0) and the category
+                ID (lower nibble, 0x0F).
+        Index         -- (UWORD *) The index of the record is stored into
+                this UWORD reference.
+
+   RESULT
+        Record        -- (APTR) Record data. This data is READ ONLY.
+
+   NOTE
+
+   BUGS
+        Currently, there is no way to find out the reason why this function
+        failed.
+
+   SEE ALSO
+ 
+pdalink.library/PL_FileReadResorce
+
+   NAME
+        PL_FileReadResource - read a resource
+
+   SYNOPSIS
+        Resource = PL_FileReadResource(FileHandle,Index,Size,Type,ID)
+          D0.l                            A0.l     D0.w A1.l A2.l A3.l
+
+        APTR PL_FileReadResource(APTR,UWORD,ULONG *,ULONG *,UWORD *);
+
+   FUNCTION
+        Read a resource out of the file.
+
+   INPUTS
+        FileHandle    -- (APTR) Handle of the file
+        Index         -- (UWORD) Index of the resource
+        Size          -- (ULONG *) The size of the resource is stored into
+                this ULONG reference.
+        Type          -- (ULONG *) The type of the resource is stored into
+                this ULONG reference.
+        ID            -- (UWORD *) The ID of the resource is stored into
+                this UWORD reference.
+
+   RESULT
+        Resource      -- (APTR) Resource data. This data is READ ONLY.
+
+   NOTE
+
+   BUGS
+        Currently, there is no way to find out the reason why this function
+        failed.
+
+   SEE ALSO
+ 
+pdalink.library/PL_FileRetrieve
+
+   NAME
+        PL_FileRetrieve - copy a database into the file
+
+   SYNOPSIS
+        Success = PL_FileRetrieve(FileHandle,Socket,CardNo)
+         D0.l                       A0.l      A1.l   D0.b
+
+        int PL_FileRetrieve(APTR,APTR,UBYTE);
+
+   FUNCTION
+        Copy a database from the Palm to this file. The database is
+        selected via the current DBInfo.
+
+   INPUTS
+        FileHandle    -- (APTR) FileHandle
+        Socket        -- (APTR) Socket, connection to the Pilot
+        CardNo        -- (UBYTE) CardNo of the database
+
+   RESULT
+        Success       -- (int) TRUE: All data have been read successfully
+
+   NOTE
+        All socket errors can be read using PL_LastError().
+
+   BUGS
+        Currently, there is no way to find out the reason why this function
+        failed.
+
+   SEE ALSO
+ 
+pdalink.library/PL_FileSetAppInfo
+
+   NAME
+        PL_FileSetAppInfo - set the application info of this file
+
+   SYNOPSIS
+        Success = PL_FileSetAppInfo(FileHandle,AppInfo,Length)
+         D0.l                         A0.l       A1.l   D0.l
+
+        int PL_FileSetAppInfo(APTR,APTR,ULONG);
+
+   FUNCTION
+        Write mode only: Set the application info of the current file.
+
+   INPUTS
+        FileHandle    -- (APTR) Filehandle of the file
+        AppInfo       -- (APTR) Application info to be set
+        Length        -- (ULONG) Length of the application info
+
+   RESULT
+        Success       -- (int) TRUE if AppInfo has been set successfully.
+
+   NOTE
+
+   BUGS
+        Currently, there is no way to find out the reason why this function
+        failed.
+
+   SEE ALSO
+ 
+pdalink.library/PL_FileSetDBInfo
+
+   NAME
+        PL_FileSetDBInfo - set the database info of this file
+
+   SYNOPSIS
+        Success = PL_FileSetDBInfo(FileHandle,DBInfo)
+         D0.l                        A0.l      A1.l
+
+        int PL_FileSetDBInfo(APTR,struct DLP_DBInfo *);
+
+   FUNCTION
+        Write mode only: Set the database info of the current file.
+        If the file was openend as resource file, you must also give
+        a resource DBInfo here (record files appropriately).
+
+   INPUTS
+        FileHandle    -- (APTR) Filehandle of the file
+        DBInfo        -- (struct DLP_DBInfo *) New DBInfo for the file.
+
+   RESULT
+        Success       -- (int) TRUE if DBInfo has been set successfully.
+
+   NOTE
+
+   BUGS
+        Currently, there is no way to find out the reason why this function
+        failed.
+
+   SEE ALSO
+ 
+pdalink.library/PL_FileSetSortInfo
+
+   NAME
+        PL_FileSetSortInfo - set the sort info of this file
+
+   SYNOPSIS
+        Success = PL_FileSetSortInfo(FileHandle,SortInfo,Length)
+         D0.l                         A0.l        A1.l    D0.l
+
+        int PL_FileSetSortInfo(APTR,APTR,ULONG);
+
+   FUNCTION
+        Write mode only: Set the sort info of the current file.
+
+   INPUTS
+        FileHandle    -- (APTR) Filehandle of the file
+        SortInfo      -- (APTR) Sort info to be set
+        Length        -- (ULONG) Length of the sort info
+
+   RESULT
+        Success       -- (int) TRUE if SortInfo has been set successfully.
+
+   NOTE
+
+   BUGS
+        Currently, there is no way to find out the reason why this function
+        failed.
+
+   SEE ALSO
+ 
+pdalink.library/PL_FileUsedID
+
+   NAME
+        PL_FileUsedID - check if a UID is already in use
+
+   SYNOPSIS
+        Result = PL_FileUsedID(FileHandle,UID)
+         D0.l                    A0.l     D0.l
+
+        int PL_FileUsedID(APTR,ULONG);
+
+   FUNCTION
+        Check if a UID is already in use in this file.
+
+   INPUTS
+        FileHandle    -- (APTR) FileHandle
+        UID           -- (ULONG) UID to be checked
+
+   RESULT
+        Result        -- (int) TRUE: UID is in use
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+ 
+pdalink.library/PL_FindRexxHandle
+
+   NAME
+        PL_FindRexxHandle - Find an ARexx handle
+
+   SYNOPSIS
+        Socket = PL_FindRexxHandle(Name)
+         D0.l                      A0.l
+
+        APTR PL_FindRexxHandle(STRPTR);
+
+   FUNCTION
+        After a socket has been created by an ARexx function, its handle
+        is maintained by the pdalink.library.
+
+        This function finds the handle name in the internal list and
+        returns the related socket ptr.
+
+        If the name did not exist, NULL will be returned.
+
+   INPUTS
+        Name          -- (STRPTR) Name of the handle
+
+   RESULT
+        Socket        -- The socket that the name was associated with
+
+   NOTE
+        This function is meant for pdalink ARexx library programmers.
+        Do not abuse it for other things, please!
+
+   BUGS
+
+   SEE ALSO
+        PL_AddRexxHandle(), PL_DeleteRexxHandle()
+ 
+pdalink.library/PL_GetBaudRate
+
+   NAME
+        PL_GetBaudRate - return the negotiated baud rate [V2]
+
+   SYNOPSIS
+        Rate = PL_GetBaudRate(Socket)
+        D0.l                   A0.l
+
+        ULONG PL_GetBaudRate(APTR);
+
+   FUNCTION
+        Return the baud rate that has been negotiated with the Palm.
+        Valid after PL_Accept() or PL_Connect() have been returned.
+        Invalid after PL_CloseSocket() has been invoked.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+
+   RESULT
+        Rate          -- (ULONG) Baud rate negotiated with the Palm
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+ 
+pdalink.library/PL_LastError
+
+   NAME
+        PL_LastError - return the last error code
+
+   SYNOPSIS
+        Error = PL_LastError(Socket)
+        D0.l                  A0.l
+
+        LONG PL_LastError(APTR);
+
+   FUNCTION
+        Return the code of the last error. Negative codes are pdalink
+        errors. Positive are DLP error codes. If the error code is
+        PLERR_DOSERROR, you can read dos/IoErr() for the cause.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+
+   RESULT
+        Error         -- (LONG) Error code, or PLERR_OKAY if no error
+                         has been occured.
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+ 
+pdalink.library/PL_OpenSocket
+
+   NAME
+        PL_OpenSocket - open a socket to a Palm
+
+   SYNOPSIS
+        Socket = PL_OpenSocket(TagList)
+        D0.l                    A0.l
+
+        APTR PL_OpenSocket(struct TagItem *);
+
+        Socket = PL_OpenSocketTags(Tag1,...)
+
+        APTR PL_OpenSocketTags(ULONG,...);
+
+   FUNCTION
+        Open a new socket to a Palm. The Palm must be connected to
+        a serial port. As default, the internal serial port is used.
+
+        If the socket cannot be created, NULL is returned. You can get an
+        explicit error code using the PLTAG_Error tag.
+
+   INPUTS
+        TagList       -- (struct TagItem *) tags with further options,
+                or NULL to use all defaults.
+
+   RESULT
+        Socket        -- (APTR) Pointer to a socket. You must use this
+                socket for all other functions. NULL if an error occured.
+
+   TAGS
+        PLTAG_ErrorPtr          -- (LONG *) If an error occured (return code
+                is NULL), the error code is written into this longword. On
+                success you will find PLERR_OKAY here.
+
+        PLTAG_SerialDevice      -- (STRPTR) Name of the serial device to be
+                used. Defaults to "serial.device". I suggest to use speed
+                optimized devices, as 8n1.device, to gain maximum transfer
+                rates between Amiga and Pilot.
+
+        PLTAG_SerialUnit        -- (LONG) Unit of the serial device. Defaults
+                to unit 0.
+
+        PLTAG_SerialMaxRate     -- (ULONG) Maximum baud rate the device can
+                generate. Defaults to 28800, which is the maximum rate of the
+                internal serial port common to the Palm. If you use a
+                multi serial interface, or faster devices as 8n1.device, you
+                can go up to 57600.
+
+        PLTAG_SerialTimeout     -- (ULONG) Time (s) that the serial receiver
+                waits for a message. If this time passed, a PLERR_TIMEOUT will
+                be produced. This timeout can also be set to 0, resulting in
+                that the transfer will not timeout. It is *strongly* suggested
+                to set a PLTAG_AbortMask then. Otherwise, the user will have
+                no possibility to abort the transfer progress, e.g. when he
+                accidentally started it or hardware problems occured.
+                Defaults to 10.
+
+        PLTAG_AbortMask         -- (ULONG) Signal mask (*not* signal bit) which
+                is used to break a serial communication from or to the Palm.
+                Can be set to e.g. SIGBREAKF_CTRL_C to allow the user to break
+                a transfer process by CTRL-C. Defaults to 0: no signals will
+                abort the transfer.
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+        PL_CloseSocket()
+ 
+pdalink.library/PL_PADPRead
+
+   NAME
+        PL_PADPRead - read a packet using PADP
+
+   SYNOPSIS
+        Length = PL_PADPRead(Socket,Buffer,Size)
+        D0.l                  A0.l   A1.l  D0.l
+
+        LONG PL_PADPRead(APTR,APTR,LONG);
+
+   FUNCTION
+        Read a data packet from the Palm, using PADP (Packet
+        Assembly Disassembly Protocol). This function returns the number
+        of bytes that were received, or -1 if an error occured. You can
+        read the error code using PL_LastError().
+
+        This is a low level call, and is used by the pdalink.library
+        itself. Usually, you do not need to use this function.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        Buffer        -- (APTR) Data buffer space
+        Size          -- (LONG) Length of buffer space
+
+   RESULT
+        Length        -- (LONG) Received bytes, or -1: error
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+        PL_PADPWrite()
+
+ 
+pdalink.library/PL_PADPWrite
+
+   NAME
+        PL_PADPWrite - write a PADP packet to the Palm
+
+   SYNOPSIS
+        Length = PL_PADPWrite(Socket,Buffer,Length,Type)
+        D0.l                   A0.l   A1.l   D0.l  D1.w
+
+        LONG PL_PADPWrite(APTR,APTR,LONG,UWORD);
+
+   FUNCTION
+        Write a data packet to the Palm. The packet is sent using
+        the PADP (Packet Assembly Disassembly Protocol). This function
+        returns the number of bytes sent, or -1 if an error occured. You
+        can read the error code using PL_LastError().
+
+        This is a low level call, and is used by the pdalink.library
+        itself. Usually, you do not need to use this function.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        Buffer        -- (APTR) Buffer of data to be transmitted
+        Length        -- (LONG) Number of bytes to send
+        Type          -- (UWORD) Packet type:
+                PLPADP_DATA     - A plain data packet. This is the most
+                        commonly used packet type.
+                PLPADP_WAKE     - A wakeup packet. Usually only for
+                        pdalink internal use.
+                PLPADP_ACK      - An acknowledge packet. Usually generated
+                        and sent by pdalink. You don't need to generate
+                        acknowledgements.
+                PLPADP_TICKLE   - A tickle packet. Used by PL_Tickle().
+                PLPADP_ABORT    - An abortion packet (PalmOS 2.0 or higher)
+
+   RESULT
+        Length        -- (LONG) Bytes sent, or -1: error
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+        PL_PADPRead()
+ 
+pdalink.library/PL_RawRead
+
+   NAME
+        PL_RawRead - read raw data from the serial interface
+
+   SYNOPSIS
+        Length = PL_RawRead(Socket,Buffer,Length)
+        D0.l                 A0.l   A1.l   D0.l
+
+        LONG PL_RawRead(APTR,APTR,LONG);
+
+   FUNCTION
+        Read raw data from the serial interface, until the buffer is
+        filled or the timeout has been reached. If an error occured,
+        you can use PL_LastError() to find out the cause.
+
+        This is a low level call, and is used by the pdalink.library
+        itself. Usually, you do not need to use this function.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        Buffer        -- (APTR) Data buffer space
+        Length        -- (LONG) Length of buffer space
+
+   RESULT
+        Length        -- (LONG) Number of bytes read, or 0 if an
+                error occured.
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+        PL_RawWrite(), PL_RawSetBaud()
+
+ 
+pdalink.library/PL_RawSetRate
+
+   NAME
+        PL_RawSetRate - set the serial interface baud rate
+
+   SYNOPSIS
+        success = PL_RawSetRate(Socket,Rate)
+        D0.l                     A0.l  D0.l
+
+        int PL_RawSetRate(APTR,ULONG);
+
+   FUNCTION
+        Sets the serial interface to the new rate. The default baud
+        rate is 9600 Baud. Other (higher) baud rates are arranged between
+        Amiga and Palm during initialisation, using CMP.
+
+        This is a low level call, and is used by the pdalink.library
+        itself. Usually, you do not need to use this function.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        Rate          -- (ULONG) New rate in bps.
+
+   RESULT
+        success       -- (int) TRUE if the rate has been set success-
+                fully, FALSE on error.
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+        PL_RawRead(), PL_RawWrite()
+
+ 
+pdalink.library/PL_RawWrite
+
+   NAME
+        PL_RawWrite - write raw data to the serial interface
+
+   SYNOPSIS
+        Length = PL_RawWrite(Socket,Buffer,Length)
+        D0.l                  A0.l   A1.l   D0.l
+
+        LONG PL_RawWrite(APTR,APTR,LONG);
+
+   FUNCTION
+        Write raw data to the serial interface. If an error occured,
+        you can use PL_LastError() to find out the cause.
+
+        This is a low level call, and is used by the pdalink.library
+        itself. Usually, you do not need to use this function.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        Buffer        -- (APTR) Data buffer
+        Length        -- (LONG) Length of data
+
+   RESULT
+        Length        -- (LONG) Number of data that were sent, or
+                0 if an error occured.
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+        PL_RawRead(), PL_RawSetBaud()
+
+ 
+pdalink.library/PL_Read
+
+   NAME
+        PL_Read - read a packet from the Palm
+
+   SYNOPSIS
+        Length = PL_Read(Socket,Buffer,Size)
+        D0.l              A0.l   A1.l  D0.l
+
+        LONG PL_Read(APTR,UBYTE *,LONG);
+
+   FUNCTION
+        Read a data packet from the Palm. DLP packets are received
+        through the PADP layer, and require an established connection. This
+        function returns the number of bytes that were received (i.e. the
+        size of the packet), or -1 if an error occured. You can read the
+        error code using PL_LastError().
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        Buffer        -- (UBYTE *) Data buffer space
+        Size          -- (LONG) Length of buffer space
+
+   RESULT
+        Length        -- (LONG) Received bytes, or -1: error
+
+   NOTE
+        The maximum data packet size is 65536 byte.
+
+   BUGS
+
+   SEE ALSO
+        PL_Write()
+
+ 
+pdalink.library/PL_SLPRead
+
+   NAME
+        PL_SLPRead - read a packet using SLP
+
+   SYNOPSIS
+        Length = PL_SLPRead(Socket,Buffer,Size,Header,PADP)
+        D0.l                 A0.l   A1.l  D0.l  A2.l  A3.l
+
+        LONG PL_SLPRead(APTR,APTR,LONG,struct PL_SLP_Header *,struct PL_PADP_Header *);
+
+   FUNCTION
+        Read a data packet from the Palm, using SLP (Serial Link
+        Protocol). The SLP header is returned in the space passed in
+        Header. You must provide sufficient space here!
+
+        Additionally, you may provide space for a PADP header, which will
+        later contain the PADP header of the received packet. This is used
+        by PL_PADPRead and enables to read the packet data directly to the
+        destination instead into a buffer. If there is no PADP header, or
+        if you don't want to read it separately, provide NULL here.
+
+        This function returns the number of bytes that were received, or
+        -1 if an error occured. You can read the error code using
+        PL_LastError().
+
+        This is a low level call, and is used by the pdalink.library
+        itself. Usually, you do not need to use this function.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        Buffer        -- (APTR) Data buffer space
+        Size          -- (LONG) Length of buffer space
+        Header        -- (struct PL_SLP_Header *) Pointer to a space
+                that will contain the SLP header hereafter.
+        PADP          -- (struct PL_PADP_Header *) Pointer to a space
+                for the PADP header, or NULL.
+
+   RESULT
+        Length        -- (LONG) Received bytes, or -1: error
+                If a PADP header was provided, its size is not included
+                in this length.
+
+   NOTE
+
+   BUGS
+        If the data buffer is not sufficient, a PLERR_CHECKSUM error will
+        be produced, and the stream must be re-synchronized to the next
+        packet, which could fail. So better make sure that at least 1024
+        byte are available, since this is the maximum packet size that can
+        be transported by SLP.
+
+   SEE ALSO
+        PL_SLPWrite()
+
+ 
+pdalink.library/PL_SLPWrite
+
+   NAME
+        PL_SLPWrite - write a SLP packet to the Palm
+
+   SYNOPSIS
+        Length = PL_SLPWrite(Socket,Buffer,Length,Header,PADP)
+        D0.l                  A0.l   A1.l   D0.l   A2.l  A3.l
+
+        LONG PL_SLPWrite(APTR,APTR,LONG,struct PL_SLP_Header *, struct PL_PADP_Header *);
+
+   FUNCTION
+        Write a data packet to the Palm. The packet is sent using
+        SLP (Serial Link Protocol). The provided SLP header will be wrapped
+        around the packet. Some parts of the SLP header are generated by
+        this call automatically (see includes).
+
+        Additionally, you may provide a PADP header, which will be wrapped
+        around the data packet as well. This is used by PL_PADPWrite and
+        allows to send the packet data from the source buffer directly,
+        without the need to copy it into a buffer first. If there is no
+        PADP header, or if you don't want to send it separately, provide
+        NULL here.
+
+        This function returns the number of sent bytes, or -1 if an error
+        occured. You can read the error code using PL_LastError().
+
+        This is a low level call, and is used by the pdalink.library
+        itself. Usually, you do not need to use this function.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        Buffer        -- (APTR) Buffer of data to be transmitted
+        Length        -- (LONG) Bytes to send. If a PADP header is provided,
+                do *not* add its size here.
+        Header        -- (struct PL_SLP_Header *) SLP header to be
+                transmitted. Do not pass NULL here!
+        PADP          -- (struct PL_PADP_Header *) PADP header to be
+                transmitted, or NULL.
+
+   RESULT
+        Length        -- (LONG) Bytes sent (PADP header not included),
+                or -1: error
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+        PL_SLPRead()
+ 
+pdalink.library/PL_Tickle
+
+   NAME
+        PL_Tickle - tickle the connection
+
+   SYNOPSIS
+        success = PL_Tickle(Socket)
+        D0.l                A0.l
+
+        int PL_Tickle(APTR);
+
+   FUNCTION
+        Tickles the Palm connection. I assume this prevents some kind
+        of connection timeout. You will not need this call under normal
+        circumstances.
+
+   INPUTS
+        Socket        -- (APTR) Socket
+
+   RESULT
+        success       -- (int) FALSE if an error occured. See PL_LastError()
+                to get the cause.
+
+   NOTE
+
+   BUGS
+
+   SEE ALSO
+
+ 
+pdalink.library/PL_Write
+
+   NAME
+        PL_Write - write a packet to the Palm
+
+   SYNOPSIS
+        Length = PL_Write(Socket,Buffer,Length)
+        D0.l               A0.l   A1.l   D0.l
+
+        LONG PL_Write(APTR,UBYTE *,LONG);
+
+   FUNCTION
+        Write a data packet to the Palm. DLP packets are sent through
+        the PADP layer. This function returns the number of bytes that were
+        sent, or -1 if an error occured. You can read the error code using
+        PL_LastError().
+
+   INPUTS
+        Socket        -- (APTR) Socket
+        Buffer        -- (UBYTE *) Buffer of data to be transmitted
+        Length        -- (LONG) Bytes to send
+
+   RESULT
+        Length        -- (LONG) Bytes sent, or -1: error
+
+   NOTE
+        The maximum data packet size is 65536 byte.
+
+   BUGS
+
+   SEE ALSO
+        PL_Read()
+
+ 

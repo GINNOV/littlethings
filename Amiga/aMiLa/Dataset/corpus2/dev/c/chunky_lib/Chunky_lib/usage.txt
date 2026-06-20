@@ -1,0 +1,149 @@
+CHUNKY SUB SYSTEM 
+USAGE
+
+Hello :)
+
+What you have in this unpacked archive are a bunch of sources and object
+files (but you'd be better off recompiling using your compiler).  I've no
+doubt that you'll need to change some include paths and names, etc.
+
+NOTE:  You need the Cybergraphics includes even if you're not even going to
+use Cybergraphics!  Just set CyberGfxBase to NULL in your code.
+
+PACKAGE CONTENTS
+
+chunky.c -- the main chunky system
+chunky.h -- header and prototypes
+chunkyc2p.asm -- some public domain chunky to planar asm code (see later)
+chunkyp2c.asm -- ditto but for planar to chunky (see later)
+BRC1_lib.c -- the Byte Run Compression 1 link library (used for
+              read/write's of chunky data)
+BRC1.h -- header for the BRC lib
+
+It's all rather straight-forward to follow, just read it through (the
+chunky.c file that is).
+
+LINKING WITH YOUR COMPILER
+
+Just add all the sources to your project (you need them all - I'll add some
+#ifdef toggles to miss out parts like the BRC1 lib at a later date) and
+compile.  Simple :)
+
+Make sure to #include "chunky.h" somewhere in your code as well :).
+
+HOW TO USE IT
+
+Well, if you look at chunky.h you'll see the main structure is a ChunkyPort
+struct.  All chunky buffers are called ChunkyPort's (like a port is where
+you interface with the chunky buffer..  you see :).  So, to create a chunky
+buffer you do this:
+
+...
+struct ChunkyPort *cp = NULL;
+...
+if(cp = CHK_InitChunky(320, 200))
+{
+  // Got a chunky buffer!
+  CHK_DrawRect(cp, 20, 20, 100, 100);
+  CHK_FreeChunky(cp);
+}
+...
+
+Easy as that.  Just like allocating a BitMap using AllocBitMap() except we
+allocate chunky buffers instead.
+
+PROPER EXAMPLE
+
+Okay..  this example shows how to draw a box on a ChunkyPort, and then draw
+the ChunkyPort on a Window's RastPort...  it's a code fragment so do the
+init and includes yourself :)
+
+...
+struct Library *CyberGfxBase;
+struct ChunkyPort *cp = NULL;
+struct Window *Window = NULL;
+struct Screen *Screen = NULL;  // you don't need a screen, but just for
+                               // this example...
+...
+if(Screen = OpenScreenTagList(NULL, NULL))
+{
+  // Decide whether or not to use cybergfx or aga
+  CHK_ChooseHardwareMode(GetVPModeID(&Screen->ViewPort));
+  
+  if(Window = OpenWindowTagList(NULL, NULL))
+  {
+    if(cp = CHK_InitChunky(Window->Width, Window->Height))
+    {
+      // Great, draw a box on the chunkyport
+      CHK_SetAPen(cp, 2);
+      CHK_SetRast(cp, 1); // fill chunkyport in pen 1
+      CHK_DrawRect(cp, 0, 0, Window->Width, Window->Height);
+      // Draw the chunkyport onto the window
+      CHK_DrawChunky(cp, Window->RPort, 0, 0);
+      // Wait a while...
+      Delay(100);
+    }
+  }
+}
+
+if(cp) CHK_FreeChunky(cp);
+if(Window) CloseWindow(Window);
+if(Screen) CloseScreen(Screen);
+...
+
+That didn't look too difficult did it?  :)
+
+NOTE ABOUT THE CHUNKY TO PLANAR ASM SOURCES
+
+These asm sources are public domain as they say in the comments.  However,
+these c2p sources seem to be slower than they should be.  Peter McGavin's
+c2p code (used in ADoom) seems to be much faster than these sources,
+however these sources are easier to use than ADoom's.
+
+If anyone would like to speed up these c2p<>p2c routines (or indeed any
+other part of this chunky sub system) please feel free, and e-mail me your
+changes so I can include them in the next release.
+
+Please note that I've tried to keep the asm routines to a minimum simply
+because of PPC issues and portability.  Let's keep it that way :).
+
+AUTHOR
+
+Think you can do better?  Why not amend these sources and send them to me?
+Please, feel free - that was one of the reasons for releasing this code.
+
+You can contact me (Andrew King) using the following ways:
+
+E-mail (preferred) :  oondy@bigfoot.com
+Telephone/Fax :  ++44 1296 589974 (01296 589974 in the UK).
+Snail mail :  Rosande Limited, 6 Beaufort Close, Aylesbury,
+Buckinghamshire, HP21 9BB, United Kingdom.
+
+I've no doubt there are some bugs lurking around somewhere, so please don't
+hesitate to contact me with solutions or reports.
+
+HISTORY
+
+The chunky sub system was written simply because using BitMap's and Chip
+RAM just wasn't practical on an A1200 when I had one several months ago.
+So I started to play around with chunky code and came up with this.
+
+Since we've been writing FUBAR (a rather hefty requirement for graphics
+memory) 2MBs of Chip RAM was easily filled so my chunky system came to the
+rescue.
+
+More recently, I've got my hands on an A4000 with a Picasso 2 card and
+noticed that gfx cards were very different than AGA.  So I fixed chunky to
+use cybergraphics when available, and it does the job marvellously.
+
+The chunky system for FUBAR is what like MUI is for IBrowse - without one
+the other wouldn't exist.
+
+---
+All hail id!
+
+Andrew King
+Co-director/Head of Technical Development
+Rosande Limited
+
+17-Dec-98

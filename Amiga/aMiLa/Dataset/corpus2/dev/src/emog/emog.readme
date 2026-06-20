@@ -1,0 +1,9 @@
+Short:        Converts C header source to E source
+Author:       daniel.kasmeroglu@daimlerchrysler.com
+Uploader:     daniel kasmeroglu daimlerchrysler com
+Type:         dev/src
+Version:      0.1
+Requires:     Amiga-E compiler, flex, gcc '
+Architecture: m68k-amigaos
+
+

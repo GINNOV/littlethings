@@ -1,0 +1,6 @@
+for i in dez drawcolr lxclip lyclip scanedge xclip yclip yxorline
+do
+	\megamax\mmcc $i.c
+	test $? -eq 0 || { echo "compiling $i.c failed"; break; }
+	\megamax\mmimp $i.o
+done

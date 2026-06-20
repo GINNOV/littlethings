@@ -1,0 +1,36 @@
+
+ Assembling The Game
+ ===================
+
+ John sent this game to me on a disc set up to assemble from a hard disc.
+Not being the lucky owner of such a device, I converted the files to
+assemble straight from disc. However, John has sent the screen data and
+some samples all in one object file which means you will have to dig out a
+copy of Blink ( Devpac disc 2 in the C directory ). Follow the following
+steps:
+
+	1/ Decrunch the source to disc ( Squable decrunches onto a disc
+	   of it's own for simplicity ).
+
+	2/ Assemble main.s to the source disc as a LINKABLE file, give it
+	   a name such as game.o
+
+	3/ Run blink with the following command line:
+
+		blink from df1:game.o df1:squable/chipdata.o to df1:game
+
+ The executable file, game, will be produced on disc 1. I know this is a
+long drawn out method of assembling, but for large programs it can be the
+only way as defining all the data as incbins in the source gobbles up heaps
+of memory.
+
+ Last minute addittion: There seems to be a raw data file missing from the
+disc, sorry about this. It is the one that contains the character set data.
+This means the writing at the start of the game is all screwed up, but I'm
+sure you can live with that ( or add your own data ).
+
+				M.Meany, Aug 91.
+
+				Cheers John!
+
+

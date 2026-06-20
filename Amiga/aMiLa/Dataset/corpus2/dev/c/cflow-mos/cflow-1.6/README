@@ -1,0 +1,94 @@
+GNU cflow README
+Copyright (C) 2005-2019 Sergey Poznyakoff
+See the end of file for copying conditions.
+
+* Introduction
+
+This file contains brief information about configuring, and installing
+GNU cflow. It is *not* intended as a replacement for the
+documentation, instead it is provided as a brief reference only.
+Please be sure to read the accompanuing documentation before using the
+utility. See section `Documentation' below.
+
+For the generic configuration options, see the file `INSTALL'.
+Refer to file `ABOUT-NLS' for information regarding internationalization.
+
+* History
+
+The GNU cflow was initially written in 1997, when I needed a utility
+that could display the control flow in a C program. The latest updates
+in its old repo date back to 1999. Then, as I no longer needed the
+package, it fell into oblivion.
+
+Six years later a thread in gnu-devel mailing list had shown that
+there is a kind of demand for that sort of utility, so I decided to
+resurrect it and make a full-fledged package of it. On 2005-04-12 it
+was dubbed a GNU package.
+
+* Current Status
+
+The package is fully operational. It compiles and runs on any
+GNU/Linux and most decent UNIX-like systems. It supports all command
+line switches required by POSIX, plus a number of extended ones. It is
+able to produce output in two formats: in GNU cflow format (which is
+the default) and in POSIX format.
+
+Currently the utility is only able to process C sources. It is the
+only deviation from POSIX specs, which requires ability to process
+YACC and LEX sources as well as binary object files. This support will
+appear in future versions.
+
+Emacs module cflow-mode.el works with files in GNU cflow format (as
+opposed to POSIX format). It has been tested with Emacs 24.2.1.
+
+* Compilation
+
+Please see the INSTALL file in this directory for the generic instructions
+on how to use configure. There is currently only one package-specific
+configuration option: --enable-debug, which compiles the package with
+-g (or -ggdb if appropriate) option. Use it if you plan debugging
+cflow.
+
+* Installation
+
+After running `./configure' and `make', run `make install'.
+
+* Configuration File
+
+The file src/cflow.rc provides a working configuration file for use
+with gcc.  See the documentation, sections 6.1 "Syntactic classes" and
+6.3 "GCC Initialization", for more information.
+
+* Documentation
+
+Complete user manual in texinfo format is provided. After the
+installation, it will be accessible by running `info cflow'. To read it
+before installing the package, run `info -f doc/cflow' from the
+package source root directory.
+
+If you don't have GNU texinfo installed, see
+http://www.gnu.org/software/texinfo for information on where to obtain it.
+
+* Bug reporting.
+
+Send bug reports and suggestions to <bug-cflow@gnu.org>.
+
+* Copyright Information:
+
+Copyright (C) 2005, 2010, 2011, 2014 Sergey Poznyakoff 
+
+   Permission is granted to anyone to make or distribute verbatim copies
+   of this document as received, in any medium, provided that the
+   copyright notice and this permission notice are preserved,
+   thus giving the recipient permission to redistribute in turn.
+
+   Permission is granted to distribute modified versions
+   of this document, or of portions of it,
+   under the above conditions, provided also that they
+   carry prominent notices stating who last changed them.
+
+
+Local variables:
+mode: outline
+paragraph-separate: "[ 	]*$"
+end:

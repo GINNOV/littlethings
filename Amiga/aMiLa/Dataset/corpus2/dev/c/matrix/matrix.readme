@@ -1,0 +1,26 @@
+Short:        Matrix functions for C: BUGFIXED
+Author:       daltern@ic.ac.uk (Nick d'Alterio)
+Uploader:     daltern ic ac uk (Nick d\\'Alterio)
+Type:         dev/c
+Architecture: m68k-amigaos
+
+A set of functions in C for manipulating matrices. Includes:-
+
+Multiplication
+Subtraction
+Addition
+LU decompositon
+Simultaneous equation solution
+Inverse
+Determinant
+Partial Pivoting
+Dot Product
+Modulus
+Inverse Iteration
+Operation by a constant
+Comparison
+Swap Rows
+
+and more
+
+2nd release fixes bugs in MatAdd, MatInv, MatDet

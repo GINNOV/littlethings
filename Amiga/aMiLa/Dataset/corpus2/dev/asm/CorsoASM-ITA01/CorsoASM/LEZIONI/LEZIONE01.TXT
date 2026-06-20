@@ -1,0 +1,1104 @@
+
+	  CORSO COMPLETO DI PROGRAMMAZIONE ASSEMBLER IN DUE DISCHI
+
+			BY FABIO CIUCCI - 1994/95
+
+Per tutti coloro che hanno provato ad imparare a fare demo o giochi che
+sfruttino l'hardware di Amiga direttamente, ma non ci sono mai riusciti
+perche' i libri erano scritti in maniera astratta e astrusa e i sorgenti
+di esempio, i listati cioe', erano poco commentati o troppo difficili,
+oppure per quelli che non ci hanno mai provato e si chiedono come si fa.
+
+Devo ringraziare e salutare tutti coloro che hanno contribuito materialmente o
+moralmente alla realizzazione di questi due dischetti, in particolare:
+
+Luca Forlizzi (The Dark Coder)
+Andrea Fasce (Executor/RAM JAM)
+Sirio Zuelli (PROXIMA DESIGN)
+Alberto Longo (VIRTUAL DREAMS)
+	
+Nonche' coloro che hanno testato le lezioni verificando se capivano o meno:
+
+Andrea Scarafoni, Federico "GONZO" Stango, e altri.
+
+Devo infine salutare la mia ragazza, Kety, la quale si e' impegnata a farmi
+stare il meno possibile al computer.
+
+Nella mia carriera di programmatore hobbista posso vantare la realizzazione
+di alcude demo/intro per delle BBS, ad esempio "AMILINK.EXE", per la
+banca dati AmigaLink, oppure per dei Club, come quella per il nuovo "Amiga
+Expert Team". Le mie "opere" maggiori sono la mia prima demo per il chipset
+AGA, il "WORLD OF MANGA", che e' stata pubblicata anche su alcune riviste, e
+il "NAOS", che ho programmato per il gruppo NOVA ACIES.
+
+Devo precisare che sarebbe bene sapere almeno un poco di DOS prima di
+accingersi a leggere il mio corso, se non altro per sapere come salvare i
+listati! Dovreste aver trovato un manuale assieme all'Amiga...
+Comunque, in breve, nei dischi (sia Hard che Floppy) i dati sono immagazzinati
+in "file", ossia una serie di numerini uno dopo l'altro, che insieme possono
+formare file grafici, musicali, eseguibili, listati eccetera.
+Da notare che un dischetto vergine per poter essere utilizzato deve essere
+FORMATTATO, altrimenti e' impossibile scriverci.
+Una volta formattato, ci si puo' salvare qualsiasi file, sia figure con
+programmi di grafica, che testi (come questo che state leggendo) che altro.
+Un file si puo' copiare da un disco ad un altro, si puo' cancellare, oppure
+gli si puo' cambiar nome, eccetera. In un disco ci possono molti file, fino
+a che non si riempiono gli 880Kb circa, magari con 2 file da 400Kb o con una
+trentina di file piu' piccoli. Da notare che all'interno di un disco, per
+fare un po' di ordine, si possono generare varie "subdirectory", ossia dei
+"cassetti" piu' piccoli, delle divisioni in cui mettere i file.
+Ad esempio si possono generare le subdir DISEGNI e TESTI, in cui copieremo
+o salveremo rispettivamente delle immagini e delle lettere per la fidanzata,
+in modo da non mettere disegni e testi insieme sciolti nella dir principale.
+E' come se il disco fosse un armadio, e le subdir dei cassetti di questo
+armadio. Dato che si possono fare delle subdir dentro le subdir, ognuno di
+questi cassetti puo' contenere file sciolti o "scatole" con file o altre
+"scatoline" piu' piccole dentro. Dunque un sistema simile a quello dei mobili!
+Per eseguire le operazioni tra i file si puo' usare la CLI/SHELL, in cui
+occorre scrivere dei comandi come:
+
+Dir		= Elenca i file e le subdir contenute in un disco
+Copy		= Copia i file
+Delete		= Cancella un file (ATTENZIONE AD USARE QUESTO!!!)
+Makedir		= Crea un "cassetto" (o subdir)
+
+Oppure si puo' agire col mouse da WorkBench, dove i file sono "raffigurati"
+come icone e le subdir come cassetti.
+Da notare che il drive interno si chiama "df0:", quelli esterni "df1:", "df2:"
+eccetera. L'hardisk di solito si chiama "Dh0:" (o "Hd0:").
+Un sistema piu' veloce e' quello di usare utility come DiskMaster o DirOpus.
+Dunque quando avrete scritto qualche listato, lo dovrete salvare in un
+disco formattato, o sull'Hard Disk in quale subdir.
+Altra cosa da sapere e' come si fa a fare un disco "autoboot", ossia che parte
+automaticamente inserendolo nel drive all'accensione o dopo un reset.
+Supponiamo di aver salvato un nostro programma ESEGUIBILE in un dischetto,
+col nome "mioprogramma". Occorrera' fare una subdirectory "S", in cui salvare
+un file di testo col nome di "startup-sequence", in cui sia scritto il nome
+del programma da caricare automaticamente:
+
+mioprogramma
+
+La startup-sequence si puo' scrivere (editare) anche con il programma con cui
+state leggendo, che fa anche da text-editor. Ultima cosa, occorre "installare"
+il disco in questione, digitando da cli/shell il comando:
+
+Install df0:
+
+Oppure "install df1:" se si insetisce il dischetto nel drive esterno.
+
+Detto questo, si puo' continuare con le note.
+
+NOTA: Se volete installare il corso sull'hard disk, ricordatevi di copiare
+nella vostra directory s: il file "TRASH'M-ONE16.pref" che si trova nella
+directory S: del disco del corso.
+
+NOTA2: Se volete stampare i listati, considerate che sono compressi col
+powerpacker, per cui vi serve il PowerPacker Patcher, quello usato in questo
+corso. (il file e' quello chiamato "PP" nella directory "C").
+Per installarlo, basta avere in LIBS: la "powerpacker.library" ed eseguire il
+comando "PP". I listati saranno autoscompattati al caricamento.
+
+In questo corso verranno trattati i vari argomenti della programmazione, come
+il COPPER, gli SPRITE, il BLITTER, nonche' il nuovo chipset AGA e la
+programmazione della scheda video PICASSO II.
+Nel disco 1 gli argomenti sono: 68000,copper,playfields e sprites.
+Il blitter, l'AGA e il resto sono nei dischi 2 e 3, non del tutto terminati.
+
+Per quanto riguarda la distribizione e la copia di questo corso, dovete sapere
+che e' GiftWare/Shareware e non propriamente di pubblico dominio.
+Con questo intendo che potete copiare ai vostri amici questo corso senza
+problemi, basta che non lo VENDIATE per soldi, dato che i diritti su questo
+corso sono dell'autore, cioe' me, e non certo del primo furbacchione che vuole
+speculare sul lavoro altrui. D'altronde, se e' vero che lo potete copiare e
+distribuire AL SOLO PREZZO DEI DISCHI VERGINI, dovete anche ricordarvi che
+se seguite con successo le varie lezioni, riuscendo a programmarvi qualche 
+cosa, avete tratto giovamento dal mio lavoro, per cui DOVETE ringraziarmi in
+qualche modo, specialmente se diventate i programmatori piu' ricchi del mondo
+(beh, nell'eventualita'...). Questo ringraziamento e' quantificabile a vostro
+piacere, preferisco biglietti da 10.000.
+L'eventuale afflusso di regalucci o, meglio, vile denaro, mi incoraggerebbe a
+proseguire l'hobby della programmazione Amiga, e anche a fare nuovi capitoli
+del corso. L'indirizzo e':
+
+	Fabio Ciucci
+	Via S.Leonardo, 13
+	55100 LUCCA
+
+Mi farete anche un grande favore se copierete a tutti i vostri amici questo
+disco 1 del corso, anche se a voi personalmente non interessasse, perche'
+darete la possibilita' a qualcun'altro di averlo e di imparare a programmare.
+Ho deciso di scrivere un corso di ASM (assembler) perche' 10000 persone me
+lo hanno chiesto, e considerato che lo faccio per divertimento l'ho scritto
+in maniera molto discutibile, ma, a mio avviso, risultera' piu' chiaro ai
+principianti i quali, una volta iniziato a capire, potranno continuare piu'
+approfonditamente. Chi e' gia' esperto di ASM trovera' divertenti le
+lezioni, magari ci trovera' delle inesattezze, percio` gli consiglio di
+consultare direttamente i listati di esempio: questo corso e' per chi parte
+da zero. Infatti, dalla mia esperienza personale e da quello che mi dicono
+gli aspiranti "CODER" (in gergo programmatori CATTIVI), il problema e'
+proprio capire il tutto e fare i primi due o tre programmini, dopodiche'
+si diviene in grado di continuare da soli. Mi propongo, dunque, di insegnare
+a far girare delle palline per lo schermo o a farci saltellare una scritta
+a chi non sa nemmeno cosa sia il 68000. Se poi costoro vorranno diventare
+programmatori di giochi ed entrare nel TEAM 17 bastera' che continuino.
+
+PER IMPARARE A PROGRAMMARE UN GIOCO TIPO GODS O PROJECT X O COMUNQUE
+UN GIOCO CHE NON SIA UN SIMULATORE DI VOLO O UNO 3D, CHE INSOMMA NON
+COMPRENDA CUBETTI CHE RUOTANO, TUNNELL SINUSOIDALI O DISTORSIONI
+PROSPETTICHE, FRATTALI O TEXTURE MAPPING, GARANTISCO CHE BASTA AVERE
+LE COGNIZIONI DI MATEMATICA DI TERZA MEDIA.
+
+Con questo voglio togliere dalla testa a tutti che la programmazione assembler
+dell'Amiga sia piena di matematica. IO CREDO INVECE CHE NON C'ENTRI NULLA.
+Se si intende fare un programma di matematica, si deve conoscere la
+matematica, come se si vuol fare un gioco del calcio bisogna conoscere il
+calcio.
+L'importante e' conoscere come funziona l'Amiga, il suo processore (nel caso
+dell'Amiga un Motorola 68000) ed i suoi chip custom (ossia quelli dedicati a
+fare la grafica ed il suono).
+Personalmente ho fatto le superiori all'Istituto d'Arte della mia citta',
+ed ho imparato a fare cosucce in ASM gia' quando ero alle medie, quindi
+basta usare bene il tempo che si tiene acceso l'Amiga, anziche' giocarci:
+non serve frequentare la facolta' di informatica all'universita', dove non
+insegnano certo a programmare giochi o demo sull'Amiga!!!
+
+Ma perche' imparare a programmare giochi o demo? E cosa sono le demo?
+Dunque, i giochi cosa sono lo sanno tutti, quindi si suppone che chi voglia
+imparare a programmarli si sia stancato di vedere giochi che non sono come
+vorrebbe, e si vuole fare il "SUO", come vuole lui, pixel per pixel.
+Per quanto riguarda le demo invece occorre fare una breve spiegazione.
+Demo sta per "demonstration", ossia dimostrazione grafica.
+Dimostrazione di cosa?
+Della potenza dell'Amiga e della bravura dei programmatori, naturalmente.
+Comunque c'e' qualcosa di piu': LA SCENA.
+Non quella del teatro, ma l'"AMIGA SCENE" (in inglese, la lingua ufficiale
+della scena stessa). Immaginatevi la scena della musica: ci sono vari gruppi
+con cantanti, batteristi, eccetera. Per l'Amiga, invece, troviamo vari gruppi
+con CODER (programmatori), GFX ARTIST (grafici), MUSICIANS (musicisti), che
+invece di fare un "VIDEO" come quelli che fanno i gruppi della scena musicale
+come loro contributo, fanno una "DEMO", che si aggiunge alle altre fatte
+da altri gruppi in tempi e luoghi diversi. Ci sono poi gli "SWAPPER" e i
+"TRADER" che sono rispettivamente coloro che scambiano e distribuiscono le
+demo via posta o via modem... costoro non producono niente, ma hanno una
+importanza nella scena, perche' una cosa che non circola e' come se non ci
+fosse. D'altronde, costoro aspirano a diventare CODER, GRAFICI o MUSICISTI,
+per contribuire a fare una DEMO, anziche' scambiare opere altrui.
+Ci sono molti gruppi nell'"Amiga Scene", che hanno membri in tutti il mondo,
+in particolare in Europa. I nomi di alcuni gruppi piu' famosi sono
+ANDROMEDA, BALANCE, COMPLEX, ESSENCE, FAIRLIGHT, FREEZERS, MELON DEZIGN,
+POLKA BROTHERS, PYGMY PROJECTS, RAM JAM, SANITY, SPACEBALLS...
+Da notare che ogni membro della scena si fa chiamare con uno pseudonimo,
+detto "handle". Insomma, un nome d'arte: per esempio due coder degli ANDROMEDA
+si fanno chiamare "Dr.Jeckyll" e "Mr.Hyde", uno dei FREEZERS si fa chiamare
+"Sputnik", poi altri di vari gruppi sono: Hannibal, Dan, Paradroid, Dak,
+Wayne Mendoza, Performer, Bannasoft, Laxity, Vention, Psyonic, Slammer, Tron,
+Mr. Pet, Chaos, Lone Starr, Dr. Skull, Tsunami, Dweezil.....
+Il nome completo si indica con l'andle seguito dal gruppo di appartenenza,
+ad esempio CHAOS/SANITY, DWEEZIL/STELLAR, DAK/MAD ELKS, e cosi' via.
+Io, per la scena, sono "RANDY/RAM JAM", ma ovviamente Fabio Ciucci per chi
+rimarrebbe perplesso, non conoscendo l'argomento.
+La scena organizza dei PARTY, delle specie di feste-ritrovo, dove i gruppi
+portano la loro demo, e ci sono delle competizioni con votazioni e premi
+anche di milioni per i vincitori.
+Alcuni coder di demo poi passano a fare i giochi, dato che l'argomento e'
+sempre quello. Ad esempio il programmatore di BANSHEE e' HANNIBAL/LEMON.,
+quello di ELFMANIA e' SAVIOUR/COMPLEX, quelli di STARDUST sono DESTOP/CNCD e
+SCY/CNCD, e la lista potrebbe continuare...
+Comunque nel disco 2 e' presente una lezione solo sulla SCENA.
+
+Ritornando alla programmazione assembler, sia che vogliate fare demo o giochi,
+vi sconsiglio di cominciare ad imparare studiando i listati di routines 3d
+(routine=parte di un listato o programma), perche' sono le piu'
+complesse, che io stesso digerisco male, non per la programmazione in se'
+ma per le formulacce di matematica che contengono.
+Ma attenzione! Non dovete nemmeno pensare che se non serve la matematica
+servano conoscenze di elettronica o che sia necessario studiare gli schemi
+elettrici di Amiga!!! Quello va fatto solo se volete fare un programma
+per gestire una scheda grafica o un digitalizzatore video o simili.
+Vi assicuro che potete, ad esempio, far apparire sullo schermo una figura
+o suonare una musica senza conoscere di dove passano i fili!!!
+Conosco persone che hanno imparato l'assembler a 12 anni e altre che lo hanno
+imparato a 30 o 40, senza conoscere bene la matematica e senza conoscere
+l'inglese. Quindi nemmeno l'eta' e' una scusa accettabile per non provare!
+GIA! PERCHE' DOVETE TOGLERVI DALLA TESTA ANCHE CHE E' INDISPENSABILE LA
+CONOSCENZA DELL'INGLESE!
+Devo ammettere, pero`, che la conoscenza dell'inglese puo' rendere piu' facile
+il tutto, perche' i comandi ASM sono abbreviazioni di parole inglesi, tipo SUB
+e ADD che significano SOTTRAI e ADDIZIONA.
+La conoscenza del WorkBench e dell'Amigados non vi saranno utili per la
+programmazione in se, in quanto il computer in realta' funziona molto
+diversamente. Io direi, in maniera piu' semplice, che queste "sovrastrutture"
+sono il sistema operativo, localizzato nel chip del kickstart, senza il
+quale all'accensione non comparirebbe nemmeno la schermata che chiede di
+inserire il dischetto. Le finestre che vedete e spostate sono il frutto di
+migliaia di linee di codice ASM, contenute nel kickstart, infatti basta vedere
+la differenza delle finestre tra il kick 1.3 e il kick 2.0, che non sono dovute
+alla differenza dei dischi inseriti, ma alle differenze nel kick stesso.
+Se volete fare programmi stile DeLuxe Paint, Gestione casalinga, word
+processor, o comunque utility per workbench che aprano le loro finestrelle
+su cui selezionare i gadget e i menu a tendina, vi consiglio di imparare il
+linguaggio C anziche' l'ASM, in quanto e' piu' indicato e una volta imparato
+potete convertire i vostri listati facilmente all'ambiente MS-DOS e WINDOWS,
+nel caso che voleste abbandonare (o tradire?) l'Amiga.
+Se invece siete affascinati dalle demo grafiche con le palline rimbalzanti
+e le scritte metallizzate e sognate di programmare giochi tipo AGONY,
+LIONHEART, SHADOW OF THE BEAST, TURRICAN, APYDIA, PROJECT X, SUPERFROG,
+ZOOL, GODS, CHAOS ENGINE, XENON II, LOTUS ESPRIT, e mettiamoci anche
+SENSIBLE SOCCER, sia chiaro che si possono fare solo in ASSEMBLER PURO!!!
+e non richiedono particolari conoscenze di matematica: bastano le classiche
+addizioni, sottrazioni, moltiplicazioni e divisioni, e qualche tabella di
+SENI e COSENI per fare, ad esempio, le palline che cadono con una traiettoria
+a parabola, o comunque seguendo una curva: queste tabelle non sono altro che
+una serie di numeri in memoria tipo 1,2,3,5,8,10,13,15,18,23 che sono, ad
+esempio, la progressione della posizione orizzontale e un'altra serie di
+numeri che sono la progressione della posizione verticale; queste serie di
+"tabelle" o SINUSTAB, cioe' una serie di numeri che definiscono le coordinate
+di una curva, possono essere costruite con un apposito comando, il CS,
+presente nell'ASMONE, l'assemblatore, anche senza conoscere esattamente la
+trigonometria, puo' bastare sapere i parametri da passare e fare delle
+prove. Di queste SINUSTAB o TABELLE ce ne sono molte nei giochi e nelle demo,
+in quanto molti movimenti ondeggianti non sono calcolati del tutto sul
+posto. Se invece sognate di fare delle ADVENTURE tipo MONKEY ISLAND, o
+dei giochi manageriali, in cui appaiono cioe' solo schermate grafiche ferme
+con qualche ometto che ci si muove dentro lentamente, in cui il gioco consiste
+nel selezionare con il mouse degli oggetti o delle scritte, allora si puo'
+usare anche il linguaggio C, perche' il gioco potrebbe essere convertito
+facilmente su PC, dove si farebbero un bel po di soldoni.
+D'altronde il C del PC lo insegnano nelle scuole scientifiche, e molto bene
+nelle universita' informatiche, e i soldoni li faranno loro.
+
+NOTA: conoscere l'assembler dell'Amiga puo' rivelarsi utile se si passa, in
+seguito, a programmare anche un altro tipo di computer con lo stesso
+microprocessore, ossia il Motorola 68000 che, per fare un esempio, e' usato da
+computers quali Apple MacIntosh e Atari ST.
+Questi computer hanno pero' diversi sistemi operativi (diversi dal
+kickstart Amiga) e diversi chip dedicati alla grafica ed al suono, dunque
+vi servira' la conoscenza delle istruzioni del 68000, ma non quella del
+sistema operativo Amiga e dei suoi chip grafici, dovrete imparare da capo;
+d'altronte anche con linguaggi come il C dovrete imparare il nuovo sistema
+operativo.
+Se ad esempio usate il linguaggio C e fate un programma per WorkBench
+che apre le finestre e magari fa dei disegni tipo montagnine, nel caso
+che compraste (che errore!) un PC MSDOS e voleste rifarvelo su WINDOWS, le
+parti del vostro programma inerenti ai calcoli per fare le montagnine e
+la struttura generale la potreste riutilizzare, ma tutta la parte inerente
+all'apertura delle finestre workbench e dei suoi gadget di selezione la
+dovreste buttare e sostituire con le istruzioni per Windows, e vi assicuro
+che imparare un altro sistema operativo e convertire un programma costa
+dei mesi o degli anni.
+NOTA: un programma scritto in assembler 68000 funziona benissimo sugli altri
+processori piu' potenti,a patto che si siano tenute presenti alcune cose.
+
+Se state leggendo ancora significa che siete imperterriti. Allora completo la
+lista delle utilita' dell'assembler... (il linguaggio in sé si dice ASSEMBLY,
+il programma che lo compila si dice ASSEMBLER, ma e' uso comune chiamare
+ASSEMBLER anche il linguaggio). Innanzitutto l'assembler rimane il linguaggio
+piu' veloce, specialmente se lo sapete bene, e la stessa cosa fatta con un
+altro linguaggio sara' sempre piu' lenta di una fatta in assembler.
+Poi rimane anche l'unico mezzo per creare effetti GRAFICI speciali, mai visti
+prima: potete ottenere effetti speciali anche con un titolatore, ma potete
+fare SOLO quelli definiti dal programma. Infatti non e' difficile scoprire
+con che programma e' stata fatta una titolazione o un effetto speciale; lo
+stesso vale per i DEMO MAKER, di cui il migliore e' il TRSI DEMOMAKER, che
+ha degli effetti interessanti, ma ormai anche i bambini riconoscono una cosa
+fatta col demomaker, perche' c'e' sempre la scritta dorata sopra e sotto
+e al centro o le palline o le stelline... E BASTA!!! non se ne puo' piu'!
+Imparando a programmare in assembler, invece, si possono inventare degli
+effetti mai visti prima, perche' non si è limitati a dover scegliere tra
+una ventina di effetti pronti per l'uso che altre migliaia di persone hanno
+usato, riempiendo reti televisive private e dischi.
+Per darvi un'idea dell'infinita varieta' di cose che potete inventare in
+assembler posso nominare la SPACEBALLS "state of the art" DEMO, una delle
+piu' conosciute, che non e' difficile da programmare e ha stupito per le
+figure stilizzate di donne che ballano in mezzo a degli effetti speciali;
+
+Se un programmatore ha piu' pazienza puo' anche programmare un gioco, dapprima
+per giocarselo, per il gusto di farsi il gioco dei sogni, per sperimentare i
+veri limiti dell'Amiga, per vedere quanti ometti si riesce a muovere senza
+rallentare lo schermo, poi nulla vieta di provare a fare un gioco commerciale,
+che richiede anche la collaborazione di grafici e musicisti, nonche' tutta
+la parte relativa alla commercializzazione che spesso premia piu' la
+pubblicita' fatta al gioco che la sua effettiva validita', a parte i casi in
+cui la validita' e' tanta che il successo arriva comunque.
+Perche' non mettersi a fare un gioco per CD32?? Basta fare un gioco AGA che
+sfrutti i 600MB di capienza del CD: per esempio un gioco in cui lo sfondo
+sia un "FILM" caricato in tempo reale, su cui far girottolare un RAMBO
+ammazzatutti o un'astronave. La difficolta' non sta ne' nell'imparare il
+nuovo chipset AGA, ne' nell'adattamento per CD, infatti il chipset AGA e'
+molto simile a quello normale, basta impararsi qualche registro nuovo, e
+il processore funziona allo stesso modo, mentre per quanto riguarda la
+gestione del CD e' ancora piu' facile, perche' basta studiarsi i 2 dischi del
+"CD 32 DEVELOPER KIT" che circola tra i programmatori. Dunque l'assembler
+alle soglie del 2000 puo' essere ancora all'avanguardia, ovviamente per certi
+compiti in particolare, e se la tecnologia del 2000 sara' tutta su CD, come
+auspicano coloro che si comprano il PC per giocare ai giochi del CD o spesso
+per vedercisi le donne nude, dato che i CD sul PC MDDOS sono in maggioranza
+slideshow sexy, anche l'Amiga avra' il suo software su CD, che potrebbe essere
+sviluppato da qualche tizio che un giorno comincio' la sua avventura leggendo
+un certo corso di programmazione.... Conoscendo come funziona il tutto, si puo'
+anche capire come funzionano certi programmi o giochi e si possono modificare
+delle sue parti: ad esempio si puo' capire come mai un gioco o un programma
+non funziona sui nuovi modelli Amiga e si puo' modificare per farlo funzionare,
+si possono fare certe modifiche ai programmi, per fare un esempio ho modificato
+una utility in modo che usasse la memoria virtuale su disco sull'Amiga 4000,
+altre volte ho velocizzato dei programmini PD, di cui ho "rubato" e velocizzato
+le parti piu' importanti. Infine si possono fare i cosiddetti trainer, le vite
+infinite, si trovano cioe' le parti di listato che sottraggono una vita al
+povero PLAYER 1 e si modifica il tutto, magari facendo aumentare le vite
+quando si e' ammazzati... per vedere e capire come funziona un gioco o un
+programma pero' e' necessario conoscere VERAMENTE bene l'ASM e disporre di
+un monitor L.M o meglio di una cartuccia tipo ACTION REPLAY (Il monitor L.M.
+e' un'utilita' che permette di disassemblare, cioe' visualizzare le istruzioni
+presenti in una sezione di memoria, e se si trova in che punto della memoria
+sono le istruzioni che tolgono una vita, si puo' modificare il tutto..
+L.M sta per Linguaggio Macchina, cioe' linguaggio del microprocessore, che
+e' quello prodotto dall'assemblatore). Queste operazioni comunque sono una
+cosa difficile, e cominciare tentando di far diventare verde un ometto blu
+in un gioco non e' certo utile. Ho visto tanti ragazzi sciupare il loro
+tempo andando a caso con i monitor L.M. e le cartucce tentando invano di fare
+non si sa cosa, cambiando le scritte nei programmi o nei listati, senza
+capirli, dicendo che li avevano fatti loro o che ci avevano fatto non si
+sa quali importanti modifiche. Costoro tutt'oggi non sanno visualizzare
+un'immagine in assembler; in gergo questi ciarlatani sono detti LAMER.
+
+Facciamo il punto della situazione: se siete uno di quei diciottenni classici
+bianchicci e gobbi, senza donne, e state andando a caso con i monitor LM
+per la memoria del vostro povero Amiga, vantandovi di essere un grande hacker,
+allora vi consiglio di posare il monitor e seguirmi per la retta via.
+Anche io ho cominciato in quella maniera ridicola (a 8 anni pero'! non a 18!),
+ma poi mi sono ravveduto e ho cominciato a leggere i libri senza saltare le
+pagine. Ecco un libro che vi potrebbe servire:
+
+IL MANUALE DELL'HARDWARE DELL'AMIGA, della IHT: Questo manuale spiega
+come funzionano i CHIP CUSTOM, quelli che fanno la grafica ed il suono
+dell'amiga, nonche' come pilotare il DISK DRIVE eccetera.
+Questo e' indispensabile, ma per visualizzare anche una sola immagine
+bisogna conoscere anche il 68000, essendo il 68000 che gestisce
+i chip grafici. Inoltre il tutto rimane una cosa astratta, una specie di
+sintetica serie di tabelle di riferimento, e non ci sono validi esempi.
+Molti esempi li potete comunque trovare nel mio corso!!!! Se sapete
+l'inglese cercate l'ultimo HARDWARE REFERENCE MANUAL, che e'aggiornato
+sui nuovi chip ECS. Comunque potete farne a meno per la durata del mio corso
+in quanto le cose principali ci sono, anche sui chip AGA dell'Amiga 1200.
+Inoltre nell'ASMONE e' incluso un comando, =C, che da una spiegazione
+di tutti i registri $DFFXXX, sia in generale che in particolare, ad esempio:
+=C 100 vi dara' una spiegazione del registro BLTCON0, concernente la
+risoluzione grafica, allo stesso modo =C 040 vi dara' un sunto del BLTCON0,
+reg. del BLITTER ($dff040).
+
+I libri tipo ROM KERNEL MANUAL e PROGRAMMARE L'AMIGA volume 1 e 2 della IHT,
+non sono utili alla programmazione diretta all'hardware, quella che
+tentero' di insegnare in questo corso, ma sono utili a chi voglia fare
+programmi per il workbench o l'amigados, che usino il sistema operativo
+contenuto nel kickstart e nei disks del workbench... programmi con finestre
+intuition dunque, non schermate con palline ed equalizzatori o ometti
+saltellanti tra le fiammelle... dunque piu' utili ai programmatori in C.
+NON VE LI CONSIGLIO... programmare cosi' e' NOIOSISSIMO.
+
+NOTA: Se, invece di essere utilizzatori bianchicci di monitor LM a caso, siete
+degli avidi ricercatori di giochi nuovi da copiare e da finire, passate ore al
+telefono a chiedere delle ultime novita', e le ore rimanenti a copiare
+con XCOPY e a giocare, magari sempre col trainer tanto per finire piu' in
+fretta, allora e' peggio che essere gobbi col monitor LM: o interrompete questo
+affanno della ricerca e della copia, o rimarrete degli ipertesi che non sanno
+assolutamente come mai gli si muovono gli ometti per lo schermo, ne saprete
+mai come farvelo da voi un trainer al gioco col menu e tutto, e vi assicuro
+che quando vi siete fatto un trainer da voi, poi non vi interessa piu' di
+finire il gioco, ma piuttosto di capire come funziona.
+Questa e'la differenza che c'e' tra il giocatore ed il creatore del gioco, tra
+il popolo assoggettato e stolto e i capi del regime che lo comandano facendogli
+passare notti insonni a finire (col trainer o meno) una miriade di giochi,
+non importa quali, basta che siano tanti e nuovi, copiati con l'XCOPY (che
+tra l'altro e' il peggior copiatore al mondo! usate il DCOPY piuttosto!).
+P.S: a proposito di donne, NON HO MAI VISTO NULLA PROGRAMMATO IN ASM DA UNA
+DONNA!!!! Se sta leggendo un rappresentante del sesso femminile, credo che
+questo sia un motivo in piu' per essere la prima!!! Una ragazza che, invece
+di interessarsi a pettegolezzi su persone sconosciute, o alle vetrine dei
+negozi, si metta a programmare robe pazzesche in gonna, credo che metterebbe
+in crisi di identita' un bel po di bambinoni che si ritengono intelligenti
+facendo vedere, alle (poche) ragazze che conoscono, quanto muovono bene la
+freccia del mouse o le finestrine del workbench, pensando che tanto non
+capiscono nulla e che gli possono inventare che sono dei geni e che stanno
+avendo dei collegamenti con la NASA, quando invece non sanno nemmeno formattare
+un dischetto.
+
+Vi anticipo che la LEZIONE2.TXT, che leggerete con i suoi sorgenti esempio dopo
+questa LEZIONE1.TXT, e' la piu' DIFFICILE, quella FATIDICA, cioe' se riuscite
+a passarla il gioco e' fatto, perche' gia' dalla lezione 3 si fanno i primi
+effetti speciali col copper e procederete veloci come delle fucilate fino in
+fondo. Dunque vi chiedo di avere la pazienza di superare con calma e impegno
+la LEZIONE2.TXT, senza saltare niente.
+
+Ora facciamo un'analisi dei programmi usati per programmare in assembly:
+
+-L'ASSEMBLATORE e' il programma che traduce il listato fatto di comandi in
+formato simbolico (move, add...) nel suo equivalente binario (cioe' in bytes).
+Cioe' traduce un un testo, leggibile dal programmatore, nel formato reale delle
+istruzioni come le legge ed esegue il processore (una sequenza di numeri).
+Per esempio il comando "RTS" sara' trasformato in $4e75, e cosi' via.
+Questo rende umano programmare, perche' immaginatevi che roba programmare
+sapendo a memoria i numeri corrispondenti a ogni istruzione!!!!
+Programmare per NUMERI vorrebbe dire programmare in vero LINGUAGGIO MACCHINA,
+ossia L.M, ma e' inutile, si fa molto meglio in ASSEMBLY, cioe' usando delle
+parole convenzionali, dette COMANDI, al posto dei numeri reali.
+Questo codice binario risultante e' chiamato codice oggetto ed e' direttamente
+eseguibile dal computer, infatti puo' essere salvato il file eseguibile, oppure
+si puo'collaudare il programma.
+Ricordatevi che in assembler e' in uso anche la numerazione esadecimale!
+I numeri esadecimali sono quelli preceduti dal $, e sono in base 16, come
+spiegheremo, e possono contenere anche le lettere ABCDEF, come in $4e75.
+Si deve tenere presente che se il listato ha degli errori "grammaticali" ci
+viene comunicato dall'assemblatore, infatti ci sono delle precise regole a
+cui attenersi: ad esempio le LABEL (o ETICHETTE), devono cominciare
+dall'inizio della riga, ossia non devono essere precedute da spazi, e devono
+terminare con i due punti (:). Ad esempio una LABEL corretta e'
+
+PIPPO:
+
+Infatti il nome si da a piacere, e PIPPO va bene, perche' non contiene simboli
+come = + - eccetera, non ha spazi che la precedono, e termina con i :.
+Le label sono nomi che si danno qua e la' nel listato a delle cose, e servono
+per indicare quelle cose durante il programma, se per esempio si da nome
+PIPPO: a una certa serie di istruzioni, quando nel programma diremo che si
+deve eseguire PIPPO verranno eseguite le istruzioni sotto PIPPO, allo stesso
+modo possiamo mettere una label ad una figura o a una musica; la label dunque
+rappresenta l'indirizzo di memoria dove si trova, come il nome dei luoghi
+rappresenta la posizione di quei luoghi! Se voglio andare in Australia, vedro'
+una bella label AUSTRALIA: sopra di essa. Ricordatevi pero' che le LABEL
+servono a noi per orientarci, ma quando l'assemblatore trasforma tutto, nel
+codice oggetto non ci sono label, solo i numeri corrispondenti alle istuzioni.
+
+Ci sono poi le istruzioni, che invece devono essere SEMPRE precedute da
+degli spazi, meglio se da un TAB (che fa 8 spazi in un colpo solo, e' il
+tasto sopra CTRL), e seguite dagli operandi, ad esempio:
+
+PIPPO:
+	MOVE.L	$10,$20
+
+In questo caso MOVE.L e' l'istruzione, mentre il primo operando e' $10 e il
+secondo e' $20. Alcune istruzioni necessitano di un solo operando e altre
+di nessun operando, ad esempio:
+
+	CLR.L	$10
+
+Necessita di un solo operando. Istruzioni come RTS non necessitano di operandi.
+Infine ci puo' essere un commento, utile per ricordarci cosa si sta facendo
+con le istruzioni: il commento si puo' scrivere dopo un punto e virgola (;).
+
+PIPPO:				; LABEL, che rappresenta l'indirizzo di MOVE.L
+	MOVE.L	$10,$20		; istruzione a 2 operandi
+	CLR.L	$10		; istruzione ad 1 operando
+	RTS			; istruzione senza operandi
+
+I commenti sono ignorati durante l'assemblaggio, quindi potete scrivere di
+tutto, basta che sia dopo i ;.
+Questa e' la grammatica. Seguendo queste semplici regole il programma viene
+assemblato. Poi che faccia quello che deve fare o no dipende da voi!!!
+
+-Un EDITOR invece e' un programma che serve per scrivere o modificare i testi,
+nel nostro caso per scrivere i listati, che non sono altro che dei testi, fatti
+di parole chiave (move, add...) e commenti del programmatore (posti dopo i ;).
+I piu' potenti editor possono cercare, agganciare e sostituire caratteri.
+Solitamente ai listati assembly si da un nome che finisce con .ASM o .S, io
+personalmente preferisco .S, infatti quelli del corso finiscono in .S, mentre
+i testi da leggere finiscono in .TXT, ma il nome del file ovviamente non ha
+importanza per l'assemblatore, che lo carica comunque.
+
+-Un MONITOR non e' in questo caso da intendersi come quello schermo su cui
+vedete le immagini dell'Amiga, ma un altro programma che permette di far vedere
+i contenuti della memoria, per esempio che numero c'e' all'indirizzo $100, e
+cosi' via. Solitamente i MONITOR hanno anche un DISASSEMBLATORE, ossia il
+contrario dell'ASSEMBLATORE, che ci permette di vedere la memoria come
+istruzioni, anziche' come numeri, ossia traduce i numeri nei rispettivi
+comandi simbolici (move, add...), in modo da rendere chiaro il funzionamento.
+Trasforma cioe' il LINGUAGGIO MACCHINA in ASSEMBLY, ossia ricostruire le
+istruzioni assembly che ogni numero rappresenta, riportando il CODICE OGGETTO
+alla forma originaria che avete usato nel listato. Per riprendere l'esempio
+usato per l'assemblatore, trasforma $4e75 in "RTS".
+
+-Un DEBUGGER serve per collaudare il programma istruzione per istruzione,
+visualizzando gli effetti delle istruzioni ogni volta, e puo' indicare la
+causa del malfunzionamento del programma. Quindi consente di far eseguire il
+programma a pezzi, cioe' definire fino a quando eseguirlo, per controllare la
+situazione, e poi riprendere l'esecuzione, per trovare ogni errore.
+Infatti BUG significa ERRORE, in gergo; in inglese significa PULCE PESTIFERA,
+infatti gli errori di solito sono difficili da trovare nel programma; con il
+debugger si puo' verificare in che punto si verifica l'irregolarita'.
+
+Alle volte il codice oggetto per poter funzionare effettivamente su un sistema
+operativo deve essere LINKATO con il LINKER, perche' i file eseguibili non
+sono semplicemente il blocco di istruzioni che avete assemblato, ma hanno
+delle parti che permettono di farlo caricare in memoria dal sistema operativo.
+Questo vale per i file .EXE e .COM del PC MSDOS e per i file eseguibili di
+qualsiasi altro sistema operativo, e' per questo che un eseguibile per Amiga
+non viene caricato da un ATARI ST o da un MACINTOSH, che pure hanno un 68000,
+proprio perche' il formato FILE e' diverso. Gli Amiga in particolare hanno gli
+HUNK, e per trasformare il codice oggetto in un file con HUNK, che possa essere
+eseguito clickandoci col mouse o caricandolo dallo SHELL, bisogna linkarlo.
+Per fortuna molti assemblatori hanno il linker incorporato, percui non occorre
+fare questo passaggio.
+
+Ebbene, l'assemblatore incluso in questo corso, il TRASH'M'ONE, ha un EDITOR,
+un ASSEMBLATORE, un MONITOR/DEBUGGER e un LINKER!!! Ossia tutto in UNO!!!!
+E' la versione modificata PD (Ossia liberamente copiabile?) dell'Asmone.
+
+A proposito dell'editor, potete cercare un testo premendo contemporaneamente
+i tasti AMIGA destro+SHIFT+S oppure selezionando col mouse (TASTO DESTRO)
+l'opzione Search nel menu' a tendina sotto la voce "Edit Funct."; a questo
+punto apparira' in alto a sinistra la scritta "Search for:", dove dovrete
+scrivere la parola (o le parole) da cercare. Puo' esservi utile intanto per
+ritrovare il punto dove siete arrivati nella lettura: se per esempio volete
+smettere qua per oggi, potete segnarvi la linea dove siete arrivati, in
+questo caso la 549 (indicata in fondo a sinistra), oppure il potete anche
+ritrovare questo punto del testo cercando una sua parola, per esempio "Funct",
+oppure "caso la 549", oppure "cercando", oppure quello che vi pare.
+
+Normalmente, avremmo dovuto scrivere il nostro listato con un EDITOR, e
+salvare il listato (detto SORGENTE) con un nome a piacere.
+Poi avremmo dovuto caricare l'assemblatore, da cui caricare il listato,
+assemblare (cioe' trasformare dal testo a suo equivalente in L.M) e salvare il
+codice oggetto.
+Per collaudare il programma, ovvero controllare se funziona, avremmo dovuto
+eseguirlo dall'assemblatore, oppure linkarlo, rendendolo eseguibile, e farlo
+partire dal DOS. Per tornare a modificarlo avremmo dovuto cercare l'editor,
+ricaricare il listato, modificarlo, salvarlo, e rifare tutto l'assemblaggio.
+Sul PC MSDOS questo e' quello che si deve fare, infatti ho rinunciato a
+programmarci, mentre sull'Amiga col multitasking si possono caricare insieme
+l'EDITOR,l'ASSEMBLATORE ecc. Come se non bastasse, qualcuno ha inventato
+il mitico SEKA, simile all'attuale ASMONE, che aveva editor, assemblatore e
+monitor insieme. Con l'evoluzione siamo arrivati al MASTERSEKA, poi
+all'ASMONE e infine alle molte versioni modificate dell'ASMONE dai piu'
+svariati programmatori hobbisti. I due piu' accaniti modificatori (bravi!!)
+sono i TFA, che hanno fatto il TFA ASMONE, e DEFTRONIC, che ha fatto questo
+TRASH'M'ONE. Ho scelto quello di Deftronic perche' e' quello che ha meno BUG,
+infatti essendo modificati alla meglio questi ASMONE spesso assemblano fischi
+per fiaschi o si bloccano improvvisamente, ma non ci si puo' certo lamentare
+con loro che si divertono ad aggiungere opzioni senza guadagnare un soldo!
+
+Il risultato finale e' che vi potete scrivere il listato, poi premendo ESC
+passate all'assemblatore/monitor, da cui potete assemblare (con "A"), oppure
+vedere i contenuti della memoria, sia come numeri che come istruzioni
+DISASSEMBLATE, potete verificare il funzionamento del programma, e infine
+salvare direttamente il FILE eseguibile con "WO".
+Per non fare confusione considerate che una cosa e' salvare il listato, ossia
+il SORGENTE, che e' un TESTO, un'altra e' salvare l'eseguibile, che e' un
+PROGRAMMA fatto di istruzioni nel formato FILE ESEGUIBILE.
+Il sorgente puo' essere scritto anche con un altro editor, come il CED, e
+poi potete caricarlo dall'ASMONE. Allo stesso modo un testo fatto con
+l'Asmone puo' essere caricato da un editor. L'Editor dell'Asmone quindi non
+e' che un normale EDITOR inserito in un assemblatore, con cui potete scrivere
+anche una lettera per la mamma, oppure modificare la STARTUP-SEQUENCE di un
+disco (Chi non sa cos'e', per favore si legga il manuale dell'AmigaDos!).
+
+Ordunque, procedero' facendo chiarimenti e spiegando a modo mio come
+funziona il computer, per evitare fraintendimenti.
+
+Quello che organizza tutto e' il microprocessore 68000, la CPU, ovvero
+Central Processing Unit, insomma il Boss... Il processore esegue delle
+istruzioni, infatti ha un set di istruzioni ben precise che sa eseguire,
+e che esegue una dopo l'altra (di seguito), a meno che nel suo cammino
+non trovi l'istruzione di saltare ad eseguire piu' avanti o piu' indietro,
+o di fare un certo numero di loop (o cicli). Nomino per esempio alcune
+istruzioni: MOVE, che significa "copia un valore da un posto ad un altro",
+ad esempio "move $10,$20" muove quello che e' in $10 nella locazione $20,
+oppure CLR, che significa AZZERA: "clr $10" azzera la locazione $10...
+(per LOCAZIONE intendo un punto della memoria accessibile dal processore)
+
+A proposito! Il processore opera sulla memoria! Facciamo una mappa:
+
+Quando le istruzioni operano con indirizzi minori di $200000 si sta operando
+nella CHIP RAM, ossia: da $000000 a $80000 ci sono i primi 512k di CHIP, quelli
+dei vecchi a500 o a2000, mentre se la RAM continua fino a $100000 significa che
+c'e' 1 MB di chip RAM, come negli a500+, a600 o nei nuovi a2000, se la memoria
+CHIP invece e' di 2MB, come negli a1200 o negli a500+ o a600 espansi, ad
+esempio, la chip va da $000000 a $200000. Insomma quando il processore lavora
+su indirizzi minori di $200000 ci troviamo in CHIP RAM, ad esempio:
+
+	CLR.L	$30000
+	MOVE.L	$150000,$1a0000
+
+Sono istruzioni che operano sulla CHIP RAM.
+
+Quando invece operano su indirizzi da $200000 in avanti, ci troviamo in FAST
+RAM, ad esempio un a500 vecchio con 1MB di memoria, divisa in 512k di CHIP
+e 512k di FAST ha la memoria divisa in 2 pezzi:
+
+1)	da $000000 a $80000	; i primi 512k di CHIP RAM
+
+2)	da $c00000 a $c80000	; 512k di FAST RAM.
+
+Potete verificare con utility come SYSINFO i blocchi di memoria che avete.
+
+Poi ci sono delle zone di memoria speciali, come quelle della ROM Kickstart,
+ossia di solito da $fc0000 per kick 1.2 e 1.3 o $f80000 per kick 2.0 o 3.0.
+La ROM, a differenza della RAM, non puo' essere sovrascritta, si puo' solo
+leggere, e non si cancella quando si spenge il computer.
+
+Un importantissimo indirizzo e' $dff000, in quanto quando le istruzioni
+operano su indirizzi che vanno da $dff000 a $dff1fe vengono azionati i
+CHIP CUSTOM della grafica e del suono, infatti per azionare la grafica
+bisogna mettere i valori giusti in questi indirizzi $dffxxx, detti anche
+REGISTRI, proprio perche' ognuno ha una funzione: provate a fare dalla
+linea di comandi (premendo ESC si scambia tra l'Editor e i comandi) il
+comando "=C", e vedrete il riassunto di quei registri, con il numero, in
+cui 000 sta per $dff000 e 100 sta per $dff100, e il nome, ad esempio
+$dff006 e' VHPOSR, mentre $dff100 e' BPLCON0. Questi indirizzi o si possono
+solo leggere, o si possono solo scrivere, per esempio $dff006 si puo'
+solo leggere, e $dff100 si puo' solo scrivere. Noterete una W o una R
+tra il numero e il nome: quelli che hanno una W sono quelli che si possono
+solo scrivere, (WRITE in inglese), quelli con la R si possono solo
+leggere (READ). Alcuni sono S (strobe) o ER (EarlyRead), ne parleremo in
+seguito quando li useremo.
+
+Altri indirizzi speciali si trovano nella zona $bfexxx, ossia da $bfe001
+a $bfef01: si tratta di indirizzi collegati al chip CIAA, che si occupa di
+varie cose come fare da timer, ossia da cronometro, e di controllare le
+porte come la parallela (quella della stampante).
+Analoghi compiti li svolge il CIAB, connesso agli indirizzi $bfdxxx.
+
+Quello che dovete ricordarvi in pratica e' che quando vedete un indirizzo
+del tipo $dffxxx o $bfdxxx o $bfexxx, stiamo operando su un registro CUSTOM,
+causando cose come il cambiamento dei colori dello schermo, o la verifica
+dei movimenti del joystick o del mouse, o altro ancora.
+
+Per quanto riguarda la memoria RAM, sia CHIP che FAST, non vi interessera'
+sapere a che indirizzo si trova ogni istruzione, perche' l'assemblatore,
+come sapete, ci permette di usare le LABEL, al posto degli indirizzi: le
+metteremo solo nei punti utili, ci pensera' l'ASMONE poi a mettere gli
+indirizzi reali al posto delle label. Potremo vedere dopo a che indirizzo
+sono finite le nostre istruzioni, se ci interessera'.
+
+Continuiamo con gli esempi delle istruzioni:
+Ci sono comandi come ADD e SUB, che significano ADDIZIONA E SOTTRAI, ad
+esempio SUB #10,ENERGIA sottrarra' 10 al valore dell'energia; ci sono le
+moltiplicazioni e le divisioni con MULS,MULU,DIVS e DIVU, e le operazioni
+logiche OR, AND, NOT ed altre. JMP significa JUMP, ovvero salta ad
+eseguire ad una certa locazione (esempio JMP $40000), JSR invece significa
+esegui una routine ad una data locazione fino a che non trovi un RTS,
+ovvero "ritorna che e' finita la routine", e l'esecuzione continuera' dopo
+il JSR; BRA fa la stessa cosa di JSR e BSR fa come JSR.
+TST significa TESTA rispetto a zero, ovvero controlla se una data
+locazione o registro e' uguale a zero; questa istruzione o l'istruzione
+CMP, ovvero COMPARA qualcosa con qualcosaltro, e' seguita di solito da un
+salto condizionato: BEQ e BNE ad esempio, che significano
+BEQ= Salta a una certa locazione se e'vera la condizione (BRANCH IF EQUAL)
+BNE= Salta se non e' vera (BRANCH IF NOT EQUAL). Si creano cosi' delle
+diramazioni varie; facciamo un esempio stupido:
+
+Principale:
+ BSR CAMPANE		; BSR fa saltare sotto la label CAMPANE, dopodiche'
+ 			; ritorna qua ad eseguire BSR aspettamouse
+ BSR aspettamouse	; Aspetta che sia premuto il MOUSE
+ BSR PAVAROTTI
+ RTS 	; torna all'asmone o al workbench
+
+aspettamouse:
+ controlla se il tasto del mouse e' premuto
+ se non e' premuto vai a aspettamouse, ossia fai il girotondo fino a che
+ non e' premuto il mouse. (in questo caso si mette un "BNE aspettamouse")
+ RTS  	; fine subroutine aspettamouse, torna sotto il BSR
+ 
+CAMPANE:
+ dindon	; una routine che suona dindon
+ RTS
+
+PAVAROTTI:
+ AAAAAHHHHHHHHH	; una routine che fa cantare Pavarotti
+ RTS
+
+ END	; Indica la fine del listato, si puo' anche non metterlo.
+
+(quello che viene scritto sotto l'END non viene letto ne' assemblato)
+
+ordunque, eseguendo questo ipotetico programma, si puo' dire che "Principale"
+e' la routine, appunto, principale, che richiama 3 routines (parti del 
+programma a cui viene dato un nome, ad esempio PAVAROTTI) in sequenza:
+all'inizio il processore salterebbe sotto CAMPANE: e suonerebbe
+le campane, poi trova un RTS e torna sotto BSR CAMPANE, dove trova un altro
+BSR che lo porta sotto "aspettamouse:" che e' una routine che fa un
+ciclo fino a che non e' premuto il tasto del mouse... il processore controlla
+miliardi di volte il mouse e se non e' premuto ritorna sempre a controllare
+senza sosta; quando il mouse viene calpestato (premuto) la situazione cambia,
+perche' si esce dal ciclo infinito ASPETTAMOUSE, e si arriva al suo RTS, ossia
+all'uscita, che lo fa tornare a PRINCIPALE sotto il "bsr aspettamouse" che
+abbiamo superato (il processore esegue sempre l'istruzione seguente, ossia
+sotto, e anche quando torna da un BSR, ossia dall'esecuzione di certe
+istruzioni messe in altro luogo) e trova l'ennesimo BSR che lo porta a far
+cantare pavarotti.
+Infine tornato dal concerto di Pavarotti trova un RTS, che lo fa uscire da
+PRINCIPALE e quindi torna all'asmone o al workbench: IL PROGRAMMA e' finito.
+
+Ora spieghero' meglio come si sposta il processore tra le varie istruzioni:
+Nel caso "BEQ label", si puo' parlare di diramazione, infatti a questo punto si
+possono prendere 2 vie: immaginatevi proprio un albero, di quelli secchi senza
+foglie, una quercia secolare, con il tronco nodoso, che a un certo punto si
+divide in 2 rami, poi ognuno di questi 2 rami si divide in 2, e cosi' via.
+quando arriviamo al beq e' come se fossimo una formichina che e' partita
+dall'inizio del programma, ossia dalla base dell'albero, in cui c'e' il nostro
+formicaio START:, e siamo arrivati alla prima DIRAMAZIONE: a questo punto o
+scegliamo di proseguire sul ramo destro o su quello sinistro. Questa scelta
+il 68000 la fa in base al risultato della condizione, sia essa un CMP o un TST:
+
+INIZIO:         ; formicaio nell'erbetta
+...
+...
+  TST.B LABEL30       ; Il byte della LABEL30 e'= 0??? (condizione esempio)
+  BEQ   RAMODESTRO    ; se si, allora salta a RAMODESTRO
+  ....                ; non e'=0, allora eseguiamo il RAMOSINISTRO
+  		      ; (significa che il byte e' un numero da $01 a $FF)
+  .... (Istruzioni del RAMOSINISTRO)
+  rts  Fine, usciamo: abbiamo percorso il RAMOSINISTRO e non quello DESTRO
+
+RAMODESTRO:
+  ...  (Istruzioni del RAMODESTRO)
+  ...
+  rts  Fine, abbiamo percorso il RAMODESTRO e non quello SINISTRO
+
+In questo caso una condizione di TST (confronta con 0) e di CMP (confronta il
+primo operando col secondo) seguita da un BEQ (se si, salta a...) o BNE (se no,
+salta a...), serve a scegliere se eseguire una certa serie di istruzioni o
+un'altra, se prendere una via o un'altra.
+Abbiamo gia' usato il BNE per fare un ciclo (o loop) in cui invece un certo
+numero di istruzioni sono eseguite ripetutamente fino a che non e' verificata
+la condizione, per esempio il loop che aspetta che sia premuto il mouse.
+Il Ciclo puo' essere paragonato, anziche' ad una formichina che sale un albero,
+ad un ROBOT che ha la pazienza di fare anche un miliardo di volte la stessa
+cosa senza stancarsi o scioperare, ad esempio:
+
+VAI IN CUCINA, CONTROLLA SE LA TORTA E' COTTA, SE NON E' COTTA TORNA IN SALOTTO
+E TOGLI LE PULCI AL CANE PER 30 SECONDI, DOPODICHE'
+VAI IN CUCINA, CONTROLLA SE LA TORTA E' COTTA, SE NON E' COTTA TORNA IN SALOTTO
+E TOGLI LE PULCI AL CANE PER 30 SECONDI, DOPODICHE'
+VAI IN CUCINA, CONTROLLA SE LA TORTA E' COTTA, SE NON E' COTTA TORNA IN SALOTTO
+E TOGLI LE PULCI AL CANE PER 30 SECONDI, DOPODICHE'
+VAI IN CUCINA, CONTROLLA SE LA TORTA E' COTTA, SE NON E' COTTA TORNA IN SALOTTO
+E TOGLI LE PULCI AL CANE PER 30 SECONDI, DOPODICHE'
+VAI IN CUCINA, CONTROLLA SE LA TORTA E' COTTA, SE NON E' COTTA TORNA IN SALOTTO
+E TOGLI LE PULCI AL CANE PER 30 SECONDI, DOPODICHE'...
+
+Come si vede un essere umano si ribellerebbe a fare per il tempo necessario
+alla cottura di una torta un vai e vieni simile in continuazione, ma il 68000
+non batte ciglio. Quando finalmente la torta e' cotta, si verifica il BEQ,
+e il ROBOT salta alla routine TOGLILADALFORNOSENZASCOTTARTIEMETTILAINTAVOLA:.
+
+Potete intuire che con delle diramazioni qua e la', anche dentro loop piu' o
+meno grandi, si puo' fare una struttura complicata che soddisfa qualsiasi tipo
+di necessita', basti pensare alla complessita' dei programmi che simulano lo
+sviluppo di una citta', che a seconda di migliaia di situazioni simula il
+comportamento dei cittadini. Tutto questo e' possibile tramite diramazioni
+alle volte connesse o cicliche tra di loro.
+
+I rami, ossia i pezzi di istruzioni eseguiti quando sono verificati i BEQ o
+i BNE che li richiamano, o semplicemente perche' sono trovate durante il
+cammino del 68000, sono chiamate ROUTINE o SUBROUTINE, cioe' pezzi di
+programma fatti di un certo numero di istruzioni che eseguono un dato compito,
+nel caso del ciclo del ROBOT, le istruzioni che fanno togliere la torta dal
+forno potrebbero essere isolate in una unica ROUTINE, che potrebbe essere
+eseguita ogni volta che e' necessario togliere la torta dal forno.
+Infatti l'utilita' delle ROUTINE e specialmente delle SUBROUTINE isolate sta
+proprio nel non dover riscrivere ogni volta che si deve togliere la torta dal
+forno la stessa serie di istruzioni, ad esempio.
+Queste istruzioni le possiamo isolare, e metterle da parte dandogli un
+nome, assegnandogli cioe' una LABEL all'inizio, e decidendone una fine con
+l'istruzione RTS. Diamo una definizione alla parola SUBROUTINE:
+-Dicesi subroutine di un blocco di istruzioni alle quali e' stato dato un nome,
+facendola iniziare con una LABEL, ossia un nome a piacere seguito dai :, e
+finire con una speciale istruzione di ritorno, l'RTS (ReTurn from Subroutine),
+e solitamente si fa eseguire con l'istruzione BSR, seguita dal nome della
+subroutine; dopo aver eseguito il BSR, il processore tornera' ad eseguire le
+istruzioni sotto il BSR che hanno fatto eseguire la subroutine stessa.
+Questo si puo' paragonare al comandante di un sommergibile, che in questo caso
+e' il programma principale, il quale dando gli ordini esegue delle subroutine,
+ad esempio immaginatevi che il comandante abbia visto al periscopio una nave
+nemica, a questo punto fara' un BSR ArmateSiluri, ossia dara' il comando di
+armare i siluri. Fino a che la subroutine che arma i siluri non sara' eseguita
+non potra' procedere. Una volta avvisato che sono stati armati, il comandante,
+ossia il programma principale, continuera' la procedura: ossia dare BSR DESTRA
+e BSR SINISTRA al reparto macchinisti fino a che la nave non si trova sulla
+traiettoria dei siluri; questo lo potremmo paragonare ad un ciclo in cui c'e'
+un CMP NAVE,SILURI seguito da un BNE SPOSTASOTTOMARINO, ossia: "la LABEL che
+contiene la posizione della nave e' uguale al contenuto della LABEL che
+contiene la posizione che raggiungeranno i siluri?", se non ancora (BNE),allora
+spostati ancora, cioe' torna alla routine che controllera' se siamo piu'
+a destra o piu' a sinistra, e di conseguenza esegui le subroutine SINISTRA
+e DESTRA. Questo ciclo e' simile a quello del ROBOT che aspettava che la torta
+fosse cotta, ma in questo caso invece di aspettare la cottura siamo noi che
+attivamente dobbiamo raggiungere la posizione esatta, come nel ciclo che
+aspetta il MOUSE siamo noi che lo dobbiamo premere per fermarlo.
+Eravamo rimasti al ciclo di allineamento: all'improvviso il comandante da il
+comando di lanciare i siluri! (BSR FUORIUNO, BSR FUORIDUE).
+BOOOOOOOOOOM... Ha funzionato... morti da tutte le parti, calzini galleggianti,
+vedove e orfani sparse per tutta la Germania (nei film muoiono sempre i
+tedeschi), un relitto in fondo al mare.
+TRANQUILLI! Era solo una simulazione al computer ben riuscita.
+
+Se siete entrati nella logica del processore, il gioco e' fatto.
+Tutto quello che vedete girare sul computer, sia un programma per le previsioni
+del tempo, una demo con cubi e palline, un gioco di azione, e' fatto di pezzi
+di programma che sono eseguiti ciclicamente o sequenzialmente, a seconda dei
+responsi delle varie condizioni TST, BTST, CMP. Dunque ogni tipo di operazione
+e di decisione, di qualunque ordine di complessita', e fatto di un certo numero
+di condizioni semplici, considerando che ogni subroutine puo' essere fatta con
+altre subroutine piu' piccole, ad esempio TOGLILATORTADALFORNO:
+
+TOGLILATORTADALFORNO:
+  BSR SpengiIlForno
+  BSR ApriIlForno
+  BSR PrendiLaTorta (tanto e' un robot e non si scotta)
+  BSR PosaLaTortaSulTavolo
+  BSR RichiudiIlForno
+  rts
+
+A sua volta le subsubroutine possono essere fatte di altre subroutine:
+
+SpengiIlForno:
+ BSR VaiSull'interruttore
+ BSR GiraloVersoSinistra
+ rts
+
+La maggior utilita' delle subroutine sta nel rendere piu' chiaro il programma,
+dividendolo in parti logiche, e nella possibilita' di farsi una raccolta di
+routines che possono essere usate per altri programmi, ad esempio se avete
+una routine che legge la posizione del joystick la potete riutilizzare in
+tutti i giochi che farete, con lievi modifiche se necessario, allo stesso modo
+la routine che suona la musica, o quella che fa camminare un ometto sul video.
+
+Questo e' per dare un'idea del continuo eseguire e girovagare a seconda
+delle condizioni vere o false del povero microprocessore.
+Quando saltellando qua e la' c'e' un errore, ad esempio salta in una
+zona con dati caricati male da disk o dove il programmatore ha fatto
+cilecca, allora appare il mitico GURU MEDITATION, o SOFTWARE FAILURE
+nella sua inquietante finestra rossa lampeggiante.
+La memoria riscrivibile (RAM) puo' essere modificata, e si divide in
+CHIP ram e FAST ram, come gia' detto.
+La differenza e' che la GRAFICA e i SUONI devono essere in CHIP RAM,
+mentre le istruzioni del processore possono essere sia in CHIP che in FAST.
+Per esempio l'Amiga 500 vecchio 1.2 o 1.3 ha 512Kb di RAM, ovvero mezzo
+mega, e se si espande si arriva ad un mega di RAM, ma gli altri 512k sono
+FAST, e' per quello che ad esempio con il DeLuxe Paint si finisce la
+memoria prima con 1MB diviso in 512k CHIP e 512k FAST rispetto ad un
+a500+ che ha invece 1MB tutto di CHIP: la memoria nel vecchio 500 avanza,
+ma e' di tipo FAST e non serve ad aprire un nuovo schermo, quindi dice
+che non c'e' memoria. Quando si programma se si prova a visualizzare
+grafica messa in FAST succede il finimondo, di tutto tranne visualizare
+quell'immagine. La memoria e' fatta a blocchi di varie misure, ad
+esempio su un a500 vecchio i primi 512k di chip ram vanno dall'indirizzo
+$00000 a $80000 e i 512k di espansione da $c00000 a $c80000: il sistema
+operativo sa dove sta la memoria e carica i programmi automaticamente
+nelle zone vuote, ad esempio caricando un programma dal WorkBench o dal
+CLI o SHELL i dati dal dischetto saranno trasferiti (grazie al kickstart)
+in memoria, a seconda che sia richiesta memoria CHIP o FAST, dopodiche' il
+processore saltera' al punto in memoria dove ha caricato, (o meglio copiato
+dal dischetto) il programma. All'utente rimane oscuro in che punto della
+memoria sia stato messo il programma e dove il microprocessore stia lavorando.
+Ho detto che la memoria chip nel vecchio 500 va da $00000 a $80000, la
+memoria infatti e' divisa in parti, come una strada con tante casine
+le quali abbiano il loro indirizzo: non a caso si chiamano indirizzi
+o locazioni di memoria (ADDRESS in inglese): all'inizio della strada
+c'e' la casa 0, che contiene un byte, la casa dopo ha l'indirizzo 1,
+che contiene un altro byte, e cosi' via. E' usato pero' il sistema di
+numerazione ESADECIMALE, cioe' in base 16. Questo non e' un problema,
+perche' da ASMONE si puo' convertire il numero in qualsiasi momento
+usando il comando "?": facendo "?$80000" si avra' un 524288 in
+decimale, che corrisponde a 1024*512, cioe' mezzo Kb o "KAPPA RAM",
+appunto 1024 bytes, moltiplicato per 512. $100000 invece e' il
+doppio, ossia un mega... provate ?$80000*2 ("*" ovvero "MOLTIPLICATO").
+I numeri esadecimali sono preceduti dal dollaro, come hai visto, i
+numero decimali non sono preceduti da nulla, quelli binari da un %.
+Queste cose sono basilari: come per le distanze esiste il metro,
+il decametro ed il chilometro, per la memoria esiste il BIT, il BYTE,
+la WORD e la LONGWORD. Il bit e' la parte piu' piccola di memoria;
+il BYTE, composto da 8 bit, e' una unita' che ha il suo indirizzo:
+il processore cioe' puo' dire: muovi(o meglio copia) il byte che e'
+nella casina in "via della memoria n10" nella casina in "via della
+memoria n16", in questo caso ha copiato gli otto bit che erano nel
+byte 10 (ovvero $A in esadecimale o HEXadecimal) nel byte 16.
+Per evitare confusioni, facciamo l'esempio inequivocabile: i bit
+possono essere a 0 o ad 1; nel byte 10 i bit erano: 00110110, nel
+byte 16 invece 11110010, dopo il MOVE.B 10,16 il byte 10 rimane
+00110110, il byte 16 diventa 00110110. il .B al MOVE significa che
+viene mosso un BYTE, cioe' la parte piu' piccola che si possa copiare.
+si puo' anche fare un MOVE.W ed un MOVE.L, ossia muovere una WORD (.w)
+o una LONGWORD (.L), che non sono altro che: 1 word = 2 bytes, una
+longword = 4 bytes, ovvero 2 word. Allora se si fa un MOVE.W 10,16,
+nel byte 16 verra' copiato il byte 10, nel byte 17 il byte 11, ossia
+viene spostato un blocco di 2 bytes. Nel caso di un MOVE.L vengono
+spostati 4 bytes, ossia: nel byte 16 il byte 10, nel 17 l'11, nel 18
+il 12, nel 19 il 13. Facciamo uno schemino:
+
+PRIMA DEL MOVE.L 10,16 ;  08/09/10/11/12/13/14/15/16/17/18/19/20
+				 C  A  N  E	   G  A  T  T  O
+
+DOPO IL MOVE.L 10,16 ;    08/09/10/11/12/13/14/15/16/17/18/19/20
+				 C  A  N  E	   C  A  N  E  O
+
+Se facciamo MOVE.B 20,14 ;08/09/10/11/12/13/14/15/16/17/18/19/20
+				 C  A  N  E  O     C  A  N  E  O
+
+Nella nostra supposizione le locazioni 08,09,14,15 erano azzerate,
+mentre le 10-13 e le 16-20 avevano un valore, qua delle lettere
+per esempio. concludiamo con un MOVE.W 8,10:
+
+			 ;08/09/10/11/12/13/14/15/16/17/18/19/20
+				       N  E  O     C  A  N  E  O
+
+Con 3 istruzioni abbiamo trasformato CANE GATTO in NEO CANEO!!!!!
+A parte gli scherzi, non proseguite a leggere fino a che non
+vi e' rimasto impresso nella memoria cerebrale il funzionamento della
+memoria sintetica!!!! fate un po di giochetti coi move.x, che vi fa bene!
+Provate ad esempio a trasformare ANTANI in TANTI NANI con vari MOVE, oppure
+SBLINDO in DOBLONI, oppure RENULOZ in ZUZZURELLONE, eccetera.
+Ricordatevi che le ISTRUZIONI del processore devono essere ad indirizzi
+pari, tipo 2,4,6... ossia allineati a WORD, oppure va tutto in GURU.
+Per togliere dubbi, nella memoria ci sono una serie di valori uno dietro
+l'altro, che possono essere istruzioni del 68000, o dati come ad esempio
+le SINUSTAB prima citate, figure, suoni, scritte da visualizzare...
+le istruzioni in memoria non sono nella forma MOVE.B 10,16, quella
+e' una versione DISASSEMBLATA, in memoria ad esempio quella istruzione occupa
+10 bytes, ed e': $13,$F9,$00,$00,$00,$0A,$00,$00,$00,$10, in cui $13f9
+significa in grandi linee MOVE.B, $0000a e' 10 in esadecimale e $10 e' 16
+in esadecimale... allo stesso modo ogni istruzione ha i suoi bytes, ad
+esempio l'istruzione NOP, ossia no operation, che non fa nulla, in memoria
+e' $4e71. Anticipo che oltre che operare sulla memoria il processore ha
+a disposizione dei registri, denominati registri dati e registri indirizzi,
+che sono 16 e lunghi una longword ciascuno, chiamati a0,a1,a2,a3,a4,a5,a6,a7
+gli Address reg, d0,d1,d2,d3,d4,d5,d6,d7 i data reg; sono dentro il processore
+e quindi sono molto piu' veloci le operazioni tra 2 registri di quelle tra 2
+indirizzi di memoria, ad esempio move.l d0,d2 sara' piu' veloce di
+move.l $100,$200; si preferisce quindi fare operazioni mettendo i numeri
+nei registri piuttosto che nella memoria, se possibile.
+
+la ROM come gia' detto non si puo' scrivere, cioe' un MOVE che scrive
+nella ROM non ha effetto: un move su $FC0000 o su $f80000 non serve a niente.
+Si possono solo eseguire le ROUTINES contenute nel ROM. Ma ESSENDO IL KICK
+DIVERSO IN OGNI VERSIONE, MAI SI DEVE SALTARE AL KICK DIRETTAMENTE.
+Il sistema operativo e' fatto in modo che le routines, ossia i singoli
+programmi presenti nel kickstart, possano essere chiamate nello stesso
+modo qualunque sia il kick e ovunque sia collocato in memoria: questo
+viene fatto tramite dei JSR, ossia dei JUMP TO SUBROUTINE (Salta ad
+un indirizzo, dopodiche' ritorna e continua da sotto il JSR), che sono
+fissi partendo pero' dall'indirizzo presente nell' indirizzo 4, in cui
+e' sempre presente l'indirizzo da cui regolarsi per fare i giusti JSR
+per eseguire le routines del kickstart. I programmi per aprire le
+finestre del workbench o per stampare caratteri, per leggere o scrivere
+un file su disco devono chiamare la routine presente nel CHIP del
+kickstart ROM ogni volta, passandogli ad esempio il nome del file da
+caricare o le dimensioni della finestra da aprire; invece quando un
+gioco o una demo "SALTA" il sistema operativo non vengono fatte
+chiamate al kickstart: ad esempio il noto XCOPY apre un suo
+schermo, ed appare evidente che toglie di mezzo il multitasking e
+non ha le finestrine ed i menu' da tasto destro come i programmi
+da sistema operativo. Allo stesso modo un gioco come quelli che ho
+menzionato prima, come SENSIBLE SOCCER, funzionerebbe anche se dopo il
+boot(la partenza) si rimuovesse il chip del kickstart, in quanto non vengono
+chiamate routines per aprire finestre o caricare file: le cose che appaiono a
+video sono controllate una per una e i dati dal disco sono caricati non come
+files DOS, ma come tracce lette direttamente spostando le testine del
+DRIVE dando corrente o meno ai pin del cavo. Appare chiara questa
+differenza? Tra i programmi o giochi che USANO il sistema operativo,
+ossia richiamano continuamente routines nella ROM e mantengono il
+multitasking e le finestre, e gli altri prog. che non aprono finestre
+o le aprono in maniera diversa dal WorkBench, e non possono essere eseguiti
+insieme al Deluxe Paint, scambiando la finestra o spostandola in basso??
+Insomma la ROM si preoccupa di dialogare con l'hardware per noi se glielo
+chiediamo, e fa un certo numero di cose prestabilite, mentre se decidiamo
+di dialogare NOI con l'hardware, possiamo fare tutto il possibile, sempre
+che ne siamo capaci!!!
+
+Ordunque ci occuperemo di fare codice senza usare la ROM. Ma allora useremo
+solo il microprocessore? e come si fa a visualizzare un immagine o suonare
+una musica? con dei MOVE????
+Ora entrano in gioco i CHIP CUSTOM!!!
+questi CHIP si chiamano PAULA, AGNUS e DENISE, inoltre ci sono altri 2 CHIP
+detti CIAA E CIAB. Questi furboni sono quelli che fanno suonare l'amiga
+e che gli fanno visualizzare tutti quei colori sullo schermo.
+La maggior parte dei registri in questione si trovano alla locazione
+$dff000 fino a $dff1fe, altri riguardanti le porte seriali, parallele, e
+dei disk drives si trovano in zona $bfexxx o $bfdxxx.
+Una volta imparate tutte le istruzioni del 68000 si possono costruire programmi
+grossi come case, ma se si sposta memoria qua e la non si visualizza ne' si
+suona nulla! col processore bisogna pilotare questi chip; uno principale e'
+il BLITTER, che si occupa di disegnare le linee, copiare pezzi di memoria
+come scroll o ometti in giro per lo schermo, riempire aree (i solidi 3d sono
+disegnati e riempiti con il blitter; il processore si occupa di calcolare le
+coordinate delle linee che poi il blitter disegna).
+Quello che pero' visualizza il tutto e che determina i colori e' il COPPER:
+per fare un esempio il $dff180 corrisponde al colore 0 ed il $dff182 al
+colore 1, mentre nel $dff006 c'e' la linea dove il pennello elettronico e'
+arrivato nel disegnare lo schermo, che viene disegnato 50 volte al secondo:
+questi registri infatti sono a SOLA lettura o a SOLA scrittura, ad esempio
+nel $dff180 si puo' mettere un valore, ma non si puo' leggere che valore c'e',
+lo stesso vale per il $dff006, sul quale non si puo' scrivere; per cambiare
+la posizione al pennello elettronico esiste comunque un apposito registro,
+cosi' per molti altri. Nei registri $bfexxx si puo' controllare il disk
+drive o le varie porte, tra cui quella del mouse: ad esempio al bit 6
+dell'indirizzo $bfe001 corrisponde lo stato del bottone sinistro del mouse,
+se questo e' premuto o no, e si puo' controllare col processore ed aspettare
+che sia premuto prima di uscire. Ed e' questo il primo esempio di
+programmazione che puoi analizzare caricando LEZIONE1a.s, il primo sorgente
+del corso, che comprende insieme un ciclo con il 68000, l'utilizzo di
+un registro $dffxxx e di uno $bfexxx. (caricatelo in un altro buffer di
+testo come spiegato sotto).
+
+Un breve accenno su come usare l'assemblatore, in questo caso ASMONE:
+All'inizio si deve selezionare se allocare memoria CHIP o FAST, e' bene
+selezionare quella chip per i sorgenti del corso, a seconda di quanta ne
+avete, selezionate il numero di Kb, almeno 250.
+Per selezionare una directory o un drive usate il comando "v", per esempio
+per andare nella directory delle lezioni fate un "V df0:LEZIONI", per andare
+nella directory dei sorgenti fate un bel "V df0:SORGENTI", poi per leggere
+il sorgente o la lezione usate "R", e selezionatelo con la finestrella.
+Si puo' scambiare con ESC tra la funzione di editor e la linea di comandi;
+cioe' premete ESC e potete scorrere o modificare il testo, ripremete ESC
+e tornate alla linea di comandi dove potete ad esempio ASSEMBLARE il
+listato con "A", dopodiche' per farlo eseguire dovete premere "J". (JSR!!)
+Potete anche caricare simultaneamente 10 testi, siano essi sorgenti o lezioni,
+perche', quando siete in modo EDIT, quando cioe' potete scorrere il testo
+con il cursore e potete cambiarlo, se premete F2 scambierete listato, e
+andrete al secondo, che in questo caso sara' vuoto: se premete nuovamente F1
+ritornate al testo caricato prima: in questo modo potete, ad esempio, tenere
+nel buffer 1 (ossia listato 1 richiamabile con F1) la Lezione1.TXT, mentre
+nel buffer 2, selezionabile con F2, potete caricare il listato inerente alla
+lezione1, ossia Lezione1a.s. In seguito potete mettere lezione1 nel buffer 1,
+lezione2 nel buffer2, nel buffer 3,4,5 dei listati della lezione2, eccetera,
+quindi potrete consultare la lezione, poi premendo un F4 o un F5 verificare
+subito l'esecuzione di un listato, o ritornare a vedere una cosa della lezione1
+che non ricordate, eccetera.
+NOTA: per scorrere di pagina in pagina usate i cursori (frecce) piu' lo SHIFT,
+ossia, per chi non aveva il C64, il tasto grande sopra ALT con la freccia.
+Vi spiego che succede quando fate "A": il listato (o sorgente) e' in formato
+testo normalissimo, ed e' fatto di parole chiave che sono i comandi o
+altri simboli che conosce l'assemblatore... per segnare un gruppo di istruzioni
+o una "variabile", o l'inizio di una tabella, o comunque avere un riferimento
+di un preciso punto del listato, si fanno delle ETICHETTE o LABEL, che non
+devono avere spazi dall'inizio del bordo, e devono finire con i : (DUE PUNTI).
+Il nome della label e' a scelta, ma non si deve dare un nome che sia uguale
+ad un comando 68000!!! esempio:
+
+WAITMOUSE:			; la label
+	btst	#6,$bfe001	; tasto sinistro premuto?
+	bne.s	WAITMOUSE	; se no torna a WAITMOUSE (ripeti il btst)
+	rts			; Esci
+
+Vi ricordo che i comandi devono avere una spaziatura, in questo caso ho
+usato il TAB (Il tasto sopra CTRL e CAPS LOCK), che fa 8 spazi con un colpo
+solo... Notate che non vanno messi i : (due punti) finali al nome della
+label (o etichetta) quando viene richiamata, ma solo a se stessa.
+Dunque, una volta editato il sorgente, va ASSEMBLATO con "A"; questa
+operazione fa leggere all'ASMONE il testo, e lo trasforma in codice, cioe'
+nei bytes che saranno letti dal 68000 ed eseguiti come istruzioni.
+Una volta assemblato, il suddetto codice e' in un punto della memoria che
+si puo' vedere con "=R", e con il comando "J" il processore salta a quel punto
+della memoria ed esegue il nostro programma. Se l'ASMONE trova un errore
+nel listato non assembla tutto fino a che non viene corretto l'errore.
+I sorgenti del corso funzionano anche con altri assemblatori come DEVPAC 3
+e MASTERSEKA, con tutti i kickstart e con tutti gli Amiga, compresi quelli
+AGA come il 1200 o il 4000.
+
+Se avete verificato il funzionamento di Lezione1a.s, caricate in un altro
+buffer di testo (quello F3, ad esempio) il file LEZIONE2.TXT con "R".
+
+Se mancasse memoria quando scambiate buffer, significa che avete selezionato
+troppa memoria all'inizio (al messaggio ALLOCATE), e non ne e' rimasta per la
+RAM DISK. La prossima volta selezionatene meno.
+

@@ -1,0 +1,87 @@
+
+ Helper
+ ~~~~~~
+ Time to reminese. I remember a time, not so long ago, when I was forever
+having to refer to the book '68OOO Assembly Language Programming' published
+by McGraw-Hill to get the majority of my programs to work.
+
+ Because of the effort involved in locating first the book, the the relevant
+section and finaly the topic I was interested in I decided to write a Helper
+program. The intention was to allow quick access to information on 68OOO
+instructions.
+
+ My futile attempt was vastly improved on by Steve Marshall. I trashed my
+own version for Steves and must admit that for some time I had this program
+running while programming.
+
+ Well, as most philosophers will tell you, history repeats itself. In the
+case of Helper, someone else saw the need for a program that would give
+information on the 68OOO instruction set. Treebeard ( Rick, just for you
+Mike!!! ), in the true programmers vain, resurected the idea and developed
+his own version. The end result was the same, but the approach was his own.
+
+ Almost two years on, I found myself in need of a similar program. The 68OOO
+instruction set and I are old friends now ( excepting PC relative code and
+the use of stack frames ). However the same cannot be said of the system's
+libraries. I know what a majority of the routines can do, but I can never
+remember entry requirements - ie. what value in which register. Yet again I
+find myself constantly refering to manuals, a time consuming task I could
+do without. Enter LibHelp, a utility to display entry parameters for most
+system library routines.
+
+ My version of this program was very basic, intended to meed my demands
+rather than those of a third party. Dave Edwards saw the need for a more
+versatile version of this program and released a program that read it's
+data from disk. This allowed easy updating/alteration of the data displayed
+by the program.
+
+ Not being content with either 68OOO Helper or LibHelp, I decided to write
+a program to display information on system structures. How many times have
+you stared at the monitor and tried to guess the offset label and size of
+the Image structures UserData field. Time for another util!
+
+ Being the fool I am, I wrote one. Only after completing the program did I
+realise that a general purpose version that could load data on ANY subject
+would be more useful.
+
+ That is what this utility is all about! Run it from the CLI, passing the
+name of a text file. This file will be loaded and ready for access.
+
+ The program accesses information by locating asterixes in the file, though
+you could change this in the source if you so wish! When a match is found for
+a string entered by the user, all lines of text to the next asterix are
+displayed! Easy or what.
+
+ What I need now are data files to go with the damn thing! If you would be
+so kind as to supply a couple, I will update the program in the following
+way:
+
+	1/ Add a file requester
+	2/ Add some respectable gadget imagery
+	3/ Add a find next/previous function
+	4/ Add better mouse control
+	5/ Possibly a print option!
+
+ At present the only data file available is struct.hlp in this directory.
+
+ Example Address Book File
+ -------------------------
+ 
+ *name 1
+ line 1 of info
+ line 2 of info
+ line 3 of info
+ line 4 of info
+ *name2
+ line 1 of info
+ *name3
+ line 1
+ line 2
+ line 3
+ line 4
+ line 5
+ 
+ Get the idea, preceed all reference words with an asterix and the program
+will be able to locate the information that follows! Any number of lines can
+follow a reference word.
+

@@ -1,0 +1,80 @@
+
+    DASM    V2.12
+
+    (c)Copyright 1988 Matthew Dillon, All Rights Reserved.
+       Freely Distributable (for non-profit) ONLY.  No redistribution
+       of any modified text files or redistribution of a subset of the
+       source is allowed.
+
+       Circumvention of said terms requires the permission of the Author (me)
+       via US Mail.
+
+       Matthew Dillon
+       891 Regal Rd.
+       Berkeley, Ca. 94708
+
+
+COMPILATION
+
+    The source code assumes that integers are LONG WORDS.  All expression
+    computation is carried out with 32 bit ints.  Additionaly, the
+    correct implementation of STDIO functions is assumed (no translation).
+
+    This code will compile with little or no modification on Amiga and UNIX
+    systems.
+
+CONVERSION TO IBM:
+
+    Should be relatively easy.	Most of the code will work if int=16 bits.
+
+FEATURES
+
+    -relatively fast
+    -processor selection (use same assembler for many processors)
+    -multi-pass (more than two passes if required)
+    -conditional assembly
+    -local labels (VERY local labels)
+    -macro capability (no stacking limit)
+    -symbolic expression capability
+    -addressing mode overides
+    -arbitrary number of named segments
+    -many pseudo-ops for repeat loops, data generation, etc....
+    -automatic checksumming accessed via the '...' symbol.
+
+
+PROCESSORS
+
+      --------------- CURRENTLY SUPPORTED MICROPROCESSORS ---------------
+
+
+6502:	    ORDER LSB,MSB   A.b    X.b	  Y.b	    RelAddr:   .+ilen+offset
+68705:	    ORDER MSB,LSB   A.b    X.b		    RelAddr:   .+ilen+offset
+6803/HD6303:ORDER MSB,LSB   A.b    B.b	  X.w	    RelAddr:   .+ilen+offset
+6811:	    ORDER MSB,LSB   A.b    B.b	  X.w  Y.w  RelAddr:   .+ilen+offset
+
+
+ADDRESSING MODES		6502	68705	6803	6811
+BYTES						HD6303
+
+ 2  implied			x	x	x	x
+ 2  immediate.8     #byte	x	x	x	x
+ 3  immediate.16    #word			x	x
+ 2  byteaddr	    byte	x	x	x	x
+ 2  byteaddr,x	    byte,x	x	x	x	x
+ 2  byteaddr,y	    byte,y	x			x
+ 3  wordaddr	    word	x	x	x	x
+ 3  wordaddr,x	    word,x	x	x
+ 3  wordaddr,y	    word,y	x
+ 2  relative	    byte	x	x	x	x
+ 2  ind.byte.x	    (byte,x)    x
+ 2  ind.byte.y	    (byte),y    x
+ 3  ind.word	    (word)      x
+ 1  0,x 	    [0],x		x
+ 2  bitmod	    #no,badr		x		    baseinst + 2*bitno
+ 3  bitbramod	    #no,badr,rel	x		    baseinst + 2*bitno
+
+NOTE:	HD6303 instruction extensions over the 6803 are:
+	    AIM OIM EIM TIM XGDX SLP
+
+I believe the 6811 is a superset of the 6803.
+

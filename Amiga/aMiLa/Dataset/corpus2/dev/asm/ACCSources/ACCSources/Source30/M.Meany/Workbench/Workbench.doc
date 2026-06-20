@@ -1,0 +1,441 @@
+ 
+RKM Libraries & Devices, page 590.
+
+			Workbench Startup Message
+			~~~~~~~~~~~~~~~~~~~~~~~~~
+					by M.Meany
+
+ When a program is started from the CLI, a pointer is passed in register a0
+to it's parameter list. It is then up to the program to parse this list of
+parameters. This does not present to many problems.
+
+ The Workbench presents more of a challenge as it can launch a program for
+more than one reason. A program will be launched if it's icon is double
+clicked, a project icon that has the program as a default tool is double
+clicked, or if multiple selection is preformed and the programs icon is
+double clicked.
+
+ Icons In General
+ ~~~~~~~~~~~~~~~~
+ Before going any further it is necessary to distinguish between a 'Tool'
+icon and a 'Project' icon. A 'Tool' is an application program, a 'Project'
+is a data file saved by an application program. So Devpac will have a
+'Tool' icon and source files it creates will have a 'Project' icon. 
+
+ This is just the beginning! Each Project Icon can contain further
+information about the file it represents. For example an animation player
+may be capable of replaying animations at various speeds, the speed being
+passed as a parameter in the Project Icon when started from the Workbench.
+
+ The user may decide to launch several projects from the same tool by using
+multiple selection, ie pressing a Shift key while selecting a number of
+project icons. The tool must be able to handle all these projects and take
+into account any parameters, refered to as Tool Types, defined in each
+icon.
+
+ The Workbench Startup Message
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ From now on a program will be referred to as a Tool for consistency. The
+discussion does not attempt to cover CLI launched programs, you can safely
+assume that none of the following would apply!
+
+ When Workbench launches a Tool, it creates a Process structure for it and
+passes all enviromental information in a single startup Message. The Message
+is posted to the process port of the Tool and should be removed as quickly
+as possible by the Tool, always before opening DOS library. Failure to
+remove the Message, by calling GetMsg(), before opening DOS will probably
+lead to a visit from the Guru. The Tool should not reply to the Message
+until it is ready to exit, replying will signal that Workbench should
+remove the Process and all assosiated memory.
+
+ A Tool can determine if it was launched from the CLI or Workbench by
+examaning the pr_CLI field of it's Process structure. If this field is
+NULL, the Tool was launched by the Workbench and suitable steps should be
+taken.
+
+ When replying to a Workbench message it is necessary to first call
+Forbid(). Failure to do so will probably result in a visit from the Guru.
+
+ The startup code 'easystart.i' supplied with Devpac takes care of the
+Workbench message for the programmer, removing it at the start of a Tool
+and replying it at the end. There is no need to process the message
+inbetween, but this would be a sad waste. The following discussion assumes
+that 'easystart.i' is to be included at the start of every program and
+relies on the fact that the pointer to the startup message is stored at the
+label 'returnMsg' by the startup code.
+
+ In order to access the field in the startup message, you must include the
+header file include:workbench/startup.i'. The startup message structure is
+defined in this file as follows:
+
+ STRUCTURE WBStartup,0
+	STRUCT	sm_Message,MN_SIZE	; a standard message structure
+	APTR	sm_Process		; the process descriptor for you
+	BPTR	sm_Segment		; a descriptor for your code
+	LONG	sm_NumArgs		; the number of elements in ArgList
+	APTR	sm_ToolWindow		; description of window
+	APTR	sm_ArgList		; the arguments themselves
+	LABEL	sm_SIZEOF
+
+ The fields of most interest are sm_NumArgs and sm_ArgList. The field
+sm_NumArgs contains the number of arguments passed by Workbench to the
+Tool. The field sm_ArgList contains a pointer to the first argument. Each
+argument is described by a WBArg structure and these structures are stored
+sequentially in memory starting at the address contained in sm_ArgList. The
+WBArg structure is shown below.
+
+ STRUCTURE WBArg,0
+	BPTR	wa_Lock			; a lock descriptor
+	APTR	wa_Name			; a string relative to that lock
+	LABEL	wa_SIZEOF
+
+ The first WBArg is always the name of the Tool.
+
+ To step through the argument list start by loading an address register
+with the address stored in sm_ArgList. To progress through the list
+repeatedly add the size of the WBArg structure to this address register.
+The first example, WB_Eg1, demonstrates this. You should try launching
+this Tool by the three methods described above, the results are quite
+interesting!
+
+ 1. If a directory is passed to a tool, the wa_Name field is NULL, but the
+    wa_Lock field is still valid.
+ 2. If a project is passed to a tool both wa_Name and wa_Lock are valid.
+ 3. If a tool is passed to a tool the result is unpredictable, either or
+    both tools may be launched.
+ 
+ The following fragment of source demonstrates how to step through the
+argument list. It calls an undocumented subroutine, HandleArg, with each
+argument. Assume that the fragment is only reached if the program is
+called from the WorkBench and the pointer to the Workbench startup message
+is stored in returnMsg.
+
+		move.l		returnMsg,(a4)		a4->Message
+		move.l		sm_NumArgs(a4),d4	d4=arc counter
+		move.l		sm_ArgList(a4),a4	a4->argument list
+
+ArgLoop		move.l		a4,a0			a0->WBArg
+		bsr		HandleArg		deal with arg
+		addq.l		wa_SIZEOF,a4		a4->next WBArg
+		subq.l		#1,d4			dec counter
+		bne.s		ArgLoop			loop while not zero
+
+
+ Some important points to note about the WBArg list:
+
+	1. If WBArg is a directory, the name will be NULL. To discover the
+	   name of the directory it is necessary to call Examine(), passing
+	   the lock supplied in the wa_Lock filed.
+	2. If WBArg is a Project or Tool, the name will be the same as that
+	   appearing under its icon. Tools passed to the default Tool are
+	   treated as Projects.
+	3. The wa_Lock is always a lock on a directory or disk. A call to
+	   CurrentDir() will allow the Tool to move into the directory
+	   containing the project.
+	4. Never release a WBArg Lock, your machine will freeze if you do
+	   this.
+	5. The default tool will appear as the first WBArg.
+	6. If multiple projects are selected, the default tool of the first
+	   project is invoked.
+
+ ToolTypes
+ ~~~~~~~~~
+ Each Project icon can have Tool Types specified in it. These should be
+considered as parameters to pass to the default tool. Tool Types are stored
+as strings with the following format
+
+	name=<value>|<value>| .... |<value>
+
+ eg.	TAB=8
+
+ The example above would signal to the Tool that a tab value of eight
+should be used. It also gives the user an oportunity to alter this value.
+
+NOTE: It is up to the Tool to investigate the Tool Types. If the Tool
+ignores the Tool Types, no ill effects will result.
+
+NOTE: A Drawer icon can also have Tool Types specified. This case is not
+covered in the following example, but should be simple enough to handle
+from the information given.
+
+ The Tool Types are stored as an array in an Icon structure so to reference
+them, the Icon needs to be read into memory. The icon.library contains
+functions to load, free icons and also to interogate an icons Tool Types.
+
+ To start with, consider just the routines GetDiskObject() and
+FreeDiskObject():
+
+ DiskObject = GetDiskObject( name )
+    d0                        a0
+
+ FreeDiskObject( DiskObject )
+                     a0
+
+ The DiskObject structure contains a pointer to the ToolTypes array, which
+is a NULL terminated list of string pointers. By stepping through this list
+it is possible to display all the ToolTypes defined in a Project icon. The
+program TT_Eg1.s demonstrates this process in action. It also determines
+the type of WArg and prints some information about it, calling Examine() to
+determine the name of directories and disks. From the Workbench, use
+extended selection to pass loads of icons ( Projects, Tools, Directories
+and Disks ) to this example and look at the result.
+
+ The fragment of code required to step through the ToolTypes array of a
+WBArg is shown below. It assumes icon.library is open and that a4 points to
+the WBArg. No attempt has been made to preserve registers, or to actually
+check what Tool Types are passed.
+
+ 		*****************************
+
+; Step through ToolTypes of a Project icon
+
+; Start by switching to the Projects directory
+
+ParseArg	move.l		wa_Lock(a4),d1		lock
+		CALLDOS		CurrentDir		switch directories
+		move.l		d0,d7			save old lock
+
+; Read in Icon structure ( DiskObject )
+
+		move.l		wa_Name(a4),a0		a0->Project name
+		CALLICON	GetDiskObject		read structure
+		move.l		d0,d6			save pointer
+		beq		Error			exit if not loaded
+
+; Step through ToolTypes array
+
+		move.l		d6,a5			a5->DiskObject
+		move.l		do_ToolTypes(a5),a5	a5->ToolTypes array
+
+Loop		move.l		(a5)+,d0		d0=addr of next entry
+		beq		DoneTools		exit when NULL
+		move.l		d0,a0			a0->Tool Type
+		bsr		HandleTypes		do whatever
+		bra.s		Loop			and loop back
+
+; End of array has been reached so free Disk Object structure
+
+DoneTools	move.l		d6,a0			a0->DiskObject
+		CALLICON	FreeDiskObject		free it
+
+; And revert to original directory
+
+Error		move.l		d7,d1			d1=Lock
+		CALLDOS		CurrentDir		revert
+
+		rts
+
+ 		*****************************
+
+ Parsing Tool Types
+ ~~~~~~~~~~~~~~~~~~
+ When writing a Tool, you may wish to test for certain ToolTypes being
+passed by a Project. There is no need to write complex search routines as
+icon.library already contains them. The two functions FindToolType() and
+MatchToolValue() can be used to determine if a specified Tool Type is
+declared and if it contains a specified value.
+
+typeString = FindToolType( ToolTypeArray, typeName )
+   d0                           a0           a1
+
+BOOL = MatchToolValue( typeString, value )
+ d0			  a0         a1
+
+ For example, you are developing a text editor that can save files in a
+packed format to save on disk space, or as ASCII for compatability with
+other packages. When a file is saved an icon is created for it ( more on
+this shortly ) and a ToolType called FORMAT is specified. This type can be
+set to either PACKED or ASCII, so the program will know how to load the
+file back in the future.  If such an icon were examined using the Workbench
+'Information' function, the following ToolType might be seen:
+
+FORMAT=ASCII
+
+This would inform the text editor that the file is in ASCII format. Further
+more, if the ToolType FORMAT did not exsist, the editor could always assume
+a default format, ASCII, to allow text to be imported from other packages.
+
+ To search for a particular ToolType, call FindToolType(). The following
+fragment assumes that a pointer to the ToolTypes array is passed to it in
+register a5:
+
+ASCII_FORMAT	equ		0
+PACKED_FORMAT	equ		1
+
+		move.l		#ASCII_FORMAT,d7	set default format
+
+		move.l		a5,a0
+		lea		ftype,a1
+		CALLICON	FindToolType
+		move.l		d0,d0			found ToolType
+		beq		Exit			nope, exit!
+
+		move.l		d0,a0			a0->typeString
+		lea		fvalue,a1		a1->value
+		CALLSYS		MatchToolValue		specified?
+		tst.l		d0			nope, exit!
+		beq		Exit
+
+		move.l		#PACKED_FORMAT,d7
+
+Exit		move.l		d7,d0
+		rts
+
+ Of course, the ToolType could have contained more information, such as the
+packing ratio ( PACK_QUICK or PACK_BEST ) to determine which unpack algorithm
+to use. This would have complicated the above example though as it would
+have required further calls to MatchToolValue().
+
+ Creating Icons
+ ~~~~~~~~~~~~~~
+ To create an icon for a file, a DiskObject structure must be created. A
+full list of the structure is given below and as you can see, a complete
+intuition Gadget structure is contained within it. The first two fields of
+the DiskObject structure are used to identify an Icon, the do_Magic field
+should always be set to the value WB_DISKMAGIC and the do_Version to
+WB_DISKVERSION.
+
+ STRUCTURE DiskObject,0
+    UWORD	do_Magic		; a magic num at the start of the file
+    UWORD	do_Version		; a version number, so we can change it
+    STRUCT	do_Gadget,gg_SIZEOF	; a copy of in core gadget
+    UBYTE	do_Type
+    UBYTE	do_PAD_BYTE		; Pad it out to the next word boundry
+    APTR	do_DefaultTool
+    APTR	do_ToolTypes
+    LONG	do_CurrentX
+    LONG	do_CurrentY
+    APTR	do_DrawerData
+    APTR	do_ToolWindow		; only applies to tools
+    LONG	do_StackSize		; only applies to tools
+    LABEL	do_SIZEOF
+
+ Below is a list of some of the flags assossiated with the above structure:
+
+WB_DISKMAGIC		EQU	$e310	; a magic number
+WB_DISKVERSION		EQU	1	; our current version number
+WB_DISKREVISION		EQU	1	; out current revision number
+WB_DISKREVISIONMASK	EQU	$ff
+
+do_Magic	This field should always contain the value WB_DISKMAGIC.
+
+do_Version	This field should be set to WB_DISKVERSION. It will be
+		updated by icon.library, so errenous values should not be
+		used.
+
+do_Gadget	Specifies the image to use for this icon. See below.
+
+do_Type		determines what type of file the icon is attached to. The
+		following are all valid entries:
+
+		WBDISK, WBDRAWER, WBTOOL, WBPROJECT, WBGARBAGE, WBDEVICE
+
+do_PAD_BYTE	keeps the structure even aligned.
+
+do_DefaultTool	This field should only be set for Project and Disk icons.
+		It should contain a pointer to the name of the default tool
+		to be called when the icon is selected. The name of the
+		default tool should be NULL terminated.
+
+do_ToolTypes	Can contain a pointer to a ToolTypes array, covered above.
+
+do_CurrentX	The icons current position in a drawer. If set to the value
+		NO_ICON_POSITION, Workbench will display the icon wherever
+		there is room.
+
+do_CurrentY	The icons current position in a drawer. If set to the value
+		NO_ICON_POSITION, Workbench will display the icon wherever
+		there is room.
+
+do_DrawerData	If the icon is for a drawer, this field should contain a 
+		pointer to a DrawerData structure shown below, though this
+		is not covered in this discussion:
+
+		dd_NewWindow		A NewWindow Structure
+		dd_CurrentX		X origin of window (LONG)
+		dd_CurrentY		Y origin of window (LONG)
+
+do_ToolWindow	Reserved for future use. Set to NULL.
+
+do_StackSize	If this icon launches a Tool, this is the size of stack the
+		Tool will be given. If set to NULL, Workbench will use a 
+		default value, currently 4K.
+
+ NOTE: If a tool is launched by a Project via the DefaultTool field, then
+the information contained in the Project icon is used, ie. The Stack Size
+Specified In The do_StackSize of the Project.
+
+ The gadget structure contained in the DiskObject structure should be
+initialised as follows:
+
+gg_NextGadget	set this field to NULL.
+
+gg_LeftEdge	set this field to NULL.
+
+gg_TopEdge	set this field to NULL.
+
+gg_Width	Width of Icons active region.
+
+gg_Height	Height of Icons active region.
+
+gg_Flags	the gadget MUST be of type GADGIMAGE. At present three
+		highlight modes are supported: GADGHCOMP, GADGHIMAGE and
+		GADGBACKFILL. All other flag bits should be zero!
+
+gg_Activation	should have only RELVERIFY and GADGIMMEDIATE set.
+
+gg_Type		gadget type must be BOOLGADGET
+
+gg_GadgetRender	should contain a pointer to a suitable Image structure.
+
+gg_SelectRender	set to an alternate Image structure if GADGHIMAGE
+		activation flag is used.
+
+
+ The Image structure used for Icons should be initialised as follows:
+
+ig_LeftEdge	set to NULL
+
+ig_TopEdge	set to NULL
+
+ig_Width	set to same width as gadget
+
+ig_Height	set to 1 pixel less than gadget to allow a blank line
+		between Icons image and it's name.
+
+ig_Depth	MUST BE 2
+
+ig_ImageData	pointer to actual raw binary data
+
+ig_PlanePick	MUST BE 3
+
+ig_PlaneOnOff	MUST BE 0
+
+ig_NextImage	should be NULL
+
+ Set up these three structures for the icon, call PutDiskObject and thats
+all there is too it. Phew! Call PutDiskObject as shown below:
+
+ Status =  PutDiskObject( Name, DiskObject )
+   d0                      a0       a1
+
+Name		a pointer to the file name
+DiskObject	a pointer to an initialised DiskObject structure
+Status		non-NULL if call was successfull
+
+ WB_Eg3.s is a complete example of creating a file and giving it an icon. A
+file is created in ram: and an icon attached to it. If you run the program,
+you can then examine he icon using Workbenches 'Info' option.
+
+ There is one last program presented with this tutorial, DumpIconImage.s.
+This utility will save an icon as source code, ready for you to insert into
+your own programs. This way you can design an icon using one of the many
+Icon Editor around and then generate source for it. You will then be able
+to write programs that can attach this icon to any project files they save.
+
+ Thats about it on Icons and Workbench. Any questions?
+
+							Mark.
+
+
+

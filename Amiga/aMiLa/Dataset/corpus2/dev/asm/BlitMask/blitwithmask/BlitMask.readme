@@ -1,0 +1,39 @@
+Short:    BlitWithMask - asm source on how! v.1.11
+Uploader: kennecni@idgOnline.no (Kenneth C. Nilsen)
+Author:   kennecni@idgOnline.no (Kenneth C. Nilsen)
+Type:     dev/asm 
+Requires: OS 3.x 
+
+
+Copyright (C) 1996 by Digital Surface.
+All rights reserved.
+
+
+This source is public domain!
+
+
+This package contains some sources and a demo program.
+
+The function is build up like a librray function and should be called as one.
+Features of DrawImageTrans() (the new function):
+
+     - Compatible with intuition.library/DrawImage() (could be patched ;-)
+     - Imagedata can be in FAST_MEM
+     - Should work on any system and any graphics card.
+
+Program has not been tested with graphics card. Please report bugs. You are
+free to optimize and edit the source. It would be nice to receive changes
+though.
+
+If you use this source in your programs, please state original author of this
+source somewhere.. well, it would be nice, but it's not required.
+
+SUGGESTIONS:
+
+You could make this routine sensitive to current DrawMode. F.ex: if drawmode
+is JAM0 the image will be transperant, in other cases the function will act
+like normal DrawImage() just that you keep the feature with imagedata in
+FAST_MEM. I'll perhaps implement this feature myself in future.
+
+
+Enjoy!

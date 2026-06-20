@@ -1,0 +1,13 @@
+Short: IFF-ILBM file processor
+Uploader: Mario Speranda <msper@bigfoot.com>
+Author: Mario Speranda <msper@bigfoot.com>
+Type: dev/c
+
+This program converts iff/ilbm files to raw files.
+It`s freeware. Simply use it like this:
+ ProcessILBM <filename> <P/L>
+This should create 3 files: filename.BMHD, filename.CMAP & filename.BODY.
+The body will contain raw uncompressed data. You can specify `P` to
+write plane after plane, or `L` to write line after line.
+I find it very helpfull when writing programes in C, to use files
+created this way, rather than using ILBM files.

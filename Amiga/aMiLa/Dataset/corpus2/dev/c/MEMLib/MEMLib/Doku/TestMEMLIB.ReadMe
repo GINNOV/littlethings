@@ -1,0 +1,16 @@
+The testprograms are compiled for 68000 to run on every
+amiga system.
+Source will be found in developer/source.
+The programs are typical unixprograms and work like the
+unixrule "no messages are good messages". If no output
+will be produced, all things seems to be ok!
+
+Deutsch:
+--------
+Die Testprogramme sind für 68000 übersetztund sollten auf
+jedem Amiga laufen.
+Der Quellcode liegt in developer/source.
+Bei den Programmen handelt es sich um typische Unixprogramme
+und diese arbeiten nach der Unixregel: "Keine Nachrichten
+sind gute Nachrichten". Wenn nichts angezeigt wird heißt
+daß das keine Fehler entdeckt wurden.

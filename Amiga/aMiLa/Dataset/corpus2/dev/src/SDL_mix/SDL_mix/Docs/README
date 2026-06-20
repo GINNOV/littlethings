@@ -1,0 +1,28 @@
+Mix: a simple SDL_mixer based test application
+Copyright (C) 2004 Angelo "Encelo" Theodorou
+
+Info
+----
+Just a simple audio mixer developed to test the possibilities of SDL_mixer library and its use inside the game 
+Mars: Land of No Mercy (http://mars.sourceforge.net).
+
+In order to load and listen to music in the program, just copy a file called music.ogg into the program directory.
+
+Keys
+----
+Escape or Q - Quit the program
+Arrow Up and Down - Change the Volume
+Arrow Left and Right - Change Panning
+C - Panning Reset to Centre
+F - Fade In or Out the music
+M - Play and Stop music
+P - Pause and Resume music
+1 or Keypad1 - Play sample 1  
+2 or Keypad2 - Play sample 2
+3 or Keypad3 - Play sample 3
+
+Compiling
+---------
+$gcc mix.c -o mix `sdl-config --libs --cflags` -lSDL_mixer
+or
+$make

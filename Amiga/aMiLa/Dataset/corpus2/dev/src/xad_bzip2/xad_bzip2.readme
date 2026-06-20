@@ -1,0 +1,39 @@
+Short: bzip2 xadmaster client
+Author: Kyzer/CSG <kyzer@4u.net>, Julian R. Seward <jseward@acm.org>
+Uploader: Kyzer/CSG <kyzer@4u.net>
+Type: dev/src
+Requires: util/arc/xadmaster.lha
+
+--- About this archive ---
+
+This archive contains 68000, 68020 and 68040 optimised versions of the
+bzip2 client for Dirk Stoecker's XAD system - util/arc/xadmaster.lha - and
+also includes the source code to this client.
+
+To install, unpack this archive somewhere and double click on the Install
+icon. The appropriate version of the client will automatically be
+installed.
+
+--- License ---
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2 of the License, or (at your option)
+any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+more details.
+
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc., 675
+Mass Ave, Cambridge, MA 02139, USA.
+
+--- About the client ---
+
+This client lets XAD view and extract bzip2 (.bz2, .tbz2) files. bzip2 is
+mainly used as a replacement for gzip in compressing UNIX tar archives,
+because it beats gzip (which uses the LZH-like deflate algorithim) in
+compression and is therefore useful for saving valuable bandwidth for Linux
+distributions and the like.

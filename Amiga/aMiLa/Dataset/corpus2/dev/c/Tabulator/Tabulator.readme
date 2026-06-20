@@ -1,0 +1,11 @@
+ Short:    SAKU-V1.2-Adjusts C source code tabs
+ Version:  1.2
+ Type:     dev/c
+ Requires: OS3.0+
+ Author:   mritter@netexpress.net (Mark Ritter)
+ Uploader: mritter@netexpress.net (Mark Ritter)
+
+ Parses C source code files and changes the tab size to your preferences,
+ can remove comments, but mostly cleans up the code for easier reading.
+
+ Part of the `Swiss Army Knife Utilities' package.

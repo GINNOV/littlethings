@@ -1,0 +1,534 @@
+TABLE OF CONTENTS
+
+dbtools.library/--background--
+dbtools.library/AddNode
+dbtools.library/AllocString
+dbtools.library/CreateBase
+dbtools.library/DeleteBase
+dbtools.library/DoBaseMove
+dbtools.library/FindBase
+dbtools.library/FindNode
+dbtools.library/GetInt
+dbtools.library/GetStr
+dbtools.library/GetIntN
+dbtools.library/GetStrN
+dbtools.library/LoadBase
+dbtools.library/LoadBaseID
+dbtools.library/SaveBase
+dbtools.library/SetInt
+dbtools.library/SetStr
+dbtools.library/SetIntN
+dbtools.library/SetStrN
+dbtools.library/FindNode
+dbtools.library/--background--                 dbtools.library/--background--
+
+    PURPOSE
+	The dbtools.library provides an easy way to create saveable
+	databases and 'dynamic structures'.
+ 
+dbtools.library/CreateBase                         dbtools.library/CreateBase
+
+    NAME
+	CreateBase - Create a new list of databases.
+
+    SYNOPSIS
+
+	database = CreateBase (tags);
+	d0		       a1
+
+	DBase * CreateBase (struct TagItem *);
+
+	database = CreateBaseTags (tag1, ...);
+
+	DBase * CreateBase (ULONG tag1, ...);
+
+    FUNCTION
+	This function is used to create a new list of databases.
+
+    INPUTS
+	tags - Attributes for the bases, terminated with TAG_DONE.
+
+    TAGS
+	DBT_PrevBase (DBase *) - Pointer to previous base to link to.
+
+	DBT_NewBase (ULONG) - ID of the new base to add to the list.
+
+	DBT_NewNode (BOOL) - Always TRUE. Creates a new node.
+
+	DBT_NewIntData (ULONG) - Long integer to add.
+
+	DBT_NewStrData (STRPTR) - Pointer to string.
+
+	DBT_OldBase (DBase *) - Ponter to previously created database
+	    to be continued.
+
+    SEE ALSO
+	DeleteBase
+
+    EXAMPLE
+
+	DBase *db;
+
+	db = CreateBase (
+		DBT_NewBase,		DBT_Text,   /* Create a text base */
+		    DBT_NewNode,	TRUE,	    /* Make a new node */
+			DBT_NewStrData, "string1",  /* Add some strings */
+			DBT_NewStrData, "string2",
+		    DBT_NewNode,	TRUE,	    /* Add another node */
+			DBT_NewStrData, "string3",  /* Add a string */
+		DBT_NewBase,		DBT_Phone,  /* Create a phone base */
+			/* Add the phone data */
+			DBT_NewStrData,	"Beyond the Dawn BBS",
+			DBT_NewStrData,	"0923-10002",
+			DBT_NewStrData, "",
+		TAG_DONE);	/* End of the base */
+
+	if(!db) exit();
+
+	CreateBase ( DBT_OldBase,	db,	/* Continue on db */
+		    DBT_NewNode,	TRUE,	/* A new phone node */
+			DBT_NewStrData, "Orion BBS",
+			DBT_NewStrData,	"0921-13040",
+			DBT_NewStrData,	"Datorföreningen Orion",
+		    TAG_DONE);	/* End */
+
+	DeleteBase (db);	/* Free all memory */
+	
+
+dbtools.library/DeleteBase                         dbtools.library/DeleteBase
+
+    NAME
+	DeleteBase - Delete a list of databases.
+
+    SYNOPSIS
+
+	DeleteBase (base);
+		    a1
+
+	DeleteBase (DBase *);
+
+    FUNCTION
+	This function should be called to free a list of databases.
+
+    INPUTS
+	base - Pointer to the first database in the list.
+
+    SEE ALSO
+	CreateBase
+
+dbtools.library/DoBaseMove                         dbtools.library/DoBaseMove
+
+    NAME
+	DoBaseMove - Change the current node of a database.
+
+    SYNOPSIS
+
+	DoBaseMove (base, pos);
+		    a1    d1
+
+	DeleteBase (DBase *, ULONG pos);
+
+    FUNCTION
+	This function changes the active node of a database. That is the
+	node (record) that will be affected by the functions wich do not
+	take node arguments.
+
+    INPUTS
+	base - Pointer to the database.
+	pos  - Position to move to.
+	       MOVE_NEXT, MOVE_PREV, MOVE_FIRST, MOVE_LAST or
+	       the number of the record (starting at 1).
+
+dbtools.library/GetInt                                 dbtools.library/GetInt
+
+    NAME
+	GetInt - Get an integer from the current record.
+
+    SYNOPSIS
+
+	data = GetInt (base, n);
+	d0	       a1    d1
+
+	ULONG GetInt (DBase *, ULONG n);
+
+    FUNCTION
+	GetInt returns the integer value of the data field n.
+	If this field is a string field, 0 will be returned.
+
+    INPUTS
+	base - Pointer to the database.
+	n    - The number of the data field.
+
+    SEE ALSO
+	GetStr, GetIntN, GetStrN, DoBaseMove
+
+dbtools.library/GetStr                                 dbtools.library/GetStr
+
+    NAME
+	GetStr - Get a string from the current record.
+
+    SYNOPSIS
+
+	data = GetStr (base, n);
+	d0	       a1    d1
+
+	STRPTR GetStr (DBase *, ULONG n);
+
+    FUNCTION
+	GetStr returns a pointer to the string in the data field n.
+	If this field is a integer field, NULL will be returned.
+
+    INPUTS
+	base - Pointer to the database.
+	n    - The number of the data field.
+
+    SEE ALSO
+	GetInt, GetIntN, GetStrN, DoBaseMove
+
+dbtools.library/GetIntN                               dbtools.library/GetIntN
+
+    NAME
+	GetIntN - Get an integer from a specified node.
+
+    SYNOPSIS
+
+	data = GetIntN (base, node, n);
+	d0	       a1    d1    d2
+
+	ULONG GetIntN (DBase *, ULONG node, ULONG n);
+
+    FUNCTION
+	GetIntN returns an integer value without using DoBaseMove.
+	This function will not change the current record, and can
+	therefore be used without intefering with Get/Set Int/Str.
+	If this field is a string field, 0 will be returned.
+
+    INPUTS
+	base - Pointer to the database.
+	node - The number of the node.
+	n    - The number of the data field.
+
+    SEE ALSO
+	GetStr, GetInt, GetStrN, DoBaseMove, SetStr, SetInt, SetIntN,
+	SetStrN
+
+dbtools.library/GetStrN                               dbtools.library/GetStrN
+
+    NAME
+	GetStrN - Get a string pointer from a specified node.
+
+    SYNOPSIS
+
+	data = GetStrN (base, node, n);
+	d0	       a1    d1    d2
+
+	STRPTR GetStrN (DBase *, ULONG node, ULONG n);
+
+    FUNCTION
+	GetStrN returns a string pointer without using DoBaseMove.
+	This function will not change the current record, and can
+	therefore be used without intefering with Get/Set Int/Str.
+	If this field is an integer field, NULL will be returned.
+
+    INPUTS
+	base - Pointer to the database.
+	node - The number of the node.
+	n    - The number of the data field.
+
+    SEE ALSO
+	GetStr, GetInt, GetIntN, DoBaseMove, SetStr, SetInt, SetIntN,
+	SetStrN
+
+dbtools.library/FindBase                             dbtools.library/FindBase
+
+    NAME
+	FindBase - Find a database.
+
+    SYNOPSIS
+
+	base = FindBase (base, id);
+	d0	         a1    d1
+
+	DBase *FindBase (DBase *, ULONG id);
+
+    FUNCTION
+	This function is used to find the first database in a list of
+	databases with the specified id.
+
+    INPUTS
+	base - Pointer to the list of databases.
+	id   - ID of the base to find.
+
+dbtools.library/LoadBase                             dbtools.library/LoadBase
+
+    NAME
+	LoadBase - Load a list of databases.
+
+    SYNOPSIS
+
+	base = LoadBase (file);
+	d0	         a1
+
+	DBase *LoadBase (STRPTR);
+
+    FUNCTION
+	This function loads a list of databases into memory.
+
+    INPUTS
+	file - Path and filename.
+
+    SEE ALSO
+	LoadBaseID
+
+dbtools.library/LoadBaseID                         dbtools.library/LoadBaseID
+
+    NAME
+	LoadBaseID - Load one database.
+
+    SYNOPSIS
+
+	base = LoadBase (file, id);
+	d0	         a1    d1
+
+	DBase *LoadBase (STRPTR, ULONG);
+
+    FUNCTION
+	This function loads one database with the right id into memory.
+
+    INPUTS
+	file - Path and filename.
+	id   - ID of the wanted database,
+
+    SEE ALSO
+	LoadBase
+
+dbtools.library/SaveBase                             dbtools.library/SaveBase
+
+    NAME
+	SaveBase - Save a list of databases.
+
+    SYNOPSIS
+
+	success = SaveBase (file, base);
+	d0		    a1	  a2
+
+	BOOL SaveBase (STRPTR, DBase *);
+
+    FUNCTION
+	SaveBase saves a list of databases to a file.
+	Returns FALSE if failure.
+
+    INPUTS
+	file - Path and filename.
+	base - List of bases.
+
+    SEE ALSO
+	LoadBaseID
+
+dbtools.library/AllocString                       dbtools.library/AllocString
+
+    NAME
+	AllocString - Copy a string.
+
+    SYNOPSIS
+
+	str = AllocString (source);
+	d0	           a1
+
+	STRPTR AllocSTring (STRPTR);
+
+    FUNCTION
+	This function allocates memory with AllocVec, and copies the string
+	to the memory.
+	FreeVec must be called to free the memory.
+
+    INPUTS
+	source - String to copy.
+
+    SEE ALSO
+	exec.library/AllocVec
+
+dbtools.library/AddNode                               dbtools.library/AddNode
+
+    NAME
+	AddNode - Add a node to a database.
+
+    SYNOPSIS
+
+	node = AddNode (base);
+	d0	        a1
+
+	DNode *AddNode (DBase *);
+
+    FUNCTION
+	This function will add a new node to the end of the database.
+
+    INPUTS
+	base - Database to add a new node to.
+
+    SEE ALSO
+	CreateBase
+
+dbtools.library/SetInt                                 dbtools.library/SetInt
+
+    NAME
+	SetInt - Set an integer in the current record.
+
+    SYNOPSIS
+
+	success = SetInt (base, n, val);
+	d0	          a1    d1 d2
+
+	BOOL SetInt (DBase *, ULONG n, ULONG val);
+
+    FUNCTION
+	SetInt sets the data in a field in the current record to the
+	specified value. If the field doesn't exist it will be created.
+	If this field is a string field, FALSE will be returned.
+
+    RETURNS
+	Returns TRUE if the data was stored.
+	If something went wrong, FALSE is returned.
+
+    INPUTS
+	base - Pointer to the database.
+	n    - The number of the data field.
+	val  - The value to set the field to.
+
+    SEE ALSO
+	SetStr, SetIntN, SetStrN, DoBaseMove
+
+dbtools.library/SetIntN                               dbtools.library/SetIntN
+
+    NAME
+	SetIntN - Set an integer in a node.
+
+    SYNOPSIS
+
+	success = SetIntN (base, node, n, val);
+	d0	           a1    d1    d2 d3
+
+	BOOL SetIntN (DBase *, ULONG node, ULONG n, ULONG val);
+
+    FUNCTION
+	SetIntN sets the data in a field in the node to the
+	specified value. If the field doesn't exist it will be created.
+
+    RETURNS
+	Returns TRUE if the data was stored.
+	If something went wrong, FALSE is returned.
+
+    INPUTS
+	base - Pointer to the database.
+	n    - The number of the data field.
+	node - The node to change.
+	val  - The value to set the field to.
+
+    SEE ALSO
+	SetStr, SetInt, SetStrN, DoBaseMove
+
+dbtools.library/SetStrN                               dbtools.library/SetStrN
+
+    NAME
+	SetStrN - Copy and add a string to a node.
+
+    SYNOPSIS
+
+	success = SetStrN (base, node, n, str);
+	d0	           a1    d1    d2 d3
+
+	BOOL SetStrN (DBase *, ULONG, ULONG, STRPTR);
+
+    FUNCTION
+	SetStrN allocates memory and copies the string. The pointer to
+	that memory will be stored in the the data field (n). If this
+	field already has been set, it will be freed.
+	If the field doesn't exist it will be created.
+
+    RETURNS
+	Returns TRUE if the data was stored.
+	If something went wrong, FALSE is returned.
+	That would probably be caused by a lack of memory.
+
+    INPUTS
+	base - Pointer to the database.
+	n    - The number of the data field.
+	node - The node to change.
+	str  - The (NULL terminated) string to copy.
+
+    SEE ALSO
+	SetStr, SetIntN, SetInt, DoBaseMove
+
+dbtools.library/SetStrN                               dbtools.library/SetStrN
+
+    NAME
+	SetStr - Copy a string to the current record.
+
+    SYNOPSIS
+
+	success = SetStr (base, n, str);
+	d0	           a1    d1 d2
+
+	BOOL SetStr (DBase *, ULONG, STRPTR);
+
+    FUNCTION
+	SetStr allocates memory and copies the string. The pointer to
+	that memory will be stored in the the data field (n). If this
+	field already has been set, it will be freed.
+	If the field doesn't exist it will be created.
+
+    RETURNS
+	Returns TRUE if the data was stored.
+	If something went wrong, FALSE is returned.
+	That would probably be caused by a lack of memory.
+
+    INPUTS
+	base - Pointer to the database.
+	n    - The number of the data field.
+	str  - The (NULL terminated) string to copy.
+
+    SEE ALSO
+	SetStrN, SetIntN, SetInt, DoBaseMove
+
+dbtools.library/FindNode                             dbtools.library/FindNode
+
+    NAME
+	FindNode - Find a node
+
+    SYNOPSIS
+
+	node = FindNode (startnode, data);
+	d0	         a1         a2
+
+	DNode * FindNode (DNode *, DData *);
+
+    FUNCTION
+	FindNode is used to find the node wich has a field matching the
+	'data' argument.
+
+    RETURNS
+	Returns the a pointer to the found field.
+	If something went wrong, NULL is returned.
+
+    INPUTS
+	startnode - Pointer to the node to start searching in.
+		    Useful for 'Search Next' functions.
+	data	  - Data to search for.
+
+    EXAMPLE
+	DBase *db,*ds;
+	DNode *nd;
+
+	db=DBT_MakeBase ...	/* Create a base to search in */
+		.....
+		DBT_End;
+
+	ds=DBT_MakeBase 0	/* Create a base with a DData to search for */
+		    DBT_Node
+			DBT_ULONG 100
+		DBT_End;
+
+	nd=FindNode(db->NList.First, ds->NList.First->Data);
+
+	/* Note that this example uses macros from 'dbtools.h' */
+

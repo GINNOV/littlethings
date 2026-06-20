@@ -1,0 +1,57 @@
+NOTICE:
+
+	68000 C compiler
+
+	Copyright 1984, 1985, 1986 Matthew Brandt.
+	all commercial rights reserved.
+
+	This compiler is intended as an instructive tool for personal use. Any
+	use for profit without the written consent of the author is prohibited.
+
+	This compiler may be distributed freely for non-commercial use as long
+	as this notice stays intact. Please forward any enhancements or questions
+	to:
+
+		Matthew Brandt
+		Box 920337
+		Norcross, Ga 30092
+
+This compiler is an optimizing C compiler for the Motorola 68000 processor.
+It has successfully compiled itself on UNIX system V running on a Motorola
+VME-10. Since this code was written for a machine with long integers it may
+exhibit some irregularity when dealing with long integers on the IBM-PC.
+The author makes no guarantees. This is not meant as a serious developement
+tool although it could, with little work, be made into one. The bugs and
+limitations of this compiler are listed below:
+
+	-Although you may declare floating point types the code generator does
+		not know how to deal with them. They should therefore be avoided.
+	
+	-The preprocessor does not support arguments to #define'd macros or
+		any of #line #ifdef... etc. Only #include and #define are supported.
+	
+	-Function arguments declared as char may not work properly. Declare
+		them as int.
+	
+	-The size of functions is slightly limited due to the fact that the
+		entire function is parsed before any code is generated.
+	
+	-The output of the compiler is in the UNIX 68000 assembler format.
+
+To run the compiler type "cc68 sieve.c". This will compile the program sieve
+and produce two files; sieve.lis is a source listing with a symbol type
+reference; sieve.s is the 68000 assembly language produced.
+
+The file lib.s is the assembly source for some runtime support routines
+which must be loaded with the final code. The is no standard runtime library
+support.
+
+The compiler can be compiled by microsoft C version 3.0 or higher. MSC will
+issue lots of warnings but they can be ignored. The file make.bat will
+rebuild the compiler if MSC is available.
+
+If you wish to make commercial use of all or part of this package please
+contact me at the above address or (404)662-0366. Any voluntary contribution
+from non-commercial users will be greatly appreciated but is by no means
+necessary. enjoy...
+

@@ -1,0 +1,303 @@
+(19-apr-92 bjw)
+(2-march-91 bjw)
+(14-nov-90 bjw)
+(23-oct-90 bjw)
+(20-sept-90 bjw)
+(9-sept-90 bjw)
+(19-apr-90 bjw)
+(22-dec-89 bjw)
+(29-aug-89 bjw)
+
+
+             OOOOOO       CCCCCCC      TTTTTTTTTTTT
+            O      O     C       C          TT
+            O      O     C                  TT
+            O      O     C                  TT
+            O      O     C                  TT
+            O      O     C       C          TT
+             OOOOOO       CCCCCCC           TT
+ 
+
+Greetings!
+
+    This disk contains source code and examples for an object
+    oriented C preprocessor system.  Included are many classes
+    to get you going.  The system includes some support programs
+    to manipulate the data, too.  Much of the system is based on
+    Dr. Cox's 1986 book, "Object Oriented Programming: An
+    Evolutionary Approach", (Addison-Wesley).  Much of the source
+    code is from there.
+
+    The files follow closely version 2 of Objective-C.  There are
+    a many version 4-ism added.  For instance, classes are declared
+    with "@implementation" instead of ":=" style.  The foundation
+    classe have been NeXT style aligned.  The OCT system was built
+    mostly by referencing Dr. Cox's book.
+
+    The system was developed by Brian Witt beginning in 1989, and then
+	continueing in 1990, 1991 and 1992.  The software programs are
+	FREEWARE, the runtime substrate and classes public domain.
+    The software includes 'flex' from FSF (from Fred Fish #156) and
+    'cpp' from DECUS.  The 'cpp' includes additions done after
+    Fred Fish #28.  The 'flex' program is included in its entirity.
+    Both programs are stored in a zoo format to save space.
+
+
+LICENSE:
+--------
+        <<< THIS SECTION UNDER CONSTRUCTION >>>
+
+    Please distribute all files intact and without modifications,
+    unless the author of those modifications indicates clearly the
+    files affected.  There are no warrenties, expressed or implied
+    as to the suitability or usability of the provided files.  The
+    authors don't accept liability for any consequental damages.
+    Complete copyright notices are in the root directory.
+
+    The software not covered by DECUS and FSF licenses, or other
+    people/organizations constitutes the OCT software system.
+    The "collection of the programs stored on this disk" is not
+    copyright.  Parts covered by DECUS or FSF licenses must be 
+    distributed persuant to the programs' originator's restrictions.
+    The programs developed specifically to support the Object-
+    Oriented "C" system constitute the OCT software system.  These
+    specific programs can be used for fun and recreation.  Profit
+    motives must be cleared with the author, with written persmission,
+    beforehand.
+
+    The OCT software system is copyright 1989, 1990, 1991 (c) by
+    Brian J. Witt, as intellectual property, ALL RIGHTS RESERVED.
+    The OCT software system is FREEWARE, and other parties may
+    not sell it for profit or personal gain.  Costs for distribution
+    may, however, be recovered. If you wish to add warrenties or
+    services beyond those already provided, a fee may be changed for
+    services rendered (GNU style). The author(s) of the OCT software
+    system reserve the right to modify or amend the terms covering
+    their contributed works.  If you have questions about these terms,
+    or any others here, please contact the respective authors.
+    
+	The runtime substrate and class libraries are totally public
+	domain.  The source and object files can be distributed with
+	restrictions.  The object code of the runtime and class libaries,
+	and the class interface header files may be distributed freely
+	and without restriction.
+	Please don't remove the original authors notices.
+	If you extend any files, please note your changes.
+
+    For the OCT software system to be distributed, it must be
+    distributed in whole, and contain all licences of the included
+    software.  If you plan on using the OCT software system, please
+    flatter the author with mail.  You may freely sale a system based
+    on the runtime libraries, provided all copyright notices are
+    included with your distribution.  Please mention the OCT system,
+    and this author along with DECUS and FSF in the documentation.
+
+    The FSF requires that software built using its code must be
+    available freely.  A way to obtain their code used in the system
+    must be stated.  The 'flex' program may be found on Fred Fish #156.
+    The 'cpp' program may be found on Fred Fish #28.  Copies of these
+    diskettes are available from local computer stores, this author,
+    and Fred Fish himself.
+        <<< THIS SECTION UNDER CONSTRUCTION >>>
+
+
+
+DISK LAYOUT:
+------------
+
+    The directories are divided amoung these groups: base system
+    source code, run-time source, and sample application code.
+    All these directories are brought together in the  root directory.
+
+    The translator system source is stored in "xlator".   Only hackers
+    should peek inside. There are a few sample code directories.
+        "samples" includes a test suite of torture programs, and "maker"
+        is from Dr. Cox's book: dependency graphs (ch. 6).  An incomplete
+        windowing system is included in "view".
+
+    System programs compiled and ready to run are store in :bin.
+    See the Makefiles in the samples section for how to use them
+    in a 'Makefile'.  The programs include a short help description.
+    The class and substrate libraries are stored in "lib".
+
+
+DISPERSING:
+-----------
+
+    The running system requires one logical assignment to locate
+    the root its private directories.  The following layout is
+    recommended.  About 2 meg is required if you unpack and de-zoo
+    all the files.  Each directory on the disk has a Zxxx.zoo file.
+    These should be unpacked if you're going to use the files therein.
+
+      OCT: ---+----- xlator         (optional; translator source)
+              |       |
+              |       +----- cpp            (optional)
+              |
+              +----- bin            (required; Amiga executables)
+              |
+              +----- docs           (required!)
+              |
+              +----- methods        (required; methods)
+              |
+              +----- collect        (optional)
+              |
+              +----- include        (required; headers)
+              |
+              +----- tools          (optional)
+              |
+              +----- unix           (optional)
+
+
+        include --+----- objc       (required)
+            	  |
+            	  +----- apps       (required)
+            	  |
+            	  +----- collect    (optional)
+
+
+        sys  ------- lib            (required; Amiga class libraries)
+
+        sys  ------- usr/include    (optional additional includes)
+
+
+
+    The include directory contains various files.  Having this bunch
+    of files in one space should reduce setup time.  If you don't have
+    the files "stdlib.h" and "string.h" copy them from usr/include to
+    somewhere public.  Both are required to recompile the foundation
+    classes and substrate.  The file "tree.h" is also required to
+    recompile the translator.
+
+    The "methods" directory contains the contents of the base library.
+    The Makefile takes a few minutes to run, but the system must be
+    rebuilt if you change any methods in this directory.  Just 'make'
+    will build a test app, 'make lib' builds the class library.
+
+    The bin directory on the floppy contains compiled versions of the
+    programs, plus the zoo program.  These programs should be included
+    in your CLI path somewhere.
+
+    The LIB directory must be copied to your system library directory.
+    If it isn't LIB: and you plan on modifying the foundation classes,
+    you must change the Makefile in :ooc/methods.
+
+    The source to 'cpp' and 'flex' are provided to satisfy licensing,
+    and need not be unzoo'ed.  Copy and unpack the files in their
+    directories if you're interested in them.
+
+
+UNIX RUNNING:
+-------------
+    The file 'setup' presets some ksh environment variables.  Better
+    make sure you get these preset before trying to translate any source!
+    There aren't may other settings except in the Makefiles.
+
+INCLUDE="$HOME/myoct/usr/include:$HOME/myoct/include" ; export INCLUDE
+OCTCPP="-DNO_PROTOTYPE" ; export OCTCPP
+echo "OCT INCLUDE shell var is now set."
+
+    Inside the Makefile's are #A comments (maybe #U comments).  These
+    relate to the Amiga and UNIX systems.  Probably should create a
+    Makefile.cpp instead...  For the xlator Makefile, ensure the 
+    'install' method deposits the executables in the correct "bin"
+    directory.
+
+
+FIRST INSTALLATION:
+-------------------
+
+    Build the cpp program first, then cd .. to xlator and build that.
+    Test the compiler by typing: (cd ../test ; make suite).  This
+    should produce lots of output.  Look for "successful translation"
+    just before that Makefile invokes 'cc'.  There are one or two
+    warnings that appear; those are OK.  Once you're happy, install
+    the translator and oct-cpp by typing 'make install'.
+
+    You are now ready to build the class libraries.  Move into
+    myoct/methods and adapt the Makefile to your location just like
+    in myoct/xlator.  (You should also adapt the Makefile in
+    myoct/collect and myoct/maker; the headings are very similar.)
+    Type 'make' to produce a substrate test routine called 'main16.'
+    Ensure that this program runs to completion.  Make sure that
+    #ByteArray lines have test after the s3 " output.  To install
+    the library, type 'make install' again.
+
+    Now go back into myoct/test to type 'make app' to create a test
+    application.  This one exercises memory allocation and test
+    pointer alignment situations.  After running main16 sucessfully,
+    the system is ready for real use.
+
+    Now 'cd myoct/collect' and type 'make' there.  Then test that
+    main16 here runs OK.  Then type 'make install' to install the
+	collection phylum library.
+
+    In myoct/maker is DAG example as an application example.
+    The sample application is from Cox, 1986 (first edition).  It is
+    a simple dependency graph example.  I've extended the grammar
+    to handle comments (ala Makefile's).  Build that by moving into
+    myoct/maker and typing 'make' which will also build a hello world
+    type program called 'hw16'.  It prints a string, then prints the
+    reverse of that string.  Run the dependency example by typing
+    'main16 depends'.
+
+
+AMIGA RUNNING:
+--------------
+
+    Unpack and the read the documentation.  I spent a lot of time writing
+    it, and I expect you to spend time studying those files! :-) :-)
+    There are 'man' pages for the individual files; you may want to
+    copy them to your central man-page repository. To use the system,
+    you'll need something like: ASSIGN OOC: <place>, and have the path
+    set to include the executables.
+
+    Setting an environment variable, OCTOPTS, you can preset options for
+	each invocation of OCT.  The program will honor Manx "set" or
+	AmigaDOS 2.x "setenv" style of shell variables.
+
+    Once the executables are installed, try making the dependency graph
+    example.  If you just type 'main', a built-in graph will be
+    constructed, or you can use the data file provided.  Manx's 'sdb'
+    may be used to step through the application. Start with:
+        sdb -s/methods!/maker main depends
+    Issue:
+            		G app_main
+    Then 't'race message expressions!  A breakpoint set inside of
+    _msg() where it calls the method code is good place to decide
+    whether to trace over or single step into the methods.
+
+    The "view" system is not at all complete; it's combined from many
+    ideas, including those from ch. 9 of Cox's book.  It's a nice place
+    to start from, if you understand the code.
+
+
+PORTING:
+--------
+
+    The system was built on the Amiga 1000.  The Manx Aztec 3.6A compiler
+    has 16-bit int's and signed char's.  Long idenitifer names (about 14
+    chars should do) were used both for internal and external function
+    names.  The substrate library (OCT run-time) is all standard "C".
+    The translator and classes have been tested with 32-bit int's under
+	Manx, and AT&T 3B15 UNIX, a Xenix '386 system, and SunOS 4.0.1.
+
+    At run-time, pointer location (char *)0 should contain (char)0.
+    The translator doesn't need this (tested under SunOS).
+
+    The .m files may be traced using a symbolic debugger since the
+    translator outputs #line directives and Manz wil honor these
+	hints.  Very handy stuff, you know!
+
+
+  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *
+                   "Laws seldom stop politicans"
+
+    Internet:  brian@babbage.ecs.csus.edu
+    USENET:    { unisoft | uunet.UU.NET } seer!rael!aleks
+
+    USMAIL:    Brian Witt
+               3638 Perada Dr.
+               Walnut Creek, CA  94598-2712
+               USA
+(eof)

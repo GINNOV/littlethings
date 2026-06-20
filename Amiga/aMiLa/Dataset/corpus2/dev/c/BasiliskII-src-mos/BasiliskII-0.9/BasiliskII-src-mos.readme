@@ -1,0 +1,71 @@
+Short:        Source code to 68k Macintosh Emulator for MorphOS
+Author:       Christian Bauer, Ilkka Lehtoranta (ilkleht@isoveli.org)
+Uploader:     Ilkka Lehtoranta (ilkleht@isoveli.org) 
+Version:      1.1
+Type:         dev/c
+Architecture: generic
+
+Basilisk II is an open source 68k Macintosh emulator. It can emulate
+either a Mac Classic or a Mac II series machine with colour display
+and sound.
+
+ * MUI GUI
+ * Harddisk support with 64bit addressing
+ * Supports LUT and ARGB display modes on all screens including Ambient
+ * Uses AHI unit 0 for sound
+ * Supports CD-ROM
+ * Ethernet and serial drivers
+ * All PC keyboard keys are supported in emulation
+ * Supports wheel mice
+
+
+Note to PowerUp users: it is probably better run Shapeshifter or Fusion on
+the 68k than Basilisk II on the PPC. Basilisk II uses UAE CPU engine and
+BPPC/CSPPC is too weak.
+
+
+Changes in Basilisk II 1.1 MorphOS version
+ * Added Russian catalog in courtesy of Vinnny
+ * Removed CreateIORequest() calls from ethernet driver
+ * AHI player process now clears the task port on exit
+
+
+Changes in Basilisk II 1.0 MorphOS version
+ * Small optimizations
+ * Added locale support and German catalog in courtesy of Ingo Schmitz
+
+
+Changes in Basilisk II 0.9.3 MorphOS version:
+ * Integrated UAE CPU engine from Basilisk II 1.0
+      - now supports FPU
+      - notably faster
+ * Fixed color problems in 8bit modes
+
+
+Changes in Basilisk II 0.9.2 MorphOS version:
+ * Can create hardfiles in GUI
+ * Can quit emulator at anytime ("emergency quit")
+ * Optimized for speed
+ * Added frameskip option
+
+
+MorphUp: http://www.lehtoranta.net/morphup/index.pmi
+
+
+Differences to AmigaOS version:
+
+This version doesnt run MacOS "natively" (natively as in virtual 68k engine in
+MorphOS) but uses UAE 68k emulation engine. Performance is relatively poor but
+good enough to run demanding 68k games (040 was the best CPU used on 68k Mac).
+
+Support for Mac HD floppies is removed because built-in floppy controller on
+Pegasos is not supported in MorphOS.
+
+NSD and P96 support was removed since it is not relevant on MorphOS.
+
+AHI support was rewritten and uses high level API instead of old lowlevel API
+which blocked other programs doing audio. It also defaults to 48000Hz/16bit now.
+
+The largest possible MacOS RAM size is 1024MB but the minimum is 16MB.
+
+SCSI no longer respects CHIP/24BITDMA flags.

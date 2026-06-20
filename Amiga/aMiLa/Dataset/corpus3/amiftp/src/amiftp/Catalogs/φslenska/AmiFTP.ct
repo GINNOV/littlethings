@@ -1,0 +1,744 @@
+## version $VER: AmiFTP.catalog 2.2 (18.6.96)
+## language íslenska
+## codeset 0
+; Catalog descriptor file for AmiFTP 
+; Copyright (C) 1995 by Magnus Lilja, All Rights Reserved.
+;
+; e-mail: lilja@lysator.liu.se
+;
+; Some notes for translators:
+;
+; In order to create a hotkey to activate a gadget insert
+; a _ in the string before the character that should be
+; the hotkey. ('Te_st' would result in 's' being the hotkey
+; for that particular gadget).
+;
+;
+; Note that menu shortcuts are defined differently:
+; A correct menu entry for 'Quit' with Amiga-Q as the
+; shortcut should look like this:
+; Q\000Quit
+;
+;
+;
+;
+; SiteList window
+;
+SLW_SiteListWindow
+AmiFTP svæðalisti
+;AmiFTP Sitelist
+;
+SLW_SiteList
+FTP Svæði
+;FTP Sites
+;
+SLW_Connect
+_Tengjast
+;_Connect
+;
+SLW_New
+_Nýtt
+;_New site
+;
+SLW_Edit
+Ritf_æra
+;_Edit
+;
+SLW_Remove
+_Fjarlægja
+;_Remove
+;
+SLW_Cancel
+_Hætta við
+;C_ancel
+;
+SLW_OK
+Í _lagi
+;_OK
+;
+SLW_Up
+Upp
+;Up
+;
+SLW_Down
+Niður
+;Down
+;
+SLW_Top
+Toppur
+;Top
+;
+SLW_Bottom
+Botn
+;Bottom
+;
+SLW_Newstring
+(Nýtt)
+;(New)
+;
+SLW_Sort
+_Raða
+;_Sort
+;
+; SiteConfiguration Window
+;
+SCW_SiteConfigurationWindow
+AmiFTP Svæðis Stillingar
+;AmiFTP Site Configuration
+;
+SCW_Name
+Na_fn
+;Na_me
+;
+SCW_Site
+_Svæði
+;_Site
+;
+SCW_Port
+_Port
+;_Port
+;
+SCW_RemDir
+S_kipta sjálfvirk í skúffu
+;_Auto-cd to drawer
+;
+SCW_LocDir
+_Niðursendingar slóð
+;_Download path
+;
+SCW_Anonymous
+An_onymous login?
+;Anonymous lo_gin
+;
+SCW_LoginName
+_Login nafn
+;_Login name
+;
+SCW_Password
+Leyni_orð
+;Pass_word
+;
+SCW_OK
+_Í lagi
+;_OK
+;
+SCW_Cancel
+_Hætta við
+;Ca_ncel
+;
+SCW_OS
+Stýri_kerfi
+;Operating S_ystem
+;
+SCW_Proxy
+Stað_gengill
+;Pro_xy
+;
+SCW_HotList
+_Vinsældarlisti
+;_HotList
+;
+; Transfer window
+;
+TW_WinTitle
+AmiFTP Færslu gluggi
+;AmiFTP - %ld file(s) left (%ld %s)
+;
+TW_RemoteFile
+Fjarlæg skrá
+;Remote file
+;
+TW_LocalFile
+Heima skrá
+;Local file
+;
+TW_Size
+Stærð
+;Size
+;
+TW_Cps
+SÁS
+;CPS
+;
+TW_DataTransferred
+Fært magn
+;Data transferred
+;
+TW_Abort
+Hætta við færslu
+;Abort transfer
+;
+TW_FileExists
+Skráin '%s' er þegar til.\n\
+Gömul stærð er: %ld bæti (ný %ld bæti).\n\
+
+;File '%s' already exists.\nOld filesize is: %ld bytes (new %ld bytes).\n
+;
+TW_Overwrite
+Skrifa yfir
+;Overwrite
+;
+TW_Resume
+Halda áfram færslu
+;Resume transfer
+;
+TW_CancelTransfer
+Hætta við færslu
+;Cancel transfer
+;
+TW_DownloadDir
+Þú ert um það bil að færa niður skúffu tré.\n\
+Ertu viss um að þú viljir gera þetta?
+;You are about to download a directory tree.\nAre you sure you want to do this?
+;
+TW_GetDir
+Já, færa það niður!|Sleppa þessari færslu
+;Yes, download it!|Skip this entry
+;
+; Main preferences window
+;
+MPW_WinTitle
+AmiFTP Almennar Stillingar
+;AmiFTP Global Preferences
+;
+MPW_Password
+_Anonymous lykilorð
+;_Anonymous password
+;
+MPW_ViewCommand
+Skoða sk_ipun
+;_View command
+;
+MPW_ProxyHost
+Staðgengils h_ýsill
+;Proxy _host
+;
+MPW_ProxyPort
+Staðgengils p_ort
+;Proxy _port
+;
+MPW_ProxyDefault
+Nota staðgengil sjálfgefið?
+;Use pro_xy per default
+;
+MPW_DefDownloadDir
+Sjálfgefin færslu skúffa
+;Default local drawer
+;
+MPW_IgnoreCase
+H_unsa há/lágstafi?
+;_Ignore case
+;
+; Main window
+;
+MW_SiteName
+Núverandi _svæði:
+;_Site
+;
+MW_DirName
+S_kúffa
+;Drawer
+;
+MW_DownloadDir
+Færslu skú_ffa
+;L_ocal drawer
+;
+MW_Parent
+_Móðurskrá
+;_Parent
+;
+MW_Get
+_Ná í
+;_Get
+;
+MW_Put
+S_etja
+;P_ut
+;
+MW_View
+Sko_ða
+;_View
+;
+MW_Connect
+_Tengjast við...
+;_Connect to...
+;
+MW_Disconnect
+_Aftengjast
+;_Disconnect
+;
+MW_DeleteRequest
+Ertu viss um að þú\n\
+viljir eyða þessum skrám?
+;Are you sure you want to\ndelete these files?
+;
+MW_DeleteCancel
+Eyða|Hætta við
+;Delete|Cancel
+;
+MW_Reload
+_Hlaða aftur
+;_Reload
+;
+; Connect window
+;
+CW_WinTitle
+AmiFTP Tengingar gluggi
+;AmiFTP Connect window
+;
+CW_Abort
+Hætta við
+;Abort
+;
+CW_Site
+Svæði:
+;Site:
+;
+CW_Status
+Staða:
+;Status:
+;
+CW_Connecting
+Tengist...
+;Connecting...
+;
+CW_ReadingDir
+Les skúffu...
+;Reading drawer...
+;
+CW_SendingLogin
+Sendi login...
+;Sending login...
+;
+CW_SendingPassword
+Sendi lykilorð...
+;Sending password...
+;
+CW_ChangingDirectory
+Breyti um skúffu...
+;Changing drawer...
+;
+; Main menus
+;
+MENU_Project
+Verkefni
+;Project
+;
+MENU_AddToSiteList
+Bæta núverandi við svæðalista
+;Add current to sitelist
+;
+MENU_Reconnect
+Endurtengjast
+;Reconnect
+;
+MENU_Iconify
+I\000Skjátáknfæra
+;I\000Iconify
+;
+MENU_About
+?\000Um...
+;?\000About...
+;
+MENU_Quit
+Q\000Hætta
+;Q\000Quit
+;
+MENU_Files
+Skrár
+;Files
+;
+MENU_TagAll
+A\000Merkja allar
+;A\000Tag all
+;
+MENU_UntagAll
+U\000Afmerkja allar
+;U\000Untag all
+;
+MENU_TransferMode
+Færslumáti
+;Transfer mode
+;
+MENU_Binary
+Vélamál
+;Binary
+;
+MENU_ASCII
+ASCII
+;ASCII
+;
+MENU_ClearCache
+Hreinsa skúffu-skyndiminni
+;Clear dir-cache
+;
+MENU_Delete
+D\000Eyða
+;D\000Delete
+;
+MENU_Move
+M\000Færa
+;M\000Move
+;
+MENU_Sort
+Raða
+;Sort
+;
+MENU_SortbyName
+eftir nafni
+;by name
+;
+MENU_SortbyDate
+eftir dagsetningu
+;by date
+;
+MENU_Settings
+Stillingar
+;Settings
+;
+MENU_Global
+1\000Almennar...
+;1\000Global...
+;
+MENU_Hostlist
+2\000Svæðislisti...
+;2\000Sitelist...
+;
+MENU_LogWindow
+Skráningar gluggi?
+;Log window
+;
+MENU_ToggleDotFiles
+Sýna punkt-skrár?
+;Show dot-files
+;
+MENU_LoadSettings
+Hlaða inn stillingum...
+;Load settings...
+;
+MENU_SaveSettings
+Vista stillingar
+;Save settings
+;
+MENU_SaveSettingsAs
+Vista stillingar sem...
+;Save settings as...
+;
+MENU_HotList
+Vinsældalisti
+;Hotlist
+;
+; Other strings
+;
+Str_ErrorReadingDir
+Villa við að lesa skúffu\n\
+
+;Error reading drawer!\n
+;
+Str_CannotDLDirs
+Get ekki fært niður heilar skúfur!\n\
+
+;Cannot download entire directories!\n
+;
+Str_SelectDLPath
+Veldu niðurfærslu slóð
+;Select download path
+;
+Str_SelectULFiles
+Veldu skrá(r) til að senda upp
+;Select file(s) to upload
+;
+Str_CDFailedTimedout
+Fjarlægt CD brást:\n\
+Tengingin slitnaði
+;Remote CD failed:\nConnection timed out
+;
+Str_CDFailed
+Fjarlægt CD brást.
+;Remote CD failed.
+;
+Str_AmiFTPError
+AmiFTP villa
+;AmiFTP error
+;
+Str_OK
+Í lagi
+;OK
+;
+Str_CANCEL
+Hætta við
+;Cancel
+;
+Str_PasswordRequest
+AmiFTP lykilorðs beiðni
+;AmiFTP Password request
+;
+Str_PasswordEntry
+Skráðu inn lykilorð fyrir notanda:\n\
+%s
+;Enter password for user:\n%s
+;
+Str_ServiceNotAvail
+Þjónusta ekki til staðar.
+;Service not available.
+;
+Str_ConnectFailed
+Tengsl brugðust.
+;Connect failed.
+;
+Str_ConnectLoginFailed
+Tengsl brugðust,login óþekkt.
+;Connect failed, login unknown.
+;
+Str_Putfailed
+Sending á %s brást
+;Put of %s failed
+;
+Str_RemoteWriteFailed
+Skrif brugðust (fjarlægt skrárkerfi fullt?).
+;Write failed (remote file system full?).
+;
+Str_GetFailed
+Sókn %s brást
+;Get %s failed.
+;
+Str_LocalfileError
+Villa við að opna %s.
+;Error opening %s.
+;
+Str_LocalWriteFailed
+Skrif brugðust: %s
+;Write failed: %s
+;
+Str_NoSuchDir
+%s: Engin skrá eða skúffa með því heiti.
+;%s: No such file or directory.
+;
+Str_DisconnectedTimeout
+Aftengdist (tími búinn).
+;Disconnected (timeout).
+;
+Str_Outofmem
+Ónægt innra minni
+;Out of memory
+;
+Str_SelectSettingsFile
+Veldu stillinga skrá...
+;Select settings file...
+;
+Str_NoRestart
+Halda áfram skipunin brást.
+;Resume command failed.
+;
+Str_ConnectionTimedOut
+Aftenging vegna þess að tími rann út
+;Connection timed out
+;
+Str_AmiFTPRequest
+AmiFTP Beiðni
+;AmiFTP Request
+;
+Str_AboutAmiFTP
+Um AmiFTP...
+;About AmiFTP...
+;
+Str_UnknownHost
+Óþekkt svæði
+;Unknown host
+;
+Str_ErrorBuildingDirList
+Villa kom upp við að byggja upp skráarlista.
+;Error building filelist.
+;
+Str_Translator
+Íslensk þýðing eftir\n\
+Sigurbjörn B. Lárusson\n\
+
+;
+; This string will show up in the about window telling the user who made 
+; the translation. I suggest the string should look like this:
+; 'English translation by\nMagnus Lilja\n' (and perhaps your emailaddress
+; too). Ofcourse the above string should be in the same language as
+; the rest of the translation.
+SLW_NewGroup
+Nýr _hópur
+;New _group
+;
+SLW_AddBar
+Skilrúm
+;Add bar
+;
+MENU_ToggleADTFiles
+Sýna alla RECENT?
+;Show entire RECENT
+;
+MENU_ResetADT
+Endurstilla Aminet-dagsetningu
+;Reset Aminet-date
+;
+MW_ViewReadme
+Skoða Readme
+;View readme
+;
+MPW_General
+Almennt
+;General
+;
+MPW_ADT
+Aminet
+;Aminet
+;
+MPW_Proxy
+Staðgengill
+;Proxy
+;
+MPW_BufferSize
+Færsluminnis stærð
+;Buffer size
+;
+MPW_DirCacheSize
+Skúffu biðminnis stærð
+;Directory cache size
+;
+MPW_DeleteViewed
+Eyða skoðunum skrám?
+;Delete viewed files
+;
+MPW_Beep
+Gefa tónmerki eftir færslu?
+;Beep after transfer
+;
+MPW_HideDirectories
+Fela skúffur
+;Hide drawers
+;
+MPW_PreservePath
+Halda skrárslóð?
+;Preserve filepath
+;
+MPW_ShowMOTD
+Sýna MOTD-skrá?
+;Show MOTD-file
+;
+MPW_GetReadme
+Ná í readme?
+;Download readme
+;
+SCW_AminetMode
+Aminet-hamur?
+;Aminet-mode
+;
+MPW_OK
+_Í lagi
+;_OK
+;
+MPW_Cancel
+_Hætta við
+;C_ancel
+;
+TW_TimeLeft
+Tími eftir
+;Time left
+;
+Str_NoNewAminetFiles
+Engar nýjar skrár síðan í síðustu aminet heimsókn.
+;No new files since last Aminet visit
+;
+Str_WindowTitle
+AmiFTP - %ld skrár valdar (%ld %s) %ld %s laus á disk
+;AmiFTP - %ld files selected (%ld %s) %ld %s free on disk
+; This might look a bit strange, but when the fields are filled the
+; string looks like:
+; AmiFTP - 10 files selected (4 MB) 15 MB free on disk
+MENU_Connect
+T\000Tengjast...
+;C\000Connect...
+;
+MENU_Disconnect
+Aftengjast
+;Disconnect
+;
+MENU_Get
+N\000Ná í
+;G\000Get
+;
+MENU_Put
+P\000Setja
+;U\000Put
+;
+MENU_View
+S\000Skoða
+;V\000View
+;
+MENU_PatternSelect
+Velja eftir mynstri
+;Select by pattern...
+;
+MPW_Display
+Birting
+;Display
+;
+Str_PatternRequest
+AmiFTP beiðni
+;AmiFTP request
+;
+Str_SelectPattern
+Skráðu inn AmigaDOS mynstur:
+;Enter AmigaDOS pattern:
+;
+MENU_Parent
+M\000Móðurskrá
+;P\000Parent
+;
+MPW_PublicScreen
+Public skjár
+;Public screen
+;
+MPW_SystemFonts
+Nota kerfisletur
+;Use system fonts
+;
+MPW_InterfaceFont
+Viðmóts letur
+;Interface font
+;
+MPW_FilelistFont
+Skráarlista letur
+;Filelist font
+;
+MPW_ShowButtons
+Sýna takka
+;Show buttons
+;
+MPW_ShowToolbar
+Birta tólastiku
+;Show toolbar
+;
+MENU_ViewReadme
+Sýna readme
+;View readme
+;
+MPW_DefaultScreen
+Open on default public screen
+;Open on default public screen
+;
+TW_OverwriteAll
+Overwrite all
+;Overwrite all
+;
+MENU_CreateDir
+Create directory
+;Create directory
+;
+Str_RemoteDir
+Enter name of directory
+;Enter name of directory
+;
+MENU_RawCommand
+Send FTP command
+;Send FTP command
+;
+MENU_Rename
+Rename
+;Rename
+;

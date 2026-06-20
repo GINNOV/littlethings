@@ -1,0 +1,11 @@
+Short:        Converts FD files to monam.libfile for MonAm 3.02beta
+Author:       grodny@hron.fei.tuke.sk (Marek Grodny)
+Uploader:     grodny hron fei tuke sk (Marek Grodny)
+Type:         dev/asm
+Version:      1.0
+Architecture: m68k-amigaos
+Distribution: Anywhere. Freely Distributable.
+
+  Converts exec_lib.fd, dos_lib.fd, intuition_lib.fd, graphics_lib.fd to
+monam.libfile for user with MonAm 3.02beta, I didn`t try it on others
+version, please try it, and send me e-mail.

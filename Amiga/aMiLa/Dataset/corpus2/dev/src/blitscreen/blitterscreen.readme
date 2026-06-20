@@ -1,0 +1,21 @@
+
+*** BLITTERSCREEN =:) ***
+
+###short:
+
+Forget copperscreens.
+Blitterscreens provide a CHUNKY 256-color 2x2 or even 2x1 screen,
+and all fullscreen! (AGA only, ECS could do byte-chunky 16colors,
+not supported yet). cpu overhead very small, cpu free for rendering,
+this method is even useful for 030!
+
+###distribution:
+
+Note: This is a hardwarehack, no warranties for anything.
+The example executables might crash sometimes, the blitterscreen
+code used with smart startup-routines should be stable.
+
+You are allowed to use the source in non-commercial software
+(if you charge shareware fee I don't care).
+
+

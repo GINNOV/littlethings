@@ -1,0 +1,1065 @@
+TABLE OF CONTENTS
+
+awin.o/--introduction--
+awin.o/awcreatedisplay
+awin.o/awdeletedisplay
+awin.o/awsetdebuglevel
+awin.o/awreadargs
+awin.o/awfreeargs
+awin.o/awcreatetimer
+awin.o/awrestarttimer
+awin.o/awreadtimer
+awin.o/awreadtimer_us
+awin.o/awdeletetimer
+awin.o/awsetidcmphook
+awin.o/awsetidcmpflags
+awin.o/awinitchunkystruct
+awin.o/awallocchunky
+awin.o/awfreechunky
+awin.o/awopendisplay
+awin.o/awclosedisplay
+awin.o/awsetpalette
+awin.o/awhandleinput
+awin.o/awrenderchunky
+awin.o/awrenderchunky_show
+awin.o/awloadfile
+awin.o/awfreefile
+awin.o/--introduction--                                awin.o/--introduction--
+
+   DESCRIPTION
+	- easy-to-use API for RTG chunky display
+	- 0x0 compiles with GeekGadgets egcs and PhxAss (both free) AND
+	  SAS/C 6.5x and PhxAss
+	- PowerUP version compiles with GG egcs + SAS/C PPC
+	- possible to use GenAm (DevPac) or basm instead of PhxAss
+
+   REQUIREMENTS
+	- runtime M68K:
+	  o MC68020 or better
+	  o Kickstart 3.0 or better
+	- runtime PPC, add:
+	  o PowerPC 603e or better
+	  o ppc.library V46.6 or better
+	- compiling:
+	  o dev/misc/CGraphX-DevKit.lha properly installed
+	  o latest xpk devkit includes properly installed
+	  o cgxvideo.h installed (from cgfx4 devkit for example)
+	  o GeekGadgets egcs or SAS/C 6.5x
+	  o dev/asm/PhxAss439.lha or DevPac GenAm properly installed
+	  o egcs PPC: patched OS includes in gg:ppc-amigaos/os-include/
+	    (ixemul ppc bridge has script for this, geninclude.pl)
+	    and SAS/C PPC lib:. also libmoto.a is linked in by default so
+	    if you'd better have that too.
+	  o SAS/C PPC: vbcc vlink or GG ppc-amigaos-ld. also libmoto.a is
+	    linked in by default so if you'd better have that.
+
+   MOTIVATION
+	I got really tired of demos not supporting gfxcards, and
+	lazy coders not supporting all systems when it indeed is
+	possible. Either products hit hardware directly or require
+	gfxcard. One word is enough to describe this situation:
+	`sucks'. RTGMaster is quite nice, but has its (known)
+	problems, awin should be better in many ways.
+
+   PURPOSE
+	awin is a extremely easy to use and yet powerful RTG system
+	for 8 and 16 bit chunky displays. It is mainly intended for
+	intro/demo/game coders who'd like to have good chunky display
+	support in their products.
+
+   FEATURES
+	- compiles for M68K and PowerPC (using PowerUP)
+	- output of any size 256 and 65536 colour chunky on ALL
+	  systems
+	- resizeable window on (named/default) pubscreen or
+	  256/65536 colour screen
+	- support for OCS, ECS, AGA, CyberGraphX 3+ and Picasso96
+	- double buffering on screen mode, if supported by gfxsystem
+	- DirectDraw with CyberGraphX 3+ and Picasso96
+	- uses features of AmigaOS 3.1 if available
+	- fast 0x0 optimized scale and remap routines, C versions for
+	  PowerPC
+	- fast 040/060 tuned c2p for native modes (by Tim "Azure" Boescke),
+	  C version for PowerPC
+	- support for cgxvideo.library for 16bit chunky in window mode
+	- optional native 12bit ham6 screen mode for 16bit chunky in
+	  screen mode
+	- support for fblit, uses fastmem bitmaps when possible
+	- detects WCP/WPA8 patches and Akiko
+	- provides window IDCMP hook for user interaction
+	- user can switch between window and screen on the fly
+	- user can change screenmodes on the fly
+	- possible to skip rendering while window is inactive
+	- simple way to read commandline arguments / icon tooltypes
+	  (also handles awin settings)
+	- can load xpk packed files with awloadfile (I had some spare
+	  time:)
+	- all-in-one solution, no need to have extra files (drivers,
+	  libraries etc.) so it can be used with intros too, and no
+	  configuration problems as always autodetects best mode :)
+	- is free and comes with full source. see legal part.
+
+   LEGAL
+	- awin package is written by Harry "Piru" Sintonen, except
+	  cpu5azure2.ASM and ddazure2.ASM which are written by Tim
+	  "Azure" Boescke. Used, modified and included here with his
+	  permission. (thanks a lot mate)
+	- original awin is copyright (C) 1998-1999 Harry "Piru" Sintonen
+	- awin package is freeware. You can use it in your products,
+	  even commercial ones.
+	- this source package is freely reuseable as long as original
+	  documentation is preserved and credits are given properly.
+	  ie. you can modify it for your purposes, but please credit
+	  the original authors. Source distributions should have full
+	  original source and documentation included.
+	- binary only distributions don't need to have original source
+	  or documentation included, mentioning awin and authors in
+	  program/game documentation or demo/intro readme is enough.
+	- If you modify awin only slightly and will release this new
+	  version, please try to keep it compatible ie. don't modify
+	  the API much. You can, of course, add new stuff to API (new
+	  flags/args/tooltypes/chunky depths/functions etc).
+	- if modified versions should be released in public (ie.
+	  Aminet), modified versions should have same legal status.
+	  Also if your version differs from original quite a lot it is
+	  suggested to have special suffix (your initials for example)
+	  appended to awin name. anyways, awin and deriviates should
+	  stay free.
+
+   THANKS
+	#amiga - for being a pc channel <g>
+	#amigafin - for late night sessions
+	#amycoders - Azure, ChP-PwL, Duken, Kalsu, Kalms, Thain, Asa,
+	             Crisp + rest
+	#amigaquake - for refreshing fragfests
+
+	Special thanks to Azure who generously gave me lots of sources
+	and guidance.. and pushed me the right way. Also thanks to all
+	guys who tested awin on various systems.
+
+   OVERVIEW
+	This document is supposed to be a easy to use reference to
+	public awin functions. Also see awin.h and example code for
+	more information.
+
+awin.o/awcreatedisplay                                 awin.o/awcreatedisplay
+
+   NAME
+	awcreatedisplay - allocate awdisplay structure
+
+   SYNOPSIS
+	awcreatedisplay()
+
+	struct awdisplay *awcreatedisplay(void);
+
+   FUNCTION
+	Allocate awdisplay structure. This call will allocate
+	memory for structure and open up some libraries and
+	devices.
+
+   NOTE
+	This is the ONLY way to allocate this structure.
+	Use awdeletedisplay to free awdisplay structure.
+
+   EXAMPLE
+	    struct awdisplay *display;
+
+	    /* Allocate awdisplay structure */
+	    display=awcreatedisplay();
+
+   RESULTS
+	pointer to a awdisplay structure allocated or NULL
+	if no memory, SetPatch or Kickstart 3.0+.
+
+   SEE ALSO
+	awdeletedisplay, awopendisplay
+
+awin.o/awdeletedisplay                                 awin.o/awdeletedisplay
+
+   NAME
+	awdeletedisplay - free awdisplay structure
+
+   SYNOPSIS
+	awdeletedisplay(display)
+
+	void awdeletedisplay(struct awdisplay *);
+
+   FUNCTION
+	Free awdisplay structure. This call will free resources and
+	memory by structure.
+
+   NOTE
+	This is the ONLY way to free this structure.
+	If display is open it will be closed before.
+
+   EXAMPLE
+	    /* free awdisplay structure */
+	    awdeletedisplay(display);
+
+   SEE ALSO
+	awcreatedisplay, awopendisplay, awclosedisplay
+
+awin.o/awsetdebuglevel                                 awin.o/awsetdebuglevel
+
+   NAME
+	awsetdebuglevel - set debug output verbosity level
+
+   SYNOPSIS
+	awsetdebuglevel(display,level)
+
+	ULONG awsetdebuglevel(struct awdisplay *,UBYTE);
+
+   FUNCTION
+	Set debug verbosity level of display. Display must have been
+	created by awcreatedisplay call.
+
+   NOTE
+	If awcreatedisplay fails it will always print debug output.
+
+   EXAMPLE
+	    /* Set debug output to normal */
+	    awsetdebuglevel(display,AWD_VERBOSE);
+
+	    /* Supress debug output */
+	    awsetdebuglevel(display,AWD_QUIET);
+
+   INPUTS
+	display - pointer to a awdisplay structure allocated by
+		  awcreatedisplay call.
+	level   - debug level, one of:
+	          AWD_QUIET   - no debug output at all
+	          AWD_VERBOSE - normal debug output
+	          AWD_DEBUG   - full debug output
+
+   RESULTS
+	returns old debug level, initially AWD_QUIET.
+
+   SEE ALSO
+	awcreatedisplay
+
+awin.o/awreadargs                                      awin.o/awreadargs
+
+   NAME
+	awreadargs - handle commandline/tooltype arguments
+
+   SYNOPSIS
+	awreadargs(display,odargs,template,array)
+
+	struct awrdargs *awreadargs(struct awdisplay *,
+		struct awodargs *,const char *, LONG *);
+
+   FUNCTION
+	Will parse awin settings to awodargs structure and
+	given template to array (like dos/ReadArgs). Also
+	translates icon tooltypes if program is started
+	from Workbench.
+
+   NOTE
+	You MUST free awrdargs stucture with awfreeargs()!
+	array is valid ONLY till awfreeargs().
+
+	Internal arguments are:
+
+	WINDOW/S	- initially open as a window
+	SCREEN/S	- initially open as a screen
+	SCREENMODE8=MODEID8=MODEID/K
+			- 8bit screen mode modeid
+	SCREENMODE16=MODEID16/K
+			- 16bit screen mode modeid
+	REQUESTMODE8=REQMODE8=MODEREQ8/S
+			- open up screenmode request
+			  for 8bit screen mode modeid
+	REQUESTMODE16=REQMODE16=MODEREQ16/S
+			- open up screenmode request
+			  for 16bit screen mode modeid
+	PUBSCREEN=PUB/K	- name of the pubscreen to open
+			  window mode window to.
+	WIDTH=WID=W/N/K	- initial display width
+	HEIGHT=HEI=H/N/K
+			- initial display height
+	UPDATEINACTIVE=UINA/T
+			- if display should update while
+			  inactive
+	DOUBLEBUFFER=DBUFFER/T
+			- if awin should doublebuffer. this
+			  slows down awin a bit, but looks
+			  better
+	WAITSWAP/T	- if awin doublebuffer should
+			  wait for swap. this usually
+			  means max Hz/2. (25Hz for pal,
+			  30Hz for ntsc)
+	FORCENATIVE=NATIVE/T
+			- if awin should force native mode,
+			  even if user has gfxcard
+	USEHAM=HAM/T	- if awin should use HAM for
+			  16bit screen mode on native
+			  systems
+	DIRECTDRAW/T	- if CGFX3+ compatible directdraw
+			  should be used
+	USECGXVIDEO=CGXV/T
+			- if cgxvideo.library vlayer should
+			  be used for 16bit window mode
+	USEARGB16/T	- use 32bit ARGB truecolour for
+			  better depth 16 output. normally
+			  window and non-directdraw screen
+			  mode convert depth 16 rgb to 256
+			  colour. Note that USEARGB16 mode
+			  is quite slow.
+
+	See awopendisplay autodoc and awin.h for awodargs
+	structure defination.
+
+   EXAMPLE
+	    struct awodargs odargs;
+	    struct awrdargs *rdargs;
+	    LONG array[1];
+
+	    /* clear all (IMPORTANT!) */
+	    memset(&odargs,0,sizeof(odargs));
+
+	    /* set defaults: */
+
+	    /* open as window, use directdraw if possible,
+	       use absolute window positioning: */
+	    odargs.flags=AWODAF_INITWINDOW|AWODAF_DIRECTDRAW|AWODAF_ABSPOS;
+	    odargs.x=40; /* open window */
+	    odargs.y=20; /* at this pos */
+
+	    /* translate internal arguments to odargs and
+	       TEST/S to array */
+
+	    rdargs=awreadargs(display,&odargs,"TEST/S",array);
+	    if (rdargs) {
+
+	      /* now odargs is filled with user chosen awin
+	         settings and it can be used with
+	         awcreatedisplay. array[0] is true if TEST is
+	         specified on commandline/tooltypes (as you
+	         would expect). */
+
+	      /* ... */
+
+	      awfreeargs(rdargs);
+	    }
+
+   INPUTS
+	display  - pointer to a awdisplay structure allocated by
+		   awcreatedisplay call.
+	odargs   - pointer to awodargs structure. This structure
+		   can (should) be initialized with default values.
+	template - formatting string as in dos/ReadArgs
+	array    - array of longwords for results, 1 per template entry
+
+   RESULTS
+	pointer to a awrdargs structure allocated or NULL
+	if no memory, or bad arguments. If you get NULL you can use
+	IoErr() to find out reason for the problem. You MUST free this
+	structure with awfreeargs call. Do NOT make any assumptations
+	about contents of this structure.
+
+   BUGS
+	In 1.0.12 release odargs flags could not be cleared by
+	awreadargs. Fixed in 1.0.13.
+
+   SEE ALSO
+	awin.h/struct awodargs, awfreeargs, awopendisplay,
+	dos.library/ReadArgs
+
+awin.o/awfreeargs                                      awin.o/awfreeargs
+
+   NAME
+	awfreeargs - free commandline arguments
+
+   SYNOPSIS
+	awfreeargs(args)
+
+	void awfreeargs(struct awrdargs *);
+
+   FUNCTION
+	Will free awrdargs structure allocated by awreadargs.
+
+   EXAMPLE
+	    awreadargs(rdargs);
+
+   INPUTS
+	display  - pointer to a awdisplay structure allocated by
+		   awcreatedisplay call.
+	odargs   - pointer to awodargs structure. This structure
+		   can (should) be initialized with default values.
+	template - formatting string as in dos/ReadArgs
+	array    - array of longwords for results, 1 per template entry
+
+   SEE ALSO
+	awreadargs, awopendisplay, dos.library/FreeArgs
+
+awin.o/awcreatetimer                                   awin.o/awcreatetimer
+
+   NAME
+	awcreatetimer - create a timer
+
+   SYNOPSIS
+	awcreatetimer(display)
+
+	struct awtimer *awcreatetimer(struct awdisplay *);
+
+   FUNCTION
+	Allocates and starts a timer.
+
+   NOTE
+	Actually awin timer system does not use timers but
+	timer.device/ReadEClock. PowerPC version uses PowerUP
+	kernel timer routines, so there always should be
+	minimum overhead calling these timer routines. You
+	can allocate as many timers as you need. Do NOT make
+	any assumptations about contents of awtimer structure.
+
+   EXAMPLE
+	    struct awtimer *timer;
+
+	    timer=awalloctimer(display);
+	    if (timer) {
+
+	      /* now timer is ready for use */
+
+
+	      awdeletetimer(timer);
+	    }
+
+   INPUTS
+	display  - pointer to a awdisplay structure allocated by
+		   awcreatedisplay call.
+
+   RESULTS
+	pointer to a awtimer structure allocated or NULL
+	if no memory.
+
+   SEE ALSO
+	awrestarttimer, awreadtimer, awreadtimer_us, awdeletetimer
+
+awin.o/awrestarttimer                                  awin.o/awrestarttimer
+
+   NAME
+	awrestarttimer - restart a timer
+
+   SYNOPSIS
+	awrestarttimer(timer)
+
+	void awrestarttimer(struct awtimer *);
+
+   FUNCTION
+	Restarts a timer.
+
+   EXAMPLE
+	    awrestarttimer(timer);
+
+   INPUTS
+	timer  - pointer to awtimer structure allocated by
+		 awcreatetimer call.
+
+   SEE ALSO
+	awcreatetimer, awreadtimer, awreadtimer_us, awdeletetimer
+
+awin.o/awreadtimer                                     awin.o/awreadtimer
+
+   NAME
+	awreadtimer - read current ticks
+
+   SYNOPSIS
+	awreadtimer(timer)
+
+	ULONG awreadtimer(struct awtimer *);
+
+   FUNCTION
+	Return milliseconds elapsed since awcreatetimer/
+	awrestarttimer for this timer.
+
+   EXAMPLE
+	    ULONG ticks;
+	    ticks=awreadtimer(timer);
+
+   INPUTS
+	timer  - pointer to awtimer structure allocated by
+		 awcreatetimer call.
+
+   RESULTS
+	unsigned long of milliseconds elapsed.
+
+   SEE ALSO
+	awcreatetimer, awrestarttimer, awreadtimer_us, awdeletetimer
+
+awin.o/awreadtimer_us                                  awin.o/awreadtimer_us
+
+   NAME
+	awreadtimer_us - read current ticks
+
+   SYNOPSIS
+	awreadtimer_us(timer)
+
+	ULONG awreadtimer_us(struct awtimer *);
+
+   FUNCTION
+	Return microseconds elapsed since awcreatetimer/
+	awrestarttimer for this timer.
+
+   EXAMPLE
+	    ULONG ticks_us;
+	    ticks_us=awreadtimer_us(timer);
+
+   INPUTS
+	timer  - pointer to awtimer structure allocated by
+		 awcreatetimer call.
+
+   RESULTS
+	unsigned long of microseconds elapsed.
+
+   SEE ALSO
+	awcreatetimer, awrestarttimer, awreadtimer, awdeletetimer
+
+awin.o/awdeletetimer                                   awin.o/awdeletetimer
+
+   NAME
+	awdeletetimer - delete a timer
+
+   SYNOPSIS
+	awdeletetimer(timer)
+
+	void awdeletetimer(struct awtimer *);
+
+   FUNCTION
+	Free resources bound to this timer.
+
+   EXAMPLE
+	    awdeletetimer(timer);
+
+   INPUTS
+	timer  - pointer to awtimer structure allocated by
+		 awcreatetimer call.
+
+   SEE ALSO
+	awcreatetimer, awrestarttimer, awreadtimer, awreadtimer_us
+
+awin.o/awsetidcmphook                                  awin.o/awsetidcmphook
+
+   NAME
+	awsetidcmphook - set a display IDCMP hook
+
+   SYNOPSIS
+	awsetidcmphook(display,idcmphook)
+
+	AWIDCMPHOOK_PTR awsetidcmphook(struct awdisplay *,
+		AWIDCMPHOOK_PTR);
+
+   FUNCTION
+	Set display IDCMP callback function.
+
+   NOTE
+	Note that function does NOT take in/return AmigaOS
+	hook structure, but *function pointer*.
+
+	For now idcmphook should always return AWIDHA_NOP.
+
+   EXAMPLE
+	    ULONG myhook(struct IntuiMessage *imsg) {
+	      /* imsg is copy of replied IDCMP intuimessage */
+	      return AWIDHA_NOP;
+	    }
+
+	    /* will call myhook for IDMCP_VANILLAKEY */
+	    awsetidcmphook(display,myhook);
+	    awsetidcmpflags(display,IDMCP_VANILLAKEY);
+
+   INPUTS
+	display   - pointer to a awdisplay structure allocated by
+		    awcreatedisplay call.
+	idcmphook - pointer to function returning ULONG and
+	            taking in struct IntuiMessage *.
+
+		idcmphook prototype is:
+		ULONG myhook(struct IntuiMessage *);
+
+		That is you get pointer to IntuiMessage in,
+		and you return ULONG.
+
+		You get a local copy of replied IntuiMessage
+		from awin window, this same copy is later used
+		to handle internal events. So you may also use
+		hook to filter out some or all user input. This
+		is not recommended (it's a bit rude to ignore
+		user input), but possible.
+
+		For example to use hook to disable keyboard
+		interaction you would do:
+
+		ULONG myhook(struct IntuiMessage *imsg) {
+
+		  /* you can handle your own stuff here
+		     .... */
+
+		  /* test not really needed it this case, but if you
+		     add idcmpflags to awsetidcmpflags() then it IS. */
+
+		  if ( (imsg->Class==IDCMP_RAWKEY) ||
+		       (imsg->Class==IDCMP_VANILLAKEY) ) {
+		    imsg->Class=0;
+		  }
+		  return AWIDHA_NOP;
+		}
+
+		awsetidcmphook(display,myhook);
+		awsetidcmpflags(display,IDCMP_RAWKEY|IDMCP_VANILLAKEY);
+
+   RESULTS
+	pointer to old idcmphook (initially NULL).
+
+   BUGS
+	Your hook doesn't get IDCMP_RAWKEY key releases.
+	If you need accurate input use input handler.
+
+   SEE ALSO
+	awsetidcmpflags, awhandleinput
+
+awin.o/awsetidcmpflags                                 awin.o/awsetidcmpflags
+
+   NAME
+	awsetidcmpflags - set a display IDCMP hook flags
+
+   SYNOPSIS
+	awsetidcmpflags(display,idcmpflags)
+
+	ULONG awsetidcmpflags(struct awdisplay *,
+		ULONG);
+
+   FUNCTION
+	Set display IDCMP callback function flags.
+
+   NOTE
+	Does ModifyIDCMP window if it is required to get
+	intuition send these IDCMP messages.
+
+   EXAMPLE
+	    ULONG oldflags;
+
+	    oldflags=awsetidcmpflags(display,IDMCP_VANILLAKEY);
+
+   INPUTS
+	display    - pointer to a awdisplay structure allocated by
+		     awcreatedisplay call.
+	idcmpflags - mask of flags display IDCMP hook is called with.
+
+   RESULTS
+	ULONG of old idcmpflags (initially 0).
+
+   SEE ALSO
+	awsetidcmphook, awhandleinput
+
+awin.o/awinitchunkystruct                              awin.o/awinitchunkystruct
+
+   NAME
+	awinitchunkystruct - allocate awchunky structure for width,
+				height and depth
+
+   SYNOPSIS
+	awinitchunkystruct(display,width,height,depth)
+
+	struct awchunky *awinitchunkystruct(struct awdisplay *,
+		ULONG,ULONG,ULONG);
+
+   FUNCTION
+	Allocates awchunky structure and initializes width,
+	height and depth to given values. This is useful if you
+	have your own framebuffer for chunky.
+
+   NOTE
+	You MUST set framebuffer pointer before use! Do NOT
+	set `memory' of awchunky structure yourself!
+
+	You should make sure your framebuffer is properly
+	aligned (speed issues, 68k<->ppc cache issues).
+	Aligning with 32 bytes should be always enough.
+
+	You should always use awallocchunky. :)
+
+   EXAMPLE
+	    /* how to use your custom framebuffer mydata */
+
+	    struct awchunky *chunky;
+
+	    chunky=awinitchunkystruct(display,320,200,8);
+	    if (chunky) {
+	      chunky->framebuffer=(UBYTE *)mydata;
+
+	      /* will NOT try to free mydata */
+	      awfreechunky(chunky);
+	    }
+
+   INPUTS
+	display  - pointer to a awdisplay structure allocated by
+		   awcreatedisplay call.
+	width    - width of chunky framebuffer (will be ceiled to
+		   multiple of 32)
+	height   - height of chunky framebuffer
+	depth	 - depth of framebuffer:
+			 8 - LUT8
+			16 - RGB565
+
+   RESULTS
+	pointer to awchunky structure or NULL.
+
+   BUGS
+	CGFX/P96 depth 16 directdraw did not work in 1.0.12 release
+	due stupid bug. Fixed in 1.0.13.
+
+   SEE ALSO
+	awallocchunky, awfreechunky
+
+awin.o/awallocchunky                                   awin.o/awallocchunky
+
+   NAME
+	awallocchunky - allocate awchunky structure and framebuffer
+			for width, height and depth
+
+   SYNOPSIS
+	awallocchunky(display,width,height,depth)
+
+	struct awchunky *awallocchunky(struct awdisplay *,
+		ULONG,ULONG,ULONG);
+
+   FUNCTION
+	Allocates awchunky structure and framebuffer according to
+	given width, height and depth.
+
+   EXAMPLE
+	    struct awchunky *chunky;
+
+	    chunky=awinitchunkystruct(display,320,240,8);
+
+   INPUTS
+	display  - pointer to a awdisplay structure allocated by
+		   awcreatedisplay call.
+	width    - width of chunky framebuffer (will be ceiled to
+		   multiple of 32)
+	height   - height of chunky framebuffer
+	depth	 - depth of framebuffer:
+			 8 - LUT8
+			16 - RGB565
+
+   RESULTS
+	pointer to awchunky structure or NULL.
+
+   BUGS
+	CGFX/P96 depth 16 directdraw did not work in 1.0.12 release
+	due stupid bug. Fixed in 1.0.13.
+
+   SEE ALSO
+	awinitchunkystruct, awfreechunky
+
+awin.o/awfreechunky                                    awin.o/awfreechunky
+
+   NAME
+	awfreechunky - free awchunky structure (and framebuffer memory)
+
+   SYNOPSIS
+	awfreechunky(chunky)
+
+	void awfreechunky(struct awchunky *);
+
+   FUNCTION
+	Free awchunky structure and framebuffer associated to it.
+
+   NOTE
+	Will only free framebuffer if it was allocated by
+	awallocchunky.
+
+   INPUTS
+	chunky  - pointer to a awchunky structure allocated by
+		  awinitchunkystruct or awallocchunky call.
+
+   SEE ALSO
+	awinitchunkystruct, awallocchunky
+
+awin.o/awopendisplay                                   awin.o/awopendisplay
+
+   NAME
+	awopendisplay - open display (window or screen)
+
+   SYNOPSIS
+	awopendisplay(display,odargs)
+
+	ULONG awopendisplay(struct awdisplay *,
+		struct awodargs *);
+
+   FUNCTION
+	Open display (window or screen). Actually the display
+	opens on first awrenderchunky or awrenderchunky_show
+	call.
+
+   NOTE
+	odargs should have been called with awreadargs. See
+	autodoc of awreadargs.
+
+	See awin.h for awodargs structure defination.
+
+   INPUTS
+	display  - pointer to a awdisplay structure allocated by
+		   awcreatedisplay call.
+	odargs   - opendisplayarguments possibly modified by
+		   awreadargs call
+
+	odargs structure has following fields:
+
+		flags - contains flags that tell awin how to handle
+			this display. See awin.h AWODAF_ flags.
+		modeid8 - screenmode to use for 8bit modes, 0 for
+			BestModeID.
+		modeid16 - screenmode to use for 16bit modes, 0 for
+			BestModeID.
+		witdh - initial display width.
+		height - initial display height.
+		x, y - displacement to visible screen center, OR abs
+			left&top if AWODAF_ABSPOS.
+		title - pointer to window title string.
+		pubscreen - pointer to pubscreen to open window to.
+		unused0 - this should be NULL for now.
+
+		For more information, see awin.h
+
+   RESULTS
+	success indicator
+
+   SEE ALSO
+	awin.h/struct awodargs, awclosedisplay, awhandleinput,
+	awrenderchunky
+
+awin.o/awclosedisplay                                  awin.o/awclosedisplay
+
+   NAME
+	awclosedisplay - close display (window or screen)
+
+   SYNOPSIS
+	awclosedisplay(display)
+
+	void awclosedisplay(struct awdisplay *);
+
+   FUNCTION
+	Close awdisplay window or screen unless already
+	closed.
+
+   INPUTS
+	display  - pointer to a awdisplay structure allocated by
+		   awcreatedisplay call.
+
+   SEE ALSO
+	awopendisplay, awhandleinput, awrenderchunky
+
+awin.o/awsetpalette                                    awin.o/awsetpalette
+
+   NAME
+	awsetpalette - set display LUT8 palette
+
+   SYNOPSIS
+	awsetpalette(display,palette,num)
+
+	ULONG awsetpalette(struct awdisplay *,ULONG *,ULONG);
+
+   FUNCTION
+	Set display LUT8 palette.
+
+   NOTE
+	display need not be open. Do NOT call this function
+	often, unless in screen mode (!display->windowmode).
+	In window mode this function forces remap to screen
+	palette and this takes some time.
+
+	You MUST awsetpalette at least once before you render
+	LUT8 chunky.
+
+   INPUTS
+	display  - pointer to a awdisplay structure allocated by
+		   awcreatedisplay call.
+	palette  - array of 00RRGGBB unsigned longs.
+	num      - number of entries in palettearray, min 1,
+		   max 256
+
+   RESULTS
+	success indicator (generally this can only fail if you
+	give wrong num)
+
+   SEE ALSO
+	awrenderchunky
+
+awin.o/awhandleinput                                   awin.o/awhandleinput
+
+   NAME
+	awhandleinput - handle IDCMP messages
+
+   SYNOPSIS
+	awhandleinput(display)
+
+	ULONG awhandleinput(struct awdisplay *);
+
+   FUNCTION
+	Handle IDCMP messages. Will call idcmphook if set.
+
+   NOTE
+	This call handles internal input and program set IDCMP
+	hook. This function can take minutes to return (user can
+	play with screenmoderequester). You should call this
+	function often (~4 times per second is ok). If you need
+	to get more precise user input call it more often (10-20
+	timer per second). Note that PowerUP version slows down
+	if you call this function too often.
+
+	If you need very accurate user input use a input handler
+	(see input.device/IND_ADDHANDLER). You should call
+	awhandleinput anyways though. Supporting PPC and
+	inputhandler is a bit tricky (you probably need to write
+	it in 68k pc relative asm and include it into c program
+	and then allocate memory for it + copy it there + set
+	pointer to your 68k<->ppc bridge memory into it. then
+	install that routine as inputhandler. note that your
+	bridgemem should probably be allocated with
+	MEMF_NOCACHEPPC|MEMF_NOCACHEM68K).
+
+	There are some internal keys defined for awin (these
+	can be overridden/remapped with idcmphook if needed):
+
+	ESC, Q  - quit
+	W       - goto window mode
+	S       - goto screen mode
+	TAB     - toggle window/screen mode
+	P       - pause rendering
+	SPACE   - reset window size
+	M       - change screen mode ModeID and size, also
+	          affects window size.
+
+   INPUTS
+	display  - pointer to a awdisplay structure allocated by
+		   awcreatedisplay call.
+
+   RESULTS
+	Will return 0 if program should quit, else >0. If you have
+	multiple awhandleidcmp loops on quit condition you must skip
+	rest of the loops (or else user gets a bit confused).
+
+   SEE ALSO
+	awrenderchunky, input.device/IND_ADDHANDLER
+
+awin.o/awrenderchunky                                  awin.o/awrenderchunky
+
+   NAME
+	awrenderchunky - render chunky to display
+
+   SYNOPSIS
+	awrenderchunky(display,chunky)
+
+	awrenderchunky(struct awdisplay *,
+		struct awchunky *);
+
+   FUNCTION
+	Render given chunky to display as fast as possible.
+
+   NOTE
+	If you render 16bit chunky display will close and reopen
+	in 16bit mode (screen will physically close/open only if
+	`real' 16bit mode is available). Then if you render 8bit
+	chunky display will reopen in 8bit mode again.
+
+   INPUTS
+	display  - pointer to a awdisplay structure allocated by
+		   awcreatedisplay call.
+	chunky   - pointer to a awchunky structure allocated by
+		   awinitchunkystruct or awallocchunky call.
+
+   SEE ALSO
+	awopendisplay, awallocchunky, awhandleinput, awrenderchunky_show
+
+awin.o/awrenderchunky_show                             awin.o/awrenderchunky_show
+
+   NAME
+	awrenderchunky - render chunky to display and make it visible
+
+   SYNOPSIS
+	awrenderchunky_show(display,chunky)
+
+	awrenderchunky_show(struct awdisplay *,
+		struct awchunky *);
+
+   FUNCTION
+	Render given chunky to display and force display visible.
+
+	This function can be used to display still pictures,
+	regardless of double (or possible future triple) buffering
+	or other factors.
+
+   NOTE
+	If you render 16bit chunky display will close and reopen
+	in 16bit mode (screen will physically close/open only if
+	`real' 16bit mode is available). Then if you render 8bit
+	chunky display will reopen in 8bit mode again.
+
+   INPUTS
+	display  - pointer to a awdisplay structure allocated by
+		   awcreatedisplay call.
+	chunky   - pointer to a awchunky structure allocated by
+		   awinitchunkystruct or awallocchunky call.
+
+   BUGS
+	If user resizes window or changes screenmode while still
+	picture is being viewed it will be destroyed. So you're
+	adviced to code still picture viewer to call awrenderchunky
+	& awhandleinput in loop instead.
+
+   SEE ALSO
+	awopendisplay, awallocchunky, awhandleinput, awrenderchunky
+
+awin.o/awloadfile                                      awin.o/awloadfile
+
+   NAME
+	awloadfile - load a file
+
+   SYNOPSIS
+	awloadfile(name)
+
+	struct awfile *awloadfile(const char *);
+
+   FUNCTION
+	Allocate memory for awfile structure and file.
+	Read the file.
+
+   NOTE
+	awfile->size will contain filesize.
+	awfile->data will point to loaded data.
+	Other fields are private!
+
+	Supports XPK packed files with xpkmaster.library.
+
+   INPUTS
+	name  - pointer to file path
+
+   RESULTS
+	pointer to awfile structure or NULL (file not found or
+	no memory).
+
+   SEE ALSO
+	awfreefile
+
+awin.o/awfreefile                                      awin.o/awfreefile
+
+   NAME
+	awfreefile - free awloadfile file
+
+   SYNOPSIS
+	awfreefile(file)
+
+	void awfreefile(struct awfile *);
+
+   FUNCTION
+	Free memory associated to awfile structure.
+
+   INPUTS
+	file  - pointer to awfile structure to free
+
+   SEE ALSO
+	awreadfile
+
+

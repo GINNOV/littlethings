@@ -1,0 +1,36 @@
+Short:        Codes from Mare/Zenon
+Author:       mluukkai@rieska.oulu.fi
+Uploader:     mluukkai rieska oulu fi
+Type:         dev/asm
+Architecture: m68k-amigaos
+
+ Included  are full sourcecodes to demo NoSeX! by zenon in this packet. It
+was 2nd at the abduction 98 party held in Oulu/Finnland.  Yes
+you really can compile and run it and Yes it includes my last
+assembler 3d-engine too. Also there are some other assembly-coded demo
+routines in this packet. (raycasting tunnel, angle/distance tunnel etc)
+
+ All these routines DON'T have c2p-routine included as I don't have one
+which I'm allowed to spread.  But don't worry you can use some publicly
+available c2ps to make routines work.
+
+ All routines are in assembly language and are optimized to be quite fast on
+060-based amigas.  About other 68k processors I don't care.
+
+ These routines were released due to the fact that I moved to
+c++/java/delphi-coding and sold my amiga.
+
+ I don't mind if You use these codes in your demo,game or anything, but
+please e-mail me incase you do ;)  Module prototyyppi and pictures by
+tohe are not for public use.  
+
+ These routines should work well and not destroy or otherwise mess your
+computer upp.  But if something like that should happen, I don't take any
+responsibility.
+
+ If some problems occur with these sources then e-mail me at:
+mluukkai@rieska.oulu.fi.  Please don't ask me for the c2p-routine as I can't
+give it to you.
+
+
+ 

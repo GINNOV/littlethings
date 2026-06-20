@@ -1,0 +1,50 @@
+ARRAY		MACRO
+		LABEL	\1
+SOFFSET		SET	SOFFSET+\2
+		ENDM
+
+CC_OFF_LEFT	EQU	1
+CC_OFF_RIGHT	EQU	2
+CC_OFF_TOP	EQU	4
+CC_OFF_BOT	EQU	8
+CC_ALL		EQU	15
+CC_BEHIND	EQU	16
+
+CC_BIT_LEFT	EQU	0
+CC_BIT_RIGHT	EQU	1
+CC_BIT_TOP	EQU	2
+CC_BIT_BOT	EQU	3
+
+
+PLANE_X			equ	0
+PLANE_Y			equ	4
+PLANE_Z			equ	8
+PLANE_ANYX		equ	12
+PLANE_ANYY		equ	16
+PLANE_ANYZ		equ	20
+
+MAX_POINTS		equ	4096
+MAX_FACES		equ	2048
+MAX_EFRAGS		equ	1024
+MAX_SURFSPANS		equ	512
+MAX_SPANS		equ	8192*2
+
+
+MAX_HEIGHT	equ		1280
+
+		STRUCTURE	SurfSpan,0
+		APTR		ss_FirstSpan	;as sp_Next
+		APTR		ss_Face
+		ULONG		ss_MipLevel
+		ULONG		ss_Entity
+		LABEL		ss_Sizeof
+
+		STRUCTURE	Span,0
+		APTR		sp_NextSurf	;as ss_Next
+		APTR		sp_Next
+		UWORD		sp_Sx
+		UWORD		sp_Ex
+		UWORD		sp_Key		;sort key
+		UWORD		sp_Y
+		LABEL		sp_Sizeof
+

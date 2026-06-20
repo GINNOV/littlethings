@@ -1,0 +1,40 @@
+How to realize binary adding and subtracting of polygons dropped by the Blitter onto playfield, by setting up it's minterms.
+
+Adding is binary function of two sources and bit carried on from the previous binary point to another.
+In case of blit we use channel A as a background, B as an object and C as a value of blit carried from previous bitplane - the overflow.
+
+According to Basics of Digital Technology by Andrzej Skorupski, binary function of adding two operands goes like this:
+
+A B C  D  O
+-----------
+0 0 0  0  0
+0 0 1  1  0
+0 1 0  1  0
+0 1 1  0  1
+1 0 0  1  0
+1 0 1  0  1
+1 1 0  0  1
+1 1 1  1  1
+
+interpreting this function as usual Karnaugh map we're having two blits - D and O. Because D operand overwrites operand A, blit O has
+to be performed first. Writing minterms for blit D gives result %10010110 - $96. Blit O is %11101000 - $e8
+
+The same book brings binary function for subtracting:
+
+A B C  D  O
+-----------
+0 0 0  0  0
+0 0 1  1  1
+0 1 0  1  1
+0 1 1  0  1
+1 0 0  1  0
+1 0 1  0  0
+1 1 0  0  0
+1 1 1  1  1
+
+And this gives blit D - $96, like before and blit O (overflow, which is now underflow, loan or borrow) - $8e
+
+For usual shade bobs it is casual that overflow or loan from the last position is carried on to the first bitplane.
+
+To get saturation effect funstion for last bitplane has to be changed from adding to binary OR - $fe, for blit D and unconditional 0 for
+blit O. For subtraction minterms $90 for blit D and $80 for blit O, should do the saturation right.

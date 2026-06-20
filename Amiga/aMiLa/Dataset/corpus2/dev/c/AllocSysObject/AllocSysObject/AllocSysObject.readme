@@ -1,0 +1,11 @@
+Short:        AllocSysObject() implementation from OS4Emu
+Author:       Ilkka Lehtoranta (ilkleht@isoveli.org)
+Uploader:     Ilkka Lehtoranta (ilkleht@isoveli.org)
+Type:         dev/c
+Architecture: generic
+
+An excerption of AllocSysObject()/FreeSysObject() implementation in OS4Emu
+which should answer to some questions (greetings to Bernd Roesch).
+
+Feel free to use it in your own programs as long as accompanied license is
+respected.

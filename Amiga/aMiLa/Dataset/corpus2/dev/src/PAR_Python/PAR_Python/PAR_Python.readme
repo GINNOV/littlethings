@@ -1,0 +1,184 @@
+Short:        PAR: access using the SIMPLEST of Python.
+Author:       wisecracker@tesco.net (Barry Walker)
+Uploader:     wisecracker@tesco.net (Barry Walker)
+Type:         dev/src
+Version:      1.00.01
+Architecture: m68k-amigaos
+
+Distribution: Public Domain, Emailware, Freeware.
+
+============================================================================
+
+  Requirements Are:-
+  ------------------
+
+       A standard A1200.
+       Standard OS3.0x or better. 
+       PAR_READ.lha from the hard/hack drawer of AMINET IS REQUIRED.
+       PAR: device installed and running.
+       Python 1.4, minimum installed. This is NO longer on AMINET but I do
+       have a copy of the full installation for a stock A1200. Python 1.5.2
+       and 2.01 is available on AMINET for more up market MIGGYs however.
+
+----------------------------------------------------------------------------
+
+Preamble...
+-----------
+
+Well I am learning the fine arts of Python and what better way of learning
+than with experimentation. My main priority is access to the parallel port
+and after some hours of book reading and trial and error I finally ended
+up with a working example of parallel port access using PAR: as a VOLUME
+in READ mode only. There are three sources in here, ~ParOpen.py~ my very
+first stand alone Python program AND a second with very minor modifications
+to use Python as a Voltmeter called ~VoltMeter.py~. These two sources are
+SOOOOO simple although the source size is large. The vast majority of the
+source size is/are comments and nothing else. The third source code
+~ParaPort.py~ is purely the working code only WITHOUT any comments at all
+and as you will see it is tiny...
+
+I have found that the statement ~print '\f'~ does NOT clear the screen on
+all platforms but does so on the AMIGA so I have used it. This also applies
+to Python version 2.4x as Windows ME and XP, (TM), do not respond to this
+command in either a GUI or a Command Prompt.
+
+This code MUST have the hardware from PAR_READ.lha in the hard/hack drawer
+of AMINET for it to work or it WILL hang if the hardware is NOT connected.
+Also my version of Python is 1.4 as that is the only version that works on
+my A1200 with 4MB FastRam. Only versions 1.5.2 to 2.01 are available on
+AMNIET. Good luck and have fun like I do... :)
+
+This opens up Python for a whole new line for the AMIGA:-
+---------------------------------------------------------
+
+1) A-D Conversion...
+2) AC-DC Volmeters, Ammeters and other simple TestGear...
+3) Anemometers, Thermometers and other simple Scientific Equipment...
+4) As an 8 channel detector of impending doom, e.g. Water Level Alarm etc...
+
+The application list is almost endless.
+
+----------------------------------------------------------------------------
+
+General usage...
+----------------
+
+1) Switch OFF the AMIGA and remove any hardware attached to the parallel
+   port.
+2) Connect the home built hardware from the ~PAR_READ.lha~ archive to the
+   parallel port.
+3) Boot the AMIGA into WorkBench.
+4) Start up Python either from an icon or the CLI/Shell. It is assumed that
+   Python IS installed AND PYTHON: is its volume name.
+5) From the Python prompt ~>>> ~ load and run the ~ParOpen.py~ file using
+   "execfile('PYTHON:Drawer/ParOpen.py')<RETURN>" without the quotes where
+   "Drawer" is the directory INSIDE the PYTHON: volume where you have put
+   these programs.
+6) To STOP, NOTE STOP, the program press Ctrl-C and the program will stop.
+7) Close down Python and switch off the AMIGA when finished to remove the
+   hardware.
+
+----------------------------------------------------------------------------
+
+The source for ~ParaPort.py~...
+-------------------------------
+
+def main():
+	while 1:
+		pointer = open('PAR:', 'rb', 1)
+		mybyte = str(pointer.read(1))
+		pointer.close()
+		print 'Decimal value at the parallel port is:-',ord(mybyte),'.    '
+main()
+
+That's all there is to it... :)
+This source WILL run as stand alone so that you can see it working BUT the
+hardware MUST be attached to the AMIGA parallel port. IF there are NO data
+lines used then the value will read 255, (the -ACK line Pin 10 of the
+parallel port MUST be toggled continuously for this to work).
+As you can see it is ludicrously simple, yet data is being grabbed from
+an external source...
+
+The other two sources are mainly comments but look much prettier on screen.
+
+(I now await the experts comments pulling these sources apart... :)
+
+----------------------------------------------------------------------------
+
+The archive is Public Domain/Emailware and you may modify them as you
+please for your OWN experiments. See below. I would dearly love an Email
+from you even if you think it is absolute rubbish... :)
+
+(Original idea and (C)2006 goes to B.Walker, G0LCU.)
+
+----------------------------------------------------------------------------
+
+                                IMPORTANT:-
+                                -----------
+
+
+    The Legal Stuff:-
+    -----------------
+
+    These programs are Public Domain and no profit will be made from them,
+    also all of the files must remain unaltered and intact including this
+    one. The author is not responsible for any damage to, or loss of, or
+    failure of equipment or data caused in any way by the use of these
+    programs. There is NO warranty with the use of these software releases
+    and YOU USE THEM AT YOUR OWN RISK.
+
+----------------------------------------------------------------------------
+
+    Testing Evaluation:-
+    --------------------
+
+    A standard A1200 in 2MB, 6MB and 10MB modes using trapdoor memory AND/OR
+    PCMCIA memory expansions.
+
+    All test conditions were/are running standard OS3.0x and using standard
+    ~topaz 8~ fonts throughout.
+
+    I have no idea what a strange configuration setup will create so refer
+    to the ~The Legal Stuff~ above.
+
+----------------------------------------------------------------------------
+
+                                 WARNING.
+                                 --------
+
+  1) DISCONNECT any faulty equipment under test from the MAINS supply.
+  2) If a DC supply is used do NOT reverse polarity the connections.
+  3) Do NOT power up any electronic item until it is safe to do so.
+  4) CHECK and RECHECK all of your construction and repair work thoroughly.
+  5) Handle ALL tools used with care.
+  6) Beware of ALL types of solvents, glues and etching fluids.
+  7) NEVER leave a soldering iron switched on unattended.
+  8) KEEP everything OUT of the reach of small children.
+  9) Switch OFF the AMIGA before disconnecting or connecting any hardware.
+ 10) And finally read 1) to 9) again.
+
+----------------------------------------------------------------------------
+
+   Contact:-
+   ---------
+
+   Mr Barry Walker, G0LCU,
+   70 King George Road,
+   Loughborough,
+   Leicestershire,
+   LE11 2PA,
+   England.
+
+   Email:-     wisecracker@tesco.net
+   URL:-       http://homepages.tesco.net/wisecracker/G0LCU.HTM
+
+   Author of the ~TestGear?~ projects in the ~hard/hack~ drawer of AMINET.
+
+----------------------------------------------------------------------------
+
+   A very useful HardWare related site, (C) Anthony Hoffman, for
+   modifications, schematics, repairs and the like is:-
+
+                          http://amiga.serveftp.net/
+
+============================================================================

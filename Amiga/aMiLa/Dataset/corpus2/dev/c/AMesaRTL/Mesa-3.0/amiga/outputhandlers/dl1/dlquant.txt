@@ -1,0 +1,489 @@
+			    DL QUANTIZATION
+			    ===============
+	A Fast High Quality Method For 2-Pass Color Quantization
+	========================================================
+			     By Dennis Lee
+			     =============
+			     Oct. 18, 1997
+			     =============
+
+Changes in this update:
+
+1) DL3 Quantizer now has an optimal color mapper.  See 'Performance'
+   section for improved results (update called dl3q.exe).
+2) DL3 Quantizer expanded to support optimum 'visual' quality, in
+   addition to the minimum RMSE mode.  This was accomplished by
+   adding support for biasing of the color components.
+   Sample program 'dl3ycc.exe' included in binary distribution to
+   demonstrate performance.
+3) 'Using DL Quant in your Software' documentation section improved.
+4) Program to measure quality (ppmdiff.exe) now uses standard RMSE
+   formula instead of mean Euclidean distance calculation.
+   Results in 'Performance' section are updated accordingly.
+
+
+Contents
+========
+Overview
+History
+Software
+Updates and Availability
+Using DL Quant in your Software
+Performance
+Legal Issues
+Contact Info
+Acknowledgments
+
+
+Overview
+========
+
+A color quantizer reduces the number of colors in a digital image.
+A typical use is to reduce a 24-bit image (up to millions of colors)
+to an 8-bit image (up to 256 colors) so a popular 8-bit graphic format
+can be used.
+
+This file documents the source and binary distributions of this software.
+This software includes the source code of my color quantizers.
+These quantizers are called DL1 and DL3.  I have decided not to
+release DL2 freely to the public.  This may change in the future,
+however.
+
+DL1
+---
+Design Goals:  1) To be the fastest 2-pass color quantizer.
+	       2) Have average to good quality.
+
+Results:       1) Success.  Fastest to my knowledge.
+	       2) Success.  Quality among the best quantizers.
+
+DL2
+---
+Design Goals:  1) Quality equal or better than the highest
+		  quality quantizer.  I used Wu Quant as reference.
+	       2) Faster than the highest quality quantizer.
+
+Results:       1) Success.  Better quality than Wu.
+	       2) Success.  Faster than Wu.
+
+DL3
+---
+Design Goals:  1) To be the highest quality 2-pass color quantizer.
+Results:       1) Success.  Highest quality to my knowledge.
+
+
+Major sections users should read are:
+
+1) Software -- Includes a 1 line description of each file in the
+	       source and binary distributions of this software
+2) Performance -- Speed and quality results for DL1, DL3 and the
+		  reference quantizers, Wan and Wu.
+3) Using DL Quant
+   in your Software -- If you plan to use DL Quant in your software,
+		       this section has essential information including
+		       an API description for the DL routines.
+
+
+History
+=======
+
+In the winter of 1993, I had an interest in color quantization.
+I was curious as to how imaging software was able to reduce the
+vast number of colors in a 24-bit image down to a lowly 256 and
+still look so nice.  I soon found out they were using a technique
+called color quantization along with error-diffusion dither.
+It turned out most software at the time was using the same
+quantization technique called Heckbert's Median-Cut.  I wanted
+to find out how the technique worked, and searched for source
+code implementations.  I ended up finding the code in the
+Independent JPEG Group's jpeg library.  I was surprised as to how
+easy the technique was and thought I could make a better one.
+
+The average computer in 1993 took many seconds to quantize a typical
+image.  For this reason, I concentrated on a technique that would
+require the least processor time possible.  I designed around the steps
+required by a 2-pass quantizer and constructed data structures that
+would need the least amount of extra processor work.
+This 'personal project' took about a week to complete, and the source
+code in this distribution is essentially the same.
+This quantizer is now called DL1.
+
+I next decided to aim for an 'optimal' method that would give the
+best possible quality regardless of processor time.  The technique
+I came up with uses an exhaustive search approach to minimize error
+introduced at each step during palette reduction.  I aimed for
+an optimal way of reducing a palette from X to X-1 colors.
+The first version I coded only took a few hours, but it was far to
+slow.  It took 2 days to quantize a typical image.  Another 2 days
+of work was required to design and code the current method which is
+tolerable in speed.  This quantizer is now called DL3.
+
+Afterwards, I searched for high quality quantizers and found a few that
+claimed to be 'optimal', included Xiaolin Wu's statistical method and a
+neural network based one by Anthony Dekker.  I compared them to DL3
+and found Wu's method to be slightly behind, and the neural network one
+further behind.
+
+My last aim was to create a close to optimal technique that would
+match or exceed Wu's quality and process faster.  As you may have
+noticed, my goal was to create a set of quantizers that could
+outperform other quantizers in all situations.
+This last quantizer took about a week to complete.
+This quantizer is now called DL2.
+
+
+Software
+========
+
+The source distribution of this software includes the following files:
+
+ 1) dlquant.txt    Documentation for this software distribution (this file)
+ 2) basic.h        Basic #defs and typedefs used in DL Quant code
+ 3) dl1quant.h     Header file for DL1 Quantizer
+ 4) dl1quant.c     DL1 Quantizer
+ 5) dl1test.c      Program to test the DL1 Quantizer by using it
+ 6) dl3quant.h     Header file for DL3 Quantizer
+ 7) dl3quant.c     DL3 Quantizer
+ 8) dl3test.c      Program to test the DL3 Quantizer by using it
+ 9) wanquant.c     Wan et al Quantizer
+10) wantest.c      Program to test Wan et al Quantizer by using it
+11) wuquant.c      Wu Quantizer
+12) wutest.c       Program to test Wu Quantizer by using it
+13) ppmdiff.c      Calculates difference (RMSE) between 2 PPM images
+
+All source code should compile without trouble using a 32-bit C compiler.
+The code will not work with 16-bit compilers because each quantizer
+attempts to allocate > 64K in a single block.
+
+The binary distribution of this software includes the following files:
+
+ 1) dlquant.txt    Documentation for this software distribution (this file)
+ 2) dl1f_q0.exe    DL1 Quantizer FAST version, no QUAL settings
+ 3) dl1f_q1.exe    DL1 Quantizer FAST version, QUAL1 setting
+ 4) dl1f_q2.exe    DL1 Quantizer FAST version, QUAL2 setting
+ 5) dl1f_q12.exe   DL1 Quantizer FAST version, QUAL1 and QUAL2 settings
+ 6) dl1_d1.exe     DL1 Quantizer with 1-val dither option
+ 7) dl1_d2.exe     DL1 Quantizer with 2-val dither option
+ 8) dl1_d4.exe     DL1 Quantizer with 4-val (Floyd-Steinberg) dither option
+ 9) dl3_d1.exe     DL3 Quantizer with 1-val dither option
+10) dl3_d2.exe     DL3 Quantizer with 2-val dither option
+11) dl3_d4.exe     DL3 Quantizer with 4-val (Floyd-Steinberg) dither option
+12) dl3q.exe       Same as 9) except has optimal color mapper
+13) dl3ycc.exe     DL3 Quantizer using scaled YCrCb (Best visual quality)
+14) wan.exe        Wan Quantizer
+15) wu.exe         Wu Quantizer
+16) ppmdiff.exe    Calculates difference (RMSE) between 2 PPM images
+17) cwsdpmi.doc    Documentation for DPMI server (see acknowledgments)
+18) cwsdpmi.exe    DPMI server
+
+The Wu Quantizer was developed by Xiaolin Wu.  It uses statistical
+computations to minimize true variance.
+The Wan Quantizer was developed by Wan et al.  It attempts to minimize
+marginal variance.
+
+The executables are sample programs using the quantize routines.
+They were created to obtain RMSE results and not meant to be useful
+for anything else.  They take a PPM image as input, reduce the number
+of colors, and outputs the result as a PPM image.
+
+
+Updates and Availability
+========================
+
+A link to the most recent version of this software can be found at
+
+www.ecf.utoronto.ca/~denlee/software.html
+
+This web page will be the first to have info on updates to this software.
+If more performance comparisons are done, a link to the results will also
+be available on this web page.
+
+
+Using DL Quant in your Software
+===============================
+
+The source code to DL1 and DL3 may be incorporated into other software
+under the conditions stated in the Legal Issues section.
+
+There are no known bugs in the DL source code.
+
+Include the following files in your program to use the DL quantizers:
+
+DL1) basic.h, dl1quant.h, dl1quant.c
+DL3) basic.h, dl3quant.h, dl3quant.c
+
+DL1 and DL3 are not dependent on each other, so you only need to include
+3 files in your program if you use one quantizer.
+
+Each quantizer has some programmer selectable options:
+
+DL1) FAST, QUAL1, QUAL2, DITHER1, DITHER2, DITHER4
+DL3) STATUS, BEST_MAPPING, SIXTEEN_BIT, CScale, DITHER1, DITHER2, DITHER4
+
+The options and a brief description for each are located near the top
+of the source files, dl1quant.c and dl3quant.c -- define or undefine
+as you wish.
+
+Refer to the API description below and the files dl1test.c and dl3test.c
+for examples of how to use the DL quantizers.
+
+
+DL1 and DL3 API
+---------------
+
+#include "dl1quant.h"
+#include "dl3quant.h"
+
+int dl1quant(unsigned char *inbuf, unsigned char *outbuf,
+	     int width, int height, int quant_to, int dither,
+	     unsigned char palette[3][256]);
+
+int dl3quant(unsigned char *inbuf, unsigned char *outbuf,
+	     int width, int height, int quant_to, int dither,
+	     unsigned char palette[3][256]);
+
+Parameters for the DL1 routine are identical to the DL3 routine.
+
+Each routine returns 1 on successful quantize and 0 on failure.
+
+inbuf must be passed a buffer (width * height * 3) bytes large
+containing the image data to quantize.  The format of the data
+should be RGBRGBRGB etc.  The order of the components does not
+matter, eg. BRGBRGBRG etc. is fine.  The data doesn't even have
+to be RGB, eg. the dl3ycc.exe sample program uses YCrCb data.
+
+outbuf must be passed a buffer (width * height) large.
+The quantized image will be placed in this buffer.
+
+width and height shouldn't need explanation
+quant_to is the number of colors to quantize to
+dither is an option: pass 1 to apply dither and 0 for no dither
+palette will contain the palette of the quantized image
+
+
+Performance
+===========
+
+The following results were obtained on a PPro 150 with 32 MB EDO RAM.
+For accurate timing results, each quantizer (except DL3) was set up
+to process an image 10 times.  This wasn't done for DL3 because it
+takes long enough processing once.
+
+All quantizers were set to reduce to 256 colors.
+All times are in seconds and for 1 quantize.
+Error measures for inappropriate cases (dithering and dl3ycc) are removed.
+I am open to suggestions for other ways of measuring quality.  Please
+forward any ideas by e-mail.  The Contact Info section has my address.
+
+Test images used:
+
+1) LENA.PPM (512 * 512 * 24-bit)
+2) WINTER.PPM (1024 * 768 * 24-bit)
+
+
+Speed and Quality Results
+-------------------------
+
+Image:  LENA.PPM (512 * 512 24-bit)
+======================================================================
+|   Quantizer    |   Options    |   Time   |  RMS Error  |  % Error  |
+======================================================================
+|  DL1F_Q0.EXE   |  Dither Off  |   0.093  |     4.15    |   126.1   |
+----------------------------------------------------------------------
+|  DL1F_Q1.EXE   |  Dither Off  |   0.132  |     4.09    |   124.3   |
+----------------------------------------------------------------------
+|  DL1F_Q2.EXE   |  Dither Off  |   0.148  |     3.97    |   120.7   |
+----------------------------------------------------------------------
+|  DL1F_Q12.EXE  |  Dither Off  |   0.186  |     3.90    |   118.5   |
+----------------------------------------------------------------------
+|  DL1_D1.EXE    |  Dither On   |   0.220  |     ----    |   -----   |
+----------------------------------------------------------------------
+|  DL1_D2.EXE    |  Dither On   |   0.330  |     ----    |   -----   |
+----------------------------------------------------------------------
+|  DL1_D4.EXE    |  Dither On   |   0.379  |     ----    |   -----   |
+----------------------------------------------------------------------
+|  DL3_D1.EXE    |  Dither Off  | 146.150  |     3.52    |   107.0   |
+----------------------------------------------------------------------
+|  DL3_D1.EXE    |  Dither On   | 146.150  |     ----    |   -----   |
+----------------------------------------------------------------------
+|  DL3_D2.EXE    |  Dither On   | 146.320  |     ----    |   -----   |
+----------------------------------------------------------------------
+|  DL3_D4.EXE    |  Dither On   | 146.320  |     ----    |   -----   |
+----------------------------------------------------------------------
+|  DL3Q.EXE      |  Dither Off  | 152.580  |     3.29    |   100.0   |
+----------------------------------------------------------------------
+|  DL3YCC.EXE    |  Dither Off  |  56.200  |     ----    |   -----   |
+----------------------------------------------------------------------
+|  DL3YCC.EXE    |  Dither On   |  49.720  |     ----    |   -----   |
+----------------------------------------------------------------------
+|  WAN.EXE       |     None     |   0.203  |     4.36    |   132.5   |
+----------------------------------------------------------------------
+|  WAN.EXE       |     Slow     |   0.352  |     4.18    |   127.1   |
+----------------------------------------------------------------------
+|  WU.EXE        |     None     |   0.198  |     3.64    |   110.6   |
+----------------------------------------------------------------------
+Note:  DL3YCC with dither is faster than DL3YCC without dither
+       because a more accurate but slower color mapper is used
+       in the dither off case.
+
+
+Image:  WINTER.PPM (1024 * 768 24-bit)
+======================================================================
+|   Quantizer    |   Options    |   Time   |  RMS Error  |  % Error  |
+======================================================================
+|  DL1F_Q0.EXE   |  Dither Off  |   0.175  |     3.53    |   135.8   |
+----------------------------------------------------------------------
+|  DL1F_Q1.EXE   |  Dither Off  |   0.291  |     3.41    |   131.2   |
+----------------------------------------------------------------------
+|  DL1F_Q2.EXE   |  Dither Off  |   0.214  |     3.38    |   130.0   |
+----------------------------------------------------------------------
+|  DL1F_Q12.EXE  |  Dither Off  |   0.330  |     3.28    |   126.2   |
+----------------------------------------------------------------------
+|  DL1_D1.EXE    |  Dither On   |   0.407  |     ----    |   -----   |
+----------------------------------------------------------------------
+|  DL1_D2.EXE    |  Dither On   |   0.637  |     ----    |   -----   |
+----------------------------------------------------------------------
+|  DL1_D4.EXE    |  Dither On   |   0.791  |     ----    |   -----   |
+----------------------------------------------------------------------
+|  DL3_D1.EXE    |  Dither Off  |  82.360  |     2.80    |   107.7   |
+----------------------------------------------------------------------
+|  DL3_D1.EXE    |  Dither On   |  82.360  |     ----    |   -----   |
+----------------------------------------------------------------------
+|  DL3_D2.EXE    |  Dither On   |  82.630  |     ----    |   -----   |
+----------------------------------------------------------------------
+|  DL3_D4.EXE    |  Dither On   |  82.630  |     ----    |   -----   |
+----------------------------------------------------------------------
+|  DL3Q.EXE      |  Dither Off  | 102.140  |     2.60    |   100.0   |
+----------------------------------------------------------------------
+|  DL3YCC.EXE    |  Dither Off  |  50.820  |     ----    |   -----   |
+----------------------------------------------------------------------
+|  DL3YCC.EXE    |  Dither On   |  31.260  |     ----    |   -----   |
+----------------------------------------------------------------------
+|  WAN.EXE       |     None     |   0.390  |     3.56    |   136.9   |
+----------------------------------------------------------------------
+|  WAN.EXE       |     Slow     |   0.495  |     3.49    |   134.2   |
+----------------------------------------------------------------------
+|  WU.EXE        |     None     |   0.500  |     2.96    |   113.8   |
+----------------------------------------------------------------------
+Note:  DL3YCC with dither is faster than DL3YCC without dither
+       because a more accurate but slower color mapper is used
+       in the dither off case.
+
+
+DL1 Performance
+---------------
+
+The results show that DL1 is very fast.  2 to 3 times as fast as
+the Wan or Wu quantizers.  More importantly is how fast DL1 is,
+compared to a memcpy.  A 2-pass quantizer must read/write at least
+(7 * pixels) bytes of memory.  A first read (3 * pixels) to gather
+statistics, a second read (3 * pixels) to map data to the output
+palette, and a write of the output data (1 * pixels).
+DL1's method happens to read/write (8 * pixels) bytes.
+A bytewise memcpy can move 60 MB/s on the test machine.
+DL1 processes 1024*768*7/0.175 (about 30 MB/s) and 512*512*7/0.093
+(about 20 MB/s) with the test images.
+That's one-third to one-half the speed of a memcpy!
+
+Most of the processing time is spent in 5 lines of code.
+The operation in these lines are also necessary for any 2-pass
+quantizer.  This is why I believe DL1 is about as fast as a
+2-pass quantizer can be.
+Specifically, the 5 lines take 60%-85% of total quantize time.
+
+From the results, dithering with DL1 is also fast.
+A 1-val dither only takes about twice as long as no dither.
+1-val dither with DL1 is about the speed of Wan or Wu without dither.
+
+DL1's quality is competitive with the high quality reference quantizers.
+On the test images, DL1 does slightly better than the Wan quantizer.
+
+One down side to DL1 is the memory requirement.  DL1 requires ~900 KB
+for its own usage.  This is a lot more than some other quantizers need.
+For example, a Median-Cut implementation can be made to work with as
+little as 64 KB.  The Wu and Wan quantizers also need a lot of memory.
+Wu uses ~735 KB, and Wan uses ~940 KB.
+
+
+DL3 Performance
+---------------
+
+The results show that DL3 is the highest quality quantizer.  The
+Wu quantizer is next best, introducing 10.6% to 13.8% more RMS Error.
+The updated DL3 (dl3q.exe) is 7.0% to 7.7% better than the previous
+released version.
+
+Also shown in the results, DL3 takes much longer than the other
+quantizers.  This eliminates DL3 from typical usage unless the user
+has a very fast computer and/or has a lot of patience.
+However, the reward is a quantized image that is the best currently
+possible.  Quantize times can range from seconds to minutes or even
+hours depending on the image and the computer used.
+
+Virtually all the processing time is taken in reducing the palette.
+The number of colors in the source image, not the image size,
+determines the time required to quantize it.
+In the updated DL3 (dl3q.exe), a significant amount of time is taken
+in the optimal color mapper if it is used.
+
+DL3 is almost truly 'optimal'.  Possibly more so than any other
+quantizer.  DL3 is not optimal for the following reasons:
+
+1) Initial pass over image data for statistics is recorded in
+   15-bit boxes.  This is better than a 24-bit to 15-bit reduction
+   since each pixel's value contributes to the box values.
+   The error introduced by this step is extremely minor in a
+   24-bit to 8-bit quantize.
+2) The quality measure used is RMSE.  This is only one way of
+   measuring quality, and probably not the best.  This is an
+   important factor in measuring how optimum DL3 is.
+3) DL3 is optimum (using RMSE) when reducing a palette from
+   N = start_colors to N = start_colors - 1.  This process is
+   repeated until N = 256.  However, repeating an optimum operation
+   X times is not the optimum way of reducing a palette from
+   N = start_colors down to N = 256 directly.
+
+
+Legal Issues
+============
+
+The DL Quant source code may be freely copied, modified, and
+redistributed, provided the copyright notice remains attached.
+Compiled versions of the code, modified or not, are free for
+personal use.  Compiled versions used in distributed software
+is also free, but a notification must be sent to the author.
+An e-mail to denlee@ecf.utoronto.ca will do.
+
+The author takes NO responsibility for any damages resulting from the
+use of this software.  The user assumes the entire risk as to its
+quality and accuracy.
+
+This software is Copyright (C) 1993-1997 Dennis Lee.
+
+
+Contact Info
+============
+
+Please send bug reports to my Internet e-mail address:
+
+    denlee@ecf.utoronto.ca
+
+Feel free to contact me if you have any questions, comments, or
+suggestions.  I appreciate feedback.
+
+
+Acknowledgments
+===============
+
+Some of the code in the source distribution is derived from the
+IJG's jpeg library.  Specifically, the error diffusion dither
+and PPM parsing code was used.
+
+DJGPP version 2.01 was used to compile all the sample programs.
+CWSDPMI is included in the binary distribution of this software.
+CWSDPMI is a DPMI server.  It is required for the sample programs
+if the OS or SHELL used does not provide DPMI services.
+
+DJGPP can be found on any simtel.net mirror.
+For example, ftp.simtel.net, directory /pub/simtelnet/gnu/djgpp
+CWSDPMI can be found at the same location under v2misc.

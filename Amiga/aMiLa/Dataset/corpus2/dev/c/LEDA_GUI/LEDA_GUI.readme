@@ -1,0 +1,27 @@
+Short:        Amiga GUI (libWx.a) for LEDA.
+Author:       kay@cip.informatik.uni-wuerzburg.de (Kay Drangmeister)
+Uploader:     kay cip informatik uni-wuerzburg de (Kay Drangmeister)
+Type:         dev/c
+Architecture: m68k-amigaos
+
+    This  is  my second version of the Wx library for the LEDA package.  It
+has nearly the same functionality as the X11 version, except for some small
+shortcomings. Read README.LEDA if you don't know where to obtain LEDA.
+
+    What  you  need  to use this package is:  a current version of LEDA.
+
+FEATURES & LIMITATIONS:
+
+    Most  functions  are  correctly emulated, including line dash patterns,
+X11 style color selection, window events, timing functions.  However, there
+are some X11 features that are not easily emulated:
+
+ - Thick lines. I use a bunch of normal lines to imitate this, but it
+   may look ugly in exor-mode, or with a dash pattern.
+ - Dashed arcs. I use normal arcs instead
+ - Bitmap insertions. I didn't have the time to write PBM import routines.
+ - Iconification is not supported
+
+    Since  many  LEDA programs make extensive use of all 3 mouse buttons, I
+have  mapped F1, F2, F3 to LMB, MMB, RMB, respectively, for the ones of you
+with only 2 button mice.

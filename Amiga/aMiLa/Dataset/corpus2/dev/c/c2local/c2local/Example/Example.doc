@@ -1,0 +1,91 @@
+
+This example shows how to localize the well known Hello-world program.
+In this example the text "This is a short text!" shall be replaced by
+"Dies ist ein langer Text, der eine neue Maximallänge erfordert."
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+
+char *p="This is a short text!";
+
+main()
+{
+   puts("Hello world!");
+   puts(p);
+}
+
+
+First you have to add a call to InitStrings() in the beginnig of the main()
+function. To be able to compile this program just as a normal C-program as
+well, this call should be surrounded by #ifdef and #endif.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+char *p="This is a short text";
+
+main()
+{
+#ifdef __LOCALIZED
+   InitStrings();
+#endif
+   puts("Hello world!");
+   puts(p);
+}
+
+
+Now you use c2local to patch the sourcecode:
+c2local patch hello.c name hello
+
+
+Since the length of the german text is longer than the automatically
+reserved length, you must edit the stringfile.
+
+ed hello_locale.str:
+
+msg_0 "This is a short text!" 63
+
+
+Now compile the stringfile:
+
+c2local compile name hello version 1 catalog hello.catalog
+
+
+Then compile the localized program:
+
+cd localized
+sc #?.c link
+
+After this you will have to translate the English texts. In this example
+into german. (Do not forget to sepcify the language via
+"##language deutsch"):
+
+copy hello_locale.ct hello_deutsch.ct
+ed hello_deutsch.ct
+
+
+And then create the suitable catalog-directory and generate the catalog.
+
+makedir catalogs
+makedir catalogs/deutsch
+
+ccomp hello_locale.cd hello_deutsch.ct catalogs/deutsch/hello.catalog
+
+That's it. (The makelocal-script does exactly the above,)
+
+
+If the program fails to use the german language, although you have selected
+it via prefs, check the following:
+- is the catalog in the correct directory ?
+- is the name of the catalog correct ?
+- does the versionnumber of the catalog match that one selected in the
+  program ?
+- did you specify the language in the .ct-file ?
+- is there an old catalog within the memory (-> "avail flush") ?
+
+
+
+
+

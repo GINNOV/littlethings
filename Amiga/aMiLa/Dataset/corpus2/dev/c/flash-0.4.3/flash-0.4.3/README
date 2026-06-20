@@ -1,0 +1,190 @@
+INTRODUCTION
+------------
+
+Feb. 14th 1999
+
+This the Version 0.4.3 of the Flash Plugin for Linux.
+
+Flash Plugin is under GPL, see COPYING file.
+
+The distribution has changed:
+- Lib contains the FlashLib sources.
+- Plugin contains plugin sources.
+- Player contains the standalone player sources.
+
+New features :
+- performance improvements.
+- rewritten for platform independence. See PORTING file.
+- Text buttons now handled.
+- sound Mixing.
+- parsers bugs fixed.
+- Font2 partially parsed.
+
+To get some information on this Plugin check the following link :
+http://www.geocities.com/TimesSquare/Labyrinth/5084/flash.html
+or mirrors :
+http://perso.club-internet.fr/odebon/flash.html     (Europe)
+
+There is also a standalone Flash Player called swfplayer which
+the opportunity to play swf files without starting Netscape.
+
+Author:	Olivier Debon <odebon@club-internet.fr>
+
+Credits :
+	Todd R. Eigenschink <todd@tekinteractive.com>
+		-who helped on egcs compilation problems, provided
+                 the most tricky swf files I never had ;-)    and
+		 gave me a good start for this file.
+	Ron Arts <raarts@netland.nl>
+		-who told me that the plugin name should be set to
+		 Shockwave Flash, and then new doors were open.
+	Emmanuel Marty <core@suntech.fr>
+		-who gave me hints for some optimizations. He also
+		 planned to make the port to GGI.
+	A <a@absurd.org>
+		-who did 24/32 bit modes work.
+	Richard Lloyd <rkl@csc.liv.ac.uk>
+		-who provides the HP-UX support.
+	Yamagata <yamagata@nwgpc.kek.jp>
+		-who provides the Font2 parsing.
+	Xavier Pianet <xavier@xingo.com>
+		-who provides the BeOS support.
+
+I don't forget those who sent me references to sites that crash the Plugin.
+
+FEATURES
+--------
+
+Limitations :
+  - The plugin and the player use XShm extensions, so remote display is not possible.
+  - Does not rotate or reverse bitmaps (only positive X and Y scaling are supported).
+
+Not functional :
+  - No Morphing.
+  - No alpha-blending.
+  - No anti-aliasing.
+
+SOUND SUPPORT
+-------------
+
+Limitations :
+  - No streamed sound supported (interleaved data).
+  - No sound envelop. So no fading or balancing effect.
+
+But the main feature is here and sound can be enjoyed.
+
+There are some 'clicks' and delayed effects, but sound
+playing is not too bad. Perfectible actually.
+
+I recommend OSS drivers, but it is not required at all
+(http://www.opensound.com)
+
+If you have troubles with sound put the -DNOSOUND option
+for compilation. Also do this for non-Linux Unix.
+
+THE PLAYER
+----------
+
+The standalone player can simply control movie by
+pressing Q to quit, P to pause, C to continue and
+R to replay.
+There is also the possibility to zoom in or out
+and scroll using Keypad +/- and cursor keys, but
+it is buggy on frozen images.
+
+BUG REPORT
+----------
+
+If Netscape crashes when it started to play a Flash file, please
+report the complete url where you have found the file.
+Do not send the actual file !
+
+If you have rendering problem also report the url.
+
+If the plugin does not seem to show anything or does not do what it
+is supposed to do, please consider that the plugin does not support
+all Flash 3.0 features. Anyway it tries to play it but may fail then.
+
+COMPILATION
+-----------
+
+If you use Linux just type 'make'.
+
+Warning : the plugin compilation should not fail, but you may
+have problem with Netscape at startup. See INSTALLATION section
+for workarounds.
+
+For other Unices like FreeBSD or Solaris you may have to change
+some flags. See Plugin/Makefile for hints.
+
+INSTALLATION
+------------
+
+Once you have successfully compiled the plugin, put the file
+npflash.so (located in the Plugin directory) into your
+~/.netscape/plugins directory or into the system-wide
+/opt/netscape/plugins directory (depends on where you have installed
+Netscape).
+
+If Netscape already runs type 'javascript:navigator.plugins.refresh'
+in the Location field.
+
+	PROBLEMS
+	--------
+
+If you have problem to successfully install the plugin, please
+read the following hints. Otherwise, report the problem with full
+description of your configuration :
+- Distribution.
+- Compiler.
+- Libs (the output of ldconfig -p is useful).
+- The netscape version and the output of 'ldd netscape'.
+
+If some symbols like _rtti or _throw are unresolved, it seems
+that you have egcs. Just uncomment the proper line in the main
+Makefile.
+You may then still have some unresolved symbols like __sigsetjmp.
+This time, add -DC6R5 in the Plugin/Makefile at the PLUGIN_DEFINES
+line.
+
+	CHECKING
+	--------
+
+To verify that the plugin is installed properly, type "about:plugins"
+in Netscape's "Location:" or "Netsite:" field.  The plugin should show
+up there, something like
+
+___________________________________________________________________________
+
+				   Shockwave Flash
+
+	File name: /opt/netscape/plugins/npflash.so
+
+	Flash file player Version 0.4.3
+
+	Shockwave is a trademark of Macromedia®
+
+	Author: Olivier Debon
+
+ ---------------------------------------------------------------------------------
+|     Mime Type                  |     Description   |  Suffixes   |    Enabled   |
+|--------------------------------+-------------------+-------------+--------------|
+|   application/futuresplash     |     Flash Plugin  |    spl      |     Yes      |
+| application/x-shockwave-flash  |                   |    swf      |     Yes      |
+ ---------------------------------------------------------------------------------
+
+___________________________________________________________________________
+
+
+If it shows up, but the "Enabled" column says "No", you need to
+configure the Flash plugin as a helper application.  Go to
+Edit/Preferences/Navigator/Applications, and add it as follows:
+
+Description: Flash Plugin
+MIME Type: application/x-shockwave-flash
+Suffixes: swf
+Handled By: Plug In (select "Shockwave Flash")
+
+------
+
+$Id: README,v 1.8 1999/02/14 22:33:04 olivier Exp $

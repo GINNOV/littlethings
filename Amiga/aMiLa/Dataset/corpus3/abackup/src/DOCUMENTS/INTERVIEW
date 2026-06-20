@@ -1,0 +1,142 @@
+- Denis GOUNELLE, racontez-nous votre parcours Amiga.
+
+  J'ai découvert l'Amiga en 1988, grâce à un copain de fac qui avait un
+  A2000 chez lui. J'ai acheté un A500 un an plus tard, avec l'argent que
+  j'avais gagné pendant mon stage d'été. Plus tard, quand j'ai commencé
+  à bosser, je me suis offert un A3000 dès que j'ai eu assez d'argent
+  pour (c'est à dire en 1992).
+
+- Sur quel modèle d'Amiga programmez-vous ?
+  Est-ce que cette machine suffit à vos besoins ?
+
+  J'ai donc un A3000, auquel je viens juste d'ajouter une carte 68060 et
+  une carte graphique PicassoII. J'ai au total 24 Mo de mémoire, et un
+  disque dur de 160 Mo (rempli à 40% environ) plus un modem, un lecteur de
+  CD-ROM, etc... Je vous laisse deviner si cette configuration me convient
+  ou pas :-)
+
+- Avez-vous l'intention d'ajouter quelques extensions hardware ou de
+  changer de modèle d'Amiga ?
+
+  Non non, tout va bien :-) J'achèterai peut-être un moniteur 17 pouces
+  l'an prochain mais c'est tout.
+
+- Utilisez-vous un autre type d'ordinateur chez vous ?
+  Si non, envisagez-vous l'achat d'un PC/MAC ...?
+
+  Non et non ! Je suis très attaché à mon A3000, et il répond parfaitement
+  à mes besoins pour l'instant... surtout depuis que je lui ai offert une
+  seconde jeunesse.
+
+- Quels sont vos outils de programmation ?
+
+  J'utilise le SAS/C depuis que j'ai mon A3000, sans autre outil particulier
+  qu'un éditeur de texte.
+
+- Beaucoup de personnes pensaient que vous aviez disparu du paysage
+  Amiga. Qu'en est-il exactement ?
+
+  Oh, juste une grosse flemme :-) Plus sérieusement, j'ai un travail
+  assez prenant et stressant, donc je n'ai plus le courage de passer, en
+  plus, mes soirées et mes week-end à programmer sur mon Amiga. Par contre,
+  je passe pas mal de temps à travailler sur mon site Web. Cela dit, j'ai
+  quand même écrit une nouvelle version de ADoc l'an dernier, et je viens
+  de faire des mises à jour de ADoc et de AFile... sans parler de la nouvelle
+  version de ABackup. Mais il est vrai que, à chaque fois, ce sont des
+  modifications qui ne réclament pas énormément de travail.
+
+- Est-ce qu'une version PPC d'ABackup est prévue ?
+
+  Dès qu'une âme généreuse m'aura offert une carte PPC, et le compilateur
+  qui va avec.
+
+- Avec la baisse de prix des supports amovibles, est-il toujours nécessaire
+  d'utiliser ABackup pour effectuer ses sauvegardes ?
+
+  Il y a encore des tas de gens qui n'ont que des lecteurs de disquettes à
+  leur disposition, pour faire leurs sauvegardes. Donc je pense (j'espère)
+  que ABackup sert encore à quelque chose. Et même pour les autres, il me
+  semble que c'est plus rapide qu'une recopie normale ou qu'un archivage
+  avec LhA.
+
+- Avez vous-eu beaucoup d'enregistrements de la part des français ?
+  Et des étrangers ?
+
+  Environ 1/3 des enregistrements viennent de France, les 2/3 de l'étranger.
+  Le premier pays étranger est l'Allemagne, et de loin.
+
+- Pensez vous que l'on puisse vivre du shareware en France ?
+
+  Non. A moins de sortir quelque chose de vraiment indispensable et très
+  bien fait... mais dans ce cas, il ne me paraîtrait pas absurde de le
+  distribuer commercialement.
+
+- Il a été remarqué que les gens s'enregistraient plus facilement dès lors
+  qu'ils pouvaient effectuer leur paiement via le net avec une carte de
+  crédit (solution de facilité). Envisagez-vous cette solution ?
+  Sera t-il possible de s'enregistrer via votre site Web ?
+
+  Non et non. Il ne s'agit pas d'une entreprise commerciale !
+  Cela dit, le courrier électronique permet d'assurer facilement un support
+  aux utilisateurs qui en disposent, et mon site Web me permet de donner
+  des nouvelles des futures versions.
+
+- Pensez-vous que le choix du PPC soit une bonne chose pour l'Amiga ?
+
+  Je ne suis pas un spécialiste en micro-processeurs, mais je pense
+  que c'est un bon choix en effet. Beaucoup plus judicieux que certains
+  autres processeurs peu répandus comme l'ARM, le RISC HP (dont on a
+  parlé un moment pour l'Amiga), ou le MIPS R4000, pour ne donner que
+  quelques exemples.
+
+- De quoi aurait besoin, selon vous, l'Amiga pour être plus au gout du
+  jour et au plus près des besoins des utilisateurs ?
+
+  Il y a quelques trucs qui manquent sur l'Amiga, par rapport à ce que
+  peut offrir une société très connue et dont le nom commence par "M".
+  Le plus gros manque à mon avis, c'est l'intégration de plusieurs
+  types de documents dans un seul (par exemple mettre une feuille de
+  calcul dans un document rédigé sous un traitement de texte). A part
+  ça, quelque chose dont l'utilisateur de base ne verrait peut être pas
+  tout de suite la portée, serait de disposer d'un système nettement
+  orienté objet. Les datatypes sont un pas dans cette direction, mais
+  je les trouve horriblement compliqués à utiliser pour le programmeur.
+  J'aimerai par exemple des "super-datatypes", qui permettent à n'importe
+  quel programme de lire et d'écrire n'importe quel format de fichier
+  (image, texte, son, etc...) que ce programme manipule, de façon
+  transparente aussi bien pour le programmeur que (surtout) pour
+  l'utilisateur.
+
+- Nous sommes (presque) au début de l'année 1998, la tendance est aux
+  prédictions de tout poil, alors, voyez-vous un avenir pour l'Amiga ?
+
+  Je pense qu'il y aura toujours tout un tas de gens qui feront de l'allergie
+  au monde merveilleux des PC et des logiciels signés Microsoft. J'espère que
+  l'Amiga redeviendra vite la meilleure solution pour échapper à cet univers
+  impitoyable.
+
+- Pensez-vous que cette machine a toujours sa place dans un environnement
+  familial, professionnel ?
+
+  Je pense que oui, même si du côté familial, les débutants vont avoir un
+  peu de mal à trouver des contacts pour les aider à s'y mettre, et si du
+  côté professionnel, l'Amiga ne peut faire le poids pour certains usages
+  précis (gros serveur par exemple).
+
+- Il est pas mal question de chats sur votre site Web. D'où vous vient
+  cette passion ? Ont-ils une influence sur votre travail de programmation,
+  sur votre vie ?
+
+  Je ne sais pas d'où ça vient, je fais partie des gens qui adorent les
+  chats, c'est tout. Visiblement les chats m'aiment bien aussi. Ca doit
+  être une question de compatibilité d'humeur.
+  Un certain tout jeune chat a eu quelques temps une influence sur mon
+  travail de programmation : entre deux siestes sur le lit, juste à côté
+  de mon Amiga, il trouvait très amusant ces mains qui bougeaient sur le
+  clavier, et sautait sur mes genoux pour essayer de les attraper.
+
+- Nous vous remercions d'avoir pris le temps de répondre à ces quelques
+  questions. Rappelons que Denis GOUNELLE peut être contacté par courrier
+  électronique (denis.gounelle@wanadoo.fr), et que vous pouvez visiter son
+  site Web à l'adresse http://perso.wanadoo.fr/denis.gounelle/index.html.
+

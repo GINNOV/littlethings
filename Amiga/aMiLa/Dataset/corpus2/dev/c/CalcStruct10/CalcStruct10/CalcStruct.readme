@@ -1,0 +1,77 @@
+Short:    Calculate the size of C structures in .h files
+Author:   schettler@informatik.fh-wuerzburg.de (Michael Schettler)
+Uploader: schettler@informatik.fh-wuerzburg.de
+Type:     dev/c
+Required: OS 2.04
+Version:  1.0
+
+COPYRIGHT
+
+The executable  and  the  documentation  are  copyright  1996  by  Michael
+Schettler.
+
+
+INTRODUCTION
+
+This is just a small (cli only) tool i hacked together  to  calculate  the
+size of C structures contained in .h files.
+
+
+USAGE
+
+CLI> calcstruct ?
+
+   FILE/A,CHECK/K/S
+
+   FILE/A        - the name of the include file
+   CHECK/K/S     - check the syntax and only output the size
+
+
+LIMITATIONS
+
+Until now, all #??????  directives,  especially  #include,  and  structure
+union's aren't implemented :(
+
+If you have your structure definitions splattered all over the place,  you
+have to generate a big .h file, where every structure is included.
+
+If you include system structures, why not define a  dummy  structure,  for
+example
+
+    STRUCT MsgPort {
+	CHAR    dummy[34];
+    };
+
+to get the *real* size of your structure.
+
+Arrays are limited to two dimensions, for example
+
+    CHAR Data[10][10]
+
+is o.k. but
+
+    CHAR Data[10][10][10]
+
+isn't implemented (if someone needs this, contact me).
+
+
+AUTHOR
+
+You can contact me (bug reports, flames, ...) at
+
+	schettler@informatik.fh-wuerzburg.de
+
+	which is my account at the university, where i study
+	computer science
+
+	or at
+
+	twd@incubus.franken.de
+
+	which is my account at my favorite bbs (not so often checked!)
+
+If you like to have the source (which is in assembler), you can also
+contact me (maybe i'll give it to you, although its a bit of a mess)
+
+AMIGA FOREVER!
+

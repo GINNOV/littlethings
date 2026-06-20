@@ -1,0 +1,161 @@
+(19.4.94)
+
+      This file gives brief information on how to make the Amiga.lib.
+
+      NOTE: If you do not have the Commodore FD1.3 or 2.04 files and the 
+            Commodore Include files then you cannot remake the Amiga.lib.
+
+      There are two versions of the Amiga lib on this disk,
+      Kick 1.3 version and 2.04.
+
+      Brief Intructions
+      ------------------
+
+      FROM HCE:
+
+      1) Select 'Load (c/a-source)' from the 'Disk' menu and then 
+         load this document (if you haven`t already).
+         You can then view the instructions from the editor.
+      2) Select 'Lock?' from the 'Other' menu and Lock the
+         'LibSrc:AmigaLib/Extras/Source' directory.
+      3) Select 'Compiler-options' from the 'Compile' menu.
+      4) Select 'Load Compile List' and load the file called 'Extras.CL'.
+      5) Click on the 'Compile' gadget until it shows 'FROM-LIST'.
+      6) Exit the options window.
+      7) Set the 'Outpath' gadget in the  'Assembler-options' window to
+         a path of your choice. (Default is, RAM:)
+      8) Select the 'Compile+Otimize+Assemble' gadget.
+      9) Wait until all files have been compiled.
+     10) Lock the 'Outpath' device or directory.
+     11) Copy your FD files to the 'Outpath' device or directory.
+     12) Select 'Linker-options' from the 'Link' menu.
+     13) Select 'Load Link List' and load the 'AmigaLib.LL' file from this
+         directory (will have to redo this file for kick 1.3 version).
+     14) Enter a library name with path into the 'Library Outname' gadget
+         (eg: RAM:Amiga2.04.lib).
+     15) Select 'FD To Lib' and wait.(takes between 5 and 8 mins)
+
+
+      IF NOT USING HCE:
+
+      1) Use the script files on this disk as a guide to making your own:
+                  FD2.04_to_Stubs  -   FD2.04_to_Amiga_Lib
+                  FD1.3_to_Stubs   -   FD1.3_to_Amiga_Lib
+
+      2) Use FD2STUBS by Detlef Wurkner to deal with the FD files.
+      3) Join the files as they are listed below ,either with 'join' 
+         or with 'Libr'.
+
+          note: I have left the object files made from the Commodore
+                FD files on this disk for convenience.
+
+==============================================================================
+                           Kick 1.3 Version
+==============================================================================
+
+note: Source code is supplied for Numbers 1-9 only, and comes from
+      PDC release 3.33 by Lionel Hummel & Paul Petersen.
+
+
+1)          Extra.a
+2)          DeletePort.c
+3)          DeleteExtIO.c     
+4)          DeleteStdIO.c
+5)          DeleteTask.c      
+6)          CreatePort.c      
+7)          CreateExtIO.c     
+8)          CreateStdIO.c
+9)          CreateTask.c
+
+
+note: You must obtian the following files yourself.
+
+      FD FILE                LIBRARY BASE NAME
+-----------------------------------------------
+10) Clist_lib.fd              ClistBase
+11) Console_lib.fd            ConsoleDevice
+12) Diskfont_lib.fd           DiskfontBase
+13) Dos_lib.fd                DOSBase
+14) Exec_lib.fd               SysBase
+15) Expansion_lib.fd          ExpansionBase
+16) Graphics_lib.fd           GfxBase
+17) Icon_lib.fd               IconBase
+18) Intuition_lib.fd          IntuitionBase
+19) Layers_lib.fd             LayersBase
+20) Mathffp_lib.fd            MathBase
+21) Mathieeedoubbas_lib.fd    MathIeeeDoubBasBase
+22) Mathieeedoubtrans_lib.fd  MathIeeeDoubTransBase
+23) Mathtrans_lib.fd          MathTransBase
+24) Potgo_lib.fd              PotgoBase
+25) Romboot_lib.fd            RomBootBase
+26) Timer_lib.fd              TimerBase
+27) Translator_lib.fd         TranslatorBase
+
+    Join files as Listed.
+==========================
+
+
+=============================================================================
+                          Kick 2.04 Version
+=============================================================================
+
+note: Source code is supplied for Numbers 1-9 only, and comes from
+      PDC release 3.33 by Lionel Hummel & Paul Petersen.
+
+'V33' = Supported by Kick 1.2 or higher
+'V34' = Supported by Kick 1.3 or higher
+'V36' = Supported by Kick 2.00 or higher    No good to 1.3 owners
+'V37' = Supported by Kick 2.04 or higher    No good to 2.00-1.3 owners
+
+1)          Extra.a           
+2)          DeletePort.c      
+3)          DeleteExtIO.c     
+4)          DeleteStdIO.c
+5)          DeleteTask.c      
+6)          CreatePort.c      
+7)          CreateExtIO.c     
+8)          CreateStdIO.c
+9)          CreateTask.c      
+
+
+note: You must obtian the following files yourself.
+
+      FD FILE                LIBRARY BASE NAME
+-----------------------------------------------
+10) Asl_lib.fd                AslBase                     V36
+11) BattClock_lib.fd          BattClockBase
+12) BattMem_lib.fd            BattMemBase
+13) Clist_lib.fd              ClistBase
+14) Commodities_lib.fd        CxBase                      V36
+15) Console_lib.fd            ConsoleDevice
+16) Diskfont_lib.fd           DiskfontBase
+17) Disk_lib.fd               DiskBase
+18) Dos_lib.fd                DOSBase
+19) Exec_lib.fd               SysBase
+20) Expansion_lib.fd          ExpansionBase               V33
+21) GadTools_lib.fd           GadToolsBase                V36
+22) Graphics_lib.fd           GfxBase
+23) Icon_lib.fd               IconBase
+24) IFFParse_lib.fd           IFFParseBase                V33
+25) Input_lib.fd              InputBase
+26) Intuition_lib.fd          IntuitionBase
+27) Keymap_lib.fd             KeymapBase                  V36
+28) Layers_lib.fd             LayersBase
+29) Mathffp_lib.fd            MathBase
+30) Mathieeedoubbas_lib.fd    MathIeeeDoubBasBase
+31) Mathieeedoubtrans_lib.fd  MathIeeeDoubTransBase
+32) Mathieeesinbas_lib.fd     MathIeeeSingBasBase
+33) Mathieeesingtrans_lib.fd  MathIeeeSinTransBase
+34) Mathtrans_lib.fd          MathTransBase
+35) Misc_lib.fd               MiscBase
+36) Potgo_lib.fd              PotgoBase
+37) Ramdrive_lib.fd           RamdriveDevice              V34
+38) RexxSysLib_lib.fd         RexxSysBase                 V33
+39) Romboot_lib.fd            RomBootBase
+40) Timer_lib.fd              TimerBase
+41) Translator_lib.fd         TranslatorBase
+42) Utility_lib.fd            UtilityBase                 V37
+43) Workbench_lib.fd          WorkbenchBase               V36
+
+    Join files as listed.
+==========================

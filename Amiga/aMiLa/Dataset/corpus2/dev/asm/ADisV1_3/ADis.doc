@@ -1,0 +1,371 @@
+
+
+
+                   ADis (Advanced Disassembler) User's Guide
+                                Version 1.3
+                         $Date: 93/09/24 17:54:43 $
+                           written by Martin Apel
+                        email: apel@physik.uni-kl.de
+
+
+CONTENTS
+  1. Introduction
+  2. Command line options
+  3. Hints and Problems
+  4. Reassembly
+  5. Theory of operation
+  6. Known bugs
+  7. Future plans
+  8. Acknowledgments
+  9. Miscellaneous
+
+
+*************************************************************************
+
+ IMPORTANT NOTICE:  This program is copyrighted by Martin Apel, but can
+ be freely distributed, providing that the following rules are respected.
+ - Every form of distribution is allowed and encouraged, but no fee can 
+   be charged for this program except for, possibly, the cost of magnetic 
+   media and/or disk duplication and shipping.
+ - Inclusion in PD software libraries such as Fish Disks is allowed, 
+   provided the fees charged for these disks are comparable with those
+   charged by Fred Fish.
+ - The program cannot be distributed in any commercial product without the 
+   written consent of the author.
+ - If you modify the source or include it in a program of yours you should
+   send me a copy of your program. You also have to indicate in your
+   documentation that your work is based on ADis written by Martin Apel.
+
+ By copying, distributing and/or using the program you indicate your 
+ acceptance of the above rules.
+
+
+*************************************************************************
+
+1. INTRODUCTION
+
+ADis  is  a 68000+ disassembler which can automatically recognize data
+and  strings  put into the code segment.  It also generates only those
+labels  that  are really referenced.  The generated file will often be
+reassemblable.   In  V1.2  ADis  is  capable  of recognizing all 68020
+/030/040  and  68881  instructions  even  with  the  68020's  extended
+addressing  modes.   ADis will also try to resolve addressing relative
+to a4, which many C compilers use in a small memory model.
+
+If  you  have  ever  worked  with  a  usual disassembler, you may have
+wondered  about all those nasty ORI.B #0,D0 or BVS $4711 instructions.
+The  first example is valid, but not very useful.  ADis will recognize
+this  and  generate  a  DC.W  0  instead.   The second example is even
+illegal, as it branches to an odd address.
+
+
+*************************************************************************
+
+2. COMMAND LINE OPTIONS
+
+I  will list the possible options for a quick look here.  They will be
+explained in detail later.  The following options are available:
+
+     -a                               add absolute offset in file as comment
+     -b num                           set buffersize for file buffers in KB
+                                      default: 10 KB
+     -c2                              enable 68020 instruction disassembly
+     -c3                              enable 68030 instruction disassembly
+     -c4                              enable 68040 instruction disassembly
+     -c8                              enable 68881 instruction disassembly
+     -dl                              disassemble as library (or device)
+     -fs                              put hunks in a single file
+     -fm                              put each hunk in a separate file
+     -i                               print addresses where illegal
+                                      instructions were found
+     -lc hex_address                  disassemble as code
+     -ld hex_address                  disassemble as data
+     -ln                              name labels with ascending numbers
+                                      instead of code addresses
+     -ml                              disassemble using large memory model
+     -ms[base_offset]                 attempt to address code and data 
+                                      relative to A4
+     -o outfilename                   filename of output file
+                                      default: <filename>.dec
+     -q                               quick disassembly, no labels
+                                      no data recognition in code segments
+     -v                               verbose
+
+
+Option -a:
+  The  absolute  offset  relative  to the start of the load file will be
+  written  as  a comment after each instruction.  This is useful, if you
+  want to edit the load file in a file monitor and modify it.
+
+Option -b n:
+  You  can  set  the  size of the output buffer to increase the speed of
+  writing.  Default is 10 KB.
+
+Option -c2:
+  This  option  will  enable 68020 opcodes and address register indirect
+  with  scaled  index addressing modes.  It does not enable the extended
+  instruction  modes (see -ce).  If not set, all 68020 instructions will
+  be recognized as illegal, and printed as data.
+
+Option -c3:
+  This  one  additionally  enables 68030 instructions (MMU opcodes).  It
+  also enables the extended 68020 addressing modes.
+
+Option -c4:
+  Enables 68040 disassembly. Automatically sets -c8 switch (see below).
+  It also enables the extended 68020 addressing modes.
+
+Option -c8:
+  This  option  enables 68881 opcodes.  If not set, all FPU opcodes will
+  be disassembled as data.
+
+Option -dl:
+  ADis  now  supports  disassembly  of libraries and devices.  With this
+  option  ADis  recognizes the ROMTag at the start of the file and reads
+  the jump table.  It places a named label at the start of each function
+  called through the function table.
+
+Option -fs:
+  ADis  can either put all hunks into a single output file or generate a
+  separate  file  for  each hunk.  The second option comes in handy when
+  disassembled files grow so large that they aren't easily processed any
+  further  if  everything is put together.  The default is to generate a
+  single  file  if  not  more  than  one hunk of each type exists in the
+  program  (CODE, DATA, BSS).  This default can be overridden by the -fs
+  or  -fm  option.   -fs  forces  ADis to generate a single file even if
+  there  are  multiple  hunks  of  the same type.  -fm forces to write a
+  separate file for each hunk even if there are only few of them.
+
+Option -fm:
+  See option -fs.
+
+Option -i:
+  This option will cause ADis to print its current address every time it
+  steps  onto  an illegal instruction.  This will make it easier for you
+  to set additional labels to aid ADis.
+
+Option -lc hex_address:
+  ADis  keeps  a  table  of  all references.  If it doesn't recognize an
+  instruction  as code, it will print it as data.  To help ADis with its
+  task  to  recognize  code,  you  can  set  a reference at that address
+  telling it that this address is meant as code.
+
+Option -ld hex_address:
+  Generates  a  label  in  ADis' internal tables, which will force it to
+  write  a  label out for that address and interpret the bit combination
+  at  that address as being data.  However you cannot force something to
+  be  disassembled  as data, if it is valid code.  It's simply an aid to
+  ADis where to start a new try for disassembly.
+
+Option -ln:
+  Instead  of  labelling  each  instruction  with  its code address this
+  option  instructs  ADis  to  use ascending labels.  Useful for 'diffs'
+  between the original and a modified version of the same program.
+
+Option -ml:
+  By  default, ADis assumes that the program to be disassembled has been
+  compiled  using  a  small  memory  model with A4 as its base register.
+  Many  times  this  default  is  very useful, but if either it has been
+  compiled  with  the  large  memory  model  or  it  has been hand-coded
+  assembler or the like, the -ml option will forbid this default.
+
+Option -ms:
+  By  default, ADis assumes that the program to be disassembled has been
+  compiled  using a small memory model with A4 as its base register.  It
+  tries  to  guess  the contents of A4 to generate correct labels.  When
+  you  see  many  parts  of the program being disassembled as data, this
+  value  is  probably  wrong.   Then you have to look for a "LEA xxx,A4"
+  instruction  or  the like and give the value "xxx" as parameter to the
+  -ms  option.  If ADis never sees an instruction of the form "LEA ,A4",
+  it will generate a warning that it might be more useful to use the -ml
+  switch.
+
+Option -o filename:
+  This  option is easy to explain:  It sets the name of the output file.
+  Default is <input file>.dec.
+
+Option -q:
+  Quick  disassembly.   When  this  option  is set, the analysis will be
+  skipped and everything inside the code segment will be disassembled as
+  code  if  possible.   Illegal  instructions  will  be printed as "DC.W
+  hex_val".
+
+Option -v:
+  Lets ADis display verbose information.  Working on long files ADis may
+  produce  no  output for longer time and not access disks, so you might
+  think  it  isn't  doing  anything.   With  -v  it displays the current
+  address it is working on.
+
+Additionally to those command line options the analysis pass can be
+terminated by pressing CTRL-D. This will cause the not yet analyzed
+part of the program to be disassembled as data.
+
+*************************************************************************
+
+3. HINTS AND PROBLEMS
+
+Because  ADis  doesn't really understand the code it is disassembling,
+it  is  possible that it makes a few mistakes, which in general aren't
+very  important,  but  they can be very annoying.  To circumvent this,
+there  are  a  few  options  which will modify ADis' behaviour in such
+cases.   There  are four problematic areas, in which ADis may generate
+strange disassemblies:
+  - Code generated by switch statements (PC relative)
+  - Code referenced only through jump tables (Relocated references)
+  - Different optimizations used by the original assembler the code was
+    produced with and the assembler you are using for reassembly.
+  - Unterminated code threads
+
+
+3.1 Code generated by C switch statements (PC relative)
+
+ADis  can  recognize jump tables in most cases.  However, as there are
+several  common  types  of  jump table constructions, it might fail (I
+have  only  observed  that with quite old programs that must have been
+compiled with a compiler that is not use anymore).  This might lead to
+ordinary  statements  disassembled  as  data,  because  they are never
+referenced  directly  by  any code.  You can change that by looking at
+the  output  and  place a code label at the corresponding address with
+the -lc option.
+
+
+3.2 Code referenced only through jump tables (Relocated references)
+
+When  the disassembled program uses function pointers and jump tables,
+ADis  will only generate data references for such locations.  To force
+these  to  be  disassembled  as  code  you can place a code label at a
+certain address with the -lc option.
+
+
+3.3 Different optimizations used by the original assembler the code was
+    produced with and the assembler you are using for reassembly
+
+Most  assemblers  do  not  allow  instructions  to  be  specified very
+detailed.   A  "MOVE  $4,A6" instruction (a very common instruction on
+the Amiga) might be assembled as an absolute word or long reference to
+address  4.  This will change the length of the code generated and all
+subsequent  labels to be moved.  If this happens often, it might occur
+that  a branch might specifiy a destination outside of its range, i.e.
+a branch to an instruction just below 32K away in the original program
+might  lead  to  an  instruction more than 32K away in the reassembled
+one.   Compilers  do  not  have  this  problem,  because  most of them
+generate JMP or JSR instructions which will be optimized to BRA or BSR
+by the assembler if possible.
+If  you  ever  have  problems  with  this  kind of output, you have to
+substitute the branches with equivalent jumps constructions.
+
+
+3.4 Unterminated code threads
+
+ADis  assumes  all code threads to be terminated by a RTS, JMP, BRA...
+instruction,  i.e.   an  instruction  that unconditionally changes the
+control  flow  and  does  not  return.   Some  compilers such as GNU C
+generate  special code for the exit statement:  They generate a JSR to
+the  exit function, but since this will never return, there is no code
+following  the  JSR.   This  will cause ADis to run into the following
+locations,  which  might  be data.  Such data often represents illegal
+code  and  therefore  the whole thread will be marked as illegal.  The
+same occurs for code sequences such as
+          BEQ       label1
+          BNE       label2
+Neither  of  these instructions is an "end instruction" and the thread
+is assumed to be continued after that.  In a future version the second
+possibility  might  be  recognized as terminating a thread.  Until now
+there  is no option to fix the first case; in a future version I might
+add an option for generating artificial "end instructions".
+
+
+*************************************************************************
+
+4. REASSEMBLY
+
+Reassembly  is  somewhat  complicated,  because  I  haven't  found  an
+assembler,  which fulfills all requirements.  Some of the available PD
+assemblers  such  as  "DAS"  from DICE and "NCode" load the whole file
+into  memory,  which  is  impossible for the large files, which may be
+generated  by ADis.  Others (e.g.  A68k) will not accept more than one
+segment  of  each type in one file.  Still others (e.g.  ASM68k) don't
+support  68020  and  68881  opcodes.   When  I  have found a usable PD
+assembler  I  will  adapt  ADis  to  directly  generate  code for that
+assembler.   For  the  time  being,  the  disassembled  code has to be
+modified  to  be understood by different assemblers.  However the only
+sections  that  need  to be changed should the NEAR and FAR directives
+and  maybe  cross-references.   I plan to add a configuration file for
+ADis  where  the  strings  that  are  written  for  the  NEAR  and FAR
+directives can be specified.
+
+
+*************************************************************************
+
+5. THEORY OF OPERATION
+
+ADis makes three passes through the program.  The first one only reads
+the  relocation  and symbol hunks and enters them into a symbol table.
+The second pass analyzes the code and stores the type of each location
+(code  or  data)  in  a temporary file.  The third pass writes out the
+code and data using the temporary file generated in the second pass.
+
+
+Analysis
+
+The analysis is sort of a backtracking algorithm.  It assumes that the
+first  location in the first code segment is executable and traces all
+jumps  and  branches from there on recursively.  When stepping onto an
+illegal  instruction  it  takes back all decisions that lead there and
+flags  the  offending  location as data.  There are several heuristics
+which  are used when every code thread has been followed and there are
+still  undetermined  parts of the file.  E.g.  it will assume the next
+instruction  after  a  RTS  or  JMP  as code, tries to follow it until
+either  having  followed all threads again or stepping onto an illegal
+instruction.   During  all  this  trial  and error it takes the labels
+generated  so  far  as  an orientation where to try disassembling.  By
+inserting  labels  "by  hand"  you  can  modify  the  behaviour of the
+analysis  pass.   You can also mislead ADis, for instance by placing a
+code label at the second word of a legal instruction.  This will cause
+ADis  to  take  back  all its decisions, because an instruction is not
+allowed to cross a label.
+
+
+*************************************************************************
+
+6. KNOWN BUGS
+
+Currently there are no known bugs.
+
+
+*************************************************************************
+
+7. FUTURE PLANS
+
+There  are  several  things  I still want to add to ADis including the
+following:
+
+- An option to generate artificial "end instructions" (s. 3.4)
+- Optionally  generate  tabs instead of spaces to reduce the size of the
+  disassembled file.
+- Add  a  configuration  file.   The command line tends to become rather
+  long, so standard options will be read from that file.
+
+
+*************************************************************************
+
+8. ACKNOWLEDGMENTS
+
+Many  thanks  to Daniel Weber for supplying me with the opcodes of the
+68030/040  processors  and doing the beta testing.  Thanks also to all
+those who sent me bug reports and suggestions for new features.
+
+
+*************************************************************************
+
+9. MISCELLANEOUS
+
+Any hints, bugs, praise,... may be addressed to 
+                    apel@physik.uni-kl.de
+When  reporting bugs, please include the program that was disassembled
+incorrectly  or  otherwise revealed a bug in ADis (if possible).  Also
+include  the version number of ADis that produced the error.  Requests
+for future enhancements are also welcome.
+
+-----------
+Martin Apel

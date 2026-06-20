@@ -1,0 +1,363 @@
+
+			Interleaved Playfields & Bobs
+			~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ For the purpose of this monologue, I'm asuming you know how to set up and
+use both the bitplane and blitter hardware registers. If not refer to the
+following disks ((( thanks for the index Mike! )))
+
+ Copper Lists:	ACC 5,  Tutorial by M.Meany.
+
+ Playfields:	ACC 2,  Tutorial by Mike Cross.
+
+ Blitter:	ACC 6,  Tutorial by Mike Cross.
+		ACC 15, Tutorial by Leon Skeldon.
+		ACC 17, Tutorial (Negative Blitter Modulos) by Leon Skeldon.
+		ACC 22, Tutorial by Mark Meany.
+		ACC 23, Tutorial by Mark Meany.
+
+ Objective
+ ~~~~~~~~~
+ Faster blitting of bobs.
+
+ Normal Playfields
+ ~~~~~~~~~~~~~~~~~
+ In most circumstances each bitplane in a playfield occupies a continuous
+block of memory. Also, consecutive bitplanes follow each other in memroy.
+To obtain the start address of consecutive bitplanes, you would repeatedly
+add the size of a bitplane to the start address of the playfield memory. An
+example should clarify what I'm waffling on about:
+
+	Playfield is  320x256x3 pixels
+
+		   or  40x256x3 bytes
+
+ if the raw data was loaded into a program using 'incbin' at the label 'gfx'
+then the address of the start of each bitplane would be:
+
+	gfx
+	gfx +  ( 40 x 256 )
+        gfx + 2( 40 x 256 )
+
+ To blit a bob into such a playfield, one would first determine the address
+of the first word in the first bitplane occupied by the bob. The bob would
+be saved in memory in the same way as the playfield so the first bitplane of
+the bob would be blitted into the first bitplane of the playfield at this
+address.
+
+ The address to start blitting in the second bitplane would be calculated
+by adding the bytesize of a bitplane onto the start address in the first
+bitplane. Infact, the address to start blitting in all subsequent bitplanes
+is obtained by adding the bytesize of a bitplane to the start address in
+the previous bitplane.
+
+ This method usually leads to a loop used to blit a bob into a playfield
+that can be expressed as follows:
+
+ - Calculate destination address in first bitplane.
+ - Set up BLTCON0 and BLTCON1 with required scroll values, minterm and
+   channel usage information.
+ - Set up BLTAPTH to point to start of bob bitplane data.
+ - Set up BLTBPTH to point to start of bobs draw mask.
+ - Set up BLTxMOD to required modulo values ( x = A, B, C and D ).
+
+LOOP-START
+ - Set up BLTCPTH with precalculated destination address.
+ - Set up BLTDPTH with precalculated destination address.
+ - Set up BLTSIZE to start the blit.
+ - Add bitplane bytesize to destination address.
+ - Wait for blit to finish.
+ - If there are bitplanes remaining, goto LOOP-START. 
+
+ Observations: There is no need to waste time re-writing BLTxMOD or BLTCONx
+               as the blitter will not alter the values you have written, so
+	       keep these outside the loop. BLTAPTH and BLTBPTH will be
+	       updated by the blitter and provided the data for each bitplane
+	       of the bob lies in consecutive memory, you do not need to
+	       update the pointers.
+
+ There are two obvious disadvantages in using this method. Firstly there is
+a Blitter setup overhead for each bitplane of the bob and secondly there is
+a period of processor inactivity during each pass of the loop waiting for
+the blitter to finish.
+
+ A further disadvantage occurs when using background preservation code, ie
+cutting a slice of the playfield out prior to blitting a bob and replacing
+it when the bob is moved. A variation of the above loop would be required
+for each of these operations, resulting in three loops and three times as
+many periods processor inactivity.
+
+ It would be preferable if all bitplanes of a bob could be blitted into a
+playfield using only one Blitter operation. This would result in no loops
+and much fewer periods of processor activity allowing even more to be
+squeezed into each frame of a program, a frame being the time between screen
+updates.
+
+ Interleaved Playfields
+ ~~~~~~~~~~~~~~~~~~~~~~
+ Interleaved playfields are the solution, and once the theory behind them
+is understood ( I had a mental block on this for ages ) the rest is easy.
+What it all boils down to is modulos, as you will soon see.
+
+ In order to use interleaved playfields you will need a suitable IFFConverter
+utility. I have put one on this disk that supports this feature. It has
+appeared before, but I'll save you the task of digging it out! You should
+load in an IFF picture file and save it in RAW format, bitplanes interleaved
+and if required, CMAP behind.
+
+ In interleaved format a line from the first bitplane of a playfield is
+followed by the corresponding lines from all other bitplanes. So for a
+playfield consisting of four bitplanes, the raw data will be in the following
+format:
+
+	Line 1, Bitplane 1
+	Line 1, Bitplane 2
+	Line 1, Bitplane 3
+	Line 1, Bitplane 4
+	Line 2, Bitplane 1
+	Line 2, Bitplane 2
+	Line 2, Bitplane 3
+	Line 2, Bitplane 4
+	Line 3, Bitplane 1
+	Line 3, Bitplane 2
+	  "         "
+	  "	    "
+ This is how the IFFConverter will save the data and how it will be read
+into your program using an 'incbin' directive.
+
+ The first problem to overcome is setting up a Copper list to display the
+raw data. The only registers requiring sspecial attention are the bitplane
+pointers and bitplane modulos. 
+
+ The bitplane pointers will be initialised as follows, assuming the raw
+data is incbin'ed at the label gfx:
+
+	BPL1PT	gfx
+	BPL2PT	gfx + ( bitplane bytewidth )
+	BPL3PT	gfx + ( bitplane bytewidth * 2 )
+	BPL4PT	gfx + ( bitplane bytewidth * 3 )
+
+ So for a 320x256 pixel, or 40x256 bytes, bitplane the address will be:
+
+	BPL1PT	gfx
+	BPL2PT	gfx + 40
+	BPL3PT	gfx + 80
+	BPL4PT	gfx + 120
+
+ Now the modulo values must be set. It is important that you remember to
+set these for both odd and even bitplanes.
+
+ Sticking with the four bitplane example, at the end of each raster line,
+three lines of data must be skipped to arrive at the start of the data for
+the next raster line. This results in a modulo value of 3*40 bytes.
+
+ In general, the modulo values will be:
+
+	modulos = playfield depth * bitplane bytewidth
+
+ That is all that is required to display an interleaved raw data file. Load, 
+examine and run Example 1 which demonstrates this.
+
+ Interleaved Bobs
+ ~~~~~~~~~~~~~~~~
+ Now the interesting part of the exersise. Interleaved playfields are not
+that useful by themselves, except making it that little harder to find and
+rip graphics from a program. 
+
+ Before going any further, I must stress that BOBS USED IN INTERLEAVED
+FORMAT MUST BE THE SAME DEPTH AS THE PLAYFIELD THEY ARE BLITTED INTO.
+
+ To produce the raw data for an interleaved bob using the IFFConverter
+supplied you have two options. You can load a single IFF brush and save it
+as a RAW, Interleaved bitmaps, no CMAP file or you can load an IFF picture
+containing loads of bobs of the same dimension and the program will save
+the lot in interleaved format, one after the other in the same file. For
+the purpose of this tutorial, consider only the single brush option. I have
+not supplied docs for the converter, you will have to register with the
+author for these though there is some in-program help supplied.
+
+ An interleaved bob is saved in the same format as an interleaved playfield.
+The task of blitting the bob is now much simpler, as you can treat it as
+only one bitplane. What ????
+
+ Consider how the bitplane data is stored in memory and how this relates to
+the video display. Below is an attempt to represent the this, the following
+notation has been used:
+
+ w<word number>b<in bitplane>, eg w2b3 => word 2, bitplane 3
+
+ w1b1  w2b1  w3b1  w4b1  w5b1  w6b1  ....... w20b1	line 1, bitplane 1
+
+ w1b2  w2b2  w3b2  w4b2  w5b2  w6b2  ....... w20b2	line 1, bitplane 2
+
+ w1b3  w2b3  w3b3  w4b3  w5b3  w6b3  ....... w20b3	line 1, bitplane 3
+
+ w1b4  w2b4  w3b4  w4b4  w5b4  w6b4  ....... w20b4	line 1, bitplane 4
+
+ w21b1 w22b1 w23b1 w24b1 w25b1 w26b1 ....... w40b1	line 2, bitplane 1
+
+ w21b2 w22b2 w23b2 w24b2 w25b2 w26b2 ....... w40b2	line 2, bitplane 2
+
+ w21b3 w22b3 w23b3 w24b3 w25b3 w26b3 ....... w40b3	line 2, bitplane 3
+
+ w21b4 w22b4 w23b4 w24b4 w25b4 w26b4 ....... w40b4	line 2, bitplane 4
+
+ ...... and so on.
+
+ The example above is for a four bitplane deep display 40 words wide = 20
+bytes = 320 pixels.
+
+ Now consider a bob 3 words wide, and 2 lines high that is going to be
+blitted into the top-left corner of the display. First, the organisation of
+the bobs bitplane data in the same format as that used above:
+
+ w1b1  w2b1  w3b1  	line 1, bitplane 1
+
+ w1b2  w2b2  w3b2  	line 1, bitplane 2
+
+ w1b3  w2b3  w3b3  	line 1, bitplane 3
+
+ w1b4  w2b4  w3b4  	line 1, bitplane 4
+
+ w4b1  w5b1  w6b1 	line 2, bitplane 1
+
+ w4b2  w5b2  w6b2 	line 2, bitplane 2
+
+ w4b3  w5b3  w6b3 	line 2, bitplane 3
+
+ w4b4  w5b4  w6b4 	line 2, bitplane 4
+
+ To blit this bob into the playfields bitplanes, we need to blit the
+following:
+
+	1st line of bob data --> start of 1st line of bitplane data
+	2nd line of bob data --> start of 2nd line of bitplane data
+	3rd line of bob data --> start of 3rd line of bitplane data
+
+		"		"		"
+	8th line of bob data --> start of 8th line of bitplane data
+
+ A blitter operation to do this would be:
+
+ BLTAPTH = start of bob data
+ BLTDPTH = start of playfields bitplane data
+ BLTAMOD = 0 ( bob data is continuous )
+ BLTDMOD = bitplane bytewidth - bob bytewidth
+ BLTCON0 = Use A & D, no scroll, whatever minterm, say D = A
+
+ Nothing new so far! All the above registers have been set just as they would
+if blitting the bob into consecutive playfields. BLTSIZE requires more
+thought, we need to blit all 8 lines of bob data. The Blitter window will be
+the same width as the bob, it has to be in order for the BLTDMOD value to
+work. The height of the window will be the height of the bob multiplied by
+the number of playfields, ie 2x4 = 8 in this case.
+
+ BLTSIZE = Window height = bob height * bob depth
+	   Window width  = bob word width
+
+ Can you see now how the bob will be blitted into four bitplanes using only
+one Blitter operation.
+
+ Load, examine and run Example 2 for a demonstration.
+
+ Interleaved Bobs Anywhere In The Display
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ In the discussion above, the destination was at position (0,0) in the
+display, assuming an orogin in the upper left corner. All but the most basic
+of programs will need to position a bob at different positions, so a means
+of calculating the start address of the first word the bob is to be blitted
+into.
+
+ Blitter scroll values and masks are set up in the same way as for a normal
+blitting, even the use of negative modulos used in conjunction with masking
+and scrolling is the same. All that is different is the calculation of the
+destination address.
+
+ In general the following formulae can be used to calculate the destination
+address and scroll values required to blit a bob at pixel position (x,y) in
+an interleaved playfield:
+
+ The following formulae assume integer arithmetic is being used!
+
+ gfx = start of playfields interleaved bitplane data
+ d   = depth of playfield ( and hence bob )
+ w   = byte width of playfield
+
+ Destination Address = gfx + (x/16)*2 + y*w*d
+
+ Scroll Value	     = MOD  ( x )
+			  16
+
+ A fragment that will calculate the destination address and set BLTCON0-1 up
+ready for use would be:
+
+			**********
+
+; Entry		d0.l=x
+;		d1.l=y
+;		d2.w=Blitter usage and minterm
+;		a0->start of interleaved playfields bitplane data
+
+		ror.l		#4,d0		x/16, MOD16(x) into high word
+		asl.l		#1,d0		(x/16)*2
+		mulu		#Width*Depth,d1 y*w*d
+		add.w		d0,d1		(x/16)*2 + y*w*d
+		add.l		a0,d1		gfx + (x/16)*2 + y*w*d
+		rol.l		#4,d0		MOD16(x)
+		asl.w		#8,d0		into high nibble
+		asl.w		#4,d0
+		or.w		d0,d2		set A scroll value
+		swap		d2		BLTCON0 into high word
+		move.w		d0,d2		BLTCON1 into low word
+
+; Exit		d1.l=destination address
+;		d2.l=ready to write into BLTCON0
+
+			***********
+
+ Load, examine and run Example 3. This positions a bob at (150,128). Note
+that the bob is just stuffed into the background. Also note the use of a
+negative source modulo to position the bob with pixel accuracy, see last
+months notes for more information!
+
+ For a full blown example of using interleaved bobs see the startings of
+the game code I've included on this disk.
+
+ That's it for now! Happy blitting, Mark.
+
+			***********
+
+[ Digression. There is no need to sit with pen, paper and calculator in order
+ to calculate BLTSIZE, let your assembler do it for you. To recap, BLTSIZE
+ is set as follows:
+
+ bit number: 15 14 13 12 11 10  9  8  7  6  5  4  3  2  1  0
+ value     : h9 h8 h7 h6 h5 h4 h3 h2 h1 h0 w5 w4 w3 w2 w1 w0
+
+ where h9-h0 determine the height of the Blitter window.
+       w5-w0 determine the width of the window.
+
+  Manualy you would need to convert the height to binary, shift left 6 places
+ and then OR with the width. If the size of a bob is known prior to
+ assembling, use the << ( shift left ) and ! ( OR ) operators of your
+ assembler.
+
+  For example, if the Blitter window is 20 lines high and 5 words wide, the
+ following will suffice:
+
+		move.w		#20<<6!5,BLTSIZE(a5)
+
+  From this you can clearly see the size of the Blitter window. It is very
+ common to see the following equivalent:
+
+		move.w		#$0505,BLTSIZE(a5)
+
+ which is far less readable, harder to debug and harder to change at some
+ time in the future! ]
+
+			**********
+
+ 
+
+
+

@@ -1,0 +1,39 @@
+
+SkyDome.
+~~~~~~~~~~~~~~~~
+
+The PLIB ssgAux library contains a class for creating a sky dome.
+
+   class ssgaSky ;
+
+The program in this directory demonstrates creating a sky dome,
+including the sun, moon, stars and clouds.
+
+This program does not attempt to place celestial bodies accurately
+if you wish to place sun, moon, planets & stars correctly then you
+could possibly plug-in the SimGear Ephemeris code.
+
+
+Keyboard controls:
+
+left/right             : turn left/right
+up/down arrow          : look up/down
+up/down arrow + shift  : increase/decrease altitude
+a/z                    : move forward/backward
+f                      : fullscreen
+w                      : wireframe
+s                      : solid
+space                  : toggle gui on and off
+q/esc                  : quit
+
+
+History:
+
+Written by Durk Talsma. Originally started October 1997, for distribution  
+with the FlightGear project. Version 2 was written in August and 
+September 1998. This code is based upon algorithms and data kindly 
+provided by Mr. Paul Schlyter. (pausch@saaf.se). 
+
+Separated out rendering pieces and converted to ssg by Curt Olson, March 2000.
+
+Moved (from SimGear) into ssgAux by Nick McEvoy, July 2003.

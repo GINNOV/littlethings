@@ -1,0 +1,56 @@
+	cmpi.l	#2,d0
+	bhi	OK
+	rts
+OK	move.l	a0,a4
+	clr.b	-1(a0,d0.w)
+	include	"/includes/exec/exec_lib.i"
+	include	"/includes/intuition/intuition_lib.i"
+	include	"/includes/libraries/dos_lib.i"
+	move.l	4.w,a6
+	move.l	#232,d0
+	moveq	#1,d1
+	jsr	AllocMem(a6)
+	move.l	d0,a5
+	lea	intname,a1
+	moveq	#0,d0
+	jsr	OpenLibrary(a6)
+	move.l	d0,d7
+	lea	dosname,a1
+	moveq	#0,d0
+	jsr	OpenLibrary(a6)
+	move.l	d0,d6
+	move.l	d6,a6
+	move.l	a4,d1
+	move.l	#-2,d2
+	jsr	Lock(a6)
+	tst.l	d0
+	beq	NotFound
+	move.l	d0,d1
+	jsr	UnLock(a6)
+	move.l	a4,d1
+	move.l	#1005,d2
+	jsr	Open(a6)
+	move.l	d0,d5
+	move.l	d5,d1
+	move.l	a5,d2
+	move.l	#232,d3
+	jsr	Read(a6)
+	move.l	d5,d1
+	jsr	Close(a6)
+	move.l	d7,a6
+	movea.l	a5,a0
+	move.l	#232,d0
+	moveq	#0,d1
+	jsr	SetPrefs(a6)
+NotFound	move.l	a5,a1
+	move.l	#232,d0
+	move.l	4.w,a6
+	jsr	FreeMem(a6)
+	move.l	d6,a1
+	jsr	CloseLibrary(a6)
+	move.l	d7,a1
+	jsr	CloseLibrary(a6)
+	rts
+intname	INTNAME
+dosname	DOSNAME
+

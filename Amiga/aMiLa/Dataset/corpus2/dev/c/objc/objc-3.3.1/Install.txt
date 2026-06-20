@@ -1,0 +1,72 @@
+Portable Object Compiler (c) 1997,98,99,2000,01,02,03,04  All Rights Reserved.
+
+For help, send email to:            objc-users@lists.sourceforge.net
+
+0. Get flex and byacc if you don't have them :
+
+   for FLEX (flex 2.5.4) :
+ 
+  	http://www.gnu.org/ 
+
+   for BSD yacc (yacc-1.9.1) :
+
+   	http://www.ibiblio.org/pub/Linux/devel/compiler-tools/
+
+   It is possible to use myacc or bison (export YACC="bison -y -d") but
+   I recommend the byacc package.  On many BSD systems "yacc" is in fact byacc.
+
+1. Start with the bootstrap compiler package : 
+
+	gnutar xvfz objc-2.3.1-bootstrap.tar.gz
+
+	cd objc-2.3.1-bootstrap
+
+	./configure --help
+	./configure --prefix=$HOME
+
+	make
+	make install
+
+It is important to use the --prefix option if you want to install the compiler in a directory like $HOME/bin.  The default (if no --prefix is specified) is to install into /usr/local/bin,/usr/local/include,/usr/local/man etc.  
+
+The configure script has to find a C compiler for all this to work.
+You may have to set the CC variable to prevent 'gcc' from being used :
+
+	e.g. on HP-UX,
+
+		CC='cc -Aa'
+		export CC
+		./configure --prefix=$HOME 
+
+	or on IRIX,
+
+		CC='cc -ansi -common'
+		export CC
+		./configure --prefix=$HOME
+
+	or on Digital Unix,
+
+		CC='cc -std'
+		export CC
+		./configure --prefix=$HOME
+
+2. Make sure that the bootstrap compiler (objc) is in the PATH :
+
+	PATH="$PATH:$HOME/bin";export PATH
+   or
+	setenv PATH "$PATH:$HOME/bin"
+
+3. After step 2 (set the PATH !), go to the actual compiler sources :
+
+	gnutar xvfz objc-2.3.1.tar.gz
+
+	cd objc-2.3.1
+
+	./configure --help
+	./configure --prefix=$HOME
+
+	make
+	make install
+
+4.  [Optional] Repeat step 3 to test the compiler (do not repeat step 1).
+

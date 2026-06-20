@@ -1,0 +1,30 @@
+Short:	  ppc c2p converters (8bpp and 15bpp)
+Author:   Jacek Cybularczyk (noe^venus art)
+Uploader: elf^va (bjsebo@jota.ii.tuniv.szczecin.pl)
+Type:     dev/asm
+
+ This archive contains 2 c2p converters written by Noe. Both
+are very fast (actually I did not find any faster c2p for ppc).
+
+Two functions are included:
+
+VOID RGB15_TO_HAM6_NI(UWORD *RGB15, ULONG **Planes,ULONG Width, ULONG Height);
+ Chunky buffer must be filled with 15bit rgb values (0rrrrrgggggbbbbb).
+Conversion is done to first 4 planes plane 5 and 6 should be filled
+with mask values:
+   plane5 = 0x77777777
+   plane7 = 0xeeeeeeee;
+Remember that you need to open HAM6 screen (depth = 6), to use this c2p()
+
+VOID C2P_NI(UBYTE *Chunky, ULONG **Planes,ULONG Width, ULONG Height);
+Nothing fancy here. Simple (but fast) c2p routine. Converts 8 bit
+chunky (paletized mode) to planar display.
+
+Also look at HowToUse.c. There is an example (and a speed test) in C.
+
+And if you can make this c2p routines faster - please contact us.
+
+You can use this c2p routines for any purposes. But if you use it, 
+please put my name in credit part.
+
+   Jacek Cybularczyk.

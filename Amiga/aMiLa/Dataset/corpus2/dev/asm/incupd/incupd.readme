@@ -1,0 +1,25 @@
+Short:    Update to V40.13 includes. V1.0.3.
+Author:   sintonen@jyu.fi (Harry Sintonen)
+Uploader: sintonen@jyu.fi (Harry Sintonen)
+Type:     dev/asm
+Requires: Original V40.13 includes
+Version:  1.0.3
+Replaces: dev/asm
+
+This is the ultimate update to V40.13 includes!
+Includes (hopefully;) all missing '_lib.i' -files, fixes some
+bugs/typos in release V40.13 includes etc. A must!
+
+New in 1.0.3:
+  - Major update! Added:
+    libraries/lowlevel_lib.i, fd/lowlevel_lib.fd,
+    libraries/amigaguide_lib.i, fd/amigaguide_lib.fd,
+    libraries/colorwheel_lib.i, fd/colorwheel_lib.fd,
+    libraries/dtclass_lib.i, fd/dtclass_lib.fd,
+    libraries/nonvolatile_lib.i, fd/nonvolatile_lib.fd,
+    libraries/realtime_lib.i, fd/realtime_lib.fd,
+    libraries/locale_lib.i, fd/cardres_lib.fd
+
+
+ Latest beta release plus some other programs by me can be found
+ from http://www.jyu.fi/~sintonen/AmigaPrograms.html

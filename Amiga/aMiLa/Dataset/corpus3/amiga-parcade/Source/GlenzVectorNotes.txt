@@ -1,0 +1,32 @@
+Glenz vectors
+3 bitplanes
+
+ COLOR01 := $eef = off white    
+ COLOR02 := $306 = dark blue
+ COLOR05 := $fff = pure white    
+ COLOR06 := $63d = light blue    
+
+Front white face:
+ overlapping with back transparent faces is off white   - color01  bpl 1 0 0
+ overlapping with back white face is pure white         - color05  bpl 1 0 1
+ DRAW ON BPL 1 (COLOR01)
+
+Back white face
+ overlapping with front transparent face is light blue  - color06  bpl 0 1 1
+ overlapping with front white face is pure white        - color05  bpl 1 0 1
+ DRAW ON BPL 3 (COLOR04)
+
+Front transparent face: = 0 1 0 = 2
+ overlapping back transparent is dark blue              - color02  bpl 0 1 0
+ overlapping back white face is light blue              - color06  bpl 0 1 1
+ DRAW ON BPL 2 (COLOR02)
+
+Back transparent face: = 0 0 0 = 0
+ overlapping front transparent is dark blue             - color02  bpl 0 1 0
+ overlapping front white faceis off white               - color01  bpl 1 0 0
+ DON'T DRAW
+
+Use color 1 (white), 2 (trans) for visible faces
+Use color 4 (undefined), 0 for back faces
+
+This means that each face is actually drawn on ONE bitplane.

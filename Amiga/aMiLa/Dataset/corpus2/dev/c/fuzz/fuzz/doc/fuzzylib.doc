@@ -1,0 +1,2804 @@
+TABLE OF CONTENTS
+
+fuzzy.lib/FL_Action
+fuzzy.lib/FL_Action_Execute
+fuzzy.lib/FL_Action_XExecute
+fuzzy.lib/FL_Add_Action
+fuzzy.lib/FL_Add_Clause
+fuzzy.lib/FL_Add_Condition
+fuzzy.lib/FL_Add_Memfunc
+fuzzy.lib/FL_Add_Memfuncs
+fuzzy.lib/FL_Add_Object
+fuzzy.lib/FL_Add_Objects
+fuzzy.lib/FL_Add_Rule
+fuzzy.lib/FL_Add_Subset
+fuzzy.lib/FL_Add_Variable
+fuzzy.lib/FL_Add_Variables
+fuzzy.lib/FL_Check_System
+fuzzy.lib/FL_Clause
+fuzzy.lib/FL_Clause_Evaluate
+fuzzy.lib/FL_Clause_XEvaluate
+fuzzy.lib/FL_Cleanup
+fuzzy.lib/FL_Clone_Action
+fuzzy.lib/FL_Clone_Actions
+fuzzy.lib/FL_Clone_Clause
+fuzzy.lib/FL_Clone_Clauses
+fuzzy.lib/FL_Clone_Condition
+fuzzy.lib/FL_Clone_Conditions
+fuzzy.lib/FL_Clone_Memfunc
+fuzzy.lib/FL_Clone_Memfuncs
+fuzzy.lib/FL_Clone_Object
+fuzzy.lib/FL_Clone_Objects
+fuzzy.lib/FL_Clone_Rule
+fuzzy.lib/FL_Clone_Rules
+fuzzy.lib/FL_Clone_Subset
+fuzzy.lib/FL_Clone_Subsets
+fuzzy.lib/FL_Clone_System
+fuzzy.lib/FL_Clone_Variable
+fuzzy.lib/FL_Clone_Variables
+fuzzy.lib/FL_Condition
+fuzzy.lib/FL_Condition_Evaluate
+fuzzy.lib/FL_Condition_XEvaluate
+fuzzy.lib/FL_Get_Clause
+fuzzy.lib/FL_Get_Memfunc
+fuzzy.lib/FL_Get_Object
+fuzzy.lib/FL_Get_Rule
+fuzzy.lib/FL_Get_Subset
+fuzzy.lib/FL_Get_Variable
+fuzzy.lib/FL_Get_Variables
+fuzzy.lib/FL_Geterror
+fuzzy.lib/FL_GeterrorName
+fuzzy.lib/FL_GeterrorText
+fuzzy.lib/FL_Getinfo
+fuzzy.lib/FL_Initialize
+fuzzy.lib/FL_Kill_Clause
+fuzzy.lib/FL_Kill_Memfunc
+fuzzy.lib/FL_Kill_Object
+fuzzy.lib/FL_Kill_Rule
+fuzzy.lib/FL_Kill_System
+fuzzy.lib/FL_Memfunc
+fuzzy.lib/FL_Object
+fuzzy.lib/FL_Object_Evaluate
+fuzzy.lib/FL_Object_Run
+fuzzy.lib/FL_Object_XEvaluate
+fuzzy.lib/FL_Read_Action
+fuzzy.lib/FL_Read_Clause
+fuzzy.lib/FL_Read_Condition
+fuzzy.lib/FL_Read_Memfunc
+fuzzy.lib/FL_Read_Object
+fuzzy.lib/FL_Read_Rule
+fuzzy.lib/FL_Read_Subset
+fuzzy.lib/FL_Read_System
+fuzzy.lib/FL_Read_Variable
+fuzzy.lib/FL_Revise_Objects
+fuzzy.lib/FL_Revise_Variables
+fuzzy.lib/FL_Rule
+fuzzy.lib/FL_Rule_Evaluate
+fuzzy.lib/FL_Rule_XEvaluate
+fuzzy.lib/FL_Set_Variable
+fuzzy.lib/FL_Set_VariableByIndex
+fuzzy.lib/FL_Set_Variables
+fuzzy.lib/FL_Subset
+fuzzy.lib/FL_Subset_Init
+fuzzy.lib/FL_Subset_Memship
+fuzzy.lib/FL_System
+fuzzy.lib/FL_System_Reset
+fuzzy.lib/FL_System_Run
+fuzzy.lib/FL_System_XRun
+fuzzy.lib/FL_Variable
+fuzzy.lib/FL_Variable_Evaluate
+fuzzy.lib/FL_Variable_Get
+fuzzy.lib/FL_Variable_Index
+fuzzy.lib/FL_Variable_Reset
+fuzzy.lib/FL_Variable_Set
+fuzzy.lib/FL_Variable_XEvaluate
+fuzzy.lib/FL_Write_Action
+fuzzy.lib/FL_Write_Clause
+fuzzy.lib/FL_Write_Condition
+fuzzy.lib/FL_Write_Memfunc
+fuzzy.lib/FL_Write_Object
+fuzzy.lib/FL_Write_Rule
+fuzzy.lib/FL_Write_Subset
+fuzzy.lib/FL_Write_System
+fuzzy.lib/FL_Rule
+fuzzy.lib/FL_Clone_Rule
+fuzzy.lib/FL_Clone_Rules
+fuzzy.lib/FL_Get_Rule
+fuzzy.lib/FL_Kill_Rule
+fuzzy.lib/FL_Read_Rule
+fuzzy.lib/FL_Rule_Evaluate
+fuzzy.lib/FL_Rule_XEvaluate
+fuzzy.lib/FL_Add_Rule
+fuzzy.lib/FL_Variable_Set
+fuzzy.lib/FL_Write_Rule
+fuzzy.lib/FL_Write_Variable
+fuzzy.lib/FL_Action                                       fuzzy.lib/FL_Action
+
+   NAME        
+       FL_Action -- Initialize a fuzzy action
+
+   SYNOPSIS    
+       fuzzyaction = FL_Action(name)
+
+       struct FL_action *FL_Action(char *)
+
+   FUNCTION
+       Allocate memory for a fuzzyaction with name "name".
+
+   INPUTS
+       Name of the fuzzyaction
+
+   RESULTS
+       Returns a pointer to the initialized action or 0 if not succesful.
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Action_Execute                       fuzzy.lib/FL_Action_Execute
+
+   NAME        
+       FL_Action_Execute -- Execute the consequent of a fuzzy rule
+
+   SYNOPSIS    
+       result = FL_Action_Execute(action, degree_of_belief)
+
+       int FL_Action_Execute(struct FL_action *, double)
+
+   FUNCTION
+       Evaluate the consequent of a rule, i.e., set the variables used in tha
+t
+       rule according to the definitions and the degree of belief assigned to
+       the rule's premises
+
+   INPUTS
+       Pointer to the fuzzyaction, degree of belief 
+
+   RESULTS
+       Returns 1 if the evaluation was successful, 0 otherwise.
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Action_XExecute                     fuzzy.lib/FL_Action_XExecute
+
+   NAME        
+       FL_Action_Execute -- XExecute the consequent of a fuzzy rule QUICKLY
+
+   SYNOPSIS    
+       result = FL_Action_XExecute(action, degree_of_belief)
+
+       int FL_Action_XExecute(struct FL_action *, double)
+
+   FUNCTION
+       Evaluate the consequent of a rule, i.e., set the variables used in tha
+t
+       rule according to the definitions and the degree of belief assigned to
+       the rule's premises
+
+       THIS FUNCTION DOES NOT PERFORM ANY ERROR CHECKING
+
+   INPUTS
+       Pointer to the fuzzyaction, degree of belief 
+
+   RESULTS
+       Returns 1
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Add_Action                               fuzzy.lib/FL_Add_Action
+
+   NAME        
+       FL_Add_Action -- Add a fuzzy action to a rule as a consequent
+
+   SYNOPSIS    
+       result = FL_Add_Action(fuzzysystem, objectname, rulename, actionname,
+                              variable, linguistic_term)
+
+       int FL_Add_Action(struct FL_system *, char *, char *, char *, char *, 
+char *)
+
+   FUNCTION
+       Add the action "variable IS_FUZZY linguistic_term" with name "actionna
+me" to the 
+       rule "rulename" belonging to the fuzzyobject "objectname". The action 
+is evaluated
+       in a fuzzy way, i.e., the crisp value of the variable is calculated by
+ means of
+       the defuzzification method assigned to the fuzzyobject.
+
+   INPUTS
+       Pointer to an initialized fuzzysystem, name of object, rule, and actio
+n. 
+       Name of variable to be set and name of linguistic term (the latter mus
+t belong
+       to the membershipfunction/type of the variable)
+
+   RESULTS
+       Returns 1 if the action was added successfully, 0 otherwise.
+
+   USE
+       Application
+
+fuzzy.lib/FL_Add_Clause                               fuzzy.lib/FL_Add_Clause
+
+   NAME        
+       FL_Add_Clause -- Add a clause to a fuzzysystem
+
+   SYNOPSIS    
+       result = FL_Add_Clause(fuzzysystem,object,rule,clause)
+
+       int FL_Add_Clause(struct FL_system*, char *, char *, char *)
+
+   FUNCTION
+       Add a clause to a the rule "rule" belonging to the object "object".
+
+   INPUTS
+       Pointer to an initialized fuzzy system, name of the fuzzyobject,
+       name of fuzzyrule, name of new clause.
+
+   RESULTS
+       Returns 1 if the clause was added or 0 if the action was not succesful
+.
+
+   USE
+       Application
+
+fuzzy.lib/FL_Add_Condition                         fuzzy.lib/FL_Add_Condition
+
+   NAME        
+       FL_Add_Condition -- Add a fuzzy condition to a rule as a consequent
+
+   SYNOPSIS    
+       result = FL_Add_Condition(fuzzysystem, objectname, rulename, clausenam
+e,
+                                 conditionname, variable, operator, linguisti
+c_term)
+
+       int FL_Add_Condition(struct FL_system *, char *, char *, char *, char 
+*, 
+                            char *, enum FL_operator, char *)
+
+   FUNCTION
+       Add the condition "IF variable operator linguistic_term" with name "co
+nditionname" to 
+       the clause "clausename" of rule "rulename" belonging to the fuzzyobjec
+t "objectname". 
+       The condition is evaluated in a fuzzy way, i.e., the crisp value of th
+e variable is 
+       calculated by means of the defuzzification method assigned to the fuzz
+yobject.
+
+   INPUTS
+       Pointer to an initialized fuzzysystem, name of object, rule, clause, a
+nd condition. 
+       Name of variable to be set and name of linguistic term (the latter mus
+t belong
+       to the membershipfunction/type of the variable)
+
+   RESULTS
+       Returns 1 if the condition was added successfully, 0 otherwise.
+
+   USE
+       Application
+
+fuzzy.lib/FL_Add_Memfunc                             fuzzy.lib/FL_Add_Memfunc
+
+   NAME        
+       FL_Add_Memfunc -- Add a membership function to a fuzzysystem
+
+   SYNOPSIS    
+       result = FL_Add_Memfunc(fuzzysystem, memfuncname)
+
+       int FL_Add_Memfunc(struct FL_system *, char *)
+
+   FUNCTION
+       Add a membership function to the fuzzysystem with name "memfuncname".
+
+   INPUTS
+       Pointer to an initialized fuzzysystem, name of membership function.
+
+   RESULTS
+       Returns 1 if the membership function was added successfully, 0 otherwi
+se.
+
+   USE
+       Application
+
+fuzzy.lib/FL_Add_Memfuncs                           fuzzy.lib/FL_Add_Memfuncs
+
+   NAME        
+       FL_Add_Memfuncs -- Add a list of membership functions to a fuzzysystem
+
+   SYNOPSIS    
+       result = FL_Add_Memfuncs(fuzzysystem, memfuncname, ...)
+
+       int FL_Add_Memfunc(struct FL_system *, char *, ..., char*)
+
+   FUNCTION
+       Add a list of membership functions to the fuzzysystem.
+
+   INPUTS
+       Pointer to an initialized fuzzysystem, name of membership functions, 0
+.
+
+   RESULTS
+       Returns 1 if the membership functions were added successfully, 0 other
+wise.
+
+   USE
+       Application
+
+fuzzy.lib/FL_Add_Object                               fuzzy.lib/FL_Add_Object
+
+   NAME        
+       FL_Add_Object -- Add a fuzzyobject to a fuzzysystem
+
+   SYNOPSIS    
+       result = FL_Add_Object(fuzzysystem,name,evaluationmethod)
+
+       int FL_Add_Object(struct FL_system*, char *, enum FL_evalmethod)
+
+   FUNCTION
+       Add a fuzzy object to a fuzzy system, allocate memory for the object a
+nd
+       set the fuzzyobject's evaluation method.
+
+   INPUTS
+       Pointer to an initialized fuzzy system, name of the new fuzzyobject, e
+valuation
+       method.
+
+   RESULTS
+       Returns 1 if the object was added or 0 if the action was not succesful
+.
+
+   USE
+       Application
+
+fuzzy.lib/FL_Add_Objects                             fuzzy.lib/FL_Add_Objects
+
+   NAME        
+       FL_Add_Objects -- Add a list of fuzzyobjects to a fuzzysystem
+
+   SYNOPSIS    
+       result = FL_Add_Objects(fuzzysystem,name,evaluationmethod, ... ,0,0)
+
+       int FL_Add_Objects(struct FL_system*, char *, enum FL_evalmethod,
+                          char *, enum FL_evalmethod, ... ,0,0)
+
+   FUNCTION
+       Add several fuzzy objects to a fuzzy system, allocate memory for the o
+bjects and
+       set the fuzzyobjects' evaluation methods. After the variable number of
+ objects,
+       the parameter list must contain two 0s.
+
+   INPUTS
+       Pointer to an initialized fuzzy system, list of tuples 
+       (name of the new fuzzyobject, evaluation method), 0,0.
+
+   RESULTS
+       Returns 1 if the objects were added or 0 if the action was not succesf
+ul.
+
+   USE
+       Application
+
+fuzzy.lib/FL_Add_Rule                                   fuzzy.lib/FL_Add_Rule
+
+   NAME        
+       FL_Add_Rule -- Add a rule to a fuzzy object
+
+   SYNOPSIS    
+       result = FL_Add_Rule(fuzzysystem, objectname, rulename)
+
+       int FL_Add_Rule(struct FL_system *, char *, char *)
+
+   FUNCTION
+       Add a fuzzyrule with name <rulename> to the object <objectname>.
+       Allocate space for the rule.
+
+   INPUTS
+       Pointer to the fuzzysystem
+       Name of fuzzy object
+       Name of rule
+
+   OUTPUTS
+       If rule could be added, return 1.
+       Otherwise, return 0. In this case, check FL_Error.
+
+fuzzy.lib/FL_Add_Subset                               fuzzy.lib/FL_Add_Subset
+
+   NAME        
+       FL_Add_Subset -- Add a linguistic term to a membership function
+
+   SYNOPSIS    
+       result = FL_Add_Subset(fuzzysystem, memfuncname, subsetname,
+                               type, center, leftspread, rightspread, 
+                               degree_of_mem)
+
+       int FL_Add_Subset(struct FL_system *, char *, char *, enum FL_subsetty
+pe,
+                         double, double, double, double)
+
+   FUNCTION
+       Add a linguistic term as "subsetname" to the membership function "memf
+uncname"
+       and initialize it according to the given parameters.
+
+   INPUTS
+       Pointer to an initialized fuzzysystem, name of membership function,
+       name of the linguistic term, parameters for the initialization.
+
+   RESULTS
+       Returns 1 if the linguistic term was added successfully, 0 otherwise.
+
+   USE
+       Application
+
+fuzzy.lib/FL_Add_Variable                           fuzzy.lib/FL_Add_Variable
+
+   NAME        
+       FL_Add_Variable -- Add a linguistic variable to a fuzzysystem
+
+   SYNOPSIS    
+       result = FL_Add_Variable(fuzzysystem, variablename, memfuncname, defau
+lt_value)
+
+       int FL_Add_Variable(struct FL_system *, char *, char *, double)
+
+   FUNCTION
+       Add a variable to the fuzzysystem with name "variablename". The type o
+f the variable
+       is set to the memfunc "memfuncname". The variable's default value is s
+et to 
+       "default_value".
+
+   INPUTS
+       Pointer to an initialized fuzzysystem, name of variable, name of membe
+rship function 
+       (must exist!), and default value.
+
+   RESULTS
+       Returns 1 if the variable was added successfully, 0 otherwise.
+
+   USE
+       Application
+
+fuzzy.lib/FL_Add_Variables                         fuzzy.lib/FL_Add_Variables
+
+   NAME        
+       FL_Add_Variables -- Add several linguistic variables to a fuzzysystem
+
+   SYNOPSIS    
+       result = FL_Add_Variable(fuzzysystem, variablename, memfuncname, 
+                                default_value,... , 0,0)
+
+       int FL_Add_Variable(struct FL_system *, char *, char *, double, ... , 
+0,0)
+
+   FUNCTION
+       Add variables to the fuzzysystem with name "variablename". The type of
+ the variable
+       is set to the memfunc "memfuncname". The variable's default value is s
+et to 
+       "default_value". The list of variables must end with two 0s.
+
+   INPUTS
+       Pointer to an initialized fuzzysystem, list consisting of 
+       (name of variable, name of membership function (must exist!), and defa
+ult value), 0,0.
+
+   RESULTS
+       Returns 1 if the variables were added successfully, 0 otherwise.
+
+   USE
+       Application
+
+fuzzy.lib/FL_Check_System                           fuzzy.lib/FL_Check_System
+
+   NAME        
+       FL_Check_System -- Check system integrity (names only!)
+
+   SYNOPSIS    
+       result = FL_Check_System(fuzzysystem)
+
+       int FL_Check_System(struct FL_system *)
+
+   FUNCTION
+       Makes a complete survey of the system, looking for duplicate names of
+       membership functions etc.
+
+   INPUTS
+       Pointer to the original fuzzysystem
+
+   RESULTS
+       Returns 1 if system was ok, 0 otherwise
+
+   USAGE
+       Internal
+
+fuzzy.lib/FL_Clause                                       fuzzy.lib/FL_Clause
+
+   NAME        
+       FL_Clause -- Initialize a clause
+
+   SYNOPSIS    
+       clause = FL_Clause(name)
+
+       struct FL_clause *FL_Clause(char *)
+
+   FUNCTION
+       Allocate memory for a clause with name "name".
+
+   INPUTS
+       Name of the clause
+
+   RESULTS
+       Returns a pointer to the initialized clause or 0 if not succesful.
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Clause_Evaluate                     fuzzy.lib/FL_Clause_Evaluate
+
+   NAME        
+       FL_Clause_Evaluate -- Evaluate a clause
+
+   SYNOPSIS    
+       degree_of_belief = FL_Clause_Evaluate(clause)
+
+       double FL_Clause_Evaluate(struct FL_clause *)
+
+   FUNCTION
+       Evaluate the preconditions belonging to a clause. The degree of belief
+ of a clause
+       is the maximum of the dob of the individual literals.
+
+   INPUTS
+       Pointer to the clause.
+
+   RESULTS
+       Returns 1 if the evaluation was successul, 0 otherwise.
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Clause_XEvaluate                   fuzzy.lib/FL_Clause_XEvaluate
+
+   NAME        
+       FL_Clause_Evaluate -- Evaluate a clause QUICKLY
+
+   SYNOPSIS    
+       degree_of_belief = FL_Clause_XEvaluate(clause)
+
+       double FL_Clause_XEvaluate(struct FL_clause *)
+
+   FUNCTION
+       Evaluate the preconditions belonging to a clause. The degree of belief
+ of a clause
+       is the maximum of the dob of the individual literals.
+
+       THIS FUNCTION DOES NOT PERFORM ANY ERROR CHECKING
+
+   INPUTS
+       Pointer to the clause.
+
+   RESULTS
+       Returns 1
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Cleanup                                     fuzzy.lib/FL_Cleanup
+
+   NAME        
+       FL_Cleanup -- Free all memory that has been used by FCT
+
+   SYNOPSIS    
+       result = FL_Cleanup()
+
+       int FL_Cleanup(void)
+
+   FUNCTION
+       Free all resources used by FCT
+
+   INPUTS
+       none
+
+   RESULTS
+       Returns 1 if successful, 0 otherwise
+
+fuzzy.lib/FL_Clone_Action                           fuzzy.lib/FL_Clone_Action
+
+   NAME        
+       FL_Clone_Action -- Make an identical copy of a action
+
+   SYNOPSIS    
+       clone = FL_Clone_Action(action)
+
+       struct FL_action *FL_Clone_Action(struct FL_action *)
+
+   FUNCTION
+       Allocates memory for the action
+
+   INPUTS
+       Pointer to original action
+
+   RESULTS
+       Pointer to clone
+
+   USAGE
+       Internal
+
+fuzzy.lib/FL_Clone_Actions                         fuzzy.lib/FL_Clone_Actions
+
+   NAME        
+       FL_Clone_Actions -- Make an identical copy of a list of actions
+
+   SYNOPSIS    
+       clone = FL_Clone_Action(actionlist,num_actions)
+
+       struct FL_action *FL_Clone_Action(struct FL_action *,int)
+
+   FUNCTION
+       Allocates memory for the whole array of actions
+
+   INPUTS
+       Pointer to first original action, number of actions in array
+
+   RESULTS
+       Pointer to cloned array
+
+   USAGE
+       Internal
+
+fuzzy.lib/FL_Clone_Clause                           fuzzy.lib/FL_Clone_Clause
+
+   NAME        
+       FL_Clone_Clause -- Make an identical copy of a clause
+
+   SYNOPSIS    
+       clone = FL_Clone_Clause(fuzzyclause)
+
+       struct FL_clause *FL_Clone_Clause(struct FL_clause *)
+
+   FUNCTION
+       Allocates memory for both the membership function and the 
+       associated subsets.
+
+   INPUTS
+       Pointer to original membership function
+
+   RESULTS
+       Pointer to clone
+
+
+   USAGE
+       Internal
+
+fuzzy.lib/FL_Clone_Clauses                         fuzzy.lib/FL_Clone_Clauses
+
+   NAME        
+       FL_Clone_Clauses -- Make an identical copy of a list of clauses
+
+   SYNOPSIS    
+       clone = FL_Clone_Clause(fuzzyclauselist,num_clauses)
+
+       struct FL_clause *FL_Clone_Clause(struct FL_clause *,int)
+
+   FUNCTION
+       Allocates memory for the whole array of membership clauses and the 
+       associated conditions.
+
+   INPUTS
+       Pointer to first original membership function, number of clauses in ar
+ray
+
+   RESULTS
+       Pointer to cloned array
+
+   USAGE
+       Internal
+
+fuzzy.lib/FL_Clone_Condition                     fuzzy.lib/FL_Clone_Condition
+
+   NAME        
+       FL_Clone_Condition -- Make an identical copy of a condition
+
+   SYNOPSIS    
+       clone = FL_Clone_Condition(condition)
+
+       struct FL_condition *FL_Clone_Condition(struct FL_condition *)
+
+   FUNCTION
+       Allocates memory for the condition
+
+   INPUTS
+       Pointer to original condition
+
+   RESULTS
+       Pointer to clone
+
+   USAGE
+       Internal
+
+fuzzy.lib/FL_Clone_Conditions                   fuzzy.lib/FL_Clone_Conditions
+
+   NAME        
+       FL_Clone_Conditions -- Make an identical copy of a list of conditions
+
+   SYNOPSIS    
+       clone = FL_Clone_Condition(conditionlist,num_conditions)
+
+       struct FL_condition *FL_Clone_Condition(struct FL_condition *,int)
+
+   FUNCTION
+       Allocates memory for the whole array of conditions
+
+   INPUTS
+       Pointer to first original condition, number of conditions in array
+
+   RESULTS
+       Pointer to cloned array
+
+   USAGE
+       Internal
+
+fuzzy.lib/FL_Clone_Memfunc                         fuzzy.lib/FL_Clone_Memfunc
+
+   NAME        
+       FL_Clone_Memfunc -- Make an identical copy of a membership function
+
+   SYNOPSIS    
+       clone = FL_Clone_Memfunc(fuzzymemfunc)
+
+       struct FL_memfunc *FL_Clone_Memfunc(struct FL_memfunc *)
+
+   FUNCTION
+       Allocates memory for both the membership function and the 
+       associated subsets.
+
+   INPUTS
+       Pointer to original membership function
+
+   RESULTS
+       Pointer to clone
+
+
+   USAGE
+       Internal
+
+fuzzy.lib/FL_Clone_Memfuncs                       fuzzy.lib/FL_Clone_Memfuncs
+
+   NAME        
+       FL_Clone_Memfuncs -- Make an identical copy of a list of membership fu
+nction
+
+   SYNOPSIS    
+       clone = FL_Clone_Memfunc(fuzzymemfunclist,num_memfuncs)
+
+       struct FL_memfunc *FL_Clone_Memfunc(struct FL_memfunc *,int)
+
+   FUNCTION
+       Allocates memory for the whole array of membership functions and the 
+       associated subsets.
+
+   INPUTS
+       Pointer to first original membership function, number of memfuncs in a
+rray
+
+   RESULTS
+       Pointer to cloned array
+
+
+   USAGE
+       Internal
+
+fuzzy.lib/FL_Clone_Object                           fuzzy.lib/FL_Clone_Object
+
+   NAME        
+       FL_Clone_Object -- Make an identical copy of a object
+
+   SYNOPSIS    
+       clone = FL_Clone_Object(fuzzyobject)
+
+       struct FL_object *FL_Clone_Object(struct FL_object *)
+
+   FUNCTION
+       Allocates memory for both the membership function and the 
+       associated subsets.
+
+   INPUTS
+       Pointer to original membership function
+
+   RESULTS
+       Pointer to clone
+
+
+   USAGE
+       Internal
+
+fuzzy.lib/FL_Clone_Objects                         fuzzy.lib/FL_Clone_Objects
+
+   NAME        
+       FL_Clone_Objects -- Make an identical copy of a list of objects
+
+   SYNOPSIS    
+       clone = FL_Clone_Object(fuzzyobjectlist,num_objects)
+
+       struct FL_object *FL_Clone_Object(struct FL_object *,int)
+
+   FUNCTION
+       Allocates memory for the whole array of membership objects and the 
+       associated rules.
+
+   INPUTS
+       Pointer to first original membership function, number of objects in ar
+ray
+
+   RESULTS
+       Pointer to cloned array
+
+   USAGE
+       Internal
+
+fuzzy.lib/FL_Clone_Rule                               fuzzy.lib/FL_Clone_Rule
+
+   NAME        
+       FL_Clone_Rule -- Make an identical copy of a rule
+
+   SYNOPSIS    
+       clone = FL_Clone_Rule(fuzzyrule)
+
+       struct FL_rule *FL_Clone_Rule(struct FL_rule *)
+
+   FUNCTION
+       Allocates memory for both the membership function and the 
+       associated subsets.
+
+   INPUTS
+       Pointer to original membership function
+
+   RESULTS
+       Pointer to clone
+
+
+   USAGE
+       Internal
+
+fuzzy.lib/FL_Clone_Rules                             fuzzy.lib/FL_Clone_Rules
+
+   NAME        
+       FL_Clone_Rules -- Make an identical copy of a list of rules
+
+   SYNOPSIS    
+       clone = FL_Clone_Rules(fuzzyrulelist,num_rules)
+
+       struct FL_rule *FL_Clone_Rules(struct FL_rule *,int)
+
+   FUNCTION
+       Allocates memory for the whole array of membership rules and the 
+       associated rules.
+
+   INPUTS
+       Pointer to first original membership function, number of rules in arra
+y
+
+   RESULTS
+       Pointer to cloned array
+
+   USAGE
+       Internal
+
+fuzzy.lib/FL_Clone_Subset                           fuzzy.lib/FL_Clone_Subset
+
+   NAME        
+       FL_Clone_Subset -- Make an identical copy of a subset/linguistic term
+
+   SYNOPSIS    
+       clone = FL_Clone_Subset(subset)
+
+       struct FL_subset *FL_Clone_Subset(struct FL_subset *)
+
+   FUNCTION
+       Allocates memory for the subset
+
+   INPUTS
+       Pointer to original subset
+
+   RESULTS
+       Pointer to clone
+
+   USAGE
+       Internal
+
+fuzzy.lib/FL_Clone_Subsets                         fuzzy.lib/FL_Clone_Subsets
+
+   NAME        
+       FL_Clone_Subsets -- Make an identical copy of a list of subsets
+
+   SYNOPSIS    
+       clone = FL_Clone_Subset(subsetlist,num_subsets)
+
+       struct FL_subset *FL_Clone_Subset(struct FL_subset *,int)
+
+   FUNCTION
+       Allocates memory for the whole array of subsets
+
+   INPUTS
+       Pointer to first original subset, number of subsets in array
+
+   RESULTS
+       Pointer to cloned array
+
+   USAGE
+       Internal
+
+fuzzy.lib/FL_Clone_System                           fuzzy.lib/FL_Clone_System
+
+   NAME        
+       FL_Clone_System -- Make an identical copy of a fuzzy system
+
+   SYNOPSIS    
+       clone = FL_Clone_System(fuzzysystem)
+
+       struct FL_system *FL_Clone_System(struct FL_system *)
+
+   FUNCTION
+       Makes a complete copy (i.e., object, rules, variables, etc. are cloned
+)
+       of a fuzzysystem
+
+   INPUTS
+       Pointer to the original fuzzysystem
+
+   RESULTS
+       Returns a pointer to the clone 0 if not succesful.
+
+   USAGE
+       Internal
+
+fuzzy.lib/FL_Clone_Variable                       fuzzy.lib/FL_Clone_Variable
+
+   NAME        
+       FL_Clone_Variable -- Make an identical copy of a variable
+
+   SYNOPSIS    
+       clone = FL_Clone_Variable(variable)
+
+       struct FL_variable *FL_Clone_Variable(struct FL_variable *)
+
+   FUNCTION
+       Allocates memory for the variable
+
+   INPUTS
+       Pointer to original variable
+
+   RESULTS
+       Pointer to clone
+
+   USAGE
+       Internal
+
+fuzzy.lib/FL_Clone_Variables                     fuzzy.lib/FL_Clone_Variables
+
+   NAME        
+       FL_Clone_Variables -- Make an identical copy of a list of variables
+
+   SYNOPSIS    
+       clone = FL_Clone_Variable(variablelist,num_variables)
+
+       struct FL_variable *FL_Clone_Variable(struct FL_variable *,int)
+
+   FUNCTION
+       Allocates memory for the whole array of variables
+
+   INPUTS
+       Pointer to first original variable, number of variables in array
+
+   RESULTS
+       Pointer to cloned array
+
+   USAGE
+       Internal
+
+fuzzy.lib/FL_Condition                                 fuzzy.lib/FL_Condition
+
+   NAME        
+       FL_Condition -- Initialize a condition
+
+   SYNOPSIS    
+       condition = FL_Condition(name)
+
+       struct FL_condition *FL_Condition(char *)
+
+   FUNCTION
+       Allocate memory for a condition with name "name".
+
+   INPUTS
+       Name of the condition
+
+   RESULTS
+       Returns a pointer to the initialized condition or 0 if not succesful.
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Condition_Evaluate               fuzzy.lib/FL_Condition_Evaluate
+
+   NAME        
+       FL_Condition_Evaluate -- Evaluate a condition
+
+   SYNOPSIS    
+       degree_of_belief = FL_Condition_Evaluate(condition)
+
+       double FL_Condition_Evaluate(struct FL_condition *)
+
+   FUNCTION
+       Evaluate a condition. The degree of belief of a condition 
+       degree of membership of the corresponding variable to the given subset
+.
+
+   INPUTS
+       Pointer to the condition.
+
+   RESULTS
+       Returns degree of belief of condition [0..1], -1 on error
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Condition_XEvaluate             fuzzy.lib/FL_Condition_XEvaluate
+
+   NAME        
+       FL_Condition_XEvaluate -- Evaluate a condition QUICKLY
+
+   SYNOPSIS    
+       degree_of_belief = FL_Condition_XEvaluate(condition)
+
+       double FL_Condition_XEvaluate(struct FL_condition *)
+
+   FUNCTION
+       Evaluate a condition. The degree of belief of a condition 
+       degree of membership of the corresponding variable to the given subset
+.
+
+       THIS FUNCTION DOES NOT PERFORM ANY ERROR CHECKING
+
+   INPUTS
+       Pointer to the condition.
+
+   RESULTS
+       Returns degree of belief of condition [0..1], -1 on error
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Get_Clause                               fuzzy.lib/FL_Get_Clause
+
+   NAME        
+       FL_Get_Clause -- Get a clause by name
+
+   SYNOPSIS    
+       clause = FL_Get_Clause(fuzzysystem,clausename)
+
+       struct FL_clause *FL_Get_Clause(struct FL_system*, char *)
+                         
+
+   FUNCTION
+       Scan the fuzzysystem for the clause with name "name". 
+
+   INPUTS
+       Pointer to an initialized fuzzy system, name of the clause
+       that is to be found.
+
+   RESULTS
+       Returns a pointer to the clause 0 if none could be found or the 
+       action was not succesful.
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Get_Memfunc                             fuzzy.lib/FL_Get_Memfunc
+
+   NAME        
+       FL_Get_Memfunc -- Get a membership function by name
+
+   SYNOPSIS    
+       memfunc = FL_Get_Memfunc(fuzzysystem,memfuncname)
+
+       struct FL_memfunc *FL_Get_Memfunc(struct FL_system*, char *)
+                         
+
+   FUNCTION
+       Scan the fuzzysystem for the membership function with name "memfuncnam
+e". 
+
+   INPUTS
+       Pointer to an initialized fuzzy system, name of the membership functio
+n
+       that is to be found.
+
+   RESULTS
+       Returns a pointer to the membership function or 0 if none could be fou
+nd or the 
+       action was not succesful.
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Get_Object                               fuzzy.lib/FL_Get_Object
+
+   NAME        
+       FL_Get_Object -- Get a fuzzyobject by name
+
+   SYNOPSIS    
+       object = FL_Get_Object(fuzzysystem,objectname)
+
+       struct FL_object *FL_Get_Object(struct FL_system*, char *)
+                         
+
+   FUNCTION
+       Scan the fuzzysystem for the object with name "objectname". 
+
+   INPUTS
+       Pointer to an initialized fuzzy system, name of the fuzzyobject
+       that is to be found.
+
+   RESULTS
+       Returns a pointer to the fuzzyobject or 0 if none could be found or th
+e 
+       action was not succesful.
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Get_Rule                                   fuzzy.lib/FL_Get_Rule
+
+   NAME        
+       FL_Get_Rule -- Get a specific rule from a fuzzy system/object
+
+   SYNOPSIS    
+       rule = FL_Get_Rule(fuzzysystem, objectname, rulename)
+
+       struct FL_rule *FL_Get_Rule(struct FL_system *, char *, char *)
+
+   FUNCTION
+       Get a pointer to a specific rule belonging to a specific object
+
+   INPUTS
+       Pointer to the fuzzysystem
+       Name of fuzzy object
+       Name of rule
+
+   OUTPUTS
+       If rule was found, return pointer to rule.
+       Otherwise, return 0. In this case, check FL_Error.
+
+fuzzy.lib/FL_Get_Subset                               fuzzy.lib/FL_Get_Subset
+
+   NAME        
+       FL_Get_Subset -- Get a linguistic term by name
+
+   SYNOPSIS    
+       subset = FL_Get_Subset(fuzzysystem,memfuncname, subsetname)
+
+       struct FL_subset *FL_Get_Subset(struct FL_system*, char *, char *)
+                         
+
+   FUNCTION
+       Scan the fuzzysystem for the membership function with name "memfuncnam
+e" and
+       find the subset "subsetname".
+
+   INPUTS
+       Pointer to an initialized fuzzy system, name of the membership functio
+n and
+       the linguistic term that is to be found.
+
+   RESULTS
+       Returns a pointer to the linguistic term or 0 if none could be found o
+r the 
+       action was not succesful.
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Get_Variable                           fuzzy.lib/FL_Get_Variable
+
+   NAME        
+       FL_Get_Variable -- Get crisp value of a variable
+
+   SYNOPSIS    
+       result = FL_Get_Variable(fuzzysystem,variablename,valuebuffer)
+
+       int FL_Get_Variable(struct FL_system*, char *, double *)
+                         
+
+   FUNCTION
+       Get the crisp value (as calculated by FL_Evaluate_Variable()) for the 
+variable 
+       "variablename" and store it in *valuebuffer.
+
+   INPUTS
+       Pointer to an initialized fuzzy system, name of the variable, pointer 
+to buffer for
+       value.
+
+   RESULTS
+       Returns 1 if the value could be read or 0 if none could be found or th
+e 
+       action was not successful.
+
+   USE
+       Application
+
+fuzzy.lib/FL_Get_Variables                         fuzzy.lib/FL_Get_Variables
+
+   NAME        
+       FL_Get_Variables -- Get crisp values of a set of variables
+
+   SYNOPSIS    
+       result = FL_Get_Variables(fuzzysystem,variablename,valuebuffer, ..., 0
+,0)
+
+       int FL_Get_Variables(struct FL_system*, char *, double *, ..., 0,0)
+                         
+
+   FUNCTION
+       Get the crisp value (as calculated by FL_Evaluate_Variable()) for a li
+st of
+       variables described by ("variablename",*valuebuffer).
+
+   INPUTS
+       Pointer to an initialized fuzzy system, list of 
+       (name of the variable, pointer to buffer for value), 0,0.
+
+   RESULTS
+       Returns 1 if the values of the variables could be read 0 if none could
+ be found or the 
+       action was not successful.
+
+   USE
+       Application
+
+fuzzy.lib/FL_Geterror                                   fuzzy.lib/FL_Geterror
+
+   NAME        
+       FL_Geterror -- Get FCT internal error code
+
+   SYNOPSIS    
+       error = FL_Geterror()
+
+       int FL_Geterror(void)
+
+   FUNCTION
+       Get FCT internal error code according to the FCT error table.
+
+   INPUTS
+       none
+
+   RESULTS
+       Returns error code.
+
+   USE
+       Application
+
+fuzzy.lib/FL_GeterrorName                           fuzzy.lib/FL_GeterrorName
+
+   NAME        
+       FL_GeterrorName -- Get plain text for FCT internal error
+
+   SYNOPSIS    
+       errortext = FL_GeterrorName()
+
+       char *FL_GeterrorName(void)
+
+   FUNCTION
+       Get FCT error description
+
+   INPUTS
+       none
+
+   RESULTS
+       Returns pointer to error description.
+
+   USE
+       Application
+
+fuzzy.lib/FL_GeterrorText                           fuzzy.lib/FL_GeterrorText
+
+   NAME        
+       FL_GeterrorText -- Get additional error information (if available)
+
+   SYNOPSIS    
+       errortext = FL_GeterrorText()
+
+       char *FL_GeterrorText(void)
+
+   FUNCTION
+       Get FCT error description
+
+   INPUTS
+       none
+
+   RESULTS
+       Returns pointer to error description.
+
+   USE
+       Application
+
+fuzzy.lib/FL_Getinfo                                     fuzzy.lib/FL_Getinfo
+
+   NAME        
+       FL_Getinfo -- Get version information
+
+   SYNOPSIS    
+       versionstring = FL_Getversion()
+
+       char *FL_Get(void)
+
+   FUNCTION
+       Get version information (e.g., to print it & check lib version in use)
+
+   INPUTS
+       none
+
+   RESULTS
+       Returns a pointer to the FCT version string
+
+fuzzy.lib/FL_Initialize                               fuzzy.lib/FL_Initialize
+
+   NAME        
+       FL_Initialize -- Initialize FCT
+
+   SYNOPSIS    
+       result = FL_Initialize()
+
+       int FL_Initialize(void)
+
+   FUNCTION
+       Initialize FCT, alloc necessary memory, setup structures
+
+   INPUTS
+       none
+
+   RESULTS
+       Returns 1 if successful, 0 otherwise
+
+fuzzy.lib/FL_Kill_Clause                             fuzzy.lib/FL_Kill_Clause
+
+   NAME        
+       FL_Kill_Clause -- Free memory allocated by a fuzzy clause
+
+   SYNOPSIS    
+       FL_Kill_Clause(fuzzyclause)
+
+       void FL_Kill_Clause(struct FL_clause *)
+
+   FUNCTION
+       Free all memory allocated by a fuzzyclause.
+
+   INPUTS
+       Pointer to fuzzyclause
+
+   USAGE
+       Application
+
+fuzzy.lib/FL_Kill_Memfunc                           fuzzy.lib/FL_Kill_Memfunc
+
+   NAME        
+       FL_Kill_Memfunc -- Free memory allocated by a membership function
+
+   SYNOPSIS    
+       FL_Kill_Memfunc(fuzzymemfunc)
+
+       void FL_Kill_Memfunc(struct FL_memfunc *)
+
+   FUNCTION
+       Free all memory allocated by a membership function
+
+   INPUTS
+       Pointer to membership function
+
+   USAGE
+       Internal
+
+fuzzy.lib/FL_Kill_Object                             fuzzy.lib/FL_Kill_Object
+
+   NAME        
+       FL_Kill_Object -- Free memory allocated by a fuzzy object
+
+   SYNOPSIS    
+       FL_Kill_Object(fuzzyobject)
+
+       void FL_Kill_Object(struct FL_object *)
+
+   FUNCTION
+       Free all memory allocated by a fuzzyobject.
+
+   INPUTS
+       Pointer to fuzzyobject
+
+   USAGE
+       Application
+
+fuzzy.lib/FL_Kill_Rule                                 fuzzy.lib/FL_Kill_Rule
+
+   NAME        
+       FL_Kill_Rule -- Free memory allocated by a fuzzy rule
+
+   SYNOPSIS    
+       FL_Kill_Rule(fuzzyrule)
+
+       void FL_Kill_Rule(struct FL_rule *)
+
+   FUNCTION
+       Free all memory allocated by a fuzzyrule.
+
+   INPUTS
+       Pointer to fuzzyrule
+
+   USAGE
+       Application
+
+fuzzy.lib/FL_Kill_System                             fuzzy.lib/FL_Kill_System
+
+   NAME        
+       FL_Kill_System -- Free memory allocated by a fuzzy system
+
+   SYNOPSIS    
+       FL_Kill_System(fuzzysystem)
+
+       void FL_Kill_System(struct FL_system *)
+
+   FUNCTION
+       Free all memory allocated by a fuzzysystem.
+
+   INPUTS
+       Pointer to fuzzysystem
+
+   USAGE
+       Application
+
+fuzzy.lib/FL_Memfunc                                     fuzzy.lib/FL_Memfunc
+
+   NAME        
+       FL_Memfunc -- Initialize a membership function
+
+   SYNOPSIS    
+       memfunc = FL_Memfunc(name)
+
+       struct FL_memfunc *FL_Memfunc(char *)
+
+   FUNCTION
+       Allocate memory for a membership function with name "name".
+
+   INPUTS
+       Name of the memfunc
+
+   RESULTS
+       Returns a pointer to the initialized membership function or 0 if not s
+uccessful.
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Object                                       fuzzy.lib/FL_Object
+
+   NAME        
+       FL_Object -- Initialize a fuzzy object
+
+   SYNOPSIS    
+       fuzzyobject = FL_Object(name)
+
+       struct FL_object *FL_Object(char *)
+
+   FUNCTION
+       Allocate memory for a fuzzyobject with name "name".
+
+   INPUTS
+       Name of the fuzzyobject
+
+   RESULTS
+       Returns a pointer to the initialized object or 0 if not succesful.
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Object_Evaluate                     fuzzy.lib/FL_Object_Evaluate
+
+   NAME        
+       FL_Object_Evaluate -- Evaluate complete fuzzyobject
+
+   SYNOPSIS    
+       result = FL_Object_Evaluate(fuzzyobject)
+
+       int FL_Object_Evaluate(struct FL_object *)
+
+   FUNCTION
+       Perform an evaluation of all rules contained in the object.
+
+   INPUTS
+       Pointer to a fuzzyobject.
+
+   RESULTS
+       Returns 1 if evaluation was successful, 0 otherwise.
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Object_Run                               fuzzy.lib/FL_Object_Run
+
+   NAME        
+       FL_Object_Run -- Evaluate complete fuzzyobject
+
+   SYNOPSIS    
+       result = FL_Object_Run(fuzzysystem, name)
+
+       int FL_Object_Run(struct FL_system *, char *)
+
+   FUNCTION
+       Perform an evaluation of all rules contained in the object belonging t
+o
+       the fuzzysystem that can be identified by "name".
+
+   INPUTS
+       Pointer to an initialized Fuzzysystem, name of the object to be evalua
+ted.
+
+   RESULTS
+       Returns 1 if evaluation was successful, 0 otherwise.
+
+   USE
+       Application
+
+fuzzy.lib/FL_Object_XEvaluate                   fuzzy.lib/FL_Object_XEvaluate
+
+   NAME        
+       FL_Object_XEvaluate -- Evaluate complete fuzzyobject quickly
+
+   SYNOPSIS    
+       result = FL_Object_XEvaluate(fuzzyobject)
+
+       int FL_Object_XEvaluate(struct FL_object *)
+
+   FUNCTION
+       Perform an evaluation of all rules contained in the object.
+ 
+       THIS FUNCTION PERFORMS NO ERROR CHECKING!
+
+   INPUTS
+       Pointer to a fuzzyobject.
+
+   RESULTS
+       Returns 1.
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Read_Action                             fuzzy.lib/FL_Read_Action
+
+   NAME        
+       FL_Read_Action -- Read a fuzzyaction from a file
+
+   SYNOPSIS    
+       result = FL_Read_Action(infile, fuzzyaction)
+
+       int FL_Read_Action(FILE *, struct FL_action *)
+
+   FUNCTION
+       Reads the action from an FCT file.
+
+   INPUTS
+       Pointer to an open file, pointer to a fuzzyaction (memory must be allo
+cated).
+
+   RESULTS
+       Returns 1 if read was successful, 0 otherwise.
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Read_Clause                             fuzzy.lib/FL_Read_Clause
+
+   NAME        
+       FL_Read_Clause -- Read a clause from a file
+
+   SYNOPSIS    
+       result = FL_Read_Clause(infile, clause)
+
+       int FL_Read_Clause(FILE *, struct FL_clause *)
+
+   FUNCTION
+       Reads the clause from an FCT file.
+
+   INPUTS
+       Pointer to an open file, pointer to a clause (memory must be allocated
+).
+
+   RESULTS
+       Returns 1 if read was successful, 0 otherwise.
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Read_Condition                       fuzzy.lib/FL_Read_Condition
+
+   NAME        
+       FL_Read_Condition -- Read a condition from a file
+
+   SYNOPSIS    
+       result = FL_Read_Condition(infile, condition)
+
+       int FL_Read_Condition(FILE *, struct FL_condition *)
+
+   FUNCTION
+       Reads the condition from an FCT file.
+
+   INPUTS
+       Pointer to an open file, pointer to a condition (memory must be alloca
+ted).
+
+   RESULTS
+       Returns 1 if read was successful, 0 otherwise.
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Read_Memfunc                           fuzzy.lib/FL_Read_Memfunc
+
+   NAME        
+       FL_Read_Memfunc -- Read a membership function from a file
+
+   SYNOPSIS    
+       result = FL_Read_Memfunc(infile, memfunc)
+
+       int FL_Read_Memfunc(FILE *, struct FL_memfunc *)
+
+   FUNCTION
+       Reads the membership function from an FCT file.
+
+   INPUTS
+       Pointer to an open file, pointer to a membership function (memory must
+ be allocated).
+
+   RESULTS
+       Returns 1 if read was successful, 0 otherwise.
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Read_Object                             fuzzy.lib/FL_Read_Object
+
+   NAME        
+       FL_Read_Object -- Read a fuzzyobject from a file
+
+   SYNOPSIS    
+       result = FL_Read_Object(infile, fuzzyobject)
+
+       int FL_Read_Object(FILE *, struct FL_object *)
+
+   FUNCTION
+       Reads the object from an FCT file.
+
+   INPUTS
+       Pointer to an open file, pointer to a fuzzyobject (memory must be allo
+cated).
+
+   RESULTS
+       Returns 1 if read was successful, 0 otherwise.
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Read_Rule                                 fuzzy.lib/FL_Read_Rule
+
+   NAME        
+       FL_Read_Rule -- Read rule from FCT file
+
+   SYNOPSIS    
+       result = FL_Read_Rule(infile, rule)
+
+       int FL_Read_Rule(FILE *, struct FL_rule *)
+
+   FUNCTION
+       Read rule from FCT file. 
+
+   INPUTS
+       Pointer to the input file
+       Pointer to rule to be read
+
+   OUTPUTS
+       If read was successful, return 1.
+       Otherwise, return 0. In this case, check FL_Error.
+
+fuzzy.lib/FL_Read_Subset                             fuzzy.lib/FL_Read_Subset
+
+   NAME        
+       FL_Read_Subset -- Read a linguistic term from a file
+
+   SYNOPSIS    
+       result = FL_Read_Subset(infile, subset)
+
+       int FL_Read_Subset(FILE *, struct FL_subset *)
+
+   FUNCTION
+       Reads the linguistic term from an FCT file.
+
+   INPUTS
+       Pointer to an open file, pointer to a linguistic term (memory must be 
+allocated).
+
+   RESULTS
+       Returns 1 if read was successful, 0 otherwise.
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Read_System                             fuzzy.lib/FL_Read_System
+
+   NAME        
+       FL_Read_System -- Read fuzzysystem from file
+
+   SYNOPSIS    
+       fuzzysystem = FL_Read_System(filename)
+
+       struct FL_system *FL_Read_System(char *)
+
+   FUNCTION
+       Reads a fuzzysystem from a file that must use an 
+       FCT compliant syntax. Allocates all necessary memory.
+
+   INPUTS
+       Pointer to filename.
+
+   RESULTS
+       Returns address of fuzzysystem, 0 if an error occured.
+
+   USAGE
+       Application
+
+fuzzy.lib/FL_Read_Variable                         fuzzy.lib/FL_Read_Variable
+
+   NAME        
+       FL_Read_Variable -- Read a variable from a file
+
+   SYNOPSIS    
+       result = FL_Read_Variable(infile, variable)
+
+       int FL_Read_Variable(FILE *, struct FL_variable *)
+
+   FUNCTION
+       Reads the variable from an FCT file.
+
+   INPUTS
+       Pointer to an open file, pointer to a variable (memory must be allocat
+ed).
+
+   RESULTS
+       Returns 1 if read was successful, 0 otherwise.
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Revise_Objects                       fuzzy.lib/FL_Revise_Objects
+
+   NAME        
+       FL_Revise_Objects -- Check fuzzysystem integrity
+
+   SYNOPSIS    
+       result = FL_Revise_Objects(fuzzysystem)
+
+       int FL_Revise_Objects(struct FL_system *)
+
+   FUNCTION
+       Checks all fuzzyobjects for integrity, i.e., looks if all rules are us
+ing only 
+       existing variables and membership functions. Checks also all variables
+ with 
+       respect to their types. Resets all pointers to their correct locations
+. Is 
+       automatically called after FL_Read_System().
+
+   INPUTS
+       Pointer to an initialized fuzzysystem.
+
+   RESULTS
+       Returns 1 if revision was successful, 0 otherwise.
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Revise_Variables                   fuzzy.lib/FL_Revise_Variables
+
+   NAME        
+       FL_Revise_Variables -- Check variable integrity
+
+   SYNOPSIS    
+       result = FL_Revise_Variables(fuzzysystem)
+
+       int FL_Revise_Variables(struct FL_system *)
+
+   FUNCTION
+       Checks all variables for integrity, i.e., check them with respect to t
+heir types. 
+       Resets all pointers to their correct locations. Is automatically calle
+d after 
+       FL_Read_System().
+
+   INPUTS
+       Pointer to an initialized fuzzysystem.
+
+   RESULTS
+       Returns 1 if revision was successful, 0 otherwise.
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Rule                                           fuzzy.lib/FL_Rule
+
+   NAME        
+       FL_Rule -- Allocate memory for a fuzzy rule 
+
+   SYNOPSIS    
+       rule = FL_Rule(name)
+
+       struct FL_rule *FL_Rule(char *)
+
+   FUNCTION
+       Allocate memory for a rule. Initialize the rule with name.
+
+   INPUTS
+       name - a pointer to the string to become the rule's name
+
+   RESULTS
+       On success, returns a pointer to the rule.
+       On failure, returns 0.
+
+fuzzy.lib/FL_Rule_Evaluate                         fuzzy.lib/FL_Rule_Evaluate
+
+   NAME        
+       FL_Rule_Evaluate -- Evaluate Fuzzyrule
+
+   SYNOPSIS    
+       result = FL_Rule_Evaluate(rule)
+
+       int FL_Rule_Evaluate(struct FL_rule *)
+
+   FUNCTION
+       Evaluate the rule pointed to by rule. 
+
+   INPUTS
+       Pointer to the rule to be evaluated.
+
+   OUTPUTS
+       If evaluation could be performed, return 1.
+       Otherwise, return 0.
+
+fuzzy.lib/FL_Rule_XEvaluate                       fuzzy.lib/FL_Rule_XEvaluate
+
+   NAME        
+       FL_Rule_XEvaluate -- Evaluate Fuzzyrule QUICKLY
+
+   SYNOPSIS    
+       result = FL_Rule_XEvaluate(rule)
+
+       int FL_Rule_XEvaluate(struct FL_rule *)
+
+   FUNCTION
+       Evaluate the rule pointed to by rule. 
+
+       THIS FUNCTION DOES NOT PERFORM ANY ERROR CHECKING
+
+   INPUTS
+       Pointer to the rule to be evaluated.
+
+   OUTPUTS
+       If evaluation could be performed, return 1.
+       Otherwise, return 0.
+
+fuzzy.lib/FL_Set_Variable                           fuzzy.lib/FL_Set_Variable
+
+   NAME        
+       FL_Set_Variable -- Set the value of a variable
+
+   SYNOPSIS    
+       result = FL_Set_Variable(fuzzysystem,variablename,value)
+
+       int FL_Set_Variable(struct FL_system*, char *, double)
+                         
+
+   FUNCTION
+       Set the crisp value of the variable "variablename". This value is used
+ to calculate
+       the degrees of membership while the rules of the fuzzysystem are evalu
+ated.
+
+   INPUTS
+       Pointer to an initialized fuzzy system, name of the variable, value.
+
+   RESULTS
+       Returns 1 if the value could be set or 0 if no variable could be found
+ or the 
+       action was not successful.
+
+   USE
+       Application
+
+fuzzy.lib/FL_Set_VariableByIndex             fuzzy.lib/FL_Set_VariableByIndex
+
+   NAME        
+       FL_Set_VariableByIndex -- Set the value of a variable given by its ind
+ex
+
+   SYNOPSIS    
+       result = FL_Set_VariableByIndex(fuzzysystem,variableindex,value)
+
+       int FL_Set_VariableByIndex(struct FL_system*, int , double)
+                         
+
+   FUNCTION
+       Set the crisp value of the variable with index "variableindex". 
+       This value is used to calculate the degrees of membership while the 
+       rules of the fuzzysystem are evaluated. 
+
+       ATTENTION! You should use FL_Variable_Get() to obtain that index befor
+e!
+
+   INPUTS
+       Pointer to an initialized fuzzy system, index of the variable, value.
+
+   RESULTS
+       Returns 1 if the value could be set or 0 if no variable could be found
+ or the 
+       action was not successful.
+
+   USE
+       Application
+
+fuzzy.lib/FL_Set_Variables                         fuzzy.lib/FL_Set_Variables
+
+   NAME        
+       FL_Set_Variables -- Set the value of a list of variables
+
+   SYNOPSIS    
+       result = FL_Set_Variables(fuzzysystem,variablename,value, ... ,0,0)
+
+       int FL_Set_Variable(struct FL_system*, char *, double, ..., char *, do
+uble)
+                         
+
+   FUNCTION
+       Set the crisp value of a list of variables according to the tuples 
+       ("variablename",value). The last arguments must be 0,0.
+
+   INPUTS
+       Pointer to an initialized fuzzy system, list of (name of the variable,
+ value), 0,0.
+
+   RESULTS
+       Returns 1 if the value could be set or 0 if a variable could be found 
+or the 
+       action was not successful.
+
+   USE
+       Application
+
+fuzzy.lib/FL_Subset                                       fuzzy.lib/FL_Subset
+
+   NAME        
+       FL_Subset -- Allocate memory for a linguistic term
+
+   SYNOPSIS    
+       subset = FL_Subset(name)
+
+       struct FL_subset *FL_Subset(char *)
+
+   FUNCTION
+       Allocate memory for a linguistic term with name "name".
+
+   INPUTS
+       Name of the subset
+
+   RESULTS
+       Returns a pointer to the initialized linguistic term or 0 if not succe
+ssful.
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Subset_Init                             fuzzy.lib/FL_Subset_Init
+
+   NAME        
+       FL_Subset_Init -- Initialize a linguistic term
+
+   SYNOPSIS    
+       subset = FL_Subset_Init(set, subsettype, center, leftspread, rightspre
+ad, 
+                               degree_of_mem)
+
+       struct FL_subset *FL_Subset_Init(struct FL_subset *, 
+                                        enum FL_subsettype, double, double, d
+ouble, double)
+
+   FUNCTION
+       Initialize a linguistic term to be of type "type" with parameters as g
+iven.
+
+   INPUTS
+       Name of the subset
+
+   RESULTS
+       Returns 1 if initialization was successful, 0 otherwise. 
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Subset_Memship                       fuzzy.lib/FL_Subset_Memship
+
+   NAME        
+       FL_Subset_Memship -- Calculate dom of a value wrt a linguistic term
+
+   SYNOPSIS    
+       degree = FL_Subset_Memship(set,crisp_value)
+
+       double FL_Subset(struct FL_subset *, double)
+
+   FUNCTION
+       Calculate the degree of membership of the crisp_value with respect to 
+the linguistic
+       term defined by set.
+
+   INPUTS
+       Name of the subset
+
+   RESULTS
+       Returns 1 if initialization was successful, 0 otherwise. 
+
+   USE
+       Internal
+
+fuzzy.lib/FL_System                                       fuzzy.lib/FL_System
+
+   NAME        
+       FL_System -- Setup a fuzzy system
+
+   SYNOPSIS    
+       fuzzysystem = FL_System(name)
+
+       struct FL_system *FL_System(char *)
+
+   FUNCTION
+       Allocate memory for a fuzzysystem. The pointer returned by FL_system c
+an be used
+       in all calls to the library where a fuzzysystem is involved.
+
+   INPUTS
+       Name of the fuzzysystem
+
+   RESULTS
+       Returns a pointer to the initialized system or 0 if not succesful.
+
+   USAGE
+       Application
+
+fuzzy.lib/FL_System_Reset                           fuzzy.lib/FL_System_Reset
+
+   NAME        
+       FL_System_Reset -- Reset fuzzysystem for later evaluation 
+
+   SYNOPSIS    
+       result = FL_System_Reset(fuzzysystem)
+
+       int FL_System_Reset(struct FL_system *)
+
+   FUNCTION
+       Resets all internal status variables of a fuzzy system such that a new
+ evaluation 
+       can safely take place. Should be run before FL_System_Run() is called.
+
+   INPUTS
+       Pointer to an initialized Fuzzysystem.
+
+   RESULTS
+       Returns 1 if evaluation was successful, 0 otherwise.
+
+   USAGE
+       Application
+
+fuzzy.lib/FL_System_Run                               fuzzy.lib/FL_System_Run
+
+   NAME        
+       FL_System_Run -- Evaluate complete fuzzysystem
+
+   SYNOPSIS    
+       result = FL_System_Run(fuzzysystem)
+
+       int FL_System_Run(struct FL_system *)
+
+   FUNCTION
+       Perform an evaluation of all rules contained in all objects belonging 
+to the 
+       system *fuzzysystem. Before FL_System_Run() is used, FL_System_Reset()
+ is usually
+       executed. 
+
+   INPUTS
+       Pointer to an initialized Fuzzysystem.
+
+   RESULTS
+       Returns 1 if evaluation was successful, 0 otherwise.
+
+   USAGE
+       Application
+
+fuzzy.lib/FL_System_XRun                             fuzzy.lib/FL_System_XRun
+
+   NAME        
+       FL_System_XRun -- Evaluate complete fuzzysystem QUICKLY
+
+   SYNOPSIS    
+       result = FL_System_XRun(fuzzysystem)
+
+       int FL_System_XRun(struct FL_system *)
+
+   FUNCTION
+       Perform an evaluation of all rules contained in all objects belonging 
+to the 
+       system *fuzzysystem. Before FL_System_Run() is used, FL_System_Reset()
+ is usually
+       executed. 
+
+       THIS FUNCTION DOES NOT PERFORM ANY ERROR CHECKING!
+
+   INPUTS
+       Pointer to an initialized Fuzzysystem.
+
+   RESULTS
+       Returns 1
+
+   USAGE
+       Application
+
+fuzzy.lib/FL_Variable                                   fuzzy.lib/FL_Variable
+
+   NAME        
+       FL_Variable -- Initialize a linguistic variable
+
+   SYNOPSIS    
+       variable = FL_Variable(name)
+
+       struct FL_variable *FL_Variable(char *)
+
+   FUNCTION
+       Allocate memory for a linguistic variable with name "name".
+
+   INPUTS
+       Name of the variable
+
+   RESULTS
+       Returns a pointer to the initialized variable or 0 if not successful.
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Variable_Evaluate                 fuzzy.lib/FL_Variable_Evaluate
+
+   NAME        
+       FL_Variable_Evaluate -- Calculate the crisp value of a linguistic vari
+able
+
+   SYNOPSIS    
+       result = FL_Variable_Evaluate(variable,evaluation_method)
+
+       int FL_Variable_Evaluate(struct FL_variable *, enum FL_evalmethod)
+
+   FUNCTION
+       Check the degree of membership of all subsets of the membership functi
+on
+       which is assigned to the variable. Calculate the crisp value by means 
+of
+       the given evaluation method (which is given by the corresponding objec
+t).
+
+   INPUTS
+       Pointer to the variable, evaluation method.
+
+   RESULTS
+       Returns 1 if evaluation was successful, 0 otherwise.
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Variable_Get                           fuzzy.lib/FL_Variable_Get
+
+   NAME        
+       FL_Variable_Get -- Get a variable by name
+
+   SYNOPSIS    
+       variable = FL_Variable_Get(fuzzysystem,variablename)
+
+       struct FL_variable *FL_Variable_Get(struct FL_system*, char *)
+                         
+
+   FUNCTION
+       Scan the fuzzysystem for the variable with name "variablename". 
+
+   INPUTS
+       Pointer to an initialized fuzzy system, name of the variable
+       that is to be found.
+
+   RESULTS
+       Returns a pointer to the variable or 0 if none could be found or the 
+       action was not successful.
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Variable_Index                       fuzzy.lib/FL_Variable_Index
+
+   NAME        
+       FL_Variable_Index -- Get a variable by index
+
+   SYNOPSIS    
+       variable = FL_Variable_Index(fuzzysystem,variablename)
+
+       int FL_Variable_Get(struct FL_system*, char *)
+                         
+
+   FUNCTION
+       Scan the fuzzysystem for the variable with name "variablename". 
+
+   INPUTS
+       Pointer to an initialized fuzzy system, name of the variable
+       that is to be found.
+
+   RESULTS
+       Returns the internal index of the variable or 0 if none could be found
+ or the 
+       action was not successful.
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Variable_Reset                       fuzzy.lib/FL_Variable_Reset
+
+   NAME        
+       FL_Variable_Reset -- Reset degrees of membership of a variable
+
+   SYNOPSIS    
+       result = FL_Variable_Reset(fuzzysystem,variablename)
+
+       int FL_Variable_Reset(struct FL_system*, char *)
+                         
+
+   FUNCTION
+       Set the dom of all subsets of the membership function of the variable 
+to 0.
+
+   INPUTS
+       Pointer to an initialized fuzzy system, name of the variable.
+
+   RESULTS
+       Returns 1 if the variable was reset or 0 if none could be found or the
+ 
+       action was not successful.
+
+   USE
+       Application
+
+fuzzy.lib/FL_Variable_Set                           fuzzy.lib/FL_Variable_Set
+
+   NAME        
+       FL_Variable_Set -- Set a variable to a linguistic term 
+
+   SYNOPSIS    
+       result = FL_Variable_Set(variable,subset,degree_of_membership)
+
+       int FL_Variable_Set(struct FL_variable *, char *, double)
+
+   FUNCTION
+       Assign "degree_of_membership" with respect to the fuzzy subset "subset
+" 
+       for the "variable".
+
+   INPUTS
+       Pointer to the variable, name of subset, degree of membership.
+
+   RESULTS
+       Returns 1 if assignment was successful, 0 otherwise.
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Variable_XEvaluate               fuzzy.lib/FL_Variable_XEvaluate
+
+   NAME        
+       FL_Variable_XEvaluate -- Calculate the crisp value of a linguistic 
+                                variable QUICKLY 
+
+   SYNOPSIS    
+       result = FL_Variable_XEvaluate(variable,evaluation_method)
+
+       int FL_Variable_XEvaluate(struct FL_variable *, enum FL_evalmethod)
+
+   FUNCTION
+       Check the degree of membership of all subsets of the membership functi
+on
+       which is assigned to the variable. Calculate the crisp value by means 
+of
+       the given evaluation method (which is given by the corresponding objec
+t).
+
+       THIS FUNCTION DOES NOT PERFORM ANY ERROR CHECKING!
+
+   INPUTS
+       Pointer to the variable, evaluation method.
+
+   RESULTS
+       Returns 1 if evaluation was successful, 0 otherwise.
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Write_Action                           fuzzy.lib/FL_Write_Action
+
+   NAME        
+       FL_Write_Action -- Write a fuzzyaction to a file
+
+   SYNOPSIS    
+       result = FL_Write_Action(outfile, fuzzyaction, indentation)
+
+       int FL_Write_Action(FILE *, struct FL_action *, int)
+
+   FUNCTION
+       Writes the action to the file using FCT syntax and indentation for rea
+dability.
+
+   INPUTS
+       Pointer to an open file, pointer to a fuzzyaction, indentation.
+
+   RESULTS
+       Returns 1 if write was successful, 0 otherwise.
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Write_Clause                           fuzzy.lib/FL_Write_Clause
+
+   NAME        
+       FL_Write_Clause -- Write a clause to a file
+
+   SYNOPSIS    
+       result = FL_Write_Clause(outfile, clause, indentation)
+
+       int FL_Write_Clause(FILE *, struct FL_clause *, int)
+
+   FUNCTION
+       Writes the clause to the file using FCT syntax and indentation for rea
+dability.
+
+   INPUTS
+       Pointer to an open file, pointer to a clause, indentation.
+
+   RESULTS
+       Returns 1 if write was successful, 0 otherwise.
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Write_Condition                     fuzzy.lib/FL_Write_Condition
+
+   NAME        
+       FL_Write_Condition -- Write a condition to a file
+
+   SYNOPSIS    
+       result = FL_Write_Condition(outfile, condition, indentation)
+
+       int FL_Write_Condition(FILE *, struct FL_condition *, int)
+
+   FUNCTION
+       Writes the condition to the file using FCT syntax and indentation for 
+readability.
+
+   INPUTS
+       Pointer to an open file, pointer to a condition, indentation.
+
+   RESULTS
+       Returns 1 if write was successful, 0 otherwise.
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Write_Memfunc                         fuzzy.lib/FL_Write_Memfunc
+
+   NAME        
+       FL_Write_Memfunc -- Write a membership function to a file
+
+   SYNOPSIS    
+       result = FL_Write_Memfunc(outfile, memfunc, indentation)
+
+       int FL_Write_Memfunc(FILE *, struct FL_memfunc *, int)
+
+   FUNCTION
+       Writes the membership function to the file using FCT syntax and indent
+ation 
+       for readability.
+
+   INPUTS
+       Pointer to an open file, pointer to a membership function, indentation
+.
+
+   RESULTS
+       Returns 1 if write was successful, 0 otherwise.
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Write_Object                           fuzzy.lib/FL_Write_Object
+
+   NAME        
+       FL_Write_Object -- Write a fuzzyobject to a file
+
+   SYNOPSIS    
+       result = FL_Write_Object(outfile, fuzzyobject, indentation)
+
+       int FL_Write_Object(FILE *, struct FL_object *, int)
+
+   FUNCTION
+       Writes the object to the file using FCT syntax and indentation for rea
+dability.
+
+   INPUTS
+       Pointer to an open file, pointer to a fuzzyobject, indentation.
+
+   RESULTS
+       Returns 1 if write was successful, 0 otherwise.
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Write_Rule                               fuzzy.lib/FL_Write_Rule
+
+   NAME        
+       FL_Write_Rule -- Write rule to a file
+
+   SYNOPSIS    
+       result = FL_Write_Rule(outfile, rule, indentation)
+
+       int FL_Write_Rule(FILE *, struct FL_rule *, int)
+
+   FUNCTION
+       Write rule in FCT format to file f. Use indentation to make
+       output more readable
+
+   INPUTS
+       Pointer to the output file
+       Pointer to rule to be written
+
+   OUTPUTS
+       If write was successful, return 1.
+       Otherwise, return 0. In this case, check FL_Error.
+
+fuzzy.lib/FL_Write_Subset                           fuzzy.lib/FL_Write_Subset
+
+   NAME        
+       FL_Write_Subset -- Write a membership function to a file
+
+   SYNOPSIS    
+       result = FL_Write_Subset(outfile, subset, indentation)
+
+       int FL_Write_Subset(FILE *, struct FL_subset *, int)
+
+   FUNCTION
+       Writes the linguistic term "subset" to the file using FCT syntax and i
+ndentation 
+       for readability.
+
+   INPUTS
+       Pointer to an open file, pointer to a linguistic term, indentation.
+
+   RESULTS
+       Returns 1 if write was successful, 0 otherwise.
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Write_System                           fuzzy.lib/FL_Write_System
+
+   NAME        
+       FL_Write_System -- Write fuzzysystem to file
+
+   SYNOPSIS    
+       result = FL_Write_System(fuzzysystem, filename, force_overwrite)
+
+       int FL_System_Reset(struct FL_system *, char *, int)
+
+   FUNCTION
+       Writes a fuzzysystem to a file, using FCT compliant syntax, 
+       thus the file can easily be edited afterwards.
+
+   INPUTS
+       Pointer to an initialized Fuzzysystem, pointer to filename, flag. 
+       If flag != 0, the file will be written even if it already exists. 
+       Otherwise, the function will return 0.
+
+   RESULTS
+       Returns 1 if write was successful, 0 otherwise.
+
+   SIDE EFFECTS
+       Changes all blanks in all names to underscores
+
+   USAGE
+       Application
+
+fuzzy.lib/FL_Rule                                           fuzzy.lib/FL_Rule
+
+   NAME        
+       FL_Rule -- Allocate memory for a fuzzy rule 
+
+   SYNOPSIS    
+       rule = FL_Rule(name)
+
+       struct FL_rule *FL_Rule(char *)
+
+   FUNCTION
+       Allocate memory for a rule. Initialize the rule with name.
+
+   INPUTS
+       name - a pointer to the string to become the rule's name
+
+   RESULTS
+       On success, returns a pointer to the rule.
+       On failure, returns 0.
+
+fuzzy.lib/FL_Clone_Rule                               fuzzy.lib/FL_Clone_Rule
+
+   NAME        
+       FL_Clone_Rule -- Make an identical copy of a rule
+
+   SYNOPSIS    
+       clone = FL_Clone_Rule(fuzzyrule)
+
+       struct FL_rule *FL_Clone_Rule(struct FL_rule *)
+
+   FUNCTION
+       Allocates memory for both the membership function and the 
+       associated subsets.
+
+   INPUTS
+       Pointer to original membership function
+
+   RESULTS
+       Pointer to clone
+
+
+   USAGE
+       Internal
+
+fuzzy.lib/FL_Clone_Rules                             fuzzy.lib/FL_Clone_Rules
+
+   NAME        
+       FL_Clone_Rules -- Make an identical copy of a list of rules
+
+   SYNOPSIS    
+       clone = FL_Clone_Rules(fuzzyrulelist,num_rules)
+
+       struct FL_rule *FL_Clone_Rules(struct FL_rule *,int)
+
+   FUNCTION
+       Allocates memory for the whole array of membership rules and the 
+       associated rules.
+
+   INPUTS
+       Pointer to first original membership function, number of rules in arra
+y
+
+   RESULTS
+       Pointer to cloned array
+
+   USAGE
+       Internal
+
+fuzzy.lib/FL_Get_Rule                                   fuzzy.lib/FL_Get_Rule
+
+   NAME        
+       FL_Get_Rule -- Get a specific rule from a fuzzy system/object
+
+   SYNOPSIS    
+       rule = FL_Get_Rule(fuzzysystem, objectname, rulename)
+
+       struct FL_rule *FL_Get_Rule(struct FL_system *, char *, char *)
+
+   FUNCTION
+       Get a pointer to a specific rule belonging to a specific object
+
+   INPUTS
+       Pointer to the fuzzysystem
+       Name of fuzzy object
+       Name of rule
+
+   OUTPUTS
+       If rule was found, return pointer to rule.
+       Otherwise, return 0. In this case, check FL_Error.
+
+fuzzy.lib/FL_Kill_Rule                                 fuzzy.lib/FL_Kill_Rule
+
+   NAME        
+       FL_Kill_Rule -- Free memory allocated by a fuzzy rule
+
+   SYNOPSIS    
+       FL_Kill_Rule(fuzzyrule)
+
+       void FL_Kill_Rule(struct FL_rule *)
+
+   FUNCTION
+       Free all memory allocated by a fuzzyrule.
+
+   INPUTS
+       Pointer to fuzzyrule
+
+   USAGE
+       Application
+
+fuzzy.lib/FL_Read_Rule                                 fuzzy.lib/FL_Read_Rule
+
+   NAME        
+       FL_Read_Rule -- Read rule from FCT file
+
+   SYNOPSIS    
+       result = FL_Read_Rule(infile, rule)
+
+       int FL_Read_Rule(FILE *, struct FL_rule *)
+
+   FUNCTION
+       Read rule from FCT file. 
+
+   INPUTS
+       Pointer to the input file
+       Pointer to rule to be read
+
+   OUTPUTS
+       If read was successful, return 1.
+       Otherwise, return 0. In this case, check FL_Error.
+
+fuzzy.lib/FL_Rule_Evaluate                         fuzzy.lib/FL_Rule_Evaluate
+
+   NAME        
+       FL_Rule_Evaluate -- Evaluate Fuzzyrule
+
+   SYNOPSIS    
+       result = FL_Rule_Evaluate(rule)
+
+       int FL_Rule_Evaluate(struct FL_rule *)
+
+   FUNCTION
+       Evaluate the rule pointed to by rule. 
+
+   INPUTS
+       Pointer to the rule to be evaluated.
+
+   OUTPUTS
+       If evaluation could be performed, return 1.
+       Otherwise, return 0.
+
+fuzzy.lib/FL_Rule_XEvaluate                       fuzzy.lib/FL_Rule_XEvaluate
+
+   NAME        
+       FL_Rule_XEvaluate -- Evaluate Fuzzyrule QUICKLY
+
+   SYNOPSIS    
+       result = FL_Rule_XEvaluate(rule)
+
+       int FL_Rule_XEvaluate(struct FL_rule *)
+
+   FUNCTION
+       Evaluate the rule pointed to by rule. 
+
+       THIS FUNCTION DOES NOT PERFORM ANY ERROR CHECKING
+
+   INPUTS
+       Pointer to the rule to be evaluated.
+
+   OUTPUTS
+       If evaluation could be performed, return 1.
+       Otherwise, return 0.
+
+fuzzy.lib/FL_Add_Rule                                   fuzzy.lib/FL_Add_Rule
+
+   NAME        
+       FL_Add_Rule -- Add a rule to a fuzzy object
+
+   SYNOPSIS    
+       result = FL_Add_Rule(fuzzysystem, objectname, rulename)
+
+       int FL_Add_Rule(struct FL_system *, char *, char *)
+
+   FUNCTION
+       Add a fuzzyrule with name <rulename> to the object <objectname>.
+       Allocate space for the rule.
+
+   INPUTS
+       Pointer to the fuzzysystem
+       Name of fuzzy object
+       Name of rule
+
+   OUTPUTS
+       If rule could be added, return 1.
+       Otherwise, return 0. In this case, check FL_Error.
+
+fuzzy.lib/FL_Variable_Set                           fuzzy.lib/FL_Variable_Set
+
+   NAME        
+       FL_Variable_XSet -- Set a variable to a linguistic term QUICKLY
+
+   SYNOPSIS    
+       result = FL_Variable_XSet(variable,subset,degree_of_membership)
+
+       int FL_Variable_XSet(struct FL_variable *, char *, double)
+
+   FUNCTION
+       Assign "degree_of_membership" with respect to the fuzzy subset "subset
+" 
+       for the "variable".
+
+       THIS FUNCTION DOESN'T DO ANY ERROR CHECKING!
+
+   INPUTS
+       Pointer to the variable, name of subset, degree of membership.
+
+   RESULTS
+       Returns 1.
+
+   USE
+       Internal
+
+fuzzy.lib/FL_Write_Rule                               fuzzy.lib/FL_Write_Rule
+
+   NAME        
+       FL_Write_Rule -- Write rule to a file
+
+   SYNOPSIS    
+       result = FL_Write_Rule(outfile, rule, indentation)
+
+       int FL_Write_Rule(FILE *, struct FL_rule *, int)
+
+   FUNCTION
+       Write rule in FCT format to file f. Use indentation to make
+       output more readable
+
+   INPUTS
+       Pointer to the output file
+       Pointer to rule to be written
+
+   OUTPUTS
+       If write was successful, return 1.
+       Otherwise, return 0. In this case, check FL_Error.
+
+fuzzy.lib/FL_Write_Variable                       fuzzy.lib/FL_Write_Variable
+
+   NAME        
+       FL_Write_Variable -- Write a variable to a file
+
+   SYNOPSIS    
+       result = FL_Write_Variable(outfile, variable, indentation)
+
+       int FL_Write_Variable(FILE *, struct FL_variable *, int)
+
+   FUNCTION
+       Writes the variable to the file using FCT syntax and indentation for r
+eadability.
+
+   INPUTS
+       Pointer to an open file, pointer to a variable, indentation.
+
+   RESULTS
+       Returns 1 if write was successful, 0 otherwise.
+
+   USE
+       Internal
+
+

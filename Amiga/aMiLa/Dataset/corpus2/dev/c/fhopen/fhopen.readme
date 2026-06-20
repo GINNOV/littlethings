@@ -1,0 +1,23 @@
+Short: DICE: build FILE * from ADOS filehandle
+Type: dev/c
+Author: Ingo.Wilken@informatik.uni-oldenburg.de
+Uploader: Ingo.Wilken@informatik.uni-oldenburg.de
+
+
+fhopen generates a stdio FILE pointer from an already open AmigaDOS
+filehandle (similar to fdopen), fhclose closes a stdio FILE without
+closing the DOS filehandle.  Works with DICE 2.07.56R (registered
+shareware version), should work with commercial DICE unless they
+made some major changes to the stdio implementation - try to compile
+the test program, if there are no errors, it should work with your
+version of DICE.
+
+
+Regards,
+Ingo
+--
+Ingo Wilken, CS Student, Univ.of Oldenburg, FRG | I'll admit dat I'm not one
+wilken@uniol.uucp (..!uunet!unido!uniol!wilken) | of da beautiful people, but
+Ingo.Wilken@arbi.informatik.uni-oldenburg.de    | I'm not as ugly as da spooks
+wilken@uniol.zer   IRC:Nobody   OL:ingo@faramir | dat hang 'round here. -Snarf
+

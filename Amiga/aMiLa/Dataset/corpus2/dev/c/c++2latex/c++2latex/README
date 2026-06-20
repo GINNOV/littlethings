@@ -1,0 +1,43 @@
+/*
+ *  C++2LaTeX: Produce prettyprinted LaTeX files from  C++ or C sources.
+ *  Copyright (C) 1990 Norbert Kiesel
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 1, or (at your option)
+ *  any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ *  Norbert Kiesel     
+ *  RWTH Aachen / Institut f. Informatik III
+ *  Ahornstr. 55
+ *  D-5100 Aachen
+ *  West Germany  
+ *
+ *  Phone:  +49 241 80-7266
+ *  EUNET:  norbert@rwthi3.uucp
+ *  USENET: ...!mcvax!unido!rwthi3!norbert
+ *  X.400:  norbert@rwthi3.informatik.rwth-aachen.de
+ *
+ *  Please contact me for any bugs you find in this code or any
+ *  improvements! I'd also be very happy to get feedback where and
+ *  how frequently this program is used (just drop a little mail :-).
+ *
+ *  ---------------------------------------------------------------------
+ *
+ *  C++2LaTeX 2.0:
+ *  Produce even more prettyprinted LaTeX files from C++ or C sources.
+ *
+ *  Copyright (C) 1991	Joerg Heitkoetter
+ *  Systems Analysis Group, University of Dortmund
+ *  (heitkoet@gorbi.informatik.uni-dortmund.de).
+ *
+ */

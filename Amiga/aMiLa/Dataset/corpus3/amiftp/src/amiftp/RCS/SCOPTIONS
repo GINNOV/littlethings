@@ -1,0 +1,392 @@
+head	1.798;
+access;
+symbols;
+locks
+	lilja:1.798; strict;
+comment	@# @;
+
+
+1.798
+date	96.11.06.19.32.54;	author lilja;	state Exp;
+branches;
+next	1.795;
+
+1.795
+date	96.09.28.13.32.58;	author lilja;	state Exp;
+branches;
+next	1.710;
+
+1.710
+date	96.07.25.00.21.30;	author lilja;	state Exp;
+branches;
+next	1.692;
+
+1.692
+date	96.07.20.00.28.38;	author lilja;	state Exp;
+branches;
+next	1.625;
+
+1.625
+date	96.07.04.17.50.58;	author lilja;	state Exp;
+branches;
+next	1.608;
+
+1.608
+date	96.07.01.20.14.54;	author lilja;	state Exp;
+branches;
+next	1.607;
+
+1.607
+date	96.06.30.12.33.45;	author lilja;	state Exp;
+branches;
+next	1.595;
+
+1.595
+date	96.06.18.23.19.14;	author lilja;	state Exp;
+branches;
+next	1.585;
+
+1.585
+date	96.06.13.00.03.21;	author lilja;	state Exp;
+branches;
+next	1.539;
+
+1.539
+date	96.06.01.14.40.45;	author lilja;	state Exp;
+branches;
+next	1.531;
+
+1.531
+date	96.05.28.00.17.52;	author lilja;	state Exp;
+branches;
+next	1.430;
+
+1.430
+date	96.04.14.13.21.26;	author lilja;	state Exp;
+branches;
+next	0.1343;
+
+0.1343
+date	96.01.20.17.34.39;	author lilja;	state Exp;
+branches;
+next	0.1332;
+
+0.1332
+date	95.12.17.13.21.38;	author lilja;	state Exp;
+branches;
+next	0.1300;
+
+0.1300
+date	95.12.08.20.24.52;	author lilja;	state Exp;
+branches;
+next	0.588;
+
+0.588
+date	95.09.12.16.24.08;	author lilja;	state Exp;
+branches;
+next	0.567;
+
+0.567
+date	95.09.11.17.15.13;	author lilja;	state Exp;
+branches;
+next	0.563;
+
+0.563
+date	95.09.10.20.59.20;	author lilja;	state Exp;
+branches;
+next	0.544;
+
+0.544
+date	95.09.08.14.11.28;	author lilja;	state Exp;
+branches;
+next	0.536;
+
+0.536
+date	95.09.05.17.59.01;	author lilja;	state Exp;
+branches;
+next	0.531;
+
+0.531
+date	95.09.01.17.25.42;	author lilja;	state Exp;
+branches;
+next	0.413;
+
+0.413
+date	95.07.23.13.03.53;	author lilja;	state Exp;
+branches;
+next	0.388;
+
+0.388
+date	95.07.16.13.14.48;	author lilja;	state Exp;
+branches;
+next	;
+
+
+desc
+@SAS/C compiler options
+@
+
+
+1.798
+log
+@Fixed init of AmigaGuide.
+@
+text
+@DEBUG=LINE
+NOSTACKCHECK
+STRINGMERGE
+NOCHECKABORT
+STRUCTUREEQUIVALENCE
+OPTIMIZE
+SAVEDS
+SMALLCODE
+SMALLDATA
+MAP
+MAPHUNK
+MAPXREFERENCE
+NOICONS
+OPTIMIZERTIME
+STRINGSECTION=CODE
+INCLUDEDIR=dh1:classact/include
+LIBRARY=lib:debug.lib
+LIBRARY=lib:reqtools.lib
+LIBRARY=lib:lists.lib
+GLOBALSYMBOLTABLE=obj/AmiFTP.gst
+MAPFILE=t:amiftp.map
+PUBSCREEN=Programming
+@
+
+
+1.795
+log
+@Stuff.
+@
+text
+@d6 1
+@
+
+
+1.710
+log
+@Fontprefs seems to work ok, except in PrefsWindow.
+@
+text
+@d9 3
+d20 1
+@
+
+
+1.692
+log
+@Speedbar and buttons configurable.
+@
+text
+@a5 1
+OPTIMIZE
+@
+
+
+1.625
+log
+@Cleaned up the code a bit.
+Rename ftpwin.h to AmiFTP.h and ftpwin.c to AmiFTP.c.
+Created Menu.c and moved all menu-functions there.
+@
+text
+@d6 1
+@
+
+
+1.608
+log
+@Removed some question-marks.
+@
+text
+@a5 1
+OPTIMIZE
+@
+
+
+1.607
+log
+@Cursor up in sitelistwindow works now.
+Fixed closing of sitelist-window when the edit-window was opened,
+this is probably a CA-bug.
+@
+text
+@d6 1
+@
+
+
+1.595
+log
+@Fixed something.
+,
+@
+text
+@a5 1
+OPTIMIZE
+@
+
+
+1.585
+log
+@Changed the parsing of the command line site.
+ESC now closes all windows but connect- and transferwindow.
+RETURN connects to the current site.
+Using the Exec-list functions/macros.
+New windowtitle, now with # of files selected and more.
+@
+text
+@d6 1
+@
+
+
+1.539
+log
+@Changed something.
+@
+text
+@d15 1
+a15 1
+LIBRARY=lib:sup.lib
+@
+
+
+1.531
+log
+@Lots of stuff
+@
+text
+@a5 1
+OPTIMIZE
+@
+
+
+1.430
+log
+@Fixed name/date-sorting in ADT-mode.
+@
+text
+@d3 1
+d12 1
+@
+
+
+0.1343
+log
+@Removed some redudant things from AllocListbrowserNode()
+Gadgets no longer flicker since I keep track of the state. Thought ClassAct did that, but no...
+Added one tick to the fuelgauge, now 11 ticks => 10 intervals.
+@
+text
+@d5 1
+@
+
+
+0.1332
+log
+@Release 1.0
+AmiFTP doesn't need amigaguide.library in order to start.
+@
+text
+@d9 1
+@
+
+
+0.1300
+log
+@Added Reload-gadget.
+Added Sort-gadget to sitelist-window.
+AmiFTP now show the correct size of links during transfer.
+@
+text
+@d3 1
+@
+
+
+0.588
+log
+@The GUI now handles proportional fonts. Only the main listview is fixed font.
+@
+text
+@d8 1
+@
+
+
+0.567
+log
+@Fixed busy loop caused by badly timed SetMenuStrip() (In the NextSelect-loop)
+@
+text
+@d1 1
+a1 1
+DEBUG=FULL
+@
+
+
+0.563
+log
+@AmiFTP now works with AS225r2 and hopefully with mlink.
+Fixes concerning the locale.
+@
+text
+@a7 2
+INCLUDEDIR=dh1:sc/include
+INCLUDEDIR=dh1:sc/as225/include
+@
+
+
+0.544
+log
+@Added gadstrlen() and macro GadgetTextLength() to compute correct strings with _ in labels.
+Checks if CTRL-C has been hit before opening window.
+@
+text
+@d1 1
+a1 1
+DEBUG=LINE
+d8 2
+@
+
+
+0.536
+log
+@SETTIINGS-tooltype/cli argument now works again.
+@
+text
+@d11 1
+a11 1
+PROGRAMNAME=obj/AmiFTP.gst
+@
+
+
+0.531
+log
+@Resume transfer added (when getting files).
+Get-dir-tree is broken.
+@
+text
+@d11 1
+a11 1
+GLOBALSYMBOLTABLE=obj/AmiFTP.gst
+@
+
+
+0.413
+log
+@Added password-gadget.
+@
+text
+@d8 1
+@
+
+
+0.388
+log
+@send/recv-request re-written
+Layoutbug in connect-window fixed
+@
+text
+@d2 1
+@

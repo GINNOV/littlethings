@@ -1,0 +1,22 @@
+
+Calls is a program which will print out the function calling hierarcy of all
+or some part of a 'C' program. It is a great tool to run when looking at 
+new code to help figure out what the heck it's doing. I tried it on some of
+my old code, highly illuminating!
+
+The author of the original code is unknown to me, I do know it was 
+significantly modified by Kevin S. Braunsdorf and then posted on Usenet(Unix
+users network).
+
+In porting it to the Amiga I could not find a way to pre-process the source 
+files using the manx package. As such the following options as described in 
+the original man page will not do anything:  -D, -U, -I.  
+I did try out the rest of the options and it seems to work fine. Also since 
+the pre-processor is not used to expand macros, any functions called by the 
+macro will be hidden. This should not affect the functionality too much, 
+just be aware that some macros will show up as functions in the output.
+
+I modified the Unix manual page and put it in calls.amiga.man, so read it
+next to figure out how to use the program.
+
+		Enjoy  George MacDonald (Yar Jeelich - My wookie name)

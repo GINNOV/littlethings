@@ -1,0 +1,457 @@
+
+                        Blitter Collision Detection
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ The basic task performed by the  Blitter  is to combine data from one or more
+sources and if required, write the result  into a destination. There is a flag
+in BLTCON0 that the Blitter uses to  signal  if  the result of a combining the
+sources was 0 and this forms the basis of a collision detection system.
+
+ Bit 13 in DMACONR is the  all  important  flag.  If  the Blitter combines all
+required sources across the whole block of data specified and all combinations
+result in a 0 bit being output to the destination, then bit 13 is set.
+
+ Background Collisions
+ ~~~~~~~~~~~~~~~~~~~~~
+ In a game in which the player can move a  bob around the screen, there may be
+areas of the landscape which the bob  cannot  move  over. Assuming the user is
+controlling the bob with a  joystick,  the  following  steps  must be taken to
+determine if the player is attempting a legal move:
+
+ 1.     Decipher joystick movements and calculate new bob position.
+ 2.     Blit a mask of the bob into a collision plane.
+ 3.     If result of blit was 0, bob can move to the new position. Otherwise
+        some other action is required. This may involve simply not moving
+        the bob, giving the impression it has run into a solid object, or
+        exploding it!
+
+ Deciphering the joystick is  covered  in  a  separate article and will not be
+duplicated here. This brings us to the second step, blitting a mask of the bob
+into a collision plane.
+
+ A bob mask consists of a single plane  the  same  size as the bob itself. Any
+bits in this plane that correspond to a  bit in the bob that can hit something
+are set, all other bits are clear. In many situations, the programmer may make
+the collision mask smaller than the  bob  itself to allow the player to have '
+very near misses' that add to the excitement  of the game. The collision plane
+is a bitplane that contains set bits  wherever  the player cannot move. It may
+be the same size as the  playfield,  or  it  may  be just a small portion that
+represents the area near the bob. The  latter  method  would require the small
+portion to be generated each time  a  collision  check  was  required and this
+would require more time. For this reason, it has become common practise to use
+one of the screens bitplanes as the collision  plane for background collision.
+This will be demonstrated in an example shortly.
+
+ Some consideration needs to be given  to  the  blit itself. There will be two
+sources, the bob mask and the  collision  plane. The result of the blit can be
+discarded and for this reason, the  Blitter  D channel can be disabled. As for
+the source registers, the blit should  be  as  fast as possible so the A and C
+channels will be used. Using the C  channel  adds no time overhead to the blit
+whereas using the B channel would add two clock cycles. A small saving, but as
+they say ' take care of the pennies and ..... '.
+
+ So, the A channel will point to the  bob  and  the C channel to the collision
+plane, a minterm can  now  be  selected.  The  two  sources  need to be AND'ed
+together, this will give a non  zero  result  when  corresponding bits in both
+sources are set. The required minterm can be expressed as D=AC, represented by
+the hex byte $a0. From this  information  the  value to be written to BLTCON0,
+less any scroll value, can be formed:
+
+        BLTCON0 = $0aa0
+                   |||
+                   ||Minterm $a0 : D=AC
+                   ||
+                   |Usage: $a=%1010, use A and C channels.
+                   |
+                   Scroll value, as yet undetermined.
+
+ All other values are determined as usual,  this includes the modulos and size
+of the Blitter window. Time for the first  example. I am not going to dwell on
+the initialisation code, just to say  it  sets up a 320x256x4 screen and a bob
+of 16x16x4. The bob is controlled by  movement  of  the joystick and the above
+collision detection employed. The fourth  bitplane of the display is used as a
+collision plane,  meaning  that  the  bob  will  collide  with  the background
+whenever it ' hits ' colours 8 to  15  (  %1000  to %1111 ). Safe areas of the
+screen can be coloured using colours 0 to 7 ( %0000 to %0111 ).  
+
+ Example 1 shows the bob movement/drawing  code in operation with no collision
+detection going on. Example 2 has the background  collision code added, and as
+you will see, some areas of the screen cannot be moved over.
+
+ A summary of the sequence of events initiated by the interrupt:
+
+ 1. Any corrupted background is restored.
+ 2. The joystick is checked and if moved two further checks occur:
+        a. Screen boundaries are checked, the move aborted if they are
+          reached.
+        b. The bobs mask is combined with the background at the new position
+          and provided the result of this combination results in 0, the move
+          is allowed else it is ignored.
+ 3. A copy of the background is saved where the bob is due to be blitted.
+ 4. The bob is blitted.
+
+ The order of events is important. The background  must be restored before any
+collision checking is done, there is  no  point in checking for collision in a
+corrupted background!
+
+ The routines represented by steps 1, 3 and 4 could be expanded to handle more
+than one bob, this is the approach adopted in the next example.
+
+ Finally, the background collision  check  routine.  Note that the players X,Y
+position has been copied into temporary  registers. These new values will only
+be passed back if the player has not  collided  with  something. If the player
+has collided with something, the  old  X,Y  position  will be used effectively
+aborting the move.
+
+ In the following  code,  negative  modulos  have  been  employed to allow for
+shifting. This technique was  covered  on  an  earlier disk, see the catalogue
+file for more details.
+
+                *******************************
+; The variables NewX, NewY contain the position  player is trying to move into
+; The variables PlayerX, PlayerY contain the players current position
+; On exit, PlayerX, PlayerY will contain the new position of the player.
+; This position will be either the current position if a collision occurred,
+; or the new position if no collision occurred.
+
+*****
+*****   Check for background collision
+*****
+
+CheckBgrnd      moveq.l         #0,d0                   clear this register
+                move.l          d0,d2                   and this one
+
+; From the x position, calculate the number  of bytes from left edge of screen
+;Note, this must be an even address as the blitter deals with words only
+
+                move.w          NewX(a4),d0             get x position
+                move.l          d0,d1                   save a copy
+                asr.w           #4,d0                   /16
+                add.w           d0,d0                   byte offset
+
+; From the y position,  calculate  the  number  of  bytes  from the top of the
+;screen to the start of the line in which the bob starts
+
+                move.w          NewY(a4),d2             get y position
+                mulu            #40,d2                  x line width
+
+; Add the two offsets  together  to  form  number  of  bytes  from top left of
+;screen and then add address of  screen  memory  to form address of first byte
+;in which the bob will appear. Remember that plane 4 is used as the 
+;collision plane so a suitable offset  is  added  to 'Screen' to arrive at the
+;first byte in this planes memory block.
+
+                add.w           d2,d0                   add offsets
+                add.l           #Screen+(320/8)*256*3,d0 d0=addr of bpl4
+
+; Must now form bltcon0.
+; usage:        A=mask, C=collision plane               ($a) 
+; minterm       D=AC                                    ($a0)
+
+                and.w           #$f,d1                  isolate scroll bits
+                ror.w           #4,d1                   into high nibble
+                move.w          d1,-(sp)                save
+                swap            d1
+                move.w          (sp)+,d1
+                or.l            #$0aa00000,d1           minterm & usage
+
+; To check move, one plane  of  draw  mask  will  be  blitted  into plane 4 of
+;playfields screen memory
+
+                bne.s           .QBlit
+
+                move.l          #PlayerM,BLTAPTH(a5)    mask
+                move.l          d0,BLTCPTH(a5)          collision plane
+                move.w          #-2,BLTAMOD(a5)         mask modulo
+                move.w          #36,BLTCMOD(a5)         plane modulo
+                move.l          #$ffff0000,BLTAFWM(a5)  blitter mask
+                move.l          d1,BLTCON0(a5)          control bits
+                move.w          #16<<6!2,BLTSIZE(a5)    size of mask
+
+; We must wait for blitter to finish before testing BZERO flag in DMACONR.
+
+                bne.s           .QB
+
+; Now see if result  of  operation  was  zero,  if  not  a collision must have
+;occurred. Since this is a background test, the move will be nullified.
+
+                btst            #13,DMACONR(a5)         blit zero?
+                bne.s           .ok                     yep, ignore it
+
+                move.w          PlayerX(a4),NewX(a4)    else update position
+                move.w          PlayerY(a4),NewY(a4)
+
+                *******************************
+
+ Inter-Bob Collisions
+ ~~~~~~~~~~~~~~~~~~~~
+ So much for background collisions! Bob to bob collisions can be detected by a
+similar technique. Basically all  bob  collisions  are  checked  using a small
+bitplane to represent the area around  one  bob. I will refer to this bitplane
+as the collision plane from now on. A mask for one of the bobs is blitted into
+the center of the collision plane and the  translation required to convert its
+x,y coordinates to this  position  is  determined.  Next  the  translation  is
+applied to the second bob to determine  it's  position in the collision plane.
+At this stage, the coordinates should  be  checked  and if out of range of the
+collision plane, no  collision  can  occur.  Now  the  mask of the mask of the
+second bob is combined with  the  small  bitplane  in  the same way background
+collisions are checked. If the result  of  the  blit is zero, no collision has
+taken place.
+
+ The method of implementing the map is entirely up to the programmer, but here
+are two suggestions:
+
+ 1. Reserve space for the small  bitplane  and when required, blit the mask of
+the first bob into this, check for collision  and finally remove mask of first
+bob leaving the bitplane empty.
+
+ 2. Attach a small bitplane to each bob  in  use as part of the initialisation
+process. The bitplane will contain  the  required  mask already in position. (
+Extending on this idea, all similar bobs could share the same small bitplane.
+
+ In both cases the collision plane  must  be  at least three times as wide and
+three times as high as the largest bob to  be blitted into it. This is because
+you must allow  space  for  all  positions  of  the  second  bob. Consider the
+extremes, the second bob is above and to the left of the first bob, the second
+bob is below and too the right of the  first  bob. Since the first bob will be
+positioned in the center of the plane, sufficient room must be provided on all
+four sides to accommodate the extreme conditions:
+
+  _________________________________________________________________________
+ |  _______________________                                                |
+ | |                       |                                               |
+ | |                       |                                               |
+ | |       Bob 2           |_____________________                          |
+ | |  ( 1st extreme )      |                     |                         |
+ | |_______________________|                     |                         |
+ |                        |        Bob 1         |_______________________  |
+ |                        |     ( centered )    |                        | |
+ |                        |_____________________|                        | |
+ |                                              |          Bob 2         | |
+ |                                              |     ( 2nd extreme )    | |
+ |                                              |________________________| |
+ |_________________________________________________________________________|
+
+
+ The overlap in the above diagram has  been  exaggerated for clarity. In truth
+it need be just one single pixel to register a collision.
+
+ Example 2 has been presented to show  how  code to display and move the enemy
+was added to the previous example. Example  3 has the inter-bob collision code
+added and implemented. To  exit  example  3,  the player must collide with the
+enemy!
+
+ Notice that in the example the collision plane is initialised on entry to the
+subroutine and cleared on exit.  This  was  done  to  demonstrate how just one
+collision plane could be used by several collision routines.
+
+                        *************************** 
+***** 
+*****   Check if player has hit the enemy bob 
+*****
+
+; Start by blitting mask of player into collision plane
+
+PlayerCheck     lea             PlayerM,a0              mask addr
+                lea             CollisionP+2+16*6,a1   center collision plane
+
+; The blit!
+
+                bne.s           .QB
+
+                move.l          #PlayerM,BLTAPTH(a5)            source
+                move.l          #CollisionP+2+16*6,BLTDPTH(a5)  dest
+                move.w          #0,BLTAMOD(a5)
+                move.w          #4,BLTDMOD(a5)
+                move.l          #-1,BLTAFWM(a5)
+                move.l          #$09f00000,BLTCON0(a5)
+                move.w          #16<<6!1,BLTSIZE(a5)
+
+; Calculate translation required to  map  players coordinates to center of the
+;collision plane ( 16,16 ).
+
+                moveq.l         #16,d0                  position of bob in
+                move.l          d0,d2                   collision plane
+                sub.w           PlayerX(a4),d0          X translation
+                sub.w           PlayerY(a4),d2          Y translation
+
+;  Apply  translation  to   enemies   coordinates   and  check  if  translated
+;coordinates are within range for collision plane, ie. ( 0<= X <= 48, 
+;0<= Y <= 48 )
+
+                add.w           EnemyX(a4),d0
+                bmi             .done                   out of range
+                cmpi.w          #32,d0
+                bge             .done                   out of range
+                
+                add.w           EnemyY(a4),d2
+                bmi             .done                   out of range
+                cmpi.w          #32,d2
+                bge             .done                   out of range
+
+; Blit mask of bob into plane and check for collision
+
+                move.l          d0,d1                   save a copy
+                asr.w           #4,d0                   /16
+                add.w           d0,d0                   byte offset
+
+; From the y position,  calculate  the  number  of  bytes  from the top of the
+;collision plane to the start of the line in which the bob starts
+
+                mulu            #6,d2                   x line width
+
+; Add the two offsets  together  to  form  number  of  bytes  from top left of
+;collision plane and then add the  address  of collision plane to form address
+;of first byte in which the bob will appear.
+
+                add.w           d2,d0                   add offsets
+                add.l           #CollisionP,d0          d0=addr in plane
+
+; Must now form bltcon0.
+; usage:        A=mask, C=collision plane               ($a) 
+; minterm       AC (note no destination)                ($a0)
+
+                and.w           #$f,d1                  isolate scroll bits
+                ror.w           #4,d1                   into high nibble
+                move.w          d1,-(sp)                save
+                swap            d1
+                move.w          (sp)+,d1
+                or.l            #$0aa00000,d1           minterm & usage
+
+; blit the enemies mask
+
+                bne.s           .QBlit
+
+                move.l          #PlayerM,BLTAPTH(a5)    mask
+                move.l          d0,BLTCPTH(a5)          collision plane
+                move.w          #-2,BLTAMOD(a5)
+                move.w          #36,BLTCMOD(a5)
+                move.l          #$ffff0000,BLTAFWM(a5)  blitter mask
+                move.l          d1,BLTCON0(a5)          control bits
+                move.w          #16<<6!2,BLTSIZE(a5)    size of mask
+
+; We must wait for blitter to finish before testing BZERO flag in DMACONR.
+
+                bne.s           .QB1
+
+; Now see if result  of  operation  was  zero,  if  not  a collision must have
+;occurred. When a collision occurs, a flag is set.
+
+                btst            #13,DMACONR(a5)         blit zero?
+                bne.s           .done                   yep, ignore it
+
+                move.w          #1,Dead(a4)             signal collision
+
+; The players mask can now  be  removed  from  the  collision plane leaving it
+;clear for other uses. In this example the collision plane is not reused!
+; The blitter is not active  at  this  point,  we  have  just waited for it to
+;finish it's last operation!
+
+                move.w          #4,BLTDMOD(a5)
+                move.l          #$01000000,BLTCON0(a5)
+                move.w          #16<<6!1,BLTSIZE(a5)
+
+                rts
+
+                        ***************************
+
+ On A Larger Scale
+ ~~~~~~~~~~~~~~~~~
+ In a real game, their is going to be more  that one enemy bob. Each enemy bob
+will, at some time, need  to  be  collision-checked  with  the  player. If the
+technique adopted in the  previous  example  is  adopted,  then some method of
+checking all bobs using the  same  collision  plane  is  required. This can be
+achieved by forming a  table  that  contains  one  entry  for  each enemy that
+details the enemies x,y position and also  has a pointer to the collision mask
+to use. A simple  loop  could  then  step  through  the  table,  deciding if a
+particular enemy is close enough to  warrant  a  collision check and calling a
+suitable subroutine if so. If  a  collision  does  occur  a flag could be set,
+under normal conditions the flag is zero, but on collision contains the number
+of the enemy that hit the player.
+
+ It is also probable that the  player  can  fire  projectiles of some kind, so
+collision checks between these and the  enemies  also need to be performed. In
+essence, this will be identical to the code for player-enemy collision checks,
+the only difference being that the  bullet  mask  is centered in the collision
+plane not the player mask.
+
+ It does not require much effort to develop a subroutine that will handle both
+player-enemy  and  bullet-enemy  collisions.  The  routine  would  require the
+following entry parameters:
+
+ 1.     X position of bob being checked.
+ 2.     Y position of bob being checked.
+ 3.     pointer to table, as explained above, to check collisions with.
+
+ The code calling this routine would preform as follows:
+
+ 1.     Blit mask of bob being checked into middle of collision plane.
+ 2.     Set entry parameters and call collision routine.
+ 3.     Clear mask from collision plane.
+ 4.     Check, act on and clear collision flag.
+
+ Another alternative is use linked  lists  of  bobs. This removes the need for
+tables and also allows for easy addition/removal  of bobs. The problem is that
+most assembly programmers tend to shy  away  from  list. However, using a list
+would allow the collision routine to act  on collision and a whole lot more. I
+leave it to you to decide.
+
+ After Thoughts
+ ~~~~~~~~~~~~~~
+ Throughout the above documentation I have only considered blitter objects. To
+simplify  programming,  you  may  decide  to  implement  the  player  and  his
+projectiles as hardware sprites  in  which  case  background collisions can be
+handled by the Amiga hardware. However,  for player-enemy and projectile-enemy
+collisions you may still use the above described technique.
+
+ Use sprites to render the player, but  use  a  mask for inter-bob collisions.
+Same goes for the projectiles launched by the player.
+
+ If you have decided  to  implement  interleaved  bitplanes  to  speed  up bob
+rendering then background collisions  using  a  bitplane of the playfield as a
+collision plane becomes a  tricky  affair.  It  is  still possible however and
+simply requires use of blitter modulos.
+
+ Under normal  circumstances,  the  collision  plane  modulo  is calculated as
+follows ( remembering to use the byte values ):
+
+ Wp = playfield width
+ Wb = bob mask width
+ D  = depth of screen ( number of bitplanes )
+
+ modulo = Wp - Wb
+
+ If you  are  using  interleaved  playfields,  the  following  calculation  is
+required to determine the collision plane modulo: 
+
+ modulo = Wp - Wb + Wp*( D - 1 )
+        = Wp*D - Wb
+
+ If also using  negative  modulos  to  simplify  scrolling,  don't  forget  to
+subtract two from the modulo value regardless of the bitplane format.
+
+ Oh, and don't forget that the bitplanes  are interleaved when calculating the
+start address of the collision plane. Use the following guide:
+
+ Screen = address of bitplane data ( interleaved format )
+ Width  = byte width of bitplane
+ Depth  = depth of display
+
+ Bitplane            Start Address
+    1                   Screen
+    2                   Screen + Width*Depth
+    3                   Screen + 2*Width*Depth
+    4                   Screen + 3*Width*Depth
+    5                   Screen + 4*Width*Depth
+    6                   Screen + 5*Width*Depth
+
+ The End
+ ~~~~~~~
+ Well that brings to a close this discussion  on collision detection using the
+blitter. I would like to  hear  from  anyone  with  other  ideas  on collision
+detection, be  it  blitter  or  sprite.  If  you  have  used  or seen a useful
+technique, please detail it and send it in. Help spread the word.
+
+                        Bye,
+                                Mark. 
+ 

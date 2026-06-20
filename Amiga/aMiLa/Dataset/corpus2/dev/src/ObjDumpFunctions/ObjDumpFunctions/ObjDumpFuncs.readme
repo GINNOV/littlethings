@@ -1,0 +1,42 @@
+Short:        Analyze functions from an executable
+Author:       thellier@free.fr (Alain Thellier)
+Uploader:     thellier free fr
+Type:         dev/src
+Version:      1.1
+Requires:     OS3,OS4,morphos
+Architecture: ppc-amigaos,m68k-amigaos
+
+
+VERSION
+V1.1 :
+OS4 build is correct this time 
+Morphos port (Stefan A. Haubenthal)
+No more use 100% cpu
+
+DESCRIPTION 
+ObjDumpFuncs: obtain functions from Objdump tool (or Adis)
+Works only on binary with symbols and name (non stripped binaries)
+Disassemble a program and show functions usage
+Build a list of functions from assembly source
+then can sort them per size/offset/name/stack usage/etc..
+can follow a function : what functions call this function, what functions are called
+
+So this program allow to understand how a binary works : what call what
+So this is a kind of dynamic functions tree
+This program is especially usefull for (porting) a big program with sources that you can
+recompile (not stripped) that you want to understand how it works
+
+The OS3 version ObjDumpFuncs use Adis as disassembler for 68k code
+The OS4 version ObjDumpFuncs-ppc use Objdump as disassembler for PPC code
+
+If you still dont understand what do this program then just try :
+Start ObjDumpFuncs. Choose ObjDumpFuncs as binary for analyzing
+
+
+Use 'q' for quitting
+										
+WARNING: This program crash on exit and I dont know why
+
+
+
+	

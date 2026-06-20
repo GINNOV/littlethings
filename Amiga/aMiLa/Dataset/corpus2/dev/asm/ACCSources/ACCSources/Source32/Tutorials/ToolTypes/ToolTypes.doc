@@ -1,0 +1,172 @@
+
+			Getting To ToolTypes
+			~~~~~~~~~~~~~~~~~~~~
+
+ Going back a couple of issues there was a basic introduction into how
+Workbench passes parameters to a program via the startup message and also
+how to get at an icons ToolTypes. I'd like to extend on that now and build
+a routine that can be plugged into any program and will simplify the
+reading of parameters set in the progam icons ToolTypes fields by the
+operator.
+
+ Recap
+ ~~~~~
+ A Tool icon has a ToolTypes field. The operator should be able to pass
+values to the program via these ToolTypes. For this to be possible, the
+program has to examine the ToolTypes passed to it when launched from the
+Workbench.
+
+ Considerations
+ ~~~~~~~~~~~~~~
+ Not all operators are familiar with ToolTypes, so your program should not
+rely on specific values being passed. Make sure your program sets default
+values that can be modified by passing values via ToolTypes.
+
+ Programming
+ ~~~~~~~~~~~
+ When a program is launched from the Workbench it recieves a startup
+message. If you use the include file 'misc/easystart.i' then replying to
+this message is handled for you and the address of the message is stored at
+the label 'returnMsg'.
+
+ When writing a program you can test returnMsg to determine if a program
+was launched from the Workbench or CLI, a value of zero implies a CLI
+launched program.
+
+ If the program was launched from the Workbench we can use information
+stored in the startup message to locate and load the icon corresponding to
+the file ( assuming it exsists ). To do this we need to examine the WBArgs
+stored in the message.
+
+ Each WBArg consists of two long words, one is a lock on the directory
+containing a file passed to this application and the other is a pointer to
+the name of the file. The first WBArg refers to the application itself and
+contains a lock on it's directory and it's name. Unless multi-select was
+used when launching this application, this will be the only WBArg.
+
+			***********************
+
+; Getting a pointer to an applications 1st WBArg
+
+		move.l		returnMsg,d0		from WB
+		beq.s		.error			no, exit!
+
+		move.l		d0,a4			a4->startup message
+		move.l		sm_ArgList(a4),a4	a4->1st WBArg
+
+			***********************
+
+ For an application to examine it's icon it must change directory to the
+drawer containing the icon and then call GetDiskObject() in icon.library.
+To change directories simply pass the lock obtained from WBArg to
+CurrentDir(), and to load the icon pass the name obtained from WBArg to
+GetDiskObject(). Voila, the icon is loaded into memory!
+
+NOTE: GetDiskObject() will append '.info' to the filename supplied, there
+is no need to do this manually.
+
+			***********************
+
+; Switching directories and loading applications icon
+
+		move.l		(a4)+,d1		d1=lock on our dir
+		CALLDOS		CurrentDir		switch dir's
+		move.l		d0,d7			save old lock
+
+		move.l		(a4),a0			a0->our name
+		CALLICON	GetDiskObject		load icon
+		tst.l		d0			got an icon?
+		beq.s		.error1			no, exit!
+
+			***********************
+
+ Once an application has loaded it's icon it can parse any ToolTypes stored
+in the icon. The do_ToolTypes field of the icon structure contains a
+pointer to the ToolTypes list. The ToolTypes list is a NULL terminated
+block of string pointers, each pointer locating one ToolType string.
+
+ At this point the programmer has a choice. ToolTypes can now be checked
+consecutivley as they occur or the function FindToolType() can be used to
+check for specific ToolTypes that the application recognises.
+
+ As I am trying to build a generic routine that can be plugged into any
+future application, I am going to opt for the first approach. This routine
+will step through the ToolTypes defined and pass the address of the
+ToolTypes string to some other routine ( explained soon ). The other
+routine can then be written specifically for each application.
+
+			***********************
+
+; Step through ToolTypes ( d0=address of DiskObject, see last fragment )
+
+		move.l		d0,a4			a4->DiskObject
+		move.l		do_ToolTypes(a4),a1	a1->ToolTypes array
+		cmp.l		#0,a1			are there any?
+		beq.s		.error3			no, exit!
+
+	; Loop that steps through list and passes address to some routine
+
+.ToolsList	move.l		(a1)+,a0		a0->next ToolType str		
+		cmp.l		#0,a0			end of list?
+		beq.s		.error3
+
+		movem.l		d1-d7/a0-a6,-(sp)	preserve all
+
+		jsr		<< some routine >>
+
+		movem.l		(sp)+,d1-d7/a0-a6
+
+		bra.s		.ToolsList
+
+.error3		...............................
+
+			***********************
+
+ If you examine the above fragment you will notice that << some routine >>
+gets a pointer to the DiskObject in register a4 and a pointer to the next
+ToolType string in a0. It is up to << some routine >> to decide what to do
+with the information passed to it, remember that it will be called once for
+each ToolType specified!
+
+ Altogether Now!
+ ~~~~~~~~~~~~~~~
+ When writing applications I tend to use register a5 as a base address to
+reference variables from, for this reason a5 remains unaltered in all the
+above fragments of code so that << some routine >> can still access global
+variables. Also register a3 is not effected by any of the above fragments,
+this is so it can hold the address of << some routine >>. The resulting
+subroutine is outlined below:
+
+			***********************
+
+; Subroutine to parse ToolTypes
+
+; Entry		a0-> << Some Routine >>
+
+; Exit		none
+
+; Corrupt	d0
+
+ParseArgs	PUSHALL				save all registers
+
+		move.l		a0,a3		a3-> << Some Routine >>
+
+		<< Above fragments of code >>
+
+		<< Cleanup code >>
+
+		PULLALL
+
+		rts
+
+			***********************
+
+ In the final subroutine icon.library is also opened and closed. This
+removes dependancy on the application to some degree, though dos.library
+and exec.library are assummed.
+
+ You can now examine the finished routine, ParseArgs.i, and start using it
+in your own code or modify it for your specific needs.
+
+							M.Meany
+ 

@@ -1,0 +1,82 @@
+                       Colour v1.0 (c) 1992, Tom Champion
+                       ----------------------------------
+
+	Colours will change the colours and let you save them to a executable
+	file
+
+	Colours will ONLY run on AmigaDos 2.04
+
+Note:
+
+	Use Colours at your own risk.
+
+Starting:
+
+	»» Workbench ««
+
+        Click on Colours twice.
+
+    »» Cli ««
+
+        Colours
+
+Usage:
+
+		Menus -
+
+            About		- About Requester.
+
+            Save		- Save colurs as Executable file, when clicked on
+						  will change the colours.
+
+            Quit		- Quit and restore starting colours.
+
+            Reset to
+			Default		- Reset colours to deafult.
+
+            Restore		- Restore colours to starting colours.
+
+			Preset		- Predefined colours.
+
+            Save Icon	- If on will save icon when you save the Executable
+                          file.
+
+		Gadgets -
+
+            Save		- Save colurs as Executable file, when clicked on
+						  will change the colours.
+
+            Use			- Quit and use colours.
+
+			Cancel		- Quit and restore colours to starting colours.
+
+		Keys -
+
+			Amiga S		- Save colurs as Executable file, when clicked on
+						  will change the colours.
+
+            Amiga Q		- Quit and use colours.
+
+            Amiga 1 to
+			Amiga 9		- Predefined colours.
+
+Distribution:
+
+    Colours is freely distributable as long as this doc file and the source
+    files are with it and a nominal copy fee is charged.
+
+
+Files in directory:
+
+    Colours		Colours.asm
+    Colours.Doc
+
+
+Correspondence:
+
+    Please sent any bug reports or correspondence to
+
+        Tom Champion
+        62 Sterling Rd.
+        Metung 3904
+        Australia

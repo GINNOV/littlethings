@@ -1,0 +1,14 @@
+Short:        Template for implementing an Amiga shared library in VBCC
+Uploader:     chritoph@gmx.de (Christoph Fassbach)
+Author:       chritoph@gmx.de (Christoph Fassbach)
+Type:         dev/src
+Version:      1.0
+Architecture: m68k-amigaos >= 2.0.4
+Distribution: Aminet
+Kurz:         Vorlage zur Implementierung von Amiga shared library in VBCC
+
+This source provides a basis for compiling a library in VBCC.
+There are no exported functions in it and there is no fd/sfd file,
+both has to be added by the user. The basis is configurable by some
+preprocessor defines that are described in the header file.
+I hope this source eases the pain of starting development for the Amiga.

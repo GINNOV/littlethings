@@ -1,0 +1,25 @@
+Short:        Source for playing DT/EP Custom-modules
+Author:       ki9656@unidhp.uni-c.dk (Mikael Lund)
+Uploader:     ki9656 unidhp uni-c dk (Mikael Lund)
+Type:         dev/asm
+Version:      1.1
+Replaces:     acustpl1.lha
+Architecture: generic
+
+Customplay v1.1 - This is an assembler source for using Delitracker
+custom-modules in your own code. It works almost like any other player
+where you need to call init-, play- and end-routines.
+
+v1.0 to v1.1 :	Only the Doc & Examples are changed.
+
+============================= Archive contents =============================
+Original  Packed Ratio    Date     Time    Name
+-------- ------- ----- --------- --------  -------------
+   11603    2648 77.1% 13-Aug-97 11:55:12 +Example1.s
+   86327   15547 81.9% 13-Aug-97 11:55:30 +Example2.s
+   30843    5891 80.9% 13-Aug-97 11:55:50 +Example3.s
+    3147     886 71.8% 27-Jan-97 12:35:30 +custplay.i
+    2776    1390 49.9% 13-Aug-97 12:09:28 +readme.doc
+     149     116 22.1% 13-Aug-97 12:11:12  file_id.diz
+-------- ------- ----- --------- --------
+  134845   26478 80.3% 13-Aug-97 12:11:46   6 files

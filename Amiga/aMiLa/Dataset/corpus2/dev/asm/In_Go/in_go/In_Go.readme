@@ -1,0 +1,61 @@
+Short   : In_Go Reassembler V4.0
+Author  : Ingo Molter, Dunzweilerstr.42 D-66903 Dittweiler Germany
+Uploader: Jens Rosenboom (boom@uni-paderborn.de)
+Type    : dev/asm
+Replaces: dev/asm/In_Go.lha
+Requires: OS 3.0, 2MB memory, harddisk
+Version : 4.0
+
+Infos only in german, needs Kick 3.0
+
+Features:
+
+ - Reassembles executable files, object files, ROM, ( Tasks ).
+
+ - Can create assembler AmigaGuide files from executables.
+
+ - Can create local labels (!)
+
+ - Can create symbol hunks, and save them, to any executable.
+
+ - Allows to find enforcer hits, if segtracker`s output
+   (Hunk + Offset) is available.
+
+ - Can optimize executables Reloc_32 to Dreloc_32 hunks
+   if globally possible. (no offset > $8000 )
+
+ - Creates assembler macros
+
+ - `Interactive` working possible
+
+ - Automatic reading of jump tables
+
+ - Implemented longword calculator ( 40 functions )
+
+ - It's up to date mostly
+
+ Many other features
+
+---------------------.
+Full release contains:
+---------------------'
+
+  In_Go  Reassembler
+  In_Go.Guide          ( German )
+  s/In_Go__Structure     ( Structures )
+  Tutorium1            (Tutorial `executable`)
+  Tutorium1.asm        (Source of Tutorium1)
+  Tutorium.txt         (Text to Tutorium1, German)
+----------------------------------------------------------------------------->
+
+In_Go was first published as `Programm of the month` in April 93
+in `Amiga Magazin`.
+Its also published on Aminet Set 1 ( Amiga Magazin ), Aminet 20
+But this version is very new..   ( March 1998 )
+
+Installing:
+No Installing needed
+That`s it.
+In_Go needs minimal 2 Megabytes Ram and a Harddisk.
+
+Help me to make a better English Version !

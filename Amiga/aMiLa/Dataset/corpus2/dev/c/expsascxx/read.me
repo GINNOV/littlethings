@@ -1,0 +1,192 @@
+This archive contains a new version of the SAS/C++ compiler,
+with new header files and link libraries. SAS/C 6.5x is required.
+
+
+This is an EXPERIMENTAL version. Use at your own risk, for
+entertainment purposes only...
+
+
+We (SAS) have decided to port our latest C++ translator to 
+the Amiga. Any SAS/C 6.5x customer may use this version. 
+In releasing this as a free update to 6.5x, we are hoping 
+to get testing of the portable translator. Please send any 
+bug reports to sassek@sas.com.
+
+
+
+I don't have an install script ready, but here is how I suggest
+you install it.
+
+
+
+1) Rename sc:libs/sccxx.library to sc:libs/sccxx.library.657 
+   (if you have not already done so)
+2) copy the sccxx.library in this archive to sc:libs
+3) copy the directory lib.701 to sc:lib.701
+4) copy the directory cxxinclude.701 to sc:cxxinclude.701
+5) Change the CXXINCLUDE: assign to point to sc:cxxinclude.701
+6) Install the patches to the SC driver and to SLINK to allow
+   support for implicit templates. There is an install script
+   to apply these patches. Execute it with 'execute install'.
+
+
+
+When linking, you must add the approriate C++ library before
+the standard SAS/C libraries. Here's an example using the driver:
+
+
+   sc test.cxx link lib sc:lib.701/sccxx.lib
+
+
+
+Other notes:
+
+This version uses significantly more stack. It is compiled
+with stack checking on, so it shouldn't crash if you run out of
+stack. Instead, you will recieve a "Stack Overflow" requestor.
+A stack around 100,000 seems sufficient.
+
+
+
+
+
+
+Here's a list of fixes since the last SAS/C++ experimental
+release.
+
+February 18, 1998
+
+1) Real types for BOOL and WCHAR_T added.
+2) Several other minor additions/fixes.
+3) Fix parsing of 1.0f
+
+
+Oct 13, 1997
+
+1) Math libraries were missing some routines. This caused
+   cout << 2.5; to fail, for example.
+
+
+Sept 30, 1997
+
+1) Support has been added to SC and SLINK for implicit template
+   declarations.
+2) #include <> should work like the SAS/C compiler now.
+3) Added missing define of __STDC__
+4) Fix symbol table scoping bug with member functions.
+5) Alignment requirements have been changed to match the C compiler,
+   is sizeof() should work correctly now.
+6) RTTI has been turned on, and the C++ libraries have been recompiled
+   with the option turned on.
+
+
+
+
+SAS/C++ limitations
+-------------------
+These are features which we do not support as specified by the C++
+draft.
+
+
+Glossary
+--------
+   POD -- 'plain old data', basically a type using only C features
+   pseudo-destructor -- a destructor call that names a non-class type,
+      like 'p->~int()'.  These are used for generic programming.
+
+
+
+No identifier form ANSI digraphs (i.e. "and", "and_eq", etc.)
+
+No universal character names
+
+no 'bool' type
+
+no "extern inline"
+
+global/static initialization/destruction order differences
+   local statics are destroyed at module cleaup, not synced with "atexit()"
+
+temporary lifetime differences
+   The draft specifies destruction at the end of a full expression.
+   We destroy early for operands of "? :", "&&" or "||".
+
+no "operator new[]" or "operator delete[]"
+
+no placement delete declarations
+
+'wchar_t' is not distinct from other integral types
+
+destructor name handling differences
+
+restricted pseudo-destructors
+
+conditional expression handling differences
+
+scope of variable declared in 'for' initialization
+   The draft behavior must be enabled by the -!Aoldforscope option.
+   The draft behavior is the default on the mainline.
+
+no 'mutable' keyword
+
+no 'explicit' keyword
+
+no namespaces
+
+no 'using' keyword
+
+no 'asm' declaration
+
+linkage limited to "C" and "C++"
+
+no "{}" empty initializer
+
+static member data variables may not be initialized in the class definition
+
+virtual base construction, destruction, and copying differences?
+
+no overriding of virtual function return type
+
+miscellaneous overloading differences
+   The overloading code of the translator was written before the draft
+   specified this very well.  There are bound to be differences.  In
+   fact, probably every different compiler will interpret some things
+   differently sometimes.
+
+enum types always promote to int, never to unsigned or other integral types
+
+no operator overloading on enum types
+
+templates
+   no 'export' keyword or separate compilation
+   no template template parameters
+   no member templates
+   no function member pointer template arguments
+   no partial specialization of classes or functions
+   no out of line definition of member classes
+   no default template arguments
+   no function template default arguments
+   no checking of name dependency rules
+   no 'export'ed templates
+   no template class member friend declarations
+   no deduction from derived class pointer
+
+no exceptions
+
+C++ library
+   We have the "classic" C++ library.
+   The draft version has lots of nice stuff, like the Standard Template
+   Library and templatized basic types, which we don't have.
+
+Obsolete C++ features and bugs
+------------------------------
+These are "features" of the translator which are disallowed by the draft.
+
+'overload' keyword, not allowed by default
+
+default base class constructor initialization
+
+constant expression overflows should be diagnosed
+
+skipping initializations using non-POD types with 'goto' should be diagnosed
+   The translator does not diagnose cases like references.

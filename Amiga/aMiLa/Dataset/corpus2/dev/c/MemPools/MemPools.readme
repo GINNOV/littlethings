@@ -1,0 +1,153 @@
+short: fast malloc() replacement, v1.3
+type: dev/c
+author: mandree@dosis.uni-dortmund.de, jochen.wiedmann@uni-tuebingen.de
+uploader: mandree@dosis.uni-dortmund.de
+replaces: dev/c/MemPools*.lha
+
+CHANGES by Matthias Andree
+==========================
+
+1.2 -> 1.3 (1998-03-12)
+
+    Since  DICE  is  to  be  considered  entirely  out-of-date,  I  removed  all
+    references  to  DICE, and reworked things a bit. I was trying to link a tool
+    with SAS/C 6.58, which - according to MUNGWALL SNOOP output - stuck with  4k
+    blocks.  Investigating this further, I found that mempools.lib did not offer
+    regargs entry points, thus, my tool stuck with SAS/C stdlib  pooling  (which
+    uses  4k  blocks  currently).  I  fixed  this  flaw  and  some  little other
+    peculiarities.
+
+    NOTE: the debug feature Jochen Wiedmann stated below is indeed  included  in
+    the  sources,  but  cannot currently be used to automatically build an SAS/C
+    mempoolsd.lib.
+
+    NOTE: The make files are a horrible mess.
+
+
+
+MemPools - malloc() replacement using standard Exec memory pools
+================================================================
+
+Many people don't like using malloc() and similar functions because  they  think
+it's  too  slow  and  gives too much overhead. Well, as far as I can say they're
+alright, at least for users of SAS/C: The Exec pool  functions  seem  to  be  at
+least  5 times faster and it can even be faster than the malloc() of GNU C! (See
+"Timings" below.)
+
+Other people like malloc(): It's portable and rather easy to use. I  am  one  of
+these, however I don't want to loose the speed of pool functions.
+
+The mempools package is a link library with the  functions  malloc(),  calloc(),
+realloc(),  strdup() and free(). It replaces the compilers own functions by just
+linking against this library. No additional work  is  required  as  the  library
+takes use of the compilers auto- initialization facility.
+
+Ths autoinitialization restricts use of the mempools library to users  of  SAS/C
+and gcc.
+
+Note, that pools are available not  only  for  users  of  OS  3.x!  The  current
+amiga.lib  offers  replacements  which  call  exec.library, if the OS is 3.x and
+emulate pools otherwise. The MemPools library uses this replacements.
+
+
+A debugging possibility very similar to Mungwall is integrated into the library,
+which  is  enabled  by  compiling  with  -DDEBUG. The makefiles provide a target
+"mempoolsd.lib" which does just that.
+
+
+
+1.) Disclaimer: Copyrights, (No) Warranty
+-----------------------------------------
+
+This program is Copyright (C) 1994  Jochen Wiedmann
+				    Am Eisteich 9
+				    72555 Metzingen
+				    Germany
+
+				    Phone: (0049) +7123 / 14881
+				    Mail: jochen.wiedmann@uni-tuebingen.de
+
+All changes are Copyright (C) 1998  Matthias Andree
+				    Stormstr. 14
+				    58099 Hagen
+				    Germany
+
+				    Phone: +49-(0)23 31-96 30 72
+				    Mail: mandree@dosis.uni-dortmund.de
+
+
+Permission is granted to make and distribute either verbatim and modified copies
+of this documentation and the library MemPools provided the copyright notice and
+this permission notice are preserved on all copies and the "GNU  General  Public
+License" (in the file COPYING) is distributed as well.
+
+The authors give ABSOLUTELY NO warranty that  the  software  described  in  this
+documentation  and  the results produced by them are correct. The authors cannot
+be held responsible for ANY damage resulting from the use of this software.
+
+
+
+2.) Installation
+----------------
+
+There are two libraries  included  in  the  distribution,  it  depends  on  your
+compiler  which  one  you  need:  mempools.lib  is for SAS/C, its destination is
+sc:lib. libmempools.a is the GNU-c version which should go to GNU:lib.
+
+If you want to recreate them, just type smake (SAS/C) or make (GNU-c).
+
+
+
+3.) Usage
+---------
+
+All you have to do is to link against the appropriate mempools library.
+
+a) SAS/C
+
+    Add the option LIB mempools.lib to your compiler  statement.  By  using  the
+    "scopts" program you can get this automatically, too.
+
+b) gcc
+
+    Add the option -lmempools to your compiler statement. I don't  know  if  gcc
+    can handle this automatically. Probably someone can enlighten me?
+
+However, you might be interested in controlling the pools attributes.  This  can
+be  done  by  creating global variables __MemPoolPuddleSize, __MemPoolThreshSize
+and __MemPoolFlags  which  correspond  to  the  arguments  of  the  CreatePool()
+function.  For example, if you want to modify the puddle size (this can increase
+speed, see "Timings" below), just add  the  following  line  somewhere  to  your
+program:
+
+    ULONG __MemPoolPuddleSize = 16384;  /*  Default: 4096       */
+
+Or if you want malloc() to obtain chip memory, just write
+
+    #include <exec/memory.h>
+    ULONG __MemPoolFlags = MEMF_CHIP;   /*  Default: MEMF_ANY   */
+
+
+
+
+4.) Timings
+-----------
+
+I wrote a little timing program. (I don't claim that it is very  good,  probably
+someone can write a better one.) I was rather surprised about the results:
+
+    Compiler    Time (Mins:Secs)    Notes
+
+    SAS/C       1:17,66             SAS/C uses an own pool system.
+				    Thus, the exit() function is
+				    rather fast. malloc(), however,
+				    seems to be slow.
+
+    gcc         0:12,84 (ixemul)    gcc uses a pool system which is
+		0:14,34 (libnix)    rather close to Exec pools. This
+				    gives good results.
+
+    MemPools    0:15,10 (4096)      By increasing the puddle size
+		0:12,14 (8192)      (see "Usage") you get better
+		0:10,80 (16384)     results! It seems worth to try a
+				    little bit.

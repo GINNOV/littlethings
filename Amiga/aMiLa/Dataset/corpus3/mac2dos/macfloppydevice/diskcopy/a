@@ -1,0 +1,3 @@
+.key file/a
+CASM -A <file>.asm -o <file>.obj -cs
+

@@ -1,0 +1,1368 @@
+4    GADGETS
+
+4.1  INTRODUCTION
+
+In this chapter we will look at how the user can communicate
+with the program. All programs which uses Intuition should,
+if possible, be controlled by a mouse, since it is the most
+commonly used input device. Intuition's Gadgets will play a big
+role here.
+
+A gadget can be a "button" which the user can click on, but it
+can also be a small knob which can be dragged (like a volume
+control on a radio). A gadget can even be a box where the user
+can enter a text string or a value. The advantages of using
+gadgets are almost uncountable. They are very well supported by
+Intuition which means that your program does hardly need to do
+anything, but still have an outstanding user interface which
+is both easy to understand as well as use.
+
+
+
+4.2  DIFFERENT TYPES OF GADGETS
+
+There exist two types of gadgets: System gadgets, which we
+already have discussed in chapter 2.3 SYSTEM GADGETS, and
+Custom gadgets. For every window System gadgets always look
+the same, and are always placed in the same places. Custom
+Gadgets, however, can be placed wherever you want, and it is
+you who decide how they should look like.
+
+
+
+4.3  CUSTOM GADGETS
+
+There exist four different types of Custom gadgets:
+- Boolean gadget        On/Off (True/False) button.
+- Proportional gadget   A small knob which can be moved around
+                        inside a container.
+- String gadgets        Gadget which enables the user to enter
+                        a string.
+- Integer gadget        Same as the String gadget, except that
+                        the user can only enter integer numbers.
+
+
+
+4.3.1  GRAPHICS FOR CUSTOM GADGETS
+
+You can render the gadget with help of the high-level graphics
+utilities which are supported by Intuition (See chapter 3
+GRAPHICS for more information). You can render the gadget with
+help of a Border structure, or an Image structure. You can even
+have a different rendering when the gadget is selected,
+highlighted.
+
+It is of course possible to open gadgets with no rendering at
+all. The Drag gadget (System gadget) is a good example.
+
+
+
+4.3.2  POSITION
+
+You can position the gadget everywhere on the display. The
+position is normally relative to the top left corner of the
+displaying element (Window, Requester etc). If you want you
+can position the gadget relative to some other sides than the
+top left corner:
+
+If you want the gadget to be placed 10 pixels out and 20 lines
+down from the top left corner of a window, you set LeftEdge to
+10, and TopEdge to 20. (LeftEdge etc are elements in the Gadget
+structure which is described later in the chapter.)
+
+If you on the other hand want the gadget to always be 20 pixels
+above the bottom border of the window, and 10 pixels to the left
+of the right border, you set LeftEdge to -10 and TopEdge to -20
+together with the Flags GRELRIGHT and GRELBOTTOM. (More about
+this later.)
+
+
+
+4.3.3  SIZE
+
+You decide the width and height of the gadget (the select box
+of the gadget) by setting the Width and Height variables as
+desired.
+
+If you set the Height to 25, the gadget will be 25 lines high.
+
+If you on the other hand set the Height to -25 and you set the
+GRELHEIGHT flag, the gadget will always be 25 lines smaller
+than the containing element (window etc).
+
+Same applies for the Width. If you set the Width to 50, the
+gadget will always be 50 pixels wide.
+
+If you on the other hand set the Width to be -50 and you set
+the flag GRELWIDTH, the gadget will always be 50 pixels smaller
+than the containing element.
+ 
+
+
+4.4  INITIALIZE A CUSTOM GADGET
+
+When you want to use a Custom gadget you need to declare and
+initialize a Gadget structure which look like this:
+
+struct Gadget
+{
+  struct Gadget *NextGadget;
+  SHORT LeftEdge, TopEdge, Width, Height;
+  USHORT Flags;
+  USHORT Activation;
+  USHORT GadgetType;
+  APTR GadgetRender;
+  APTR SelectRender;
+  struct IntuiText *GadgetText;
+  LONG MutualExclude;
+  APTR SpecialInfo;
+  USHORT GadgetID;
+  APTR UserData;
+}
+
+NextGadget:        A pointer to the next gadget in the list if
+                   there exist one, else NULL.
+
+LeftEdge, TopEdge: Position of the gadget's select box relative
+                   to the displaying element.
+
+Width, Height:     Width and height of the gadget's select box.
+
+Flags:             You must set one of the following four
+                   highlighting flags: (The gadget is
+                   highlighted when it is selected)
+
+                   GADGHCOMP:  Complement the colours of all
+                               pixels in the gadget's select
+                               box.
+
+                   GADGHBOX:   Draw a box around the the
+                               gadget's select box.
+
+                   GADGHIMAGE: Display an alternative Image/
+                               Border.
+
+                   GADGHNONE:  No highlighting.
+
+                   If the gadget should be rendered as an Image
+                   set the flag GADGIMAGE, otherwise (render it
+                   with a Border structure, or no rendering at
+                   all) clear this flag.
+
+                   If you want the position and/or size of the
+                   gadget to be relative to the size of the
+                   displaying element, set the desired flags:
+
+                   GRELBOTTOM: TopEdge is used as an offset
+                               relative to the bottom of the
+                               displaying element, instead of
+                               an offset relative to the top of
+                               the displaying element.
+
+                   GRELRIGHT:  LeftEdge is used as an offset
+                               relative to the right edge of
+                               the displaying element, instead
+                               of an offset relative to the
+                               left edge of the displaying
+                               element.
+
+                   GRELWIDTH:  Width describes an increment to
+                               the width of the displaying
+                               element, instead of describing
+                               the absolute width of the
+                               gadget.
+
+                   GRELRIGHT:  Height describes an increment
+                               to the height of the displaying
+                               element, instead of describing
+                               the absolute height of the
+                               gadget.
+
+                   If this gadget is a toggle-select gadget
+                   (see Activation flags) you can set the
+                   SELECTED flag, and the gadget will be
+                   selected and highlighted when opened. If
+                   not, the gadget will be unselected and non-
+                   highlighted when opened.
+                   
+                   You can also examine this field to see if
+                   the SELECTED flag is set or not. If it is
+                   set, the gadget is selected, else it is
+                   unselected.
+                   
+                   If you want that the gadget should be
+                   disabled when opened, you set the flag
+                   GADDISABLED. Your program can later change
+                   this by calling the functions OnGadget()
+                   (enables the gadget) and OffGadget()
+                   (disables the gadget).
+
+Activation:        Set the flags for the desired effects:
+                   (More about these later...)
+                   
+                   GADGIMMEDIATE: If you want your program to
+                                  know immediately when the
+                                  user selects this gadget, you
+                                  should set this flag.
+
+                   RELVERIFY:     If you want your program to
+                                  receive a message when the
+                                  user releases the gadget and
+                                  the pointer is still inside
+                                  the gadget's select box, you
+                                  should set this flag.
+
+                   FOLLOWMOUSE:   Set this flag if you want
+                                  your program to receive mouse
+                                  positions every time the user
+                                  moves the mouse while this
+                                  gadget is selected.
+
+                   TOGGLESELECT:  Each time the user selects
+                                  this gadget, the on/off state
+                                  of the gadget (as well as the
+                                  image) is toggled. Your
+                                  program can later check the
+                                  status of the gadget by
+                                  examining the SELECTED bit in
+                                  the Flags field.
+
+                   BOOLEXTEND:    Set this flag if your gadget
+                                  has a BoolInfo structure
+                                  connected to it.
+
+
+                   If your gadget is connected to a window you
+                   can set the following flags in order to
+                   change the size of the window's borders.
+                   (You can then put the gadget there.):
+                   
+                   RIGHTBORDER:   The width of the window's
+                                  right border is calculated
+                                  with help of the gadget's
+                                  position and width.
+
+                   LEFTBORDER:    The width of the window's
+                                  left border is calculated
+                                  with help of the gadget's
+                                  position and width.
+
+                   TOPBORDER:     The height of the window's
+                                  top border is calculated
+                                  with help of the gadget's
+                                  position and height.
+
+                   BOTTOMBORDER:  The height of the window's
+                                  bottom border is calculated
+                                  with help of the gadget's
+                                  position and height.
+
+
+                   If this gadget is connected to a requester
+                   you can set the ENDGADGET flag. The 
+                   requester will only go away when a gadget
+                   with the ENDGADGET flag has been selected.
+                   (See chapter 5 REQUESTERS for more
+                   information about gadgets connected to
+                   requesters.)
+
+                   Intuition will only care about these flags
+                   if the gadget is a String/Integer gadget:
+                   
+                   STRINGRIGHT:   Set this flag if you want the
+                                  characters in the string to
+                                  be right-justified.
+
+                   STRINGCENTER:  Set this flag if you want the
+                                  characters in the string to
+                                  be center-justified.
+                                  
+                  (The default is left-justified.)
+
+                   LONGINT:       Set this flag if you want
+                                  that the user should only be
+                                  able to enter a 32-bit signed
+                                  integer value.
+
+                   ALTKEYMAP:     Set this flag if you want to
+                                  use an alternative keymap.
+                                  Remember to give the AltKeyMap
+                                  pointer in the StringInfo
+                                  structure a pointer to the
+                                  keymap.
+
+GadgetType:        You must set one of the following three
+                   flags:
+
+                   BOOLGADGET:    Set this flag if you want a
+                                  Boolean gadget.
+
+                   STRGADGET:     Set this flag if you want a
+                                  String/Integer gadget. If you
+                                  want an Integer gadget you
+                                  also need to set the
+                                  Activation flag LONGINT. 
+
+                   PROPGADGET:    Set this flag if you want a
+                                  Proportional gadget.
+
+                   The following two flags are only for gadgets
+                   connected to Gimmezerozero windows and
+                   requesters.
+
+                   GZZGADGET:     If the gadget is connected to
+                                  a Gimmezerozero window and
+                                  you have set this flag, the
+                                  gadget will be put in the
+                                  outer window, and will not
+                                  destroy any drawings etc in
+                                  the inner window.
+                                  
+                   REQGADGET:     Set this flag if the gadget
+                                  is connected to a requester.
+
+GadgetRender:      A pointer to an Image or Border structure
+                   (See chapter 3 GRAPHICS for more information)
+                   which will be used to render the gadget. (If
+                   you supply a pointer to an Image structure
+                   you need to set the Flags variable to
+                   GADGIMAGE.) Set it to NULL if you do not
+                   want to supply the gadget with any graphics.
+
+SelectRender:      A pointer to an alternative Image or Border
+                   structure which will be used when the gadget
+                   is highlighted. Remember to set the
+                   GADGHIMAGE bit in the Flags variable if you
+                   want to use an alternative Image/Border.
+                   (GadgetRender and SelectRender must point to
+                   the same type of data. If you have specified
+                   that you want to use an Image for the
+                   GadgetRender (GADGIMAGE), SelectRender must
+                   then also point to an Image structure.)
+
+GadgetText:        A pointer to an IntuiText structure (See
+                   chapter 3 GRAPHICS for more information)
+                   which will be used to print some text in the
+                   gadget. Set it to NULL if you do not want
+                   any text connected to your gadget.
+
+MutualExclude:     This field represent the first 32 gadgets
+                   in the list. If this gadget is selected,
+                   all specified gadgets in the MutualExclude
+                   field are deselected automatically. For
+                   example, if you want that gadget number 0,
+                   2, 5 and 8 should be deselected (mutual
+                   excluded) when this gadget is selected, the
+                   MutualExclude field should be set to 293.
+                   ( 293(d) == 100100101(b) )
+                   
+                   Remember, the mutual exclude works only with
+                   toggle-select gadgets.
+
+SpecialInfo:       If the gadget is a Proportional gadget you
+                   should here give Intuition a pointer to a
+                   PropInfo structure, or if the gadget is a
+                   String (Integer) gadget you should give
+                   Intuition a pointer to a StringInfo
+                   structure.
+                   
+                   If the gadget is a Boolean gadget you can
+                   connect a BoolInfo structure which will
+                   place a mask on the gadget's select box.
+                   (See below for more information.)
+
+GadgetID           This variable is left for your own use.
+                   Intuition ignores this field.
+
+UserData:          A pointer to any structure you may want
+                   to connect to the gadget. Intuition ignores
+                   this field.
+
+
+
+4.5  BOOLEAN GADGET
+
+If you want a Boolean gadget you should declare and initialize
+the Gadget structure something like this:
+
+struct my_gadget=
+{
+  NULL,          /* NextGadget, no more gadgets in the list. */
+  40,            /* LeftEdge, 40 pixels out. */
+  20,            /* TopEdge, 20 lines down. */
+  60,            /* Width, 60 pixels wide. */
+  20,            /* Height, 20 pixels lines high. */
+  GADGHCOMP,     /* Flags, when this gadget is highlighted, */
+                 /* the gadget will be rendered in the      */
+                 /* complement colours:                     */
+                 /* (Colour 0 (00) will become colour 3 (11) */
+                 /* (Colour 1 (01)        - " -       2 (10) */
+                 /* (Colour 2 (10)        - " -       1 (01) */
+                 /* (Colour 3 (11)        - " -       0 (00) */  
+  GADGIMMEDIATE| /* Activation, our program will receive a  */
+  RELVERIFY,     /* message when the user has selected this */
+                 /* gadget, and when the user has released  */
+                 /* it.                                     */ 
+  BOOLGADGET,    /* GadgetType, a Boolean gadget. */
+  &my_border,    /* GadgetRender, a pointer to our Border */
+                 /* structure.                            */
+  NULL,          /* SelectRender, NULL since we do not    */
+                 /* supply the gadget with an alternative */
+                 /* image. (We complement the colours     */
+                 /* instead.)                             */
+  &my_text,      /* GadgetText, a pointer to our IntuiText */
+                 /* structure.                             */
+  NULL,          /* MutualExclude, no mutual exclude. */
+  NULL,          /* SpecialInfo, no BoolInfo connected to it. */
+  0,             /* GadgetID, no id. */
+  NULL           /* UserData, no user data connected to the */
+                 /* gadget. */
+};
+
+
+It is possible to connect a mask to a Boolean gadget. In that
+case the gadget would only be selected when the user clicks
+inside the selected (masked) area, and only that area would be
+highlighted. If you want to connect a mask to a Boolean gadget
+you need to declare and initialize a BoolInfo structure
+together with its mask.
+
+The BoolInfo structure look like this:
+
+struct BoolInfo
+{
+  USHORT Flags;
+  UWORD *Mask;
+  ULONG Reserved;
+};
+
+Flags:    There exist only one flag for the moment: BOOLMASK.
+
+Mask:     Pointer to the binary mask. (The width and height of
+          the mask must be the same as the width and height of
+          the select box.)
+
+Reserved: This field is reserved and should therefore be set
+          to 0.
+
+
+The binary mask is built up as an Image plane. Only the
+selected (1's) parts of the mask will be sensitive and
+highlighted.
+
+A mask for a gadget with the width of 16 pixels, and the height
+of 8 pixels can look something like this: (Only the inner part
+of the select box will be sensitive and highlighted.)
+
+Mask                16-Bit memory words    Hexadecimal
+------------------------------------------------------
+
+0000001111000000    0000 0011 1100 0000    03C0
+0000111111110000    0000 1111 1111 0000    0FF0
+0011111111111100    0011 1111 1111 1100    3FFC
+1111111111111111    1111 1111 1111 1111    FFFF
+1111111111111111    1111 1111 1111 1111    FFFF
+0011111111111100    0011 1111 1111 1100    3FFC
+0000111111110000    0000 1111 1111 0000    0FF0
+0000001111000000    0000 0011 1100 0000    03C0
+
+
+The mask would in this case be declared/initialized like this:
+
+UWORD my_mask[]=
+{
+  0x03C0,
+  0x0FF0,
+  0x3FFC,
+  0xFFFF,
+  0xFFFF,
+  0x3FFC,
+  0x0FF0,
+  0x03C0
+};
+
+See Example6 for more information about the BoolInfo structure.
+
+
+
+4.6  STRING/INTEGER GADGET
+
+String and Integer gadgets are a bit more complicated to
+declare since you need to supply the Gadget structure with a
+StringInfo structure. However, String and Integer gadgets
+allows the user to enter a string or an integer value without
+much effort from your side. Intuition takes care of most of the
+work, and you almost only need to decide how long and where the
+string gadget should be.
+
+
+
+4.6.1  STRINGINFO STRUCTURE
+
+The StringInfo structure look like this:
+
+struct StringInfo
+{
+  UBYTE *Buffer;
+  UBYTE *UndoBuffer;
+  SHORT BufferPosition;
+  SHORT MaxChars;
+  SHORT DispPos;
+  SHORT UndoPos;
+  SHORT NumChars;
+  SHORT DispCount;
+  SHORT CLeft, CTop;
+  struct Layer *LayerPtr;
+  LONG LongInt;
+  struct KeyMap *AltKeyMap;
+};
+
+Buffer:            A pointer to a NULL-terminated string.
+
+UndoBuffer:        A pointer to a NULL-terminated string which
+                   is used by Intuition to store an undo string.
+                   This must be at least as long as the Buffer
+                   string. When the user selects this gadget
+                   Intuition makes a copy of the Buffer string
+                   which will be copied back if the user
+                   presses AMIGA + Q. Since only one String/
+                   Integer gadget can be active at a time
+                   several String/Integer gadgets can use the
+                   same undo string.
+
+MaxChars:          The maximum number of characters which may
+                   be entered. (Number of characters in the
+                   buffer + the NULL '\0' sign.)
+
+BufferPos:         Cursor position in the buffer string.
+
+DispPos:           Position of the first character which is
+                   displayed.
+
+These variables are initialized and maintained by Intuition:
+
+UndoPos:           Cursor position in the undo string.
+
+NumChars:          Current number of characters in the buffer.
+
+DispCount:         Current number of visible characters in the
+                   container.
+
+CLeft, CTop:       Top left offset of the container.
+
+LayerPtr:          Pointer to the Layer structures.
+
+LongInt:           If this is an Integer gadget you can examine
+                   the value here to find out what the user has
+                   entered.
+
+AltKeyMap:         A pointer to an alternative keymap.
+                   (Remember to set the flag ALTKEYMAP in the
+                   Activation field.)
+
+
+
+4.6.2  INITIALIZE A STRING/INTEGER GADGET
+
+This is an example on how you can initialize a string gadget:
+
+UBYTE my_buffer[50];
+UBYTE my_undo_buffer[50];
+
+struct StringInfo my_string_info=
+{
+  my_buffer,       /* Buffer, pointer to a NULL-terminated s. */
+  my_undo_buffer,  /* UndoBuffer, pointer to a NULL-          */
+                   /* terminated string. (Remember my_buffer  */
+                   /* is equal to &my_buffer[0])              */
+  0,               /* BufferPos, initial position of the */
+                   /* cursor.                            */
+  50,              /* MaxChars, 49 characters + NULL-sign. */
+  0,               /* DispPos, first character in the string */
+                   /* should be first character in the       */
+                   /* display.                               */
+
+  /* Intuition initializes and maintains these variables: */
+
+  0,               /* UndoPos */
+  0,               /* NumChars */
+  0,               /* DispCount */
+  0, 0,            /* CLeft, CTop */
+  NULL,            /* LayerPtr */
+  NULL,            /* LongInt */
+  NULL,            /* AltKeyMap */
+};
+
+struct Gadget my_gadget=
+{
+  NULL,           /* NextGadget, no more gadgets in the list. */
+  68,             /* LeftEdge, 68 pixels out. */
+  30,             /* TopEdge, 30 lines down. */
+  198,            /* Width, 198 pixels wide. */
+  8,              /* Height, 8 pixels lines high. */
+  GADGHCOMP,      /* Flags, draw the select box in the        */
+                  /* complement colours. Note: it is actually */
+                  /* only the cursor which will be drawn in   */
+                  /* the complement colours (yellow). If you  */
+                  /* set the flag GADGHNONE the cursor will   */
+                  /* not be highlighted, and the user will    */
+                  /* therefore not be able to see it.         */
+  GADGIMMEDIATE|  /* Activation, our program will receive a  */
+  RELVERIFY,      /* message when the user has selected this */
+                  /* gadget, and when the user has released  */
+                  /* it.                                     */ 
+  STRGADGET,      /* GadgetType, a String gadget. */
+  &my_border,     /* GadgetRender, a pointer to our Border */
+                  /* structure.                            */
+  NULL,           /* SelectRender, NULL since we do not    */
+                  /* supply the gadget with an alternative */
+                  /* image.                                */
+  &my_text,       /* GadgetText, a pointer to our IntuiText */
+                  /* structure.                             */
+  NULL,           /* MutualExclude, no mutual exclude. */
+  &my_string_info,/* SpecialInfo, a pointer to a StringInfo */
+                  /* structure. */
+  0,              /* GadgetID, no id. */
+  NULL            /* UserData, no user data connected to the */
+                  /* gadget.                                 */
+};
+
+The only difference between declaring and initializing a String
+gadget and an Integer gadget, is that when you initialize an
+Integer gadget you also need to:
+
+1. Set the flag LONGINT in the Activation field.
+2. Copy an integer string into the buffer string.
+   eg: strcpy( my_buffer, "0" );
+
+
+
+4.6.3  USING A STRING/INTEGER GADGET
+
+Once you have declared and initialized the appropriate
+structures Intuition takes care of everything else. While the
+user is entering a string he/she can even use some special
+keys:
+
+  ------------------------------------------------------------
+  | <-            Moves the cursor to the left.              |
+  | ->            Moves the cursor to the right.             |
+  | SHIFT and <-  Moves the cursor to the beginning of the   |
+  |               string.                                    |
+  | SHIFT and ->  Moves the cursor to the end of the string. |
+  | BACKSPACE     Deletes the character to the left of the   |
+  |               cursor.                                    |
+  | DEL           Deletes the character under the cursor.    |
+  | AMIGA and Q   Undo the last changes of the string.       |
+  | AMIGA and X   Clears the buffer string.                  |
+  | RETURN        Releases the gadget. If we have set the    |
+  |               activation flag RELVERIFY we will receive  |
+  |               a message telling us that the user has     |
+  |               finished.                                  |
+  ------------------------------------------------------------
+
+
+
+4.7  PROPORTIONAL GADGET
+
+A proportional gadget is roughly a knob which can be moved
+horizontally, vertically or both inside a container. It can be
+like a volume control on a radio, or it can be used to show the
+user how much more data there exist in the file etc.
+
+
+
+4.7.1  PROPINFO STRUCTURE
+
+The PropInfo structure look like this:
+
+struct PropInfo
+{
+  USHORT Flags;
+  USHORT HorizPot;
+  USHORT VertPot;
+  USHORT HorizBody;
+  USHORT VertBody;
+  USHORT CWidth;
+  USHORT CHeight;
+  USHORT HPotRes, VPotRes;
+  USHORT LeftBorder;
+  USHORT TopBorder;
+};
+
+Flags:             You normally should set one or both of the
+                   following two bits:
+
+                   FREEHORIZ      Set this bit if you want the
+                                  user to be able to move the
+                                  knob horizontally.
+
+                   FREEVERT       Set this bit if you want the
+                                  user to be able to move the
+                                  knob vertically.
+                   
+                   AUTOKNOB       Set this bit if you want that
+                                  the size of the knob to be
+                                  controlled by Intuition.
+                                  (HorizBody and VertBody
+                                  affects the size of the
+                                  Autoknob.)
+
+                                  - If you want to use
+                                  Intuition's Autoknob you
+                                  should give GadgetRender a
+                                  pointer to an Image structure.
+                                  (You do not need to initialize
+                                  the Image structure since
+                                  Intuition takes care of it.)
+
+                                  - If you on the other hand
+                                  would like to use your own
+                                  knob image, you give
+                                  GadgetRender a pointer to your
+                                  Image structure, which you have
+                                  initialized yourself.
+
+                   PROPBORDERLESS Set this bit if you do not
+                                  want any border around the
+                                  container. 
+
+                   KNOBHIT        This is a flag which is set by
+                                  Intuition if this gadget is
+                                  selected.
+
+HorizPot:          This variable contains the actual
+                   (horizontally) proportional value. If the
+                   user has moved the knob 25% to the right,
+                   HorizPot is 25% of MAXPOT (0xFFFF).
+                   (0xFFFF * 0.25 = 0x3FFF)
+
+VertPot:           Same as HorizPot except that this is the
+                   vertically proportional value.
+
+HorizBody:         Describes how much HorizPot should change
+                   every time the user clicks inside the
+                   container. If the volume of a melody can be
+                   between 0-63 (64 steps), HorizPot should
+                   change 1/64 each time. The HorizBody should
+                   therefore be initialized to:
+                   1/64 * MAXBODY (0xFFFF) == 3FF
+
+                   HorizBody describes also how much the user
+                   can see/use of the entire data. For example,
+                   if you have a list of 32 file names, and the
+                   user only can see 8 names at one time (25%),
+                   the knob (AUTOKNOB) should fill 25% of the
+                   container. HorizBody should in this case be
+                   initialized to:
+                   MAXBODY * 8 / 32 (25% of 0xFFFF) == 3FFFF
+
+VertBody:          Same as HorizBody except that it affects
+                   VertPot, and the vertical size of the knob
+                   (AUTOKNOB).
+
+These variables are initialized and maintained by Intuition:
+
+CWidth:            Width of the container.
+
+CHeight:           Height of the container.
+
+HPotRes, VPotRes:  Pot increments.
+
+LeftBorder:        Position of the container's left border.
+
+TopBorder:         Position of the container's top border.
+
+
+
+4.7.2  INITIALIZE A PROPORTIONAL GADGET
+
+This is an example on how you can initialize a proportional
+gadget which can, for example, be used to change the volume of
+a melody (64 positions):
+
+/* We need to declare an Image structure for the knob, but */
+/* since Intuition will take care of the size etc of the   */
+/* knob, we do not need to initialize the Image structure: */
+struct Image my_image;
+
+struct PropInfo my_prop_info=
+{
+  FREEHORIZ|      /* Flags, the knob should be moved         */
+  AUTOKNOB,       /* horizontally, and Intuition should take */
+                  /* care of the knob image.                 */
+  0,              /* HorizPot, start position of the knob. */
+  0,              /* VertPot, 0 since we will not move the */
+                  /* knob vertically. */
+  MAXBODY * 1/64, /* HorizBody, 64 steps. */
+  0,              /* VertBody, 0 since we will not move the */
+                  /* knob vertically. */
+
+  /* These variables are initialized and maintained by */
+  /* Intuition:                                        */
+
+  0,              /* CWidth */
+  0,              /* CHeight */
+  0, 0,           /* HPotRes, VPotRes */
+  0,              /* LeftBorder */
+  0               /* TopBorder */
+};
+
+struct Gadget my_gadget=
+{
+  NULL,            /* NextGadget, no more gadgets. */
+  80,              /* LeftEdge, 80 pixels out. */
+  30,              /* TopEdge, 30 lines down. */
+  200,             /* Width, 200 pixels wide. */
+  12,              /* Height, 12 pixels lines high. */
+  GADGHCOMP,       /* Flags, no highlighting. */
+  GADGIMMEDIATE|   /* Activation, our program will receive a  */
+  RELVERIFY,       /* message when the user has selected this */
+                   /* gadget, and when the user has released  */
+                   /* it.                                     */
+  PROPGADGET,      /* GadgetType, a Proportional gadget. */
+  &my_image,       /* GadgetRender, a pointer to our Image */
+                   /* structure. (Intuition will take care */
+                   /* of the knob image. See chapter 3     */
+                   /* GRAPHICS for more information about  */
+                   /* images.)                             */
+  NULL,            /* SelectRender, NULL since we do not    */
+                   /* supply the gadget with an alternative */
+                   /* image.                                */
+  &my_text,        /* GadgetText, pointer to a IntuiText */
+                   /* structure. */
+  NULL,            /* MutualExclude, no mutual exclude. */
+  &my_prop_info,   /* SpecialInfo, pointer to a PropInfo */
+                   /* structure. */
+  0,               /* GadgetID, no id. */
+  NULL             /* UserData, no user data connected to */
+                   /* the gadget. */
+};
+
+
+
+4.8  MONITORING THE GADGETS
+
+Once you have decided which gadgets to use and how they should
+look like, it is time to decide what information they should
+send to your program. You need to decide if they should send a
+message when the user has selected them, or when the user has
+released them etc. All this work with handling the input can be
+easily done with help of Intuition's IDCMP system. IDCMP stands
+for Intuition's Direct Communications Message Ports system.
+Hard name but very easy use.
+
+The IDCMP system is also explained, in more detail, in chapter
+8 IDCMP. 
+
+If you want to use the IDCMP system you only need to follow
+these steps:
+
+1. Decide what events your gadget should report. You do it by
+   setting the appropriate flags in the Activation field in the
+   Gadget structure:
+   
+   GADGIMMEDIATE  Set this flag if you want your program to
+                  receive a message immediately when the user
+                  selects this gadget.
+
+   RELVERIFY      Set this flag if you want your program to
+                  receive a message when the user releases
+                  (while still pointing at it) this gadget. If
+                  the user releases the gadget after having
+                  moved away the pointer from the select box,
+                  your program will not receive any message.
+
+   FOLLOWMOUSE    Set this flag if you want your program to
+                  receive a message every time the mouse is
+                  moved while this gadget is selected. 
+
+
+2. If the gadgets are connected to a window you need to tell
+   Intuition which messages should be allowed to pass by. You
+   do it by setting the appropriate flags in the IDCMPFlags
+   field in the NewWindow structure:
+
+   GADGETDOWN     If a gadget connected to a window has the
+                  GADGIMMEDIATE flag set, you should set the
+                  GADGETDOWN flag.
+
+   GADGETUP       If a gadget connected to a window has the
+                  RELVERIFY flag set, you should set the
+                  GADGETUP flag.
+
+   MOUSEMOVE      If a gadget connected to a window has the
+                  FOLLOWMOUSE flag set, you should set the
+                  MOUSEMOVE flag.
+
+   CLOSEWINDOW    If you have connected the Close window gadget
+                  (System gadget) to your window, you can set
+                  this bit, and your program will receive a
+                  message when the user selects this gadget.
+                  Remember, Intuition does not close the window
+                  automatically when the user clicks on the
+                  Close window gadget. It is up to your program
+                  to decide what to do when you receive a
+                  CLOSEWINDOW event. (See Example1)
+
+
+3. Once your program is running it is time to try to collect
+   and examine the messages sent to us by Intuition. One very
+   commonly used way of doing it is to put the program to sleep
+   [ Wait() ] and it will wake first when a message has
+   arrived. We will then try to collect it [ GetMsg() ], and
+   then (if success) examine the message. When we are finished
+   with it we send it back [ ReplyMsg() ] so Intuition can send
+   us another message if there is one. We can then put the
+   program to sleep again, and so on.
+   
+When we collect a message with help of the function GetMsg() we
+actually receive a pointer to an IntuiMessage structure or NULL
+if there was nothing for us. The IntuiMessage structure look
+like this:
+
+struct IntuiMessage
+{
+  struct Message ExecMessage;
+  ULONG Class;
+  USHORT Code;
+  USHORT Qualifier;
+  APTR IAddress;
+  SHORT MouseX, MouseY;
+  ULONG Seconds, Micros;
+  struct Window *IDCMPWindow;
+  struct IntuiMessage *SpecialLink;
+};
+
+This structure is fully explained in chapter 8 IDCMP, so you do
+not need to bother so much about it for the moment. However,
+there is two variables in the structure that we need to
+understand. They are:
+
+Class:        When a message is sent this field contains the
+              reason for why it was sent. It contains an IDCMP
+              flag which tells us what has happened. For
+              example, if the user has selected a gadget with
+              the GADGIMMEDIATE flag set, this variable is
+              equal to GADGETDOWN.
+
+IAddress:     This is a pointer to the gadget (or similar)
+              which sent the message. For example, if a program
+              receives a message telling us that a gadget was
+              selected, we need to know which gadget since
+              there may be several gadget connected to the same
+              window. This pointer points to that gadget.
+
+Here is an example of how a program which collects IDCMP
+messages can look like:
+
+main()
+{
+  /* Declare a variable in which we will store the IDCMP */
+  /* flag: */
+  ULONG class;
+  
+  /* Declare a pointer in which we will store the address */
+  /* of the object (gadget) which sent the message: */
+  APTR address;
+
+  /* Declare a pointer to an IntuiMessage structure: */
+  struct IntuiMessage *my_message;
+
+
+  /* ... */
+
+
+  /* (This is an endless loop) */
+  while( TRUE )
+  {
+    /* 1. Put our program to sleep, and wake up first when   */
+    /*    we have received a message. Do not bother for the  */
+    /*    moment about all these funny thing we put inside   */
+    /*    the Wait () function. I will talk about that later */
+    /*    on.                                                */
+    
+    /* Wait until we have received a message: */
+    Wait( 1 << my_window->UserPort->mp_SigBit );
+
+
+
+    /* 2. We have now received a message and we shall now     */
+    /*    try to collect it. If success the function GetMsg() */
+    /*    will return a pointer to an IntuiMessage            */
+    /*    structure, otherwise it will return NULL.           */
+   
+    /* Collect the message: */
+    my_message = GetMsg( my_window->UserPort );
+
+
+
+    /* 3. If we have collected a message successfully we save */
+    /*    some important values which we later can use.       */
+    
+    if( my_message )
+    {
+      /* Save the code variable: */
+      class = my_message->Class;
+      
+      /* Save the address of the gadget: */
+      address = my_message->IAddress;
+
+
+      /* 4. After we have saved all important values we     */
+      /*    reply as fast as possible. Once we have replied */
+      /*    we can NOT use the IntuiMessage structure any   */
+      /*    more!                                           */
+      
+      ReplyMsg( my_message );
+
+  
+      /* 5. We can now check what message was sent to us. */
+
+      /* Check which IDCMP flag was sent: */
+      switch( class )
+      {
+        case GADGETDOWN: /* The user has selected a gadget: */
+               
+               /* If we want to check which gadget sent the */
+               /* message we simply need to check the       */
+               /* address pointer:                          */
+               
+               if( address == &my_first_gadget)
+                 /* The gadget "my_first_gadget" selected. */
+                 /* Do what ever you want... */
+
+               if( address == &my_second_gadget)
+                 /* The gadget "my_second_gadget" selected. */
+                 /* Do what ever you want... */
+
+               break;
+
+        case GADGETUP: /* The user has released a gadget: */
+               /* Do what ever you want... */
+               break;
+
+        case MOUSEMOVE: /* The user has moved the mouse */
+                        /* while a gadget was selected. */
+               /* Do what ever you want... */
+               break;
+
+        case CLOSEWINDOW: /* The user has selected the close */
+                          /* window gadget. Time to quit.    */
+               /* Do what ever you want... */
+               break;
+      }
+    }
+  }
+
+  
+  /* ... */
+}   
+
+
+
+4.9  FUNCTIONS
+
+Here are some commonly used functions:
+
+RefreshGadgets()
+
+  This function redraws all the gadgets in the list, starting
+  by the specified gadget. If you for example has added or
+  deleted a gadget you need to call this function to see the
+  changes. On the other hand, if you have changed the imagery
+  of a gadget, or the gadget's image has been trashed by
+  something, you can also use this function to refresh the
+  display.
+  
+  Synopsis:  RefreshGadgets( gadget, window, requester);
+
+  gadget:    (struct Gadget *) Pointer to the gadget where the
+             redrawing should start. This gadget, and all the
+             following gadgets in the list will be redrawn.
+
+  window:    (struct Window *) Pointer to the window which the
+             gadgets are connected to.
+  
+  requester: (struct Requester *) If the gadget is connected to
+             a requester, set this pointer to point to that
+             requester, else NULL. Important, if this gadget is
+             connected to a requester, it must be displayed
+             when you execute this command! (See chapter 5
+             REQUESTERS for more information about requesters.)
+
+
+AddGadget()
+
+  This function adds a gadget to the gadget list.
+
+  Synopsis: result = AddGadget( window, gadget, position );
+  
+  result:   (long) The actual position of the gadget when it
+            has been added.
+
+  window:   (struct Window *) Pointer to the window, to which
+            the gadget should be added.
+
+  gadget:   (struct Gadget *) Pointer to the gadget which will
+            be added.  
+
+  position: (long) Position in the gadget list. (Starts from
+            zero). Eg:
+              0 -> Before all other gadgets.
+              1 -> After the first gadget, but before the
+                   second.
+              If a too big value is entered (or -1), the gadget
+              will be placed last in the list.
+
+
+  Important, after your program has added the necessary
+  gadgets, you need to call the function RefreshGadgets() in
+  order to see your changes. You may add (or take away) several
+  gadgets, but when you are finished you must call that
+  function.
+
+
+RemoveGadget()
+
+  This function removes a gadget from the list:
+  
+  Synopsis: result = RemoveGadget( window, gadget );
+
+  result:   (long) The position of the removed gadget or -1 if
+            something went wrong.
+
+  window:   (struct Window *) Pointer to the window that the
+            gadget is connected to.
+
+  gadget:   (struct Gadget *) Pointer to the gadget which will
+            be removed.  
+
+
+  Important, after your program has removed the necessary
+  gadgets, you need to call the function RefreshGadgets() in
+  order to see your changes. You may take away (or add) several
+  gadgets, but when you are finished you must call that
+  function.
+
+
+OnGadget()
+
+  This function enables a gadget (removes the GADGDISABLED bit
+  in the gadget structure's Flags field):
+  
+  Synopsis: OnGadget( gadget, window, requester );
+
+  gadget:     (struct Gadget *) Pointer to the gadget which
+              will be enabled.
+
+  window:     (struct Window *) Pointer to the window that the
+              gadget is attached to.
+  
+  requester:  (struct Requester *) If the gadget is connected
+              to a requester, set this pointer to point to that
+              requester, else NULL. Important, if this gadget
+              is connected to a requester, it must be displayed
+              when you execute this command!
+
+  Remember, as long as the gadget is disabled the user can not
+  select it, and it will not broadcast any messages. A disabled
+  gadget is drawn as usual except that it "ghosted".
+
+
+OffGadget()
+
+  This function disables a gadget (sets the GADGDISABLED bit in
+  the gadget structure's Flags field):
+  
+  Synopsis:  OffGadget( gadget, window, requester );
+
+  gadget:    (struct Gadget *) Pointer to the gadget which will
+             be disabled.
+
+  window:    (struct Window *) Pointer to the window that the
+             gadget is attached to.
+
+  requester: (struct Requester *) If the gadget is connected to
+             a requester, set this pointer to point to that
+             requester, else NULL. Important, if this gadget is
+             connected to a requester, it must be displayed
+             when you execute this command!
+
+
+ModifyProp()
+
+  This function modifies a proportional gadget's values and
+  knob. For example, if your program is reading files from the
+  disk, VertBody was maybe equal to 0xFFFF (MAXBODY) in the
+  beginning, but as more files are collected from the disk, you
+  maybe want to change the size of the knob etc. You then
+  simply call this function and it will change the values as
+  well as redraw the gadget.
+  
+  Synopsis:    ModifyProp( gadget, window, requester, flags,
+               horiz_pot, vert_pot, horiz_body, vert_body ); 
+
+  gadget:      (struct Gadget *) Pointer to the proportional
+               gadget which should be changed and redrawn.
+
+  window:      (struct Window *) Pointer to the window which
+               the proportional gadget is connected to.
+  
+  requester:   (struct Requester *) If the gadget is connected
+               to a requester, set this pointer to point to
+               that requester, else NULL. Important, if this
+               gadget is connected to a requester, it must be
+               displayed when you execute this command!
+
+  flags:       (long) Here is the list of all flags you may
+               use:
+  
+                 FREEHORIZ      Set this bit if you want the
+                                user to be able to move the
+                                knob horizontally.
+
+                 FREEVERT       Set this bit if you want the
+                                user to be able to move the
+                                knob vertically.
+
+                 AUTOKNOB       Set this bit if you want that
+                                the size of the knob to be
+                                controlled by Intuition.
+                                (HorizBody and VertBody
+                                affects the size of the
+                                Autoknob.)
+
+                                - If you want to use
+                                Intuition's Autoknob you
+                                should give GadgetRender a
+                                pointer to an Image structure.
+                                (You do not need to initialize
+                                the Image structure since
+                                Intuition takes care of it.)
+
+                                - If you on the other hand
+                                would like to use your own
+                                knob image, you give
+                                GadgetRender a pointer to your
+                                Image structure, which you have
+                                initialized yourself.
+
+                 PROPBORDERLESS Set this bit if you do not
+                                want any border around the
+                                container. 
+
+               (See chapter 4.7 for more information.)
+
+  horiz_pot:   (long) This variable contains the actual
+               (horizontally) proportional value. If the knob
+               should be moved 25% to the right, HorizPot
+               should be set to 25% of MAXPOT (0xFFFF).
+               (0xFFFF * 0.25 = 0x3FFF)
+
+  vert_pot:    (long) Same as HorizPot except that this is the
+               vertically proportional value.
+
+  horiz_body:  (long) Describes how much HorizPot should change
+               every time the user clicks inside the container.
+               If the volume of a melody can be between 0-63
+               (64 steps), HorizPot should change 1/64 each
+               time. The HorizBody should therefore be set to:
+               1/64 * MAXBODY (0xFFFF) == 3FF
+
+               HorizBody describes also how much the user can
+               see/use of the entire data. For example, if you
+               have a list of 32 file names, and the user only
+               can see 8 names at one time (25%), the knob
+               (AUTOKNOB) should fill 25% of the container.
+               HorizBody should in this case be set to:
+               MAXBODY * 8 / 32 (25% of 0xFFFF) == 3FFFF
+
+
+  vert_body:   Same as HorizBody except that it affects
+               VertPot, and the vertical size of the knob
+               (AUTOKNOB).
+
+
+4.10  EXAMPLES
+
+Example1
+  This program will open a normal window which is connected to
+  the Workbench Screen. The window will use all System
+  Gadgets, and will close first when the user has selected the
+  System gadget Close window. (Same as Example3 in chapter 2
+  WINDOWS, except that we have added an IDCMP check on the
+  Close window gadget.)
+
+Example2
+  Same as Example1 except that we have added a Boolean gadget
+  with the text "PRESS ME".
+
+Example3
+  Same as Example2 except that the on/off state of the gadget
+  is toggled each time the user hits the gadget.
+
+Example4
+  This program will open a normal window which is connected to
+  the Workbench Screen. The window will use all System
+  Gadgets, and will close first when the user has selected
+  the System gadget Close window. Inside the window we have put
+  two Boolean gadgets with the text "GADGET 1" and "GADGET 2".
+
+Example5
+  This program will open a normal window which is connected to
+  the Workbench Screen. The window will use all System Gadgets,
+  and will close first when the user has selected the System
+  gadget Close window. Inside the window we have put a Boolean
+  gadget with two Image structures connected to it. Each time
+  the user clicks on the gadget it will change images, lamp
+  on/lamp off.
+
+Example6
+  This program will open a normal window which is connected
+  to the Workbench Screen. The window will use all System
+  Gadgets, and will close first when the user has selected the
+  System gadget Close window. Inside the window we have put a
+  Boolean gadget with a connecting mask. The gadget will only
+  be highlighted when the user selects this gadget while
+  pointing inside the specified (masked) area.
+
+Example7
+  This program will open a normal window which is connected to
+  the Workbench Screen. The window will use all System
+  Gadgets, and will close first when the user has selected the
+  System gadget Close window. Inside the window we have put a
+  String gadget.
+
+Example8
+  Same as Example7 except that it is an Integer gadget.
+
+Example9
+  Same as Example7 except that it is a Proportional gadget.
+
+Example10
+  Same as Example9 except that the Proportional gadget uses a
+  custom image knob.
+
+Example11
+  This program will open a normal window which is connected to
+  the Workbench Screen. The window will use all System
+  Gadgets, and will close first when the user has selected the
+  System gadget Close window. Inside the window we have put a
+  Proportional gadget where the knob can be moved both
+  horizontally and vertically.
+
+Example12
+  This program will open a SuperBitmap window which is
+  connected to the Workbench Screen. The window will use all
+  System Gadgets, and will close first when the user has
+  selected the System gadget Close window. Inside the window we
+  have put two Proportional gadgets, one on the right side, and
+  one at the bottom. With help of these two gadgets, the user
+  can move around the BitMap.
+
+  This example is for experienced programmers only, since it
+  uses some functions etc which we have not discussed yet. I
+  have, however, included it here since it is a good example on
+  how you can combine Proportional gadgets with SuperBitmap
+  windows.

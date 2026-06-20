@@ -1,0 +1,143 @@
+
+		FindAminet 1.15 for AmiFTP
+
+		© 1996 Sami Itkonen
+
+
+		Purpose:
+
+To find and get files from Aminet with AmiFTP, using Aminet findservers which exist in 
+some Aminet sites.
+
+
+		Requirements:
+
+AmigaOS 2.04 or higher
+AmiFTP 1.149 or higher
+AmiTCP installed since the script needs the TCP:-device
+rexxreqtools.library   (At the time of writing aminet:util/rexx/rexxreqtools.lha, also
+			part of the reqtools distribution)
+rexxdossupport.library (.. aminet:util/rexx/RexxDosSupport.lha)
+amigaguide.library
+
+
+		Installation:
+
+copy Find.AmiFTP rexx:
+protect rexx:Find.AmiFTP +s
+
+
+		Usage: 
+
+[rx] Find.AmiFTP [-e] ["substring"|"substrings"] [-m<maxhits>] [-s<sitename>] [-p<portname>] 
+		 [-f<findsite number>] [-w<width>] [-c<0|1>]
+
+Explanation of the options: 
+		-e  	- tells the Aminet findserver to look for the exact string
+		-m<maxhits> - defines the maximum number hits the findserver should return.
+		-s<sitename> - the Aminet site to use
+		-p<portname> - The Arexx portname of AmiFTP FindAminet
+		-f<findsite number> - the number of the findsite to use (more on this below)
+		-w<width> - the width of the lines the findserver should return (not all
+			findservers understand this command)
+		-c<0|1> - will force crap filtering on (1) or off (0). Any other number will
+			be ignored.
+
+Arguments can be freely mixed on the command line. Any argument not beginning with a hyphen ('-') 
+will be taken as a part of the string to find. If no string is specified, you will be prompted
+with a reqtools requester to enter a string. You can enter options in that requester, too.
+If any files are found, an amigaguide file will be popped up (See section Getting files).
+
+
+		Configuration:
+
+The following variables can be configured (by editing the script) for customization:
+
+dldir 		- Your default download directory
+AmiFTP_bin 	- The full path to your AmiFTP binary. Set this if you don't have 
+		  AmiFTP in your command path.
+sitename	- The default Aminet site to use
+pubscreen	- The public screen to use
+viewmethod	- Defines the method to 'view' downloaded files. 'builtin' will try
+		  to use AmiFTP's builtin VIEW command (more on this in the AmiFTP
+		  documentation). 'processfile' will use 'rexx:processfile.rexx', which
+		  comes with eg. Grapevine. Any other setting will disable viewing.
+filtercrap	- If set to 1, will filter out all files in directories that match 
+		  'filterpat', which is a valid AmigaDOS pattern.
+filterpat	- The pattern to filter out files in unwanted directories.
+width		- The default display width
+maxhits		- The default number of maximum hits
+fsitenum	- The number of the default Aminet findsite. Possible choices are:
+			1 - Using site ftp.wustl.edu
+			2 -     ...    amiga.icu.net.ch
+			3 -     ...    haegar2.uni-paderborn.de
+
+
+		Getting files:
+
+Whether the script finds files or not, it will popup an amigaguide file containing
+the hits. If there are none, there will only be a gadget named 'Search for a new file',
+which will call Find.AmiFTP script again. The Aminet site and findsite used and the portname
+for the script will be propagated to next script. 
+Those files found will be in the following format:
+
+[     Filename	    ]	Directory  Size  Age¹ [ Description ]
+
+Clicking on the 'filename' gadget will download the file and optionally try to
+view/process it, depending on the 'viewmethod' configuration variable. Clicking
+on 'description' gadget will download and view the Readme of the file.
+
+¹) Some findsites do not supply this
+
+
+		Disclaimer:
+
+This software is provided as it is. I cannot be held responsible for any damage
+that will happen to your computer, you or your state of mind. 
+
+Any funny remarks in this file are completely unintentional.
+
+
+		Credits:
+
+Thanks go to:
+
+Osma Ahvenlampi for writing Browse.DaFTP and other cool stuff 
+Josef Faulkner for writing aminetfind.gvrexx
+Magnus Lilja for AmiFTP
+Commodore for making such a mess of everything
+Douglas Adams - not that he had anything to with the script or Amiga at all, but 
+	Hitchhiker's Guide to the Galaxy is a great book, don't you think?
+
+
+		Contacting the Author:
+
+Email: Sami.Itkonen@hut.fi
+IRC: Camelot (in undernet)
+
+	
+		Find.AmiFTP version history:
+	
+1.15
+	- Added the -c option for switching crap filter on/off
+	- fixed the bug with the crap filter
+	- Removed the very incomplete 'History' section from the doc file :)
+1.14
+	- Added the view method 'builtin'
+
+1.13
+	- Added the viewmethod configuration variable
+
+1.12
+	- Options can now be freely mixed in the command line
+	- haegar2 (findsite) doesn't show age field, files found from there are now shown correctly
+
+1.11	
+	- Changed the 'exact' keyword to the '-e' option
+
+1.10	
+	- All requesters/guide now use the supplied public screen
+
+1.9
+	- Findsite didn't propagate from one script to another, fixed that bug
+

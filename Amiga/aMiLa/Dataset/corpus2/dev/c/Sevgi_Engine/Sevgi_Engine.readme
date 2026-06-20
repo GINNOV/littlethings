@@ -1,0 +1,289 @@
+Short:        Open source video game engine
+Author:       amithlondestek@gmail.com (Alper Sönmez)
+Uploader:     amithlondestek gmail com (Alper Sönmez)
+Type:         dev/c
+Version:      0.193
+Replaces:     dev/c/Sevgi_Engine.lha
+Requires:     MUI v3.8+
+Architecture: m68k-amigaos
+
+Sevgi Engine
+************
+Sevgi Engine is a new open-source video game engine designed for the classic
+Amiga computers. It delivers the necessary tools and generates the boilerplate
+code to enable the development of high-performance Amiga games using only the C
+programming language.
+It is built around the great ScrollingTricks by Georg Steger.
+
+Features
+********
+* Performance
+  All display algorithms aim to perform at a locked 50fps on a single buffered
+  native Amiga chipset display. It implements an optimized version of the
+  algorithm Scroller_XYUnlimited2_64 from ScrollingTricks. Benefits highly from
+  Fast Ram where available.
+* System friendly
+  Aims to work on all ROM versions (2.0+) providing a clean quit back to OS
+  without needing WHDLoad.
+* AGA Support
+  Supports all features provided by the AGA chipset.
+* No limitations
+  Designed to support all the well known visual tricks known by the popular
+  Amiga video game titles while not limiting more experimental effects to be
+  implemented.
+* UI
+  Code to create customizable mouse driven GUI objects (buttons, input gadgets,
+  checkboxes etc.) with auto-layout and modern features, which can also be
+  accessed by the keyboard or the joysticks.
+* Controllers
+  Supports very optimized input from mice, joysticks and CD32 JoyPads from both
+  joystick ports, as well as the keyboard.
+* Easy development
+  A native editor program is provided to generate code, manage game assets, edit
+  color palettes etc. called Sevgi Editor. Other elements like game logic,
+  animation and events require programming knowledge in C. The programming and
+  compiling can be made natively (on the Amiga OS - using native compilers) or
+  cross platfrom (on Windows or Linux PCs - using cross development tools).
+  Sevgi Editor can import game maps made in Tiled (https://www.mapeditor.org/).
+* Templates
+  Generates ready to compile and run game code from template genres which aims
+  to ease bootstrapping. The templates include test assets.
+* ptplayer
+  Implements the great ptplayer by Frank Wille for music and audio effects.
+* No third party dependencies
+  The game executable will not require any libraries(1)
+* Documentation
+  The engine code is very well commented and documented in detail in Amigaguide
+  format.
+
+(1): Except diskfont.library. And even that is avoidable if you do not use any
+     Amiga font asset.
+
+Sevgi Editor
+************
+Sevgi Engine code and template assets are generated using the provided editor
+called Sevgi Editor.
+
+Requirements
+************
+* ECS or AGA Amiga
+* Kickstart 2.0+
+* MUI 3.8 (for Sevgi Editor)
+
+Fast Ram and an RTG Workbench display is highly recommended for Sevgi Editor.
+
+Build
+*****
+Sevgi Engine code is suitable to be compiled with any Amiga compiler. Makefiles
+for SAS/C and gcc are provided and these compilers are tested to work. It
+includes and uses SDI_headers, so (hopefully) it is compiler agnostic.
+
+Templates
+*********
+Sevgi Editor comes with some ready to compile and run game templates from
+different genres which demonstrates its features using some free assets.
+
+Licences
+********
+Sevgi Engine and Sevgi Editor is under MIT Licence. Meaning you can use it in
+whatever project you want as long as you include the original copyright and
+license notice.
+ptplayer is public domain under The Unlicence licence.
+
+Future Plans
+************
+Sevgi Engine is still a work in progress. Some new features planned are:
+* Support for different level display implementations (split screen etc.)
+* More graphical effects
+* A native tilemap and gameobject editor
+* More templates for different game genres
+
+Contributions
+*************
+The source codes for Sevgi Engine and Sevgi Editor can be found at:
+https://github.com/alpyre/Sevgi_Engine
+
+If you make use of Sevgi Engine and find shortcomings, contributions like
+feature requests, bug reports or even pull requests will be highly appreciated.
+
+--------------------------------------------------------------------------------
+  HISTORY:
+  v0.193 (2026-05-13) [STABLE]
+  - Implement QuickBOBs (a.k.a. triple-bufffering)
+  - Redesign BOB "unblit" implementations
+  - Add unblitting using the tileset option
+  - Add option to NOT allocate a "BOBsBackBuffer"
+  - Refactor gameobject states to be flags
+  - Fix Gameobject Properties for Tiled
+  - Update template games to reflect changes
+  - Add options for the new features into the Editor
+  - Fix non-interleaved BOB Sheet check
+  - Fix requesters that get stuck in DoSaveMode
+  - Fix typos
+  - Update documentation for the new features
+
+  v0.192 (2026-04-21)
+  - Make gameobject.o aware of the last scroll
+  - Move g_active_buffer to gameobject.o (where it is mostly used)
+  - Move struct ScrollInfo definition to tilemap.h
+  - Don't revive dead BOBs unless they are moved in by a scroll
+  - Add reviveBOB() helper function
+  - Update template games to utilize changes
+  - Fix fonts.c for gcc compiler warning
+  - Improve code quality
+  - Fix typos and incorrect spellings
+  - Update documentation
+
+  v0.191 (2026-04-06)
+  - Update SDI_headers to the latest version
+  - Use the FLEXARR symbol to define flexable array members
+  - Add makefile for vbcc
+  - Make cross compilable makefiles host aware
+  - Add vbcc option to Sevgi Editor compiler settings
+  - Update documentation
+
+  v0.190 (2026-03-30)
+  - Store mouse GameObject globally
+  - Load and keep a dedicated sprite bank for mouse images until game exit
+  - Clip sprites from top and bottom of display without SMART_SPRITES
+  - Allow reuse of sprite images across different mediums without SMART_SPRITES
+  - Enable sprite usage on top and bottom panels of level_display
+  - Restrict SMART_SPRITES to hardware sprite auto-selection and vertical reuse
+  - Add bpli.c, and spri.c files to define bitplane and sprite instructions
+  - Remove the (now unused) initial control words from sprite images
+  - Update setSprite() to reflect new sprite system
+  - Update SpriteBanker tool accordingly
+  - Recreate all sprite banks in template games
+  - Remove requirement for SMART_SPRITES in template games
+  - Add resetSprite() and resetSprites() functions
+  - Fix DEFAULT_DIWSTRT and DEFAULT_DIWSTOP for proper 320x256 display
+  - Refactor display_#?.c files and simplify copperlist definitions
+  - Refactor getting access pointers for bottom panel in DYNAMIC_COPPERLIST mode
+  - Fix bug in moveGameObjectClamped()
+  - Fix off-by-one errors in setSprite(), LD_setSprite() and findPointedObject()
+  - Enhance Assets Editor:
+    * Allow separate selection of the sprite bank for global mouse pointer
+    * Display asset indexes
+    * Add bubble help
+  - Update Display Creator:
+    * Ensure compatibility with the new sprite system
+    * Add "Implement Mouse" option for global mouse pointer support
+  - Fix popasl_string bug affecting MUIA_PopASLString_StringFunc initialization
+  - Disable default selection of Hardware Sprite checkbox in Sprite Bank Creator
+  - Update documentation
+
+  v0.189 (2026-03-16)
+  - Fix operator precedence bugs in audio.c {committed by cyberman}
+  - Fix a bug in utility.h / makeString3() {committed by cyberman}
+  - Use strncpy() to set dtPicDisplay window title {recommended by cyberman}
+  - Clarify runCommand() stream handling comment {committed by cyberman}
+  - Fix the same bug in tools/ConvertMap
+  - Prevent a possible filename overflow in BobSheeter tool
+
+  v0.188 (2026-03-15)
+  - Fix color.h (add the missing CT_GO_IDLE symbol)
+  - Programs launched from Sevgi Editor now inherit their parent's stack size
+  - Editor Settings now has a setting for the stack size used when running the
+    project executable using the "Run Project" button
+  - Fix a bug in Bob Sheet Creator which interpeted the state of the Force
+    non-interleaved checkbox in reverse
+  - Fix the bugs in BobSheeter tool which ignored the BIG and FORCENI keywords
+  - Fix the forms of the command lines used in Bob Sheet and Sprite Bank Creator
+
+  v0.187 (2026-03-14)
+  - bobList on gameobject.c is now also double buffered in double buffered mode
+  - BOB background preservation is now a vanilla copy (saving some DMA time)
+  - Removed the bug in resignBOB() causing a BOB medium being assigned by
+    another gameobject before it was completely resigned
+  - Dead BOB implementation debugged and revised
+  - LD_BlitBOB debugged and re-implemented to support BOB Sheets that have
+    different depth than the level bitmap
+  - BOB Sheets can now be allocated non-interleaved
+  - Removed a bug in aToi() causing negative integer values not being read
+  - Removed a bug in setColorTable_CLP causing AGA CLPs to not work
+  - Fixed clp.c to work correctly on AGA CLPs
+  - setColorTable_CLP sets the CLP one extra time before going CT_IDLE taking
+    into account that the copperlist may be double buffered
+  - All fetch modes are now supported in DUALPLAYFIELD mode
+  - Palette Editor can now 'Export' color palettes as ILBM (.col) palette files
+  - Palette Editor can now 'Append' and 'Merge' color palettes
+  - Changes in Sevgi Editor tools to support the new features for dualplayfield
+    and non-interleaved BOB Sheets
+  - Sevgi Editor Picture display now also shows the image size and depth
+  - Selecting a palette updates the screen depth in Display Creator tool
+  - Creation of a display with different graphics architecture (AGA/ECS) than
+    the project creates a literal CLP and displays a warning message (some
+    commented out useful code is also added in color.c for this condition)
+  - Lots of revisions on the engine code to improve code quality
+  - Update the documentation to reflect changes
+
+  v0.186 (2025-11-30)
+  - Implement CPL (Palette on copperlist)
+  - Setting NUM_BOBS to 0 strips BOB related variables and functions
+  - Setting NUM_SPRITES to 0 strips Sprite related variables and functions
+  - Fix unstandardized implementations on display_loading.c
+  - Update template games to support CLP
+  - Fix the bugs on CopOp sorter
+  - Update Sevgi Editor to manage CLP
+  - Update documentations to provide information on CLP
+
+  v0.185 (2025-11-12)
+  - Implement double buffering
+  - Fix a bug in BOB medium initialization causing glitches
+  - Implement proper BOB clear/redraw order in single buffered mode
+  - Rewrite CopOp sorting algorithm (saves some Copper DMA time)
+  - Make changes on template games to support Double Buffering
+  - Add gadgets into Sevgi Editor to manage Double Buffering
+  - Update documentations to reflect changes
+
+  v0.184 (2025-10-07)
+  - Add Amiga CD32 JoyPad support
+  - Fix the handling of NUM_LEVELS
+  - Fix the limits set for the integer gadgets on Sevgi Editor's Bob Sheet and
+    Sprite Sheet Creator windows
+
+  v0.183 (2025-09-17)
+  - Add slider gadget implementaion to UI
+  - Implement held key repeat in system.c
+  - Add full keyboard and joystick control to UI
+  - Fix the compiler warnings for ui.c
+  - Fix the logic in setIntegerValue()
+  - Fix the deactivation of an integer gadget using the mouse not updating its
+    value bug
+  - Rewrite display_menu.c to make better use of UI features
+  - Fix the error strings that are not ending with a new line
+  - Update documentation to reflect changes
+
+  v0.181 (2025-08-20)
+  - Add ui.c and ui.h for UI implementations
+  - Implement buffered input from input.device in system.c to provide UI
+  - loadILBMBitMap() allocates extra width
+  - color.c exports setColor() to be used to set out of palette mouse pointer
+    colors
+  - display.c exports a modular setSprite() implementation
+  - Use UI objects to implement buttons in display_menu.c
+  - Use ClipBlit() to render GameFonts
+  - Display Creator on Sevgi Editor supports sprite fetch modes
+  - Fix cycle chain on Game Settings window of Sevgi Editor
+  - Update documentation to cover new features and reflect changes
+
+  v0.179 (2025-06-08)
+  - Fix the crash when opening an image bank in Image Editor on a native display
+
+  v0.178 (2025-06-07)
+  - Fix cybergraphics.library dependency of Sevgi Editor
+  - Fix exiting with an invalid current dir when Sevgi Editor is ran from shell
+
+  v0.177 (2025-05-30)
+  - Re-implement all file copy routines used in new project creation
+  - Add a toolbar button to compile projects directly from Sevgi Editor
+  - Add a toolbar button to run projects directly from Sevgi Editor
+  - Popup the Editor Settings window at first run
+  - Fix labels in Sevgi Editor according to Amiga User Interface Style Guide
+
+  v0.176 (2025-05-26)
+  - Fix file system errors on new project creation
+  - Fix broken links in the documentation
+
+  v0.175 (2025-05-21)
+  - Initial release

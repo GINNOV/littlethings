@@ -1,0 +1,310 @@
+
+			Number Conversion
+			~~~~~~~~~~~~~~~~~
+
+ Many types of program require the user to enter in values in some way.
+This poses a problem to the programmer in that the number will probably be
+entered as an ASCII string.
+
+ What is required is a general purpose conversion routine from ASCII string
+( refered to from now on as a string ) to an internal value the computer
+can use. To make the routine more universal, it should be able to accept
+strings that represent numbers in anumber of bases, ie hex, decimal, octal
+or binary. This would allow the routine to be integrated into programmers
+tools as well.
+
+ Converting from a string to a number is only half the story. A second
+routine could be used to convert back into one of the recognised bases.
+
+ Considerations
+ ~~~~~~~~~~~~~~
+ The input routine must be able to determine what base the string it is
+about to read is in. For this reason I will declare some base specifiers:
+
+	$		should preceed all hex strings
+	#		should preceed all decimal strings
+	&		should preceed all octal strings
+	%		should preceed all binary strings
+
+ Since the everyday user may not be familiar with a base specifier
+preceeding a string the code will default to reading a decimal string if no
+specifier is present.
+
+ The routine will finish reading a string when a character outside the
+bases subset is encountered. For instance, &1239 would be read as &123
+since the character 9 is outside the legal character range for an octal
+number.
+
+ On return, the routine will pass the address of the byte that caused the
+conversion to end, in the above example this would be the address of the
+character 9. This will allow the code to be integrated into a line parser
+if required. An example of this will follow.
+
+ To simplify the base conversion, a table of legal characters will be
+defined, this will consist of the following characters:
+
+	0,1,2,3,4,5,6,7,8,9,A,B,C,D,E,F,a,b,c,d,e,f
+
+ Notice that the letters A->F are defined twice. We cannot rely on the user
+to always use one case, nor should we. Placing restrictions on the user
+always reduces the appeal of a program and should be avoided at all costs.
+
+ If you wish to extend the bases covered some work will be involved. I will
+cover this at the end of this file.
+
+ String To Value
+ ~~~~~~~~~~~~~~~
+ This routine will be developed with the following entry/exit requirements
+in mind:
+
+Entry:		a0 will hold the address of the start of the string to be
+		   converted.
+
+Exit:		d0 will hold the long word value that resulted from the
+		   conversion.
+		d1 will be used to flag an error. If the conversion routine
+		   fails for some reason, d1 will be set to zero. If the
+		   conversion is sucessfull, d1 will be set to 1.
+		a0 will hold the address of the byte following the string
+		   that was converted.
+
+Corrupt:	Only the return registers: a0, d0 and d1.
+
+ Within the routine itself, the following registers will be used as global
+variables, that is the value set in them will remain unchanged and may be
+accessed in any subroutines:
+
+d7		The base conversion factor once determined.
+
+a0		The address of the start of the string.
+
+ When converting a string to a value, it is always easier to work
+backwards. That is start at the end of the string and work to the start.
+For this reason, the string to be converted will first be scanned to find
+it`s end.
+
+ This is a little more involved than it first seems. First the base of the
+string must be determined so the code knows what characters are allowed.
+This is done by refering to a table. Each entry in the table is one word,
+but each byte has it`s own meaning. The first byte is the base of the
+specifier and the second is the character itself. To simplify matters the
+characters 0 to 9 are included in this table so that strings with no base
+specifier are still recognised. The last entry in the table is a NULL word,
+if the search reaches this far then the string is an illegal expression and
+an error will be passed back to the calling program in register d1. Here
+then is how the table is defined:
+
+SpecifierTable	dc.b	16,'$'		$ is for base 16
+		dc.b	10,'#'		# is for base 10
+		dc.b	8,'&'		& is for base 8
+		dc.b	2,'%'		% is for base 2
+; The following entries are for strings with no specifier
+		dc.b	10,'1'		1 is for base 10
+		dc.b	10,'2'		1 is for base 10
+		dc.b	10,'3'		1 is for base 10
+		dc.b	10,'4'		1 is for base 10
+		dc.b	10,'5'		1 is for base 10
+		dc.b	10,'6'		1 is for base 10
+		dc.b	10,'7'		1 is for base 10
+		dc.b	10,'8'		1 is for base 10
+		dc.b	10,'9'		1 is for base 10
+		dc.b	10,'0'		1 is for base 10
+		dc.b	0,0		end of table
+
+ To determine the base of the entry then, the following fragment can be
+used:
+
+; a0->start of string at this point
+
+		lea		SpecifierTable,a1	a1->start of table
+		moveq.l		#0,d1			clear register
+
+.next_specifier	move.w		(a1)+,d1		d1=next entry
+		beq		Error			quit if end of table
+
+		cmp.b		(a0),d1			found specifier?
+		bne.s		.next_specifier		if not check next
+
+; If we get to here, d1 contains the info we require on the specifier
+
+		asr.w		#8,d1			base into lowest byte
+		move.l		d1,d7			d7=conversion factor
+
+ Note that register d1 is used to hold the data read from the table. This
+is essential for a quick escape if the end of the table is reached. Should
+this happen, a0 will still be pointing at the start of the string so the
+routine can return without any further work, the user will detect failure
+on testing register d1. 
+
+ It`s time to start stepping through the string to find it`s end. Register
+a0 will not be used for this as this would hamper a quick exit and later
+code as you will soon see. For this reason, we must make a copy into
+another register, a1.
+
+ Other considerations are the presence of a specifier, remember that a base
+specifier is optional so the code must be ready for either situation. To
+get round this, see if the first character is legal for the base being
+used. If not it must be a specifier and must be ignored.
+
+ To simplify checking for the precence of a specifier, all specifiers are
+found at the start of the SpecifierTable. As there are only four supported
+at present a simple loop can be constructed to do the job. Note if you add
+specifiers you must ensure they are defined in this table BEFORE the
+characters 1->10 and also you will need to change the global definition
+NUM_SPECIFIERS which is declared before the Specifier table:
+
+NUM_SPECIFIERS	equ	4		four unique base specifiers
+
+ After finding the end of the string, a test should be made to ensure that
+an empty string has not been passed. There are two ways of dealing with
+such a situation, either flag an error or default to a NULL value. I have
+opted to flag an error and exit to the caller.
+
+ Before presenting the code for the string scan, we must specify the legal
+character look-up table. This is built up in the same was as the specifier
+table with word values, each word containing two bytes. The first byte is
+the value of the character plus 1, I have added 1 so that an error can be
+signalled by setting the value to 0, any non-zero return return signals a
+valid character. The second byte is the character itself. The table is
+terminated by a NULL entry.
+
+; The following table defines the value of individual digits.
+
+CharTable	dc.b		1,'0'
+		dc.b		2,'1'
+		dc.b		3,'2'
+		dc.b		4,'3'
+		dc.b		5,'4'
+		dc.b		6,'5'
+		dc.b		7,'6'
+		dc.b		8,'7'
+		dc.b		9,'8'
+		dc.b		10,'9'
+		dc.b		11,'A'
+		dc.b		12,'B'
+		dc.b		13,'C'
+		dc.b		14,'D'
+		dc.b		15,'E'
+		dc.b		16,'F'
+		dc.b		11,'a'
+		dc.b		12,'b'
+		dc.b		13,'c'
+		dc.b		14,'d'
+		dc.b		15,'e'
+		dc.b		16,'f'
+		dc.b		0,0		end of table
+
+ A subroutine is required that will check if a particular byte is infact a
+legal character. This subroutine will return the converted value of the byte
+plus one if it is legal, zero if not.
+
+ A legal character will be one that is both in the table and a valid
+character for the base under consideration. Remember the base is stored in
+register d7. Here is the subroutine then:
+
+***************	Subroutine to convert a digit
+
+;Entry		a1->character
+
+;Exit		d0=0 if character is invalid or value of character plus 1
+
+;Corrupt	d0
+
+GetByteVal	move.l		a0,-(sp)	save registers
+		move.l		d1,-(sp)
+
+		moveq.l		#0,d0		clear register
+		lea		CharTable,a0	a0->digit lookup table
+		move.b		(a1)+,d1	d1=digit to convert
+
+.loop		move.w		(a0)+,d0	get next entry
+		beq.s		.done		quit if end of table
+
+		cmp.b		d0,d1		found digit?
+		bne.s		.loop		if not loop back
+
+		asr.w		#8,d0		value into low byte
+
+		cmp.b		d0,d7		compare with base
+		bge.s		.done		if legal then skip
+		moveq.l		#0,d0		else flag an error
+
+.done		move.l		(sp)+,d1	restore registers
+		move.l		(sp)+,a0
+		rts
+
+ This subroutine can be used to test the validity of a character as well as
+converting a character. This feature is exploited in the string scan code: 
+
+
+		move.l		a0,a1		make copy of string pointer
+
+; Determine if 1st character is a specifier
+
+		lea		SpecifierTable,a2	ptr to look-up table
+		move.l		#NUM_SPECIFIERS-1,d1	loop counter
+
+.spec_loop	move.w		(a2)+,d2		get next specifier
+		cmp.b		(a1),d2			specifier found
+		bne.s		.loop_end		if not skip!
+		addq.l		#1,a1			else bump pointer
+		moveq.l		#0,d1			force loop exit
+.loop_end	dbra		d1,.spec_loop		check all specifiers
+
+; a1 now points to the start of the digits in the string.
+
+		bsr		GetByteVal		check 1st digit
+		tst.l		d0			is it valid
+		bne.s		.scan_loop		if so continue
+		move.l		d0,d1			else set error
+		bra		.error			and quit
+
+.scan_loop	addq.l		#1,a1			bump to next char
+		bsr		GetByteVal		convert char
+		tst.l		d0			is it valid?
+		bne.s		.scan_loop		if so loop back
+
+; a1 now points to the byte after the last legal character and at least one
+;legal digit exsists.
+
+ Now the string has been scanned all that remains is to work back through
+it converting each digit as we go, multiplying the converted figure by it's
+positional index and adding this value to a running total.
+
+ One point to remember is the last character to be converted may be a base
+specifier. If this is the case, it should be ignored. Here then is the last
+of the subroutine:
+
+		moveq.l		#0,d6			will hold conversion
+		moveq.l		#1,d5			index for conversion
+		move.l		a1,a2			copy end pointer
+		
+.convert_loop	subq.l		#1,a1			back one char
+		bsr.s		GetByteVal		convert it
+		tst.l		d0			legal?
+		beq.s		.convert_done		if not skip
+
+		subq.l		#1,d0			must correct return		
+		mulu		d5,d0			x index
+		add.l		d0,d6			add to total
+		mulu		d7,d5			index=index*base
+		
+		cmpa.l		a0,a1			at the start yet?
+		bne.s		.convert_loop		if not loop back
+
+.convert_done	move.l		d6,d0			total into d0
+		moveq.l		#1,d1			no errors
+		move.l		a2,a0			a0->next char
+		
+.error		movem.l		(sp)+,d2/d5/d6/d7/a1/a2	restore
+		rts					and return
+		
+
+ I have supplied the subroutine and a couple of examples with this tutorial.
+To benefit most, use Monam to trace your way through them. This is always a
+sure way of seeing how the code is preforming.
+
+ 
+
+
+

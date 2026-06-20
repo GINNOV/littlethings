@@ -1,0 +1,40 @@
+Short: Source code for AmiPhone v1.92
+Type: dev/src
+Author: jfriesne@ucsd.edu (Jeremy Friesner)
+Uploader: jfriesne@ucsd.edu (Jeremy Friesner)
+Requires: DICE, 2.04 includes, AmiTCP SDK, PhxAss, AHI
+Version: 1.92
+
+Since I don't have much time to work on AmiPhone anymore, it was
+suggested that I upload AmiPhone's source code to Aminet so that 
+other people could work on it.  So here it is--the source code to 
+AmiPhone, version 1.92.  Anyone my has permission to do with it 
+whatever they want.
+
+You will still need some other packages if you wish to compile 
+AmiPhone successfully.  They are:
+
+1) a C Compiler - I use DICE, but with some mucking around you could
+                  probably get AmiPhone running with another brand.
+                
+2) Standard Amiga include files - 2.04 or higher.
+ 
+3) The includes from the AmiTCP SDK - on Aminet, in comm/net
+
+4) PhxAss - The assembler program, on Aminet, in dev/asm
+
+5) The AHI SDK - on Aminet, in dev/misc
+
+Everything else necessary should be in this archive, although you
+will probably have to modify the dmakefile to be able to find the
+various files (it's still set up for my system, where some of the
+files and utilities were in other directories)
+
+I'm afraid the code is a bit nasty in spots, sorry about that--
+if you have any questions about any of it, or if I forgot to
+include a file, feel free to email me at jfriesne@ucsd.edu or 
+jaf@chem.ucsd.edu
+
+Have fun,
+Jeremy
+ 

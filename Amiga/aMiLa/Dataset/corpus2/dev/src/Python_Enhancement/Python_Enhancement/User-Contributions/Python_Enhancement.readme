@@ -1,0 +1,286 @@
+Short:        Enhancing Python Code, Classic AMIGAs.
+Author:       wisecracker@tesco.net (Barry Walker)
+Uploader:     wisecracker@tesco.net (Barry Walker)
+Type:         dev/src
+Version:      0.01.01
+Architecture: m68k-amigaos
+
+Distribution: GPL, (Public Domain, Emailware).
+
+============================================================================
+
+  Minimum Requirements Are:-
+  --------------------------
+
+         Stock AMIGA A1200(HD), 68EC020 and upwards.
+
+         A FULL, standard, OS3.0x+ installation.
+
+         A FULL, Python Version 1.4x minimum installation, available on
+         AMINET.
+
+         (Designed to work around OCS, as the ABSOLUTE minimum graphics.)
+
+============================================================================
+
+  To do:-
+  -------
+
+  1) Continuing with the Data-Logger, saving data in ~#?.CSV~ format.
+  2) More documentation, including a manual for the Data-Logger.
+
+  Keep an eye on the URL for the latest version of Data-Logger:-
+
+                http://amiga.serveftp.net/Test_gear/Archives/
+
+       IT WOULD BE REALLY NICE FOR SOMEONE TO EMAIL ME; GOOD OR BAD!!!
+
+                            wisecracker@tesco.net
+
+----------------------------------------------------------------------------
+
+  History:-
+  ---------
+
+  15-05-2007.
+  -----------
+  Version 0.01.01. Added the experimental 'Call' and 'Jump' commands to
+  access YOUR own machine language routines/programs. 'Data-Logger' now
+  at Version 0.10.00.
+
+  01-05-2007.
+  -----------
+  Version 0.01.00. Added more documentation. Continued with the
+  'Data-Logger' project now at Version 0.00.16.
+
+  15-04-2007.
+  -----------
+  Version 0.00.07. Added more documentation. Continued with the
+  'Data-Logger' project now at Version 0.00.14. Added another 'Experimental'
+  command, 'RMB', for right mouse button detection. Added the 'Val' command.
+
+  01-04-2007.
+  -----------
+  Version 0.00.06. Added the FREE semi-serious application, 'Data-Logger'
+  main archive. Added more documentation. Added another experimental
+  gadget/widget.
+
+  15-03-2007.
+  -----------
+  Version 0.00.05. Started a 'Gadgets&Widgets' drawer with some working
+  ideas/examples. Added even more documentation. Started a semi-serious
+  application using these ideas; a Data-Logger. Download the latest from
+  the above site. Re-arranged the directory structure.
+  (This is fast becoming an application addition rather than a fun idea.)
+
+  01-03-2007.
+  -----------
+  Version 0.00.04. More snippets added. More useful documentation added.
+
+  01-02-2007.
+  -----------
+  Version 0.00.03. More snippets added. 'User-Contributions' drawer added
+  to the 'Plugins' drawer.
+
+  20-01-2007.
+  -----------
+  Version 0.00.02. More snippets added; make it GPL, due to the number
+  of downloads from AMINET within 4 days... :)
+
+  04-01-2007.
+  -----------
+  Version 0.00.01. First upload to AMINET, (a taster upload)... :)
+  (Clr.py, Coloured-Text.py and Font.py.)
+
+----------------------------------------------------------------------------
+
+  Some extra items are available and related to this archive but are NOT
+  required - ALL are on AMINET...
+
+                               Peek-Mem.lha
+  Peeking memory and registers using Python.
+
+                               Poke-Mem.lha
+  Poking memory and registers using Python.
+
+                               PAR_Python.lha
+  Accessing PAR: as 'VOLUME' using Python and requiring NO knowledge of the
+  parallel port at all.
+                               PAR_READ.lha
+  This IS NEEDED from AMINET to access PAR: as a 'VOLUME'.
+
+============================================================================
+
+  AS WE LOWLY A1200+ USERS HAVE NOT GOT 'Tkinter' THEN SEE WHAT I AM UP TO!
+
+  Some sample code to extend the capabilities of Python 1.4x, (2.0x), for
+  the classic AMIGA range of computers. These REQUIRE an AMIGADOS Shell
+  for them to work and Python started from that Shell. READ the Manual for
+  more information about this.
+
+  IMPORTANT:-
+  -----------
+  I have LIMITED everything to the classic AMIGA AND its 16MB boundary ONLY.
+  Also LIMITED to the OCS chipset, as even an old style A500 can have at
+  least a 68020 or greater CPU accelerator card and OS3.0x installed, and
+  be able to run Python 1.4x to 2.0x successfully.
+
+  Enjoy finding simple solutions to often difficult problems... :)
+
+----------------------------------------------------------------------------
+
+  Installation:-
+  --------------
+
+  Just copy ALL OF THE CONTENTS of the ~Python_Enhancement~ drawer to the
+  ~PYTHON:~ volume and away you go... :)
+
+----------------------------------------------------------------------------
+
+  Why Did I Do This Idea Using Executables?:-
+  -------------------------------------------
+
+  You might be wondering WHY I decided on using executables to do various
+  things inside Python?
+
+  Well the answers are VERY simple...
+
+  1) PRIMARY REASON... TO DO SOMETHING DIFFERENT!!!
+  2) SECONDARY REASON... Access to HW directly or indirectly as Python
+     CANNOT do this on its own... :(
+  3) Attempt to make a running Python program look a little prettier... :)
+  4) No third party special LIBRARY(s) is/are needed, where source code
+     is often unavailable.
+  5) Similarly for DEVICE(s) and HANDLER(s).
+  6) YOU can EASILY generate YOUR OWN executable(s), NO MATTER HOW TRIVIAL
+     IT/THEY IS/ARE and add it/them to the 'Plugins' section.
+  7) YOU can code to YOUR ability, NOT professional standards so long as
+     YOUR executable does what YOU want, NOT what others THINK you want.
+     (I use ACE Basic, VBCC, Dice-C, A68K and others, plus other commercial
+     types, e.g. DevPac2/3, Hisoft Basic, etc...)
+  8) My executables are able to be called from the CLI as normal and work
+     the same as if they were called from Python, therefore they can be
+     put into the 'Startup-Sequence' for example IF so desired.
+
+     IN THEORY THESE EXECUTABLES COULD WORK UNDER 'PHP' AND OTHER SCRIPTING
+     LANGUAGES THAT CAN EXECUTE A 'system(<command>)' CALL. THEY EVEN WORK
+     WITH A CLASSIC AMIGA AREXX PROGRAM RUNNING IN AN AMIGA SHELL!!!
+
+  9) ANYONE can join in NOT just coding experts and their buddies. Your
+     command(s) and code will be just as important as mine or anyone elses.
+ 10) Get KIDS involved in SIMPLE coding and learning about programming.
+
+----------------------------------------------------------------------------
+
+  AMIGADOS Error Reports:-
+  ------------------------
+
+  When calling commands that use the RC, (RETURN CODE), to pass values
+  back to Python, AMIGADOS error reports are printed. Those of you who are
+  experimenting with my ideas may have found ways around this.
+  There are a number of ways to help alleviate this problem... :)
+
+  These AMIGADOS error reports are NOT bugs as the RC is designed to
+  generate errors according to the value passed to AMIGADOS.
+
+  As you can/will see I use this method for easy transfer of 8, 16 and 32
+  bit data from these commands to Python.
+
+  I will explain methods as a 'cure' in due course; in the meantime however
+  enjoy finding simple solutions to often difficult problems... :)
+
+============================================================================
+
+  General Assumptions:-
+  ---------------------
+
+  That You Should Have A Basic Knowledge Of:-
+  -------------------------------------------
+
+  1) How to set up the AMIGA.
+  2) How to BOOT up the AMIGA into either a CLI, (Command Line Interface),
+     or a WorkBench screen.
+  3) How to use the Keyboard.
+  4) How to use the Mouse.
+  5) How to start programs from the CLI or WorkBench.
+  6) The general operation of WorkBench, windows and requesters etc...
+  7) How to format a floppy disk.
+  8) How to create a BOOTABLE floppy disk.
+  9) Safely connecting ANY external equipment to the AMIGA.
+
+----------------------------------------------------------------------------
+
+                                IMPORTANT:-
+                                -----------
+
+
+    The Legal Stuff:-
+    -----------------
+
+    These programs are Public Domain and no profit will be made from them,
+    also all of the files must remain unaltered and intact including this
+    one. The author is not responsible for any damage to, or loss of, or
+    failure of equipment or data caused in any way by the use of these
+    programs. There is NO warranty with the use of these software releases
+    and YOU USE THEM AT YOUR OWN RISK.
+
+----------------------------------------------------------------------------
+
+    Testing Evaluation:-
+    --------------------
+
+    NOT PROVEN!!!
+    -------------
+
+    An A1200(HD) in 2MB, 6MB and 10MB modes using trapdoor memory AND/OR
+    PCMCIA memory expansions and OS3.0x+.
+
+    A(n) HP Pavillion Notebook, model number dv2036ea, running Windows XP
+    SP2 and AF2005/WinUAE in 68040+ JIT mode with FULL sound enabled.
+
+    All test conditions WERE/ARE using standard ~topaz 8~ fonts throughout.
+
+    I have no idea what a strange configuration setup will create so refer
+    to the ~The Legal Stuff~ above.
+
+----------------------------------------------------------------------------
+
+                                 WARNING.
+                                 --------
+
+  1) DISCONNECT any faulty equipment under test from the MAINS supply.
+  2) If a DC supply is used do NOT reverse polarity the connections.
+  3) Do NOT power up any electronic item until it is safe to do so.
+  4) CHECK and RECHECK all of your construction and repair work thoroughly.
+  5) Handle ALL tools used with care.
+  6) Beware of ALL types of solvents, glues and etching fluids.
+  7) NEVER leave a soldering iron switched on unattended.
+  8) KEEP everything OUT of the reach of small children.
+  9) Switch OFF the AMIGA before disconnecting or connecting any hardware.
+ 10) And finally read 1) to 9) again.
+
+----------------------------------------------------------------------------
+
+   Contact:-
+   ---------
+
+   Mr Barry Walker, G0LCU,
+   70 King George Road,
+   Loughborough,
+   Leicestershire,
+   LE11 2PA,
+   England.
+
+   Email:-     wisecracker@tesco.net
+   URL:-       http://homepages.tesco.net/wisecracker/G0LCU.HTM
+
+   Author of the ~TestGear?~ projects in the ~hard/hack~ drawer of AMINET.
+
+----------------------------------------------------------------------------
+
+   A very useful HardWare related site, (C) Anthony Hoffman, for
+   modifications, schematics, repairs and the like is:-
+
+                          http://amiga.serveftp.net/
+
+============================================================================

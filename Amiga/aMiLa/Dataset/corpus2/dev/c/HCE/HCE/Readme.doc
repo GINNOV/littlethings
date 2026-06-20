@@ -1,0 +1,335 @@
+***************************************************************************
+*                                                                         *
+*                           HCE version 1.0                               *
+*                 C Compiler envirenment for the Amiga                    *
+*                           by Jason Petty.                               *
+*                                                                         *
+***************************************************************************
+
+/* Original Compiler Copyright.
+ * HCC:
+ *
+ * Copyright (c) 1988,1989,1991 by Sozobon, Limited.  Author: Johann Ruegg
+ *
+ * Permission is granted to anyone to use this software for any purpose
+ * on any computer system, and to redistribute it freely, with the
+ * following restrictions:
+ * 1) No charge may be made other than reasonable charges for reproduction.
+ * 2) Modified versions must be clearly marked as such.
+ * 3) The authors are not responsible for any harmful consequences
+ *    of using this software, even if they result from defects in it.
+ */
+
+/* Original Optimizer Copyright.
+ * TOP:
+ *
+ * Copyright (c) 1988,1989,1991 by Sozobon, Limited.  Author: Tony Andrews
+ *
+ * Permission is granted to anyone to use this software for any purpose
+ * on any computer system, and to redistribute it freely, with the
+ * following restrictions:
+ * 1) No charge may be made other than reasonable charges for reproduction.
+ * 2) Modified versions must be clearly marked as such.
+ * 3) The authors are not responsible for any harmful consequences
+ *    of using this software, even if they result from defects in it.
+ */
+
+/* Detlef Wuerkners original Copyright:
+ *
+ * HCC 2.0 Amiga version 1.1 and TOP 2.0 Amiga version 1.1. I declare the 
+ * work done by me as Public Domain. Detlef Wuerkner.
+ *
+ */
+
+/* My Copyright.
+ * HCE:
+ *
+ * Copyright (c) 1994. Author: Jason Petty.
+ *
+ * Permission is granted to anyone to use this software for any purpose
+ * on any computer system, and to redistribute it freely, with the
+ * following restrictions:
+ * 1) No charge may be made other than reasonable charges for reproduction.
+ * 2) Modified versions must be clearly marked as such.
+ * 3) The authors are not responsible for any harmful consequences
+ *    of using this software, even if they result from defects in it.
+ */
+
+**************************************************************************
+*                      REQUIREMENTS-INSTALLATION                         *
+**************************************************************************
+
+1) KickStart Release 2.0 or Higher. (A500+ ,A600 ,A1200, ....)
+2) 2MB ram.
+3) or 1MB ram.(This is the absolute minimum and will limit what you can do)
+
+note: Two disk drives or a hard drive are required for any serious work, but
+      for anyone just wanting to try HCE, a single drive is ok.
+
+Installing HCE:
+---------------
+To use HCE from the (HCE:) disk it comes on, do the following:
+
+   1) Load Workbench
+   2) Place the HCE disk into the Internal drive.
+   3) Click on its Icon.
+   4) Then click on either the HCE_1MB Icon or the HCE_2MB Icon, 
+      (don't click the 2MB Icon if your machine only has 1MB!).
+   5) If you have 2 disk drives, place the workbench disk into the external
+      drive and the HCE disk into the internal drive.
+
+To Install HCE to other disks, See the 'Hce.doc' (on the docs and examples
+ disk) for details.
+
+HCE was developed on an A1200 with two external disk drives, and has not 
+been fully tested on any other Amiga.
+If HCE fails to load on your machine, please write to me explaining
+the reason why. I will try and fix the problem ready for the next release
+of HCE.
+
+**************************************************************************
+*                          CONTENTS                                      *
+**************************************************************************
+
+HCE          -   Compiler/Editor with source.
+TOP          -   Optimizer with source.
+A68K         -   Assembler from Fish disk 508.
+Blink        -   Linker from Fish disk 508.
+C libraries  -   Standard C libraries from fish disk 314.(with source)(ZC)
+Header files -   C library header files also from fish disk 314.
+begin.o      -   Startup code also from fish disk 314.
+Ami.lib      -   Kickstart release 1.3 to 2.04 Version of Amiga.lib,
+                 based upon source from 'PDC' release 3.33.(Fish 351)
+
+Required for Amiga specific code but not included:
+--------------------------------------------------
+The Commodore Include files.
+
+On requiring information from commodore as to how much and where to 
+obtain the Include files the reply was:
+
+To obtain the 1.3 Native Developers disk may I suggest you contact
+Sharon Rodrigo at our Maidenhead Office (0628) 770088,
+or send a cheque to the amount of £25 to:-
+
+       Commodore Business Machines UK Ltd
+       Commodore House
+       The Switchback
+       Gardner Road
+       Maidenhead
+       Berks
+       SL6 7XA
+
+The disk contains all the C and Assembler Include files,
+the Amiga specific Libraries, Autodocs and much more.
+
+note: this letter was received over a year ago, and the price of
+      the developer disk could have changed.
+      If you decide to obtain the Amiga Include files now, you 
+      should ask for Includes which cover Kickstart release 2.04,or Higher.
+
+If you do not live in the UK then you should try and contact your
+National Commodore office.
+
+**************************************************************************
+*                           SOURCE                                       *
+**************************************************************************
+
+Source is provided for HCE,TOP,FD2STUBS and the C libraries in compressed
+form. To unpack them format two spare floppies called 'LibSrc:' and 'HceSrc:',
+copy the 'LibSource.LZH' file from this disk also the LHARC file from this
+disk and the 'HceSource.LZH' from the docs and examples disk to the ram disk.
+Then type the following:
+
+                RAM:LHARC -x -a -m x HceSource.LZH HceSrc:
+
+                RAM:LHARC -x -a -m x LibSource.LZH LibSrc:
+
+
+***************************************************************************
+*         If you have not programmed in C on the Amiga before:            *
+***************************************************************************
+
+The C Manual V2.0 by Anders Bjerin can be found on Fish disk 457.
+It describes how to work with Screens, Windows, Graphics, Sprites,
+and most other areas of amiga programming.
+All the examples provided work with HCE, but some may need minor changes.
+note: nearly all the examples require the include files mentioned above.
+
+
+Literature I`ve bought and found to be very useful:
+--------------------------------------------------
+
+Amiga C for Beginners:  
+                       A Practical guide to learning and using C,
+                       language on your Amiga.
+                       Topics include:
+                                      Beginner`s overview of C.
+                                      Writing your first C program.
+                                      Special features of the C language.
+                                      Important routines in C libraries.
+                                      Input and Output using C.
+                                      And much more.
+
+                       Abicus books.  Author, Dirk Schaun.(around £18)
+
+C By Example:
+                       The easiest way to learn how to program.
+                       This book teaches at three levels: beginning,
+                       intermediate, and advanced.
+                       Covers nearly all areas of C programming but is
+                       not specifically for the amiga computer, more
+                       for PC`s. After saying that, the examples provided
+                       (many of) work fine with HCE.
+
+                       QUE books. Author, Greg Perry.(around £20)
+
+Amiga Rom Kernal Reference Manual - Includes and AutoDocs:
+
+                                (Essential for serious programmers)
+
+                       Contains:
+                               Summaries of the System library functions.
+                               Summaries of the System device commands.
+                               Summaries of System resource calls.
+                               Summaries of amiga,lib functions and source.
+                               C language include files.
+                               Assembly language include files.
+                               Handy charts designed to ease, 
+                               debugging and exploring.
+
+                       Other Manuals in the series:
+                               Amiga User Interface Style Guide
+                               Amiga Rom Kernal Reference Manual, Libraries
+                               Amiga Rom Kernal Reference Manual, Devices
+                               Amiga Hardware Reference Manual
+
+                       Amiga Technical Reference Series.
+                       Commodore-Amiga, Inc. (£28 - £32)
+
+***************************************************************************
+*            What is HCE and why would you want to use it?                *
+***************************************************************************
+
+What is HCE?
+-------------
+HCE first started out as a stand alone text editor for programmers
+which was capable of compiling C source codes from within the editor.
+This was done by running a PD compiler such as the ZC compiler from the
+editor and passing the source code filename. But this had its down sides
+such as all error messages would go to the CLI, you had to save the source
+code before you could compile it, the compiler did not check memory as
+it compiled and would on occasions crash, not very pleasant!.
+Then I came across the HCC compiler by Detlef Wuerkner from fish disk 508, 
+which came with source and could compile itself!. 
+I decided to modify the Compiler and the Editor source codes so as to be
+able to combine the two and make a single program, 'HCE'.
+It started off with many bugs but eliminated the bad memory management and 
+other side effects. 
+The program to date is pretty much bug free and has many features some
+of which I have mentioned below.
+
+Why use HCE?
+------------
+ some good points:
+                    1) You can modify and test your code without leaving
+                       the editor.
+                    2) You can mark out and test sections of code.
+                    3) You can run your finished program from the editor.
+                    3) If an error is encounted the editor will scroll
+                       to the area of the offending line automatically.
+                    4) You can compile or assemble upto 55 files at a
+                       time using Compile Lists. 
+                       These are files which end with a '.CL' extension.
+                    6) You can also link upto 55 files at a time 
+                       using Link Lists.
+                       These are files which end with a '.LL' extension.
+                    5) It shows what files and how much memory your
+                       using during compile.
+                    6) Does memory checking and aborts if Low.
+                    7) You can make libraries from either FD files, Object
+                       files or both.
+                    8) The Compiler,Optimizer,Assembler and Linker have
+                       their own option screens which use simple 
+                       (GadTools) gadgets.
+                    9) Can do common file operations such as Rename,
+                       Relabel,Assign,MakeDir,Delete,Copy.
+                   10) Supports most of the common text editor features,
+                       such as Cut,Copy,Insert,Print Block,Find,Replace,
+                       goto, and more.
+                   11) Allows full screen editing by pressing the escape
+                       key.
+                   12) Has own preferences screen. You can change and save
+                       the pen,paper,markout colour,Compiler/Optimizer/
+                       Assembler and Linker options and most other areas 
+                       of the program.
+                   13) Can compile itself.
+                   14) Complete source code is provided.
+                   15) And most Importantly, It`s Free!.
+
+ some bad points:
+                    1) You cannot type beyond the visable windows width.
+                    2) There is a maximum file size of 1998 lines.
+                    3) There are no type over modes.
+                    4) The editor upon loading swallows around 500K
+                       of memory.
+                    5) The Source to HCE is not portable. Takes advantage
+                       of the Amigas Operating System. (Not really a bad
+                       point though).
+                    5) The Internal Compiler (HCC) is not an ANSI Compiler.
+                    6) Requires Kickstart release 2.00 or Higher.
+
+***************************************************************************
+*           WRITING COMMERCIAL OR SHAREWARE PROGRAMS WITH HCE             *
+***************************************************************************
+
+This distribution does not make use of the CClib.library by Robert 
+W. Albrecht Jr, which requires a $50 licence fee for Commercial or 
+Shareware programs which use it. The HCC compiler from Fish disk 508
+did use it. So if you are a user of HCC and have now decided to use HCE
+you can either use the libraries I have provided or to replace them with 
+CClib.library.
+The libraries I have provided are the original Sozobon C libraries and
+have had bug fixes and some enhancements.
+
+Programs written using HCE do not require that you pay any licence fees.
+
+
+***************************************************************************
+*                            HISTORY                                      *
+***************************************************************************
+
+For information on the history of the Sozobon C Compiler, I suggest
+you get Fish disk 508. The HCC distribution by Detlef Wuerkner has 
+the full history and original Sozobon C documentation.
+
+
+***************************************************************************
+*                          IMPROVING HCE                                  *
+***************************************************************************
+
+If you find any bugs in HCE I would be most gratefull if you could make
+a copy of the 'Bug_Report.doc' , fill it in and send it to me. If it
+really was a bug then I will fix it and give your name a mention in the 
+next release of HCE.
+In order for me to make HCE useful, I need your opinions on what you
+consider to be missing from HCE, what needs improving and what things
+in general you would like to see in HCE. All opinions gratefully accepted.
+
+You could of course improve HCE yourself and send it directly to Fred Fish.
+I do not recomend this, it would be better to have a single version of
+HCE in the Public Domain rather than 20 or so with minor bug fixes.
+If you send the bugs to me I will fix them and give your name a mention
+in the next release of HCE.
+
+note: If you write to me requiring a reply, you are more likely to get it
+      if you enclose an S.S.A.E.
+
+Have fun with HCE!
+
+Jason Petty
+32 Balder Raod,
+Norton,
+Stockton-On-Tees,
+Cleveland. TS20 1BE.
+

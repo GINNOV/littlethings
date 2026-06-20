@@ -1,0 +1,51 @@
+Short:        Pro. C editor for AMIS.
+Author:       Willem Mestrom
+Uploader:     supernov zeelandnet nl
+Type:         dev/c
+Version:      1.21
+Architecture: m68k-amigaos
+Date:         April 7/1997
+
+This is the C editor for AMIS. To be able to use it, download the new 1.03
+version of AMIS from the Aminet (text/edit/amis.lha) and unpack this
+archive. Use the installer script to install the viewer correctly.
+
+AMIS Philosophy:
+----------------
+Some men see things as they are, and say 'why ?'.
+I dream things that never were, and say 'why not ?'.
+
+After years of using my Commodore 64 and my Amiga to learn all about the
+assembler language, I dreamt of a programme which had it all. Now, after a
+development period of 3 years, you have the first steps of this dream in
+your hands. AMIS (AMiga Integrated System) is a programme capable of editing
+multiple file formats with the power of an unique, easy to use graphical
+user interface using normal intuition functions.
+
+A list of the most important features of AMIS:
+----------------------------------------------
+o WYSIWYG handling of AmigaGuide, ANSI, ASCII, C and HTML documents.
+o A special codebar beneath the WYSIWYG environment allowing normal ASCII
+  editing. The codebar height is adjustable.
+o Each viewer has its own special preferences.
+o Recognition of the type of text you want to load.
+o Possibility to program your own viewer. Examples are included.
+o A Project Manager for documents which belong to a certain subject.
+o A Window manager for easy handling opened/hidden windows.
+o Many user-definable preferences to let the user create his own best
+  suitable editor environment (toolbar, menu, keyboard, etc.).
+o Folding.
+o Undo/Redo.
+o Real tabs with a possibility to use spaces.
+o Several ways of wordwrapping.
+o Hunt file option for easy opening include files used in C documents.
+o Many internal commands which simultaneously represent the ARexx commands.
+o Each window has its own ARexx port and preferences.
+o Window position snap-/unsnapshotting.
+o Macro recording/playing and adding short-keys to macros.
+o Bookmark support.
+o Smart indent with unique user-definable preferences.
+o Fast search/replace function with wildcards option.
+o Fast loading and initializing of documents.
+o Extra Dutch, German and Italian localization.
+o XPK crunch support.

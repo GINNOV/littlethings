@@ -1,0 +1,123 @@
+# -----------------------------------------------------------------
+# gcc V4.0.4+ MakeFile for:  CPGM:GlobalObjects/CommonFuncsPPC.
+# -----------------------------------------------------------------
+#
+MAKE  = SDK:c/make
+#
+LIBS  = -lm -lamiga -lauto
+#
+CC    = SDK:gcc/bin/gcc
+#
+COPTS = -c -ISDK:Local/common/Include
+#
+DOPTS = -c -ggdb -gdwarf-2 -ISDK:Local/common/Include
+#
+GLOB  = GlobalObjects/
+#
+ACMD  = LhArc
+#
+AOPTS = -x -a 
+#
+# -----------------------------------------------------------------
+#
+help :
+	@echo "You will probably have to edit the makefile to change $(GLOB)"
+	@echo "to where ever you want the header & object file to end up."
+	@echo "Avaialble make targets are:"
+	@echo "   CommonFuncsPPC.o, CommonFuncsPPCDBG.o & CommonFuncs.lha."
+	@echo "Read CommonFuncs.guide for information on object file contents."
+	@echo "Now back to the freeway, which is already in progress!"
+#	
+.c.o : 
+	EnsureASCII $<     RAM:$<
+	COPY        RAM:$< $<
+	DELETE      RAM:$< 
+	$(CC) $(CFLAGS) -o $@ $<
+#
+# -----------------------------------------------------------------
+#
+ppcTargets :
+	$(MAKE) CommonFuncsPPC.o
+	$(MAKE) CommonFuncsPPCDBG.o
+#
+DEPS = CommonFuncs.c
+#
+#
+#
+#SASC     = SC:c/SC
+#
+#SASCOPTS = cpu=68020 nover opt optsize nostkchk ansi strmer ignore=100,51,304 idir=INCLUDE:
+#
+#CommonFuncs.o : $(DEPS) CommonFuncs.h CommonFuncsLocale.h
+#	EnsureAscii CommonFuncs.c      RAM:CommonFuncs.c
+#	COPY        RAM:CommonFuncs.c  CommonFuncs.c
+#	DELETE      RAM:CommonFuncs.c
+#	$(SASC) $(SASCOPTS) CommonFuncs.c
+#	COPY   $@  CPGM:$(GLOB)$@
+#
+CommonFuncsPPC.o : $(DEPS) CommonFuncs.h CommonFuncsLocale.h
+	EnsureAscii CommonFuncs.c      RAM:CommonFuncs.c
+	COPY        RAM:CommonFuncs.c  CommonFuncs.c
+	DELETE      RAM:CommonFuncs.c
+	$(CC) $(COPTS) -o $@ CommonFuncs.c
+	COPY   $@  CPGM:$(GLOB)$@
+	COPY   $@  SDK:Local/libs/$@
+#
+CommonFuncsPPC.asm : $(DEPS) CommonFuncs.h CommonFuncsLocale.h
+	EnsureAscii CommonFuncs.c      RAM:CommonFuncs.c
+	COPY        RAM:CommonFuncs.c  CommonFuncs.c
+	DELETE      RAM:CommonFuncs.c
+	$(CC) $(COPTS) -S -o $@ CommonFuncs.c
+#
+# ----------- DEBUG targets: ---------------------------------------
+#
+CommonFuncsPPCDBG.o : $(DEPS) CommonFuncs.h CommonFuncsLocale.h
+	EnsureAscii CommonFuncs.c     RAM:CommonFuncs.c
+	COPY        RAM:CommonFuncs.c CommonFuncs.c
+	DELETE      RAM:CommonFuncs.c
+	$(CC) $(DOPTS) -o $@ CommonFuncs.c
+	COPY   $@ TO CPGM:$(GLOB)$@
+	COPY   $@  SDK:Local/libs/$@
+#
+#
+CommonFuncsLocale.h : CommonFuncs.cd
+	CatComp $< CFILE  $@ NOCODE NOARRAY NOBLOCK
+	CatComp $< CTFILE CommonFuncs.ct
+	COPY   $@ TO CPGM:$(GLOB)$@
+	COPY   $@ TO SDK:Local/common/include/$@
+#
+#
+# ------------- Archive Target(s): -------------------------------------------------
+#
+CommonFuncsPPC.lha : CommonFuncs.c CommonFuncs.h CommonFuncsPPC.o CommonFuncsPPCDbg.o
+	$(ACMD) $(AOPTS) add $@ CommonFuncs.readme
+	COPY CPGM:$(GLOB)CommonFuncs.guide      CPGM:$(GLOB)SrcFiles/CommonFuncs.guide
+	COPY CPGM:$(GLOB)CommonFuncs.guide.info CPGM:$(GLOB)SrcFiles/CommonFuncs.guide.info
+	$(ACMD) $(AOPTS) add $@ CommonFuncs.guide
+	$(ACMD) $(AOPTS) add $@ CommonFuncs.guide.info
+	DELETE  CPGM:$(GLOB)SrcFiles/CommonFuncs.guide
+	DELETE  CPGM:$(GLOB)SrcFiles/CommonFuncs.guide.info
+	$(ACMD) $(AOPTS) add $@ CommonFuncs.c
+	$(ACMD) $(AOPTS) add $@ CommonFuncs.cd
+	$(ACMD) $(AOPTS) add $@ CommonFuncs.ct
+	$(ACMD) $(AOPTS) add $@ CommonFuncs.h
+	$(ACMD) $(AOPTS) add $@ CommonFuncsLocale.h
+	$(ACMD) $(AOPTS) add $@ CommonFuncsPPC.o
+	COPY CPGM:$(GLOB)CommonFuncs.o CPGM:$(GLOB)SrcFiles/CommonFuncs.o
+	$(ACMD) $(AOPTS) add $@ CommonFuncs.o
+	DELETE CPGM:$(GLOB)SrcFiles/CommonFuncs.o
+	$(ACMD) $(AOPTS) add $@ CommonFuncsPPCDBG.o
+	COPY MakeFile  RAM:MakeFile.saved
+	COPY SMakeFile RAM:SMakeFile.saved
+	COPY MakeFile.cfuncs  MakeFile
+	COPY SMakeFile.cfuncs SMakeFile
+	$(ACMD) $(AOPTS) add $@ MakeFile
+	$(ACMD) $(AOPTS) add $@ SMakeFile
+	COPY RAM:MakeFile.saved  MakeFile
+	COPY RAM:SMakeFile.saved SMakeFile
+	DELETE RAM:#?.saved QUIET
+	COPY SDK:Local/common/include/AmigaDOSErrs.h AmigaDOSErrs.h
+	$(ACMD) $(AOPTS) add $@ AmigaDOSErrs.h
+	DELETE AmigaDOSErrs.h
+	@echo "Done generating the archive!"
+#

@@ -1,0 +1,25 @@
+Hallo Frank,
+
+nachdem ich heute mein Computer in die Stube geschleppt habe
+(hier ist es bedeutend waermer), legte ich seit langem mal
+wieder mit dem Coden los.
+Ich schicke dir mal ein Grundgeruest meines Source-Codes mit.
+Du musst die Stellen mit ????? oder !!!!! suchen, hier stehen
+Fragen oder Anregungen.
+Der Source ist das ungefaehre Produkt einer Stunde. Der Rest
+geht viel schneller.
+Da ich schon fast raus war (mit Wissen ueber die einzelnen
+Routinen und so) schau dir den Code mal kurz an.
+Er beschraenkt sich nur aufs Laden und ein paar anderen kleine
+Dinge. Schau ihn dir an und mail ihn so schnell wie moeglich
+zurueck. Am besten bis spaetestens Donnerstag. Am Freitag ist
+eine kleine Party. Da kann ich denn vielleicht zu Ende coden.
+
+Dieser Text ist im Archiv mit drin.
+
+Fehler in ArtPro:
+ich habe als Settings XHelvetica.13 als Font und einen Screen
+von 554x600+16 und da wird der Wert in Hoehe nicht richtig
+dargestellt.
+
+Maik

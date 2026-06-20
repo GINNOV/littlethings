@@ -1,0 +1,9 @@
+Short:        Convert '.fd' files to include file. V1.0
+Author:       Peter Wyspianski
+Version:      1.0
+Architecture: m68k-amigaos
+Source:       Fish collection
+
+A utility for Amiga assembly programmers.  FixFd will read a '.FD' file and
+output a file that can be 'INCLUDE'ed rather than having to link with the
+colossal 'Amiga.Lib'.  

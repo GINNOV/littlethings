@@ -1,0 +1,976 @@
+
+CORSO DI ASSEMBLER - LEZIONE 9
+
+		- FONDAMENTI DI ACUSTICA ED AUDIO DIGITALE -
+
+(Directory Sorgenti8) - quindi scrivere "V Assembler3:sorgenti8"
+
+			         ___
+			       _(   )_
+			    __( . .  .)__
+			  _(   _ .. ._ . )_
+			 ( . _/(_____)\_   )
+			(_  // __ | __ \\ __)
+			(__( \/ o\ /o \/ )__)
+			 ( .\_\__/ \__/_/. )
+			  \_/ (_.   ._) \_/
+			   /___(     )___\
+			  ( |  |\___/|  | )
+			   ||__|  |  |__||
+			   ||::|__|__|::||
+			   ||:::::::::sc||
+			  .||:::__|__:;:||
+			  /|. __     __ .|\.
+			./(__..| .  .|.__) \.
+			(______|. .. |______)
+			   /|  |_____|
+			         /|\
+
+
+Autore: Alvise Spano'
+
+Come tutti senz'altro saprete, il suono altro non e' che un'ONDA, ovvero,
+secondo la definizione fisica, la « propagazione di una perturbazione in un
+mezzo »; nel caso dei suoni che siamo abituati ad ascoltare, la perturbazione
+(onda) viene inizialmente emessa dalla vibrazione della materia (molecole e/o
+atomi), ed il mezzo e' l'aria (un'onda e' una oscillazione, un continuo scambio
+di energia cinetica e potenziale, quindi meccanica, tra molecole e/o atomi
+(fisicamente e' la variazione di pressione tra particelle di materia), e
+pertanto NECESSITA di materia per esistere e diffondersi: nel vuoto, ad
+esempio, non si propaga alcuna onda sonora, ne' alcun altro tipo di vibrazione
+tra due corpi distinti e separati (le radiazione elettromagnetiche soltanto
+- almeno sinora, le uniche di cui se ne e' alla conoscienza - riescono a
+muoversi anche nel vuoto grazie alla loro duplice natura fisica sia di
+corpuscolo dotato di massa - seppur piccolissima - (fotone) sia di onda)).
+Il modello fisico adottato per descrivere questo continuo cedimento di energia
+da un punto all'altro del mezzo presenta il grafico della funzione goniometrica
+SENO (= sen = sin), ovvero di una SINUSOIDE.
+
+>>> FUNZIONE D'ONDA: y = f(x ± v*t) <<<
+
+x es.: EQUAZIONE D'ONDA ARMONICA: y = asink(x±vt) = a * sin(k * (x ± v * t))
+
+		    - y = VARIBILE DIPENDENTE: in un grafico cartesiano
+			  bidimensionale (x,y), l'ordinata y rappresenta
+			  le "quote" di ogni punto x dell'oscillazione.
+
+		    - a = COEFICIENTE DI AMPLIFICAZIONE DELL'ONDA: come
+			  ben saprete, -1 <= sin(x) <= 1 (seno di x (x =
+			  qualsiasi numero reale) compreso tra -1 e 1, estremi
+			  inclusi), quindi per ottenere un'oscillazione che
+			  vari da -a ad a (-a <= sin(x) <= a) e' necessario
+			  moltiplicare sin(x) per un numero reale a.
+
+		    - k = FREQUENZA DELL'ONDA: variando questo parametro
+			  si varia la frequenza, e, in modo inversamente
+			  proporzionale, il PERIODO dell'onda, ovvero
+			  l'intervallo minimo, lungo l'asse della variabile
+			  indipendente (in questo caso x) per cui la sinusoide
+			  e' ciclabile, ovvero il minimo intervallo dopo
+			  il quale l'onda assume le medesime caratteristiche.
+			  Introduciamo a questo punto il concetto di LUNGHEZZA
+			  D'ONDA (= spazio percorso nel periodo = distanza tra
+			  due creste di cicli adiacenti), ed approfondiamo
+			  quello di frequenza: numero di volte in cui vengono
+			  assunte le stesse caratteristiche dall'onda in una
+			  data unita' di tempo, ovvero quante volte al secondo
+			  viene letto il periodo (= cicli al secondo); di
+			  solito si considera il minuto secondo [s] come unita'
+			  di tempo e l'Hertz [Hz = s^-1 = 1/s] come unita'
+			  di misura della frequenza.
+
+		    - x = VARIABILE INDIPENDENTE: in un grafico cartesiano
+			  bidimensionale (x,y), l'ascissa x rappresenta un
+			  punto lungo una dimensione spaziale rettilinea
+			  prestabilita in un dato istante; x appartiene
+			  ai numeri reali e, teoricamente, non ha limitazioni,
+			  ovvero abbraccia tutta la retta provocando nel piano
+			  considerato (x,y) una sinusoide che prosegue
+			  all'infinito sia a sinistra che a destra
+			  dell'origine degli assi O(0,0): cio' fa facilmente
+			  intuire come la funzione seno goda di una
+			  periodicita'.
+			  Per esempio, se k = 1, il periodo dell'onda
+			  e' di 360 gradi (= 2*¶ radianti) e la frequenza
+			  e' 1 Hz; se k = 2, il periodo e' 180° (= ¶ rad) e
+			  la frequenza e' pari a 2 Hz; e cosi' via.
+
+		    - v = VELOCITA' DI PROPAGAZIONE: indica la velocita' in
+			  senso cinematico con cui si sposta nello spazio
+			  un punto dell'onda.
+			  Da notare che v = LUNG.ONDA * FREQ.
+
+		    - t = ISTANTE DI TEMPO: tenete presente che v * t = s =
+			  = spazio, ed s e' la distanza tra due punti
+			  corrispondenti della stessa perturbazione presa in
+			  t diversi, pertanto, aggiungento/sottraendo s a/da
+			  x si ottiene nel tempo una propagazione, un movimento
+			  nello spazio dell'onda.
+			  E' da notare che con (x + s) l'onda si muovera'
+			  a sinistra, e con (x - s) a destra lungo l'asse
+			  delle ascisse.
+
+			  P.S.: mi scuso per la frettolosita' delle spiegazioni
+				e l'assenza di dimostrazioni, ma non mi sembra
+				questa l'occasione adatta per dilungarsi
+				eccessivamente su argomenti che non riguardano
+				direttamente l'assembler ed il coding in
+				generale; per cui vi prego di prendere cosi'
+				come sono le suddete delucidazioni e non
+				preoccupatevi troppo se non avete capito nel
+				profondo la fisica delle onde: non vi servira'
+				alla fin fine per inserire una musica in un
+				gioco o demo.
+
+		    N.B.: Tenete presente che x e y rappresentano due qualsiasi
+			  caratteristiche del fenomeno di propagazione.
+			  Nel caso di onde sonore, noi considereremo x e y
+			  come due dimensioni spaziali che descrivono su di un
+			  piano l'onda esaminandone una sezione.
+
+	                         ·      ·
+	                         :      :
+	                 ________¦      ¦________
+	                 \       |  __  |       /
+	__________________\_____ | _\/_ | _____/__________________
+	\____________________  / | \/\/ | \  ____________________/
+	         \____________ \_|._  _.|_/ ____________/
+	                \  ____ _)| \/ |(_ ____  /
+	                 \/   / \__¯`'¯__/ \   \/
+	                     / /  /    \  \ \
+	                     \/ \ `····' / \/
+	                         \      /
+	                          \    /
+	                           \  /sYz
+	                            \/
+
+Ora siamo in grado di trasportare quanto appreso dagli accenni di fisica
+generale dei fenomeni di propagazione in acusica vera e propria, definendo
+il concetto di ARMONICA: un suono - tra parentesi, inesistente in natura e
+riproducibile solo con strumenti elettronici, quali il computer appunto - che
+presenta la forma d'onda (= grafico (x,y) della perturbazione lungo tutta la
+sua durata) di una sinusoide.
+Possiamo dire che l'armonica e' il modello del SUONO BASE, che unendosi a molti
+altri crea tutti i suoni NON puri.
+Sempre la fisica distingue in un suono 3 qualita' affinche' possa essere
+descritto:
+
+	   1- ALTEZZA:     Che si distingue di suoni PURI (costituiti da una
+			   sola armonica - inesistenti in natura) e NATURALI
+			   (costituiti da piu' armoniche sovrapposte in uno
+			   stesso intervallo di tempo - alcuni di quelli che
+			   esitono in natura presentano migliaia di armoniche
+			   di periodo diverso), e ne qualifica la frequenza,
+			   alterando la quale vengono prodotte le varie note.
+
+	   2- INTENSITA':  Che puo' essere vista come una sorta di "volume"
+			   del suono, e, nel caso di armoniche, e' direttamente
+			   proporzionale all'amplificazione a (valore assoluto
+			   delle quote Y delle creste) della sinusoide.
+
+	   3- TIMBRO:      Che qualifica la forma d'onda del suono a
+			   prescindere dai precedenti due parametri, quindi
+			   descrive sostanzialemente lo strumento musicale o,
+			   piu' generalmente, cio' per cui noi distinguiamo
+			   un suono da un altro indipendentemente dalla sua
+			   altezza e intensita'.
+
+Lasciamo perdere le varie formule per calcolare l'intensita' sonora ed i
+livelli di pressione e di intensita' [deciBell = dB], che comunque non toccano
+direttamente la musica elettronica ma solo l'acustica come ramo della fisica
+che si occupa della diffusione dei suoni nell'ambiente e della progettazione di
+apparecchi in grado di ruprodurre (altoparlanti, ecc.) o captare (microfoni,
+ecc.) suoni, e soffermiamoci sull'altezza ed il timbro.
+
+*** Intanto per cominciare, il timbro, di per se, e' un parametro inesistente:
+il computer non distingue i suoni, e converte i dati digitali che ha in memoria
+in segnali analogici (che trasferiscono instensita' elettriche e non bit)
+secondo una frequenza di lettura ed un dato valore di sottoamplificazione,
+non curandosi della differenza tra suono e rumore - due concetti che soltanto
+noi uomini abbiamo introdotto con significati diversi e riconducibili al senso
+estetico ***.
+Del timbro come parametro, dunque, non si puo' propriamente parlare - perlomeno
+a livello elettronico -, anche se esistono sofisticati algoritmi di
+indentificazione e confronto del timbro di forme d'onda differenti che
+potrebbero tornare utili a chi e' intenzionato a programmare routine di
+riconoscimento vocale, ad esempio; ad ogni modo, non e' certo questa la sede
+adatta a discutere di tanto complesse applicazioni del mondo della sintesi e
+della elaborazione sonora.
+
+Passiamo quindi al parametro piu' importante - per quanto ci riguarda - :
+l'altezza dei suoni e' direttamente legata, nel caso di suoni NATURALI, alla
+frequenza dell'armonica fondamentale (FREQUENZA FONDAMENTALE) che li distingue,
+e, nel caso di suoni PURI, alla frequenza dell'UNICA armonica che li
+costituisce.
+Facciamo un esempio: abbiamo un suono puro (armonica) di periodo (=durata) X;
+esso puo' essere emesso a qualsiasi frequenza, dipende solo dalla "VELOCITA' DI
+LETTURA" del suono da parte dell'emittente: per esempio, se questo "legge"
+l'armonica per tutto il suo periodo 2 volte al secondo la frequenza sara' pari
+a 2 Hz; in un secondo momento, si presenta pure il problema della diffusione
+acustica del dato suono nell'aria, che, pero', e' presto risolto: la velocita'
+di propagazione del suono nell'aria e' di 380 m/s, e quindi, sapendo che
+VELOCITA' = LUNGH.ONDA * FREQ., e' etremamente semplice ottenerne la lunghezza
+d'onda, che coincide, in termini di dimensioni spaziali, al periodo (che e'
+espresso in secondi).
+A questo punto entra in gioco un nuovo parametro, per trattare gli strumenti di
+generazione del suono: la velocita' di lettura, o VELOCITA'/FREQUENZA DI
+CAMPIONAMENTO.
+Ora pero', per proseguire, e' nessario spiegare come gli strumenti elettronici
+trattano il suono e come lo processano prima di passarlo all'amplificatore.
+
+Tramite l'uso di un campionatore (digitalizzatore audio) ed un software
+adeguato, e' possibile convertire i suoni provenienti da una sorgente sonora
+(microfono, CD, ecc.) in dati numerici (campioni digitali) ognuno dei quali
+descrive la "quota" di un intervallo (di una "minuscola fettina" - per parlare
+in termini scientifici -) lungo le ascisse del grafico (x,y) della forma
+d'onda. Piu' sono i campioni che "catturiamo", piu' definita e vicina alla
+realta' fisica sara' il suono digitale.
+Ad esempio, se abbiamo un suono naturale (quindi, non armoniche) della durata
+di 2 secondi (che assumiamo come periodo, visto che non e' possibile
+individuare un intervallo minimo inferiore per cui l'onda si cicli), e siamo in
+grado di ricavarne la frequenza fondamentale, e' sufficiente campionare in
+memoria con una DOPPIA frequenza di campionamento (teorema di Nyquist, spiegato
+piu' avanti), per ottenere una riproduzione fedele e definita acusticamente del
+suono; se, ad esempio, la frequenza fondamentale e' di 2 kHz (= 2000 Hz),
+dovremmo registrare 2000 campioni al secondo, per un totale di 4000 campioni
+(2000 camp/s * 2 s = 4000 camp).
+** Ogni campione (= sample), in memoria occupa 8 bit (= 1 byte), nell'Amiga,
+che adotta una definizione sonora ad 8 bit, appunto.
+Col numero espresso ad 8 bit e' possibile descrivere quote Y comprese tra -128
+(= -(2^8)/2 = -2^(8-1) = -2^7) e 127 (= (2^8)/2-1 = 2^(8-1)-1 = 2^7-1 (lo zero
+ha segno positivo, in binario: in effetti i numeri positivi (da 0 a 127) sono
+128 come quelli negativi), estremi inclusi, di ogni singolo campione, per un totale di
+256 (= 2^8) valori esprimibili **.
+
+N.B.: e' importante notare che la forma d'onda oscilla tra il I (+) ed il II
+      (-) quadrante, divisi dall'ascissa di quota 0; NON considerate -128 come
+      0 e +127 come 255: NON e' possibile traslare l'onda sul I quadrante e
+      rendere tutto positivo, * i conti non tornerebbero ne' al chip sonoro,
+      ne' ad un'eventuale elaborazione del suono per effetti speciali via
+      software *.
+
+*** CONSIDERATE OGNI SAMPLE COME UN BYTE AD 8 BIT CON SEGNO (= MSB = bit 7) ***
+
+E' importante sottolineare come sintesi digitale ad un numero di bit maggiore
+di 8 offrirebbero una qualita' sonora superiore, a parita' di frequenza di
+campionamento.
+Per esempio, i lettori CD leggono sample a 16 bit (= 2 byte = 1 word), il che
+significa che il range delle quote varia da -32768 (= -(2^16)/2 = -2^(16-1) =
+= -2^15) e 32767 (= (2^16)/2-1 = 2^(16-1)-1 = 2^15-1), per un totale di 65536
+(= 2^16) valori esprimibili: *** cio' non vuol dire, pero', che il valore 32767
+(picco positivo) del CD corrisponde ad una quota maggiore di quel sample
+rispetto al valore 127 dello stesso campione reso ad 8 bit: l'uscita sonora
+sara' uguale, solo che a parita' di range fisico la sinstesi a 16 bit offre
+molta piu' deifnizione (in sostanza, ad 8 bit ho 256 numeri per esprimere un
+suono, compreso tra due picchi positivo e negativo fisicamente costanti, che
+pero' a 16 bit viene sintetizzato con una gamma di valori molto superiore
+(65536) e quindi CON PIU' PRECISIONE, CON MENO APPROSSIMAZIONE DELLE QUOTE).
+In un certo senso possiamo affermare che gli 8 bit del primo esempio
+corrispondono agli 8 bit alti (15:8) dei 16 bit del secondo, e gli 8 bit bassi
+corrispondono ad una sorta di approssimazione dopo una virgola fittizia posta
+tra il byte alto e quello basso della word del sample ***.
+
+Torniamo ora a parlare della frequenza di campionamento, citando un celebre ed
+importante - tanto quanto complicato per quanto riguarda la dimostrazione - che
+enuncia che « LA RISPOSTA DI FREQUENZA E' PARI A META' DELLA FREQUENZA DI
+CAMPIONAMENTO » (teorema di Nyquist): sostanzialmente, significa che se noi
+campioniamo a 10 kHz, verranno riprodotti fedelmente solo i suoni con frequenza
+minore od uguale a 10/2 = 5 kHz (ecco spiegato il misterioso « DOPPIO » scritto
+poco sopra circa la frequenza di campionamento necessaria per campionare il
+dato suono, conoscendone la frequenza fondamentale).
+E' fondamentale campionare i suoni ad una frequenza adeguata per non sentire
+l'ALIASING, che taglia le frequenze al di sopra della meta' della frequenza di
+campionamento rendendole con uno sgradevole effetto di "disturbato".
+** Anche se il Paula (per la cronaca, nome proprio del chip sonoro dell'Amiga)
+adotta una precisione digitale a soli 8 bit, e' possibile riprodurre suoni
+ugualmente di buona qualita' campionando alle frequenze giuste ed evitando
+l'aliasing ***, anche se, comunque, non si puo' raggiungere la qualita' di un
+CD, che campiona 16 bit a 44.1 kHz (44100 Hz) per ottenere una risposta di
+frequenza che spazia da 20 Hz a 22 kHz circa, che corrisponde circa al range
+delle frequenze udibili dall'orecchio umano (soggettivo: qualcuno potrebbe
+arrivare fino a 20 kHz ca.)
+* Colgo l'occasione per dire che i suoni di frequenza (fondamentale,
+sott'inteso) minore di 20 Hz vengono chiamati INFRASUONI, e quelli di frequenza
+maggiore di 20-22 kHz ULTRASUONI: entrambi NON sono udibili dall'uomo *.
+Comunque, la maggior parte dei suoni naturali non ha una frequenza fondamentale
+superiore ai 15-16 kHz; e' dunque sufficiente campionare a 32 kHz al massimo
+per riprodurre fedelmente quasi tutti i suoni esistenti ?
+Ebbene, no ! Per un motivo molto semplice: poco sopra e' stato spiegato che i
+suoni naturali sono costituiti da molte armoniche tra le quali ne e'
+individuabile una fondamentale: potrebbe anche accadere che la frequenza
+fondamentale (che noi utilizziamo di solito per calcolare quella di
+campionamento) sia effettivamente la frequenza dell'armonica di periodo minore
+(quindi, di frequenza maggiore); in tal caso tutte le armoniche di frequenza
+maggiore di quella che noi assumiamo come fondamentale verrebbero tagliate e
+riprodotte con aliasing, abbassando sensibilmente la qualita' sonora globale.
+*** SAREBBE OPPORTUNO, QUINDI, CAMPIONARE A FREQUENZA DOPPIA RISPETTO ALLA
+FREQUENZA DELL'ARMONICA PIU' ALTA CHE COMPONE IL DATO SUONO NATURALE ***.
+			      _______
+			 _  _/ /_____\
+			   _ __\  Oo /
+			_ ______\_-_/______
+			  (_/__/  :  __\_) '
+			    __/   :   \__
+			_  (_/____:____\_>
+			   _ O/    _ _O/
+
+Dunque, l'intensita' contraddistingue il "volume" del suono, ed essa *** NON e'
+costante rispetto alla frequenza: a frequenze molto alte o molto basse e'
+necessario amplificarlo per essere percepito con la stessa intensita' rispetto
+a suoni di frequenza media dall'orecchio, che l'evoluzione biologica
+(conseguenza dell'abitudine) lo ha evidentemente portato a sentire meglio
+quelli piu' diffusi in natura ***; cosa contraddistingue invece l'altezza di un
+suono ? In termini puramente musicali, e' presto detto: le NOTE.
+Come senz'altro saprete le note musicali formano scale di 7 note per OTTAVA,
+ognuna delle quali comincia con la nota DO (C, per la notazione anglosassone)
+e finisce con il SI (B, per la notazione anglosassone - il LA e' la A); ad ogni
+ottava si raddoppia la frequenza, quindi ogni DO e' di frequenza doppia
+rispetto a DO precedente (notate dunque che l'incremento di frequenze non e'
+rettilineo, ma ESPONENZIALE in base 2).
+All'interno dell'ottava i rapporti tra le note della scala sono i seguenti:
+
+        DO      RE      MI      FA     SOL      LA      SI      |  (DO)
+--------+-------+-------+-------+-------+-------+-------+-------|---+---------
+        1      9/8     5/4     4/3     3/2     5/3     15/8     |   2
+
+Nel caso in cui bisogni campionare suoni che poi verranno usati come strumenti
+in programmi di editing musicale (tipo SoundTracker, NoiseTracker o
+ProTracker), sarebbe sufficiente campionare ad una frequenza doppia rispetto
+alla frequenza fondamentale del suono, che, se si campiona da uno strumento
+musicale, corrisponde alla frequenza della nota suonata, almeno per praticita':
+se, ad esempio, necessitiamo di un pianoforte per la composizione di un modulo,
+possiamo campionare il LA3 (LA della terza ottava) a 880 Hz (LA3 = 440 Hz) e
+comunicare al tracker che la frequenza di campionamento corrisponde al LA3,
+pensera' lui, dopo, a calcolare le frequenze giuste relative a quella di
+campionamento in base alle note che poniamo sullo spartito con quello
+strumento.
+Ora, sicuramente, vi porrete una domanda: ma basta campionare a 880 Hz, per
+non ottenere un aliasing ?
+La risposta e' no. Come abbiamo detto prima, bisognerebbe campionare al doppio
+della frequenza dell'armonica piu' acuta per riprodurre fedelemente la
+timbrica del pianoforte, ma e' assai complicato ricavare tale frequenza (per
+non dire impossibile).
+Cosa fare, allora ? ** Beh, provare e riprovare a campionare a varie frequenze
+(onestamente, ben piu' alte di 880 Hz) finche' si ottiene una riproduzione
+ottimale dello strumento a quella nota e comunicare al tracker la frequenza di
+lettura del sample per tale nota **.
+Come vedete, dunque, la faccenda e' piu' complicata nella pratica che nella
+teoria !
+
+
+Dopo questi inevitabili (e - spero - interessanti) cenni di audio digitale,
+passo alla spiegazione piu' specifica dell'hardware sonoro dei chip Original ed
+AA dell'Amiga (il Paula e' l'unico chip custom che non ha mai subito
+miglioramenti dall'uscita del primo Amiga (1985, per la cronaca)).
+L'hardware presenta 4 canali DMA dedicati alle 4 voci del chip sonoro; queste 4
+voci sono totalmente indipendenti e sono ragruppate a 2 a 2 per cassa ottenendo
+le voci 1+4 per la via sinistra e 2+3 per la destra in stereo.
+Tutte e 4 le voci, inoltre, possiedono propri registri hardware:
+
+	AUDxLCH $dff0y0 =       Locazione dei dati da leggere (word alta)
+	AUDxLCL $dff0y2 =       Locazione dei dati da leggere (word bassa)
+	AUDxLEN $dff0y4 =       Lunghezza del DMA (in word)
+	AUDxPER $dff0y6 =       Periodo di campionamento in lettura
+	AUDxVOL $dff0y8 =       Volume
+	AUDxDAT $dff0ya =       Dato del canale (2 byte = 2 sample alla volta)
+
+	N.B.: Per ogni 'x' sostituite un numero da 0 a 3, corrispondente alla
+	      voce desiderata; per ogni 'y' sostituite un numero esadecimale
+	      da $a a $d relativo alle voci da 0 a 3.
+
+AUDxLCH-AUDxLCL:Costituiscono il valore di latch, non il puntatore del DMA ai
+		dati, pertanto, una volta impostato, non incrementa come accade
+		per i plane, per gli sprite o per i canali del blitter, ma e'
+		simile ai registri di locazione del copper, il valore dei quali
+		viene automaticamente riinserito nei registri interni di
+		puntatore quando ce n'e' bisogno.
+		* Visto che questi due registri a 16 bit sono adiacenti, e'
+		comodo impostarli con un singolo MOVE.L del 68000 del tipo:
+		MOVE.L  #miosample,AUDxLCH *.
+		N.B.: d'ora in poi, con AUDxLC mi riferiro' alla coppia dei
+		due registri, ad una sorta di registro di locazione unico
+		a 32 bit.
+
+AUDxLEN:	Esprime la lunghezza in word del sample da suonare.
+		Se, per esempio, abbiamo in memoria un sample di 500 byte,
+		bisogna impostare questo registro (di uno dei 4 canali
+		desiderato) con un valore di 250.
+	  N.B.: Come per il blitter, scrivendo 0 questo registro vengono
+		letti 128 kB di sample.
+
+AUDxPER:	Questo registro serve a specificare la frequenza di lettura del
+		DMA in modo un po' bizzarro - apparentemente -, ma che torna
+		comodo e veloce all'hardware: bisogna impostarlo con il
+		PERIODO DI CAMPIONAMENTO di ogni singolo campione del suono,
+		un valore che esprime il tempo (in cicli di CLOCK del DMA di
+		sistema = 3546895 Hz (PAL), 3579545 Hz (NTSC)) che il DMA deve
+		attendere (funziona da decrementatore: -1 per ciclo di clock)
+		prima di trasferire un'altro campione.
+		Ecco una formula per calcolare il valore da inserire in questo
+		registro, data la frequenza di campionamento (che e' molto piu'
+		pratica da gestire):  PER = CLOCK / freq. [Hz]
+		Per esempio, se dobbiamo campionare un LA3 armonica - ammesso
+		che ne troviamo un sorgente naturale... - di frequenza 440 Hz,
+		di periodo 1 secondo, dobbiamo adottare una frequenza di
+		campionamento di 880 Hz, per cui ecco il periodo di
+		campionamento da inserire nel registro AUDxPER per leggere alla
+		giusta frequenza in 1 secondo il sample in memoria:
+		PER = 3546895 / 880 = 4030 (PAL)
+	  N.B.: I dati audio vengono fetchati dal DMA in 4 slot del color clock
+		(16bit=2 sample per canale) per linea di scansione orizzontale.
+		Le linee di scansione PAL sono 312.5 (312=SHF, 313=LOF) per
+		raster, e ci sono 50 raster al secondo; per cui, la frequenza
+		massima di lettura (leggendo a tutti i cicli assegnati
+		disponibili) sarebbe = 2 BytePerLinea * 312.5 * 50 = 31300 Hz
+		circa: ** MA QUESTA VELOCITA' E' SOLO TEORICA **, in quanto e'
+		impossibile impostare un giusto periodo di campionamento che
+		coincida perfettamente con i cicli assegnati al DMA audio ad
+		ogni linea di raster: potrebbe verificarsi la fine di un
+		conteggio del periodo dal DMA nel bel mezzo di una linea di
+		scansione (o, sfiga totale, il ciclo dopo lo slot assegnato
+		alla data voce), e l'hardware e' costretto ad attendere la
+		linea dopo per avere i dati da suonare, mentre, se il periodo 
+		di campionamento e' breve, la successiva fine di conteggio
+		potrebbe avvenire nella linea stessa, in assenza di nuovi dati.
+		In sostanza, il periodo minimo deve permettere all'hardware
+		di percorrere ALMENO un'intera linea di raster: il suono non
+		esce quando viene letto dal DMA, ma quando termina il conteggio
+		interno dal valore del periodo in AUDxPER: il DMA audio
+		legge i dati solo durante i cicli assegnati (peraltro ad
+		altissima priorita' - come quelli del DMA dei disk drive -, per
+		evitare distorsioni e rallentmenti dovuti a "sovraffollamento"
+		di canali - vedi: "bit plane che rompono sempre") e li conserva
+		in AUDxDAT fino alla fine del del periodo di campionamento,
+		* che puo' avvenire in qualsiasi momento *, e viene generato
+		il suono;
+		* per questo motivo NON si puo' abbassare il periodo minimo di
+		campionamento oltre 123 (=28836 Hz): per permettere al DMA
+		di leggere comunque almeno un'altro dato prima di suonare, alla
+		linea dopo *.
+		A questo punto la domanda e' d'obbligo: « Come mai si pone 123
+		come periodo minimo, quando i cicli di clock per linea (ovvero
+		il numero di decrementi) sono 226.5 (226=LOF, 227=SHF) ? ».
+		Ecco la risposta: prima e' stato accennato che il DMA
+		trasferisce 16 bit (=2 byte) "al colpo" per voce, per cui
+		possiede 2 sample suonabili ad ogni linea, e, suonato il primo,
+		puo' suonare anche il successivo durante la stessa linea di
+		raster, per il fatto che non lo ha gia' letto; con 123,
+		infatti, possono accadere, al massimo, 2 fine-conteggi durante
+		una stessa linea, ed il problema non si pone.
+		Il periodo minimo teorico, dunque, dovrebbe essere di 227 (per
+		tenerci larghi) / 2 = 114 (sempre approssimando per eccesso),
+		che coincide piu' o meno (la corrispondenza tra periodo e
+		frequenza di campionamento NON e' biunivoca: c'e' sempre una
+		certa approssimazione) con la frequenza massima teorica di
+		31300 Hz circa. Ma, come si e' detto sopra, non e'
+		raggiungibile con precisione dall'hardware.
+		*** 123 e' il periodo minimo impostabile = 28836 Hz ***
+
+AUDxVOL:	In questo registro va specificato il volume dell'emissione del
+		suono nel relativo canale con valori compresi tra 0 e 64
+		(inserendo '64' non vi e' alcune diminuzione di dB = volume
+		massimo).
+		*** CONSIGLIO !!! Quando campionate cercate di sfruttare tutta
+		la fascia di valori da -128 a 127 anche per suoni a bassa
+		intensita' al fine di avere sempre la massima precisione, e,
+		tutt'al piu', abbassate il volume in questo registro ***.
+
+AUDxDAT:	E' il buffer momentaneo che il DMA utilizza prima che i dati
+		vengano spediti ai convertitori D/A (Digitale/Analogico) e
+		che vengano emessi i segnali all'esterno dell'Amiga.
+		Esso contiene 2 byte di dati audio (il DMA trasferisce 16 bit
+		alla volta dalla RAM - ecco spiegato il motivo per cui
+		l'AUDxLEN deve essere espresso in word !) che vengono inviati
+		1 ad 1 al DAC (Digital-Analogical Converter).
+		*** SCONSIGLIO !!! E' anche possibile impostare questi registri
+		con la CPU quando il DMA e' spento e far suonare ugualmente il
+		computer  :( ***.
+			         _____   
+			     .__/_____\
+			        \ O o /
+			  /\ ____\_\_/___
+			  \\\/___  :  _  \
+			  O\ \  /  :  /  /
+			    \\\_   :   \/
+			_ __O\_/___:____\
+
+
+		- ESEMPIO di impostazione dei registri per suonare un sample
+		  di 23 kB ad una frequenza di 21056 Hz posto in memoria alla
+		  locazione $60000 (chip RAM) a volume massimo in stereo,
+		  con la voce 2 e la 3 (terzo e quarto canale):
+
+PlaySample:
+	lea	$dff000,a0	; base dei chip custom in a0
+	move.l	#$60000,$c0(a0)	; punta AUD2LC a $60000
+	move.l	#$60000,$d0(a0)	; punta anche AUD3LC a $60000
+	move.w	#11776,$c4(a0)	; AUD2LEN = 23 kB = 23*1024 = 23552 B [...]
+	move.w	#11776,$d4(a0)	; anche AUD3LEN = [...] = 23552/2 = 11776 word
+	move.w	#168,$c6(a0)	; AUD2PER = 3546895/21056 = 168
+	move.w	#168,$d6(a0)	; imposta AUD3PER come AUD2PER
+	move.w	#64,$c8(a0)	; volume massimo per AUD2VOL
+	move.w	#64,$d8(a0)	; volume massimo anche per AUD3VOL
+	move.w	#$800c,$96(a0)	; accende il DMA dei canali 2 e 3 in DMACON
+
+Passiamo ora a spiegare cosa accade quando si accendono i DMA dei canali (oltre
+al fatto che - chiaramente - si sente il sample...):
+
+		1 - Il valore contenuto in AUDLC viene inserito nei registri
+		    interni di puntamento ed il DMA comincia a trasferire
+		    nei registri dati 2 byte alla volta.
+		    * Da adesso il registro AUDLC PUO' anche venire cambiato:
+		    l'hardware, appena finito di trasferire tutto il sample,
+		    ricominciera' daccapo (LOOPANDO ALL'INFINITO).
+
+		2 - Appena inserito il valore di AUDLC nei registri interni
+		    viene sparato un interrupt di LIVELLO 4, che nei registri
+		    INTENA e INTREQ si suddivide in 4 sottointerrupt, uno
+		    assegnato ad ognuno dei 4 canali audio:
+
+		      +--------------+---------------------+---------+
+		      | LIVELLO IRQ  |  BIT INTENA/INTREQ  |  CANALE |
+		      +--------------+---------------------+---------+
+		      |      4       |	 	10  	   |    3    |
+		      |      4       |	  	9	   |    2    |
+		      |      4       |	  	8	   |    1    |
+		      |      4       |	  	7	   |    0    |
+		      +--------------+---------------------+---------+
+
+		    Grazie a questi interrupt e' possibile, ad esempio,
+		    impostare un nuovo sample da suonare appena finito di
+		    suonare quello corrente semplicemente puntando i registri
+		    locazione ad un altro sample, ed ottenendo un perfetto
+		    collegamento fra i due (a patto che le due forme d'onda
+		    rispettivamente terminino e comincino similmente).
+
+		3 - alla fine del trasferimento ricomincia tutto dal punto (1).
+		    ** I registri non vengono mai alterati **.
+
+			   .||||||.
+			   \ oO  ||
+			   _\_-_/||_
+			  / {_{_ __ \
+			  \ |____|/_/
+			   /______\_)
+			 ___|_|  |
+			/_/______|ck!^desejn
+
+Certo, tutto questo e' interessante - voi direte -, ma come fare per far
+suonare al computer una canzone di 10 minuti senza campionarsi decine di
+megabyte di dati ?
+Proprio per questo scopo sono stati inventati i Tracker: programmi atti a
+scrivere musica che richiedono che soltanto gli strumenti di base siano
+campionatim ricavando le varie note variando la frequenza di lettura degli
+stessi. Sono inoltre dotati di un editor dove comporre lo spartito suddiviso in
+4 tracce (una per voce), ognuna delle quali puo' suonare qualsiasi strumento in
+qualsiasi momento, ma pur sempre uno alla volta (in totale si puo' ottenere
+un massimo di 4 strumenti effettivamente in contemporanea).
+Sarebbe assai complicato spiegare qui tutte le varie possibilita' di un
+tracker, pertanto vi invito a procurarvene uno (tipo il ProTracker: attualmente
+il miglior tracker a 4 tracce - ebbene si, ne esistono anche a piu' tracce, che
+mixano in tempo reale le note di piu' tracce in un'unica voce; purtroppo,
+pero', tale procedimento e' estramamente lento e non protrebbe essere adottato
+per suonare la musica di un demo o di un videogioco, visto che la macchina, in
+simili casi, ha ben altro da fare che perdere tutto il tempo a suonare...).
+La "filosofia" dei tracker, comunque, non cambia: tutti forniscono delle
+- cosidette - music routine, che sono dei sorgenti asm che sfruttando spesso
+interrupt di livello 6 (collegati al CIAB) o loop di attesa sincronizzati col
+pennello elettronico, e suonano in tempo reale i moduli (song + samples =
+spartito + strumenti) creati con il relativo tracker (o compatibili, ovvero,
+che salvano la struttura del modulo allo stesso modo).
+Adattare tali routine ai propri sorgenti e' semplicissimo: in linea di massima
+- ognuna ha le sue convenzioni: leggetevi i .doc del vostro tracker - e'
+sufficiente lanciare una subroutine di inizializzazione che imposta gli
+interrupt ed i canali DMA - alcune anche i timer del CIAB; il CIAA resta
+intatto visto che viene usato dall'Exec per temporizzare i processi/task -
+e lanciare la subroutine di play ad ogni raster (vi conviene farlo all'inizio
+del codice di interrupt del vertical blank - se siete sotto sistema operativo
+aggiungete un server di interrupt 5 (VBLANK, livello 3) a priorita' alta, per
+fare tutto durante l'intervallo di vertical blank, prima che i plane comincino
+a fetchare ed a rallentare tutto); prima di quittare il vostro demo/gioco - o
+programma che sia - RICORDATE di lanciare la subroutine di restore degli
+interrupt, dei DMA e dei timer all'OS.
+
+Un'altro importante paragrafo sull'hardware audio dell'Amiga riguarda la
+modulazione del suono proveniente dal DMA delle 4 voci.
+Cos'è la MODULAZIONE ? Avrete senz'altro udito in moltissime canzoni l'effetto
+di DISSOLVENZA AUDIO (il progressivo e lento abbassarsi del volume): ebbene,
+questo semplice effetto è un particolare tipo di modulazione.
+*** La MODULAZIONE consiste nell'alterare uno o più parametri di un suono
+durante ed oltre il suo periodo ***; i parametri in questione sono, ovviamente,
+INTESITA' (ampiezza) ed ALTEZZA (frequenza).
+A quali effetti corrispondono - a livello di percezione sonora - modulazione
+in ampiezza e modulazione in frequenza ?
+La prima, come abbiamo già accennato, trova una comune applicazione nelle
+dissolvenze solitamente al principio ed al termine di un brano musicale; un
+familiare esempio di modulazione in frequenza è lo slide sulle corde di una
+chitarra (od uno strumento a corda): in sostanza, una sfumata fusione di note
+adiacenti partendo da una data frequenza ed arrivando ad un'altra passando
+gradualmente per tutte quelle intermedie con una certa velocità (od addirittura
+una certa accelerazione).
+E' anche possibile modulare sia in ampiezza che in frequenza contemporanemente,
+ottenendo uno strano effetto riconducibile ad un fenomeno di eperienza 
+quotidiana: * l'effetto Doppler *.
+Brevemente, consiste nel cambiamento (appunto, modulazione) di intensità ed
+altezza dei suoni provenienti da una fonte in moto relativo rispetto
+all'ascoltatore: quando state camminando per strada, notate che il rumore delle
+macchine che vi si avvicinano e poi vi sorpassano non mantiene i medesimi
+parametri nelle diverse posizioni dell'auto (fonte) rispetto a voi
+(ascoltatore) ma, innanzitutto, si fà più alto di volume in modo inversamente
+proporzionale alla distanza tra voi e la fonte, e, se ci badate bene,
+l'intesità non è l'unica a mutare nel tempo: anche la frequenza del rumore
+emesso dal motore è minore quando la macchina è distante.
+Non penso sia il caso di riportare l'equazione che descrive il fenomeno
+in funzione della velocità dei due corpi e della distanza, in quanto il
+problema non tocca da vicino l'argomento "modulazione su Amiga"; equazione che,
+comunque, potrete facilmente trovare in qualunque libro di fisica o di acustica
+generale anche delle scuole medie superiori.
+Passando, appunto, alla modulazione sull'Amiga, sono costretto a deludervi
+subito: sebbene il Paula possegga dei particolari modi operativi per modulare
+i suoni provenienti da un canale sia in ampiezza che in frequenza, non si usa
+mai utilizzare questa soluzione hardware perchè presenta una terribile
+restrizione: per modulare intensità ed altezza il DMA deve leggere dalla RAM
+dei valori da inserire rispettivamente nei registri AUDxVOL e/o AUDxPER mentre
+un'altro DMA legge i valori veri e propri del sample da suonare e poi
+distorgere; tale processo ha la limitazione che il DMA che legge dalla tabella
+dei valori di modulazione deve essere uno dei canali audio, per cui per
+modulare, ad esempio, il suono letto dal canale 0 sia in frequenza che in
+ampiezza siamo costretti ad usare i canali 1 e 2 per leggere le rispettive
+tabelle, col risulato di sprecare 3 canali per generare un solo suono modulato.
+Tutti gli effeti di modulazione utilizzati dai tracker sono gestiti dalla CPU,
+che imposta "di cattiveria" i registri di volume e periodo della voce
+desiderata mentre il DMA legge ignaro il suo sample. Così facendo, non viene
+sprecato alcun canale, anche se la CPU resta per un po' impegnata a calcolare
+in tempo reale gli effetti sonori.
+L'Amiga NON possiede nemmeno un sintetizzatore FM (Frequency Modulation) in
+grado di creare timbri diversi partendo da una stessa forma d'onda.
+Questi applicano modulazioni sia in ampiezza che in frequenza secondo 4
+parametri chiamati ADSR, dalle iniziali delle 4 fasi principali di un suono
+sintetizzato: Attack, Decay, Sustain, Release.
+Il grafico di questa modulazione è il seguente:
+
+			     b
+			     /\
+			    /  \ D     
+			   /    \      S
+		       A  /      \___________d
+			 /       c           \
+			/		      \  R
+		       /		       \
+  _ _ _ ______________/				\____________________ _ _ _
+		      a				 e
+
+La prima fase è l'Attack, che consiste nel portare il volume e/o la frequenza
+dell'onda da 'a' a 'b' (ovvero da 0 ad un valore di picco massimo); dopodichè,
+il grafico scende per il tratto del Decay fino ad una quota 'c', alla quale si
+stabilizza per la durata del Sustain; infine ritorna a 0 da 'd' ad 'e' con il
+Release.
+** "Giocando" acutamente con la posizione dei punti 'a','b','c','d' ed 'e' e
+con le durate delle varie fasi è possiblile generare un'infinità di suoni
+anche partendo dal sample di una banale armonica **.
+Purtroppo, queste nozioni non vi saranno utili per la programmazione del chip
+sonoro dell'Amiga, perciò passiamo alla descrizione di quei bit che mai vennero
+impostati nella storia di Amiga e del suo hardware...:)
+Il registro in questione è il famigerato ADKCON ($dff09e), che possiede pure
+una copia di lettura (ADKCONR) all'indirizzo $dff010:
+
+	bit  -  7:      USE3PN  Usa il canale 3 per non modulare nulla
+		6:      USE2P3  Usa il canale 2 per modulare il PERIODO del 3
+		5:      USE1P2  Usa il canale 1 per modulare il PERIODO del 2		      
+		4:      USE0P1  Usa il canale 0 per modulare il PERIODO dell' 1		      
+		3:      USE3VN  Usa il canale 3 per non modulare nulla
+		2:      USE2V3  Usa il canale 2 per modulare il VOLUME del 3
+		1:      USE1V2  Usa il canale 1 per modulare il VOLUME del 2		      
+		0:      USE0V1  Usa il canale 0 per modulare il VOLUME dell' 1		      
+
+Avrete senz'altro capito come funziona la faccenda: se, ad esempio, dovete
+modulare in ampiezza il canale 2, potete farlo solamente utilizzando l'1 come
+lettore dei valori da inserire nel registro AUD2VOL, per cui, dovrete puntare i
+canali ai relativi dati e dare loro una frequenza di lettura.
+** La modulazione, comunque, è un'effetto semplice ma importante, che deve
+essere simulato via CPU - come già detto - per non occupare qualcuno dei
+già pochi canali audio di Amiga... **
+
+			   O    .... o      
+			     o :¦ll¦:       
+			   ___( 'øo` )___   
+			 /¨¨¨(_  `____)¨¨¨\ 
+			(__,  `----U-'  .__)
+			( ¬\\_>FATAL< _,/¯ )
+			(__)\ ¯¯":"¯¯¯ /(__)
+			(,,) \__ : ___/ (,,)
+			     (_\¯¯¯ /_)     
+			:...(    Y    ¬) ··:
+			    _\___|____/_
+			   `-----`------'
+
+Concluderei permettendomi di affermare che la conoscenza di acustica digitale e
+del funzionamento dei chip sonori in generale, non e' fondamentale come quella
+dell'hardware grafico o dell'asm di una CPU, ed e' certo che la padronanza di
+questi e' necessaria a chiunque, audiofili compresi; e' altrettanto vero,
+pero', che la vera cultura in materia prevede anche la conoscenza approfondita
+della teoria del suono digitale, che tanto viene decantata in questi ultimi
+tempi, quanto e' oggetto di ignoranza dalla maggior parte della gente, che
+ragiona proprio come quei "coder" che snobbano - per non dire "saltano" -
+completamente le fonti di informazione su tale argomento perche' « tanto, le
+music routine basta chiamarle dall'interrupt...».
+
+****************************************************************************
+* PARTE 2: LE REPLAY ROUTINES SOFISTICATE (autore: Fabio Ciucci)	   *
+****************************************************************************
+
+A proposito di tali music rutines, per ora abbiamo visto solo quella standard
+fornita con il protracker, ma ce ne sono anche altre piu' sofisticate.
+Vedremo ora una delle migliori, il player6.1a, che richiede anche un programma
+di conversione (il p61con, in questo disco), con cui dobbiamo trasformare un
+modulo normale in uno ottimizzato per la replay routine.
+
+NOTA: Questo player e' copyright dell'autore:
+
+		Jarno Paananen / Guru of Sahara Surfers.
+		­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­
+
+			       J.Paananen
+			      Puskalantie 6
+			    FIN-37120 Nokia
+				Finland
+
+Internet:	    Jarno_Paananen@sonata.fipnet.fi
+			 jpaana@freenet.hut.fi
+
+
+Quindi, se userete la sua replay routine in un prodotto commerciale, ad
+esempio in un gioco, dovete ricevere la sua autorizzazione scritta e dargli
+qualcosa (in marchi finlandesi!) come percentuale.
+Gia' si arrabbiera' con me che non ho incluso tutto l'archivio!!!...
+
+Questo player ha moltissime opzioni, vediamo intanto di farci la cosa piu'
+semplice: suonare un modulo come abbiamo fatto con la routine standard fornita
+assieme al programma protracker.
+
+Le cose da fare sono queste:
+
+1) Convertire il modulo nel formato P61, usando l'utility "P61CON". Questa
+   utility richiede la reqtools.library e la powerpacker.library nella
+   directory libs: per funzionare. Nelle preferences del programma, non
+   toccate niente, lasciando settata solo l'opzione "tempo".
+   Annotatevi al salvataggio l'USECODE, che andra' specificato nel listato
+   all'equate "use = ....". Questo serve per risparmiare codice.
+
+2) In questo modo, abbiamo ottenuto il modulo convertito NON COMPRESSO.
+   Nonostante cio', spesso il modulo si accorcia per l'ottimizzazione che
+   viene fatta automaticamente.
+
+3) Ora basta fare come con le routines precedenti: chiamare P61_Init prima
+   di suonare, poi P61_Music ad ogni fotogramma, e P61_End alla fine.
+   L'unica richiesta in piu' e' l'abilitazione dell'interrupt di livello 6.
+
+Vediamo un esempio pratico in Lezione14-10a.s
+
+Noterete come sia piu' veloce di quella standard, ma anche che usa il timer
+A del CIAB e l'interrupt di livello 6 ($78).
+Ci sono poi degli equates, di cui occorre conoscere il significato:
+
+fade  = 0	;0 = Normal, NO master volume control possible
+		;1 = Use master volume (P61_Master)
+
+Questo va messo ad 1 se si vuol controllare il volume per fare un fade,
+agendo sulla label P61_Master. Vedremo dopo un esempio. Se non ci serve tale
+opzione, mettiamo 0, in modo da risparmiare codice, infatti questi equate
+non sono altro che degli assemblaggi condizionati che usano le direttive
+dell'assemblatore "ifeq", "ifne", "endc"...
+
+jump = 0	;0 = do NOT include position jump code (P61_SetPosition)
+		;1 = Include
+
+Anche questa opzione va lasciata a zero, se non si usa la routine di salto
+ad una specifica posizione del modulo. Vedremo dopo un esempio.
+
+system = 0	;0 = killer
+		;1 = friendly
+
+Questa opzione e' bene lasciarla a 0, se si fa codice "malvagio" e si usa
+la startup2.s. State solo attenti quando caricate da dos!!! (dovete anche
+lasciare l'interrupt $78 (level6) al suo posto, senza ripristinare quello
+di sistema, nel caso carichiate con questa replay routine attiva!).
+
+CIA = 0		;0 = CIA disabled
+		;1 = CIA enabled
+
+Questa opzione va tenuta a 0 per usare la routine in modo "standard". Se si
+mette ad 1, non occorrera' piu' chiamare P61_Music ad ogni fotogramma, perche'
+la temporizzazione avverra' totalmente col CIAB. Vedremo un esempio.
+
+exec = 1	;0 = ExecBase destroyed
+		;1 = ExecBase valid
+
+Qua va lasciato 1, dato che in $4.w lasciamo l'execbase valido... non siamo
+mica dei maniaci!!! E la startup che la facciamo a fare?
+
+opt020 = 0	;0 = MC680x0 code
+		;1 = MC68020+ or better
+
+Questo e' chiaro: se il vostro gioco/demo e' AGA only, potete mettere questo
+ad 1, altrimenti lasciatelo a zero. Attenti a non metterlo ad 1 quando non
+serve!!!!!! SOLO SE IL GIOCO/DEMO VA **SOLO** SU AGA (quindi 68020+).
+
+use = $2009559	; Usecode (mettete il valore dato dal p61con al salvataggio
+		; diverso per ogni modulo!)
+
+Qua il commento spiega tutto... annotatevi sempre l'usecode su un foglietto
+(senza perdere il foglietto, naturalmente), e mettetelo qua.
+Serve per far assemblare solo le routines degli effetti usati nel modulo,
+risparmiando spazio. Mettere -1 significa assemblare tutto (puah!).
+			      ____  
+			     /    \ 
+			  _ |______| _
+			 /(_|/\/\/\|_)\
+			(______________)
+			    |  ..  |
+			    | \__/ |
+			    |______|
+			  .--'    `--.
+			  | |      | |
+			  | |______| |
+			  |_||||||||_|
+			  (^) ____ (^)
+			    |  ||  |
+			   _| _||_ |_
+			  /____\/____\
+
+Il programma di conversione permette anche di comprimere il modulo, ma
+questo fa perdere un po' la qualita'. Quindi vi sconsiglio di compattarli...
+A meno che non dobbiate fare una 40k intro e abbiate le spalle al muro in
+termini di spazio, e' sempre bene usare il modulo "normalmente" convertito.
+Comunque, il programma permette di scegliere quali sample compattare e quali
+no... e di ascoltare con le nostre orecchie se si perde troppo di qualita'!!!
+
+Ecco cosa si deve fare per comprimere e risuonare un modulo compresso:
+
+1) Convertire il modulo nel formato P61 compresso, con "P61CON".
+   Nelle preferences del programma, occorre attivare l'opzione "pack samples".
+   Da notare che potete scegliere quali sample comprimere e quali no.
+   Ecco cosa vedrete per ogni sample:
+
+   Original	   -Suona il sample originale (Stop con tasto destro mouse)
+   Packed	   -Suona il sample come verrebbe compresso. Se notate che si
+   		    perde troppo in qualita', ripensateci...!
+   Pack		   -Segna questo sample come "da comprimere"
+   Pack rest	   -Compatta tutti gli altri sample da qua in avanti
+   Don't pack	   -Non compattare questo sample
+   Don't pack rest -Non conpattare tutti gli altri sample (da qua in avanti)
+   Annotatevi al salvataggio l'USECODE, come sempre.
+   In PIU', annotatevi anche il "sample buffer length"!!!!!!
+
+2) In questo modo, abbiamo ottenuto il modulo convertito e COMPRESSO.
+
+3) Ora ci sono 2 cose in piu' da fare: innanzitutto, il modulo ha i sample
+   compressi, che vanno scompattati in un buffer. Per fare cio', occorre fare
+   2 cose: il buffer, lungo quanto indicato dal programma come "sample buffer
+   length", e mettere il suo indirizzo in a2 prima di chiamare P61_Init, che
+   provvedera' alla decompressione. Per il resto (play ed end) e' uguale.
+   Vediamo in pratica il tutto:
+
+	movem.l	d0-d7/a0-a6,-(SP)
+	lea	P61_data,a0	; Indirizzo del modulo in a0
+	lea	$dff000,a6	; Ricordiamoci il $dff000 in a6!
+	sub.l	a1,a1		; I samples non sono a parte, mettiamo zero
+*******************
+>>>>>	lea	samples,a2	; modulo compattato! Buffer destinazione per
+*******************		; i samples (in chip ram) da indicare!
+	bsr.w	P61_Init	; Nota: impiega alcuni secondi per decompress!
+	movem.l	(SP)+,d0-d7/a0-a6
+
+Per il modulo e il buffer, ecco le modifiche:
+
+1) Il modulo non occorre piu' che sia caricato in chip ram:
+
+	Section	modulozzo,data	; Non occorre sia in chip ram, perche' e'
+				; compresso e sara' scompattato altrove!
+P61_data:
+	incbin	"P61.stardust"	; Compresso, (opzione PACK SAMPLES)
+
+2) Il buffer deve essere caricato in CHIP RAM, e lungo quanto specificato:
+
+	section	smp,bss_c
+
+samples:
+	ds.b	132112	; lunghezza riportata dal p61con
+
+
+Come noterete, oltre a perdere qualita' nei samples, si usa anche piu' memoria,
+in quanto abbiamo in piu' il buffer, anche se il modulo e' piu' corto.
+
+Vediamo un esempio in Lezione14-10b.s
+
+Ora che abbiamo visto le 2 implementazioni principali, possiamo vedere tutte
+le varianti. Innanzitutto l'opzione CIA, che si abilita con l'equate.
+Potete vederene 2 esempi in Lezione14-10c.s e Lezione14-10d.s
+
+				  o
+				 o. ______
+				 °O|.____.|
+				°o.|| .. ||
+				  O|`----'|
+				   |______|
+				 .--'    `--.
+				 | |      | |
+				 | |      | |
+				 |_|______|_|
+				 (^) ____ (^)
+				   |  ||  |
+				  _| _||_ |
+				 /____\/___\
+
+Per finire, vediamo l'uso di 2 optional:
+
+Il fade audio: basta attivare l'equate "fade", e agire sulla apposita
+label "P61_Master", che va da 0 a 64. Esempio in Lezione14-10e.s
+
+La possibilita' di saltare a posizioni arbitrarie del modulo: basta attivare
+l'equate "jump", e chiamare la routine "P61_SetPosition", con la posizione
+nel registro d0. Esempio in Lezione14-10f.s
+
+Ci sarebbero anche altri optional, che possiamo riassumere nelle preferences:
+
+Two files:		Questa opzione salva separatamente i sample e il
+			song in 2 file. Puo' servire se usiamo piu' moduli
+			con gli stessi sample...
+
+P61A sign:		mette il segno P61A all'inizio del modulo... puo'
+			servire solo a rendere piu' facile ai malintenzionati
+			ripparlo!!! Non settatelo mai!
+
+No samples:		Serve quando si salvano molti moduli che hanno gli
+			stessi sample: la prima volta si mette "two files",
+			e si salvano i moduli e il primo song. Poi si mette
+			questa opzione e si salvano tutti gli altri songs.
+
+Tempo:			Per far usare l'opzione "Tempo" al player.
+
+Icon:			Se si vuol salvare un icona assieme al modulo
+
+Delta:			Compressione a 8-bit anziche' a 4-bit (ho notato
+			che non cambia quasi niente... bah!)
+
+Sample packing:		Da settare per la compressione dei samples con
+			l'algoritmo delta a 4-bit (PERDENDO DI QUALITA'!!!).
+
+			 ____     ________     ____
+			 \__ \__ /   __   \ __/ __/
+			   \____|o o \/ o o|____/
+			     \__|__________|__/
+			        |     ___/__\
+			       _|__   \__/  \\_
+			      (_______/U     \/
+			____/\_\___U_/ \_____/_/\____
+			\ ___/  (_(_______)_)  \___ /
+			 \_\/  /      |      \  \/_/
+			   /  /       |       \  \
+			  /  /________|_______/\  \
+			 /  /      _____        \  \
+			 \           /             /
+			  \_______________________/
+
+Buon ascolto a tutti!
+

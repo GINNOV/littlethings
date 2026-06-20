@@ -1,0 +1,1 @@
+BOOL Error(char*);

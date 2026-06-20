@@ -1,0 +1,117 @@
+/**************************************************************************/
+                           PERE ET FILS
+                         ( Father & Sons )
+             An example of creating REENTRANT processes
+                        by Jean-Michel Forgeas
+                            June 1987
+/**************************************************************************/
+IMPORTANT:
+----------
+    This files are placed into Public Domain by the author.
+    You can freely distribute them for non-commercial purposes
+    on condition that they all stay together:
+
+        proc.h              include file (message structure)
+        Pere.c              'father' source
+        Fils.c              'child'  source
+        StartProc.asm       startup source
+        Pere                executable
+        Fils                executable
+        StartProc.obj       object file to link with
+        pere-et-fils.doc    this file
+
+/* ----------------------------------------------------------------------- */
+
+
+    To try it out:
+    --------------
+        Set your current directory to pere-et-fils drawer.
+        Then type Pere Fils [n]  ( n - the number of processes you want,
+                                     try 4 first time).
+
+    To stop them all:
+    -----------------
+        Write 'logoff' into every window.
+        'Pere' stops itself after the last 'fils'.
+
+
+    HOW IT WORKS:
+    -------------
+        Father loads ones the child code into memory and then starts as many
+        processes as you want over it. The code is as a pure body,
+        the process is the spirit to bring this body to life.
+
+        Father opens 2 MsgPorts. The first one is used for children
+        initilisation and to recieve their answers ( Ok or error codes).
+        Then, father changes the ReplyPort in the message structure
+        to his second port so to dialog with child process through father's
+        second port.
+        Father process then can start another child using the first
+        MsgPort.
+
+        Every child detects the initialisation message coming to his port
+        and creates an additional port so not to use the one in the
+        Process structure. Before answering 'Ok' to the father, he places
+        the address of his new port in the message so that father will know
+        to where send his messages.
+
+        As every child has its own message, every message contains the
+        address of the MsgPort of his child.
+
+        Children behave as a terminals and the code that make them work
+        is in the father.
+
+        So you can create as many child processes as you wish all using
+        the same code that exists only ONES in memory.
+        Of course, each child's DATA should be different.
+        Use AllocMem to reserve space for child's static variables. You can
+        use automatic variables since they are placed onto stack but
+        static and global variables should be used with great care since
+        all chilren will read and write to them all at the same time.
+
+
+
+    StartProc.obj:
+    --------------
+        It is modified astartup.obj to allow for reentrant code. It is
+        possible not to use startup at all and kill processes with RemTask(),
+        but it's better to use startup for 2 reasons:
+
+            - cause exit() function is very handy;
+            - RemTask doesn't return the memory (AllocMem) and other
+              resources used by the task it is going to remove;
+
+
+    STATIC & GLOBAL variables:
+    --------------------------
+        The easy way to use static and global variables in your reentrant
+        code is to define one structure that contains all your variables
+        and then call AllocMem with image of this structure. Then you
+        would pass an address of this structure through all of your
+        function calls.
+
+
+
+    COMPILE INSTRUCTIONS:
+    ---------------------
+        This example MUST be compiled with Lattice C (3.10 or 3.03).
+
+                LC1 -iINCLUDE: Pere
+                LC2 -v Pere
+                BLink FROM LIB:AStartup.obj+Pere.o TO Pere
+                      LIBRARY LIB:Amiga.lib+LC.lib VERBOSE NODEBUG
+
+                LC1 -iINCLUDE: Fils
+                LC2 -v Fils
+                BLink FROM LIB:StartProc.obj+Fils.o TO Fils
+                LIBRARY LIB:Amiga.lib VERBOSE NODEBUG
+
+
+
+    CONTACT:
+    --------
+                J-M. Forgeas,
+                21 rue Voltaire,
+                92300 Levallois Perret,
+                FRANCE
+

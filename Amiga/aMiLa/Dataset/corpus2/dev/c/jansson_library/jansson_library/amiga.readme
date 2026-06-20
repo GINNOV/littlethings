@@ -1,0 +1,65 @@
+This is a port of the original Jansson library by Petri Lehtinin which is available at
+http://www.digip.org/jansson/. This is the current latest version, 2.12, and was made
+using my libgen program with a bit of tweaking.
+
+This port is as a dynamically-loaded shared library (.library) as opposed to
+dynamically-linked shared object (.so), which already has a port of version
+2.7 previously ported by Fredrik Wikström and is available at
+http://os4depot.net/share/development/library/misc/libjansson.lha.
+
+As a standard library, its interface is IJansson and all of its functions match the
+standard jannson functions. For instance,
+
+	* IJannson->json_object_set_new () is the matching function for json_object_set_new ()
+	* IJansson->json_dumps () is the matching function for json_dumps ()
+
+etc.
+
+There are *no* inline function defines as they would have a nameclash with the actual
+jansson function names.
+
+The include/jansson directory contains the original jansson header files with some minor
+tweaks for compatibility.
+
+If you wish to test it prior to installing, there is a small test program and its
+source code included in the archive which can be compiled using
+
+	gcc amiga_test.c -o amiga_test -Wall -O3 -Iinclude -Iinclude/jansson
+
+To run it, you'll need to add the jansson library to the library search path which you
+can do with
+
+	assign libs: lib/ add
+
+Then you can run it by typing
+
+	amiga_test
+
+which should give output similar to
+
+------------------------------------
+json: {"string_key": "string_value"}
+loaded json is equal to saved json
+packed successfully:
+[
+  {
+    "key": 4,
+    "my": {
+      "nested": "value",
+      "boolean false": false
+    }
+  },
+  {
+    "real pi": 3.1415920000000002
+  }
+]
+results: [3/3] tests ran successfully
+-------------------------------------
+
+
+Any questions or bug reports, email me at tyrrell.simon@gmail.com
+
+
+
+
+

@@ -1,0 +1,255 @@
+
+                      Intuition 
+                      ~~~~~~~~~ 
+ 
+ Before continuing with  gadgets,  I  am  going  to  briefly  cover Intuition 
+Screens. This tutorial will serve only as  an introduction as I`m running out 
+of time. 
+ 
+ Screens 
+ ~~~~~~~ 
+    To date, all the Intuition tutorials  have  dealt  with windows opened on 
+the Workbench screen. This has it`s  advantages,  no extra memory is required 
+for a custom screen and the  examples  are  all  visible on the screen a text 
+viewer can run on should you wish to read and experiment at the same time. 
+ 
+    The major drawback  is  colour.  Workbench  is  limited  to four colours. 
+Something I have neglected to mention  so  far is that Images and Borders can 
+be rendered in as many colours as the screen provides. 
+ 
+    Imagine the contrast available with a  sixteen  colour display! You could 
+open several windows, each with different foreground and background pens. You 
+could add multi-coloured gadgets and  Images  and build a display more worthy 
+of your beloved Amiga. 
+ 
+    So how does one open a screen?  If  your  thinking  `  structures `, your 
+right. A screen structure needs to be  defined  and  then this is supplied to 
+OpenScreen(). OpenScreen() returns a pointer  in the same way as OpenWindow() 
+which should be tested and saved for later use. 
+ 
+ The New Screen Structure 
+ ======================== 
+ 
+ns_LeftEdge          WORD           x origin 
+ns_TopEdge           WORD           y origin 
+ns_Width             WORD           width in pixels 
+ns_Height            WORD           height in lines ( pixels ) 
+ns_Depth             WORD           number of bitplanes 
+ns_DetailPen         BYTE           foreground pen 
+ns_BlockPen          BYTE           background pen 
+ns_ViewMode          LONG           display modes flags 
+ns_Type              LONG           screen type flags 
+ns_Font              LONG           pointer to TextAttr, NULL for default 
+ns_DefaultTitle      LONG           pointer to title string 
+ns_Gadget            LONG           pointer to gadget list 
+ns_BitMap            LONG           pointer to CustomBitMap, NULL default 
+ 
+    I will now explain each field in a little more detail. 
+ 
+ LeftEdge 
+ ~~~~~~~~ 
+    Not implemented in kickstart 1.3 or lower, set to zero. 
+ 
+ TopEdge 
+ ~~~~~~~ 
+    Number of scan lines from top of display  before the start of the screen. 
+This will normally be set to zero and  leave  it up to the user to reposition 
+the screen. 
+ 
+ Width 
+ ~~~~~ 
+    The pixel width of  the  screen.  Though  you  can  try other values, the 
+recommended ones are: 320 for low resolution, 640 for high resolution. 
+ 
+ Height 
+ ~~~~~~ 
+    The height in scan lines of your display. Again it is normal to use 256 ( 
+200 ) for non-interlaced and 512 ( 400 ) for interlaced displays. 
+ 
+ Depth 
+ ~~~~~ 
+    Number of bitplanes to use for the screen, may take a value from 1 to 6. 
+ 
+ DetailPen 
+ ~~~~~~~~~ 
+    The colour to use for foreground drawing/text printing. 
+ 
+ BlockPen 
+ ~~~~~~~~ 
+    The colour to use for background drawing/text printing. 
+ 
+ ViewModes 
+ ~~~~~~~~~ 
+    The fun bit. Tells Intuition what display  mode to use. A particular mode 
+is defined by setting the appropriate bits  in this long word flag. Each flag 
+is easiest referred to by name: 
+ 
+    V_HIRES            hi resolution mode ( 640 width ) 
+    V_LACE             interlace mode on 
+    V_SPRITES          enable sprites in this display 
+    V_DUALPF           dual playfield mode 
+    V_HAM              hold and modify mode 
+    V_EXTRA_HALFBRITE  64 colour mode 
+    GENLOCK_VIDEO      this allows normal display mode. 
+ 
+    Note that some modes are best set up by  altering a screen once opened in 
+a lesser mode, for example  dual  playfield.  First  open a normal screen and 
+then add the dual playfield. 
+ 
+ Type 
+ ~~~~ 
+    Defines the type of screen. Those I know about are: 
+ 
+    CUSTOMSCREEN       all screens you open will be custom screens, so set 
+                       this bit. 
+    SCREENBEHIND       opens the screen behind all other screens. 
+    SCREENQUIET        screen will not have a title bar or gadgets visible. 
+    CUSTOMBITMAP       set this if you are using your own bitplanes. 
+ 
+    For this tutorial I am only going to use CUSTOMSCREEN. 
+ 
+ Font 
+ ~~~~ 
+    A pointer to a TextAttr structure that defines the font to be used in all 
+window title bars and menu entries. For the present, set this to zero for the 
+default Intuition font. 
+ 
+ DefaultTitle 
+ ~~~~~~~~~~~~ 
+    A pointer to the title to  be  displayed  in  the screens title bar. Note 
+that the title text must be null terminated. 
+ 
+ Gadgets 
+ ~~~~~~~ 
+    Not implemented on kickstart 1.3 or lower. Set to zero. 
+ 
+ CustomBitMap 
+ ~~~~~~~~~~~~ 
+    Pointer to a BitMap structure if you are supplying your own bitplanes for 
+the screen display. Will cover this in a later tutorial. 
+ 
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+ 
+ Opening A Screen 
+ ~~~~~~~~~~~~~~~~ 
+    Opening a screen is just a case of setting  up a new screen structure and 
+then  calling   OpenScreen().   The   new  screen  will  then  be  displayed. 
+OpenScreen() supplies a pointer to  the  Screen  structure if all went ok. If 
+OpenScreen() fails to open  the  screen,  it  returns zero. You should always 
+test register d0 for the return value. 
+ 
+    When you have finished with  the  screen  you  should close it by calling 
+CloseScreen(). This requires the pointer returned by OpenScreen(). 
+ 
+    The following fragment demonstrates this: 
+ 
+              lea        MyScreen,a0 
+              CALLINT    OpenScreen 
+              move.l     d0,scrn.ptr 
+              beq.s      Error 
+ 
+              << more program here >> 
+ 
+              move.l     scrn.ptr,a0 
+              CALLINT    CloseScreen 
+ 
+              << more program here >> 
+ 
+MyScreen      dc.w        0,0               x,y origin 
+              dc.w        320,256           width,height 
+              dc.w        3                 3 planes = 8 colours 
+              dc.b        3                 foreground colour 
+              dc.b        1                 background colour 
+              dc.l        GENLOCK_VIDEO     view modes: normal 
+              dc.l        CUSTOMSCREEN      screen type 
+              dc.l        0                 default font 
+              dc.l        ScrnName          pointer to title 
+              dc.l        0                 no gadgets 
+              dc.l        0                 no custom bitmap 
+ 
+ Once a screen has been opened, you can open windows on it. 
+ 
+ Opening Windows 
+ ~~~~~~~~~~~~~~~ 
+    Windows are opened in the normal way. The  only extra step required is to 
+put a pointer to the  screens  structure  (  returned  by OpenScreen ) in the 
+nw_Screen field of the New Window structure and also set the nw_Type field to  
+CUSTOMSCREEN. 
+ 
+    This is best seen by looking at an example.  See the ColourGadget program 
+in my source directory. It opens a custom  screen, then a window and displays 
+a gadget, in eight colours, in the window. 
+ 
+    Note that no extra work is required for the gadget. 
+ 
+ 
+ 
+ As I`m so pushed for time,  that`s  all  I`ve  got time for this month. Will 
+expand on screens next month. 
+ 
+                                             Mark. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 

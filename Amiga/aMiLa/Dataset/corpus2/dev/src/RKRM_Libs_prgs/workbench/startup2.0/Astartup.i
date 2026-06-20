@@ -1,0 +1,1 @@
+ASTARTUP	SET	1

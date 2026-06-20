@@ -1,0 +1,620 @@
+TABLE OF CONTENTS
+
+mesamain/--background--
+mesamain/mesaCreateVisual
+mesamain/mesaDestroyVisual
+mesamain/mesaCreateContext
+mesamain/mesaDestroyContext
+mesamain/mesaCreateFramebuffer
+mesamain/mesaDestroyFramebuffer
+mesamain/mesaMakeCurrent
+mesamain/mesaGetCurrentContext
+mesamain/mesaCopyContext
+mesamain/mesaSetAPITable
+mesamain/mesaProblem
+mesamain/mesaWarning
+mesamain/mesaError
+mesamain/mesaGetError
+mesamain/mesaUpdateState
+mesamain/mesaViewport
+mesamain/mesaGetAttr
+mesamain/mesaSetAttrsA
+
+mesamain/--background--                               mesamain/--background--
+
+   NAME
+        mesamain - Main Mesa library and interface for drivers
+
+   PURPOSE
+        This document describes the interface to the main Mesa library.
+
+        As well as containing the usual set of Mesa/OpenGL functions (which
+        aren't documented here), the mesamain library has a number of
+        functions for drivers to interface with some of the internal
+        functions needed to set up and handle contexts. They are basically
+        the functions found in context.c. These should not be used by
+        applications.
+
+        The only two functions of use for applications are mesaGetAttr() and
+        mesaSetAttrsA().
+
+
+mesamain/mesaCreateVisual                           mesamain/mesaCreateVisual
+
+   NAME
+        mesaCreateVisual - Create a new Mesa Visual
+
+   SYNOPSIS
+        result = mesaCreateVisual(rgb_flag, alpha_flag, db_flag, stereo_flag,
+        D0                        D0        D1          D2       A4
+                            depth_bits, stencil_bits, accum_bits, index_bits,
+                            D3          D4            D5          D6
+                            red_scale, green_scale, blue_scale, alpha_scale,
+                            FP0        FP1          FP2         FP3
+                            red_bits, green_bits, blue_bits, alpha_bits)
+                            D7        A0          A1         A2
+
+        GLvisual* mesaCreateVisual(GLboolean, GLboolean, GLboolean, GLboolean
+                            GLint, GLint, GLint, GLint,
+                            Glfloat, GLfloat, GLfloat, GLfloat,
+                            GLint, GLint, GLint, GLint);
+
+   FUNCTION
+        Create a new visual. This function is simply a wrapper for the
+        internal gl_create_visual() function.
+
+   NOTE
+        This function has changed in V3 to match Mesa 3.0. The old interface
+        has been retired.
+
+   INPUTS
+        rgb_flag - Use RGB or Index mode
+        alpha_flag - Store alphas or not
+        db_flag - Use double or single buffering
+        stereo_flag - Use stereo images (V3)
+        depth_bits, stencil_bits, accum_bits, index_bits - Number of bits to
+             use per element
+        red_scale, green_scale, blue_scale, alpha_scale - Range of values to
+             use per element
+        red_bits, green_bits, blue_bits, alpha_bits - Number of bits to use
+             per element
+
+   RESULTS
+        result - A pointer to a created GLvisual
+
+   BUGS
+        None.
+
+   SEE ALSO
+        mesaDestroyVisual()
+
+mesamain/mesaDestroyVisual                         mesamain/mesaDestroyVisual
+
+   NAME
+        mesaDestroyVisual - Destroy a Mesa Visual
+
+   SYNOPSIS
+        mesaDestroyVisual(vis)
+                          A0
+
+        void mesaDestroyVisual(GLvisual *);
+
+   FUNCTION
+        Destroy a visual. This function is simply a wrapper for the internal
+        gl_destroy_visual() function.
+
+   INPUTS
+        vis - A pointer to a previously created visual
+
+   RESULTS
+        None.
+
+   BUGS
+        None.
+
+   SEE ALSO
+        mesaCreateVisual()
+
+mesamain/mesaCreateContext                         mesamain/mesaCreateContext
+
+   NAME
+        mesaCreateContext - Create a Mesa Context
+
+   SYNOPSIS
+        result = mesaCreateContext(visual, share, context, direct)
+        D0                         A0   A1     A2          D0
+
+        GLcontext* mesaCreateContext(GLvisual*, GLcontext*, void*, GLboolean );
+
+   FUNCTION
+        Create a new Mesa context. This function is simply a wrapper for the
+        internal gl_create_context() function.
+
+   NOTE
+        This function has changed in V3 to match Mesa 3.0. The old interface
+        has been retired.
+
+   INPUTS
+        visual - A previously create GLvisual
+        share - Optional sharing context
+        context - Driver-specific context
+        direct - Use direct rendering (V3)
+
+   RESULTS
+        result - A pointer to a created GLcontext
+
+   BUGS
+        None.
+
+   SEE ALSO
+        mesaDestroyContext(), mesaCreateVisual()
+
+mesamain/mesaDestroyContext                       mesamain/mesaDestroyContext
+
+   NAME
+        mesaDestroyContext - Destroy a Mesa Context
+
+   SYNOPSIS
+        mesaDestroyContext(context)
+                           A0
+
+        void mesaDestroyContext(GLcontext *);
+
+   FUNCTION
+        Destroy a context. This function is simply a wrapper for the internal
+        gl_destroy_context() function.
+
+   INPUTS
+        context - A pointer to a previously created context
+
+   RESULTS
+        None.
+
+   BUGS
+        None.
+
+   SEE ALSO
+        mesaCreateContext()
+
+mesamain/mesaCreateFramebuffer                 mesamain/mesaCreateFramebuffer
+
+   NAME
+        mesaCreateFramebuffer - Create a new Mesa Framebuffer
+
+   SYNOPSIS
+        result = mesaCreateFramebuffer(visual)
+        D0                             A0
+
+        GLframebuffer* mesaCreateFramebuffer(GLvisual* )
+
+   FUNCTION
+        Create a new Mesa Framebuffer. This function is simply a wrapper for
+        the internal gl_create_framebuffer() function.
+
+   INPUTS
+        visual - A previously create GLvisual
+
+   RESULTS
+        result - A pointer to a created GLframebuffer
+
+   SEE ALSO
+        mesaDestroyFramebuffer(), mesaCreateVisual()
+
+mesamain/mesaDestroyFramebuffer               mesamain/mesaDestroyFramebuffer
+
+   NAME
+        mesaDestroyFramebuffer - Destroy a Mesa Framebuffer
+
+   SYNOPSIS
+        mesaDestroyFramebuffer(buffer)
+                               A0
+
+        void mesaDestroyFramebuffer(GLframebuffer *);
+
+   FUNCTION
+        Destroy a framebuffer. This function is simply a wrapper for the
+        internal gl_destroy_framebuffer() function.
+
+   INPUTS
+        buffer - A pointer to a previously created framebuffer
+
+   RESULTS
+        None.
+
+   BUGS
+        None.
+
+   SEE ALSO
+        mesaCreateFramebuffer()
+
+mesamain/mesaMakeCurrent                             mesamain/mesaMakeCurrent
+
+   NAME
+        mesaMakeCurrent - Make a context and framebuffer current
+
+   SYNOPSIS
+        mesaMakeCurrent(context, buffer)
+                        A0       A1
+
+        void mesaMakeCurrent(GLcontext*, GLframebuffer* );
+
+   FUNCTION
+        Make a context and framebuffer current. This function is simply a
+        wrapper for the internal gl_make_current() function.
+
+        Note that this is NOT the way for an application to set the current
+        context. Use the driver.
+
+   INPUTS
+        context - A pointer to a previously created context
+        buffer - A pointer to a previously created framebuffer
+
+   RESULTS
+        None.
+
+   SEE ALSO
+
+
+mesamain/mesaGetCurrentContext                 mesamain/mesaGetCurrentContext
+
+   NAME
+        mesaGetCurrentContext - Get the currently current Mesa context
+
+   SYNOPSIS
+        result = mesaGetCurrentContext()
+        D0
+
+        GLcontext* mesaGetCurrentContext(void);
+
+   FUNCTION
+        Get the currently current Mesa context. This function is simply a
+        wrapper for the internal gl_get_current_context() function.
+
+        Note that this is NOT the way for an application to get the current
+        context. Use the driver.
+
+   INPUTS
+        None.
+
+   RESULTS
+        result - The currently current Mesa context
+
+   SEE ALSO
+
+
+mesamain/mesaCopyContext                             mesamain/mesaCopyContext
+
+   NAME
+        mesaCopyContext - Copy a context
+
+   SYNOPSIS
+        mesaCopyContext(source, destination, mask)
+                        A0      A1           D0
+
+        void mesaCopyContext(GLcontext*, GLcontext*, GLuint);
+
+   FUNCTION
+        Copy a context. This function is simply a wrapper for the internal
+        gl_copy_context() function.
+
+        Note that this is NOT the way for an application to copy a contxt.
+        Use the driver.
+
+   INPUTS
+        source - Source context
+        destination - Destination context
+        mask - bitwise OR of GL_*_BIT flags
+
+   RESULTS
+        None.
+
+   BUGS
+        None.
+
+   SEE ALSO
+
+
+mesamain/mesaSetAPITable                             mesamain/mesaSetAPITable
+
+   NAME
+        mesaSetAPITable - Set an API table
+
+   SYNOPSIS
+        mesaSetAPITable(context, api_table)
+                        A0       A1
+
+        void mesaSetAPITable(GLcontext*, struct gl_api_table *);
+
+   FUNCTION
+        Set an API table for a context. This function is simply a wrapper for
+        the internal gl_set_api_table() function.
+
+   INPUTS
+        context - A pointer to a previously created context
+        api_table - Initialized API table, or NULL to restore original API
+
+   RESULTS
+        None.
+
+   BUGS
+        None.
+
+   SEE ALSO
+
+
+mesamain/mesaProblem                                     mesamain/mesaProblem
+
+   NAME
+        mesaProblem - Report a problem
+
+   SYNOPSIS
+        mesaProblem(context, str)
+                    A0       A1
+
+        void mesaProblem(GLcontext*, char*);
+
+   FUNCTION
+        Report a problem to the user. This function is simply a wrapper for
+        the internal gl_problem() function.
+
+   INPUTS
+        context - Context which has the problem
+        str - Error string to report
+
+   RESULTS
+        None.
+
+   BUGS
+        None.
+
+   SEE ALSO
+
+
+mesamain/mesaWarning                                     mesamain/mesaWarning
+
+   NAME
+        mesaWarning - Issue a warning
+
+   SYNOPSIS
+        mesaWarning(context, str)
+                    A0       A1
+
+        void mesaWarning(GLcontext*, char*);
+
+   FUNCTION
+        Issue a warning to the user. This function is simply a wrapper for
+        the internal gl_warning() function.
+
+   INPUTS
+        context - Context for which to issue the warning
+        str - Warning string to issue
+
+   RESULTS
+        None.
+
+   BUGS
+        None.
+
+   SEE ALSO
+
+
+mesamain/mesaError                                         mesamain/mesaError
+
+   NAME
+        mesaError - Report an error
+
+   SYNOPSIS
+        mesaError(context, error, str)
+                  A0       D0     A1
+
+        void mesaError(GLcontext*, GLenum, char*);
+
+   FUNCTION
+        Report an error to the user. This function is simply a wrapper for
+        the internal gl_error() function.
+
+   INPUTS
+        context - Context which has the error
+        error - The error value
+        str - Error string to report
+
+   RESULTS
+        None.
+
+   BUGS
+        None.
+
+   SEE ALSO
+
+
+mesamain/mesaGetError                                   mesamain/mesaGetError
+
+   NAME
+        mesaGetError - Get the current error value
+
+   SYNOPSIS
+        result = mesaGetError(context)
+        D0                    A0
+
+        void mesaGetError(GLcontext*);
+
+   FUNCTION
+        Get the current error value of the context. This function is simply a
+        wrapper for the internal gl_GetError() function.
+
+        Note that this is NOT the way for an application to get the error
+        value.
+
+   INPUTS
+        context - Context to get error of
+
+   RESULTS
+        result - Error value
+
+   BUGS
+        None.
+
+   SEE ALSO
+
+
+mesamain/mesaUpdateState                             mesamain/mesaUpdateState
+
+   NAME
+        mesaUpdateState - Update a context state
+
+   SYNOPSIS
+        mesaUpdateState(context)
+                        A0
+
+        void mesaUpdateState(GLcontext*);
+
+   FUNCTION
+        Update a context state. This function is simply a wrapper for the
+        internal gl_update_state() function.
+
+   INPUTS
+        context - Context to update
+
+   RESULTS
+        None.
+
+   BUGS
+        None.
+
+   SEE ALSO
+
+
+mesamain/mesaViewport                                   mesamain/mesaViewport
+
+   NAME
+        mesaViewport - Set a context viewport
+
+   SYNOPSIS
+        mesaViewport(context, x, y, width, height)
+                     A0       D0 D1 D2     D3
+
+        void mesaViewport(GLcontext*, GLint, GLint, GLsizei, GLsizei);
+
+   FUNCTION
+        Set a context viewport. This function is simply a wrapper for the
+        internal gl_Viewport() function.
+
+        Note that this is NOT the way for an application to set the viewport.
+        Use glViewport().
+
+   INPUTS
+        context - Context to set viewport of
+        x,y,width,height - Viewport position and size
+
+   RESULTS
+        None.
+
+   BUGS
+        None.
+
+   SEE ALSO
+
+
+mesamain/mesaGetAttr                                     mesamain/mesaGetAttr
+
+   NAME
+        mesaGetAttr - Get mesamain library attributes
+
+   SYNOPSIS
+        result = mesaGetAttr(attr, data)
+        D0                   D0    A0
+
+        ULONG mesaGetAttr(ULONG, ULONG *);
+
+   FUNCTION
+        Get an attribute of the mesamain library instance. This function can
+        be used by applications. The main purpose of this function is to
+        provide an easy means of getting information about the driver the
+        user wants to use.
+
+   INPUTS
+        attr - Attribute to get value of
+        data - Pointer to memory area which receives the attribute value
+
+   TAGS
+        MESA_Driver (STRPTR) - Name of driver library that the library is
+             using. This returns a pointer to the actual library ID string.
+             If the driver hasn't been set yet, the driver specified by the
+             environment variables "AmigaMesaRTL/Driver" (default
+             "MesaDrivers/amigamesartl") and "AmigaMesaRTL/DriverVersion"
+             (default 2) will be opened. This allows you to open the mesamain
+             library, and simply open and associate a driver with the library
+             by getting this attribute. An application would probably want to
+             actually use MESA_DriverBase to ensure the application is using
+             the same driver instance as the library.
+
+        MESA_DriverBase (struct Library *) - Get the driver base that the
+             Mesa library instance is using. As with MESA_Driver, a driver
+             specified by environment variables will be opened if the library
+             does not have a driver yet. Using this attribute is probably
+             preferable to using AMRTL_Driver for an application, as this
+             attribute gets you the driver base the library is using. This is
+             what the autoinitialization routine in the MesaAuto.c LIB file
+             actually uses to get a driver.
+
+        MESA_DriverVersion (ULONG) - Version of the driver that the Mesa
+             library is using. As with AMRTL_Driver, a driver will be opened
+             if the library does not have a driver yet.
+
+        MESA_HaveDriver (BOOL) - TRUE if the Mesa library has a driver, FALSE
+             otherwise.
+
+   RESULTS
+        result - 1 if the tag was handled, 0 if not.
+
+   BUGS
+        None.
+
+   SEE ALSO
+        mesaSetAttrsA()
+
+mesamain/mesaSetAttrsA                                 mesamain/mesaSetAttrsA
+
+   NAME
+        mesaSetAttrsA - Set mesamain library attributes
+        mesaSetAttrs - Varargs stub
+
+   SYNOPSIS
+        result = mesaSetAttrsA(tags)
+        D0                     A0
+
+        ULONG mesaSetAttrsA(struct TagItem *);
+
+        result = mesaSetAttrs(tag1, ...)
+
+        ULONG mesaSetAttrs(ULONG, ...);
+
+   FUNCTION
+        Sets Mesa library attributes. This function can be used by
+        applications.
+
+   INPUTS
+        tags - Pointer to a tag list
+
+   TAGS
+        MESA_Driver (STRPTR) - Name of driver to use. See the description for
+             mesaGetAttr(). Note that at present, a Mesa library instance can
+             only once open a driver. In the future, there may be the ability
+             to do on-the-fly driver switching. Also note that the driver
+             base used by an application should be the same driver base used
+             by the mesamain library, otherwise the application ends up
+             working with a different context than the driver.
+
+        MESA_DriverBase (struct Library *) - Set the driver base that the
+             Mesa library instance should use. See MESA_Driver.
+
+   RESULTS
+        result - Currently always 0
+
+   BUGS
+        No error reporting yet (e.g. driver failed to open). Check the value
+        of MESA_HaveDriver instead.
+
+   SEE ALSO
+        mesaGetAttr()
+

@@ -1,0 +1,11 @@
+These files are from the MorphOS PowerSDL Port.
+
+You can get the current version from:
+http://www.lehtoranta.net/powersdl/
+
+These files can be either copied to system wide
+LIBS: via the command
+
+copy #?.library LIBS:
+
+or can be copied to the application folder

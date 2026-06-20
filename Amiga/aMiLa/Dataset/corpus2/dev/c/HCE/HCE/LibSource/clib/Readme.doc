@@ -1,0 +1,33 @@
+(19.4.94)
+
+      NOTE: Some of the libraries in this directory cannot be remade without
+            the Commodore Include files.
+
+
+      Brief Intructions on how to make one of the C libraries.
+      ----------------------------------------------------------
+
+      FROM HCE:
+      
+      1) Select 'Load (c/a-source)' from the 'Disk' menu and then 
+         load this document (if you haven`t already).
+         You can then view the instructions from the editor.
+      2) Select 'Lock?' from the 'Other' menu and then Lock the directory
+         which contains the library files.
+      3) Select 'Compiler-options' from the 'Compile' menu.
+      4) Select 'Load Compile List' and load the file with a '.CL' extension.
+      5) Click on the 'Compile' gadget until it shows 'FROM-LIST'.
+      6) Exit the options window.
+      7) Set the 'Outpath' gadget in the  'Assembler-options' window to
+         a path of your choice. (Default is, RAM:)
+      8) Select the 'Compile+Optimize+Assemble' gadget.
+      9) Wait until all files have been compiled.(10-20 mins)
+     10) Select 'Linker-options' from the 'Link' menu.
+     11) Select 'Load Link List' and load the file with a '.LL' extension.
+     12) Enter a library name with path into the 'Library Outname' gadget
+         (eg: RAM:String.Lib).
+     13) Select 'List To Lib' and wait.(10-30 secs)
+
+
+
+

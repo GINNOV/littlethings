@@ -1,0 +1,37 @@
+
+Attention: charger l'adresse de base du segment de donnée avec getA4()
+ou compiler séparemment cette fonction avec l'option -y.
+Le code est: LEA _LinkerDB,A4. Puis, il y a propagation d'A4.
+
+Règle d'or:
+   Pas de système anarchique c'est-à-dire qu'un tâche lancée est toujours
+   "sous le contrôle" soit d'une autre tâche, soit de l'utilisateur.
+
+o Tâche parente / tâche enfante ( lancée par la tâche parente )
+
+o Tâche dépendante / indépendante ou
+   code, données dépendants / indépendants; du code, données de la parente.
+
+o Sur Amiga, une tâche ne peut pas être tuée ( sens UNIX ) car il n'existe
+   pas de mémorisation des ressources ( ex: fichiers ouverts ).
+   Autremendit, une tâche ne peut être qu'enlevée, ôtée du système et ceci
+   lorsqu'elle s'est terminée et a rendu toutes ses ressources.
+
+o Pour Exec, les tâches dépendantes sont les seules intêressantes puisque
+   la notion de segment du DOS ( Disk Operating System ) n'est pas connu.
+   Pas de chargement de tâche ou de séparation de segment possible.
+
+o Gestion des tâches dépendantes:
+   Une tâche lancée devra signaler qu'elle s'est terminée c'est-à-dire:
+   Un mécanisme permet à la tâche parente d'attendre la terminaison d'une
+   tâche enfante, puis de l'ôter du système (la tâche terminée se met dans
+   un état sain en attente d'être tuée par la prente).
+   Attention: si elle signale sa fin puis se saborde, la commutation de
+   tâches entre ces deux actions peut décharger le code de l'enfant
+   avant le sabordage ait eu lieu.
+   Pour qu'une tâche puisse mourir, il faut que toutes ses tâches enfants
+   soient décèdées.
+
+o Tâches indépendantes: à priori même gestion. Le susicide est sans
+   conséquence puisqu'il n'y a pas de dépendance de code.
+

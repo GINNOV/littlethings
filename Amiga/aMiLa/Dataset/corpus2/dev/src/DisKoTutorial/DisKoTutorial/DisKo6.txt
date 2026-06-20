@@ -1,0 +1,81 @@
+Gestion CDDA
+Par Corto
+
+Après être entré dans les profondeurs de MUI, on s'en écarte un peu pour une partie cruciale de notre player, à savoir le module de gestion des CD. Toujours dans un soucis d'apprendre à bien programmer (en MUI ou pas), on excluera toute fonction d'accès aux disques de notre source lié à l'interface. Cette modularité est indispensable pour que les sources restent lisibles et cohérents. Ainsi, même si on utilise plusieurs API différentes (suivant l'OS par exemple) pour accéder aux disques, l'interface graphique n'a pas à s'en soucier.
+
+
+ Module CDDA
+
+Nous envisageons donc un module que nous appellerons "cdmanager". C'est à lui que notre interface va s'adresser pour lui demander si un disque est présent, combien de titres se trouvent dessus, etc. Nous n'implémenterons que les fonctionnalités de base car bien qu'indispensable, ce module ne doit pas nous détourner de notre centre d'intérêt du moment : MUI.
+
+Pour la lecture de CD, la cdda.library vient simplifier nos affaires sur MorphOS. Sur AmigaOS, il existe la cdplay.library qui est moins évoluée mais doit offrir des fonctionnalités de base équivalentes. Sinon les players avaient l'habitude de piloter directement le lecteur avec des commandes SCSI envoyées au device approprié. Pour rester simple, sous AmigaOS, nous ne pourrons que simuler la présence d'un CD en renvoyant des valeurs fixes. C'est dommage mais dans le fond ça ne gênera pas au niveau de l'interface. Libre à vous d'implémenter un réel gestionnaire de CD avec des accès bas niveau !
+
+
+ De quelles fonctions avons-nous besoin ?
+
+Nous devons pouvoir :
+- initialiser et libérer le module
+- réserver le lecteur pour notre usage personnel et annuler ce verrou
+- récupérer le nombre de pistes du CD courant
+- jouer une piste en particulier et arrêter la lecture
+Malheureusement, d'autres fonctionnalités ne seront pas gérées : pause, éjection, ... il est toujours envisageable de les implémenter par la suite. L'important pour nous tient dans la réalisation d'un module indépendant auquel on peut accéder simplement depuis notre interface. De même, la gestion interne du module ne présente peut-être pas toutes les garanties nécessaires, bien qu'il soit fonctionnel.
+
+Voici les prototypes des fonctions correspondants à celles énumérées ci-dessus :
+int CDM_Initialize(STRPTR device, int unit);
+void CDM_DeInitialize(void);
+int CDM_GetNumTracks(void);
+void CDM_PlayTrack(int num);
+void CDM_StopTrack(void);
+
+Le préfixe CDM signifie "CD Manager", soit le nom de notre module. Les noms des fonctions sont en anglais, il s'agit d'une convention personnelle. Seules deux fonctions prennent des arguments : l'initialisation qui indique le device et l'unité choisis, la lecture d'une piste donnée (de 1 à GetNumTracks()).
+
+
+ Entre boutons et actions
+
+Les détails du module CDM restent à votre entière disposition dans le source, nous ne nous attardons pas dessus. En revanche, voyons l'intégration du module dans l'interface.
+
+L'initialisation de CDM a lieu dès le démarrage de l'application. Le device et son unité sont passés en dur, ce qui a pour conséquence de rendre actuellement inutile l'onglet de configuration. Mais pas de panique, tout est en place pour remédier à ça. D'autres part, les deux valeurs sont présentées dans une structure appelée Config que l'on renseigne donc manuellement pour l'instant mais là encore, il suffit d'imaginer une fonction de lecture d'un fichier de configuration au démarrage pour rendre tout cela beaucoup plus attrayant. Prévoyez aussi la sauvegarde ;-)
+
+Les fonctions de verrouillage (lock) sont utilisées uniquement en interne. Le module doit s'assurer qu'il a un accès privilégié au lecteur et au disque pour y lire des informations. Une des premières données que l'on va lire pour en rendre compte à l'utilisateur concerne le nombre de pistes du CD présent. La valeur obtenue permet d'enrichir la liste avec autant de nouvelles entrées qu'il n'y a de pistes sur le CD, grâce à la méthode MUIM_List_InsertSingle de l'objet liste. Il semble que ce dernier ne copie pas dans ses données personnelles les chaînes insérées, c'est pourquoi nous avons déclaré un tableau (de 24 lignes maximum) pour y conserver les chaînes sur lesquelles pointe l'objet liste.
+
+Voila pour les opérations qui ont lieu une seule fois. Maintenant, le temps est venu de gérer l'intéraction des boutons et de la liste avec le module CDM. Rappelons les actions de base :
+- la lecture d'une piste est commandée quand on clique sur une des entrées de la liste, sur les boutons "Jouer", "Précédent" et "Suivant". Ceci implique la récupération du numéro de piste à jouer, la mise en action du composant Busy et l'appel à la lecture effective de la piste.
+- l'arrêt de la lecture, provoquée par un clic sur "Stopper" ou par la fermeture de l'application (dans ce cas, c'est l'appel à la fonction de libération des ressources qui s'en charge).
+
+
+ Intéractions en pratique
+
+Si les actions sur le module CDM étaient gérées par un composant MUI, on pourrait uniquement (et simplement !) utiliser le mécanisme de notification. En attendant, nous devons ajouter deux hooks :
+- un pour la lecture, quel que soit le composant qui est à l'origine de cette action : il récupère la piste courante de la liste, commande sa lecture à CDM et active le composant Busy
+- l'autre pour l'arrêt
+
+Quelques changements concernant le composant Busy ont été apportés. Il n'est plus lié aux boutons Jouer et Stopper mais à l'action correspondante, ce qui est plus intéressant ! En effet, le contrôle centralisé en un seul endroit, dans le hook. La démarche est la suivante : un clic sur le bouton Jouer définit l'entrée active de la liste ... action sur laquelle repose le hook ! Voila un joli travail d'équipe.
+
+Pour un degré de finition plus avancé, il faudrait récupérer l'événement comme quoi le morceau est fini et passer à la piste suivante si on n'est pas déjà sur la dernière. Le changement de l'entrée active de la liste entrainerait sa lecture (grâce au hook_PlayTrack).
+
+Note : Les sources correspondants à cet article sont disponibles sous forme d'une archive téléchargeable ici. Ce chapitre énonce les principes mais le code doit être étudié dans son ensemble. Deux makefiles sont inclus, suivant votre compilateur, il pourra être nécessaire de les modifier. Pour rappel, la compilation s'effectue ainsi : "make -f ".
+
+
+ Notions acquises dans ce chapitre
+
+- avantages, conception et écriture d'un module indépendant à la GUI
+- amélioration de l'intéraction entre les composants
+- révision des hooks, notifications et appels de méthodes
+
+
+ 
+
+ Commentaires 
+
+
+  2004-10-21 23:42:33 - Amifred 
+
+Quelqu'un a-t-il essayé disko5/6 sur un Amiga 68k ?
+  
+
+
+  2004-11-04 22:47:34 - Corto 
+
+Suite à des soucis de compilation et un ou deux bugs rencontrés avec la cdda.library, il a été décidé de l'abandonner au profit d'une solution interne. Le code de cdmanager.c n'est plus disponible, ça embrouillerait encore plus vu que j'y ai ajouté l'accès direct au device.
+Mais j'ai tout préparé pour que ça compile sans soucis avec 5 compilateurs. Ca devrait fonctionner cette fois ! Sinon, merci de remonter les problèmes ou souhaits.
+

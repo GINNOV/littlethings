@@ -1,0 +1,63 @@
+
+			DumpSprite, © M.Meany 1993.
+			~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ Disclaimer
+ ==========
+ I make no gaurentees as to the suitability or reliability of this program.
+
+ Use this program at your own risk. I will accept no responsability for
+damage caused, or data lost, as a result of running the program. By running
+the program you are agreeing to these terms.
+
+ Usage
+ =====
+ Use from the CLI only!
+
+ DumpSprite <filename>
+
+		<filename> must be an IFF-ILBM as explained below.
+
+		<filename>.s will be created.
+
+ Function
+ ========
+
+ DumpSprite will convert suitable IFF-ILBM files into assembly source code.
+
+ The source IFF file should contain an image not wider that 16 pixels and
+consisting of either 4 or 16 colours.
+
+ A corresponding source file will be created containing Simple Sprite
+structures ready for inclusion into your larger project. The Simple Sprite
+structures are complete, ie two blank control words have been added at the
+start and a terminating long word added to the end.
+
+ In the case of a 16 colour sprite, two Simple Sprite structures will be
+created. If you do not know the reason for this, then this utility is
+probably of little use to you :-)
+
+ Notes
+ =====
+
+ Look as I may, I could not find a utility that would convert a brush
+created by DPaint into source code for a sprite that could be used in an
+assembly language program.
+
+ Though little problems are encountered designing simple 4 colour sprites,
+things get involved when working with 16 colour sprites. This program can
+handle both! 
+
+ Feedback
+ ========
+
+ This program will only be of use to a few people out there. If you are one
+of them and would like to see an improved version then write to me.
+
+Mark
+12 Hinkler Road
+Southampton
+Hants
+SO2 6FT
+
+

@@ -1,0 +1,16 @@
+Short:     V2.1 ToolTypesEditorPPC
+Author:    Jim Steichen (jimbot@frontiernet.net)
+Uploader:  Jim Steichen (jimbot@frontiernet.net)
+Type:      dev/c
+Version:   2.1
+Requires:  OS4.0+
+
+This program was mainly written so that it could be called from other 
+programs, eliminating the need to write your own ToolTypes Editor.
+Read the enclosed AmigaGuide file for more information.
+
+HISTORY
+  2.1   - Minor behavior enhancement(s).
+  2.0   - Added AmigaOS4 & gcc support.
+  1.1   - Added code to open the GUI on the active screen.
+  1.0   - First release.

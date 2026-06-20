@@ -1,0 +1,17 @@
+Short:        68000 Source code statistics generator. V1.0
+Author:       Laurence Vanhelsuwé
+Version:      1.0
+Architecture: m68k-amigaos
+Source:       Fish collection
+Tested:       V40 A3000 with 2Mb CHIP, 5Mb FAST.
+Date:         1992.02.22
+
+Filter/Statistics program which analyzes standard 68000	assembly source code and
+produces mnemonics statistics while also filtering out all unrecognized lines.
+Output files can be fed directly to a small barchart display program "chart" (inc).
+Test source for "chart" included.
+
+Laurence Vanhelsuwé
+Christinastraat 105
+B-8400 Oostende
+BELGIUM

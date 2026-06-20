@@ -1,0 +1,19 @@
+Short   : Subset of the OpenGL API for AGA/CGFX/P96, AmigaOS and MorphOS
+Uploader: mathias.p@wanadoo.fr (Mathias 'Corto' Parnaudeau)
+Author  : mathias.p@wanadoo.fr (Mathias 'Corto' Parnaudeau)
+Type    : dev/c
+Version : 0.10
+
+OpenGL is the most famous API to create 3D worlds. TinyGL only contains
+the main functions but allows you to start programming OpenGL.
+
+The archive contains the libs for SAS/C and GCC (68k and MorphOS).
+You'll find several examples too.
+
+Please read the readme_amiga.txt for more information about the features
+and the compilation advices.
+
+TinyGL was originally written by Fabrice Bellard.
+
+Date : 22/01/2003
+

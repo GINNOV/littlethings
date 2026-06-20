@@ -1,0 +1,22 @@
+				fd2monam 1.0
+				~~~~~~~~~~~~
+    This program is used for converting fd files to MonAm's libfile.
+  Usage:
+    - make directory e.g. tmp/, than you copy exec_lib.fd, dos_lib.fd,
+      intuition_lib.fd and graphics_lib.fd to this directory.
+    - run fd2monam, which must be in the same directory with fd files, or
+      change your current directory to your new directory and run fd2monam
+      with full path.
+  Now, libfile is in directory with fd files.
+
+    That's all. I use this proggy with MonAm 3.02ß, so i don't know if it will
+  run with other versions. Try and send me result please. Thanx.
+    Apology:
+  fd2monam was written year ago and i was begginer in C, so maybe there is still
+  someone who will find this proggy usefull... maybe not, than use it as an
+  example how to not write programs. (i'm lazy to write fd2monam again
+  and better :)
+
+  The fd2monam is freeware. You can spread it anywhere.
+
+  Marek Grodny (e-mail: grodny@hron.fei.tuke.sk)

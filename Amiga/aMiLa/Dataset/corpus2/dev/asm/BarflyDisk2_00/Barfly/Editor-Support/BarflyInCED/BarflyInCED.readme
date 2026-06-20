@@ -1,0 +1,13 @@
+Short:    Rexx scripts for use of Basm in CygnusED
+Author:   Christian Rattei <rattei@informatik.tu-muenchen.de>
+Uploader: rattei@informatik.tu-muenchen.de
+Type:     dev/asm
+
+2 ARexx scripts for assembling and doing automatic error/warning handling
+with Basm directly from within CygnusED. The scripts are written to work
+with both CygnusED 2.12 and 3.5. This package is freeware.
+
+Please read the file BasmScripts.doc carefully, especially the LIMITATIONS
+paragraph, before you send me an e-mail.
+
+Christian Rattei

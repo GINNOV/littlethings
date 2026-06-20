@@ -1,0 +1,22 @@
+; ASM-One - mathieeedoubtrans_lib.i
+; (Release 3.0)
+;
+; by SCHWARZENEGGER/R.A.F
+
+IEEEDPAtan=	-30
+IEEEDPSint=	-36
+IEEEDPCos=	-42
+IEEEDPTan=	-48
+IEEEDPSincos=	-54
+IEEEDPSinh=	-60
+IEEEDPCosh=	-66
+IEEEDPTanh=	-72
+IEEEDPExp=	-78
+IEEEDPLog=	-84
+IEEEDPPow=	-90
+IEEEDPSqrt=	-96
+IEEEDPTieee=	-102
+IEEEDPFieee=	-108
+IEEEDPAsin=	-114
+IEEEDPAcos=	-120
+IEEEDPLog10=	-126

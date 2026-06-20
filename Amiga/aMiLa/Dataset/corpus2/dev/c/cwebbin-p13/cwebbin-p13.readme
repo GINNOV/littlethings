@@ -1,0 +1,29 @@
+Short:        Literate Programming with C and C++
+Author:       Andreas Scherer et.al.
+Uploader:     <scherer genesis informatik rwth-aachen de>
+Type:         dev/c
+Architecture: m68k-amigaos
+Files:        cwebbin-p13.lha, cwebbin-p13.readme
+
+
+This is the final update for the CWEB system on the Amiga.
+
+In order to fully exploit Silvio Levy's CWEB system for `Literate
+Programming with C/C++' you should aquire the original distribution
+
+   ftp.dante.de:/pub/tex/web/c_cpp/cweb/cweb-3.4c.tar.gz
+
+and add the contents of the CWEBBIN distribution.  Care has been taken
+to avoid any conflicts in file names.  Detailed information about what
+to install where is given in the accompanying documentation.
+
+
+Happy CWEBbin'!
+
+
+September, 1995.
+
+Andreas Scherer
+Rolandstraﬂe 16
+52070 Aachen, Germany
+<scherer@genesis.informatik.rwth-aachen.de>

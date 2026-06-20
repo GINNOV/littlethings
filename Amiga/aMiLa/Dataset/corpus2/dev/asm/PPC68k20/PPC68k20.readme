@@ -1,0 +1,37 @@
+Short:        Use your PPC as the ultimate 68k!
+Author:       sraghoeb@ocenl.nl (Sharwin & Rakesh Raghoebardayal)
+Uploader:     polluks+aminet sdf lonestar org (Stefan Haubenthal)
+Type:         dev/asm
+Version:      2.0 Beta
+Architecture: m68k-amigaos
+URL:          http://www.coyoteflux.nl/ppc680x0.htm
+
+Welcome to the first release of PPC680x0 V2.0!
+
+Finally, PPC680x0 has become freeware, this means that anyone is allowed
+to use it freely as long as the archive and contents remain in their 
+original state.
+
+PPC680x0 V2.0 is not entirely finished yet, which means that there may
+still be some bugs present in the program. The following limitations or
+problems are known:
+
+- PPC68k V2.0 Dynamic Cache system is only partially implemented. Therefore
+  it still has no effect
+  
+- The Floating Point Unit may contain some bugs
+
+- Complex immediate modes (ie with brackets etc.) are still not supported
+
+- PPC680x0 Native Mode may cause problems when called from PPC680x0. Only 
+  (nested or non-nested) macro calls may be affected by this
+
+- Parts of the conversion code have been rewritten many years ago, this
+  may or may not cause problems. Actually it has not been tested yet!
+
+- PowerUp mode is untested and probably does not work or produces garbage
+
+Kind regards,
+
+Sharwin & Rakesh
+Coyote Flux

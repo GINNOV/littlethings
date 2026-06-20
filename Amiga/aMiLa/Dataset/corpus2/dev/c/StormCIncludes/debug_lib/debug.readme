@@ -1,0 +1,26 @@
+
+		debug.library V2.0   9.11.97 by Sam Jordan
+		------------------------------------------
+
+This directory contains the debug.library, a debugging system for
+assembler programmers. German and English documentation is included
+as well as a demo program to show the features of the library.
+
+Read the documentation for more information about the debug.library
+
+
+Directory contents:
+
+- debug.readme          the text you are reading now
+- debug.library         the library
+- debug.i               the include file for this library (68K)
+- debugppc.i            the include file for this library (PPC)
+- debug_D.guide         german documentation
+- debug_E.guide         english documentation
+- example.s             example source (68K)
+- example.txt           debugging output of 'example' (68K)
+- example               'example' executable (68K)
+- examplePPC.s          example source (PPC)
+- examplePPC.txt        debugging output of 'examplePPC' (PPC)
+- examplePPC            'examplePPC' executable (PPC)
+

@@ -1,0 +1,63 @@
+
+  Assembler Binary Maker 1.3
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+  1. Copyright and spreading
+     ~~~~~~~~~~~~~~~~~~~~~~~
+  This  program is FreeWare, so it may be spread freely providing that the
+  documentation is included in the package. Making changes is not allowed.
+
+  2. What does it do?
+     ~~~~~~~~~~~~~~~~
+  There are many programs which convert binary files into assembler source
+  code.   However,   all  these  programs  can  only  convert  files  into
+  hexadecimal  format  ie.  'DC.B  $20'. I have never found a program that
+  could  convert a binary file into assembler source binary file ie. 'DC.B
+  %00100000'. That is why I created this converter.
+
+  3. Starting the program
+     ~~~~~~~~~~~~~~~~~~~~
+  This  program can be started only from the Shell or CLI. Then it asks to
+  enter some parameters:
+
+  Give source file name   : (here you should type the source file name)
+  Give target file name   : (here you should type the target file name)
+  Give data size: (B/W/L) : (and here you should choose the size into
+                             which the data will be converted.
+                             B -> DC.B, W -> DC.W, L -> DC.L)
+  Give number of columns  : (here the number of columns per line is
+                             requested. DC.B %00100000 -> 1 kolumna,
+                             DC.B %00100000,%00100000 -> 2 kolumny)
+
+  4. Converting process
+     ~~~~~~~~~~~~~~~~~~
+  Immediately after start, the program allocates a work buffer of about 42
+  KB.  No  additional  memory  is  allocated  during  converting,  and the
+  converted  file is read part by part, which makes it possible to convert
+  files  of  any  size. This means that you can convert a file the size of
+  300  KB with only 50 KB of free memory. The only limit is the free space
+  on  the  disk  on  which  the  target file is written. Converting may be
+  aborted by pressing Ctrl+C.
+
+  ATTENTION: I am not responsible for faulty work of this program.
+
+  5. Program history
+     ~~~~~~~~~~~~~~~
+  1.2 (26 May 1996)
+      The first quite well working version.
+
+  1.3 (24 August 1998)
+      Program can convert files of any size and it also correctly converts
+      these  ones  which length is not divisible by a chosen data size (it
+      changes the size of last lines).
+
+  6. End
+     ~~~
+  That is all. Have a nice converting.
+  And if you have any questions, suggestions or other doubts write to:
+
+  Grzegorz Królik
+  ul. Wyszyïskiego 8/19
+  42-400 Zawiercie
+  Poland

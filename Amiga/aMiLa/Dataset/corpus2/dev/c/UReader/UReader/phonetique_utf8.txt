@@ -1,0 +1,17 @@
+﻿Symbols essential for English phonetics
+æ 	ɑ 	ɒ 	ɔ 	ə 	ɜ 	ɪ 	ʊ 	ʌ
+θ 	ð 	ŋ 	ɹ 	ɫ 	ʃ 	ʒ 	ʍ 	ʔ
+Length marks, stress marks, diacritics
+(put diacritics AFTER the letter they go with)
+ː 	ˑ 	ˈ 	ˌ 	Syllabic, devoiced → 	̩ 	̥
+Other useful symbols
+ɛ 	ø 	œ 	ɯ 	ɤ 	ɨ 	ʉ 	ɚ 	ɝ
+ɵ 	ɶ 	ʚ 	č 	ǰ 	š 	ž 	ü 	ö
+ɓ 	ɕ 	ɖ 	ɗ 	ɟ 	ɠ 	ɢ 	ɣ 	ɥ
+ɦ 	ɬ 	ɭ 	ɮ 	ɰ 	ɱ 	ɲ 	ɳ 	ɴ
+ɸ 	ɻ 	ɽ 	ɾ 	ʀ 	ʁ 	ʂ 	ʈ 	ʋ
+ʎ 	ʐ 	ʑ 	ʕ 	ʘ 	ʙ 	ʛ 	ʜ 	ʝ
+ʟ 	ʡ 	ʢ 	ʰ 	ʲ 	ʳ 	ʴ 	ʷ 	ʸ
+Useful letter-plus-diacritic combinations
+ɛ̃	œ̃	ɑ̃	ɔ̃	t̪	d̪	n̪	r̥	l̥
+

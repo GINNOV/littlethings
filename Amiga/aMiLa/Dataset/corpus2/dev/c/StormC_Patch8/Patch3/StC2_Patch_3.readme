@@ -1,0 +1,80 @@
+HAAGE&PARTNER Computer GmbH
+Mainzer  Straße 10A
+61191 Rosbach
+Germany
+
+Tel: +49 (0) 6007 - 93 00 50
+FAX: +49 (0) 6007 - 75 43
+
+Internet: 100654.3133@compuserve.com
+
+Homepage: http://ourworld.compuserve.com/homepages/haage_partner
+
+
+Dear StormC customer,
+
+enclosed you will find a patch program to update
+StormC version 2.00.04 (07.12.96) to the current release
+2.00.8 (28.01.97).
+
+The process is started by a double click on the icon
+
+StormC2.0-3.Patch.BAT
+
+
+Please take note that the old version of StormC must be in the drawer
+
+StormC:StormSYS
+
+
+Best wishes
+
+HAAGE&PARTNER Support Team
+
+
+
+History of StormC
+============================
+
+02.12.96 (V 2.00.03)
+
+* Optimisations of structs assings (of 23.11.96) caused some side effects at
+  functions which give back structs.
+
+  -> Example "pi.c" can not be compiled any more.
+
+
+07.12.96 (V 2.00.04)
+
+* The tricky algorithm of 17.09.96 (because of call of IEEE library functions)
+  had a blackout when both arguments of the function call were the same register
+  variable (e.g. multiplication of a double variable with itself).
+
+* On the initialisation of a static object with a pointer on another object
+  created unnessesare _INIT_ functions.
+
+22.12.96 (V 2.00.05)
+
+* Optimization of qualified branches.
+
+* FScc calls are not longer used if generating 060-code.
+
+* Just generated objectfiles will be deleted if the compiler puts an errormessage.
+
+* Operator "*=" on WORD-variable gets a wrong result if the variable isn't in a
+  register.
+
+12.01.97 (V 2.00.06)
+
+* Debug-Dateien: bei Klassen werden nur noch ihre direkten Basisklassen vermerkt
+
+* Wenn eine "void"-Funktion eine explizite "return;"-Anweisung enthielt, wurden
+  beim Return Destruktoren für lokale Variablen nicht aufgerufen.
+
+17.01.97 (V 2.00.07)
+
+* Operators "/=" and "%=" generates wrong code for Byte und Word variables.
+
+27.01.97 (V 2.00.08)
+
+* Some mistakes with Array-Indexcalculation fixed.

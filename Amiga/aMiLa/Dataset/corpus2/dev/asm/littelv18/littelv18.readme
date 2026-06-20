@@ -1,0 +1,25 @@
+Short:        Language and compiler as shared library
+Author:       leif_salomonsson@swipnet.se
+Uploader:     amigae swipnet se
+Type:         dev/asm
+Version:      v18
+Replaces:     dev/asm/LittelComp.lha
+Requires:     PhxAss/Lnk,020,OS3
+Architecture: m68k-amigaos
+
+Yeehaaa :)
+
+This is a shared library used to compile littel language
+sources, it uses PhxAss and PhxLnk for assembling and linking it.
+A small frontend "lc17" is included.
+
+Executables, libraries and objects can be created with ease.
+
+I stopped development two years ago.
+
+This is a never released v18 of LITTEL package.
+Sourcecode in AmigaE is included.
+Its FREEWARE.
+
+Have fun,
+Leif

@@ -1,0 +1,32 @@
+Short:    Euchre! v1.2  The card game on The Amiga!
+Author:   kellr@earthlink.net (Rick Keller)
+Uploader: Author
+Type:     game/think
+Requires: OS 2.04 or better
+Replaces: 1.0
+Version:  1.2
+Date:     September 5, 1998
+
+Euchre version 1.2 for the Amiga. Based on the card game of the
+same name. Features multiple playing styles. Each computer player
+can be playing with a different style!
+
+
+New for this release:
+====================
+
+    - fixed display/layout problems
+
+    - added a status section of main window for keeping track of game stats
+
+    - now reports who called trump, by popular demand
+
+    - changed font to XHelvetica
+
+    - fixed bug which prevented a message being displayed when a 4pt loner
+        was won
+
+    -a few other, minor changes
+
+
+

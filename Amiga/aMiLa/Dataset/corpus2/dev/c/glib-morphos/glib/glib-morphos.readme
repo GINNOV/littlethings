@@ -1,0 +1,66 @@
+Short:        Experimental shared runtime library
+Author:       Various, gtk-mui developers, Ilkka Lehtoranta
+Uploader:     Ilkka Lehtoranta (ilkleht@isoveli.org)
+Type:         dev/c
+Version:      2.0
+Requires:     dev/c/libintl-morphos.lha, dev/c/iconv-morphos.lha
+Architecture: ppc-morphos
+
+This is second experimental MorphOS port of glib 2.6.6.
+
+  Version 2.0 (2.11.2006)
+  -----------------------
+
+  - fixed many glib calls
+  - added many more glib calls
+  - added gobject calls
+  - approximately 950 library functions
+
+
+  Install
+  -------
+
+Copy Libs/glib.library to LIBS:
+Copy usr/local/#? usr:local/ ALL
+
+
+  Usage
+  -----
+
+The glib.library defaults to link lib calls. That is, all function calls are
+made using stubs. If you prefer using direct library calls you must add
+
+#include <proto/glib.h>
+
+somewhere in your source code.
+
+Both VBCC and GCC are supported.
+
+
+  Possible problems
+  -----------------
+
+It is very likely that glib.library has problems and doesnt work with all programs.
+Bunch of functions are still missing but in case you find a problem just let me
+know (mailto: ilkleht@isoveli.org) and I'll attempt to fix it. There is also static
+link lib at Aminet, http://aminet.net/dev/gg/glib-2.6.0-morphos.lha from
+Christian Rosentreter.
+
+
+  Dependencies
+  ------------
+
+This library requires intl.library and iconv.library. They are available
+at aminet:
+
+http://www.aminet.net/dev/c/iconv-morphos.lha
+http://www.aminet.net/dev/c/libintl-morphos.lha
+
+In the future glib.library will be required by gtkmui.library (when it is done!).
+
+
+  Source code
+  -----------
+
+You can get the sources of this GLib port at the CVS of
+http://sourceforge.net/projects/gtk-mui/

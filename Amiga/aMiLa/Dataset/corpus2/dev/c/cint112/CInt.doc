@@ -1,0 +1,211 @@
+
+
+
+
+
+                                 CInt.guide
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                 [2m- Page 1 -[22m
+
+
+
+[1;33m1.	Table of Contents[22;39m
+
+
+                        Welcome to the C Interpreter
+                        ----------------------------
+
+ C Interpreter, CInt.guide and all relative files including examples, are
+   copyrighted (©) 1993-94 by The Xperts Group Inc. All Rights Reserved.
+
+                       Engineered by Manolis S Pappas.
+
+---------------------------------------------------------------------------
+
+                    T A B L E   O F   C O N T E N T S
+                    ---------------------------------
+
+
+        What is a C Interpreter
+        Installation
+        Limits
+        Respond
+        Information
+        Credits
+
+---------------------------------------------------------------------------
+
+ Every possible effort has been made to provide a bug-free program, however
+I am NOT responsible in ANY way about any loss of data or mulfunction of
+this program. USE AT YOUR OWN RISK!!!!!!!!
+
+[1;33m2.	What is a C Interpreter[22;39m
+
+ Normally, all C programs must be compiled first and then executed in order
+for the user to check their programs. Well, this isn't very convinient for
+users that are familiar with BASIC or PASCAL or other higher-level
+programming languages, than C.
+
+ Herein the C interpreter comes for. This program will allow C users to
+"run" their program in a "supervised" mode. This means that C programs will
+be interpreted instead of compiled, so it would be easier - theoretically -
+to debug your programs.
+
+ Theoretically means that it isn't possible to emulate 100% the C compiler
+with the interpreter, since C is a "compiler based" language, so it relies
+heavily on the preprocessor, the linker and assembler.
+
+ See C Interpreter Limits section for supported index of C functions.
+
+[1;33m3.	Installation[22;39m
+
+  The C Interpreter requires KickStart 2.0 and above to run correctly.
+
+  The C Interpreter is a CLI/Shell Utility, which means it can be run ONLY
+from a CLI or Shell. Just type "CInt" at the command prompt, followed by the
+name of the C source file you want to execute.
+
+ Important Notice: Since this version of C Interpreter IS case-sensitive,
+you should be very careful with filenames. For example, if your C source
+file is called "test.c" you should invoke the command:
+
+                CInt test.c
+ and not
+                 CInt test
+ 
+ The second command argument will simply ignore your program.
+ 
+
+                                 [2m- Page 2 -[22m
+[2m3.	Installation[22m
+
+ Study the example files provided in order to get an idea about what the
+interpreter does.
+
+[1;33m4.	Limits[22;39m
+
+  The following are NOT supported in this version:
+  
+  - #includes, #defines, and ALL preprocessor stuff
+  - Input or Output in ANY way.
+  - Cases, if's and the rest.
+  - Subroutines, calls and mathematical functions
+  - Long, double numbers.
+  - No structures are allowed
+  - i++, ++i, --i and i-- . Use i=i+1 instead
+  
+  The following are supported:
+  
+  - Unlimited number of branches
+  - Unlimited number of nests
+  - Simple arithmetic operators
+  - Only supports "char" and "int" data types
+  - No structures are allowed
+  - Nested for loops must be delineated with '{' and '}'
+
+ A VERY simple input/output system is supported with the following commands
+
+   - puts       - put a string such as "Hello World" on the console.
+   - print      - put an integer or string on the console.  IE
+                  print(1)  will print "1" on the console.
+                  print("Hello world") will print "Hello World".
+   - getnum     - get a signed integer from the console.
+
+  
+ As you can see, there are a LOT of limitations in this version; however as
+this is a "trial and error" version this is acceptable. If I get enough
+respond from you ( see Respond ), I will write a NEW optimized version which
+will hopefully support more things... :-)
+
+[1;33m5.	Respond[22;39m
+
+ This program is PD software. However it is copyrighted by Manolis S Pappas.
+You can give copies of this to every person who owns an Amiga, but you may
+NOT MODIFY the main executable or the ReadMe files in ANY WAY.
+
+ I do not want money, just your respond. Write me a letter, send me a
+postcard, things like that. I just want to know how far this program went.
+
+ See Information about author information.
+
+[1;33m6.	Information[22;39m
+
+  I can be reached in the following address:
+  
+                                  Manolis S Pappas
+                                Thermopilon 24
+                                14231 Nea Ionia
+                                Athens
+                                GREECE
+                                
+ You can also contact me through E-Mail, with the following addresses:
+ 
+ Internet: mpap@acrogate.ath.forthnet.gr
+ FidoNet: 2:410/128.19
+ A-Net: 6:200/3.19
+ GR.Un.Net: 30:3001/128.19
+ 
+ By the nickname "Frontier" in the following Greek BBS's:
+
+                                 [2m- Page 3 -[22m
+[2m6.	Information[22m
+
+ 
+ Acrobase
+ Dynamic
+ Ermis
+ G.A.T.E
+
+
+[1;33m7.	Credits[22;39m
+
+   The C Interpreter was written by Manolis S Pappas.
+   
+   Beta-Testers:
+   
+   Amiga Version:
+                           Argiris Maistralis
+                        Menelaos Mikedis
+                        Vangelis Kalamakis
+                        Pantelis Kopelias
+                        
+  Programmed using SAS/C++ v6.51
+  
+   
+   PC Version:
+                   
+                        John Kerkines
+                        Costas Tabouris
+                        Dimitres Andripoylos
+                        
+  Programmed using Borland Turbo C v2.0
+

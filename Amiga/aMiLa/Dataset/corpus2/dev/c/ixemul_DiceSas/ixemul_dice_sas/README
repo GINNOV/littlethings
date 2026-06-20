@@ -1,0 +1,109 @@
+Welcome to ixemul_dice_sas.lha!
+-------------------------------
+This  archive  contains a quick port of the ixemul.library startup code and
+stubs for SAS C and Dice.  ixemul.library is a shared library that contains
+functions compatible to those in the Unix operating system.  ixemul.lib and
+ixstartup.o  were  created  from  the  original files, contained in the GCC
+distribution. Here are the distrubtion conditions:
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Library General Public
+    License as published by the Free Software Foundation; either
+    version 2 of the License, or (at your option) any later version.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Library General Public License for more details.
+
+    You should have received a copy of the GNU Library General Public
+    License along with this library; if not, write to the Free
+    Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+Contents:
+
+COPYING.LIB		- GNU Library General Public License
+README			- This file
+bin			- gen_glue binary (generates glue source code)
+src			- ixstartup.c and gen_glue.c
+include			- only sys/syscall.h and syscall.def
+lib			- ixstartup.o and ixemul.lib
+libs			- ixemul.library
+
+Recreating the library
+----------------------
+If  you  want  to  recompile  the  provided  sources you will have to do it
+manually, I have not provided a makefile.  Compile both with:
+
+sc gen_glue.c link
+sc ixstartup.c
+
+dcc gen_glue.c -o gen_glue
+dcc ixstartup.c -o ixstartup.o -c
+
+For SAS you can use the provided SCOPTIONS file (nothing special, really).
+
+To  recreate  ixemul.lib  first compile gen_glue and start it (if you don't
+want  to  compile  gen_glue you can find it in the bin directory).  It will
+create a *.s assembler source file for every function in the library.  Then
+you  will have to assemble those files.  Use your favourite assembler (f.e.
+asm with SAS or a68k with Dice).  Do it like this:
+
+LIST >t:x *.s LFORMAT="asm %s" ; LFORMAT="a68k %s" for Dice
+EXECUTE t:x
+
+Then create the library from the object files (use oml under SAS or simply
+join them together for Dice):
+
+oml ixemul.lib a abs.o atof.o atoi.o ......
+
+or
+
+join abs.o atof.o atoi.o .... to ixemul.lib
+
+Installation
+------------
+Copy  ixstartup.o  and ixemul.lib to your lib:  directory (dlib:  for Dice)
+and ixemul.library to libs:.
+
+When  compiling a Unix specific program you will first of all need the Unix
+include   files   (you   can   get   them   from   f.e.    ftp.funet.fi  in
+/pub/amiga/gnu/gcc/ixemul_src_39.47.tar.gz).   If  you have GCC you already
+have  the  Unix include files.  They are NOT included in this archive (this
+archive should stay as short as possible).
+
+Usage
+-----
+To compile a Unix program use the following compile and link lines:
+
+SAS:
+  sc <file>.c
+  slink lib:ixstartup.o <file>.o to <file> lib lib:ixemul.lib
+
+Dice:
+  dcc <file>.c -o <file>.o -c
+  dlink dlib:ixstartup.o <file>.o dlib:ixemul.lib -o <file>
+
+WARNING:   If  you  also  link with your standard compiler's c.lib you will
+have  to specify ixemul.lib FIRST in your link line so that the linker uses
+the  ixemul.library  functions  and  not  your  compilers  functions.  When
+linking  Unix  specific programs (with ixstartup.o) you CAN'T use functions
+specific to your compiler (that need your compiler's startup).
+
+Future
+------
+This was only a quick hack.  The idea was to provide the SAS and Dice users
+with  a quick way of porting Unix programs to the Amiga platform.  The main
+problem remains - ixemul.library.  I'm currently in the process of creating
+a  static  ixemul  link  library  (so  your  programs won't need the shared
+ixemul.library anymore).  This will be usable (hopefully) for SAS, Dice and
+GCC.  Stay tuned.  :-)
+
+Author
+------
+If you have any questions, comments, bug reports (?), or anything else then
+write to:
+
+Internet: blaz.zupan@uni-mb.si
+Fidonet: Blaz Zupan @ 2:380/104.40
+S-mail: Blaz Zupan, Ljubljanska 19/b, 62000 Maribor, Slovenia

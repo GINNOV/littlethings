@@ -1,0 +1,23 @@
+
+;                   >> Q U I C K    H I S T O R Y <<
+
+
+;  Version    Data      Dizzy
+;  -------    ----      -----
+
+;   1.01     24-4-96    Added the new DeltaNUllskip with compare buffer routine
+;                       (512k) single pixel width 256 colours
+
+;   1.02     25-4-96    Added pixelwidth1 1Meg & 1.5meg  DeltaNUllskip.
+
+;   1.03     25-4-96    Added pixelwidth2&4 512k/1Meg DeltaNUllskip 
+
+;   1.04     26-4-96    Added 6bit pixelwidth1 512k/1Meg & 1.5meg DeltaNUllskip 
+;			Added 6bit PW2 & pw4 delta nullskip.
+;			Added All the 4bit versions of DeltaNullSkip
+
+;   1.05      2-5-96    Bug fixed the DeltaNullSkip 512k pixelw1 C2P routine.
+
+;   1.06     10-8-96    Assembler fixed the library sources.. Ie. Forced '.l'
+
+;	-	-	-	-	-	-	-	-	-

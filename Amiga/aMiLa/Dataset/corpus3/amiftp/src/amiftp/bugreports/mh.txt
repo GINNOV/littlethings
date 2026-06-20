@@ -1,0 +1,27 @@
+Hej!
+Tror jag har hittat en bug i AmiFTP 1.607. Jag har försökt få
+AWebAmiFTP-scriptet att fungera (det var både ett och annat som behövde
+åtgärdas... ;), men en sak fungerar inte som det är tänkt. Om AmiFTP inte
+är igång, så startas det, då med argumenten (för att nu ta ett exempel):
+  ftp://ftp.nordicglobal.om/Miami/Miami0422.lha PUBSCREEN AWeb
+(Jag har provat både med och utan "ftp://"-delen.) Men enligt
+connect-fönstret som då öppnas, så försöker AmiFTP koppla upp mot den sista
+adressen i site-listan.
+
+Däremot verkar det fungera bra om AmiFTP redan är igång, då scriptet i det
+fallet kör SetAttr/Connect/CD (iaf sedan jag ändrat lite ;).
+
+Sedan undrar jag lite över diverse oklarheter i dokumentationen... Vad
+returnerar t.ex. ARexx-kommandot CD om lådan inte finns eller refererar
+till en fil? För GET, kan man ange "foo/bar"? Och om "foo/bar" anger en
+låda, vad säger GET då? Jag skulle behöva veta detta för att få scriptet
+att fungera på ett bra sätt...
+
+Det vore trevligt om transfer-fönstret på något vis visade hur mycket som
+har gjorts/är kvar totalt sett. Har man valt några MB data, och dessutom
+kör via t.ex. ett modem, så är den informationen klart intressant. Hur vore
+det med en progress-bar till, som visade det totala antalet bytes som
+överförts?
+
+En annan minimal detalj: Mellanrummen mellan ramar är inte helt konsekvent,
+speciellt för transfer-fönstret.

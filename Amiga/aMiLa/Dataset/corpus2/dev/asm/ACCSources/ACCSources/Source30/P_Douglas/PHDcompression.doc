@@ -1,0 +1,156 @@
+
+                          PHD  Data Compression
+                          ~~~~~~~~~~~~~~~~~~~~~
+                      Copyright:  Paul Douglas  1992
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+First things first - this is only a DATA FILE compression utility
+If you want to compress your executables then use Powerpacker or
+Imploder or similar. The de/compression routines have been written
+in 680X0 assembly language on Commodore Amiga but could be ported
+to any 680X0 platform (Apple Mac, Atari ST etc) but only with the
+my permission. You have permission to use the decompression routine
+in your own programs as long as it is released as Public Domain
+or Shareware (a mention of my name would be nice but thats entirely
+up to you  .You could also send me a small contribution if you like.)
+If you wish to use the decompression routine in a commercial program
+then you'll need my permission.
+
+If you wish to distribute the above routines then you must include
+this text file and all associated files.
+
+Now thats the nasty stuff out of the way.
+
+
+
+1. About PHD Data Compression
+
+The routines use lossless data de/compression algorithms, this 
+basically means after compression and then decompression the output
+file will exactly match the input file so can be used on any type of
+data. I'm not going into heavy details but basically it uses an
+enhanced version of the Lempel-Ziv, Adaptive Huffman combination
+as used in LHArc etc. For this reason its not as fast as some of
+the more simple packers, but usually compresses data more
+efficiently than any other data compression utility on the Amiga.
+The decompression routine has been heavily optimised to run as
+fast as possible on a standard 68000. Please contact me if you
+want an enhanced version for 68020+ processors.
+
+
+
+2. Advantages/Disadvantages
+
+Generally this compression utility provides better compression
+ratios than any similar utility on the Amiga, especially for
+graphics and sound data. ( Handy for A1200 programmers, 256
+colour graphics sure do burn up disk space!) 
+
+On the downside is the decompression speed. This shouldnt be a
+problem if you're using 68020+ processors (A1200 or A4000) but
+on a bog-standard 68000 you'll have to decide if the timings
+are acceptable or not. This could depend on how much disk
+accessing your program does.
+
+
+
+3. Using The Compression Utility
+
+I've included a simple utility that allows you to load a file
+compress it and then save it as a compressed file. This uses
+an ARP requester for file input/output so is pretty simple to
+use. This works fine on a WB1.3 machine but I've not had the 
+chance to test it on a WB 2.0 or 3.0 Amiga.
+To use it you'll need at least 1 meg of memory, perhaps more
+if you wish to multitask or your memory is divided half meg
+fast, half meg chip ram (luckily decompression is a lot less
+greedy on the memory).
+
+OK, assuming you have enough memory (and if you're developing
+Amiga programs you should have as much as you can get!) then its
+simple to use.
+
+
+Loading a file
+
+click on gadget marked LOAD and use arp requester as in devpac etc
+
+
+Compressing a file
+
+There are 6 gadgets marked 0 to 5. Click on any of these to start
+compression once you've loaded a file. It's probably best to
+experiment with different values on each file, but most of the time
+selecting 5 will produce the best results.
+
+Once a file has been loaded it can be compressed at different ratios
+without having to reload the file.
+
+Once compressed, the compressed length and compression percentage
+will be shown.
+
+
+Saving a file
+
+Jeez, do I really have to explain this! Click on save and use Arp
+requester as per usual. This saves the compressed file by the way!!
+
+
+
+4. Using The Decompression Routine
+
+This is probably the most important bit for all you programmers out
+there. The binary dump of the decompression code is included so can
+be easily incorparated in your own programs (I've not included the
+source code because its pretty irrelevant, all you have to know is
+how to use it). This code is relocatable and re-entrant so you can put
+it anywhere on a word boundary.
+
+I've included an example of how to load and decompress a file using
+DOS, which shows the basics.
+
+The decompression routine needs about 4k of memory ( again word-aligned
+but doesn't have to be cleared ) see the include doc for actual size.
+
+Total memory useage for decompression is about 5k, plus the memory for
+the uncompressed file. For example you can uncompress a file that was
+originally 200k in size with only 205k, with the extra 5k becoming
+free to use after decompression.
+
+On entry to the decompression program you'll need pointers to
+                   1. Work buffer
+                   2. Compressed file
+                   3. Output uncompressed data
+ 
+
+Compressed File Format is as follows
+
+   Bytes 0-3       I.D. for PHD compression. This is so you can tell
+                   the file apart from normal uncompressed files or
+                   say Powerpacker files.
+
+   Bytes 4-7       Length of original ( uncompressed ) file in bytes.           
+
+   Bytes 8-End     Actual compressed data.
+
+
+Please note, you must load the compressed file onto a Word boundary
+else it'll be Guru time. 
+
+I've not included any form of checksum on the compressed file, as I
+think Amiga DOS does this anyway??
+
+Anyway see the example code which should explain things more easily.
+
+         Please send bug reports, comments etc to,
+
+
+                                   Paul Douglas
+                                   147 Winkworth Road
+                                   Banstead
+                                   Surrey SM7 2JP
+
+
+
+

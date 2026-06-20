@@ -1,0 +1,238 @@
+File-Select Version 2.0
+(C) by André Wichmann of CLUSTER in 09/1990.
+       Posener Weg 4
+       5300 Bonn 1
+       West Germany
+
+This program is Freeware and may be copied or used even in commercial
+programs if you mention the author.
+
+-----------------------------------------------------------------------------
+
+     - FileSelect V2.0 -
+    ~~~~~~~~~~~~~~~~~~~~~
+
+Here is another nice request in the never ending series of filerequests, but
+this time with some more features.
+
+PRO AND CONTRA
+~~~~~~~~~~~~~~~
+
+       FileSelect V2.0 pros:
+
+              - Displays the sizes of the files, but is small enough to fit
+                on a lo-res screen
+              - Fast and small (My opinion!)
+              - You can select the colors which should be used (FilePen,
+                DirPen, GadgetPen, BackPen)
+              - You can give a list of filters to the request-routine (no
+                .info-files should be shown for example)
+              - No limits (Why can some filerequests only show 200 files ?)
+              - All is done with structures and an own include-file (for
+                future improvements)
+              - Three useful gadgets can optionally be switched on or off:
+                makedir, delete and rename. (I missed them in other requests)
+              - You can certainly set a windowtitle, a default path and a
+                default filename (Well, I need not mention that you can put
+                it on any screen-position !)
+              - If you do not set a screenpointer FileSelect will use the
+                active screen
+              - You will get back the path, the file AND the full name
+              - Show devices and double-click are also supported
+              - You need no large library (as ARP does)
+
+       FileSelect V2.0 contras:
+
+              - must be in CHIPMEM because of some images (Will be changed
+                soon!)
+
+HOW TO USE IT AS AN USER
+~~~~~~~~~~~~~~~~~~~~~~~~~
+You can enter any path in the 'Path'-gadget and FileSelect will try to show
+the path when you press return.Use either your mouse to select a file or
+directory or type in any filename in the 'File'-gadget.To end the request,
+either double-click a filename, click 'Okay' or click 'Cancel'.Click on the
+'Makedir'-gadget to create a new directory (A new request will appear).Enter
+a filename and click 'Delete' to delete this (You will be asked if you really
+want to delete that file).Enter a filename and click 'Rename' to rename that
+file (again with a new request).Sometimes these gadgets are switched off by
+the main program so you can't use them.Press the right mouse-button to get a
+list of all connected devices (df0:, ram: etc.).
+
+HOW TO USE IT AS A PROGRAMMER
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This version is written for the DevPac assembler V2.14, but if you use the
+linkable file 'FileSelect.o' I think you can use it in any language.
+To use it you must include the file 'FileSelect.i' which contains several
+structures and important equates.To call FileSelect a0 must contain a pointer
+on the following structure:
+
+NFS2_NewFileSelect      rs.b    0
+NFS2_LeftEdge           rs.w    1
+NFS2_TopEdge            rs.w    1
+NFS2_WindowTitle        rs.l    1
+NFS2_DefaultPath        rs.l    1
+NFS2_DefaultFile        rs.l    1
+NFS2_Screenptr          rs.l    1
+NFS2_GadgetFlags        rs.w    1
+NFS2_FirstFilter        rs.l    1
+NFS2_BackPen            rs.b    1
+NFS2_FilePen            rs.b    1
+NFS2_DirPen             rs.b    1
+NFS2_GadgetPen          rs.b    1
+NFS2_Reserved1          rs.l    1
+NFS2_Reserved2          rs.l    1
+NFS2_SIZEOF             rs.w    0
+
+NFS2_LeftEdge.w         This is the x-position for FileSelect.Use
+                        NFS2_CENTREPOS (-1) to centre it on a hires-screen.
+NFS2_TopEdge.w          This is the y-position for FileSelect.Use
+                        NFS2_CENTREPOS (-1) to centre it on a hires-screen.
+NFS2_WindowTitle.l      A pointer on the window-title ended with a zero.Use
+                        NFS2_DEFAULTTITLE (0) to use the default window-
+                        title.
+NFS2_DefaultPath.l      A pointer on a string containing the default path.Use
+                        NFS2_NODEFAULT (0) for no default path.
+NFS2_DefaultFile.l      A pointer on a string containing the default filename.
+                        Use NFS2_NODEFAULT (0) for no default filename.
+NFS2_Screenptr.l        The screenpointer.NFS2_ACTIVESCREEN (0)  will force
+                        FileSelect to use the active screen.
+NFS2_GadgetFlags.w      This flag toggles the three dos-gadgets makedir,
+                        delete and rename on/off.Use NFS2_NOGADGETS (0) to
+                        switch all off or NFS2_MAKEDIR (1), NFS2_DELETE (2)
+                        and NFS2_RENAME (3) to switch them on.Example:
+                        NFS2_MAKEDIR!NFS2_DELETE would switch all except
+                        Rename on.
+                        NFS2_MAKEDIR!NFS2_DELETE!NFS2_RENAME would switch all
+                        dos-gadgets on.
+NFS2_FirstFilter.l      A pointer on the first structure of the filter list
+                        (see below).Use NFS2_NOFILTER (0) to let FileSelect
+                        display all files.
+NFS2_BackPen.b          The pen which will be used for the background.Use
+                        NFS2_DEFAULTPEN (0) to use 1 (white).
+NFS2_FilePen.b          The pen for the file-display.Default: 2 (black).
+NFS2_DirPen.b           The pen for the directories.Default: 3 (orange).
+NFS2_GadgetPen.b        The pen for the gadgets.Default: 2 (black).
+NFS2_Reserved1.l        Set it to zero.
+NFS2_Reserved2.l        Set it to zero.
+
+You can give a list of filters to FileSelect, e.g. that files with that
+extension will not be displayed.This can be useful to avoid displaying
+.info-, .iff-, .txt-files etc. NFS2_FirstFilter should point on the
+following structure:
+
+FS2F_FilterElement      rs.b    0
+FS2F_NextFilter         rs.l    1
+FS2F_FilterLength       rs.b    1
+FS2F_AdjustToWord       rs.b    1
+FS2F_Filter             rs.l    1
+FS2F_Reserved           rs.l    1
+FS2F_SIZEOF             rs.w    0
+
+FS2F_NextFilter.l       Either a pointer on the next filter-structure or
+                        FS2F_LASTFILTER (0) to end the list.
+FS2F_FilterLength.b     Length of the string
+FS2F_AdjustToWord.b     Only used to align the next longword.
+FS2F_Filter.l           A pointer on a string containing the extension.
+FS2F_Reserved.l         Set it to zero.
+
+If there appears no guru-meditation your program will receive a pointer in
+d0 on the following structure:
+
+FS2_FileSelectReturn    rs.b    0
+FS2_Status              rs.w    1
+FS2_Path                rs.l    1
+FS2_File                rs.l    1
+FS2_FullName            rs.l    1
+FS2_Reserved1           rs.l    1
+FS2_Reserved2           rs.l    1
+FS2_SIZEOF              rs.w    0
+
+FS2_Status.w            FS2_OKAY (0) means the user clicked Okay.
+                        FS2_CANCEL (1) means the user clicked Cancel.
+                        FS2_WINDOWERR (2) means FileSelect was not able to
+                        open the window (Probably not enough CHIPMEM).
+FS2_Path.l              A pointer on a string containing the path.FS2_NOPATH
+                        (0) if there is no path (after CANCEL or WINDOWERR).
+FS2_File.l              A pointer on a string containing the filename.
+                        FS2_NOFILE (0) if there is no filename (after CANCEL
+                        or WINDOWERR).
+FS2_FullName.l          A pointer on a string containing the full name
+                        (Path + file).FS2_NOFULLNAME (0) if there is no full
+                        name (after CANCEL or WINDOWERR).
+FS2_Reserved1.l         Normally zero.
+FS2_Reserved2.l         Normally zero.
+
+FileSelect will use little memory while running, only for its window and 42
+bytes per file/dir/device.
+
+To include FileSelect in your program you have two possibilities:
+
+1) You can append the source to your source. Then you must delete the
+   include-lines and the opt-line.
+2) You can link it to your program with blink.
+
+If you use FileSelect V2.0 you must include the file 'FileSelect.i' if you
+use some of the keywords like NFS2_ACTIVESCREEN.If you do not link it but
+assemble it (with your program) the following files must be included:
+
+                include exec/exec_lib.i
+                include exec/memory.i
+                include intuition/intuition_lib.i
+                include intuition/intuition.i
+                include intuition/intuitionbase.i
+                include graphics/graphics_lib.i
+                include libraries/dos_lib.i
+                include libraries/dos.i
+                include libraries/dosextens.i
+
+                include FileSelect.i
+
+If you link the routine your program should import/export the following:
+
+                XREF    FileSelect
+                XDEF    _IntuitionBase,_GfxBase,_DOSBase
+
+When you call FileSelect, Intuition.library, Graphics.library and
+Dos.library must be open.
+
+If you want to use it in any other language than assembler you must do
+this on your own because I do not know how compilers treat such include-
+files.But I hope that it can easily be linked ! Tips for that can be
+expected in the doc-file of the next version.(Send me Tips !)
+
+Fell free to change this routine ! If you make major changes please send
+me the new versions because I am always interested in improvements.Own
+better versions will follow.
+
+                        ...AW 29/09/1990...
+                     Aragorn/CLUSTER rules !!!
+
+-----------------------------------------------------------------------------
+
+CLUSTER is a legal programming formation mainly working on Amiga, coding
+Freeware (and perhaps some commercial programs later).
+CLUSTER was founded on January 1989 with the following members:
+André Wichmann, Guido Wegener, Martin Rosenkranz, Martin Baumann, Philipp
+Witkop, Stefan Kaspari, Stefan Lietzow and Giang Nguyen.
+Then we reduced our members to the best and got a new programmer.
+Now, on 29.09.1990, we have the following members:
+André Wichmann          Coding
+Guido Wegener           Coding
+Martin Mohr             Coding
+Martin Rosenkranz       Graphics
+Philipp Witkop          Digitizing
+If you want to contact any member of CLUSTER then write to our address:
+             André Wichmann
+             Posener Weg 4
+             5300 Bonn 1
+             West Germany
+André will give the letter to the addressed member.
+
+Send errors, corrections, supporting ideas, criticism, enthusiastic fan-
+letters and money to the author:       André Wichmann
+                                       Posener Weg 4
+                                       5300 Bonn 1
+                                       West Germany
+

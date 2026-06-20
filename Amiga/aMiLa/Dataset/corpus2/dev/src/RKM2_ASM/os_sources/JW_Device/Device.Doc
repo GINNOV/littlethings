@@ -1,0 +1,6 @@
+
+ The Device.s file is all you need for assembly programming. I.e. I have not
+ created Stubs for the device, like I did with the Library.s files. You will
+ need to make your own FD file. The device code is from RKM Devices. Simply
+ insert your own code where the commands Update:, Seek: etc are. Or better
+ still. Change the names of the commands and insert your own device commands.

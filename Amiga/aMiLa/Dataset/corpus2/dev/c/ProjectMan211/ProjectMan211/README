@@ -1,0 +1,23 @@
+
+                         SASCProjectManager
+                         ==================
+
+                    ©1993,1994,1995 Donald Milne
+
+
+This program is v2.11 of a project manager for SAS/C v6.0 or greater.
+
+It is freely distributable aslong as the following conditions are met :
+
+    1) All the files in this archive must be distributed together.
+    2) No more than £2.50 or equivalent can be charged for it.
+    3) No modifications or changes to any file in this distribution are
+       made without permission.
+
+Any breach of these conditions is a breach of copyright.
+
+The author accepts no liability for damage caused by use of this software,
+it is used entirely at your own risk.
+
+#include <legal/mumbo_jumbo.h>  // :-)
+

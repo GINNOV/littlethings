@@ -1,0 +1,51 @@
+history.txt
+
+31.10.2002 - Erste Version 1.0
+
+8.11.2002 - Version 2.0:
+
+Änderungen im Vergleich zu Version 1.0:
+
+Aus
+
+  (define (fermat n)
+    (not (= (potmod 2 (- n 1) n) 1))
+  )
+
+wurde
+
+  (define (fermat b n)
+    (not (= (potmod b (- n 1) n) 1))
+  )
+
+Der zusätzliche Parameter b ermöglicht es nun, den Fermat-Test nicht nur
+zur Basis 2, sondern zur Basis b durchzuführen.
+
+Die Prozedur
+
+  (define (kongruent? a n)
+     ( =
+       (potmod a (- n 1) n)
+       (modulo 1 n)
+     )
+  )
+
+flog komplet heraus.
+Zum einen ist 1 mod n immer 1, zum anderen können wir den gleichen
+Test jetzt auch mit der erweiterten Fermat-Prozedur durchführen:
+
+  (define (carmichael-iter a n)
+
+     ; Implikation:
+     (if (or (not (= (ggT a n) 1))
+             (eq? (fermat a n) #f)
+         )
+           (if (< a (- n 1))
+               (carmichael-iter (+ a 1) n)
+               #t
+           )
+           #f
+     )
+  )
+
+

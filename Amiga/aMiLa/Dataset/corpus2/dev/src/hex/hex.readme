@@ -1,0 +1,43 @@
+Short:    Hex dump of binary files, command and source included
+Author:	  L38058@ALFA.IST.UTL.PT (Antonio Santos)
+Uploader: L38058@ALFA.IST.UTL.PT (Antonio Santos)
+Type:     dev/src
+Version:  1.0
+
+ *** IMPORTANT NOTE ***
+	You can include this archive in Computer Magazines if you:
+		Send me a free copy of the magazine in question or
+		You send me a resonable fee for my work.
+	
+	This program can go into Aminet with no restritions!
+	Other Disk's/CD's compilations shall send me a copy of the media
+	where my archive is put! Many thanks in advance.
+ **********************
+
+-------------------------------------------------------------------------------------
+
+Contact:
+	Antonio Manuel Santos
+	Rua do Zaire, 5 1-dto
+	1170 Lisbon, Portugal
+	
+Email:
+	L38058@ALFA.IST.UTL.PT
+
+Send some cool stuff like CDROM's of software, CDROM's of music, money, a source to
+a program that you might have done, a registration to a program of yours, etc etc
+
+-------------------------------------------------------------------------------------
+
+
+usage is simple:
+ copy hex to C:
+ 
+usage is :
+
+ hex <binary file>
+
+
+happy hexing .
+
+

@@ -1,0 +1,7 @@
+{
+	"baseMods": {
+		"ubChargeRate": 50,
+		"ubChargeRateNeutral": 100,
+		"wCapacity": 100
+	}
+}

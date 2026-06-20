@@ -1,0 +1,49 @@
+Short:  Elemental sorting algorithms in Ada
+Autor:  walternn@rupert.informatik.uni-stuttgart.de (Norman Walter)
+Uploader:  walternn@rupert.informatik.uni-stuttgart.de (Norman Walter)
+Type:  dev/src
+Requires:  Ada Compiler (e.g. GNU gnat)
+
+
+Demonstration of elemental sorting algorithms in Ada:
+
+ - Bubble Sort
+ - Selection Sort
+
+The executables included in this archive require 68000 cpu or better.
+
+The sources are highly portable. They shold work with all major operating systems.
+
+Testet on Amiga 4000/30 with AmigaOS 3.5.
+
+Compiled with gnat - the GNU Ada Compiler.
+
+
+Literature:
+
+Programming in Ada95, 2nd edition
+(also known as 'The Barnes Bible')
+John Barnes
+Addison-Wesley
+ISBN 0-201-34293-6
+
+Ada from the beginning
+Jan Skansholm
+Addison-Wesley
+ISBN 0-201-17522-3
+
+Robert Sedgewick:
+Algorithms in C
+Addison-Wesley
+ISBN 3-89319-376-6
+
+
+World Wide Web:
+
+http://www.norman-interactive.com (my Homepage)
+
+http://www.informatik.uni-stuttgart.de (University Stuttgart, Dept. of Computer Science)
+
+http://www.ninemoons.com (GeekGadgets)
+
+

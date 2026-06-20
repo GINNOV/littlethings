@@ -1,0 +1,21 @@
+Short:        Tool to update build number and time
+Uploader:     fraborg@tiscali.it (Francesco Borghese)
+Author:       fraborg@tiscali.it (Francesco Borghese)
+Type:         dev/c
+Version:      1.00.139
+Architecture: m68k-amigaos
+
+Versionize is a simple tool that automatically updates the build number
+and/or the date and time of compilation of a project.
+Versionize is mainly targeted at the C developer.
+
+Versionize is open source so you can use and distribute the code
+and the executables in any form you like. If you like, I will be
+happy to include modifications on the code back on the original
+source so others may benefit from them.
+
+Versionize should compile correctly with any C compiler on any platform.
+Executables for AmigaOS (68k) and Windows are also included in the package.
+They were tested on AmigaOS 3.x and WindowsXP but should work just everywhere.
+
+Support site: borghesef.tripod.com

@@ -1,0 +1,27 @@
+Short: Convert DPaint brush files to C src (source code included).
+Author:   Michael J. Farren
+Uploader: jimbot@frontiernet.net (Jim Steichen, author of AmigaTalk)
+Source:   Fish collection
+Type:     dev/c
+Version:  1.0
+
+   Michael J. Farren, Copyright (c) 1986
+
+If you compare GetImage.c.orig with the re-written file GetImage.c
+you should see immediately why this update was created.
+
+I find it amazing that this program (gi) is still around & that no one
+has improved upon it very much.  I made a few improvements but mostly
+I re-wrote the GetImage.c source file for readability, Jim Steichen.
+
+REQUIREMENTS
+~~~~~~~~~~~~
+   68040 or better microprocessor. (or Re-compile the program).
+
+ORIGINAL README CONTENTS:
+~~~~~~~~~~~~~~~~~~~~~~~~~
+An enhanced version of "gi" from disk 14.  It now looks for the GRAB
+marker, in the brush file, instead of assuming that it is at a specific
+place, sets up the PlanePick value in the Image structure, and deletes any
+unused bitplanes to save memory and disk space.  
+

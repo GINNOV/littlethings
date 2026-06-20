@@ -1,0 +1,1523 @@
+**************************************************
+* DiskCoder :- Version 2.00  (c)1991 Dean Ashton *
+*                                                *
+* New Features include 'Drive Select' gadgets    *
+* and a 'System 2.0' style user interface        *     
+**************************************************
+
+	SECTION STARTUP,CODE_C
+	INCDIR	"source:dean/INCLUDE/"
+	INCLUDE	"HW_EXAMPLES.I"
+	INCLUDE	"DISKMACROS2.I"
+
+ALLOCMEM	EQU 	-$C6		; exec.library Memory Allocation
+FREEMEM	EQU	-$D2		; exec.library Memory Deallocation
+DOIO	EQU	-$1C8		; exec.library Device Input/Output
+SCRWIDTH	EQU	80		; 80 characters wide
+SCRHEIGHT	EQU	200		; 200 lines high
+PLANES	EQU 	2		; 2 planes deep (max 4 colours)
+PASSLEN	EQU 	21		; Password can be up to 21 characters.
+RNDNUMBER	EQU	20		; We'll encode 20 tracks
+READTRIES	EQU	3		; Maximum no. of read attempts
+
+STARTUP	LEA	STOPSYS(PC),A0
+	MOVE.L	A0,$80.W		; Trap #0 to get into Supervisor Mode
+	TRAP	#0		; Do It!
+	MOVEQ	#0,D0		; No errors on return to AmigaDos
+	RTS
+
+STOPSYS	MOVEM.L	D1-D7/A1-A6,-(A7)	; Stack registers for system return
+	LEA	VARIABLES(PC),A5	; Point to internal variables list
+	LEA	CUSTOM,A6		; Point to Hardware Registers
+	MOVE.W	VHPOSR(A6),SEED(A5)	; Set initial value for Random Seed
+	MOVE.W	DMACONR(A6),OLDDMA(A5)
+	MOVE.W	INTENAR(A6),OLDINT(A5)
+	MOVE.L	$6C.W,OLDLEV3(A5)	
+	MOVE.L	$68.W,OLDLEV2(A5)
+	MOVE.W	#$7FFF,D0		; D0 holds disable value
+	MOVE.W	D0,DMACON(A6)	; Kill system DMA
+	MOVE.W	D0,INTENA(A6)	; Kill system Interrupts (Enable)
+	
+	LEA	LEVEL3(PC),A0	; Point to my Level 3 interrupt
+	MOVE.L	A0,$6C.W		; Insert our interrupt! (Copper)
+	LEA	LEVEL2(PC),A0	; Point to my Level 2 interrupt 
+	MOVE.L	A0,$68.W		; Insert our interrupt! (Keys)
+	
+	BSR	SETUP		
+	
+STARTSYS	LEA	CUSTOM,A6		; Point to Hardware Registers
+
+	MOVE.W	#$7FFF,D0		; D0 holds disable value
+	MOVE.W	D0,DMACON(A6)	; Kill system DMA
+	MOVE.W	D0,INTENA(A6)	; Kill system Interrupts (Enable)
+	
+	MOVE.L	OLDLEV3(A5),$6C.W	; Restore Level 3 Interrupt Vector
+	MOVE.L	OLDLEV2(A5),$68.W	; Restore Level 2 Interrupt Vector
+	
+	MOVE.W	OLDDMA(A5),D0	; Get old DMACON values
+	OR.W	#$8200,D0		; Set 'SET' and 'ENABLE' bits
+	MOVE.W	D0,DMACON(A6)	; Restore DMACON values
+	
+	MOVE.W	OLDINT(A5),D0	; Get old INTENA values
+	OR.W	#$C000,D0		; Set 'SET' and 'MASTER' bits
+	MOVE.W	D0,INTENA(A6)	; Restore INTENA values
+	
+	MOVEM.L	(A7)+,D1-D7/A1-A6	; Restore system registers
+	RTE
+	
+SETUP	MOVE.L	4.W,A6		; Get ExecBase
+	LEA	GFXNAME(PC),A1	; Point to 'graphics.library'
+	MOVEQ	#0,D0		; Any version will do...
+	JSR	-$228(A6)		; OpenLibrary
+	TST.L	D0		; Has it opened ok?
+	BEQ	SETEXIT		; No? Exit Main Process
+	MOVE.L	D0,A1		; Move to an address register
+	MOVE.L	38(A1),OLDLIST(A5)	; Store system copperlist address
+	MOVE.L	4.W,A6		; Get ExecBase
+	JSR	-$19E(A6)		; CloseLibrary
+	
+	MOVE.L	#SCRWIDTH*SCRHEIGHT*PLANES,D0	; Size for Screen
+	ADD.L	#20000+5636,D0	; Add in size for diskbuffers
+				; 20000 Bytes for Buffers
+				; 5636  Bytes for Track Zero store
+	MOVE.L	#$10002,D1	; Cleared Chip memory
+	MOVE.L	4.W,A6		; Get ExecBase
+	JSR	ALLOCMEM(A6)	; Allocate memory
+	TST.L	D0		; Has it worked?
+	BEQ	SETEXIT		; No? Exit Main Process
+	
+	MOVE.L	D0,SCREEN(A5)	; Store screen address
+	
+	ADD.L	#SCRWIDTH*SCRHEIGHT*PLANES,D0	; Skip over screen memory
+	MOVE.L	D0,TRACKZERO(A5)	; Store address of Track Zero Buffer
+	
+	ADD.L	#5636,D0		; Find address of Track (Decoded)
+	MOVE.L	D0,TRACK(A5)	; Store address of Track (Decoded)
+	
+	ADD.L	#6144,D0		; Find address of Track Gap (Raw)
+	MOVE.L	D0,TRACKGAP(A5)	; Store address of Track Gap
+	
+	ADD.L	#700,D0		; Find address of Track Buffer (Raw)
+	MOVE.L	D0,TRACKBUFF(A5)	; Store address of Track Buffer (Raw)
+
+	MOVE.L	TRACKGAP(A5),A0	; Retrieve address of Track Gap
+	MOVE.L	#(13756/4)-1,D0	; Number of Longwords to Initialise
+INITMFM	MOVE.L	#$AAAAAAAA,(A0)+	; Write MFM coded Zero Bytes away..
+	DBF	D0,INITMFM
+	
+SETPLANE1	MOVE.L	SCREEN(A5),D0	; Retrieve Screen Address
+	LEA	PLANE1LO(PC),A0	; Point to BitPlane Low Word
+	MOVE.W	D0,(A0)		; Move into copperlist
+	SWAP	D0
+	LEA	PLANE1HI(PC),A0	; Point to BitPlane High Word
+	MOVE.W	D0,(A0)		; Move into copperlist
+	SWAP	D0		; Swap address back to normal
+	
+SETPLANE2	ADD.L	#SCRWIDTH,D0	; Add one line (serial bitplanes!)
+	LEA	PLANE2LO(PC),A0	; Point to BitPlane Low Word
+	MOVE.W	D0,(A0)		; Move into copperlist
+	SWAP	D0
+	LEA	PLANE2HI(PC),A0	; Point to BitPlane High Word
+	MOVE.W	D0,(A0)		; Move into copperlist
+	SWAP	D0		; Swap address back to normal
+
+SETMOUSE	LEA	MOUSESPR(PC),A0	; Point to Mouse Sprite
+	MOVE.L	A0,D0		; Transfer to Data Register
+	LEA	SPR0LO(PC),A0	; Point to Sprite 0 Low Word
+	MOVE.W	D0,(A0)		; Move into copperlist
+	SWAP	D0	
+	LEA	SPR0HI(PC),A0	; Point to Sprite 0 High Word
+	MOVE.W	D0,(A0)		; Move into copperlist
+
+SETDEADSP	LEA	DEADSPR(PC),A0	; Point to Null Sprite Data
+	MOVE.L	A0,D0		; Transfer to Data Register
+	LEA	NOSPRITES(PC),A0	; Point to No Sprite List
+	MOVE.W	D0,6(A0)		; Sprite 1 Low Word
+	MOVE.W	D0,14(A0)		; Sprite 2 Low Word
+	MOVE.W	D0,22(A0)		; Sprite 3 Low Word
+	MOVE.W	D0,30(A0)		; Sprite 4 Low Word
+	MOVE.W	D0,38(A0)		; Sprite 5 Low Word
+	MOVE.W	D0,46(A0)		; Sprite 6 Low Word
+	MOVE.W	D0,54(A0)		; Sprite 7 Low Word
+	SWAP	D0		
+	MOVE.W	D0,2(A0)		; Sprite 1 High Word
+	MOVE.W	D0,10(A0)		; Sprite 2 High Word
+	MOVE.W	D0,18(A0)		; Sprite 3 High Word
+	MOVE.W	D0,26(A0)		; Sprite 4 High Word
+	MOVE.W	D0,34(A0)		; Sprite 5 High Word
+	MOVE.W	D0,42(A0)		; Sprite 6 High Word
+	MOVE.W	D0,50(A0)		; Sprite 7 High Word
+
+	LEA	NEWCOPPER(PC),A0	; Point to our new copperlist
+	LEA	CUSTOM,A6		; Point to Custom registers
+	
+	MOVE.L	A0,COP1LC(A6)	; Move address to copperlist pointer
+	MOVE.W	#0,COPJMP1(A6)	; Strobe copperlist #1
+	
+	BSR	MAIN		; Perform Main code section
+	
+	BSR	BLITWAIT		; Wait for Blitter to finish
+	
+	MOVE.L	OLDLIST(A5),A1	; Get system copperlist address
+	MOVE.L	A1,COP1LC(A6)	; Make system copperlist current
+	MOVE.W	#0,COPJMP1(A6)	; Strobe copperlist #1
+	
+	MOVE.L	SCREEN(A5),A1	; Get Screen Memory address
+	MOVE.L	#SCRWIDTH*SCRHEIGHT*PLANES,D0	; Size for Screen
+	ADD.L	#20000+5636,D0	; Add size for Disk Buffers
+	MOVE.L	4.W,A6		; Get ExecBase
+	JSR	FREEMEM(A6)	; Free screen memory
+	
+SETEXIT	RTS			; Return and restore resources
+
+
+********************************
+* MAIN :- Main Process Section *
+********************************
+
+MAIN	MOVE.W	#%1100000000011000,INTENA(A6)	; Enable Copper/Ports/Disk
+	MOVE.W	#%1000001111110000,DMACON(A6)	; All DMA except Audio
+
+	DRIVEOFF	1111		; All drives off!
+	
+	BSR	READY		; Print 'Ready' on status line
+	
+CALCBOOT	LEA	BOOTPROG(PC),A0	; Point to BootBlock 
+	MOVE.L	#0,4(A0)		; Clear old checksum
+	MOVE.L	#$00FF,D1		; Number of longwords to check
+	MOVEQ	#0,D0		; Clear D0 for Check Creation
+BBCHECK	ADD.L	(A0)+,D0		; Add longword to Check value
+	BCC.S 	BBCHECK2		; Overflow ?
+	ADDQ.L	#1,D0		; No? Add 1 to D0
+BBCHECK2	DBF	D1,BBCHECK	; Back for another Longword
+	NOT.L	D0		; D0 holds checksum for BootBlock
+	LEA	BOOTPROG(PC),A0	; Point to our program
+	MOVE.L	D0,4(A0)		; Write BootBlock checksum away.
+	
+INITGADS	LEA	GADGETLST(PC),A4	; Point to GadgetList
+GADSLOOP	LEA	GADGPTRS(PC),A3	; Point to GadgetPointers
+	CMP.L	#0,(A4)		; Is this the end marker?
+	BEQ.S	CHECKRMB		; Yes? Then carry on with main
+	BSR	DOGADGET		; Show gadget using GadgetList Data
+	BRA.S	GADSLOOP		; Back for next gadget
+ 
+CHECKRMB	BTST	#10,POTINP(A6)	; Right Mouse Button pressed?
+	BEQ.S	MAINEXIT		; Yes? Then exit Main Procedure
+	
+	BTST 	#6,$BFE001	; Left Mouse Button pressed?
+	BNE.S	CHECKRMB		; No? Then loop back...
+	
+	BSR	SCANMOUSE		; Button was pressed.. What Gadget?
+	
+	MOVEQ.L	#0,D0		; Clear D0
+	MOVE.W	GADGNUM(A5),D0	; Retrieve current Gadget number
+	BMI.S	CHECKRMB		; No gadget, so loop back!
+	
+	LSL.W	#2,D0		; Obtain longword offset
+	LEA	JUMPTABLE(PC),A0	; Point to our 'JumpTable'
+	JSR	(A0,D0)		; Call our subroutine for gadget
+	
+CHECKLMB	BTST	#6,$BFE001	; Left Mouse Button released?
+	BEQ.S	CHECKLMB		; No, then loop
+	
+	BRA.S	CHECKRMB		; All done, so loop back!
+	
+MAINEXIT	RTS
+	
+*******************************************************************
+* JUMPTABLE :- This contains the jump offsets for each gadget     *
+*              Each entry MUST be a 4 byte BRA <addr> instruction *
+*******************************************************************
+
+JUMPTABLE	BRA	TOGGLE		; Toggle state of gadget 0
+	BRA	TOGGLE		; Toggle state of gadget 1
+	BRA	TOGGLE		; Toggle state of gadget 2
+	BRA	TOGGLE		; Toggle state of gadget 3
+	BRA	DOSTART		; Kick of the Disk Operations
+	BRA	DOSTOP		; Do either DiskStop or Exit Program
+	BRA	GETCODE		; Enter/Amend CodeWord
+	
+************************************************************************
+* TOGGLEGAD :- This toggles a selected gadget, deselecting the old one *
+************************************************************************
+
+TOGGLE	MOVEQ	#0,D0		; Clear D0
+	MOVE.W	DRIVENUM(A5),D0	; D0 now holds selected Gadget
+	CMP.W	GADGNUM(A5),D0	; Is it the currently selected one?
+	BEQ.S	TOGGEXIT		; Yeah? Then don't do anything!
+	
+	BSR	FINDGADG		; Find pointer to Old Gadget
+	BCLR	#6,8(A4)		; Clear 'State' bit.. Now Up...
+	BSR	DOGADGET		; Redraw the Old Gadget
+	
+	MOVE.W	GADGNUM(A5),D0	; Get number of selected gadget
+	MOVE.W	D0,DRIVENUM(A5)	; This is our selected drive no.
+	BSR	FINDGADG		; Find pointer to New Gadget
+	BSET	#6,8(A4)		; Set 'State' bit.. Now Down..
+	BSR	DOGADGET		; Redraw the New Gadget
+
+TOGGEXIT	RTS
+	
+FINDGADG	LEA	GADGLIST(PC),A4	; Point to out GadgetList
+FINDGLOOP	CMP.B	9(A4),D0		; Is the GadgetNumber correct?
+	BEQ.S	FINDGEXIT		; Yes? Then exit with A4 right!
+	TST.L	(A4)		; Is this the last entry
+	BEQ.S	FINDGEXIT		; Still not ok? Then exit anyway!
+	ADD.L	#10,A4		; Point to next GadgetList entry
+	BRA.S	FINDGLOOP		; Loop back
+FINDGEXIT	RTS			; Back to calling code..
+
+********************************************************************
+* DOSTART :- Calls the DiskCoder routine and Installation routines *
+********************************************************************
+
+DOSTART	BSR	CONTROL		; Call main diskcode routine
+DOSTARTEX	RTS
+
+*********************************************************************
+* DOSTOP :- Exits the program, causing the freeing of all resources *
+*********************************************************************
+
+DOSTOP	LEA	BYEMESS(PC),A0	; Point to 'Bye Bye!' message
+	BSR	PRINTSTAT		; Print on status line
+	MOVE.W	#2000,D0		; Set wait time to 2 seconds
+	BSR	WAIT		; Wait for time to elapse
+	LEA	4(A7),A7		; Lose the return address from 
+	BRA	MAINEXIT		; the stack and exit program...
+
+************************************************
+* GETCODE :- Read a password from the keyboard *
+************************************************
+
+GETCODE	LEA	WAITMESS(PC),A0	; Print password exit message
+	BSR	PRINTSTAT		; Lets print that text!
+	
+	LEA	PASSWORD(PC),A0	; Point to the Password
+	MOVEQ	#PASSLEN-1,D1	; We're going to clear the password
+CLPASSLP	MOVE.B	#32,(A0)+		; Move a space character in
+	DBF	D1,CLPASSLP	; Back for next byte.
+	
+	BSR	PRINTPASS		; Print the Password (It's Spaces!)
+	
+	MOVE.W	#0,CURSOR(A5)	; Cursor position at start
+	BSR	DOCURSOR		; Print the current cursor
+	
+GETCODELP	MOVE.W	AMIGAKEY(A5),D1	; Get our ASCII code...
+	TST.W	D1		; Is it a valid keypress?
+	BEQ.S	GETCODELP		; No? 
+	CMP.W	#$01,D1		; Is it a 'Delete'?
+	BEQ.S	CHARDEL		; Yeah! 
+	CMP.W	#$02,D1		; Is it the other 'Delete'?
+	BEQ.S	CHARDEL		; Yes! (Only one delete supported!)
+	CMP.W	#$03,D1		; Is it 'Cursor Left'?
+	BEQ.S	GETCODELP		; Unsupported Keypress! Ha!
+	CMP.W	#$04,D1		; Is is 'Cursor Right'?
+	BEQ.S	GETCODELP		; Yet another unsupported keypress!
+	CMP.W	#$0D,D1		; Is it a 'Return' or 'Enter'?
+	BEQ.S	CHARENTER		; Yes! End the input
+
+NORMALCHR MOVE.W	CURSOR(A5),D3	; Retrieve cursor position	
+	CMP.W	#PASSLEN,D3	; Is this the spare cursor slot
+	BNE.S	NOTSPARE		; No? Carry on as normal
+	MOVE.W	#$FF0,COLOR00(A6)	; Max. Length reached so flash screen
+	BRA.S	NOCURSINC		; Reset key then go back...
+NOTSPARE	MOVE.B	D1,(A0,D3.W)	; Move into Password
+	BSR	PRINTPASS		; Print the Password 
+	CMP.W	#PASSLEN,D3	; Check against Maximum length + 1
+	BEQ.S	NOCURSINC		; Don't increase position if greater
+	BSR	DOCURSOR		; Delete the old cursor
+	ADD.W	#1,CURSOR(A5)	; Not maximum, so increase position
+	BSR	DOCURSOR		; Print cursor at new position
+NOCURSINC	MOVE.W	#0,AMIGAKEY(A5)	; Reset for next keypress
+	BRA	GETCODELP		; Back for the next character!
+
+CHARDEL	MOVE.B	#32,D1		; We want to space the character out
+	MOVE.W	CURSOR(A5),D3	; Retrieve cursor position
+	TST.W	D3		; Is this character zero?
+	BEQ.S	NOCURSDEC		; Yes? Then don't do anything
+	
+	CMP.W	#PASSLEN,D3	; Is the cursor in spare slot?
+	BEQ.S	NOPRIDEL		; No Primary Delete 
+	MOVE.B	D1,(A0,D3.W)	; Delete current character
+NOPRIDEL	SUB.W	#1,D3		; Cursor back one place
+	MOVE.B	D1,(A0,D3.W)	; Delete character at new cursor pos.
+	
+	BSR	PRINTPASS		; Print the Password
+	BSR	DOCURSOR		; Delete the old cursor
+	MOVE.W	D3,CURSOR(A5)	; Store new cursor position
+	BSR	DOCURSOR		; Print cursor at new position
+	
+NOCURSDEC	MOVE.W	#0,AMIGAKEY(A5)	; Reset for next keypress
+	BRA	GETCODELP		; Back for another key
+
+CHARENTER	TST.W	CURSOR(A5)	; Is this character zero
+	BNE.S	ENTEROK		; No? Then it's ok to exit
+	MOVE.W	#$FF0,COLOR00(A6)	; Flash screen
+	MOVE.W	#0,AMIGAKEY(A5)	; Reset for next keypress
+	BRA	GETCODELP		; Back for another key
+	
+ENTEROK	BSR	DOCURSOR		; Remove the cursor
+	ADD.W	#1,CURSOR(A5)	; Increase position
+	MOVE.W	CURSOR(A5),D3	; Retrieve position
+	MOVE.B	#0,(A0,D3.W)	; Place 'End_Of_Text' marker
+	
+	BSR	READY		; Print 'Ready' on Status Line
+	
+	RTS			; Return to main caller
+
+PRINTPASS	LEA	PASSWORD(PC),A0	; Point to start of Password
+	MOVEQ	#12,D1		; I'm doing this so that I don't
+	MOVEQ	#92,D2		; have to print individual chars.
+	BSR	PRINTLINE		; Print up spaces
+	RTS	
+	
+DOCURSOR	MOVEM.L	D1-D4/A0,-(A7)	; Stack Registers
+	MOVEQ	#0,D1		; Clear D0
+	MOVE.W	CURSOR(A5),D1	; Get cursor position
+	ADD.W	#12,D1		; Add Password start position
+	MOVEQ	#92,D2		; Always same vertical position
+	MOVE.L	SCREEN(A5),A0	; Retrieve screen address
+	MOVE.L	#SCRWIDTH*PLANES,D4	; D4 holds line length
+	ADD.L	#SCRWIDTH,A0	; Point to a different bitplane
+	MOVE.L	D4,D3		; We don't want to scrap D4 yet!
+	MULU.W	D2,D3		; D3 now points to correct scanline
+	ADD.W	D1,D3		; D3 now points to correct offset
+	LEA	(A0,D3),A0	; A3 now has the actual screen addr.
+	MOVEQ	#8-1,D0		; Repeat 8 times
+CURSORLP	NOT.B	(A0)		; Do a line of the old cursor
+	ADD.L	D4,A0		; Add line length from above
+	DBF	D0,CURSORLP	; Loop back for next screen line
+	MOVEM.L	(A7)+,D1-D4/A0	; Restore Registers
+	RTS			; Back we go!
+	
+*************************************************
+* PRINTSTAT :- Prints text in status box        *
+*              A0.L ---> Address of status text *
+*************************************************
+PRINTSTAT	MOVEQ	#11,D1		; in the status box... 
+	MOVEQ	#0,D2		; We can't let any upper words in!
+	MOVE.W	#129,D2		; This is so line can be > 127!
+	BSR	PRINTLINE		; Lets print that text!
+	RTS			; Return
+	
+*****************************************************
+* PRINTLINE :- Prints text string at position X,Y   *
+*              A0.L ---> Address of message text    *
+*              D1.B	---> X position (in characters) *
+*              D2.B	---> Y position (in lines)      *
+*****************************************************
+
+PRINTLINE	MOVEM.L	D0-D1/A0,-(A7)	; Stack registers
+	MOVEQ	#0,D0		; Make sure D0 is clear
+PLLOOP	TST.B	(A0)		; Is this end_of_string?
+	BEQ.S	PLINEEXIT		; Yeah! Lets head home!
+	MOVE.B	(A0)+,D0		; Get next character
+	BSR	PRINTCHAR		; Print the character
+	ADDQ	#1,D1		; Next X position
+	BRA.S	PLLOOP		; Back for next one!
+PLINEEXIT	MOVEM.L	(A7)+,D0-D1/A0	; Retrieve registers
+	RTS			; Return to caller
+	
+***************************************************
+* PRINTCHAR :- Prints a character at position X,Y *
+* Parameters:- Character Code (ASCII code!)    D0 *
+*	     X coordinate (in 8 pixel steps) D1 *
+*	     Y coordinate (in 1 pixel steps) D2 *
+***************************************************
+
+PRINTCHAR	MOVEM.L	D0-D4/A0-A1,-(A7)	; Stack registers
+	MOVE.L	SCREEN(A5),A0	; Retrieve screen address
+	MOVE.L	#SCRWIDTH*PLANES,D4	; D4 holds line length
+	MOVE.L	D4,D3		; We don't want to scrap D4 yet!
+	MULU.W	D2,D3		; D3 now points to correct scanline
+	ADD.W	D1,D3		; D3 now points to correct offset
+	LEA	(A0,D3),A0	; A3 now has the actual screen addr.
+	
+	LEA	FONT(PC),A1	; Point to our font...
+	SUB.W	#32,D0		; First character is 'Space'
+	LSL.W	#3,D0		; Multiply by 8 to get font offset
+	LEA	(A1,D0.W),A1	; A0 points to correct place in font
+	MOVEQ	#8-1,D0		; Repeat 8 times
+PRTCHARLP	MOVE.B	(A1)+,(A0)	; Move line into screen memory
+	ADD.L	D4,A0		; Add line length from above
+	DBF	D0,PRTCHARLP	; Loop back for next screen line
+	
+	MOVEM.L	(A7)+,D0-D4/A0-A1	; Restore registers
+	RTS
+	
+******************************************
+* BLITWAIT :- Wait for Blitter to finish *
+******************************************
+		
+BLITWAIT	BTST	#14,DMACONR(A6)
+	BNE.S	BLITWAIT
+	RTS
+
+**********************************************************
+* DOGADGET :- Display a gadget using GadgetTable entries *
+**********************************************************
+
+DOGADGET	LEA	GADGPTRS(PC),A3	; Point to GadgetPointers
+	MOVE.W	(A4)+,D0		; Load D0 with X position
+	MOVE.W	(A4)+,D1		; Load D1 with Y position
+	MOVE.W	(A4)+,D2		; Load D2 with width in pixels
+	MOVE.W	(A4)+,D3		; Load D3 with height in scanlines
+	MOVE.W	(A4)+,D4		; Retrieve GadgetState/GadgetNumber
+	LSR.W	#8,D4		; We don't want actual GadgetNumber
+	MOVE.W	D4,D5		; Move into temporary storage
+	AND.W	#$0F,D5		; D5 now holds the GadgetId number
+	LSL.W	#3,D5		; D5 points to LongWord table entry
+	MOVE.L	#0,A1		; A1 now indicates that no mask req.
+	BTST	#7,D4		; Check the 'MaskReq' bit
+	BEQ.S	SKIPMASK		; Not set? Then skip mask addr. load
+	LEA	GMASK(PC),A1	; Load Mask address into A1
+SKIPMASK	LEA	(A3,D5),A3	; Point to Initial gadget entry
+	BTST	#6,D4		; Check the 'State' Bit
+	BEQ.S	SKIPSTATE		; Not set? Then skip state prepare
+	ADDQ	#4,A3		; We want the Second Image pointer
+SKIPSTATE	MOVE.L	(A3),A0		; A0 now points to GadgetData
+	BSR	PUTGADGET		; Put the Gadget on screen
+	RTS
+
+***************************************************
+* LEVEL3 :- This is the Level 3 interrupt routine *
+***************************************************
+LEVEL3	MOVEM.L	D0-D7/A1-A6,-(A7)
+	AND.W	#$0010,INTREQR(A6)	; Mask the COPPER bit from INTENAR
+	BEQ.S	LEVEL3EX		; Not from copper!
+	
+MYLEVEL3	BSR	READMOUSE		; Get Mouse Coordinates
+
+	MOVE.W	#$0010,INTREQ(A6)	; Clear copper interrupt bit
+				; My Interrupt routine follows
+LEVEL3EX	MOVEM.L	(A7)+,D0-D7/A1-A6
+	RTE
+
+***************************************************
+* LEVEL2 :- This is the Level 2 interrupt routine *
+***************************************************
+LEVEL2	MOVEM.L	D0-D7/A1-A6,-(A7)
+	
+	BTST	#3,$BFED01	; Is Ciaa interrupt for SP/Keyboard
+	BEQ.S	LEVEL2EX		; No? Then Exit this Interrupt Code.
+	
+MYLEVEL2	BSR	READKEYS		; Read the Keyboard...
+
+LEVEL2EX	MOVE.W	#$0008,INTREQ(A6)	; Clear ports interrupt bit
+
+	MOVEM.L	(A7)+,D0-D7/A1-A6
+	RTE
+
+***********************************************************
+* READMOUSE :- Mouse reader routine                       *
+*              Needs following entries in Variables Block *
+*              all are words to be referenced off A5      *
+*              LASTX,LASTY,XPOS,YPOS                      *
+*              Also needs Equates for SCRWIDTH,SCRHEIGHT  *
+***********************************************************
+
+READMOUSE	MOVEM.L	D0-D1/A0,-(A7)
+	MOVE.W	LASTY(A5),D0
+	MOVE.W	JOY0DAT(A6),D1
+	LSR.W	#8,D1
+	MOVE.W	D1,LASTY(A5)
+	SUB.W	D1,D0
+	BMI.S	NEGVERT
+	CMP.W	#127,D0
+	BLT.S	VERTOK
+	SUB.W	#255,D0
+	BRA.S	VERTOK
+NEGVERT	CMP.W	#-127,D0
+	BGT.S	VERTOK
+	ADD.W	#255,D0
+VERTOK	SUB.W	D0,YPOS(A5)
+	BPL.S	YPOSOK
+	CLR.W	YPOS(A5)
+YPOSOK	CMP.W	#SCRHEIGHT,YPOS(A5)
+	BLT.S	GETXPOS
+	MOVE.W	#SCRHEIGHT-1,YPOS(A5)
+GETXPOS	MOVE.W	LASTX(A5),D0
+	MOVE.W	JOY0DAT(A6),D1
+	AND.W	#$FF,D1
+	MOVE.W	D1,LASTX(A5)
+	SUB.W	D1,D0
+	BMI.S	NEGHOR
+	CMP.W	#127,D0
+	BLT.S	HOROK
+	SUB.W	#255,D0
+	BRA.S	HOROK
+NEGHOR	CMP.W	#-127,D0
+	BGT.S	HOROK
+	ADD.W	#255,D0
+HOROK	SUB.W	D0,XPOS(A5)
+	BPL.S	HOROK2
+	CLR.W	XPOS(A5)
+HOROK2	CMP.W	#SCRWIDTH*4,XPOS(A5)	; Sprites are Lo-Res
+	BLT.S	MOUSEOUT			; so max horizontal pos
+	MOVE.W	#SCRWIDTH*4-1,XPOS(A5)	; is 320! 
+MOUSEOUT	BSR	PLOTMOUSE			; Put sprite on screen!
+	MOVEM.L	(A7)+,D0-D1/A0
+	RTS
+
+**************************************************
+* PLOTMOUSE :- Updates Sprite 0 (Mouse) position *
+**************************************************
+PLOTMOUSE	LEA	MOUSESPR(PC),A0	; Point to control words
+	MOVEQ	#0,D0		; Clear D0
+	MOVE.L	D0,D1		; Clear D1
+	MOVE.L	D0,(A0)		; Clear old control words
+WORKHORIZ	MOVE.W	XPOS(A5),D0	; D0 holds X position
+	BTST	#0,D0		; Is it an odd X position
+	BNE.S	NOTODD		; No?
+	SUBQ	#1,D0		; Make it even!
+	MOVE.W	#$0001,2(A0)	; Set bit zero of Hor. Position
+NOTODD	LSR.W	#1,D0		; Divide by 2 to get lo-res position
+	ADD.W	#$3D,D0		; * Does ANYBODY know how to convert
+	AND.W	#$00FF,D0		; * Real to Hardware co-ordinates???
+	MOVE.W	D0,(A0)		; Move into SPR0POS low byte
+WORKVERT	MOVE.W	YPOS(A5),D0	; D0 holds Y position
+	ADD.W	#$2D,D0		
+	MOVE.L	D0,D1		; Keep hold of VSTART
+	LSL.W	#8,D0		; Shift into High byte 
+	OR.W	D0,(A0)		; Move into SPR0POS high byte
+	ADD.W	#$0F,D1		; Add pointer height to VSTART
+	LSL.W	#8,D1		; Shift into High Byte
+	OR.W	D1,2(A0)		; Move into SPR0CTL
+	RTS
+
+****************************************************************************
+* READKEYS :- Reads the keyboard and translates to Ascii on Ciaa interrupt *
+****************************************************************************
+
+READKEYS	MOVEM.L	D0-D2/A0,-(A7)	; Stack registers
+	BSET	#6,$BFEE01	; Start Handshake with Keyboard
+	MOVEQ	#0,D0		; Clear D0 to prepare for Calculation
+	MOVE.L	D0,D1		; Clear D1 for later on...
+	
+	MOVE.W	D0,AMIGAKEY(A5)	; Clear ASCII value
+	
+	MOVE.B	$BFEC01,D0	; Get Raw Key value
+	
+	NOT.B	D0		; Invert all bits
+	LSR.B	#1,D0		; Put bits in correct order
+	BCS.S	RKEYEXIT		; We only want 'Down' presses
+	
+	CMP.W	LASTRAW(A5),D0	; Is this the same key?
+	BEQ.S	RKEYEXIT		; Yes? Then we don't want it!
+	
+	LEA	KEYTABLE(PC),A0	; Point to our Keyboard Table
+	MOVE.B	(A0,D0.W),D1	; D1 should hold our ASCII value.
+	MOVE.W	D1,AMIGAKEY(A5)	; Store a our ASCII value...
+	
+RKEYEXIT	MOVE.W	#9,D0		; Wait 90 microseconds to be sure of
+	BSR	WAIT		; a successful handshake...
+
+	BCLR	#6,$BFEE01	; Complete Handshake. Must be > 85µs	
+	MOVEM.L	(A7)+,D0-D2/A0	; Restore Registers
+	RTS			
+
+************************************************
+* PUTGADGET  :- Puts a graphic image on screen *
+* Parameters :- D0.W ---> X Position           *
+*               D1.W ---> Y Position           *
+*               D2.W ---> Width in Pixels      *
+*               D3.W ---> Height in scanlines  *
+*               A0.L ---> GadgetImage Data     *
+*               A1.L ---> GadgetMask Data      *
+************************************************
+
+PUTGADGET	MOVEM.L	D0-D6/A0-A4,-(A7)	; Save registers
+	MOVE.W	D0,D4		; Keep hold of X position
+	LSR.W	#4,D0		; Divide by 16 to get word offset
+	ADD.W	D0,D0		; Multiply by 2 to get Long offset
+	MOVE.L	SCREEN(A5),A2	; Retrieve screen start address
+	MULU.W	#SCRWIDTH*PLANES,D1	; Work out our vertical position
+	ADD.W	D1,D0		; D0 now holds screen offset
+	LEA	(A2,D0),A2	; A2 points to our screen position
+	BSR	BLITWAIT		; Wait for blitter before continuing
+	
+	CMP.L	#0,A1		; Do we have a mask for this?
+	BEQ.S	NOMASK		; No? Then process accordingly
+	
+YESMASK	MOVE.L	A1,BLTAPTH(A6)	; Source for Mask 
+	MOVE.L	A0,BLTBPTH(A6)	; Source for Data 
+	MOVE.L	A2,BLTCPTH(A6)	; Source for Screen
+	MOVE.L	A2,BLTDPTH(A6)	; Destination for Screen
+	MOVE.W	#-$002,BLTAMOD(A6)	; We want to re-do the last word
+	MOVE.W	#-$002,BLTBMOD(A6)	; as it's to be our first word...
+	
+	MOVE.L	#$0FCA0000,D5	; Set minterms and all 4 channels
+	BRA	DOBLIT		; Work out modulos and shifts then go
+	
+NOMASK	MOVE.L	A0,BLTAPTH(A6)	; Source for Data
+	MOVE.L	A2,BLTCPTH(A6)	; Source for Screen
+	MOVE.L	A2,BLTDPTH(A6)	; Destination for Screen
+	MOVE.W	#-$002,BLTAMOD(A6)	; Back a word after blitter op.
+	
+	MOVE.L	#$0BFA0000,D5	; Set minterms but only 3 channels
+				; Drop through into DoBlit
+	
+DOBLIT	MOVE.W	#$FFFF,BLTAFWM(A6)	; We want the first word
+	MOVE.W	#$0000,BLTALWM(A6)	; But the last word is crap..
+	
+	MOVE.W	#SCRWIDTH,D6	; D4 holds screen width in bytes
+	LSR.W	#3,D2		; D2 holds bob width in bytes
+	ADDQ	#2,D2		; We're transferring an extra word!
+	SUB.W	D2,D6		; D4 now holds Source Modulo
+	MOVE.W	D6,BLTCMOD(A6)	; Set 'C' modulo. 
+	MOVE.W	D6,BLTDMOD(A6)	; Set 'D' modulo.
+	
+	AND.W	#$0F,D4		; We only want lower nibble
+	ROR.W	#4,D4		; Move into high nibble
+	MOVE.W	D4,D0		; Move into our shift value
+	SWAP.W	D0		; Swap into higher word
+	MOVE.W	D4,D0		; Move into other shift value
+	
+	OR.L	D5,D0		; Set channels,minterm and shifts
+	MOVE.L	D0,BLTCON0(A6)	; Write into relevant register
+	
+	MULU.W	#PLANES,D3	; Multiply by number of planes
+	LSL.W	#6,D3		; Multiply by 64
+	LSR.W	#1,D2		; Divide Width (in bytes) by 2
+	ADD.W	D2,D3		; Add to previous calculation
+	MOVE.W	D3,BLTSIZE(A6)	; Start blitter operation.
+	
+	MOVEM.L	(A7)+,D0-D6/A0-A4	; Restore registers
+	RTS
+	
+*******************************************************************
+* SCANMOUSE :- Scans Gadget Zone table and returns the zone entry *
+*              number that the current mouse position applys to.  *
+*******************************************************************
+
+SCANMOUSE	MOVEM.L	D0-D2/A0,-(A7)	; Save registers
+	MOVEQ	#0,D0		; Clear D0
+	MOVE.L	D0,D1		; Clear D1
+	MOVE.L	D0,D2		; Clear D2
+	MOVE.W	#-1,GADGNUM(A5)	; Reset GadgetNumber
+SCANXPOS	LEA	GADGLIST(PC),A0	; Point to our GadgetList structure
+
+SCANXLOOP	CMP.L	#0,(A0)		; Have we scanned all the GadgetList
+	BEQ.S	SCANEXIT		; Yes. Exit.
+	MOVE.W	XPOS(A5),D0	; Retrieve Mouse X-Position
+	LSL.W	#1,D0		; Multiply X by 2 to get Hi-res pos.
+	MOVE.W	(A0),D1		; Obtain X start of Gadget
+	MOVE.W	4(A0),D2		; Obtain Width of Gadget
+	ADD.W	D1,D2		; D2 holds the X end of Gadget
+	CMP.W	D1,D0		; Is Mouse X => Gadget X Start
+	BGE.S	FOUNDXST		; We've found a gadget where X Start
+				; is applicable.
+				
+NEXTENTRY	LEA	10(A0),A0		; Point to Next GadgetList entry
+	BRA.S	SCANXLOOP		; Go and scan the others.
+FOUNDXST	CMP.W	D2,D0		; Is Mouse X < Gadget X End
+	BGE.S	NEXTENTRY		; No, then this Gadget isn't valid!
+CHECKYPOS MOVE.W	YPOS(A5),D0	; Retrieve Mouse Y-Position
+	MOVE.W	2(A0),D1		; Obtain Y start of Gadget
+	MOVE.W	6(A0),D2		; Obtain Height of Gadget
+	ADD.W	D1,D2		; D2 holds the Y end of Gadget
+	CMP.W	D1,D0		; Is Mouse Y => Gadget Y Start
+	BLT.S	NEXTENTRY		; The Y Start is invalid.Next gadget!
+VALIDYST	CMP.W	D2,D0		; Is Mouse Y < Gadget Y End
+	BGE.S	NEXTENTRY		; No! This gadget isn't valid! Ha!
+	MOVE.W	8(A0),D0		; Move GadgetEntry to D0
+	AND.W	#$00FF,D0		; We don't want Gadget ID or State 
+	MOVE.W	D0,GADGNUM(A5)	; Store gadget number
+SCANEXIT	MOVEM.L	(A7)+,D0-D2/A0
+	RTS
+
+***************************************************************
+* CONTROL :- This performs all of the main tasks of DiskCoder *
+***************************************************************
+CONTROL	MOVEM.L	D1-D4/A0,-(A7)	; Stack registers
+	LEA	PASSWORD(PC),A0	; Point to the Password
+	CMP.B	#0,(A0)		; Has one been entered?
+	BNE.S	PASSWDOK		; Yes? Then carry on with validation
+	
+	LEA	PASSMESS(PC),A0	; Point to 'Enter Password First'
+	BRA	CONTEXIT		; Exit control routine
+
+PASSWDOK	LEA	$BFD100,A0	; A0 points to Drive Select register
+	MOVEQ	#0,D0		; Clear D0
+	MOVE.L	D0,D2		; Clear D2
+	MOVE.L	D0,D3		; Clear D3
+	MOVE.W	DRIVENUM(A5),D0	; Restore Drive Number
+	ADD.W	#3,D0		; D0 points to Drive Bit
+	MOVE.B	#$79,(A0)		; Motor is to be turned on
+	BCLR	D0,(A0)		; Select Drive to be turned on...
+	
+	CMP.B	#3,D0		; Drive Zero isn't external so it
+	BEQ	DRIVEOK		; won't respond to ID request!
+	
+	MOVE.B	#$F9,(A0)		; Motor is to be turned off
+	BCLR	D0,(A0)		; Select Drive to be turned off...
+	
+	MOVEQ	#32-1,D1		; Read 32 bits in Identification Mode
+DRIVEID	BCLR	D0,(A0)		; Place SELx line active
+	MOVE.B	$BFE001,D2	; Read Drive status...
+	LSL.B	#3,D2		; Move DSKRDY bit into carry bit...
+	ROXL.L	#1,D3		; Rotate carry into Drive ID.
+	BSET	D0,(A0)		; Place SELx line inactive
+	DBF	D1,DRIVEID	; Back for next bit of Identification
+	NOT.L	D3		; Invert as DSKRDY is active low..
+	CMP.L	#$FFFFFFFF,D3	; Is it a 3.5" Amiga Drive?
+	BEQ.S	DRIVEOK		; Yes? Then carry on!
+	
+	LEA	DRIVEMESS(PC),A0	; Point to 'Drive does not exist!'
+	BRA	CONTEXIT		; Exit control routine
+	
+DRIVEOK	MOVE.B	#$79,(A0)		; Motor is to be turned on
+	BCLR	D0,(A0)		; Select drive to be turned on...
+	
+	MOVE.W	#500,D0		; Must wait 500ms before continuing
+	BSR	WAIT		; See Hardware Ref. Manual Page 239!
+	
+	STEP	OUT		; We only want to step the
+	STEPTRACK	3,WAIT		; disk to get all of the drive flags
+				; Wait the 3 milliseconds as stated
+				; in Hardware Reference Manual...
+	STEP	IN		; We'll step out and then back in 
+	STEPTRACK	3,WAIT		; again, so we don't break the drive!
+	
+	BTST	#2,$BFE001	; Is there a disk in the drive
+	BNE.S	DSKTHERE		; Yes? Then carry on!
+	
+	LEA	DISKMESS(PC),A0	; Point to 'No Disk in Drive'
+	BRA	CONTEXIT		; Exit control routine
+
+DSKTHERE	BTST	#5,$BFE001	; Is the Drive up to speed?
+	BNE.S	DSKTHERE		; No? Wait until it is!
+	
+	BTST	#3,$BFE001	; Is the disk write protected?
+	BNE.S	DISKOK		; No? Then all validation is Ok!
+	
+	LEA	WRITEMESS(PC),A0	; Point to 'Disk Write Protected'
+	BRA	CONTEXIT		; Exit control routine
+	
+DISKOK	BSR	RNDTRACKS		; Select some 'random' tracks to code
+	
+	BSR	CODEDISK		; Encode the tracks and install disk
+	
+	TST.L	D0		; Has it worked
+	BNE.S	CONTEXIT		; No? Print appropriate message
+	
+	LEA	DONEMESS(PC),A0	; Point to 'Coding Completed'
+	
+CONTEXIT	BSR	PRINTSTAT		; Print status line
+	DRIVEOFF	1111		; All drives off!
+	
+	MOVE.W	#1000,D0		; We'll wait for 1 second 
+	BSR	WAIT		; Wait before erasing message
+	
+	BSR	READY		; Print 'Ready for command'
+	
+	MOVEM.L	(A7)+,D1-D4/A0	; Restore register contents
+	RTS
+
+READY	MOVE.L	A0,-(A7)		; Stack A0 as we're going to use it!
+	LEA	READYMESS(PC),A0	; Point to 'Ready for Command'
+	BSR	PRINTSTAT		; Print status line	
+	MOVE.L	(A7)+,A0		; Retrieve old A0
+	RTS
+
+************************************************************************
+* WAIT :- Waits for a specific amount of time to pass before returning *
+*         Pass the number of Milliseconds in register D0.              *
+************************************************************************
+	
+WAIT	MOVEM.L	D0-D1/A0,-(A7)	; Stack registers
+	LEA	$BFE001,A0	; Point to CIAA addresses
+	MOVE.B	$E00(A0),D1	; Set control register A on CIAA
+	AND.B	#%11000000,D1	; Don't trash bits we are not
+	OR.B	#%00001000,D1	; using.....
+	MOVE.B	D1,$E00(A0)	; Write bits back...
+	MOVE.B	#$CC,$400(A0)	; Set Timer to wait for exactly
+	MOVE.B	#$02,$500(A0)	; 1 millisecond..
+	AND.L	#$FFFF,D0		; Mask off the upper word
+WAITTIMER	BTST.B	#0,$D00(A0)	; Is Timer-Expired flag set?
+	BEQ.S	WAITTIMER		; No? Then wait until it is!
+	BSET.B	#0,$E00(A0)	; Restart timer...	
+	DBF	D0,WAITTIMER	; Back until done.
+	MOVEM.L	(A7)+,D0-D1/A0	; Restore registers
+	RTS
+	
+********************************************************************
+* RNDTRACKS :- Constructs a table of 20 track numbers, 18 of which *
+*              are random, the others being Track Two and the      *
+*              AmigaDOS root track... These are then to be sorted  *
+********************************************************************
+
+RNDTRACKS	MOVEM.L	D0-D4/A0-A1,-(A7)	; Stack registers
+	LEA	DECODEPRG(PC),A0	; Point to Decoder binary file
+	LEA	$26(A0),A0	; Skip Hunk Header/BRA.S/Checksum
+	MOVE.W	#2,(A0)+		; Always do Track Two (for Check)
+	MOVE.W	#80,(A0)+		; and the AmigaDOS root track.
+	MOVEQ	#RNDNUMBER-3,D0	; So, we want the rest to be random!
+READRAND	MOVE.W	SEED(A5),D1	; Get our Random Seed Value
+	MOVE.W	VHPOSR(A6),D2	; Get Beam Position
+	EOR.W	D2,D1		; Exclusive OR our seed with it
+	ROR.W	D2,D1		; Rotate by a mystery number of bits
+	EOR.W	D2,D1		; Exclusive OR our seed again
+	EOR.W	#$4489,D1		; Exclusive OR with sync marker!
+	MOVE.W	D1,SEED(A5)	; Store as our new seed
+	AND.W	#$00FF,D1		; We only want the lower byte
+	CMP.W	#159,D1		; Is it outside our range?
+	BGT.S	READRAND		; Yup! Go and get another
+	BSR	CHECKDUP		; No? Check for duplicate number!
+	TST.B	D3		; Check response
+	BNE.S	READRAND		; Duplicate number, read again!
+	TST.W	D1		; Hey! We can't encode Track Zero
+	BEQ.S	READRAND		; because it's not the done thing!
+	MOVE.W	D1,(A0)+		; It's valid! Write into Table
+	DBF	D0,READRAND	; and then go back for another!
+	
+	MOVEQ	#RNDNUMBER-1,D4	; Initial number of scans
+SORTRANDS	LEA	DECODEPRG(PC),A0	; Point to Decoder binary file
+	LEA	$26(A0),A0	; Skip Hunk Header/BRA.S/Checksum
+	SUBQ	#1,D4		; Subtract one from number of scans
+	MOVEQ	#0,D1		; Swap Flag is Zero
+	MOVE.L	D4,D2		; After each full scan, we know that
+				; the last entry processed is in its
+				; correct place, so we don't need to
+				; process as many words on the next
+				; full scan, hence D4 is reduced..
+				; This makes the sort really quick!
+SORTLOOP	MOVE.W	(A0),D3		; Retrieve first word
+	CMP.W	2(A0),D3		; Is it greater than next word
+	BLT.S	NOSWAP		; No? Then don't swap words!
+	MOVE.W	2(A0),(A0)	; Move second word into first
+	MOVE.W	D3,2(A0)		; Move first word into second
+	MOVEQ	#1,D1		; Set flag to say that we've swapped
+NOSWAP	ADDQ.L	#2,A0		; Point to next word
+	DBF	D2,SORTLOOP	; Back for next pair of words
+	TST.B	D1		; Is the Swap Flag set?
+	BNE.S	SORTRANDS		; No? Make another pass then!
+
+	MOVEM.L	(A7)+,D0-D4/A0-A1	; Restore registers
+	RTS			; Back to Caller
+	
+CHECKDUP	LEA	DECODEPRG(PC),A1	; Point to Decoder binary file
+	LEA	$26(A1),A1	; Skip Hunk Header/BRA.S/Checksum
+CHECKDPLP	CMP.W	(A1)+,D1		; Is our value the same?
+	BEQ.S	DUPFOUND		; Yes? Then Exit!
+	CMP.L	A0,A1		; Have we checked all of the words
+	BGT.S	CHECKOK		; Yes? Then it must be Ok!
+	BRA.S	CHECKDPLP		; No? Then keep checking
+CHECKOK	MOVEQ	#0,D3		; Response = No Duplicate found
+CHECKDPEX	RTS
+DUPFOUND	MOVEQ	#1,D3		; Response = Duplicate Found
+	BRA.S	CHECKDPEX		; Exit 
+
+*************************************************
+* CODEDISK :- Copy Track Zero into Memory       *
+*             Encode our random tracks          *
+*             Write Track Zero on Track 160     *
+*             Install DiskDecoder on Track Zero *
+*************************************************
+
+CODEDISK	LEA	CODEMESS(PC),A0	; Point to 'Coding Disk' message
+	BSR	PRINTSTAT		; Print on status line!
+
+	BSR	PASSKEY		; Calculate Password Key
+	MOVE.L	#0,CHECK(A5)	; Reset Checksum for Decoder
+	BSR	SETDISK		; Set Disk DMA values
+	MOVE.W	#0,CURRTRACK(A5)	; Set for reference by FindTrack
+	SEEKZERO	3,WAIT		; Find Track Zero using 3ms steps
+	LOWERHEAD			; Place head on correct side
+	
+	BSR	READTRACK		; Read in Track Zero
+	TST.B	D1		; Did it work?
+	BNE	FAILURE		; Oh.... I'm stopping then!
+	
+	MOVE.L	TRACK(A5),A0	; Point to Decoded Data
+	MOVE.L	TRACKZERO(A5),A1	; Point to our Track Zero Buffer
+	MOVE.L	#((11*512)/4)-1,D0	; Number of Longwords to transfer
+TOZEROLP	MOVE.L	(A0)+,(A1)+	; Transfer to Buffer
+	DBF	D0,TOZEROLP	; Back for next longword
+	
+	MOVEQ	#0,D0		; Clear D0
+	LEA	DECODEPRG(PC),A0	; Point to Decoder binary file
+	LEA	$26(A0),A0	; Skip Hunk Header/BRA.S/Checksum
+	MOVEQ	#RNDNUMBER-1,D7	; Set number of 'Random' tracks
+ENCODETRK	MOVE.W	(A0)+,D0		; Get the next track number
+	BSR	FINDTRACK		; Locate it.
+	BSR	READTRACK		; Read it.
+	TST.B	D1		; Did it Fail in any way?
+	BNE	FAILURE		; Yes? Go to that bit then!
+	CMP.W	#2,D0		; Is it Track Two (our check track)?
+	BNE.S	NOTCHECK		; No? Skip the checksum bit
+	BSR	CHECKSUM		; Calculate the checksum value
+NOTCHECK	BSR	PASSCRYPT		; Scramble it!
+	BSR	SAVETRACK		; Write track back to disk
+	BTST	#6,$BFE001	; Has left mouse been pressed?
+	BNE.S	NOABORT		; No? Then user hasn't aborted
+	BSR	SCANMOUSE		; Get mouse position
+	CMP.W	#5,GADGNUM(A5)	; Is it the 'STOP' gadget?
+	BEQ	ABORTED		; Yes? Then go to that bit..
+NOABORT	DBF	D7,ENCODETRK	; Back for next Track!
+
+	MOVE.L	TRACK(A5),A0	; Point to Decoded Data
+	MOVE.L	TRACKZERO(A5),A1	; Point to our Track Zero Buffer
+	MOVE.L	#((11*512)/4)-1,D0	; Number of Longwords to transfer
+FROMZERO	MOVE.L	(A1)+,(A0)+	; Transfer from Buffer
+	DBF	D0,FROMZERO	; Back for next longword
+	
+	MOVEQ	#0,D0		; Clear D0
+	MOVE.W	#160,D0		; Our new home for Track Zero!
+	BSR	FINDTRACK		; Locate the track!
+	BSR	SAVETRACK		; Save Track Zero on Track 160!
+	
+	LEA	DECODEPRG(PC),A0	; Point to Decoder Program
+	MOVE.L	CHECK(A5),$22(A0)	; Write our checksum into program
+	
+	LEA	BOOTPROG(PC),A0	; Point to our program
+	MOVE.L	TRACK(A5),A1	; Get address of our Track Buffer
+	MOVE.L	#((11*512)/4)-1,D0	; Number of Longwords to transfer
+FROMDECO	MOVE.L	(A0)+,(A1)+	; Transfer to Track Buffer
+	DBF	D0,FROMDECO	; Back for next longword
+	
+	MOVEQ	#0,D0		; We're going to replace Track Zero
+	BSR	FINDTRACK		; Locate it..
+	
+	BSR	SAVETRACK		; Save out our Track Zero!
+	
+	MOVEQ	#0,D0		; Successful Coding
+CODEDONE	RTS
+	
+FAILURE	LEA	FAILMESS(PC),A0	; Point to Disk Failure message
+	MOVEQ	#-1,D0		; Error Flag 
+	BRA.S	CODEDONE		; Exit
+
+ABORTED	LEA	ABORTMESS(PC),A0	; Point to Aborted message
+	MOVEQ	#-1,D0		; Error Flag
+	
+
+**************************************************************
+* FINDTRACK :- Load a specified track ( track number in D0 ) *
+**************************************************************
+
+FINDTRACK	MOVEM.L	D0-D2,-(A7)	; Save registers
+	MOVE.W 	D0,NEWTRACK(A5)	; Store new track number.
+	MOVE.W	CURRTRACK(A5),D2	; Retrieve current track number
+	BTST 	#0,D0		; Is the new track number odd?
+	BEQ.S	TRACKLOW		; Yes? Then read the Lower Side
+	UPPERHEAD			; No? Then read the Upper Side
+	BRA.S	FINDDIFF	
+TRACKLOW	LOWERHEAD			; In that case read the UPPER side!
+FINDDIFF	CMP.W	D2,D0		; Is current track > new track
+	BLE.S 	MOVEIN		; Yes? Then move towards Track Zero
+	STEP	OUT		; Otherwise move to Track 159
+	BRA.S	FINDNUMB
+MOVEIN	STEP	IN	
+FINDNUMB	LSR.W	D2		; Divide tracks by two because we
+	LSR.W	D0		; we aren't dealing with sides here!
+	SUB.W	D2,D0		
+	BPL.S	NUMBEROK
+	NEG.W	D0		; How many tracks away is new track?
+NUMBEROK	TST.W	D0		; If D0 is zero then we don't need
+	BEQ.S	OVERTRACK		; to step any tracks,and we've 
+	SUBQ	#1,D0		; Subtract one from it for counter.
+LOCATEIT	STEPTRACK	3,WAIT		; Step that track! 3ms wait time.
+	DBF	D0,LOCATEIT	; Until I've reached the new track
+
+OVERTRACK	MOVE.W	NEWTRACK(A5),CURRTRACK(A5) ; Current Track is New Track
+	MOVEM.L	(A7)+,D0-D2	; Restore registers
+	RTS
+
+***************************************************************************
+* PASSCRYPT :- Encrypts/Decrypts a single track side using the Passkey    *
+***************************************************************************
+PASSCRYPT	MOVEM.L	D0-D2/A0,-(A7)	; Save registers
+	MOVE.L	TRACK(A5),A0	; Point to sector buffer
+	MOVE.L	PASSVALUE(A5),D0	; Retrieve Password Key value
+	MOVE.L	#(11*512)/4,D1	; Encrypt one track.
+CRYPTLOOP	MOVE.L	(A0),D2		; Get Longword
+	EOR.L	D0,D2		; EOR with Password Key
+	EOR.L	D1,D2		; EOR with Offset Value
+	EOR.L	#$C5EAD12B,D2	; EOR with my own 'Random' Value
+	MOVE.L	D2,(A0)+		; Write Longword back
+	SUBQ.L	#1,D1		; Decrease counter
+	BNE.S	CRYPTLOOP		; Loop until finished
+	MOVEM.L	(A7)+,D0-D2/A0	; Restore registers
+	RTS			; Go Back
+
+************************************************
+* CHECKSUM :- Calculate checksum for Track Two *
+************************************************
+CHECKSUM	MOVEM.L	D0-D2/A0,-(A7)	; Stack registers
+	MOVE.L	CHECK(A5),D0	; Retrieve Current Checksum
+	MOVE.L	TRACK(A5),A0	; Point to Sector Buffer
+	MOVE.L	#(11*512)/4,D1	; Repeat for 11 Sectors/1 Track
+CHECKLOOP	ADD.L	(A0)+,D0		; Add Longword into Checksum
+	MOVE.L	PASSVALUE(A5),D2	; Retrieve Password Key
+	EOR.L	D2,D0		; Scramble further using Password Key
+	SUBQ.L	#1,D1		; One from counter
+	TST.L	D1		; Are we Finished?
+	BNE.S	CHECKLOOP		; No? Then do another Longword
+	MOVE.L	D0,CHECK(A5)	; Store checksum.
+	MOVEM.L	(A7)+,D0-D2/A0	; Retrieve registers
+	RTS			; Go back.
+
+***************************************************************************
+* PASSKEY :- Calculates a longword (returned in D0) based on the Password *
+***************************************************************************
+PASSKEY	MOVEM.L	D0-D1/A0,-(A7)	; Save registers
+	LEA	PASSWORD(PC),A0	; Point to Password string
+	MOVEQ.L	#0,D0		; Clear D0
+	MOVEQ.L	#0,D1		; Clear D1
+PKEYLOOP	MOVE.B	(A0)+,D1		; Get byte from Password
+	BEQ.S	PASSKEYX		; Have we finished??
+	ROL.L	#6,D0		; Rotate 6 bits to the left 
+	ADD.L	D1,D0		; Add password character
+	EOR.L	#$07061969,D0	; Scramble with my Birthday!
+	EOR.L	D1,D0		; Exclusive or with character
+	ROL.L	#5,D1		; Rotate a few bits!
+	BRA.S	PKEYLOOP		; Back for next character!
+PASSKEYX	MOVE.L	D0,PASSVALUE(A5)	; Store the Password Key
+	MOVEM.L	(A7)+,D0-D1/A0	; Restore registers
+	RTS			; Go Back.
+
+***********************************************
+* SETDISK :- This sets the Disk DMA registers *
+***********************************************
+SETDISK	MOVE.W	#$4489,DSKSYNC(A6)	; Syncword
+	MOVE.W	#$4000,DSKLEN(A6)	; Disable writing
+	RTS
+
+**********************************************************
+* READTRACK :- Read a track in MFM Format using Disk DMA *
+**********************************************************
+READTRACK MOVEQ	#READTRIES-1,D2	; Maximum number of read attempts
+RTRKLOOP	MOVE.L	TRACKBUFF(A5),DSKPTH(A6)
+	MOVE.W	#$7F00,ADKCON(A6)	; Clear ADKCON
+	MOVE.W	#$9500,ADKCON(A6)	; MFM, with PRECOMP
+	MOVE.W	#$9980,DSKLEN(A6)
+	MOVE.W	#$9980,DSKLEN(A6)	; Read $1980 Words
+	WAITDISK			; Wait for Disk DMA to Stop
+	BSR.S	DECODE	
+	TST.B	D1		; Has the Decode worked?
+	BEQ.S	READEXIT		; Yes! Let's quit it!
+	DBF	D2,RTRKLOOP	; No? Let's try again!
+READEXIT	RTS
+
+***********************************************************
+* SAVETRACK :- Write a track in MFM Format using Disk DMA *
+***********************************************************
+SAVETRACK	BSR	ENCODE		; Encode Scrambled Track to MFM Data
+	MOVE.L	TRACKGAP(A5),DSKPTH(A6)
+	MOVE.W	#$7F00,ADKCON(A6)	; Clear ADKCON
+	CMP.W	#80,CURRTRACK(A5)	; Is current track greater than 80
+	BLT.S	PRECOMP		; No? Then skip this setting
+	MOVE.W	#$A500,ADKCON(A6)	; Set precomp to 140ns
+	BRA.S	SAVEIT		; Skip next setting
+PRECOMP	MOVE.W	#$9500,ADKCON(A6)	; Set no precomp
+SAVEIT	MOVE.W	#$D980,DSKLEN(A6)
+	MOVE.W	#$D980,DSKLEN(A6)	; Write $1980 words 
+	WAITDISK			; Wait for Disk DMA to Stop
+	MOVE.W	#$4000,DSKLEN(A6)	; Disable writing...
+	RTS
+
+******************************************************************
+* DECODE :- Decodes MFM Format track pointed at by TRACKBUFF(A5) *
+******************************************************************
+DECODE	MOVEM.L	D0/D2-D6/A0-A2,-(A7); Save registers
+	MOVE.L	TRACK(A5),A0	; Pointer to decoded data
+	MOVE.L	TRACKBUFF(A5),A1	; Pointer to trackbuffer
+	MOVE.L	#$55555555,D3	; Value for decoder
+	MOVEQ	#10,D5		; Decode 11 blocks
+DECNEXTBK	CMP.W	#$4489,(A1)+	; Check for next sync word
+	BEQ.S	NOGAP		; Hey! There's no other syncs!
+NOSYNC	CMP.W	#$4489,(A1)+	; Search for next sync
+	BNE.S	NOSYNC		; Not there! Back we go!
+NOGAP	CMP.W	#$4489,(A1)	; Skip all remaining syncs
+	BNE.S	SKIPSYNC		
+	ADDQ.W	#2,A1
+	BRA.S	NOGAP
+SKIPSYNC	MOVE.L	(A1)+,D0		; Read data from buffer
+	MOVE.L	(A1)+,D1
+	AND.L	D3,D0		; Remove clock bits
+	AND.L	D3,D1
+	ADD.L	D0,D0
+	OR.L	D1,D0
+	MOVE.L	D0,D1
+	AND.L	#$FF000000,D1	; Check if header is alright
+	CMP.L	#$FF000000,D1
+	BNE.S	FATALERR		; If not -> ERROR
+	AND.L	#$0000FF00,D0	; Get sector number
+	ADD.L	D0,D0
+	MOVE.L	A0,A2
+	ADD.L	D0,A2		; Add to get the right pos.
+	ADD.L	#$28,A1		; Skip the rest
+	MOVE.L	(A1)+,D4		; Decode Data-Checksum
+	MOVE.L	(A1)+,D1		; Store it in D4
+	AND.L	D3,D4
+	AND.L	D3,D1
+	ADD.L	D4,D4
+	OR.L	D1,D4
+	MOVEQ	#127,D6		; Decode 2*128 longwords
+	MOVEQ	#0,D2
+DECNEXT	MOVE.L	512(A1),D1	; Decode data block
+	MOVE.L	(A1)+,D0
+	EOR.L	D0,D2		; Calculate Checksum
+	EOR.L	D1,D2
+	AND.L	D3,D0		; Decode longword
+	AND.L	D3,D1
+	ADD.L	D0,D0
+	OR.L	D1,D0
+	MOVE.L	D0,(A2)+		; Store longword in buffer
+	DBF	D6,DECNEXT	; Decode next longword
+	AND.L	D3,D2		; Skip illegal bits
+	CMP.L	D4,D2		; Compare checksums
+	BNE.S	FATALERR		; If not equal -> error
+	ADD.W	#$0200,A1		; Add for next block
+	DBF	D5,DECNEXTBK	; Back for next block
+	MOVEQ	#0,D1		; Return code : OK
+DCODEEXIT	MOVEM.L	(A7)+,D0/D2-D6/A0-A2; Restore registers
+	RTS
+
+FATALERR	MOVEQ	#-1,D1		; Failure
+	BRA.S	DCODEEXIT		; Leave properly!
+
+**********************************************************
+* ENCODE : Codes a track into MFM format for Writing     *
+**********************************************************
+
+ENCODE	MOVEM.L	D0-D7/A0-A4,-(A7)	; Save registers
+	MOVE.L	TRACK(A5),A0	; Get Data address
+	MOVE.L	TRACKBUFF(A5),A1	; Get MFM Buffer address
+	MOVE.L	#$55555555,D5	; Mask For Even Bits
+	MOVEQ	#11,D7		; Code 11 Sectors
+	MOVEQ	#0,D6		; Sector Number
+
+CODELOOP	LEA	8(A1),A2
+	MOVE.L	A1,A3
+	MOVE.L	#$FF000000,D0	; Format Sign
+	MOVEQ	#0,D1
+	MOVE.W	CURRTRACK(A5),D1	; Track number is needed for MFM
+	SWAP	D1
+	OR.L	D1,D0		; Store Track Number (0-159)
+	MOVE.W	D6,D1
+	ASL.W	#8,D1
+	OR.W	D1,D0		; Store Sector Number (0-10)
+	OR.W	D7,D0		; Store Sectors until gap (11-1)
+
+	MOVE.L	#$00000000,(A1)+	; Store coded zero bytes
+	MOVE.L	#$44894489,(A1)+	; Move in Sync bytes
+	BSR	CODELONG		; Code the Info-Block
+	MOVE.L	D0,(A1)+		; Move in Odd Data
+	MOVE.L	D1,(A1)+		; Move in Even Data
+
+	MOVEQ	#8-1,D2		
+STORELAB	CLR.L	(A1)+		; Store sector label ( not used )
+	DBF	D2,STORELAB	
+
+	MOVEQ	#0,D0
+	MOVEQ	#10-1,D2		; Calculate checksum over 40 bytes
+HEADCHECK	MOVE.L	(A2)+,D1
+	EOR.L	D1,D0
+	DBF	D2,HEADCHECK
+	BSR.S	CODELONG		; Code the Header Checksum
+	MOVE.L	D0,(A1)+		; Store Header Checksum (Odd)
+	MOVE.L	D1,(A1)+		; Store Header Checksum (Even)
+
+	LEA	16(A2),A2		; Point to buffer for Odd bits
+	LEA	512(A2),A4	; Point to buffer for Even bits
+	MOVEQ	#128-1,D2		; Code 128 longwords...
+
+CODEDATA	MOVE.L	(A0)+,D0		; Fetch program data from memory
+	BSR.S	CODELONG
+	MOVE.L	D0,(A2)+		; Store Coded Data (Odd)
+	MOVE.L	D1,(A4)+		; Store Coded Data (Even)
+	DBF	D2,CODEDATA
+
+	LEA	8(A1),A2		; Skip space for Data Checksum
+	MOVEQ	#0,D0		; Clear checksum 
+	MOVE.W	#256-1,D2
+DATACHECK	MOVE.L	(A2)+,D1
+	EOR.L	D1,D0		; Calculate Data Checksum
+	DBF	D2,DATACHECK
+	BSR.S	CODELONG		; Code it into MFM format
+	MOVE.L	D0,(A1)+		; Store Data Checksum (Odd)
+	MOVE.L	D1,(A1)+		; Store Data Checksum (Even)
+
+	MOVEQ	#0,D4		; Set Clock bits for InfoBlock
+	BSR.S	SETCLOCKS
+
+	LEA	4(A3),A3		; Skip syncs
+	MOVE.W	#270-1,D4		; Set Clock bits for 270 Longwords
+	BSR.S	SETCLOCKS
+
+	ADD.W	#1024,A1		; Skip coded Data bits
+	ADDQ.W	#1,D6
+	SUBQ.W	#1,D7
+	BNE	CODELOOP		; Right! Back for the next Sector
+	MOVEQ	#0,D0
+	MOVEM.L	(A7)+,D0-D7/A0-A4	; Restore registers
+	RTS			; Back to the main program
+
+SETCLOCKS	MOVE.B	-1(A3),D3		; Byte from previous longword
+	NOT.B	D3		; Invert it.
+	ANDI.L	#1,D3		; Mask off Bit 0
+	ROR.L	#1,D3		; Shift Bit 0 to Bit 31
+	MOVE.L	(A3),D0		; Fetch next longword
+	MOVE.L	D0,D1
+	EOR.L	D5,D0
+	MOVE.L	D0,D2
+	LSL.L	#1,D0
+	LSR.L	#1,D2		
+	OR.L	D3,D2		; Set Bit 31 if necessary
+	AND.L	D2,D0
+	OR.L	D1,D0
+	MOVE.L	D0,(A3)+
+	DBF	D4,SETCLOCKS
+	
+	RTS
+
+CODELONG	MOVE.L	D0,D1
+	LSR.L	#1,D0
+	AND.L	D5,D0		; D0 is coded Odd  bits
+	AND.L	D5,D1		; D1 is coded Even bits
+	RTS
+
+
+
+***********************************
+* Data for Variables & CopperList *
+***********************************
+	RSRESET
+OLDDMA	RS.W	1	; For DMA status of Amiga OS
+OLDINT	RS.W	1	; For Interrupt status of Amiga OS
+OLDREQ	RS.W	1	; For Interrupt Request status of Amiga OS
+OLDLEV3	RS.L	1	; Old Autovector Level 3 storage
+OLDLEV2	RS.L	1	; Old Autovector Level 2 storage
+OLDLIST	RS.L	1	; System CopperList address
+SCREEN	RS.L	1	; Address of our Custom Screen
+XPOS	RS.W	1	; Current X position of Mouse
+YPOS	RS.W	1	; Current Y position of Mouse
+LASTX	RS.W	1	; Last X position of Mouse
+LASTY	RS.W	1	; Last Y position of Mouse
+GADGNUM	RS.W	1	; Currently selected gadget number
+DRIVENUM	RS.W	1	; Currently selected drive number
+AMIGAKEY	RS.W	1	; ASCII value from Keyboard routine
+LASTRAW	RS.W	1	; Last RawKey value from CIA
+CURSOR	RS.W	1	; Cursor position within Password String
+SEED	RS.W	1	; Random seed value
+PASSVALUE	RS.L	1	; Password Key Value
+TRACKZERO	RS.L	1	; Holds address of Track Zero Buffer
+TRACK	RS.L	1	; Holds address of Decoded Track Data
+TRACKGAP	RS.L	1	; Holds address of Track Gap prior to MFM Data
+TRACKBUFF	RS.L	1	; Holds address of MFM Data Buffer
+CHECK	RS.L	1	; Holds checksum for Track Two
+CURRTRACK	RS.W	1	; Holds current track number
+NEWTRACK	RS.W	1	; Holds new track number
+VARLENGTH	RS.W	0
+
+VARIABLES	DCB.B	VARLENGTH,0
+
+GFXNAME	DC.B	"graphics.library",0
+	EVEN
+WAITMESS	DC.B	"  Press ENTER to stop  ",0
+	EVEN
+PASSMESS	DC.B	"Enter a Password First!",0
+	EVEN
+DRIVEMESS	DC.B	" Drive does not exist! ",0
+	EVEN
+DISKMESS	DC.B	"   No disk in drive!   ",0
+	EVEN
+WRITEMESS	DC.B	"Disk is Write Protected",0
+	EVEN
+CODEMESS	DC.B	"      Coding Disk      ",0
+	EVEN
+DONEMESS	DC.B	" ** Coding Complete ** ",0
+	EVEN
+READYMESS	DC.B	"   Ready for Command   ",0
+	EVEN
+FAILMESS	DC.B	"Fatal Disk Format Error",0
+	EVEN
+ABORTMESS	DC.B	"  Disk Coding Aborted! ",0
+	EVEN
+BYEMESS	DC.B	"    **  Bye Bye!  **   ",0
+	EVEN
+PASSWORD	DCB.B	PASSLEN,0		; Zero fill password initially
+	EVEN
+************************************
+*  Copper List for Screen Display  *
+************************************
+NEWCOPPER	DC.W	DIWSTRT,$3481	; Top left corner of screen.
+	DC.W	DIWSTOP,$FCC1	; Bottom right corner of screen.
+	DC.W	DDFSTRT,$3C	; Data fetch start.
+	DC.W	DDFSTOP,$D4	; Data fetch stop.
+	DC.W	BPL1MOD,SCRWIDTH	; Set modulo for odd planes.
+	DC.W	BPL2MOD,SCRWIDTH	; Set modulo for even planes.
+ 	DC.W	BPLCON0,$A200	; Set BPLCON0 to 2 bitplane hi-res.
+
+	DC.W	COLOR00,$0999 	; Light Grey ---
+	DC.W	COLOR01,$0000	; Black        |_ Looks like
+	DC.W	COLOR02,$0FFF	; White        |  System 2.0!
+	DC.W	COLOR03,$079F	; Sky Blue   ---
+
+	DC.W	COLOR16,$0999	; Sprite 1 Color 00
+	DC.W	COLOR17,$000F	; Sprite 1 Color 01
+	DC.W	COLOR18,$088F	; Sprite 1 Color 02
+	DC.W	COLOR19,$0DDF	; Sprite 1 Color 03
+	
+
+	
+ 	DC.W	BPL1PTH		; Bitplane high word.
+PLANE1HI	DC.W	0
+	DC.W	BPL1PTL		; Bitplane low word.
+PLANE1LO	DC.W	0
+ 	DC.W	BPL2PTH		; Bitplane high word.
+PLANE2HI	DC.W	0
+	DC.W	BPL2PTL		; Bitplane low word.
+PLANE2LO	DC.W	0
+
+	DC.W	SPR0PTH		; Sprite 1 high word.
+SPR0HI	DC.W	0		 
+	DC.W	SPR0PTL		; Sprite 1 low word.
+SPR0LO	DC.W	0
+				; Byte Offsets for Words
+NOSPRITES	DC.W	SPR1PTH,0,SPR1PTL,0	;  0001,0203,0405,0607
+	DC.W	SPR2PTH,0,SPR2PTL,0	;  0809,1011,1213,1415
+	DC.W	SPR3PTH,0,SPR3PTL,0	;  1617,1819,2021,2223
+	DC.W	SPR4PTH,0,SPR4PTL,0	;  2425,2627,2829,3031	
+	DC.W	SPR5PTH,0,SPR5PTL,0	;  3233,3435,3637,3839
+	DC.W	SPR6PTH,0,SPR6PTL,0	;  4041,4243,4445,4647
+	DC.W	SPR7PTH,0,SPR7PTL,0	;  4849,5051,5253,5455
+
+	DC.W	INTREQ,$8010	; Cause copper interrupt!
+
+ENDCOPPER	DC.L	COPPER_HALT	; CopperList end marker
+
+DEADSPR	DC.L	0		; Null Sprite!
+
+MOUSESPR	DC.W	0,0			; Sprite Control Words
+	DC.W	$0100,$0000,$0100,$0000	; Sprite Data
+	DC.W	$0000,$0100,$0000,$0100	; This is a sprite used
+	DC.W	$0000,$0100,$0100,$0100	; for the mouse pointer.
+	DC.W	$0100,$0100,$C7C6,$3ff8	; It is 15 scan lines
+	DC.W	$0100,$0100,$0100,$0100	; high.
+	DC.W	$0000,$0100,$0000,$0100
+	DC.W	$0000,$0100,$0100,$0000
+	DC.W	$0100,$0000
+	DC.W	$0000,$0000		; Sprite End Marker
+
+******************************
+* Structures for GadgetLists *
+******************************
+
+GZONE	MACRO
+	DC.W	\1,\2,\3,\4	; X,Y,Width,Height
+	DC.B	\5<<4!\6,\7	; State,Box Id 
+	ENDM			; Lower nibble of state indicates
+				; whether the mask is to be used
+				; (eg. $01 = Up and UseMask)
+				
+GADGPTRS	DC.L	GADGET0,GADGET0A	; 0
+	DC.L	GADGET1,GADGET1A	; 1
+	DC.L	GADGET2,GADGET2A	; 2  
+	DC.L	GADGET3,GADGET3A	; 3
+	DC.L	TITLES,0		; 4
+	DC.L	CREDITS,0		; 5
+	DC.L	STARTBOX,0	; 6
+	DC.L	STOPBOX,0		; 7
+	DC.L	STATUS,0		; 8
+	DC.L	INPUT,0		; 9
+	DC.L	0,0		; End Marker
+	
+GADGETLST	GZONE	050,050,256,32,%0000,4,0	; Title
+	GZONE	306,050,256,32,%0000,5,0	; Credits
+	GZONE	050,114,256,32,%0000,8,0	; Status
+
+GADGLIST	GZONE	306,082,064,32,%1100,0,0	; Drive 0
+	GZONE	370,082,064,32,%1000,1,1	; Drive 1
+	GZONE	434,082,064,32,%1000,2,2	; Drive 2
+	GZONE	498,082,064,32,%1000,3,3	; Drive 3
+	GZONE	306,114,128,32,%0000,6,4	; StartBox
+	GZONE	434,114,128,32,%0000,7,5	; StopBox
+	GZONE	050,082,256,32,%0000,9,6	; Input
+	
+	DC.L	0
+
+GMASK	INCBIN	"source:dean/data/Drive.Mask"	; 4 words * 32 lines * 2 Planes
+
+GADGET0	INCBIN	"source:dean/data/Drive0_Up"	; 4 words * 32 lines * 2 Planes
+GADGET0A	INCBIN	"source:dean/data/Drive0_Down"	; for all of the drive gadgets
+GADGET1	INCBIN	"source:dean/data/Drive1_Up"	
+GADGET1A	INCBIN	"source:dean/data/Drive1_Down"	
+GADGET2	INCBIN	"source:dean/data/Drive2_Up"	
+GADGET2A	INCBIN	"source:dean/data/Drive2_Down"	
+GADGET3	INCBIN	"source:dean/data/Drive3_Up"	
+GADGET3A	INCBIN	"source:dean/data/Drive3_Down"	
+TITLES	INCBIN	"source:dean/data/Diskcode.Title"   ; 256 * 32 Pixels * 2 planes
+CREDITS	INCBIN	"source:dean/data/Diskcode.Credits" ; for both of these!
+STARTBOX	INCBIN	"source:dean/data/Diskcode.Start"   ; 128 * 32 Pixels * 2 planes
+STOPBOX	INCBIN	"source:dean/data/Diskcode.Stop"    ; for both of these!
+INPUT	INCBIN	"source:dean/data/Diskcode.Input"   ; And back to 256 * 32 * 2
+STATUS	INCBIN	"source:dean/data/Diskcode.Status"  ; boxes for these ones....
+
+FONT	INCBIN	"source:dean/data/System.Fnt"	    ; Load system font (Pearl 8)
+
+*****************************************************
+* KEYTABLE Information... 	Delete Back     = $01 *
+*			Delete Forwards = $02 *
+*			Cursor Left     = $03 *
+*			Cursor Right    = $04 *
+*****************************************************
+
+KEYTABLE	DC.B	"'1234567890-=\",0,"0"
+	DC.B	"QWERTYUIOP[]",0,"123"
+	DC.B	"ASDFGHJKL;#",13,0,"456"
+	DC.B	0,"ZXCVBNM,./",0,".789"
+	DC.B	" ",1,0,13,13,0,2,0,0,0,"-",0,0,0,4,3
+KEYEND	EQU 	KEYTABLE-*
+	DCB.B	128-KEYEND,0	; Fill rest of keytable..
+	EVEN
+
+BOOTPROG	DC.B	"DOS",0		; DOS Disk Identification Marker
+	DC.L	$00000000		; Boot Checksum
+	DC.L	$00000370		; Pointer for Root Block
+	
+BOOTSTART LEA	OLDA1(PC),A0	; Point to Start of Store
+	MOVE.L	A1,(A0)		; Store A1 (used by trackdisk)
+
+	MOVE.L	#5632,D0		; Allocate One Track
+	MOVE.L	#$10002,D1	; Chip/Clear Memory
+	MOVE.L	4.W,A6		; Get ExecBase
+	JSR	ALLOCMEM(A6)	; Allocate memory
+	TST.L	D0		; Has it worked?
+	BEQ	MEMFAIL		; No!
+	
+	LEA	DECADDR(PC),A1	; Point to address storage
+	MOVE.L	D0,(A1)
+LDDECODE	MOVE.L	OLDA1(PC),A1
+	MOVE.W	#2,28(A1)		; Command is READ
+	MOVE.L	D0,40(A1)		; Set Load Address
+	MOVE.L	#9*512,36(A1)	; Load Length
+	MOVE.L	#2*512,44(A1)	; Start at sector 2
+	MOVE.L	4.W,A6		; Set ExecBase
+	JSR	DOIO(A6)		; Load it up!
+	
+	MOVE.L	DECADDR(PC),A0	; Get Load Address...
+	JSR	$20(A0)		; Call past Hunk Header
+	
+	LEA	$FC0004,A0	; Point to KickStart
+	MOVE.L	(A0),A0		; Get address of PC_init.
+	MOVE.L	A0,$80.W		; Set Trap #0 vector
+	TRAP	#0		; Reset the machine
+	
+	
+MEMFAIL	MOVE.W	#$F00,$DFF180	; Screen Red
+	MOVE.W	#$000,$DFF180	; Screen Black
+	BRA.S 	MEMFAIL		; Loop... Explain in Documentation
+	
+OLDA1	DC.L	0
+DECADDR	DC.L	0
+
+BOOTEND	EQU 	*-BOOTPROG	; BOOTEND is Length of Boot Code
+BOOTFILL	DCB.B	1024-BOOTEND,0	; Fill the spare Boot with Zeros!
+	
+DECODEPRG	INCBIN	"source:dean/data/DecoderV2.Bin"
+
+
+	

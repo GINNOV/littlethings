@@ -1,0 +1,8 @@
+Short:        Cross reference of Lattice header syms.
+Author:       Fred Fish
+Architecture: m68k-amigaos
+Source:       Fish collection
+
+A cross reference listing of all symbols defined in the Lattice 3.10 header
+files.  Sorted alphabetically by symbol string, includes file name and line
+number of all references and/or definitions.  

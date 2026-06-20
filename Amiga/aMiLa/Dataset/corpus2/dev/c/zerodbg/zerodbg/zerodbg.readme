@@ -1,0 +1,37 @@
+Short:        Useful macros for debugging purposes
+Author:       Nicolae Vartolomei
+Uploader:     Carsten Larsen (carsten.larsen@mail.com)
+Type:         dev/c
+Version:      1.0
+Architecture: generic; m68k-amigaos
+URL:          https://github.com/clibs/zerodbg.git
+
+Usage
+
+    #include <stdio.h>
+    #include "debug.h"
+
+    int main (void) {
+        debug("I see what you did there o_O!");
+        log_info("standing still");
+        return 0;
+    }
+
+    Output:
+
+    * DEBUG example.c:12: I see what you did there o_O!
+    * [INFO] (example.c:13) standing still
+
+    Or you could redirect logging information to a file using
+    debug_set_log(FILE * log_file);.
+
+    If you #define NDEBUG calls to debug will be ignored and
+    will output nothing.
+
+    If you want to output errnos, you can use debug_errno()
+    to transform error number to string, if no error happened
+    the resulted string will be "None".
+
+Installation
+
+    Copy debug.h and debug.c to you source code tree.

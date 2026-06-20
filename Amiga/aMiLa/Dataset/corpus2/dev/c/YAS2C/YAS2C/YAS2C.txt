@@ -1,0 +1,57 @@
+How easy can programming in SAS C or C++ be using CED?  Too easy, if you use
+theese five files!  I have CED 3.0, so I am not sure what the minimal version
+of CED you need to use these scripts.  You also need SAS/C version 6.00+.
+
+There should be 6 files included in this archive:
+
+YAS2C.txt		- This text file
+Rexx/Compile.ced	- ARexx script to compile current file
+Rexx/Make.ced		- ARexx script to make current file's directory
+Rexx/NextError.ced	- ARexx script to step through all the errors
+S/Compile.ced		- AmigaDOS script to use sc with ARexx
+S/Make.ced		- AmigaDOS script to use smake with ARexx
+
+To compile, load a file to compile or clear a fold to start fresh.  When
+you feel you want to test your program against gramatical errors, press the
+fkey assigned to "Compile".  This will compile the file in the current
+view, report the first error, if any, and will bring you to the specific
+file and line that the error occured in.  A prompt will pop up with the
+kind of error it was and the error message.  Fix the error (or as much as
+you can) and press the fkey assigned to "NextError".  If modified, this
+will save the file and also close it if it was not originally open.  This
+is continued untill the prompt "No more errors found" is reached.  Now
+compile the file again with the fkey assigned to "Compile", and continue
+the process if more errors occur.
+
+To make, load a file contained in the directory you with to use smake.  The
+rest of the process is the same as compiling.
+
+To install these scripts:
+
+	1)	Copy everything in "YAS2C/Rexx" to your ARexx directory
+
+	2)	Copy everything in "YAS2C/S" to your S: directory.
+
+	3)	Your SASOPTIONS files need the string ERRORREXX and
+		ENVARC:SC/SCMSG should contain REXXONLY and HIDDEN if you do not
+		want to see the list of errors.
+
+	4)	Select	Special
+			Dos/ARexx interface
+			Install Dos/ARexx command...
+
+		from CED.  Enter the function key number you want to assign to
+		compile in the first prompt.  Enter "Compile" in the second.
+
+		Enter the function key number you want to assign to step through
+		errors in the first prompt.  Enter "NextError" in the second.
+
+	5)	If you wish to save these commands, select
+		"Save Dos/ARexx commands..." in the same menu, and save the file
+		as "RexxCommands" in your ARexx directory.
+
+Note: This archive is placed into the public domain, and the author is
+not liable for any faults created by using these scripts.
+
+						Mike
+						cman@netcom.com

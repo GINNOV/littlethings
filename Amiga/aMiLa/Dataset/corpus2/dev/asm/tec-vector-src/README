@@ -1,0 +1,93 @@
+Occationally, people have been asking me about the sources used for 'The Hunt
+for 7th October', some are even willing to pay a decent lump of money for it.
+I don't have much use for it myself anymore, so I see no reason why a few of
+my old sources should stay unused in a dusty disk-box if someone finds them
+useful.
+
+Together with this file, you should find one of my vector-graphics sources and
+the files needed to assemble it. Almost a year after the release of 'The Hunt
+for 7th October', I did a few changes which made it slightly faster. I think it
+is that source you will find with this file.
+
+
+WARNINGS:
+
+* This is not at all a kind of 3D engine. Its usefulness beyond displaying
+  a single rotating object is quite limited.
+
+* The code was written to make fast graphics, whenever I could save a few
+  cycles at the cost of readability I chose to save those cycles. It is just
+  a ugly lump of code - you will find no subroutines (!)
+
+* It will not work very well on AGA-machines. It should be a quite easy fix,
+  though. I bet the copper-list is really nasty.
+
+* I present the source code exactly as I left it several years ago. It has not
+  been prepared for a public release and documentation is sparse.
+
+* It wont assemble in its present form. Include paths are set to fit my
+  original source disk.
+
+* No tools are provided. I didn't bother to search through my disks for them.
+  They are such ugly hacks anyway, so I better not release them.
+
+
+The files that come with this release are:
+------------------------------------------
+
+README:       This file.
+COPYING:      Some legacy stuff.
+4bp_vector.S: The source. Modify the includes and add AGA-support if needed.
+newcomb:      A lookup table needed to draw correct colours, I think.
+8bitSine:     Name says it all.
+fastblit.i:   Some names of blitter registers, relative to $dff058.
+
+crb-logo.4bp:
+robot.4bp:
+station.4bp:
+tec.4bp:      Some sample objects.
+
+
+A few notes on the object format:
+---------------------------------
+  Just look at the samples. I bet you are able to figure out how it works.
+
+  There are a couple of this that may not be obvious:
+  1. 'Invisible points' are points that belong to a polygon, but it not used
+     to draw it. Sorting is done by assigning a z-value to each polygon and
+     sort in the order of those values. 'Invisible points' may be useful to
+     assign a value to a polygon making correct sorting likely. This isn't
+     a very good explanation, but a hint perhaps.
+  2. Each object has a list called 'sizes' with one entry for each polygon.
+     You should be able to calculate these sizes by doing a cross product
+     with the two vectors made by the three first points in each polygon. If
+     these values are incorrect, the shading wont look good at all.
+
+
+If I forgot to include some needed files, please let me know.
+You can reach me on:
+
+Email:
+ steinarm@ifi.uio.no
+
+Student address:
+ Steinar Midtskogen
+ Fjellbirkeland 26A435
+ N-0864 OSLO
+ Norway
+
+or by a even slower way (but more likely to reach me if I move) via my parents:
+ Steinar Midtskogen
+ Svenskerud 127
+ N-3408 TRANBY
+ Norway
+
+
+
+I release this under the GNU Lisence in the hope that it can be useful to
+someone. It is not released as public domain or shareware (read the COPYING
+file for details). However, if you insist to pay for it, I wont stop
+you from sending me whatever you want as a donation :-), but this code
+shall always be available at no cost.
+
+Steinar Midtskogen (once Tec of Cryptoburners), September 24, 1994.

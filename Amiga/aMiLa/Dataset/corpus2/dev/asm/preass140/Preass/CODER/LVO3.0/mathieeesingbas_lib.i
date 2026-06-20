@@ -1,0 +1,17 @@
+; ASM-One - mathieeesingbas_lib.i
+; (Release 3.0)
+;
+; by SCHWARZENEGGER/R.A.F
+
+IEEESPFix=	-30
+IEEESPFlt=	-36
+IEEESPCmp=	-42
+IEEESPTst=	-48
+IEEESPAbs=	-54
+IEEESPNeg=	-60
+IEEESPAdd=	-66
+IEEESPSub=	-72
+IEEESPMul=	-78
+IEEESPDiv=	-84
+IEEESPFloor=	-90
+IEEESPCeil=	-96

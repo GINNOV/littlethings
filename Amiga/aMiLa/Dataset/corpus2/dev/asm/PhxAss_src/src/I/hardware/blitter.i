@@ -1,0 +1,28 @@
+ ifnd HARDWARE_BLITTER_I
+HARDWARE_BLITTER_I set 1
+*
+*  hardware/blitter.i
+*  for PhxAss
+*
+*  © copyright by F.Wille in 1993
+*
+
+BLTDDAT  = $000
+BLTCON0  = $040
+BLTCON1  = $042
+BLTAFWM  = $044
+BLTALWM  = $046
+BLTCPT	 = $048
+BLTBPT	 = $04c
+BLTAPT	 = $050
+BLTDPT	 = $054
+BLTSIZE  = $058
+BLTCMOD  = $060
+BLTBMOD  = $062
+BLTAMOD  = $064
+BLTDMOD  = $066
+BLTCDAT  = $070
+BLTBDAT  = $072
+BLTADAT  = $074
+
+ endc

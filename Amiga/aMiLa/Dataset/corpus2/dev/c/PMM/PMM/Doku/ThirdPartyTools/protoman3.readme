@@ -1,0 +1,57 @@
+Short: prototype database manager.
+Type: dev/c
+
+   NAME
+
+        ProtoMan - Generate prototypes from and for C source. (V37)
+
+   SYNOPSIS
+
+        protoman FilePats/A/M,O=Outfile/K,AP=Append/S,DB=Database/K,
+                 Lines/S,Static/S,BufSize/K/N
+
+   FUNCTION
+
+        Protoman was designed to scan C source files and produce
+        prototypes.  It will also keep track of multiple prototype
+        files in a main database for use with mutliple source file
+        projects.
+[...]
+   EXAMPLE
+
+                protoman O=protos.h file1.c file2.c
+        protoman database=protos.h c/#?.c newc/#?.c lines
+
+        or for a makefile maybe:
+
+        srcs=file1.c file2.c file3.c [...] file49.c file50.c
+
+        protos.h: $(srcs)
+                protoman database=$@ $?
+
+        (in smake $? stands for all out of date dependent files.)
+[...]
+
+        The main reason for using this program instead of, for
+        example, what SAS/C supplies is the database capability.
+
+        The database is a single file that Protoman keeps track of all
+        prototypes for all the files that have ever been passed to it.
+        If a new file is passed to protoman it is added.  If a file is given
+        that is already present it is replaced.
+
+[...]
+   HISTORY
+
+        V37.3 - (14feb93) Second Release.
+                Fixed parser bug, was not handling comments that occured
+                the next character after a brace ('}'),  also fixed
+                same bug for C++ comments.  Made some local states global
+                for the better handling of multiple files.  Now a single
+                file having parse errors should not effect others being
+                parsed.
+
+        V37.2 - (12feb93) First Release.
+                Fixed most obvious bugs.
+[...]
+This was taken from the documentation file.

@@ -1,0 +1,97 @@
+
+	ROTAZIONE e PROSPETTIVA
+
+
+; Rotate points into RotPointArray
+; Persp points into persp array
+HandlePoints
+	MOVE.L	O.PPLIST(A5),A4			; Source coords
+	MOVE.L	O.PRLIST(A5),A0			; Destination of rotate routine
+
+	LEA	SinTab(pc),A1			;\
+	LEA	$400(a1),A2			;/\ Sin/Cos table
+	LEA	AngAct(PC),A3			; Current angles
+
+	MOVE.W	(A4)+,D7			; No of coords to rotate
+	SUBQ.W	#1,D7
+RotatePoint_lp
+	MOVEM.W	(A4)+,D0-D2			; x,y,z
+	MOVE.W	(A3),D6		; xang
+	MOVE.W	(A1,D6.W),D5
+	MOVE.W	(A2,D6.W),D6
+	MOVE.W	D1,D4	
+	MULS	D5,D4		; xsin*y
+	MULS	D6,D1		; xcos*y
+	MULS	D2,D5		; xsin*z
+	SUB.L	D5,D1		; xcos*y-xsin*z
+	SWAP	D1		; Scale down...
+	ADD.W	D1,D1
+
+	MULS	D6,D2		; xcos*z
+	ADD.L	D4,D2		; xsin*y+xcos*z
+	SWAP	D2
+	ADD.W	D2,D2
+
+	MOVE.W	2(A3),D6
+	MOVE.W	(A1,D6.W),D5			; ysin
+	MOVE.W	(A2,D6.W),D6			; ycos
+	MOVE.W	D0,D4
+	MULS	D5,D4		; ysin*x
+	MULS	D6,D0		; ycos*x
+	MULS	D2,D5		; ysin*(xsin*y+xcos*z)
+	SUB.L	D5,D0		; ycos*x-ysin*(xsin+xcos*z)
+	SWAP	D0
+	ADD.W	D0,D0
+
+	MULS	D6,D2			; ycos*(xsin*y+xcos*z)
+	ADD.L	D4,D2			; ysin*x+ycos*(xsin*y+xcos*z)
+	SWAP	D2
+	ADD.W	D2,D2
+
+	MOVE.W	4(A3),D6
+	MOVE.W	(A1,D6.W),D5		; zsin
+	MOVE.W	(A2,D6.W),D6		; zcos
+	MOVE.W	D0,D4
+	MULS	D5,D4			; zsin*(ycos*x-ysin*(xsin+xcos*z))
+	MULS	D6,D0			; zcos*(above)     (1)
+	MULS	D2,D5			; zsin*(ysin*x+ycos*(xsin*y+xcos*z)
+	SUB.L	D5,D0			; above - above prev line
+	SWAP	D0
+	ADD.W	D0,D0
+	MULS	D6,D2
+	ADD.L	D4,D2			; round down...
+	SWAP	D2
+	ADD.W	D2,D2
+
+	MOVE.W	D0,(A0)+
+	MOVE.W	D1,(A0)+
+	MOVE.W	D2,(A0)+
+	DBRA	D7,RotatePoint_lp
+
+	MOVE.L	o.prlist(A5),A0		; Rot coords
+	MOVE.L	o.p2List(A5),A1		; Dest for persp coords
+	LEA	PerspTab(PC),A2
+	MOVE.W	Perspfactor3d,D0			; ZDist of object
+	ADD.W	D0,D0
+	LEA	(A2,D0.W),A2
+
+	LEA	176.w,A3				; x-centre
+	LEA	134.w,A4				; y-centre
+
+	MOVE.W	O.WMXPTS(A5),D7		; Perspective all points
+	SUBQ.W	#1,D7
+PerspPoint_lp
+	MOVEM.W	(A0)+,D0-D2
+
+	MOVE.W	(A2,D2.W),D2
+	MULS	D2,D0				; f(z)*x
+	SWAP	D0
+	ADD.W	A3,D0   			; f(z)*x+xcentre
+	MULS	D2,D1   			; f(z)*y
+	SWAP	D1
+	ADD.W	A4,D1   			; f(z)*y+ycentre
+	MOVE.W	D0,(A1)+
+	MOVE.W	D1,(A1)+
+	DBRA	D7,PerspPoint_lp
+	RTS
+

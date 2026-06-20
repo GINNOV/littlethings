@@ -1,0 +1,409 @@
+From: m_smart@usa.net (Commander Frantic)
+
+EQUIPMENT::WEAPONS
+
+EQUIPMENT::WEAPONS::LASERS
+
+- Lasers that fire like in Arc Elite and Amiga Elite. A laser bolt
+  should take about 2 seconds to reach target at maximum range, about
+  0.5 seconds in close combat. In this way an alert pilot should be able
+  to dodge incoming fire when they hear it, 
+ 
+  - perhaps a small external camera box on screen to see your ship in
+    relation to incoming fire. Also attacking would be closer to a combat
+    feel as you would shoot ahead of a moving ship rather than just sitting
+    still and aiming the mouse right on centre. 
+
+  - The shots should not follow your crosshairs (as you are turning away)
+    after firing, they should continue on their original firing path. 
+
+  - ability to set strength of shots, from
+    strong spaced out shots to light frequent fire.
+
+- Collisions and missile hits made your get knocked back. 
+  Would be nice of laser fire did this too and made the ship rock a bit.
+
+EQUIPMENT::WEAPONS::MISSILES
+
+- Missiles can be a real hassle early in the game, they should require
+  a direct hit. In this way your little fighter would have at least a
+  chance of dodging missiles. 
+ 
+- Should be able to get an ECM that kills all homing missiles and
+  missiles should be easier to shoot like in Elite. 
+  
+- Should have rockets that fly in a straight line and are immune
+  to all ECM. They explode on closest approach to target causing splash
+  damage or on direct hit causing full damage. 
+  
+- Nuclear missiles should be rockets.
+
+CHARACTERS
+
+- Enemy ships with improved (and varied) combat skills. A hired
+  assassin should be pretty good on average. 
+ 
+COMBAT
+
+- Pirates should attack in formations and rebuild their formations. 
+
+- Larger ships should use their turret weapons against you and your crew
+  should man your turrets.
+
+GROUPS
+
+- Ability to join and/or build fleets of ships and give orders to you
+  drone ships. 
+  
+BASES
+
+- Ability to buy land to set up bases. 
+
+- Your base should allow you to store cargo, equipment and ships. 
+- Planet based bases in owned systems cost money; 
+- hidden bases on asteroids are free. 
+- Buying a Long Range Cruiser should enable you to have docking ports for fighters.
+
+SPACE
+
+- When you kill a ship you should be able to salvage it for parts, if
+  you have the right equipment and large enough ship to haul it away in.
+
+
+EQUIPMENT::ANTIWEAPONS
+
+- Shields should have 2 levels. Amount of shields/strength% and
+  efficiency%. Taking shield damage should slightly reduce a percentage
+  efficiency of recharge. In this way a fighter could eventually wear
+  down a large ship to the point where it could no longer recharge it's
+  shields. It would require repair to shield generators to bring
+  efficiency back to 100%. The advantage of this would be that a Long
+  Range Cruiser with 1000 shields would not be exactly invincible, but
+  that any ship could kill it given enough time and skill. Even at 1%
+  efficiency, though, you would still be able to bring your shields up
+  to full, albeit very slowly. Depleting shields to 0% should reduce
+  their efficiency by 10%.
+
+GROUPS
+
+- Branching storyline. There should be functionality that changes the
+  course of the game depending on decisions that you make. E.g., you
+  should be able to start war between 2 powers (given the opportunity)
+  that will set up missions that will only occur if that course is
+  chosen.
+
+BASES
+
+- Ability to destroy a space station. This would stay destroyed until a
+  new one is built. In a war situation you should be able to take over a
+  system by jumping in with a fleet and annihilating all stations and
+  military sites. You would get a reward for this and a stack of points
+  towards your next promotion. I used to jump to Achnear and kill all
+  the ships, police, cruisers and bulk carriers at the various bases and
+  stations to up my elite rating, then jump out. Stations should be
+  really tough to destroy based on their size. Orbital cities would
+  require a stack of concentrated fire to bring their shields down,
+  perhaps even nuclear rockets designed for this purpose. 
+  
+- In the same way, you would be called in to help stop an invasion by
+  a fleet of enemy ships in a nearby system. Game-play would be extended
+  by having a continued mission to completely wipe out the enemy from
+  the face of the galaxy.
+
+BASES
+
+- Space stations. Separate launching docks for police, preferable on
+  separate sides of the station so you cant kill them all before they
+  launch. 
+  
+COMBAT
+
+- They should retreat so as to return in force and in formation.
+  Also, space stations should have fixed defence turrets.
+
+GROUPS
+
+- Completion of some missions should give you contacts for trading
+  goods, special equipment etc. A high ranking in a military force
+  should give you access to special equipment based on your rank.
+
+GROUPS
+
+- A choice of just freelancing for military forces, or actually joining
+  them with time off for other pursuits. Also to join police forces,
+  pirate gangs, exploratory fleets etc.
+
+CHARACTERS
+
+- More status detail. Need to have a bounty on your head for mischief
+  per police force. Bounty hunters chasing you for this too. Your elite
+  rating should display in points as well as rating, as with military
+  points etc. You should get good elite points for killing an elite
+  rated pirate. You should get good military points for special missions
+  (discouraging delivery runs which can be done in bulk and there fore
+  up your rating faster than bombing runs). Need a mission to
+  assassinate the Emperor/President (or anyone surrounded by an
+  entourage).
+
+CHARACTERS
+
+- Gaining a reputation. Repeatedly attacking police forces in the
+  empire (for example), destroying shipping, assassinating their
+  officials etc. would eventually get you to a point where paying a fine
+  will not get you back in the good books and you will permanently be a
+  fugitive with a bounty on your head for that police force. There
+  should be good grace missions that would prevent you from getting to
+  this point.
+
+CHARACTERS, GROUPS
+
+- AI commanders in the single player game. These would be not only be
+  randomly generated upon starting a new game, but would stay around in
+  the game until they get killed. You could make friends or enemies with
+  these commanders and join them in missions or ask them to join you in
+  missions and your fleet. You would meet these commanders in flight
+  occasionally amongst the other ships running around, and be able to
+  carry out communications and negotiations.
+
+EQUIPMENT
+
+- Fleets hyper spacing. First of all on large ships, you should be able
+  to install multiple drives to increase range. Secondly, in a fleet the
+  total range would be calculated for the entire fleet. This would be a
+  weighted average so that a Falcon with a class1M would only add a
+  little extra range to a Panther partner. The formula would contain the
+  values of total fleet mass and total fleet engine power in use. This
+  would work for 2 ships (i.e. Cobra and an Asp) as well as a whole
+  fleet of assorted ships. In this way, 30 Cobra's with class3M drives
+  would not be held to the maximum range of the single Explorer tagging
+  along. However they but would still have to keep pace with it on
+  interplanetary travel.
+
+- Separate interplanetary drives for upgrade, so you could increase the
+  manoeuvrability on a ship for the right price.
+
+EQUIPMENT
+
+- Differing quality equipment. E.g., cheap crap shields from Lave, but
+  really good ones from Alioth with the same 4t space, but better
+  resistance. Also a FFE autopilot for sale (he he), and a top-notch
+  baby that actually does a halfway turnaround to make full use of rear
+  thrust power. Kill the cheat where you just hold enter down full until
+  0.8 au or so and hit autopilot and magically come to a halt at the
+  station. A 1-mw beam laser is still 1-mw, but some versions would me a
+  little more compact. Etc.
+
+EQUIPMENT
+
+- Robot lifters for ships too large to dock/capable of carrying
+  fighters. These would be used to scoop up goods in space and to
+  load/unload goods you buy from a station. Some stations should have
+  this as a service (paid maybe?). For large transactions, you larger
+  fleet ships could be ordered to assist with the loading/unloading to
+  save time. In battle you could shoot these off after cargo before is
+  gets lost, thereby collecting all the cargo from a battle.
+
+GROUPS
+
+- Some criminal acts that will get you in trouble with 2 or more/all
+  police forces at once. Things such as deliberately attacking civilian
+  targets, such as cities.
+
+SERVICES
+
+- Customising colours on ships and registering customised ID's. This
+  should cost credits.
+
+CHARACTERS
+
+- To reach Elite, after accumulating the necessary kills, you should
+  have to complete an initiation mission or series of missions to gain
+  the title. When you reach Elite you should get new missions and/or
+  invitations to join various Elite Forces and military wings.
+
+PHYSICS SIMULATION
+
+- Keep with the realistic physics and control methods. Improvements to
+  graphics on planets would be cool. I read on Frontier Developments web
+  page that combat will feel more like Elite than Frontier. This would
+  be a step backwards. The combat feel of FE2/FFE is not as adventurous
+  as Elite, but the only versions of Elite that really took on more than
+  an aim and fire feel were Arc Elite and Amiga Elite where you fires
+  laser bolts.
+
+EXTERNAL TOOL ?
+
+- Ability to record replays. You could later convert these to mpegs.
+
+???
+
+- Background star fields based on your actual position in space. As it
+  would be way too complex to reference every start in relation to
+  current position, only some systems would have a correct star field
+  which would be hard coded in. Other systems would receive a random
+  star field based on the general density of systems in the area. The
+  galaxy would be broken into regions of density and all systems in each
+  group would receive the same number of stars to generate in the sky,
+  and also the average magnitude. To cut it short, if you are on the
+  galactic rim, you would have a very sparse star field, and in the
+  galactic core you would have a very confusing mess (which your screen
+  would filter down in magnitude but not quantity).
+
+???
+
+- Life support supplies like oxygen, food etc. This would be mostly an
+  automated procedure, but you would be able to increase your supply in
+  preparation for a long trip. Carrying slaves and animals would use up
+  oxygen.
+
+ENCOUNTERS
+
+- When being attacked by pirates, dumping cargo should distract their
+  attention. Visa versa for when you attack a trader. This was one of
+  the original tactics for Elite that rarely was implemented.
+
+PHYSICS SIMULATION
+
+- Some effect of atmosphere on manoeuvring ability. Possibly
+  manoeuvring wings that could be deployed in the atmosphere at low
+  enough speeds. Say a cobra is entering the atmosphere at high speed
+  at, say, 45 degrees. Lifting the nose would cause a slight change in
+  direction over time, compared to a saker whose direction would be
+  affected a lot more by the change. Atmosphere would cause a braking
+  effect also, turning a saker 90 degrees from forward would increase
+  the surface area working against atmosphere and increase braking. This
+  affects the ship along with gravity and thrust (which are the more
+  powerful). Reusable (or not) parachutes to make further use of
+  atmosphere for braking. This would be useful in a situation where you
+  are going straight down and thrusting in the opposite direction won't
+  quite save you.
+
+ACTION CONTROL
+
+- Take up the Asimov restrictions of hyperspace jumps where you must be
+  good distance way from a point of gravity to make a jump safe. About
+  the distance from a planet where your autopilot switches off and says
+  "Arrived in vicinity of target" should be absolutely safe if the
+  planet is the nearest relative gravatic point. Jumping earlier would
+  be always possible (even right after take off), but not very safe
+  depending on closeness to planet. The ship would have an indicator
+  showing your safety percentage to hyperspace and telling you object
+  you need to get away from to reach a safe jump point. The better
+  quality autopilots would have a function to take you to the nearest
+  safe jump point.
+
+ACTION CONTROL
+
+- Hyper spacing at low altitudes of an inhabited planet would be
+  illegal. Also illegal to jump to close to a space station. An
+  indicator showing traffic control clearance to jump.
+
+ACTION CONTROL
+
+- Some options to prevent you accidentally doing something illegal. You
+  would be able to set a weapons lockout that would cut in when you are
+  in the safe zone of a station. Options would include Always Lock (you
+  would have an override button for emergencies), Unlock if Under Attack
+  (If you are attacked, traffic control would not fine you for defending
+  yourself), Never Lock. You could set these options for each political
+  force. Lock out for accidentally launching without clearance,
+  accidentally hyper spacing in proximity to population centre, illegal
+  mining etc.
+
+???
+
+- Some form of encouragement to play the game without saving and
+  loading all the time. Sort of like Diablo II.
+
+???
+
+- Some types of communication would require text input. Still looking
+  back, King's Quest I was much more fun than King's Quest V (Not to
+  mention Zork). Talking to a character in the game, it would be good if
+  you would miss stuff unless you knew what you were after. On the other
+  hand by really thinking about what someone says you may find the right
+  question to find out something really special. This could also have
+  application in weeding out cops from bulletin boards before you trade.
+
+USER INTERFACE
+
+- Ability to filter stuff in mission lists and bulletin boards. Would
+  be nice to go to military and in one go select and accept all delivery
+  missions to system X after date Y. Also to show a list of
+  assassination contracts on the BBS.
+
+TRADING SYSTEM
+
+- Diminishing effect of price differences as you wear out a trade
+  route. Trading the same goods several times in large quantity would
+  reduce demand and price.
+
+CHARACTERS
+
+- Would like to be able to release slaves. If you had the money, you
+  could buy them each a flight-training course, a cheap ship and a few
+  credits then leave them to themselves. A percentage of these would
+  become AI characters in the game and would always be your allies. Vice
+  versa, some slaves you trade in would eventually gain freedom (a very
+  small percentage) and hold a grudge against you forever.
+
+CHARACTERS
+
+- Slaves could come in pressurised containers that have limited life
+  support. You would still need cargo bay life support systems and
+  oxygen food etc, but when a ship carrying slaves is destroyed, some of
+  the slave containers could survive for a while in space with the
+  supplies they were using at the time. This way you could pick up
+  slaves and sell or free them for reputation points. Cargo
+  differentiation between normal slaves, and pirates escape capsules.
+
+CHARACTERS
+
+- When collecting pirates escape capsules, you hand them over to the
+  authorities for imprisonment or sell them as slaves. Likewise with
+  narcotics etc, you would get a small reward (much less than sell
+  value) for handing over illegal goods that you collect in space. You
+  would only get a Smuggling Illegal Goods record if you try to hide
+  them from the police. Request when docking with illegal goods "Hand
+  goods over to the authorities or try to smuggle them in?".
+
+COMBAT         : Formations
+                 Wingmen
+                 
+EQUIPMENT      : What you can do in while not docked
+                 Weapons
+                 Antiweapons
+                 Scooping items
+                 Tractor beams
+
+CHARACTERS     : Status information
+                 What others think about you
+
+SHIP           : Ship type
+                 Equipment
+                 Who controls
+
+FLEET          : Collection of ships
+
+BASE           : Provides storage for your stuff
+
+GROUPS         : 
+
+BUSINESS       : Fuel
+                 Maintainance, repairs
+                 Storage
+                 Trade goods
+                 Trade equipment (different kinds of)
+                 Alter equipment (some illegal)
+                 Navigation
+                 Transport
+
+TRADING SYSTEM :
+
+ACTION CONTROL : What are results of actions; groups observe
+                 Local regulations
+                 Groups regulations
+
+MISSIONS       :
+                
+IMAGE :

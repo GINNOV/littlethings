@@ -1,0 +1,35 @@
+MatchWild.c         01/09/95           Paul Stevenson
+
+This is a function you can call to add wildcard support to your programs.
+It is called like:
+    MatchWild(char *pattern, char *reference);
+
+    where the first argument is a pointer to the string you wish to test,
+possibly containing wildcards. The second argument is a pointer to the
+string you're really looking for. It may not contain wildcards.
+
+tokens currently supported are:
+      #, ?, *
+      and any combination thereof.
+
+Possible problems may arise by bizarre use. Things to remember:
+    # means 0 or more occurences of the next single character typed.
+    ? means exactly 1 character which may be anything.
+    #? therefore means anything at all - including nothing
+    * means exactly the same as #?
+
+    This software is so free, they're giving it away. Feel free to use it.
+Although it seems to work fine, it could do with extended support for more
+exotic wildcards. Feel free to improve it (mail me a copy).
+
+Compilation note: The routine is recursive: If very complicated wild card
+strings are called the will be correctly parsed but can cause a stack
+overflow unless provision is made to avoid this.
+
+paul.stevenson@balliol.ox.ac.uk
+
+
+
+
+
+

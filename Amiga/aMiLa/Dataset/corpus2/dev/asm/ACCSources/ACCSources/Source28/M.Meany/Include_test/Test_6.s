@@ -1,0 +1,101 @@
+
+; Experimenting with Copper list macros :-)
+
+		incdir		Source:Include/
+		include		hardware.i
+		include		Marks/Hardware/HW_Macros.i
+		include		Marks/Hardware/HW_start.i
+
+Main		STARTCOP	#CopList
+		move.w		#SETIT!DMAEN!COPEN,DMACON(a5)
+
+mouse		WAITCOP				wait for copper interrupt
+		
+		bsr		Scroll
+
+		btst		#6,CIAAPRA
+		bne.s		mouse
+		
+		rts
+
+Scroll		lea		L1,a0
+		move.l		(a0),d0
+		move.l		#scr,d1			counter
+.loop		move.l		4(a0),(a0)
+		addq.l		#4,a0
+		dbra		d1,.loop
+		
+		move.l		d0,L2
+		rts
+
+		section		copper,DATA_C
+
+CopList		CMOVE		COLOR00,$0000
+		CWAIT		30,150
+		CMOVE		COLOR00,$0f00
+		CWAIT		32,150
+		CMOVE		COLOR00,$00f0
+		CWAIT		48,150
+		CMOVE		COLOR00,$0f00
+		CWAIT		50,150
+		CMOVE		COLOR00,$0000
+
+		CWAIT		30,152
+		CMOVE		COLOR00,$0f00
+		CWAIT		32,152
+		CMOVE		COLOR00,$00f0
+		CWAIT		36,152
+		CMOVE		COLOR00,$0f00
+		CWAIT		38,152
+		CMOVE		COLOR00,$0000
+
+		CWAIT		30,154
+L1		CMOVE		COLOR00,$0f00
+		CMOVE		COLOR00,$00f0
+		CMOVE		COLOR00,$000f
+		CMOVE		COLOR00,$0f00
+		CMOVE		COLOR00,$00f0
+		CMOVE		COLOR00,$000f
+		CMOVE		COLOR00,$0f00
+		CMOVE		COLOR00,$00f0
+		CMOVE		COLOR00,$000f
+		CMOVE		COLOR00,$0f00
+		CMOVE		COLOR00,$00f0
+		CMOVE		COLOR00,$000f
+		CMOVE		COLOR00,$0f00
+		CMOVE		COLOR00,$00f0
+		CMOVE		COLOR00,$000f
+		CMOVE		COLOR00,$0f00
+		CMOVE		COLOR00,$00f0
+		CMOVE		COLOR00,$000f
+		CMOVE		COLOR00,$0f00
+		CMOVE		COLOR00,$00f0
+		CMOVE		COLOR00,$000f
+		CMOVE		COLOR00,$0f00
+		CMOVE		COLOR00,$00f0
+		CMOVE		COLOR00,$000f
+		CMOVE		COLOR00,$0f00
+		CMOVE		COLOR00,$00f0
+		CMOVE		COLOR00,$000f
+		CMOVE		COLOR00,$0f00
+		CMOVE		COLOR00,$00f0
+		CMOVE		COLOR00,$000f
+		CMOVE		COLOR00,$0f00
+		CMOVE		COLOR00,$00f0
+		CMOVE		COLOR00,$000f
+		CMOVE		COLOR00,$0f00
+		CMOVE		COLOR00,$00f0
+		CMOVE		COLOR00,$000f
+		CMOVE		COLOR00,$0f00
+		CMOVE		COLOR00,$00f0
+		CMOVE		COLOR00,$000f
+		CMOVE		COLOR00,$0f00
+L2		CMOVE		COLOR00,$00f0
+		CMOVE		COLOR00,$0000
+
+scr		=		(*-L1)>>2-2
+
+		CMOVE		INTREQ,$8010		interrupt
+		CEND
+
+

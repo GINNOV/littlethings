@@ -1,0 +1,268 @@
+
+
+                                        Fuzz  User  Manual
+
+
+
+                                          Michael Kaiser
+
+                                         Waldstrasse 40B
+                                   D-76131 Karlsruhe, Germany
+
+                                   E-Mail: kaiser@ira.uka.de
+
+1      Introduction
+
+
+Fuzz is a set of files and tools that, as a combination, serves as a
+toolkit supporting the development of applications using fuzzy rule
+bases. At its current state, it's pretty much rudimentary with respect
+to its documentation. Regarding its functionality, its more or less
+complete. For an introduction to fuzzy logics, please check any of the
+numerous introductory books or articles that are available in
+virtually any language. Here, I'll concentrate on the package itself.
+Since the whole thing was developed using SAS/C on an Amiga, I'll
+describe everything in terms of AmigaOS. Nevertheless, libraries and
+tools are available for other platforms, I personally have them
+running under Solaris 1.x and 2.x, MS-DOS, and OS/9. 
+
+
+2      What's  in  the  package
+
+
+Fuzz mainly consists of three things:
+
+1.  A library and a set of include files that allow for easy
+    incorporation of fuzzy systems in a proprietary 
+    application program written in C.
+
+2.  A compiler for translating a fuzzysystem specified in fuzz-syntax into
+    a C program. 
+
+3.  Several tools that allow to check developed systems.
+
+
+Additionally, the package contains several example fuzzy systems.
+
+
+
+3      Installation
+
+
+Usually, you'll get Fuzz in an archive, which you just have to unpack
+to somewhere on your harddisk. This should give you a tree like this:
+
+
+fuzz
+    bin
+
+    doc
+
+    examples
+
+    inc
+
+    lib
+
+
+To run any of the programs, you don't have to do anything else.  If
+you want to use the crossreferences contained in the library's
+AmigaGuide documentation, you have to do an assign  fuzz:   <whereever
+your  fuzz  root-directory  is  located>, e.g., assign  fuzz:
+home:sas-c/fuzz.  If you want the utilities and the compiler in your
+path, add an path  fuzz:bin  add to your user-startup (located behind
+the assign command).  
+
+
+4      Usage  of  the  library
+
+
+Included in the package are two version of the fuzzy library:
+
+fuzzy.lib:    created with SAS's oml and usable with the SAS/C compiler/linker.
+
+fuzzycommon.lib:         general library format, should be usable with
+                         all other linkers (checked with Aztec 3.6/5.0).
+
+Both libraries are link libraries, i.e., you have to link them into
+your program into order to use the fuzzy functionality. E.g., sc  link
+cartpole.c  lib  lib:sc.lib  lib:scmieee.lib  fuzz:lib/fuzzy.lib
+compiles and links the cartpole example program with SAS/C. Of course, 
+fuzz:inc should be in the include path.
+
+Attention: In both libraries, IEEE double precision math is used.
+           In SAS/C, the corresponding math library is scmieee.lib.
+           For other compilers, please check your documentation
+
+
+5      Building  fuzzy  systems
+
+
+The idea followed in Fuzz is to build and evaluate fuzzy systems in an
+hierarchical manner.  A fuzzy system is described by means of a text
+file whose structure reflects the evaluation strategy of Fuzz (see
+also Fig. 5). 
+
+TERM name TRAPEZOID   center  maxwidth     minwidth    degree of membership (center)  
+TERM name TRIANGULAR  center  leftspread  rightspread  degree of membership (center)
+TERM name GAUSSIAN    center  left sigma  right sigma  degree of membership (center)
+TERM name SINGLETON   center  leftspread  rightspread  degree of membership (center)  
+Example 1                 TERM low TRIANGULAR 10.0 10.0 10.0 1.0     
+Example 2                 TERM high GAUSSIAN 50 10.0 10.0 1.0         
+
+*** Figure 1: Specification of a linguistic term.
+
+
+The first things that have to be defined are the linguistic variables
+that are being used throughout the system (Fig.  5).  During
+application of the fuzzy rule base, crisp input values are represented
+by their membership to some of these linguistic terms. The terms
+relevant for a specific variable are combined in a membership
+function.  Intuitively, the membership function that's assigned to a
+crisp variable can be thought of as the type of the variable (Fig. 5).  
+
+COND name IF   variable  IS type subset  Check if variable is equal to fuzzy subset
+COND name IF   variable  ==    constant  Check if variable is equal to crisp value 
+COND name IF   variable  ISNOT type subset  Check if variable is not equal to fuzzy subset
+COND name IF   variable  !=    constant     Check if variable is not equal to crisp value 
+Example 1    COND if1 IF Angle IS Input SMALL
+Example 2    COND if2 IF Angle != 0.0    
+
+*** Figure 2: Specification of a fuzzy condition.
+
+
+
+
+ACT name        variable    "=     type subset  |   Assign fuzzy value to variable
+ACT name        variable     :=      constant   |   Assign crisp value to variable
+Example 1                                       | ACT act1 IF Control "= Control LEFT
+Example 2                                       | ACT act2 IF Control := 0.0
+
+*** Figure 3: Specification of a fuzzy action.
+
+
+Once the membership functions have been defined, the rule base must be
+developed.  Each rule consists of a condition and an action part
+(Figs.  2 and 3).  During evaluation, the degree of truth of a rule's
+condition determines how much the rule's action influences the final
+value of an output variable (i.e., a variable whose value is
+calculated by the fuzzy system). The actual value of these output
+variables is also determined by the defuzzification method in use. The
+defuzzification method is constant for any set of rules that can be
+evaluated in parallel.  Such rules are combined into objects (see Fig. 4). 
+
+
+   FUZZYSYSTEM  <name  of  fuzzysystem>
+
+
+   MEMFUNCS  <number  of  membership  functions  to  follow>
+     MF  <name>  TERMS  <number  of  linguistic  terms  to  follow>
+          TERM  <name>  -TRIANGULAR TRAPEZOID GAUSSIAN SINGLETON"  <center>  <p1>  <p2>  <degree>
+
+   VARIABLES  <number  of  variables  to  follow>
+     VAR  <name>  TYPE  <name  of  associated  membership  function>  DEF  <variable  default  value>
+
+   OBJECTS  <number  of  fuzzy  objects  to  follow>
+     OBJECT  <name>  DEFUZZIFICATION  -AVG COG MAX"  <number  of  rules  to  follow>
+
+          RULE  <name>  <number  of  clauses>  <number  of  actions>  BELIEF  <degree  of  belief>
+            IF
+                CLAUSE  <name>  WITH  <number  of  conditions  to  follow>  LITERALS
+                     COND  <name>  <variable  name>  -IS ISNOT == !="  <type>  <linguistic  term>
+            THEN
+                ACT  <name>  <variable  name>  -"=  <type>  <linguistic  term> :=  <constant>"
+
+                                           Figure 4: Fuzzysystem syntax.
+
+
+
+Since objects themselves are evaluated in order of definition, they
+are also a possibility to realize hierarchical rule bases. For
+example, the results of an object Preprocessing could be variables
+that are input to a second object, e.g., Interpretation.  In case a
+variable is not altered during the evaluation of the fuzzy rule base,
+this variable's default value (defined by the DEF statement) is
+assigned to it.
+
+
+6      Use  of  the  compiler
+
+
+Once you have developed and tested a fuzzy rule base, you may want to
+accelerate its evaluation.  The fuzzy compiler fcc provides an easy
+way to do just this.  From a fuzzy system, i.e., from a textfile such
+as the one shown in Fig.  5, it produces a C source file that can be
+compiled to an object module and linked with any application without
+needing the fuzz library.  
+
+Compiler options:
+
+-ansi           Generate ANSI compliant instead of K&R style headers
+-debug          Insert debugging code
+-main           Generate a main function, such that the resulting C
+                file can be compiled, linked, and executed.
+
+
+
+
+FUZZYSYSTEM  XPS_CarSelection
+MEMFUNCS  3
+  MF  Age  TERMS  3
+       TERM  Young   TRIANGULAR   18.0   -1.0   20.0   1.000000
+       TERM  Middle  TRIANGULAR   35.0   10.0   20.0   1.000000
+       TERM  Old      TRIANGULAR   55.0   10.0   30.0   1.000000
+  MF  Speed  TERMS  3
+       TERM  Low  TRIANGULAR  100.0  20.0  20.0  1.0
+       TERM  Medium  TRIANGULAR  130.0  30.0  30.0  1.0
+       TERM  High  TRIANGULAR  200.0  50.0  50.0  1.0
+  MF  Car  TERMS  3
+       TERM  VW  SINGLETON  -100.0  20.0  20.0  1.0
+       TERM  Porsche  SINGLETON  0.0  20.0  20.0  1.0
+       TERM  BMW  SINGLETON  100.0  20.0  20.0  1.0
+VARIABLES  3
+  VAR  Age  TYPE  Age  DEF  0.0
+  VAR  Speed  TYPE  Speed  DEF  0.0
+  VAR  Car  TYPE  Car  DEF  0.0
+OBJECTS  2
+  OBJECT  Age2Speed  DEFUZZIFICATION  AVG  3
+       RULE  Rule1  1  1  BELIEF  1.0
+         IF
+             CLAUSE  Clause1  WITH  1  LITERALS
+                  COND  IF1  Age  IS  Age  Young
+         THEN
+             ACT  Then1  Speed  "=  Speed  High
+       RULE  Rule2  1  1  BELIEF  1.0
+         IF
+             CLAUSE  Clause1  WITH  1  LITERALS
+                  COND  IF1  Age  IS  Age  Middle
+         THEN
+             ACT  Then1  Speed  "=  Speed  Medium
+       RULE  Rule3  1  1  BELIEF  1.0
+         IF
+             CLAUSE  Clause1  WITH  1  LITERALS
+                  COND  IF1  Age  IS  Age  Old
+         THEN
+             ACT  Then1  Speed  "=  Speed  Low
+  OBJECT  Speed2Car  DEFUZZIFICATION  AVG  3
+       RULE  Rule1  1  1  BELIEF  1.0
+         IF
+             CLAUSE  Clause1  WITH  1  LITERALS
+                  COND  IF1  Speed  IS  Speed  High
+         THEN
+             ACT  Then1  Car  "=  Car  Porsche
+       RULE  Rule2  1  1  BELIEF  1.0
+         IF
+             CLAUSE  Clause1  WITH  1  LITERALS
+                  COND  IF1  Speed  IS  Speed  Medium
+         THEN
+             ACT  Then1  Car  "=  Car  BMW
+       RULE  Rule3  1  1  BELIEF  1.0
+         IF
+             CLAUSE  Clause1  WITH  1  LITERALS
+                  COND  IF1  Speed  IS  Speed  Low
+         THEN
+             ACT  Then1  Car  "=  Car  VW
+
+
+
+                                       Figure 5: Fuzzysystem example.

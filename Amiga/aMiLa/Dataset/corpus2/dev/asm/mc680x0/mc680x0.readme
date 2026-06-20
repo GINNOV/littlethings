@@ -1,0 +1,41 @@
+MC680x0 Reference:
+~~~~~~~~~~~~~~~~~
+MC680x0.guide is a doc with several informations about MOTOROLA 680x0
+family processors:
+
+o Generic Asm Doc
+o MC680x0 Optimizations
+o MC680x0 Instructions
+o MC68000 Instructions timings
+o MC68030 Instructions timings
+
+Copyright and Distribution:
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+This documentation is Copyright ©1995 Flint/DKS. All Rights reserved.
+MC680x0 Reference is freely redistributable. You're permitted  to  modify it
+for personal use, but any modifications made must NOT  be distributed.
+If you have made changes you think others would like, send them to me and
+I'll include them in future versions.
+This doc comes with NO WARRANTIES. The author is NOT responsible for any
+mistakes, or wrong information; the user takes all such responsibility.
+
+No charges may be made for MC680x0 Reference, other than a nominal copy fee.
+It may NOT be  distributed with a commercial product without the author prior
+consent.
+Although MC680x0 Reference is freeware, DONATIONS WOULD BE GLADLY ACCEPTED,
+either money or stuff you've written yourself.
+
+Contacting the author:
+~~~~~~~~~~~~~~~~~~~~~
+I can be reached for comments, suggestions, bug reports, money etc.
+at the following address:
+
+		Flint/DKS
+		Bruno COSTE
+		80, av. de la Lanterne
+		Le Castiglione B
+		06200 NICE
+                FRANCE
+
+Or By E-Mail (it's the account of a friend so specify for Flint/DKS):
+pintaric@samoa.unice.fr

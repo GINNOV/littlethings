@@ -1,0 +1,61 @@
+MiniGL V1.5 preliminary documentation
+--------------------------------
+
+MiniGL is a 3D API which is compatible to OpenGL(tm). It implements a subset
+of that API and was designed for speed, therefore it directly interfaces with
+Warp3D. This also means that there is currently no software mode.
+
+This release is the second release of MiniGL as a set of shared libraries.
+There are two such libraries: minigl.library, which is the GL part,
+and mglut.library, which implements some of the GLUT API.
+
+The new shared library interface drops a lot of the original functions (mgl*)
+in favor of GLUT. Unfortunately, no documentation exists yet. Refer to the 
+glut source code and src/context.c to get an idea on how it works.
+
+Changes in V1.5.1
+-----------------
+- Fixed some bugs found 
+- Removed debug output that was slowing things down
+- It is now possible to allocate only one buffer instead of being forced to do double buffering (thanks to Steen Lund)
+- The gl**Pointer(GLint size, ...) functions can now be used with size set to 2. Previously only 3 and 4 were valid (thanks to Steen Lund)
+
+Changes in V1.5
+---------------
+- MiniGL now supports display lists
+- GL_NORMALIZE support added
+- It is now possible to allocate only one buffer instead of being forced to do double buffering
+- The gl**Pointer(GLint size, ...) functions can now be used with size set to 2. Previously only 3 and 4 were valid
+- Added a watchdog timer to the smart locking mode (MGL_LOCK_SMART). Audio
+  should now playback smoothly when running OpenGL applications
+ NOTES:
+    - Only works if "Interrupt=Yes" is set in the Radeon monitor tooltypes 
+    - This has only been tested on a Radeon 9000 card
+    - This cannot guarantee that audio stuttering won't occur. 
+- Fixed a bug that would cause only the first quad in a quad-strip to render 
+ (resulting in missing surfaces)
+- Fixed flat shading of tri-strips and quad-strips
+
+Installation
+--------------
+Simply copy the contents of the libs drawer into libs:. The demos and utilities can be
+put wherever you like. Developers should copy the contents of the "developer files"
+drawer into SDK:.
+
+
+Credits:
+--------
+
+Authors: 
+	Hans-Jörg Frieden (Hans-JoergF@hyperion-software.de)
+	Thomas Frieden (ThomasF@hyperion-software.de)
+
+Contributions:  
+	Hans de Ruiter (hjr29 -add-@hotmail.com)
+	Steen Lund
+	Christian "Surgeon" Michael
+	Massimiliano Tretene
+	Joe Sera
+	Frank Wille
+	Steffen Häuser
+	Kris Collingwood

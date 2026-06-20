@@ -1,0 +1,50 @@
+SAS/C "Magic" Icons
+-------------------
+
+Contained in this archive you will find MagicWB-style icons designed as a replacement for the rather
+bland, low-resolution icons provided with SAS/C(++)6.00-6.50. It is my hope that I have filled a
+"need" in the Amiga community. Inspiration for these icons provided by Osma "Tau" Ahvenlampi.
+
+LEGAL STUFF
+MagicWB original icons and backdrops copyright by Martin Huttenloher. I would suggest that you refer
+to the MagicWB documentation for the software license agreement.
+
+All icons here (except for the README icon, which is © Martin Huttenloher) are copyright ©1994 by me,
+Joel R. Stanley. All rights are reserved. Original icon ideas were provided by the really cool guys at
+SAS Institute.
+
+You may use these icons as a part of your Workbench environment. These icons shall *NOT* be used in
+any way, shape, or form, on another platform. They are expressedley Amiga specific! :)
+
+Feel free to copy and distribute these icons anywhere you wish, and on whatever meduium (disk, BBSes,
+Internet, etc) you feel is necessary. However, no monetary gain, other than possible duplicating
+costs, will be provided by these icons. Thank you.
+
+FILES IN THIS ARCHIVE
+Build.info - replacement for the SAS/C Build icon.
+Find.info - replacement for the SAS/C Find icon.
+Edit.info - replacement for the SAS/C Edit icon.
+Debug.info - replacement for the SAS/C Debug icon.
+SCOptions.info - replacement forthe SAS/C SCOptions icon.
+
+SHAREWARE NOTICE
+If for some reason you are compelled to send me some money, it would be greatly appreciated! :-)
+My snailmail address can be found later on in this document.
+
+ENJOY!
+All legal stuff aside, please enjoy these icons, and let me know if you have any ideas for
+improvement. I can be reached at any of the following:
+	o (Internet) joels@agora.rain.com
+	o (Internet) joels@drizzle.rain.com
+	o (IRC) Bitstream on channel #amiga
+	o (snailmail) Joel Stanley
+		      1528 NE 86th
+		      Portland, OR, USA
+		      		97220-5612
+
+ACKNOWLEDGEMENTS
+Thanks to Martin Huttenloher for creating the MagicWB environment. Thanks to SAS Institute for
+creating such a wonderful development system! (SAS/C++ 6.50). Thanks also to Tau, Hezu, and all of my
+other friends from channel #amiga on the IRC.
+
+- Joel Stanley -

@@ -1,0 +1,36 @@
+Short:        Card deck gfx,code,large cards(SAS,Manx)
+Author:       Todd_Lewis@unc.edu
+Uploader:     Todd_Lewis unc edu
+Type:         dev/c
+Architecture: m68k-amigaos
+
+Todd M. Lewis                                   Todd_Lewis@unc.edu
+2601 Piedmont Drive                                 (919) 776-7386
+Sanford, NC 27330-9437
+USA
+
+The "card package" contains C source code for incorporating playing
+card images into Intuition programs.  Three complete sets of card
+images are provided.  One set has horizontal cards, the others have
+vertical cards.  Though some are small (they were designed so that
+52 cards could be shown at the same time on a Workbench screen),
+attention to detail has not been spared.  All the face cards are
+unique.  The Jack of Spades, the Jack of Hearts, and the King of
+Diamonds are all "one-eyed" like they are supposed to be.  A joker
+image is included, as well as the images of the back of a card, a
+blank card, and black card image.
+
+The programming interface is straight-forward.  No initialization
+is necessary (except for opening the intuition.library and the
+graphics.library).  A blind type is defined (CardID_t) for
+representing cards.  Four suits are defined for "normal" cards
+(SUIT_SPADES, SUIT_HEARTS, SUIT_CLUBS, and SUIT_DIAMONDS) plus an
+additional suit for the special images (SUIT_SPECIAL).  Functions
+are provided for translating a (suit,rank) pair to a CardID
+(CardID()) and back (CardSuit() and CardRank()).  These functions
+provide error checking for invalid CardIDs and impossible
+(suit,rank) combinations.  Functions are provided to initialize
+(CardRange()) and shuffle (Shuffle()) an array of CardIDs.  Cards
+are displayed by calling ShowVCard(), ShowVBigCard(), or ShowHCard().
+Defined constants give the width and height of both the horizontal
+and vertical card images.

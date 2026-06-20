@@ -1,0 +1,23 @@
+Here's my current effort to get mpega.library working under PPC (PowerUP
+(Sorry, I don't have a devkit for WarpOS, and don't know how to do this there))
+
+All you need to do is copy the included Includes to your INCLUDE: and
+PPCINCLUDE: directories .. only the modified Includes are included, so you need
+to get the original mpega.library SDK from Aminet first!
+
+Also you should make the following links in your PPCINCLUDE: directory if you
+haven't already:
+
+ppcpragmas -> powerup/ppcpragmas
+pragmas    -> powerup/ppcpragmas
+proto      -> powerup/ppcproto
+
+..this will make sure SCPPC always gets the correct Includes when compiling.
+
+With GCC, make sure your PPCInclude dir is before your normal AmigaOS include
+dir in it's searchpath...
+
+Enjoy! ;)
+
+
+- CISC

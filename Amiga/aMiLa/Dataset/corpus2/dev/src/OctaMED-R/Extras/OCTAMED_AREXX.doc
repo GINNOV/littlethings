@@ -1,0 +1,2051 @@
+############################################################################
+
+	OctaMED ARexx documentation for OctaMED AREXX version 1
+	(OctaMED V6.0)
+
+Date:	29.3.1995
+
+############################################################################
+
+General
+~~~~~~~
+OctaMED's ARexx commands are divided into sections. An ARexx command
+generally has a form of:
+
+	XX_COMMAND
+
+Where XX specifies the section (e.g. SA = sample editor), COMMAND is the
+actual command name (documented below). Neither commands nor their keywords
+are case-sensitive, however some arguments passed may be (for example, the
+song name).
+
+A command of form:
+
+	XX_COMMAND ?
+
+Returns the argument template of that command. It does nothing else.
+
+You should generally turn on OPTIONS RESULTS on your ARexx programs that
+utilize OctaMED. All OctaMED commands that return information pass it in the
+variable RESULT. Alternatively, you can use the VAR keyword to place the
+result in any variable you wish. For example:
+
+	ED_GETNUMBLOCKS VAR numblocks
+
+Places the number of blocks to variable 'numblocks'. The VAR keyword is not
+mentioned in command templates. It works with all commands that return
+results.
+
+You should be careful with quotes. For example, to request an answer using
+the command WI_REQUEST:
+
+	WI_REQUEST "Answer YES or NO!" "Yes|No"
+
+This would seem to work, and it does work when invoked from OctaMED's
+built-in command shell. However, ARexx strips off quotes around the strings,
+and confuses OctaMED. To make it work, you must use double quotes:
+
+	WI_REQUEST '"Answer YES or NO!"' '"Yes|No"'
+
+OctaMED's command shell can be used to test all ARexx commands.
+
+When writing ARexx macros, you should be aware of the version number of
+OctaMED in use. You may be using macros that are not available in earlier
+versions. The description of each command specifies the first OctaMED ARexx
+version in which that command/option can be used. If no version number is
+specified, the command is available in all OctaMED ARexx versions. See also
+the description of command VE_OCTAMEDREXX.
+
+All numeral arguments in OctaMED's ARexx commands are DECIMAL NUMBERS. Even
+though OctaMED displays some values in hex or other bases, ARexx commands
+accept and return only decimal numbers. Use ARexx's own functions to convert
+them, if needed. OctaMED doesn't always check the validity of the arguments,
+you must be sure you don't pass numbers out of range! Otherwise you may
+badly confuse OctaMED.
+
+Some editing functions require argument NOTE. This is not a string, but a
+note number. Note number 0 = ---, 1 = C-1, 2 = C#1, 13 = C-2 and so on.
+
+Command templates use the following specifiers for an argument:
+
+	(none)		A string
+	/S		A switch, turned on if the keyword appears,
+			otherwise off
+	/N		A number is expected
+	/K		The keyword must appear on the command line e.g.
+			CMD KEY/K/N must be used like: CMD KEY 2 or
+			CMD KEY=2 (CMD 2 doesn't work).
+	/A		This argument is obligatory. Otherwise the
+			command fails.
+	/F		The rest of the command line is used as the
+			argument.
+	/M		Multiple arguments are allowed (separated with
+			spaces).
+
+
+Startup script
+~~~~~~~~~~~~~~
+After starting OctaMED, OctaMED automatically attempts to execute an ARexx
+script "om_startup.omed". You can place any initialization commands in it,
+launch programs etc.
+
+Window names
+~~~~~~~~~~~~
+Some commands that handle windows require mnemonic window names. Below are
+currently defined windows:
+
+BLOCKLIST		BLOCKPROPERTIES		EDITOR
+EQBAR			EQOSC			EXPANDSHRINK
+FONT			HIGHLIGHTOPTIONS	INFORMATION
+INSTLOAD		INSTPARAMS		INSTTYPE
+INPUTMAP		KEYBOARDOPTIONS		KEYBOARDSHORTCUTS
+MAINCONTROL		AURAOPTIONS		MIDIINPUTCHANNEL
+MIDIMESSAGEEDITOR	MISCOPTIONS		MOUSEOPTIONS
+NEW			NOTEECHO		PALETTE
+PLAYINGSEQ		PROGKEYS		PRINTOPTIONS
+SAMPLEEDITOR		SAMPLELIST		SAMPLELISTEDITOR
+SAVEOPTIONS		SAVETIMER		SAVE_PPSETTINGS
+SAVE_XPKSETTINGS	SA_ADDWORKSPACE		SA_ADJUSTY
+SA_CHANGEPITCH		SA_CHANGEVOLUME		SA_CHORDCREATION
+SA_NOISE		SA_DISPLAYSETTINGS	SA_ECHO
+SA_FILTERBOOST		SA_MIX			SECTIONLIST
+SMFLOADOPTIONS		SONGANNOTATION		SONGOPTIONS
+SONGSELECT		SPREADNOTES		SYNTHSOUNDEDITOR
+SY_PROGRAM		SY_STRETCH		SY_VOLUME
+TEMPO			TEMPOOP			TOCCATA_CAPTURE
+TRACKVOLUMES		TRANSPOSE
+
+Option names
+~~~~~~~~~~~~
+Some commands handle global option values/switches. They use
+mnemonic option names as well. Currently defined are:
+
+AddPaths		Instr Menu/Add Path
+AdvCurs			Keyboard Options/Advance Cursor
+AdvLine			Keyboard Options/Advance Line
+AdvTrk			Keyboard Options/Advance Track
+AdvVoice		Keyboard Options/Advance with sound
+AUDIOCHANNELS		Project Menu/Audio Channels
+AuraActive		Aura Options/Active
+AuraFixedRate		Aura Options/Fixed Output Rate
+AuraMinPer		Aura Options/Minimum Period
+AuraSingleCh		Aura Options/Right channel only
+AutoFlush		Instr Menu/Automatic Flush
+AutoFreeze		Settings Menu/Auto-Freeze Screen
+AutoTerminate		MIDI Msg Editor/Auto-Terminate Capt.
+CHORD			Main Control/Chord
+CloseWB			Misc. Options/Close Workbench
+Compression		Save Options/Compression
+CreateIcons		Save Options/Create Icon
+CreateIconsForSamples	Sample Editor/Settings Menu/Create Icons...
+DefHQMode		Misc. Options/Default HQ Mode
+DefLPB			Tempo Op/Set Curr. as Def (Tempo/LPB)
+DefSlowHQ		Misc. Options/Default Slow HQ
+DefTempo		Tempo Op/Set Curr. as Def (Tempo/Tempo)
+DefTempoBPM		Tempo Op/Set Curr. as Def (Tempo/SPD/BPM)
+DefTPL			Tempo Op/Set Curr. as Def (Tempo/TPL)
+DefVolMode		Misc. Options/Default Volume Mode
+DestrSpc		Keyboard Options/Destructive Spacing
+EDIT			Main Control/Edit
+EXPSHRK_FACTOR		Expand/Shrink / Factor
+F6_F10_Highlights	Keyboard Options/F6-F10 = Highlights
+FollowSeq		Playing Sequence/Follow
+FourBitPalette		Palette/Palette Type
+HalveLoadedSamples	Instr Menu/Halve Loaded Samples
+HelpViewer		Misc. Options/Help Viewer
+HtoB			Misc. Options/H->B
+InstCtrlStrLoad		Misc. Options/InstCtrlStrLoad
+KEYMAPACTIVE		(not implemented yet)
+KeypadMap		Keyboard Options/Keypad Mapping
+KeypadMode		Keyboard Options/Keypad Mode
+KillBx7B00		MIDI Menu/Note Killing
+KillNOff		MIDI Menu/Note Killing
+LMB			Mouse Options/Left Button
+MIDIACTIVE		MIDI Menu/MIDI Active
+MIDIACTSENSING		MIDI Menu/Send Active Sensing
+MIDIEXTSYNC		MIDI Menu/Ext Sync
+MIDIINPUT		MIDI Menu/Input Active
+MIDIREADKEYUPS		MIDI Menu/Read Key-Up's
+MIDIREADVOLUME		MIDI Menu/Read Volume
+MIDISENDOUTINPUT	MIDI Menu/Send Out Input
+MIDISENDSYNC		MIDI Menu/Send Sync
+MMB			Mouse Options/Middle Button
+OverwriteReq		Misc. Options/Overwrite Requesters
+PALETTE_WB		Palette/WB Palette
+PolyPlay		Keyboard Options/Poly Play
+PlayAfterLoading	Settings Menu/Play After Loading
+PPBuffer		PP Settings/Speedup Buffer
+PPEfficiency		PP Settings/Efficiency
+RemPaths		Instr Menu/Remove Path
+ReqTools		Misc. Options/Use Reqtools
+ResetChord		Keyboard Options/Chord Reset
+RMB			Mouse Options/Right Button
+RoundSpc		Keyboard Options/Auto-Round Spacing
+SaveAllInfo		Save Options/Save Secondary Data
+SAVEINSTRUMENTS		Save Options/Save Instruments
+SAVEMULTIMOD		Save Options/Save Multi-Module
+SaveNotation		Save Options/Save Notation Data
+SaveTimer		Save Timer/Time Between Saves
+SaveTimerOpenWin	Save Timer/Open Save Window
+ShowUnusedBlocks	Block List/Show Unused
+SizeOnlyWindowZoom	Misc. Options/Size-Only Window Zoom
+SMFL_CMDPAGE_CHAFTERTOUCH	SMF Loading Options
+SMFL_CMDPAGE_CHANNELVOL		"
+SMFL_CMDPAGE_MIDIPRESET		"
+SMFL_CMDPAGE_MODWHEEL		"
+SMFL_CMDPAGE_PAN		"
+SMFL_CMDPAGE_PITCHBEND		"
+SMFL_CMDPAGE_TEMPO		"
+SMFL_CMDPAGE_VELOCITY		"
+SMFL_DONTINTERMIX		"
+SMFL_LINESPERBLOCK		"
+SMFL_MAXTRACKS			"
+SMFL_OFFSETADJUST		"
+SMFL_RESOLUTION			"
+SMPEDCRNOISE_LEVEL	Sample Editor/Create Noise/Level
+SmpEdDensity		Sample Editor/Disp. Settings/Pixel Density
+SmpEdDigiWVoice		Sample Editor/Sampler Voice Monitor
+SMPEDECHO_NUM		Sample Editor/Echo/Number of Echoes
+SMPEDECHO_RATE		Sample Editor/Echo/Echo Rate
+SMPEDECHO_VOLDECR	Sample Editor/Echo/Volume Decrease
+SmpEdFastGfx		Sample Editor/Disp. Settings/Fast Graphics
+SMPEDFB_AVERAGING	Sample Editor/Filt/Boost/Averaging
+SMPEDFB_DISTANCE	Sample Editor/Filt/Boost/Distance
+SMPEDFREEHAND		Sample Editor/Freehand
+SmpEdMaxVolClip		Sample Editor/Change Volume/Max Clip
+SmpEdMinZoom		Sample Editor/Disp. Settings/Minimum Zoom
+SMPEDMIX_DEST		Sample Editor/Mix/Dest. Level
+SMPEDMIX_SOURCE		Sample Editor/Mix/Source Level
+SmpEdPitch		Sample Editor/Pitch
+SMPEDPITCHCHG_ANTIALIAS	Sample Editor/Change Pitch/Antialias
+SMPEDPITCHCHG_DEST	Sample Editor/Change Pitch/Dest.
+SMPEDPITCHCHG_SOURCE	Sample Editor/Change Pitch/Source
+SmpEdPitchInHz		Sample Editor/Settings Menu/Pitch in Hz
+SmpEdPixelDisp		Sample Editor/Disp. Settings/Pixel
+SMPEDVOLCHG_END		Sample Editor/Change Volume/End
+SMPEDVOLCHG_START	Sample Editor/Change Volume/Start
+SmpEdVolClip		Sample Editor/Change Volume/Check Clip
+SmpEdZoomRngCent	Sample Editor/Disp. Settings/Center Zoom...
+SMPED_LOOPPOINT		Sample Editor/Loop Point
+SPACE			Main Control/Space
+SpaceIsDel		Keyboard Options/Space = DEL
+SpaceVal		Keyboard Options/Space Value
+SPREADVAL		Spread Notes/Width
+TempoOpChangeCmds	Tempo Op/Change Commands
+Toccata_LevelDisp	Toccata Capture/Level Display
+TRANSPOSE_INSTSLOTS	Transpose/Instrument Slots
+WarnDiskFull		Misc. Options/Warn if Disk Full
+XPKmethod		(don't use)
+
+############################################################################
+SECTION:	VE	(Version)
+############################################################################
+
+Command:	VE_OCTAMED
+Purpose:	Returns OctaMED version number.
+Result:		Version number, e.g. "6.0".
+
+
+Command:	VE_OCTAMEDREXX
+Purpose:	Returns the version number of OctaMED ARexx implementation.
+		This is an integral number which will be lifted always when
+		new commands/options have been added to OctaMED. It will
+		always change by one, no matter how big or small changes
+		have occurred since the last version.
+Result:		A number, e.g. 1, 2, 3...
+
+############################################################################
+SECTION:	WI	(Window)
+############################################################################
+
+Command:	WI_ACTIVATE WINDOW/A
+Purpose:	Activates the specified window. See above for a list of
+		supported names.
+RC:		In case of invalid window name.
+
+
+Command:	WI_CHANGEBOX WINDOW/A,X/N,Y/N,W=WIDTH/N,H=HEIGHT/N
+Purpose:	Change the position, width and/or height of a window.
+		Dimensions can be changed only if the window has a
+		sizing gadget.
+RC:		In case of invalid window name.
+
+
+Command:	WI_CLOSE WINDOW/A
+Purpose:	Close a window.
+RC:		In case of invalid window name.
+
+
+Command:	WI_ISOPEN WINDOW/A
+Purpose:	Tests if a specified window is currently open.
+Result:		0 = closed
+		non-zero = open
+RC:		In case of invalid window name.
+
+
+Command:	WI_OCTAMEDTOBACK
+Purpose:	Puts the OctaMED screen to back.
+
+
+Command:	WI_OCTAMEDTOFRONT
+Purpose:	Brings the OctaMED screen to front.
+
+
+Command:	WI_OPEN WINDOW/A
+Purpose:	Open a window. See above for a list of supported names.
+RC:		In case of error or invalid window name.
+Example:	WI_OPEN SAMPLEEDITOR
+
+
+Command:	WI_OPENSHELL
+Purpose:	Opens a new command shell window. Note that there can be
+		several shells open at a time!
+
+
+Command:	WI_REQUEST BODYTEXT/A,GADGETTEXT/A
+Purpose:	Displays a requester with one or more gadgets.
+		(Remember to quote the strings twice.) GADGETTEXT
+		specifies the gadget labels, separated by "|".
+Result:		0 for the rightmost choice,
+		1, 2, 3... for other choices (starting from left)
+Example:	'WI_REQUEST "Format hard disk?" '"Yes|Don''t know|No"'
+		Returns: 1 = Yes, 2 = Don't know, 0 = No
+Note:		A failure to bring up the requester (out of memory) will
+		return 0. Don't forget the style guide recommendation of
+		placing the safest choice to the right!
+
+
+Command:	WI_SHOWSTRING MESSAGE/F
+Purpose:	Displays a message on OctaMED's title bar. If no
+		message is specified, resets the title bar to its
+		default state.
+
+
+Command:	WI_TOBACK WINDOW/A
+Purpose:	Moves the specified window to back of all other windows.
+RC:		In case of invalid window name.
+
+
+Command:	WI_TOFRONT WINDOW/A
+Purpose:	Moves the specified window to front of all other windows.
+RC:		In case of invalid window name.
+
+
+Command:	WI_ZIP WINDOW/A
+Purpose:	Zooms or unzooms the specified window.
+RC:		In case of invalid window name.
+
+############################################################################
+SECTION:	PL	(Playing)
+############################################################################
+
+Command:	PL_CONTBLOCK
+Purpose:	Play block (continue from current position).
+
+
+Command:	PL_CONTSONG
+Purpose:	Play song (continue from current position).
+
+
+Command:	PL_GETSTATE
+Purpose:	Get player's current state.
+Result:		One of the following strings:
+		STOPPED
+		PLAYSONG
+		PLAYBLOCK
+
+
+Command:	PL_JUMPTOTIMERZERO
+Purpose:	Jumps to the position where the timer was last
+		reset.
+
+
+Command:	PL_NEXTALPHAKEYCHANGESINSTR
+Purpose:	To implement the "alpha-enter" facility of the
+		instrument keypad map 2. Probably never useful
+		for any other purpose.
+
+
+Command:	PL_PLAYBLOCK
+Purpose:	Play block (from the beginning).
+
+
+Command:	PL_PLAYSONG
+Purpose:	Play song (from the beginning).
+
+
+Command:	PL_PLAYSTATECOMMAND CMD,ELSE
+Purpose:	Performs one of two possible OctaMED commands,
+		depending on the current playing state. If
+		currently playing the song or a block, command
+		CMD is executed, otherwise ELSE.
+
+
+Command:	PL_RESETMIDI
+Purpose:	Resets MIDI pitchbenders, modulation wheels and
+		instrument presets when they are used.
+
+
+Command:	PL_RESETTIMER
+Purpose:	Resets the play timer.
+
+
+Command:	PL_STOP
+Purpose:	Stop playing.
+
+############################################################################
+SECTION:	IN	(Instrument)
+############################################################################
+
+Command:	IN_FLUSH CURR=CURRENT/S,ALL/S,UN=UNUSED/S
+Purpose:	Flush one or more instruments.
+		CURR (default) flushes only the current instrument.
+		ALL flushes all instruments.
+		UNUSED flushes all unused instruments.
+
+
+Command:	IN_GETFINETUNE
+Result:		Finetune value (-8 - 7).
+
+
+Command:	IN_GETHOLD
+Result:		Hold value.
+
+
+Command:	IN_GETDECAY
+Result:		Decay value.
+
+
+Command:	IN_GETDEFAULTPITCH
+Result:		Instrument's default pitch (note number, 0 = none).
+
+
+Command:	IN_GETEXTENDEDPRESET
+Result:		0 = No extended preset
+		1 = Extended preset.
+
+
+Command:	IN_GETMIDICHANNEL
+Result:		Instrument's MIDI channel (1 - 16, 0 = none).
+
+
+Command:	IN_GETMIDIPRESET
+Result:		Instrument's MIDI preset.
+
+
+Command:	IN_GETNAME
+Result:		String (instrument name).
+
+
+Command:	IN_GETNUMBER
+Purpose:	Get the number of currently selected instrument.
+Result:		Instrument number (1 - 63).
+
+
+Command:	IN_GETNUMOCTAVES
+Result:		The number of octaves in this sample (1 - 7). Returns 0 if
+		the instrument is not of type SAMPLE.
+
+
+Command:	IN_GETOUTPUT
+Result:		"AMIGA", "AURA" or "TOCCATA" depending on the instrument's
+		selected output device.
+
+
+Command:	IN_GETSUPPRESSNOTEOFF
+Result:		0 = Don't suppress Note Off
+		1 = Suppress Note Off.
+
+
+Command:	IN_GETTRANSPOSE
+Result:		Transpose value (-128 - 127).
+
+
+Command:	IN_GETTYPE
+Purpose:	Returns instrument's type.
+Result:		One of the following strings is returned:
+		EMPTY		(no instrument in this slot)
+		SAMPLE
+		SYNTH
+		HYBRID
+		EXTSAMPLE
+		SAMPLE16
+		UNKNOWN		(probably won't appear)
+Note:		More types may be added in future versions.
+
+
+Command:	IN_GETVOLUME
+Result:		Instrument's volume (0 - 64).
+
+
+Command:	IN_ISSLOTUSED SL=SLOT/N
+Purpose:	Tells if the specified instrument slot (1 - 63) is free
+		or not.
+Result:		1 = slot used, 0 = slot free.
+Note:		MIDI instruments generally have the slot unused. The slot
+		might belong to a MIDI instrument even if this returns 0.
+
+
+Command:	IN_ISSTEREO
+Purpose:	Check the stereo/mono state of the current sample:
+Result:		1 = current sample is stereo
+		0 = current sample is mono or no sample exists
+
+
+Command:	IN_LOAD NAME/A,NOSL=NOSLIST/S,CN=COMPARENAMES/S
+Purpose:	Loads a specified instrument from disk.
+		NAME = instrument name.
+		NOSLIST = don't search from the sample list. Usually
+		a full path name should be specified in this case.
+		COMPARENAMES = don't load if NAME and the name of the
+		current instrument are equal. Useful for triggering
+		sample changes from the song.
+
+
+Command:	IN_LOADREQ
+Purpose:	Opens the Load Instruments requester.
+
+
+Command:	IN_MONO
+Purpose:	Convert this sample to mono.
+RC:		If not enough memory/sample already mono/no sample
+
+
+Command:	IN_SAVE NAME,RAW/S,EIGHTSVX/S,MAUD/S,AIFF/S,WAVE/S
+Purpose:	Saves the sample. NAME should be a full path name.
+		Defaults to the EIGHTSVX format (uses MAUD for 16-bit
+		samples, though).
+
+
+Command:	IN_SAVEREQ RAW/S,EIGHTSVX/S,MAUD/S,AIFF/S,WAVE/S
+Purpose:	Opens the Save Instrument requester for saving in the
+		specified format (default: EIGHTSVX).
+
+
+Command:	IN_SELECT INS/N,NEXT/S,PREV/S,LAST/S,LU=LASTUSED/S,
+		NEXTFREE/S,PREVFREE/S,MINUS16/S,PLUS16/S,
+		PREVFOUND=NEARCURSOR/S,SWITCH/S
+Purpose:	Changes the number of the current instrument:
+		INS 3		goto instrument 3 (accepted values are 1-63,
+				note: these are decimal numbers! Don't use
+				values like 0G or 1V that OctaMED displays.
+		NEXT		next instrument
+		PREV		previous instrument
+		LAST		last instrument
+		LASTUSED	last used instrument
+		NEXTFREE	next free instrument slot
+		PREVFREE	previous free instrument slot
+		MINUS16		subtract 16 from current sample number
+		PLUS16		add 16 to current sample number
+		PREVFOUND/	selects the last instrument found on this
+		  NEARCURSOR	track (above the cursor)
+		SWITCH		"switches" the first instr. number between
+				1 and 0
+
+
+Command:	IN_SETDEFAULTPITCH NO=NOTE/N/A
+Purpose:	Set instrument's default pitch. (0 = none, 1 = C-1 etc.)
+
+
+Command:	IN_SETFINETUNE FT=FINETUNE/N/A
+Purpose:	Sets the finetune of the current instrument. Allowed
+		values are -8 - 7.
+
+
+Command:	IN_SETHOLDDECAY H=HOLD/N,D=DECAY/N
+Purpose:	Sets hold and/or decay values of the current instrument.
+
+
+Command:	IN_SETMIDICHANNEL CH=CHANNEL/N/A
+Purpose:	Set instrument's MIDI channel (0 - 16), 0 = none.
+
+
+Command:	IN_SETMIDIPRESET PR=PRESET/N/A,EXT=EXTENDED/S
+Purpose:	Set instrument's preset. if the EXTENDED switch
+		is set, extended preset is used, otherwise it's
+		cleared.
+
+
+Command:	IN_SETNAME NAME/A
+Purpose:	Set the name of the current instrument. (Maximum length is
+		39 characters.)
+
+
+Command:	IN_SETNUMOCTAVES OCTS/N/A
+Purpose:	Set number of octaves (1 - 7). Only valid if the instrument
+		type is SAMPLE.
+
+
+Command:	IN_SETOUTPUT AMIGA/S,AURA/S,TOCCATA/S
+Purpose:	Sets instrument's output device.
+
+
+Command:	IN_SETSUPPRESSNOTEOFF ON/S,OFF/S,TOGGLE/S
+Purpose:	Set/clears/toggles instrument's Note Off suppress
+		property.
+
+
+Command:	IN_SETTRANSPOSE TR=TRANSPOSE/N/A
+Purpose:	Sets the transpose of the current instrument. Allowed
+		values are -128 - 127.
+
+
+Command:	IN_SETTYPE SAMPLE/S,EXTSAMPLE/S,SYNTHETIC/S,HYBRID/S,SAMPLE16/S
+Purpose:	Changes instrument type.
+Note:		Not all type changes can be carried out. The following
+		changes can be used:
+		SAMPLE <-> EXTSAMPLE
+		(EXT)SAMPLE <-> SAMPLE16
+		(EXT)SAMPLE <-> HYBRID
+		(EXT)SAMPLE(16) -> SYNTHETIC	(sample discarded)
+		SYNTHETIC -> SAMPLE		(synthsound discarded)
+
+Command:	IN_SETVOLUME VOL/N,INCREASE/S,DECREASE/S
+Purpose:	Set instrument's volume (0 - 64), or optionally INCREASE
+		or DECREASE it by one.
+
+
+Command:	IN_STEREO
+Purpose:	Convert this sample to stereo.
+RC:		If not enough memory/sample already stereo/no sample
+
+
+Command:	IN_SWAPINSTRUMENTS SLOT1/N/A,SLOT2/N/A
+Purpose:	Swaps two instruments. Instrument numbers are given.
+		It only exchanges the instruments, song data is not
+		modified.
+
+############################################################################
+SECTION:	SA	(Sample editor)
+############################################################################
+
+Command:	SA_ADJUSTYRANGE S=SHIFT/N/A
+Purpose:	Adjusts the selected range in vertical direction.
+		(See Adjust Y -function of sample editor)
+		SHIFT is an 8-bit adjust value (although the
+		adjustment will be made in 16 bits, 8-bit resolution
+		was considered sufficient for this parameter).
+
+
+Command:	SA_BOOST AVG=AVERAGING/N,D=DISTANCE/N
+Purpose:	Will boost the selected range (see Filter/Boost
+		window of the sample editor). If either or both
+		values are not supplied, the values in the F/B
+		window will be used.
+
+
+Command:	SA_BUFFERTOSAMPLE
+Purpose:	Copies the contents of the buffer to the sample.
+		The old sample will be discarded.
+
+
+Command:	SA_CENTRALIZESAMPLE
+Purpose:	Centralizes the entire sample in vertical direction.
+		Similar to SA_ADJUSTYRANGE, but affects the entire
+		sample and automatically calculates a suitable value
+		for centralizing the sample.
+
+
+Command:	SA_CHANGEPITCH S=SOURCE/N,D=DEST/N,AA=ANTIALIAS/S
+Purpose:	Changes the pitch of the current sample. SOURCE and
+		DEST are period values. If they are not supplied,
+		values in the Change Pitch window will be used.
+		ANTIALIAS turns antialiasing on (otherwise off).
+
+
+Command:	SA_CHANGEVOL S=START/N,E=END/N,CLIP/S,NOCLIP/S
+Purpose:	Changes the volume of the selected range. START and
+		END are specified in percents, as in the Change Volume
+		window. CLIP specifies clipping, NOCLIP makes OctaMED
+		avoid clipping, otherwise the setting in the Ch. Volume
+		window will be used. To maximize the volume, you can
+		use high values with NOCLIP, e.g.:
+		SA_CHANGEVOL 999 999 NOCLIP
+
+
+Command:	SA_CHANGESIZE SIZE/N/A,C=CLEAR/S,RE=RETAINATEND/S,REQ/S
+Purpose:	Changes the size of the current sample. By default,
+		this function retains the existing sample at the
+		beginning. If CLEAR is specified, the entire sample
+		is cleared, if RETAINATEND is specified, the existing
+		sample will be retained at the end. Finally, REQ
+		instructs OctaMED to ask the user if the existing
+		sample should be kept.
+
+
+Command:	SA_CHOPRANGE
+Purpose:	Chops the selected range.
+
+
+Command:	SA_CLEARRANGE
+Purpose:	Clears the selected range.
+
+
+Command:	SA_COPYRANGE
+Purpose:	Copies the selected range to the copy buffer.
+
+
+Command:	SA_CREATECHORD N=NOTES/N/M/A,FV=FULLVOL/S,NFV=NOFULLVOL/S,
+		ET=ERASETRAIL/S,NET=NOERASETRAIL/S
+Purpose:	Creates a chord of specified notes. NOTES define the note
+		numbers of the chord (up to 4 notes can be given).
+		FULLVOL/NOFULLVOL override the Full Volume switch of the
+		Create Chord window. ERASETRAIL/NOERASETRAIL override the
+		Erase Trailing Notes switch.
+Example:	Create a major chord of three notes:
+		SA_CREATECHORD 1 5 8
+
+
+Command:	SA_CREATENOISE L=LEVEL/N
+Purpose:	Adds noise to the selected range.
+
+
+Command:	SA_CUTRANGE
+Purpose:	Cuts the selected range.
+
+
+Command:	SA_DELRANGE
+Purpose:	Erases the selected range.
+
+
+Command:	SA_ECHO NUM/N,R=RATE/N,VD=VOLDECR/N
+Purpose:	Creates echoes. See the Echo Window documents for the
+		purpose of the parameters.
+
+
+Command:	SA_ERASE TS=TOSTART/S,TE=TOEND/S,BL=BEFORELOOP/S,
+		AL=AFTERLOOP/S
+Purpose:	Erases a part of the current sample.
+		TOSTART	erases from the beginning of the range to the
+			start of the sample.
+		TOEND	(default) erases from the end of the range to
+			the end of the sample.
+		BEFORELOOP	erases from the beginning of the sample
+				to the beginning of the loop.
+		AFTERLOOP	erases from the end of the loop to the
+				end of the sample.
+
+
+Command:	SA_FILTER AVG=AVERAGING/N,D=DISTANCE/N
+Purpose:	Filters the selected range. See the Filter/Boost window
+		documents.
+
+
+Command:	SA_GETBUFFERLENGTH
+Purpose:	Get the size of the copy buffer.
+Result:		Copy buffer size. (0 if the buffer is empty.)
+
+
+Command:	SA_GETDISPLAYCHANNEL
+Purpose:	Returns the currently displayed channel of a stereo
+		sample.
+Result:		String, one of the following:
+		LEFT	(also returned for mono samples)
+		RIGHT
+		BOTH
+RC:		If no sample in memory.
+
+
+Command:	SA_GETDISPLAYSIZE
+Result:		The size of the currently displayed part of the sample.
+RC:		If no sample in memory.
+
+
+Command:	SA_GETDISPLAYSTART
+Result:		Position of the beginning of the display (from the
+		beginning of the sample).
+RC:		If no sample in memory.
+
+
+Command:	SA_GETLOOPLENGTH
+Result:		Length of the loop.
+
+
+Command:	SA_GETLOOPSTART
+Result:		Beginning of the loop.
+
+
+Command:	SA_GETLOOPSTATE
+Result:		1 = loop active, 0 = loop not active
+
+
+Command:	SA_GETRANGEEND
+Result:		Returns the range end position.
+RC:		If no sample in memory.
+
+
+Command:	SA_GETRANGESTART
+Result:		Returns the range start position.
+RC:		If no sample in memory.
+
+
+Command:	SA_GETSAMPLE O=OFFSET/N/A
+Purpose:	For actual editing of the sample waveform.
+		OFFSET is the position from the beginning of the
+		sample. Allowed values are 0 - (SAMPLELENGTH-1).
+Result:		Returns the sample value at the given position.
+		This number is always in 16-bit range (regardless
+		of the actual sample resolution), -32768 being the
+		lowest, 32767 the highest possible value. (I.e.
+		signed arithmetic must be used.)
+RC:		If no sample in memory.
+
+
+Command:	SA_GETSAMPLELENGTH
+Result:		Returns the length of the current sample.
+RC:		If no sample in memory.
+
+
+Command:	SA_INVERTRANGE
+Purpose:	Flips the selected range upside down.
+
+
+Command:	SA_MIX SL=SOURCELEVEL/N,DL=DESTLEVEL/N
+Purpose:	Mixes the copy buffer with the selected range. See
+		Mix Window documentation.
+
+
+Command:	SA_MONITOR AS=ALLOWSAMPLING/S
+Purpose:	Activates the sampler monitor display. It can be
+		deactivated only by the user. If ALLOWSAMPLING is
+		specified, the text "LMB = start sampling - RMB = cancel"
+		will appear, and sampling is allowed.
+
+
+Command:	SA_PASTE OW=OVERWRITE/S
+Purpose:	Pastes the buffer to the current position. If OVERWRITE
+		is specified, the buffer contents will overwrite existing
+		data instead of inserting.
+
+
+Command:	SA_PLAY D=DISPLAY/S,R=RANGE/S,CB=CBUFF/S,LO=LOOP/S,
+		TU=TUNING/S
+Purpose:	Plays the specified part of the sample:
+		DISPLAY plays the display.
+		RANGE plays the range.
+		CBUFF plays the copy buffer.
+		LOOP plays the loop.
+		TUNING plays the tuning tone.
+
+
+Command:	SA_RANGE S=START/N,E=END/N,A=ALL/S,LO=LOOP/S
+Purpose:	Sets the range. START/END are absolute offsets in the
+		sample, ALL selects the entire sample, LOOP selects the
+		loop.
+
+
+Command:	SA_RANGETOSYNTHED
+Purpose:	Copies the range to synth editor wave buffer.
+
+
+Command:	SA_REFRESH
+Purpose:	Refreshes the sample display (see SA_SETSAMPLE).
+
+
+Command:	SA_REMUNUSEDSPACE
+Purpose:	Removes the unused space from both ends of the sample.
+
+
+Command:	SA_REVERSERANGE
+Purpose:	Reverses the selected range.
+
+
+Command:	SA_SAMPLETOBUFFER
+Purpose:	Copies the whole sample to the copy buffer.
+
+
+Command:	SA_SCROLLDISPLAY L=LEFT/S,R=RIGHT/S,STEP/N
+Purpose:	Scrolls the sample editor display LEFT or RIGHT. By
+		default, one step is 50 % of the display size, but
+		you can override it by specifying STEP (it's a
+		percentage - a value of 100 scrolls one screenful.)
+
+
+Command:	SA_SETDISPLAYCHANNEL BOTH/S,L=LEFT/S,R=RIGHT/S
+Purpose:	Changes the display mode of a stereo sample.
+
+
+Command:	SA_SETLOOP S=START/N,L=LENGTH/N,KE=KEEPEND/S,R=RANGE/S,
+		D=DISPLAY/S,SA=SAMPLE/S
+Purpose:	Sets the loop. START/LENGTH specify the absolute positions.
+		If only START is specified, the length remains constant,
+		unless KEEPEND is set (which keeps the end position intact).
+		RANGE sets the loop to range, DISPLAY to display, SAMPLE
+		to the whole sample.
+
+
+Command:	SA_SETLOOPSTATE ON/S,OFF/S
+Purpose:	Turns the loop on or off.
+
+
+Command:	SA_SETSAMPLE O=OFFSET/N/A,V=VALUE/N/A
+Purpose:	For editing the actual sample waveform. Sets the sample data
+		at the specified position (OFFSET may be 0 - SAMPLELENGTH-1).
+		The VALUE is a 16-bit signed number, regardless of the actual
+		resolution of the sample. -32768 is the lowest, 32767 is the
+		highest allowed value.
+Note:		For sake of speed, this command does not refresh the
+		displayed waveform. When you are done with modifying the
+		sample, call SA_REFRESH to refresh the display.
+RC:		If no sample in memory, or if invalid OFFSET is given.
+
+
+Command:	SA_SHOW S=START/N,L=LENGTH/N,R=RANGE/S,A=ALL/S,LO=LOOP/S
+Purpose:	Sets the display to the specified part of the sample.
+		START/LENGTH specify the display area in an absolute way.
+		RANGE shows the range, ALL shows the whole sample, LOOP
+		shows the loop.
+
+
+Command:	SA_SWAPBUFFERWITHSAMPLE
+Purpose:	Swaps the copy buffer with the sample. This call doesn't
+		involve any copying or memory allocations, so it's pretty
+		fast.
+
+
+Command:	SA_ZOOM IN/S,OUT/S
+Purpose:	Halves or doubles the size of the display (i.e. zooms IN or
+		OUT).
+
+############################################################################
+SECTION:	SG	(Song)
+############################################################################
+
+Command:	SG_CLEARALLSONGS
+Purpose:	Clears all songs. Doesn't ask any confirmation.
+
+
+Command:	SG_CLEARCURRENTSONG
+Purpose:	Clears the current song.
+
+
+Command:	SG_DELETESONG CURRENT=HERE/S,LAST/S
+Purpose:	Deletes either the current (CURRENT, default) or the LAST
+		song of the multi-module. If there's only one song, this
+		command does nothing.
+
+
+Command:	SG_DISCARDANNOTEXT
+Purpose:	Discards the long annotation text, if there's any.
+
+
+Command:	SG_GETANNOSTRING
+Result:		Returns the current (short) annotation string.
+
+
+Command:	SG_FORGETMODIFICATIONS
+Purpose:	This command will clear OctaMED's internal "modified"-flag.
+		(See also SG_ISMODIFIED.) After this command, OctaMED thinks
+		there have been no changes since the song was last saved.
+		Use with care!
+
+
+Command:	SG_GETCHANNELMODE
+Result:		Returns the current channel mode: 4 - 8.
+
+
+Command:	SG_GETCURRENTSONGNUMBER
+Result:		Returns the number of the current song (1 - NUMBEROFSONGS).
+
+
+Command:	SG_GETFILESIZE MMD2/S,MMD1/S,MMD0/S,SMF0/S,MULTIMOD/S,
+		CURRSONG/S
+Purpose:	Calculates and returns the unpacked file size of the
+		multi-module (default) or the current song in desired file
+		format.
+Result:		File size in bytes.
+
+
+Command:	SG_GETFILTER
+Result:		Returns the state of the hardware audio filter (1 or 0).
+
+
+Command:	SG_GETHQ
+Result:		Returns the state of the HQ switch (1 or 0).
+
+
+Command:	SG_GETMASTERVOL
+Result:		Returns the current master volume (1 - 64).
+
+
+Command:	SG_GETNAME
+Result:		Returns the name of the current song (string).
+
+
+Command:	SG_GETNUMBEROFSONGS
+Result:		Returns the number of songs.
+
+
+Command:	SG_GETPLAYTRANSPOSE
+Result:		Returns the current play transpose value.
+
+
+Command:	SG_GETSLIDEMODE
+Result:		Returns the slide mode. Either 'NO1ST' or 'STD'.
+
+
+Command:	SG_GETTEMPO
+Result:		Returns the main SPD or BPM tempo.
+
+
+Command:	SG_GETTEMPOLPB
+Result:		Returns the Lines per Beat value (only used in BPM mode).
+
+
+Command:	SG_GETTEMPOMODE
+Result:		Returns the current tempo mode (either 'SPD' or 'BPM').
+
+
+Command:	SG_GETTEMPOTPL
+Result:		Returns the Pulses per Line value (a.k.a. the secondary
+		tempo).
+
+
+Command:	SG_GETTRACKVOL TRACK/N/A
+Result:		Returns the track volume (1 - 64) of the specified track
+		(0 - 63).
+
+
+Command:	SG_GETVOLMODE
+Result:		Returns the current volume mode ('HEX' or 'DEC').
+
+
+Command:	SG_GOTOSONG SONGNUM/N,NEXT/S,PREV/S,LAST/S,NEXTORAPPEND/S
+Purpose:	Selects the song. SONGNUM is the number of the song.
+		NEXT/PREV select the next or the previous song, and LAST
+		selects the last song. NEXTORAPPEND is the same as NEXT,
+		except if the last song is currently selected, a new one
+		is created (with a requester).
+
+
+Command:	SG_ISMODIFIED
+Result:		Returns a non-zero value if the song has been modified
+		since it's been loaded or saved. Otherwise returns 0.
+
+
+Command:	SG_ISTRACKON TRK=TRACK/N
+Result:		Returns the on/off (1/0) state of the specified track.
+		If track not specified, current track is assumed.
+
+
+Command:	SG_ISTRACKSELECTED TRK=TRACK/N
+Result:		Returns the selected/deselected (1/0) state of the
+		specified track.
+		If track not specified, current track is assumed.
+
+
+Command:	SG_LOAD NAME,FORCE/S
+Purpose:	Loads a song/module into memory. If NAME is not specified,
+		the Load Song file requester appears. This command returns
+		an error, if the song has been modified, unless FORCE is
+		set.
+RC:		Fails, if song modified and FORCE not set.
+
+
+Command:	SG_LOADANNOTEXT NAME
+Purpose:	Loads the specified text file and binds it to the current
+		module. (See Song Annotation Window documents.) If NAME is
+		not specified, a file requester appears.
+
+
+Command:	SG_NEWSONG HERE/S,LAST/S
+Purpose:	Creates a new song either at the current position (HERE) or
+		after the last song (LAST, default).
+
+
+Command:	SG_SAVE NAME,FULLNAME/K,MMD2/S,MMD1/S,MMD0/S,SMF0/S,EXEC/S,
+		MULTIMOD/S,CURRSONG/S
+Purpose:	Saves the current song (CURRSONG) or multi-module (MULTIMOD,
+		default) in the specified file format (MMD2, MMD1, MMD0, SMF0
+		or EXEC). If NAME is specified, the file is saved relative
+		to the currently used save path (see also SG_SETSAVEPATH).
+		If you specify FULLNAME, you have to specify the entire path,
+		which will replace the existing save path.
+
+
+Command:	SG_SAVEANNOTEXT NAME
+Purpose:	Saves the long annotation text (see Song Annotation Window)
+		to a separate file. If NAME is not specified, a file
+		requester appears.
+
+
+Command:	SG_SETANNOSTRING STRING/F
+Purpose:	Sets the (short) annotation string (Song Annotation Window).
+		If no arguments appear, the string is cleared.
+
+
+Command:	SG_SETCHANNELMODE MODE/N/A
+Purpose:	Sets the channel mode. Valid values are 4 - 8.
+
+
+Command:	SG_SETFILTER ON/S,OFF/S
+Purpose:	Sets the state of the hardware audio filter.
+
+
+Command:	SG_SETHQ ON/S,OFF/S
+Purpose:	Sets HQ on or off.
+
+
+Command:	SG_SETMASTERVOL VOL/N/A
+Purpose:	Sets the master volume. Allowed values are 1 - 64.
+
+
+Command:	SG_SETNAME NAME/A/F
+Purpose:	Sets the name of the current song.
+
+
+Command:	SG_SETPLAYTRANSPOSE TRANSP/N/A
+Purpose:	Sets play transpose (-12 - +12).
+
+
+Command:	SG_SETSAVENAME NAME/A
+Purpose:	Sets the default save file name of the current project.
+		This is the file name that appears in the Save Options
+		window. See also the next command.
+Note:		This should only be used for setting the file name.
+		Use the next command for the path.
+
+
+Command:	SG_SETSAVEPATH PATH/A
+Purpose:	Sets the default save file name and path of the current
+		project. This is the file name/path that appears in the
+		Save Options window. The path should be a full path
+		specification of the directory where saved songs should
+		be placed.
+
+
+Command:	SG_SETSLIDEMODE STD/S,NO1ST/S
+Purpose:	Sets the slide mode.
+
+
+Command:	SG_SETTEMPO BPM=SPD/N,TPL/N,LPB/N
+Purpose:	Sets the current tempo. BPM/SPD sets the main tempo,
+		TPL sets the secondary tempo (ticks per line), and LPB
+		sets Lines per Beat (only in BPM mode).
+
+
+Command:	SG_SETTEMPOMODE SPD/S,BPM/S
+Purpose:	Sets the tempo mode. Nowadays BPM is recommended for
+		general usage.
+
+
+Command:	SG_SETTRACKSTATE TRK=TRACK/N/A,ON/S,OFF/S,TOGGLE/S,SEL/S,
+		DESEL/S,TOGGLESEL/S
+Purpose:	Sets the state of the specified track. ON/OFF/TOGGLE
+		affect the track's playing status. SEL/DESEL/TOGGLESEL
+		affect the selected state of the track.
+
+
+Command:	SG_SETTRACKSTATES ON/S,OFF/S
+Purpose:	Sets all tracks ON or OFF.
+
+
+Command:	SG_SETTRACKVOL TRACK/N/A,VOL/N/A
+Purpose:	Sets the track volume of TRACK (0 - 63). VOL may be 1 - 64.
+
+
+Command:	SG_SETVOLMODE DEC/S,HEX/S
+Purpose:	Sets the volume mode (DECimal or HEX).
+
+
+Command:	SG_SHOWFREEMEMORY
+Purpose:	Displays the free memory on OctaMED's title bar. Used for
+		Ctrl-F.
+
+
+Command:	SG_TEMPO_DECREASE TPL/S
+Purpose:	Mainly for OctaMED keyboard shortcuts. Decreases the main
+		tempo, or if TPL set, the TPL value.
+
+
+Command:	SG_TEMPO_INCREASE TPL/S
+Purpose:	Mainly for OctaMED keyboard shortcuts. Increases the main
+		tempo, or if TPL set, the TPL value.
+
+
+Command:	SG_VOLCONVERT TOHEX/S,TODEC/S,REQ/S
+Purpose:	Converts the volume commands of the song. TOHEX converts
+		everything from decimal to hex, TODEC does the opposite.
+		REQ asks the user.
+
+############################################################################
+SECTION:	OP	(Options)
+############################################################################
+
+Command:	OP_GET OPT/A
+Purpose:	Returns the current value of the specified option. (See
+		above for a list of options.) The values depend on the type
+		of the object (i.e. gadget or menu) that is used to control
+		the option. Generally, the following rules apply:
+
+		Object type		Allowed values
+		~~~~~~~~~~~		~~~~~~~~~~~~~~
+		Checkbox or menu	0 = not checked
+		items with toggling	1 = checked
+		checkmarks.
+
+		Cycle gadget		0 = first item (not necessarily the
+					    default!)
+					X-1 = last item (where X = total
+					    number of items the gadget has).
+
+		Slider or integer	Same as the gadget's values.
+		gadgets
+
+		MX (Radio) gadget	0 = topmost item
+					X-1 = last item (X = total number of
+					      items).
+Result:		Option value.
+RC:		10 if OPT is invalid (not recognized).
+
+
+Command:	OP_GETKEYBOARDOCT
+Purpose:	Returns the keyboard edit octaves currently in use.
+Result:		A number: 0 = octaves 1+2, 1 = 2+3, 2 = 3+4 etc.
+
+Command:	OP_LOADKEYBOARDSHORTCUTS NAME/A
+Purpose:	Loads keyboard shortcuts from disk. NAME should be a full
+		path name.
+
+
+Command:	OP_LOADSETTINGS NAME/A
+Purpose:	Loads a settings file from disk. NAME should be a full path
+		name. Loaded settings will change immediately to their new
+		states. Options not mentioned in the settings file won't be
+		modified.
+
+
+Command:	OP_MULTICMD CMD/M
+Purpose:	Allows execution of multiple OctaMED commands. Simply
+		executes the given commands in succession.
+Note:		Since you can't nest quotation marks, you can't execute
+		commands which need spaces in their arguments.
+
+
+Command:	OP_REPEATCMD TIMES/N,CMD/F
+Purpose:	Repeats the given command the specified number of times.
+		You can combine this command with OP_MULTICMD to repeat
+		a sequence of commands.
+
+
+Command:	OP_SAVEKEYBOARDSHORTCUTS NAME/A
+Purpose:	Saves current keyboard shortcuts to disk. NAME should be a
+		full path name.
+
+
+Command:	OP_SET OPT/A,VAL/N,ON/S,OFF/S,TOGGLE/S
+Purpose:	Changes the state/value of the specified option. (See above
+		for a list of options.) If the option has only two states
+		(checkbox gadgets or toggling menus), you must specify ON,
+		OFF or TOGGLE keyword to change the state. Otherwise a
+		number is expected. See OP_GET description for the allowed
+		range.
+WARNING:	OctaMED does NO range checking on the specified numeric
+		values!! You must be absolutely sure you pass valid in-range
+		values! Otherwise OctaMED may get badly confused, even a
+		crash might occur under some conditions! You've been warned.
+RC:		10 if OPT is invalid (not recognized).
+
+
+Command:	OP_SETKEYBOARDOCT OCT/N,FKEY/K/N
+Purpose:	Sets the current keyboard edit octaves. Use only values
+		1 - 9 for OCT (1 = 1+2, 2 = 2+3, 3 = 3+4 etc.). FKEY, if
+		specified, overrides OCT, and corresponds function keys
+		F1 - F5. (Acceptable values for FKEY are 1 - 5, 1 = F1...
+		5 = F5).
+
+
+Command:	OP_TOGGLEBETWEEN OPT/A,VAL1/N/A,VAL2/N/A
+Purpose:	Toggles a NON-BOOLEAN option (i.e. not a checkbox) between
+		two possible values. If option OPT is currently neither VAL1
+		nor VAL2, it won't be changed.
+
+
+Command:	OP_UPDATE ON/S,OFF/S
+Purpose:	Turns display updating (editor and information windows) on
+		or off. It can be used for speeding and cleaning up long
+		operations. OP_UPDATE ON updates the display.
+
+############################################################################
+SECTION:	SY	(Synth editor)
+############################################################################
+
+Command:	SY_ADDWAVES
+Purpose:	Adds the right waveform to the left one.
+
+
+Command:	SY_CHANGEVOL VAL/N/A
+Purpose:	Changes the volume of the selected range. VAL is specified
+		in percents (100 = no change, 50 = halve, 200 = double etc.)
+
+
+Command:	SY_CLEARRANGE
+Purpose:	Clears the selected range.
+
+
+Command:	SY_CLEARWAVE
+Purpose:	Clears the current waveform.
+
+
+Command:	SY_COPYRANGE
+Purpose:	Copies the selected range to the right waveform.
+
+
+Command:	SY_COPYWAVE TOTEMP/S,FROMTEMP/S
+Purpose:	Copies a waveform. TOTEMP copies from right to left,
+		FROMTEMP from left to right.
+
+
+Command:	SY_CUTRANGE
+Purpose:	Cuts the selected range.
+
+
+Command:	SY_DELPROGCOMMAND VOL/S,WF/S
+Purpose:	Deletes a command/number in the program. VOL deletes from
+		the volume program, WF from the waveform program.
+
+
+Command:	SY_DELWAVE L=LAST/S
+Purpose:	Deletes a waveform. If LAST specified, the last waveform
+		is deleted, otherwise the current.
+
+
+Command:	SY_DOUBLERANGE
+Purpose:	Doubles the selected range.
+
+
+Command:	SY_GETNUMBEROFWAVES
+Purpose:	Gets the number of waveforms in this synthsound.
+Result:		Number of waveforms.
+
+
+Command:	SY_GETPROGCOMMAND O=OFFSET/N/A,VOL/S,WF/S
+Purpose:	Returns the program command. OFFSET specifies the position
+		in either VOL or WF program.
+Result:		A string, such as 'JMP' or '12' or '7F'.
+RC:		If OFFSET is out of range.
+
+
+Command:	SY_GETPROGCURSORX
+Result:		Returns the horizontal position of the cursor
+		(A number between 0 and 5.)
+
+
+Command:	SY_GETPROGLENGTH VOL/S,WF/S
+Purpose:	Get the length of the program.
+Result:		A number.
+
+
+Command:	SY_GETPROGLINE
+Result:		Current line number. (May exceed program length.)
+
+
+Command:	SY_GETPROGSPEED VOL/S,WF/S
+Result:		The execution speed of the program.
+
+
+Command:	SY_GETSAMPLE O=OFFSET/N/A
+Purpose:	Returns a sample from the current waveform at a specified
+		position.
+Result:		A 16-bit signed number (-32768 - 32767). Note that 16-bit
+		resolution is used even though synthsounds are currently
+		always in 8 bits!
+
+
+Command:	SY_GETSELECTEDWAVE
+Purpose:	Indicates which (left or right) waveform is currently
+		selected (has range in it).
+Result:		0 = left, 1 = right
+
+
+Command:	SY_GETWAVELENGTH
+Purpose:	Returns the length of the current waveform.
+Result:		A number (2 - 128, in steps of two).
+
+
+Command:	SY_GETWAVENUM
+Result:		Returns the number of the currently selected wave.
+
+
+Command:	SY_GOTOPROGLINE L=LINE/N/A
+Purpose:	Go to the specified line in the program editor.
+
+
+Command:	SY_GOTOWAVE WAVE/N,NEXT/S,PREV/S
+Purpose:	Go to the specified waveform.
+
+
+Command:	SY_MIXWAVES
+Purpose:	Mix the right waveform to the left.
+
+
+Command:	SY_MOVEPROGCURSOR POS/N,LEFT/S,RIGHT/S,UP/S,DOWN/S,FKEY/K/N
+Purpose:	Moves the cursor in the program editor. POS specifies
+		an absolute X-position (0 - 5). LEFT/RIGHT/UP/DOWN are
+		self-explanatory. FKEY (use only values 0 - 4) perform
+		the function of pressing keys F6 - F10 (0 = F6 etc.)
+
+
+Command:	SY_NEW
+Purpose:	Creates a new synthsound.
+
+
+Command:	SY_NEWWAVE H=HERE/S
+Purpose:	Creates a new waveform. Either inserts a new one HERE
+		or appends after the last one (default).
+
+
+Command:	SY_NOISE
+Purpose:	Sets the current waveform to noise.
+
+
+Command:	SY_PASTERANGE
+Purpose:	Pastes the right waveform to the left.
+
+
+Command:	SY_PULSE
+Purpose:	Sets the current waveform to pulse.
+
+
+Command:	SY_RAMPDOWN
+Purpose:	Sets the current waveform to ramp down.
+
+
+Command:	SY_RAMPUP
+Purpose:	Sets the current waveform to ramp up.
+
+
+Command:	SY_RANGE S=START/N,E=END/N,A=ALL/S
+Purpose:	Sets the range.
+
+
+Command:	SY_REVERSERANGE
+Purpose:	Reverses the selected range.
+
+
+Command:	SY_SETPROGRAM PROGRAM/M/A,VOL/S,WF/S,INS=INSERT/S
+Purpose:	Enters a VOL or WF program. If INSERT is specified,
+		the program will be inserted at the current line.
+		Otherwise the entire program will be set (don't
+		forget the last END command!).
+Example:	SY_SETPROGRAM 64 CHD 2 END VOL
+		Sets the volume program to:
+			 40
+			CHD
+			 02
+			END
+Note:		Unlike SY_GETPROGRAM, numeric values must be entered
+		as decimal numbers! SY_GETPROGRAM returns them in hex.
+
+
+Command:	SY_SETPROGSPEED VOL/K/N,WF/K/N
+Purpose:	Sets the execution speed of either or both programs.
+
+
+Command:	SY_SETSAMPLE O=OFFSET/N/A,V=VALUE/N/A
+Purpose:	Sets a sample in the current waveform at position
+		OFFSET. VALUE is a signed 16-bit number (-32768 -
+		+32767). Display is refreshed after this command.
+
+
+Command:	SY_SETSELECTEDWAVE TEMP/S,ACTUAL/S
+Purpose:	Selects either the right (TEMP) or the left (ACTUAL)
+		waveform.
+
+
+Command:	SY_SETWAVELENGTH LENGTH/N/A
+Purpose:	Sets the length of the current waveform. Accepted
+		values are 2 - 128.
+
+
+Command:	SY_SHIFTRANGE L=LEFT/S,R=RIGHT/S
+Purpose:	Shifts the selected range to left or right.
+
+
+Command:	SY_SINE
+Purpose:	Sets the current waveform to sine.
+
+
+Command:	SY_STRETCH DIST/N/A
+Purpose:	Stretches the current waveform at the cursor. DIST
+		specifies the distance to stretch. A negative value
+		stretches left, a positive to the right.
+
+
+Command:	SY_SWAPWAVES
+Purpose:	Exchanges the left and right waveforms.
+
+
+Command:	SY_TRIANGLE
+Purpose:	Sets the current waveform to triangle.
+
+
+Command:	SY_UNDO
+Purpose:	Undoes the last editing operation.
+
+
+Command:	SY_WAVETRANSFORMATION START/N/A,END/N/A
+Purpose:	Transforms a waveform to another. START and END specify
+		the start and end waveforms.
+
+############################################################################
+SECTION:	ED	(Edit)
+############################################################################
+
+Command:	ED_ADVANCELINE LINES/N,UP/S,DOWN/S,FKEY/K/N,SPC=SPACING/S,
+		USESETT/S
+Purpose:	Advances the cursor UP or DOWN the specified number of LINES
+		(default 1). If SPACING is set, the current space value will
+		be used. (Note: spacing must be turned on.) If you specify
+		FKEY (values 6 - 10), the cursor is moved to the corresponding
+		line as if F6 - F10 was pressed. USESETT will use the Keyboard
+		Options window settings for advancing the cursor.
+
+
+Command:	ED_CHANGECMDPAGE PAGE/N,NEXT/S,PREV/S,CYCLEFWD/S
+Purpose:	Changes the displayed command page. PAGE is an absolute
+		page number (starting at 0). NEXT/PREV are self-explanatory,
+		CYCLEFWD cycles forward, jumping to the first page after the
+		last.
+
+
+Command:	ED_CHANGECMDPAGE PAGE/N,NEXT/S,PREV/S,CYCLEFWD/S
+Purpose:	Changes the displayed command page. PAGE is an absolute
+		page number (starting at 0). NEXT/PREV are self-explanatory,
+		CYCLEFWD cycles forward, jumping to the first page after the
+		last.
+
+
+Command:	ED_CLEARNOTECMD NOTE/S,CMD/S,ALLPAGES/S
+Purpose:	Clears the current note and/or command values. NOTE and
+		CMD switches specify which parts are cleared. By default
+		only clears the command on the current page, unless
+		ALLPAGES is set. Also takes Space in account and clears
+		all notes in the spacing range.
+
+
+Command:	ED_CLEARSEQ FORCE/S
+Purpose:	Clears the current playing sequence. Requests the user for
+		confirmation, unless FORCE exists.
+
+
+Command:	ED_CREATESLIDE VOL/S,GEN/S,PITCH1/S,PITCH2/S
+Purpose:	Generates a slide. VOL = volume slide, GEN = generic slide,
+		PITCH1 = pitch slide (using cmd 3), PITCH2 = pitch slide
+		(using cmds 1 and 2).
+
+
+Command:	ED_DELETEBLOCK HERE=CURRENT/S,LAST/S
+Purpose:	Deletes the LAST or current (HERE, default) block.
+
+
+Command:	ED_DELETENOTE B=BLOCK/K/N,L=LINE/K/N,T=TRACK/K/N,DELSPACE/N
+Purpose:	Deletes a note and moves the following notes on that track
+		one line upwards. BLOCK/LINE/TRACK specify the position, by
+		default the current cursor position is used. DELSPACE is the
+		number of notes to remove (default = 1).
+
+
+Command:	ED_DELETEPLAYSEQ
+Purpose:	Deletes the current entry of the playing sequence.
+
+
+Command:	ED_DELETESECLIST
+Purpose:	Deletes the current entry of the section list.
+
+
+Command:	ED_DELETESECTION
+Purpose:	Deletes the current playing sequence list (section).
+
+
+Command:	ED_ENTERNOTE NOTE/N,PROGKEY/K/N,HOLD/S
+Purpose:	Enters a note to the current position (as if it had been
+		entered using the keyboard). NOTE is the note number,
+		zero is the same as pressing DEL. If PROGKEY exists, the
+		desired programmable key definition is pasted. HOLD enters
+		the hold symbol.
+
+
+Command:	ED_FINDSAMPLEOCCURRENCE PREV/S,NEXT/S
+Purpose:	Finds the NEXT or PREVious occurrence of the current
+		sample.
+
+
+Command:	ED_GETBLOCKNAME B=BLOCK/N
+Result:		Returns the name of the current, or specified block.
+
+
+Command:	ED_GETCURRBLOCK
+Result:		Returns the number of the current block.
+
+
+Command:	ED_GETCURRLINE
+Result:		Returns the current line number (in decimal).
+
+
+Command:	ED_GETCURRPAGE
+Result:		Returns the currently displayed command page.
+
+
+Command:	ED_GETCURRPLAYSEQ
+Result:		Returns the current position in the current playing
+		sequence list.
+
+
+Command:	ED_GETCURRSECLIST
+Result:		Returns the current position in the section list.
+
+
+Command:	ED_GETCURRSECTION
+Result:		Returns the number of the current playing sequence list
+		(section).
+
+
+Command:	ED_GETCURRTRACK
+Result:		Returns the number of the current track (on which the cursor
+		is).
+
+
+Command:	ED_GETDATA B=BLOCK/K/N,L=LINE/K/N,T=TRACK/K/N,P=PAGE/K/N,
+		NOTE/S,INUM/S,CMDNUM=CMDTYPE/S,QUAL=CMDLVL/S,PRTALL/S
+Purpose:	Returns data from the song. BLOCK/LINE/TRACK/PAGE specify
+		the position data is fetched from. (Defaults to cursor
+		position.) The other arguments specify which data you want
+		to get. (Only one item can be fetched per command.)
+		NOTE returns the note number (0 = ---, 1 = C-1, 2 = C#1..).
+		INUM returns the instrument number (0 = none).
+		CMDNUM returns the command number (0 - 255).
+		QUAL returns the command qualifier (0 - 255).
+		PRTALL returns the textual representation of a note and its
+		command, for example: 'C-3 20000'.
+Note:		Don't assume that the ranges remain constant. They might be
+		raised. In particular, don't attempt to interpret PRTALL
+		(it should only be displayed to the user), the note format
+		is not guaranteed to stay constant.
+
+
+Command:	ED_GETLINEHIGHLIGHT B=BLOCK/K/N,L=LINE/N
+Result:		Returns the highlight state of a line.
+
+
+Command:	ED_GETNUMBLOCKS
+Result:		Returns the total number of blocks in memory.
+
+
+Command:	ED_GETNUMLINES B=BLOCK/N
+Result:		Returns the length of the current or specified block.
+
+
+Command:	ED_GETNUMPAGES B=BLOCK/N
+Result:		Returns the number of pages on the current or specified
+		block.
+
+
+Command:	ED_GETNUMPLAYSEQ
+Result:		Returns the length of the current playing sequence list.
+
+
+Command:	ED_GETNUMSECLIST
+Result:		Returns the length of the section list.
+
+
+Command:	ED_GETNUMSECTIONS
+Result:		Returns the total number of playing sequence lists
+		(sections).
+
+
+Command:	ED_GETNUMTRACKS B=BLOCK/N
+Result:		Returns the number of tracks on the current or specified
+		block.
+
+
+Command:	ED_GETPLAYSEQBLOCK O=OFFSET/N
+Result:		Returns the block number from the playing sequence list at
+		offset OFFSET.
+
+
+Command:	ED_GETPREVIOUSINUM
+Result:		Returns the previous instrument number on the current track.
+
+
+Command:	ED_GETSECLISTSECTION O=OFFSET/N
+Result:		Extracts data from the section list at OFFSET (default =
+		current position). Returns the playing sequence list number
+		(section number).
+
+
+Command:	ED_GETSECTIONNAME
+Result:		Returns the name of the current playing sequence list
+		(section).
+
+
+Command:	ED_GOTO B=BLOCK/K/N,L=LINE/K/N,T=TRACK/K/N,P=PAGE/K/N
+Purpose:	Moves the cursor to the specified position.
+
+
+Command:	ED_GOTOBLOCK PREV/S,NEXT/S,FIRST/S,LAST/S,FIRSTLINE/S,
+		FIRSTPAGE/S
+Purpose:	Mainly to support different OctaMED keyboard shortcuts.
+		Jump to PREV/NEXT/FIRST/LAST block. If FIRSTLINE is set,
+		also jumps to the first line on that block. If FIRSTPAGE
+		is set, jumps also to the first command page.
+
+
+Command:	ED_GOTOCMDPAGE PAGE/N,NEXT/S,PREV/S,CYCLEFWD/S
+Purpose:	Changes the displayed command page. PAGE is an absolute
+		page number (starting at 0). NEXT/PREV are self-explanatory,
+		CYCLEFWD cycles forward, jumping to the first page after the
+		last.
+
+
+Command:	ED_GOTOPLAYSEQ NUM/N,PREV/S,NEXT/S,FIRST/S,LAST/S,BOTTOM/S,
+		JUMPED/S,JUMPPLAY/S
+Purpose:	Changes the current position at the playing sequence list.
+		NUM sets the absolute position, PREV/NEXT/FIRST/LAST move
+		onto the corresponding entry on the list. BOTTOM jumps
+		past the last number, so you can insert new entries at the
+		bottom of the list. JUMPED instructs the editor to jump
+		onto the first line of the block in that position.
+		JUMPPLAY does the same, but only while playing.
+RC:		If out of range.
+
+
+Command:	ED_GOTOSECLIST SECPOS/N/A
+Purpose:	Changes the position in the section list.
+
+
+Command:	ED_GOTOSECTION SECT/N/A
+Purpose:	Changes the current playing sequence list (section).
+RC:		If SEQL out of range.
+
+
+Command:	ED_GOTOTRACK PREVNOTE/S,NEXTNOTE/S,NEXTCHORD/S,FIRST/S,
+		LAST/S,PREVDISP/S,NEXTDISP/S
+Purpose:	Mainly to support different OctaMED keyboard shortcuts.
+		Moves the cursor:
+		PREVNOTE/NEXTNOTE	onto the prev/next note
+		NEXTCHORD		to next chord track
+		FIRST			to the first track
+		LAST			to the last track
+		PREVDISP/NEXTDISP	scrolls the display 1 screenful
+
+
+Command:	ED_HIGHLIGHTLINE B=BLOCK/K/N,L=LINE/N,ON/S,OFF/S,TOGGLE/S
+Purpose:	Highlights, dehighlights, or toggles the current or
+		specified line
+
+
+Command:	ED_INSERTEMPTYNOTE B=BLOCK/K/N,L=LINE/K/N,T=TRACK/K/N,
+		INSSPACE/N
+Purpose:	Inserts an empty note at the cursor (or the specified
+		position), scrolling the following notes on that track
+		downwards. INSSPACE controls the number of notes inserted
+		(default = 1).
+
+
+Command:	ED_ISBLOCKINSEQ B=BLOCK/N
+Purpose:	Scans sections in the section list and checks if the
+		specified or current block exists in the playing sequence.
+Result:		0 = doesn't exist (block is unused) - or block number invalid
+		1 = the block exists in the playing sequence
+
+
+Command:	ED_KILLNOTES CURRTRACK/S,ALLTRACKS/S,CBS=CHANGEBLOCKSIZE/S
+Purpose:	Kills the notes below the cursor. CURRTRACK only kills the
+		notes on that track, ALLTRACKS kills all notes following
+		the current one. CHANGEBLOCKSIZE kills all notes by changing
+		the block size.
+
+
+Command:	ED_MOVECURSOR LEFT/S,RIGHT/S,NOTE/S,INUM/S,CMDNUM1=CMDTYPE1/S,
+		CMDNUM2=CMDTYPE2/S,QUAL1=CMDLVL1/S,QUAL2=CMDLVL2/S
+Purpose:	Moves the cursor left or right, or relative to the current
+		note, onto the specified number.
+
+
+Command:	ED_NEWBLOCK HERE=INSERT/S,LAST=APPEND/S,TRACKS/N/K,
+		LINES/N/K,PAGES/N/K
+Purpose:	Creates a new block, either HERE, or after the LAST block.
+		You can also specify its size.
+RC:		10, if incorrect sizes are given or if the creation fails
+		(due to lack of memory).
+
+
+Command:	ED_NEWPLAYSEQ BLOCK/N,CURRBLOCK/S,COPYBLOCK/S
+Purpose:	Inserts a new entry to the playing sequence list at current
+		position. COPYBLOCK copies the previous block number there,
+		CURRBLOCK inserts the current block number, BLOCK can be
+		used to specify any block. (Default = CURRBLOCK.)
+
+
+Command:	ED_NEWSECLIST INSERT=HERE/S,APPEND=LAST/S
+Purpose:	INSERTs or APPENDs a new entry to the section list.
+
+
+Command:	ED_NEWSECTION INSERT=HERE/S,APPEND=LAST/S
+Purpose:	Creates a new playing sequence list (section), either
+		INSERTing or APPENDing it to currently existing sequence
+		lists.
+RC:		10, if creation failed (no memory).
+
+
+Command:	ED_NUMBERTONOTE NOTE/N/A
+Purpose:	Converts a note number to a string. E.g. 2 is converted to
+		'C#1'.
+Result:		A string representing the note.
+
+
+Command:	ED_PICKPROGKEYNOTE PROGKEY/N/A
+Purpose:	Picks the note/commands the cursor is on to the specified
+		programmable key slot.
+
+
+Command:	ED_PLAYNOTE NOTE/N,INUM/N,TRACK/N
+Purpose:	Plays a note. NOTE is a note number (Default = instrument's
+		default pitch), INUM instrument number (Default = current
+		instrument), and TRACK is a track number (Default = current
+		track).
+
+
+Command:	ED_SETBLOCKLINES B=BLOCK/N/K,LINES/N/A
+Purpose:	Changes the length of the current/specified block.
+RC:		If LINES < 1 or LINES > 3200.
+
+
+Command:	ED_SETBLOCKNAME B=BLOCK/K/N,NAME
+Purpose:	Sets a block's name.
+
+
+Command:	ED_SETBLOCKPAGES B=BLOCK/N/K,PAGES/N/A
+Purpose:	Adds/removes command pages. PAGES is the new number of
+		pages.
+RC:		If PAGES is out of range.
+
+
+Command:	ED_SETBLOCKTRACKS B=BLOCK/N/K,TRACKS/N/A
+Purpose:	Changes a block's width.
+RC:		If TRACKS is out of range.
+
+
+Command:	ED_SETDATA B=BLOCK/K/N,L=LINE/K/N,T=TRACK/K/N,P=PAGE/K/N,
+		NOTE/K/N,INUM/K/N,CMDNUM=CMDTYPE/K/N,QUAL=CMDLVL/K/N,ALTCMD/S
+Purpose:	Changes notes/data. BLOCK/LINE/TRACK/PAGE specify the
+		position of the note to change.
+		NOTE changes the note.
+		INUM changes the instrument number.
+		CMDNUM changes the command number.
+		QUAL changes the command qualifier.
+		ALTCMD places the Right-Alt prg. key definition.
+Example:	This inserts a note 'C-2 30205':
+		ED_SETDATA NOTE 13 INUM 3 CMDNUM 2 QUAL 5
+See also:	The next command:
+
+
+Command:	ED_SETDATA_UPDATE ON/S,OFF/S
+Purpose:	By default, ED_SETDATA redraws the display after changing
+		the data. You can turn this temporarily off by this command.
+		If you're doing a lot of changes, this is much faster.
+		OFF turns refreshing off.
+		ON turns it back on.
+		With no arguments, redraws the display.
+Note:		Always remember to turn this back on after done. Otherwise
+		other macros might fail to refresh the display.
+
+
+Command:	ED_SETPLAYSEQBLOCK O=OFFSET/N,B=BLOCK/N,INCREASE/S,DECREASE/S
+Purpose:	Edits the playing sequence list. INCREASE/DECREASE modify
+		the selected/current value by one.
+RC:		If INCREASE/DECREASE over/underflow
+
+
+Command:	ED_SETSECLISTSECTION O=OFFSET/N,SC=SECNUM/N
+Purpose:	Edits the section list.
+RC:		If OFFSET or SEQLISTNUM is out of range.
+
+
+Command:	ED_SETSECTIONNAME NAME
+Purpose:	Sets the name of the current playing sequence list
+		(section).
+
+
+Command:	ED_SWAPNOTEWITH FOLL=FOLLOWING/S,RIGHT/S
+Purpose:	Swaps the current note with the FOLLOWING note or the
+		note on the RIGHT.
+
+############################################################################
+SECTION:	RN	(Range)
+############################################################################
+
+Command:	RN_CANCELRANGE
+Purpose:	Discards the range.
+
+
+Command:	RN_CHANGEINUM SRC/N,DEST/N,CHANGE/S,EXCHANGE=SWAP/S,
+		DELNOTES/S,AFFECT/K/N
+Purpose:	Changes instrument numbers throughout the specified range.
+		SRC/DEST specify the source and destination numbers. (If
+		not specified, values will be taken from the Transpose
+		window.) CHANGE changes SRC to DEST. EXCHANGE swaps them.
+		DELNOTES deletes all instances of SRC.
+
+		AFFECT is a numeric value that specifies the range to
+		affect:
+			1 = the entire song
+			2 = current block
+			3 = selected track
+			4 = current track
+			5 = ranged area
+
+		(If not specified, the value in the Transpose window will
+		be used.)
+
+
+Command:	RN_CHANGENOTES SRC/N,DEST/N,CHANGE/S,EXCHANGE=SWAP/S,
+		AFFECT/K/N
+Purpose:	Changes notes throughout the specified range. SRC/DEST
+		specify the source and destination notes (0 = '---'), if
+		not specified, values in the Transpose window will be used.
+		CHANGE changes SRC to DEST, EXCHANGE swaps them.
+
+		AFFECT is a numeric value that specifies the range to
+		affect (see RN_CHANGEINUM).
+
+
+Command:	RN_COPY RANGE/S,TRACK/S,BLOCK/S
+Purpose:	Copies a RANGE/TRACK/BLOCK.
+
+
+Command:	RN_CUT RANGE/S,TRACK/S,BLOCK/S
+Purpose:	Cuts a RANGE/TRACK/BLOCK.
+
+
+Command:	RN_DELETELINE LINE/N
+Purpose:	Deletes the current or specified line.
+
+
+Command:	RN_DELETETRACK TRACK/N,WHOLESONG/S
+Purpose:	Deletes the current or specified track. WHOLESONG deletes
+		the same-numbered track throughout the entire song.
+
+
+Command:	RN_DISCARDBUFFERS
+Purpose:	Discards all copy buffers.
+
+
+Command:	RN_ERASE RANGE/S,TRACK/S,BLOCK/S
+Purpose:	Clears the RANGE/TRACK/BLOCK.
+
+
+Command:	RN_EXPANDBLOCK FACTOR/N
+Purpose:	Expands the block. FACTOR, if specified, changes the
+		Factor value in the Expand/Shrink window.
+RC:		In case of error or invalid FACTOR.
+
+
+Command:	RN_GETRANGEENDLINE
+Purpose:	Returns the line number of the last ranged line.
+RC:		If no range selected.
+
+
+Command:	RN_GETRANGEENDTRACK
+Purpose:	Returns the track number of the last ranged track.
+RC:		If no range selected.
+
+
+Command:	RN_GETRANGESTARTLINE
+Purpose:	Returns the line number of the first ranged line.
+RC:		If no range selected.
+
+
+Command:	RN_GETRANGESTARTTRACK
+Purpose:	Returns the track number of the first ranged track.
+RC:		If no range selected.
+
+
+Command:	RN_GETSPACINGFROMRANGE
+Purpose:	Gets the spacing from range. (See Alt-~ shortcut.)
+
+
+Command:	RN_INSERTLINE LINE/N
+Purpose:	Inserts an empty line at LINE or current line.
+
+
+Command:	RN_INSERTTRACK TRACK/N,WHOLESONG/S
+Purpose:	Inserts an empty track.
+
+
+Command:	RN_ISRANGED
+Purpose:	Tells if the range is currently displayed or not.
+Result:		0 = no range, 1 = a range exists.
+
+
+Command:	RN_JOINBLOCKS
+Purpose:	Joins the current block with the next one.
+RC:		If fails.
+
+
+Command:	RN_NOTEECHO DIST/N,MINVOL/N
+Purpose:	Echoes the range. DIST is the distance between echoes.
+		MINVOL is the minimum volume to use.
+RC:		In case of error or no range.
+
+
+Command:	RN_PASTE RANGE/S,TRACK/S,BLOCK/S,TS=TOSELECTED/S
+Purpose:	Pastes the RANGE/TRACK/BLOCK. TOSELECTED applies to
+		RANGE only, if selected, skips unselected tracks when
+		pasting.
+
+
+Command:	RN_SETRANGE STARTTRACK/N,STARTLINE/N,ENDTRACK/N,ENDLINE/N,
+		TRACK/K/N,LINE/K/N,CURRBLOCK/S,CURRTRACK/S
+Purpose:	Sets the range area. STARTTRACK/LINE and ENDTRACK/LINE
+		specify absolute values for the range. TRACK ranges the
+		specified track, LINE the specified line. CURRBLOCK/TRACK
+		range the current block or track, respectively.
+
+
+Command:	RN_SHRINKBLOCK FACTOR/N
+Purpose:	Shrinks the block. FACTOR, if specified, changes the
+		Factor value in the Expand/Shrink window.
+RC:		In case of error or invalid FACTOR.
+
+
+Command:	RN_SPLITBLOCK LINE/N
+Purpose:	Splits the current block at current or specified LINE.
+RC:		In case of failure.
+
+
+Command:	RN_SPREADNOTES WIDTH/N
+Purpose:	Spreads the ranged notes (see Spread window).
+RC:		In case of failure.
+
+
+Command:	RN_SWAP TRACK/S,BLOCK/S
+Purpose:	Swaps the current track or block with the copy buffer.
+
+
+Command:	RN_TRANSPOSE HSUP/S,HSDOWN/S,OCTUP/S,OCTDOWN/S,AFFECT/K/N,
+		ALLINSTRS/S,CURRINSTR/S
+Purpose:	Transposes the specified area:
+		HSUP = halfstep up
+		HSDOWN = halfstep down
+		OCTUP = octave up
+		OCTDOWN = octave down.
+
+		AFFECT - see RN_CHANGEINUM.
+		ALLINSTRS = affect all instruments
+		CURRINSTR = affect current instrument
+		(If neither ALLINSTRS nor CURRINSTR is given, the gadget
+		state in Transpose window is checked.)
+
+############################################################################
+SECTION:	MM	(MIDI Message editor)
+############################################################################
+Note:		This section only has one command to support the required
+		keyboard functions. Full ARexx control does not exist due
+		to the probable fact that it would be used quite seldom.
+		However, if there's a lot of demand, full control can be
+		added in a future version.
+
+Command:	MM_MOVECURSOR LEFT/S,RIGHT/S,UP/S,DOWN/S
+Purpose:	Quite obvious.

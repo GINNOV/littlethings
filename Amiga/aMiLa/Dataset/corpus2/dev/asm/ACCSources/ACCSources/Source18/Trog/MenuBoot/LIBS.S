@@ -1,0 +1,62 @@
+*************************************************************************************************
+OPENLIBRARYS:
+	MOVE.L  $4,A6		* EXECBASE ADRESS
+	LEA     DOS(PC),A1	* POINTER TO DOS.LIBRARY
+        MOVEQ   #$0,D0		* ANY VERSION WILL DO
+	JSR	OPENLIBS(A6)	* OPENLIBRARY
+	TST.L	D0		* IF ERROR NO LIBRARY RETURN TO VLI
+	BEQ	RETURNTOCLI
+	MOVE.L  D0,DOSBASE	* STORE DOS.LIBRARY BASE ADRESS
+
+	LEA	GRAPH(PC),A1	* OPEN GRAPHICS.LIBRARY
+	MOVEQ	#$0,D0		* SAME AS ABOVE
+	JSR	OPENLIBS(A6)
+	TST.L   D0
+	BEQ	DOSCLOSE
+	MOVE.L  D0,GRAPHBASE
+
+	LEA	INT(PC),A1	* OPEN INTUITION.LIBRARY
+	MOVEQ	#$0,D0		* SAME AS ABOVE
+	JSR	OPENLIBS(A6)
+	TST.L   D0
+	BEQ	GRAPHCLOSE
+	MOVE.L  D0,INTBASE
+ALLLIBSOPEN:
+	RTS			
+
+*******************************************************************************
+CLOSELIBRARYS:
+INTCLOSE:
+	MOVE.L  $4,A6		* EXECBASE
+	MOVE.L  INTBASE,A1	* INTUITION.LIBRARY POINTER TO LIB
+	JSR	CLOSELIBS(A6)	* SYSTEM CALL TO CLOSE LIB
+
+GRAPHCLOSE:
+	MOVE.L  $4,A6		
+	MOVE.L  GRAPHBASE,A1	* GRAPHICS.LIBRARY POINTER TO LIB
+	JSR	CLOSELIBS(A6)	* SAME AS ABOVE
+	
+DOSCLOSE:
+	MOVE.L  $4,A6
+	MOVE.L	DOSBASE,A1	* DOS.LIBRARY BASE POINTER TO LIB
+	JSR	CLOSELIBS(A6)	* SAME AS ABOVE
+
+RETURNTOCLI:
+	RTS
+	
+*******************************************************************************
+*LIBRARY POINTER DATA AND LIBRARY OFFSETS
+*******************************************************************************
+LIBRARYS:
+DOS:  	DC.B "dos.library",0		* NAME OF THE LIBRARIES TO
+      	EVEN				
+GRAPH: 	DC.B "graphics.library",0	* OPEN DOS INTUITION AND
+	EVEN
+INT:   	DC.B "intuition.library",0	* GRAPHICS
+	EVEN
+*******************************************************************************
+BASEADRESSES:
+DOSBASE:   DC.L 0	* STORE FOR DOS.LIBRARY BASE ADRESS
+GRAPHBASE: DC.L 0	* STORE FOR GRAPHICS.LIBRARY BASE ADRESS
+INTBASE:   DC.L 0	* STORE FOR INTUTION.LIBRARY BASE ADRESS
+*******************************************************************************

@@ -1,0 +1,41 @@
+
+                         Progress Bar Version 1.1
+                              By Tom Bampton
+
+                           © 1996 Eden Software
+
+Introduction
+~~~~~~~~~~~~
+This is a small link lib for creating and maintaining progress bars in your
+programs.
+
+I have also included the source in case you have problems linking and for
+anyone that wants to have a look.
+
+Conditions
+~~~~~~~~~~
+PBar is freeware but it may not be made into a run time shared library.
+
+Disclaimer
+~~~~~~~~~~
+I accept no responsibility for any loss/damage caused through the use (or
+misuse) of this lib.
+
+How to use it
+~~~~~~~~~~~~~
+I've included a small example which i used as a test program. See this for
+a more detailed idea of using it.
+
+To put it simply, you first create a progress bar with CreatePBar(). When
+you recive IDCMP_REFRESHWINDOW you call RefreshPBar(). When you want to
+change the value of it, use UpdatePBar(). To clear the pbar (i.e. reset
+everything to 0 percent) use ClearPBar(). When you've finished, simply call
+FreePBar() before you close the window.
+
+The autodocs have been supplied in ASCII and AmigaGuide format for ppl that
+prefer AmigaGuide autodocs (like me).
+
+Contact
+~~~~~~~
+Contact me at fosters@dvalley.demon.co.uk via email. You can also find me
+on IRC in #amigacafe (undernet or efnet).

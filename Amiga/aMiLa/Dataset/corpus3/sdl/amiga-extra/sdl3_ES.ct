@@ -1,0 +1,182 @@
+## version $VER: sdl3.catalog 1.0 (19.02.2024)
+## codeset 4
+## language spanish
+;
+MSG_APP_MAIN_MENU
+Proyecto
+; Main
+;
+MSG_APP_MAIN_ICONIFY
+I|Iconificar
+; I|Iconify
+;
+MSG_APP_MAIN_ABOUT
+?|Acerca de SDL...
+; ?|About...
+;
+MSG_APP_MAIN_LAUNCH_PREFERENCES
+P|Preferencias de SDL...
+; P|Launch preferences...
+;
+MSG_APP_MAIN_QUIT
+Q|Salir
+; Q|Quit
+;
+MSG_APP_ABOUT_WINDOW
+Acerca de SDL3.library
+; About SDL3 library
+;
+MSG_APP_OK
+_Aceptar
+; _Ok
+;
+MSG_APP_APPLICATION
+Aplicación SDL3
+; SDL3 application
+;
+MSG_APP_LIBRARY_VERSION
+SDL3.library versión
+; SDL library version
+;
+MSG_PREFS_APPLICATION
+Preferencias de SDL3
+; SDL3 preferences
+;
+MSG_PREFS_OK
+_Aceptar
+; _OK
+;
+MSG_PREFS_RENDERER_OPTIONS_GROUP
+Opciones Render 2D
+; 2D renderer options
+;
+MSG_PREFS_DRIVER_GAD
+Controla_dor
+; _Driver
+;
+MSG_PREFS_DRIVER_DEFAULT
+por defecto
+; default
+;
+MSG_PREFS_DRIVER_COMPOSITING
+composición
+; compositing
+;
+MSG_PREFS_DRIVER_OPENGLES2
+opengles2
+; opengles2
+;
+MSG_PREFS_DRIVER_SOFTWARE
+software
+; software
+;
+MSG_PREFS_VERTICAL_SYNC_GAD
+Sincronización _Vertical
+; _Vertical sync
+;
+MSG_PREFS_VERTICAL_SYNC_DEFAULT
+por defecto
+; default
+;
+MSG_PREFS_VERTICAL_SYNC_ENABLED
+activada
+; enabled
+;
+MSG_PREFS_VERTICAL_SYNC_DISABLED
+desactivada
+; disabled
+;
+MSG_PREFS_VIDEO_OPTIONS_GROUP
+Opciones De Video
+; Video options
+;
+MSG_PREFS_SCREEN_SAVER_GAD
+_Permitir Salvapantallas
+; _Allow screen saver
+;
+MSG_PREFS_SCREEN_SAVER_DEFAULT
+por defecto
+; default
+;
+MSG_PREFS_SCREEN_SAVER_ENABLED
+Sí
+; enabled
+;
+MSG_PREFS_SCREEN_SAVER_DISABLED
+No
+; disabled
+;
+MSG_PREFS_SETTINGS_GROUP
+Ajustes
+; Settings
+;
+MSG_PREFS_SAVE_GAD
+_Guardar
+; _Save
+;
+MSG_PREFS_RESET_GAD
+_Restaurar
+; _Reset
+;
+MSG_PREFS_CANCEL_GAD
+_Cancelar
+; _Cancel
+;
+MSG_PREFS_MAIN_MENU
+Proyecto
+; Main
+;
+MSG_PREFS_MAIN_ICONIFY
+I|Iconificar
+; I|Iconify
+;
+MSG_PREFS_MAIN_ABOUT
+?|Acerca de...
+; ?|About...
+;
+MSG_PREFS_MAIN_QUIT
+Q|Salir
+; Q|Quit
+;
+MSG_PREFS_ABOUT_WINDOW
+Acerca de SDL3 Prefs
+; About SDL3 preferences
+;
+MSG_PREFS_ABOUT_AUTHOR
+por Juha Niemimaki
+; Written by Juha Niemimaki
+;
+MSG_PREFS_ABOUT_TRANSLATOR
+(traducción: Javier de las Rivas)
+; (using built-in strings)
+;
+MSG_PREFS_DRIVER_HELP
+Controlador a usar por SDL3:\n\
+ \033bcomposición \033nsoporta pocos modos de mezclado (\"blend\")\n\
+ \033bopengles2 \033nsoporta la mayoría de opciones\n\
+ \033bsoftware \033ncomo \"opengles2\" pero sin aceleración por hw
+; Select driver implementation:\n\
+;  \033bcompositing \033ndoesn't support some blend modes\n\
+;  \033bopengles2 \033nsupports most features\n\
+;  \033bsoftware \033nsupports most features but is not accelerated
+;
+MSG_PREFS_VERTICAL_SYNC_HELP
+Sincronizar imágenes según el refresco del monitor
+; Synchronize display update to monitor refresh rate
+;
+MSG_PREFS_SCREEN_SAVER_HELP
+Permitir salvapantallas (por defecto: No)
+; Allow screen saver (disabled by default)
+;
+MSG_PREFS_SAVE_HELP
+Guardar ajustes y salir
+; Store settings to ENVARC: and exit
+;
+MSG_PREFS_RESET_HELP
+Establecer GUI o sus valores por defecto
+; Reset GUI to default values
+;
+MSG_PREFS_CANCEL_HELP
+Salir del programa
+; Exit program
+;

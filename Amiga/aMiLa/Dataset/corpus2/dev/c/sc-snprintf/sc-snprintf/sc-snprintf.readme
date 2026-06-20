@@ -1,0 +1,28 @@
+Short: sc-snprintf - snprintf() for SAS/C
+Version: 1.0 (28.12.2007)
+Type: dev/c
+Uploader: info@ar-kleinert.de
+Author: Andreas R. Kleinert
+Architecture: m68k-amigaos >= 3.1.0
+
+sc-snprintf - Freeware.
+
+This library is freely redistributable and usable upon the conditions that this
+notice remains intact and that modified versions of this archive are not distributed
+in any way. The author makes no warranty of any kind with respect to this product
+and explicitly disclaims any implied warranties of merchantability or fitness for
+any particular purpose.
+
+If you are going to use sc-snprintf within one of your programs and include
+it into your program's distribution, feel free to do so. In this case you have
+to add the following statement into your program's documentation:
+
+"This program makes use of sc-snprintf @ 2007 by Andreas R. Kleinert".
+
+Independently from this license agreement it is ok to link the provided
+stubs with LGPL v2, BSD, Apache and comparable OSS licenses (except GPL).
+
+Warning: The IEEE-enabled version uses a temp file in RAM: and may fail,
+         i.e. fall back to non-IEEE-enabled.
+
+© 2007 by Dipl.-Ing. Andreas Kleinert. All rights reserved.

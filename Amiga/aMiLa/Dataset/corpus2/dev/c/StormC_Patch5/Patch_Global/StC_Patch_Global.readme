@@ -1,0 +1,51 @@
+HAAGE&PARTNER Computer GmbH
+Mainzer  Straﬂe 10A
+61191 Rosbach
+Germany
+
+Tel: +49 (0) 6007 - 93 00 50
+FAX: +49 (0) 6007 - 75 43
+
+Internet: 100654.3133@compuserve.com
+
+Homepage: http://ourworld.compuserve.com/homepages/haage_partner
+
+
+Dear StormC customer,
+
+you will find new linker libraries and a new AppManger library in
+these drawers.
+
+Please copy the contents of the drawer "Mathlibs" to
+"StormC:StormSYS/lib" and the contents of the drawer "Lib" to
+"StormC:Lib" and the contents of "StormSYS" to "StormC:StormSYS".
+
+
+Best wishes
+HAAGE&PARTNER Support Team
+
+
+=========================================================
+THESE FILES CAN ONLY BE USED WITH VERSION 2 OF STORMC !!!
+=========================================================
+
+
+
+Changes on AppManager.library
+====================================
+
+19.11.96
+
+Repeated opening of a Wizard window brought up strange effects on
+the size of the next window. It was always the size of the biggest
+one opened.
+
+
+Changes on Linker library
+=====================================
+
+19.11.96
+
+- Correction of the "strstr" function.
+
+- Several changes on the parsing of arguments.

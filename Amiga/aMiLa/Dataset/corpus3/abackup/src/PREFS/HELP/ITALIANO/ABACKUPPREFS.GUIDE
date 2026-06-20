@@ -1,0 +1,403 @@
+@database ????
+@master ????
+@width 80
+@width 76
+
+;*******************************************************************************
+:*                                                                             *
+;*      Translated by Francesco Mancuso (Pirandello's city) {Sicily-Italy}     *
+;*                              (30.10.95)                                     *
+;*                                                                             *
+;*******************************************************************************
+
+@node Main "Preliminary"
+@toc Sommaire
+
+@{b}============================================================================@{ub}
+                    Programma Preferenze per ABackup 5.10
+
+          Copyright (C) 1993-1996 by Reza ELGHAZI & Denis GOUNELLE
+@{b}============================================================================@{ub}
+
+Senza autorizzazione scritta, qualsiasi utilizzo commerciale o vendita é assolutamente
+vietata.  Potete copiare e diffondere questo programma con le seguenti
+modalità:
+
+    1. Tutti i file devono essere forniti
+    2. I file non devono essere modificati in nessun modo
+    3. Non potete richiedere più di $6 per esso
+
+Malgrado molti test, non vi é garanzia riguardo la mancanza di errori in
+ABackup. UTILIZZATE QUESTO PROGRAMMA SOTTO LA VOSTRA RESPONSABILITA'. In nessun
+caso gli autori dovranno essere ritenuti responsabili per qualsiasi danno, diretto
+o  indiretto, derivante dall'uso di ABackup.
+
+@endnode
+
+@node Sommaire Table of contents"
+
+Il programma Preferenze per ABackup lavora proprio come gli altri programmi
+di Preferenze, forniti con il Sistema operativo di Amiga. Così, questa documentazione
+descrive solo i parametri diversi,  e  come  essi eseguono le procedure di ABackup.
+
+Si suggerisce di installare questo programma nella directory "SYS:Prefs",
+insieme con gli altri programmi Preferenze.  Se preferite copiarlo altrove,
+non dimenticate di aggiornare il tooltype "PREFSPATH" Tool Types nell'icona di ABackup,
+così esso sarà in grado di trovare il programma  Preferenza.
+
+                @{" Opzioni Backup            " Link "BackupOpt"}
+                @{" Opzioni Recupero          " Link "RestoreOpt"}
+                @{" Opzioni Verifica          " Link "VerifyOpt"}
+                @{" Opzioni Compressione      " Link "CrunchOpt"}
+                @{" Opzioni Nastro            " Link "TapeOpt"}
+                @{" Opzioni Interfaccia GUI   " Link "GUIOpt"}
+                @{" Opzioni programmi Esterni " Link "ExternalOpt"}
+                @{" Opzioni Miscellanea       " Link "MiscOpt"}
+
+@endnode
+
+@node BackupOpt "Opzioni Backup"
+
+Backup verso
+    Indica la destinazione del backup:
+
+    - un gadget ciclico vi permette di selezionare il tipo di archivio (unità, file, nastro)
+
+    - due finestre vi permettono selezionare le unità da usare, se il tipo di archivio è assegnato
+      al "Device". La finestra sulla sinistra mostra tutte le unità collegate ,  quella
+      sulla destra mostra le unità d'uso. Per trasferire una unità da  una ad
+      un'altra, cliccate sul nome nella finestra.
+
+    - Una finestra testo, ed un pulsante di chiamata, vi permettono di selezionare il nome
+      del File Archive, se il tipo d'archivio é settato a "File".
+
+Buffer size
+    Specifica la dimensione del buffer usato dal child task per le scritture
+    asincrone, così come per le scritture con lo streamer.  Quando correttamente settato,  questo
+    parametro può generare un rilevante aumento della velocità di backup.
+
+Log file
+    Se un filename é specificato, un rigo di statistiche sarà aggiunto in questo
+    file, ogni volta che fate un backup. Questa linea mostrerà la data di backup,
+    il tempo, il sorgente e la destinazione, il numero di file salvati, il numero
+    totale di byte scritti, e il commento opzionale associato a questo backup.
+
+Commento
+    Specifica il default comment associato al backup.  Vedete l'opzione "Aggiungi
+    Commento" qui sotto.
+
+Rapporto
+    Attiva la creazione di un rapporto del backup. Questo rapporto può essere mandato alla
+    stampante o al file. Potete richiedere un rapporto dettagliato od in breve.
+
+Verifica
+    Attiva la verifica della scrittura dei dischi. Questa opzione rallenta il
+    backup, ma lo rende più sicuro. @{b}
+    ATTENZIONE ! Anche quando questa opzione è attivata, è impossibile essere
+    sicuri che il backup sia corretto. Se volete esser certi che l'archivio
+    sia libero da errori al 100%, usate la funzione di verifica dell'archivio di ABackup.
+    @{ub}
+
+Usa child task
+    Attiva l'uso di un distinto task per la  scrittura  del disco,  per la
+    eseguire le scritture asincrone. In base alla dimensione del buffer  (vedete
+    sopra), questo può generare un rilevante aumento della velocità di backup.
+
+Backup links
+    Attiva il backup dei  links  creati  con il comando dell'AmigaDOS  "MakeLink".
+
+Aggiungi Commento
+    Se questa opzione è attivata, ABackup vi chiederà di scrivere un piccolo
+    commento, alla fine di ogni backup. Questo commento sarà mostrato  quando
+    aprirete l'archivio, prima un ripristino o un'operazione di verifica,  e aggiunto
+    nel backup log.
+
+Aggiungi icona
+    Attiva la creazione di un'icona (".info" file) per i file archivio.
+
+Compressione dati
+    Attiva compressione di dati. ABackup non cercherà di comprimere file più piccoli
+    di 512 bytes. I file già compressi da Lha, Zoo, PowerPacker o XPK sono visti,
+    e non vengono compressi. Vedete @{" Opzioni Compressione " Link "CrunchOpt"}.
+
+Compressione catalog
+    Attiva la compressione delll'archivio catalog, con lo stesso algoritmo
+    come quello usato per compressione di dati.
+
+Criptazione dati
+    Attiva criptazione dati, con una password utente specificata che vi verrà
+    richiesta  prima di iniziare il backup.@{b}
+    ATTENZIONE ! Questa password sarà OBBLIGATORIA  per  ogni operazione di
+    ripristino o verifica. Se la dimenticate, i dati salvati  saranno persi.
+    Anche gli autori del programma non saranno in grado di aiutarvi a recuperare
+    i vostri dati. @{ub}
+
+Set archivio bit
+    Attiva il settaggio del bit archivio   (vedete il comando AmigaDOS  "Protect"
+    su ogni file salvato con successo.  Questo bit è resettato da AmigaDOS,
+    ogni volta che un file è modificato, così questo vi aiuterà ad eseguire
+    backup incrementali  (solo dei file modificati), selezionando i file dal bit
+    di protezione (vedete la documentazione di ABackup).
+
+Duplica catalog
+    Se questa opzione è attivata, ABackup duplicherà  l'archivio  catalog
+    (che è normalmente aggiunto alla fine dell'archivio) ad un file. il nome
+    di questo file può essere specificato come un argomento allo start di ABackup.
+    Altrimenti, vi sarà chiesto alla fine del backup.
+    Questa opzione è molto utile per i backup su nastro, perchè non dovrete leggere
+    tutto il nastro per prendere il catalog e poi riavvolgerlo per iniziare l'operazione
+    di ripristino o di verifica.
+
+@endnode
+@node RestoreOpt "Restore options"
+
+Recupero dal
+    Specifica l'archivio sorgente,  contenente i dati da ripristinare.  Per ulteriori
+    informazioni, vedete l'opzione "Backup verso" in @{" Opzioni Backup " Link "BackupOpt"}.
+
+Recupero verso
+    Specifica la directory dove ripristinare i file. Se questo gadget è vuoto,
+    i file  saranno  ripristinati  nella  directory nella quale erano posti al
+    tempo del backup.
+
+File Esistenti
+    Dice che cosa fare quando un file, che sta per essere ripristinato,  già
+    esiste sul vostro Hard Disk. Le opzioni possibili sono:
+
+    - Sostituire sempre (il file esistente sarà sovrascritto)
+    - Sostituire mai (il file non sarà ripristinato)
+    - Chiedi prima di sostituire (ABackup vi chiederà se volete sostituire il
+      file)
+    - Sostituisci se precedente (il file esistente sarà sovrascritto solo se
+      più vecchio del file in archivio)
+    - Rinomina file (ABackup vi chiederà un nuovo nome per il file da ripristinare)
+
+Bad files
+    Dice cosa fare quando ABackup ha fallito di ripristinare un file.  In  questo caso,
+    il file sul vostro Hard Disk può essere troncato, o danneggiato. Le scelte possibili
+    sono:
+
+    - Cancella sempre (il file sarà cancellato)
+    - Cancellare mai (il file non sarà cancellato)
+    - Chiedi prima di cancellare (ABackup vi chiederà se volete cancellare il
+      file)
+
+Rapporto
+    Attiva la creazione di un rapporto del ripristino.   Questo rapporto può essere
+    mandato alla stampante o a un file. Potete chiedere per un rapporto dettagliato
+    o in breve.
+
+Directory tree
+    Attiva il ripristino  della  directory  tree.  Se  questa  opzione  è
+    disattivata, tutti i file saranno ripristinati nella stessa directory.
+
+Recupero dati
+    Quando un file è ripristinato, AmigaDOS gli dà la data del ripristino, come se
+    fosse la data di modifica. Se questa opzione è attivata, ABackup assegnerà
+    la data del file alla data del file quando fu salvato.
+
+Recupero links
+    Se questa opzione è attivata, ABackup ripristinerà anche i  links  (vedete
+    il comando AmigaDOS "MakeLink").
+
+Directory vuote
+    Se questa opzione è attivata,   ABackup  ripristinerà  anche  le  directory
+    vuote.
+
+Usa catalog file
+    Se questa opzione è attivata, ABackup caricherà  l'archivio catalog  da
+    un file. Il nome di questo file può essere specificato come un argomento.
+    Altrimenti, sarà richiesto  prima di caricare l'archivio catalog.
+
+@endnode
+@node VerifyOpt "Opzioni Verifica"
+
+Rapporto
+    Attiva la creazione di un rapporto del backup. Questo rapporto può essere mandato alla
+    stampante o al file. Potete richiedere un rapporto dettagliato od in breve.
+
+Compara i dati
+    Di default, ABackup  cerca  di  ripristinare i  file  nell'archivio, ma
+    non controlla se dati nei  file è corretto. Tuttavia, come il programma
+    usa i checksum, questa è proprio una buona verifica. Se questa opzione è
+    attivata, ABackup  comparerà pure i dati ripristinati con i dati originali
+    sul vostro dischetto.
+    Questa opzione rallenta la verifica. Naturalmente, ABackup  sarà in grado
+    solamente di comparare i file ancora posti sul vostro dischetto, e non modificati.
+    Per scoprire un'eventuale modifica, il programma controllerà sia la dimensione
+    sia i dati dei file.
+
+Ignora i Dati file
+    Se questa opzione è attivata, ABackup non controllerà la data del
+    file originale, prima comparato con il file archiviato.
+
+Seleziona files
+    Di default, ABackup verifica tutti i file nell'archivio. Se questa
+    opzione è attivata, sarete in grado di selezionare il file da
+    verificare, per mezzo della solita finestra di selezione.
+
+@endnode
+@node CrunchOpt "Opzioni Compressione"
+
+Metodo
+    Specifica l'algoritmo di compressione da usare.  Potete scegliere almeno
+    tra "Interno" (usando la compressione interna di ABackup)  ed  "Esterno"
+    (usando un programma di compressione esterno, vedete sotto). Se la  XPK.library
+    é installata sul vostro sistema, la scelta della "XPK library" sarà pure
+    possibile.
+    Prego notare che potete usare la compressione esterna per i  backup della
+    partizione.
+
+XPK Libs/XPK Modo
+    Se il metodo di compressione selezionato è "XPK libreria", questi gadget vi
+    permettono di selezionare  uno  degli  algoritmi  XPK, e il modo per questo
+    algoritmo.
+
+Compressore/Decompressor
+    Questi due gadget vi permettono di specificare il nome e gli argomenti di
+    compressione e decompressione dei programmi esterni. Le convenzioni di assegnazione di nome
+    per argomenti sono:
+
+    %0 (ou %s)    : nome di (path) percorso completo del file di sorgente
+    %1            : nome di percorso del file  sorgente
+    %2            : nome del file di sorgente (senza path)
+    %3 (ou %d)    : nome di percorso completo del file bersaglio
+    %4            : nome di percorso del file bersaglio
+    %5            : nome del file bersaglio (senza path)
+
+    Ad esempio, ecco qui il valore da inserire in questi gadget, se volete usare
+    il programma LhA (copyright di Stefan Boberg):
+
+    Compressore   : LhA a -X %d %s
+    Décompressor  : LhA e -X %s %5 %4
+
+    Quando si usa la compressione esterna, si consiglia di  rendere  questi  programmi
+    residenti, o  copiarli in RAM:, per ridurre il tempo  occorrente  per caricarli in
+    in memoria. Quando questi programmi sono richiesti da  ABackup  per  ogni file  da
+    comprimere o decomprimere, ridurre il tempo di caricamento di un secondo significa,
+    per esampio, ridurre il tempo di backup di 15 minuti,  se fate il  backup di
+    1000 file.
+
+Filtro
+    Specifica una lista di nomi degli extentions file  che saranno esclusi dalla
+    compressione. Per esempio, se  la  lista  contiene "lzx", file  il cui  nome
+    termina con ".lzx" non sarà compresso.
+
+@endnode
+@node TapeOpt "Opzioni Nastro"
+
+Device driver
+    Specifica il nome del driver SCSI (default: "scsi.device").
+
+SCSI Port
+    Specifica il numero di porta SCSI del drive a nastro.
+
+Block size
+    Specifica la dimensione di blocco supportata dal drive a nastro.
+
+Riavvolge
+    Attivata il riavvolgimento automatico del nastro, al termine dell'operazione.
+
+Auto retension
+    Attiva la ritenzione automatica del nastro, all'inizio dell'operazione.
+
+Espulsione
+    Attiva l'espulsione automatica del cardrige, al termine dell'operazione. Questa
+    funzione non è supportata da tutti i drive a nastro.
+
+Buffer per FAST
+    Allocare il buffer di memoria, usato per operazioni di input/output, in
+    memoria FAST, invece che in quella CHIP.
+
+SCSI Inquiry
+    Se il numero del driver SCSI e porta sono corretti, questo gadget vi permette
+    di ottenere informazioni dal driver nastro.  Queste informazioni saranno
+    mostrate in un requester.
+
+@endnode
+@node GUIOpt "Opzioni Interfaccia GUI"
+
+Tipo Schermo
+    Specifica lo schermo da usare: lo schermo Workbench, un  schermo custom, o
+    uno Schermo pubblico.
+
+Nome schermo pubblico
+    Specifica il nome dello schermo pubblico da usare, quando il tipo di schermo è
+    assegnato a "Pubblico"
+
+Se il tipo di schermo è settato a "Custom", potete selezionare  il modo di  questo
+schermo. Il modo di request dello schermo usato sarà o quello della asl.library, o
+quello della reqtools.library.  Se  entrambi librerie sono
+mancanti (richiede la V38 o superiore), non sarete in grado di cambiare il modo dello
+schermo.
+
+Font schermo
+    Specifica il font dello schermo dello schermo custom.
+
+Font testo
+    Specifica il font di testo per le finestre di ABackup, qualsiasi tipo di schermo sia
+    selezionato.
+
+Palette
+    Se il tipo di schermo è settato a "Custom", potete  modificare la palette di
+    questo schermo. La reqtools.library (V38 o superiore) è richiesta.
+
+@endnode
+@node ExternalOpt "Opzioni programmi Esterni"
+
+Questa finestra vi permette di parametrare la visualizzazione dei file, che  é iniziato con un
+doppio-click sul nome di un file, sulla finestra di selezione di ABackup.
+
+ASCII
+    Nome dei file di testo programma di visualizzazione.
+
+ILBM
+    Nome delle immagini IFF programma di visualizzazione.
+
+Altri
+    Nome del programma di visualizzazione per gli altri tipi di file.
+
+Run asynchronously
+    Dice di iniziare il programma di visualizzazione nello sfondo, così ABackup
+    non vorrà essere chiuso finchè la visualizzazione è terminata.
+
+Conferma ogni visualizzazione
+    Se questa opzione è attivata, ABackup vi chiederà la conferma prima di visualizzare
+    ogni file.  Questo vi  permetterà  eventualmente  di  modificare  il  nome  del
+    programma da chiamare.
+
+@endnode
+@node MiscOpt "Opzioni Miscellanea"
+
+Allarme
+    Specifica come ABackup vi informerà quando avverrà qualche errore, o quando
+    ha bisogno di qualche reazione da parte vostra. Le scelte possibili sono:
+
+    - Nessuno (ABackup mostrerà solo un requester)
+    - Bip (ABackup darà un segnale sonoro)
+    - Flash screen (ABackup farà lampeggiare lo schermo)
+    - Bip & flash (ABackup darà un segnale sonoro e farà lampeggiare lo
+      schermo)
+
+Grandezza File
+    Specifica l'unità per dimensione file:  byte,  kilo-byte,  mega-byte,  o
+    automatico (seleziona l'unità più grande possibile).
+
+Directory Temporanea
+    Specifica il nome della directory di lavoro. Per ragioni di sicurezza, non é
+    consigliato  indicare la  directory  che é posta sulla  partizione  in corso
+    di backup.
+
+Selezione Path Default
+    Specifica il nome della directory in cui i file di selezione sono
+    conservati (vedete la documentazione di ABackup per ulteriori informazioni
+    circa la registrazione delle selezioni).
+
+Stampa Etichette Disco
+    Attiva la stampa automatica delle etichette del disco, a termine del backup.
+
+Lunghezza Etichette (linee)
+    Specifica il numero di linee per etichetta.
+
+@endnode
+@endbase

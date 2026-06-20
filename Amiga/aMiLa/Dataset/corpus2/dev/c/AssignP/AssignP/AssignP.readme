@@ -1,0 +1,19 @@
+Short: AssignX replacement in 100% C (SAS)
+Type: dev/c
+Uploader: Andreas_Kleinert@t-online.de
+Author: Andreas_Kleinert@t-online.de, Steve Tibbet
+
+ *  AssignP - trap easyrequests for non existant device or volumes      *
+ *                                                                      *
+ *  (originally based on AssignX by Steve Tibbet, but has been          *
+ *   completely rewritten several times)                                *
+ *                                                                      *
+ *  All changes made: put into the Public Domain.                       *
+ *                                                                      *
+ *  rewritten and enhanced by Andreas R. Kleinert                       *
+ *  Andreas_Kleinert@t-online.de                                        *
+ *                                                                      *
+ *  No Assembler - 100 percent C                                        *
+
+ ---
+ All mentioned trademarks are subjects to their owners.

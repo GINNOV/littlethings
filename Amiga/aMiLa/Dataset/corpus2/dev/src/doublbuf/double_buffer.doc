@@ -1,0 +1,12 @@
+
+Here's some simple double buffering example code, using OS 3.0 routines.
+It is quite fast - the actual switch between different bitplanes takes
+almost no time.
+
+Compiler used: SAS/C 6.55.
+
+I have a GST file which contains every header file known, hence I barely
+made any #include <...> statements in the source codes.
+
+
+g.sanderson@ais.gu.edu.au

@@ -1,0 +1,719 @@
+
+3.3.1   * simplify Makefile for better Unix/Linux install
+          use target directories to install bins,libs,man,include (for rpm)
+          remove the -refcnt build from default compile
+	  use AC_PROG_INSTALL in the configure.in
+
+	* add objc.spec file for rpmbuild
+
+	* fix warning in oclib/scalar.m for gcc 4.8.3
+
+3.2.14  * fix initializer assignments in reverse order in specific case
+          of variables referenced in Block
+          (patch by Brian Martin revivalhabbo@googlemail.com)
+	
+	* add Solaris 11.3 (sun compiler) and RedHat 7.1 (gcc) to Platforms.txt
+
+3.2.13  * regenerate configure on FreeBSD 10.0 with autoconf 2.69
+
+	* define C99 __func__ as builtinvar
+          (__func__ is used in /usr/include/assert.h on FreeBSD 10.0)
+
+3.2.12  * port to Oracle Solaris 11 with Sun C 5.12 SunOS_i386 2011/11/16
+
+        * support thread-local storage C keyword __thread
+	specifically have to support due to Solaris <strings.h> following:
+
+	extern __thread char *__strdupa_str;
+	extern __thread size_t __strdupa_len;
+
+        * back out __builtin_alloca as gnu builtin for Sun Studio which
+          defines it in header as regular function
+
+	* port to Slackware 14.1 with gcc 4.8.2 and flex 2.5.37
+	add __builtin_bswap32 and __builtin_bswap64 builtin functions
+
+	* port to FreeBSD 9.2 with clang 3.3 and gcc 4.2.1 (flex 2.5.4 byacc)
+	FreeBSD 9.2 has /usr/include/stdlib.h : _Noreturn void exit(int);
+	(in their __ISO_C_VISIBLE >= 2011 mode, 'greater than C99 expose C1x')
+	stdlib.h : int abs(int) __pure2;
+	stdlib.h : void abort2(const char*,int,void**) __dead2;
+	_Noreturn, __pure2 and __dead2 are macros __attribute((__noreturn__))
+	__attribute__((__const__)) and __attribute__((__noreturn__))
+
+ 	NOTE: before
+	 byacc: 6 shift/reduce conflicts, 48 reduce/reduce conflicts.
+	AFTER hack to support the _Noreturn attribute
+ 	byacc: 8 shift/reduce conflicts, 49 reduce/reduce conflicts.
+
+	* fix for FreeBSD yacc __unused static char const yyrcsid[]="..."
+	where __unused expands to __attribute__((__unused__))
+
+	NOTE: after fix
+	byacc: 8 shift/reduce conflicts, 49 reduce/reduce conflicts.
+
+	* add __builtin_strncpy for CentOS 6.5 in /usr/include/string.h
+
+3.2.11	* fix for Ubuntu header file, reported by adriana.koncsag@yahoo.com
+          __attribute problems, extern_always_inline problem in cdefs.h
+
+	* fix for bootSrc on SunOS 11 (pragma tab issue in util.m)
+
+	* add errno.h to util directory
+
+	* some changes for -refcnt, isvoid problem with __attribute__(()) void
+	  not correctly recognized as void in -refcnt case
+          try to filter out __attribute__ stuff using isgnuattrib
+
+3.2.10	* add patch Finn Wilcox finnw
+	  ocstring cannot concat: or at:insert: itself - ID: 1640788
+
+	* port to OpenSolaris 09/06 with Sun C 5.10 SunOS_i386 2009/06/03
+
+	* updated email address in indent-patch
+
+3.2.9	* add OpenSolaris (solaris 2.11) to Platforms
+
+	* change __builtin_va_alist to builtinvar for OpenSolaris
+
+3.2.8   * add __builtin_expect, __builtin_strchr and more garbage for gcc 3.4.6
+	  __builtin_cmp (GCC developers seem to believe they're using PASCAL)
+
+        * regenerated configure with autoconf 2.6
+
+	* upgraded config.guess and config.sub to automake 1.9
+
+	* add NIOS2 sopc to platforms  (port by lionnel@ipricot.com)
+
+	* rebuilt bootstrap package
+
+	* upgraded nm objc1 | postlink >util/_objc1.c 
+
+3.2.7	* fix for -builtintype and -builtinfunction broken
+          (pragma OCbuiltInFctn and OCbuiltInType still worked)
+
+	* port to IA-64 hpux 11.23 with HP aC++/ANSI C (add to platforms)
+
+	* add -hpux flag with some builtins: __va_list__, __va_arg__,
+          __va_start__, __fpreg and __float80
+
+3.2.6   * add patch of yerfino@delsatgroup.com for ordcltn -includes:
+
+        * some filer tweaking
+
+3.2.5   * add message string to TypeInconsistency class
+
+	* increased Filer version number
+
+3.2.4	* add exception subclasses BadVersion, TypeInconsistency, UnknownType
+
+	* add LCC patches for MAKEFILE  + manual addition LCC
+
+3.2.3	* apply yacc.ym + CompoundStmt patch of Mike for further C99 support
+
+	* continue work on Exception (add instance variable 'resumeHandler')
+
+3.2.2	* add subclass "OutOfMemory" (inherits from Exception) to objcrt
+
+	* add subclass "OutOfBounds" (inherits from Exception) to objpak
+
+	* add subclass "NotFound" (inherits from Exception) to objpak
+
+	* add lex patch of Mike for partial C99 support
+          (the yacc patch introduces some problems for the moment)
+
+	* updated file Intro.txt to show Exception classes
+
+3.2.1   * new class Exception and new message -on:do: for Block class
+
+          the -on:do: message is to keep in line with Ansi Smalltalk
+          developments ...
+
+	  See the documentation on -on:do: (in the Block class for more info)
+
+3.1.33  * temporarily undo 3.1.31 lexfiltr by setting the flag in the driver
+          to no by default (there was a problem reported on LCC with this)
+	
+	* fix minor problem with show message with -refcnt
+	  this problem was basically due to the fact that the runtime is
+	  compiled without -refcnt, while Object.m is compiled with -refcnt,
+	  and one should not mix modules compiled with/without -refcnt
+
+	* add documentation for includesAllOf:, includesAnyOf: and -addAll:
+	  (thanks to Ralph Moeritz for pointing out that this was missing)
+
+	* add note on -ansic to the Lcc.txt readme file
+
+	* changed email address of the mailing list
+
+3.1.32  * throw out change in yacc.ym for -refcnt as it breaks the compile
+          with GCC 3.2 and -O2; the -O2 option enables some GNU braced
+          expressions in the header files and GNU braced expressions have some
+          restrictions 
+
+3.1.31  * update config.guess, config.sub and install-sh to automake 1.5
+
+	* add updated lexfiltr.m from Lee Willis
+
+	* add notes on using the debugger to Visual.txt
+
+	* add notes on using the Visual C++ GUI to Visual.txt
+
+        * add a test to the configure script to test for support for #line
+          and # in .i files;  this is because there is a bug recently
+          introduced in gcc 3.1 where support for #line has been removed
+
+3.1.30  * add patch from Lee Willis for lex.lm DosAsmStmt which adds an extra
+          case for the patch by Ronald Pijnacker/JVdGoor
+
+        * support for duplicate typedefs, patch by lee-willis@attbi.com
+
+	  POC now supports duplicate typedefs like icc or msvc visual C
+		typedef int FOO;
+		typedef int FOO;
+	  is accepted now as input (see src/objc/lexfiltr.m)
+
+	  this is enabled with the option -duptypedefs or -msdos
+
+3.1.29  * support for Intel icc for Linux (Version 6.0   Build 020312Z)
+         (add __ALIGNOF__ builtin fun)
+
+         CC=icc -w
+         CPP=icc -E
+         export CC CPP
+	 ./configure 
+
+3.1.28  * fix stack tracing print feature which was broken due to change in
+          3.1.25 for unload of selectors
+ 
+3.1.27  * fix for __attribute__((__cdecl__)) in CYGWIN headers (gcc 2.95.3)
+	  fix for __attribute__((dllimport)) in CYGWIN
+
+	* add patch from Ronald Pijnacker / J.V.d.Goor for win32 / visual C++
+	  (new class DosAsmStmt in src/oclib/dasmstmt.m)
+
+	* add AIX 4.3.3 (with gcc compiler) to Platform.txt per Y.S.Huang
+
+3.1.26  * update configure script (unix) for better test for cppneedsdotc
+
+3.1.25  * configure script regenerated on Slackware 8.0 with autoconf 2.50
+
+	* update config.sub and config.guess to versions of automake 1.4p4
+
+	* tested with GCC 3.0
+
+	* fix warning iscompstmt in yacc.m
+
+	* fix unload of class with selectors that are not defined by superclass
+
+	* porting changes for SUN cc 6.2 workshop (fix some warnings)
+	  (__builtin_va_alist and __builtin_va_arg_incr)
+
+	* change libcakit Complex class : Complex is ISO C99 keyword
+
+	  Change name to "Gaussian". (like in Gaussian Integer)
+
+3.1.24  * make Bag -filter method compatible with -refcnt
+          (it should not send -free when compiling with -refcnt)
+
+3.1.23  * change isid to isrefcounted in util.m 
+
+	* add .lo suffix (like .a or .o) in objc.in
+
+3.1.22  * remove <-> assignment
+        
+	* fix 'const id' reference counting;
+	  'volatile id' remains uncounted with -refcnt
+
+	* change -gc to be equivalent to -refcnt instead of -boehm
+
+	* update manual and manpage for the change
+
+3.1.21  * add <-> assignment ( a <-> b; swaps variables 'a' and 'b')
+
+3.1.20  * remove restriction p!=2 from IntModp.
+	  (for binary Galois Field, polynomial arithmetic char 2)
+
+3.1.19  * add  i386-pc-solaris2.8 to platform file
+	  change to configure to use -shortTags for Sun (Workshop 6 C 5.2)
+
+	* fix few warnings (not errors) in objpak for compiling with non-POC
+
+3.1.18  * add cakitr,objcrtr,objpakr to targets (on Unix)
+
+	  (this depends on a 'make' feature, may have to change this)
+
+3.1.17  * fix for obj_t datatype
+
+3.1.16  * internal cleanup of cakit;  no API change
+ 
+        * fix typo in -double of degree dense variable dense polynomials
+
+	* fix for break in refcnt case (this fixes leak in poly remainder)
+
+3.1.15  * fix problem with Fraction class
+
+3.1.14  * fix problem structs within structs
+
+	* fix specs within struct not getting -synth
+
+        * set -refcnt to imply noSelfAssign again
+          because with -refcnt count of receiver of a message is not incremented
+          (this was originally in 2.2.1 in there, but taken out by mistake)
+
+	* fix bugette in -refcnt with nested return statements
+
+3.1.13  * add rule for _empty_ struct specifications
+
+        * fix bug in fileOut method of BigInt
+  
+        * fix power: method of BigInt
+
+3.1.12  * add rule to grammar for another use of __attribute__
+
+3.1.11  * add 'browse' target to Makefile
+
+		make browse
+
+	  to browse the source Objective-C classes of the compiler.
+
+	* add instance variable browser
+
+	* add method list browser
+
+3.1.10  * implement -browse switch for Objective-C Browser
+
+                objc -browse FooBar.m
+          
+          browses the class FooBar  (cursel or fmli must be installed)
+
+3.1.9   * minor porting changes to ia64-unknown-linux-gnu
+
+	* add __builtin_va_list to builtin types
+
+3.1.8   * extension for Informix esql : .em = embedded sql in .m files
+
+          ./configure --with-informix
+ 
+          will set SQLCC=$INFORMIXDIR/bin/esql
+          and SQLLIBS to the Informix libraries to automatically link
+
+        * add example : examples/esql.em using ANSI Embedded SQL syntax
+
+3.1.7   * add method -invertCompare:
+
+	* incorporate patch of Bonnefoi for OrdCltn
+
+	* incorporate patch of Bonnefoi for filer
+
+3.1.6   * add vicifile to DependencyGraph
+
+	* add SCO OpenServer to Platforms.txt (works on OSR5.0.0 and OSR5.0.5)
+
+	* add patch from Faried Nawaz to make -g -dynamic select .so sharedlibs
+          that were compiled with debug support (if compiled with makeLibs)
+
+	* DependencyGraph can be run from within VICI
+
+	* add support for instance variables to VICI interpreted classes
+
+	* implement VICI set args (to set argv and argc of program)
+
+	* made VICI dlopen stuff optional : use vici --with-dlopen to build
+
+	* implement VICI backtrace (bt) command
+
+	* catch -error messages inside VICI
+
+	* make VICI use its own stdin/stdout (vistdin,vistdout)
+
+3.1.5   * implement VICI Objective-C messages (receiving, interpreted methods)
+
+	* implement VICI classes
+
+	* add subclass:: to Object (uses the old newsubclass for the moment)
+
+	* fixed memory corruption bug in dynamic loading code of subclass::
+
+	* added +load and +unload message to Object
+
+	* added commands vi, edit,view (all equivalent) to vici
+
+3.1.4   * minor fixes for Digital Unix (with gcc compiler).
+          get rid of warnings for __builtin_saveregs __builtin_classify_type
+
+	* update manual.html a bit
+
+	* implement VICI Objective-C messages (sending only)
+
+	* implement VICI load command for .so files (probably Linux only)
+
+3.1.3   * fix for funs with K&R style parameters in -refcnt case
+
+	* add Solaris 2.7 to Platforms.txt file
+          minor changes (flags) for dynloading on Solaris2.7
+          change instvar name st_ctime to savetime because Solaris macro
+
+        * implement VICI funcalls
+
+3.1.2   * changed exprlist rule in grammar (list of nocomma expr)
+
+	* add new classes stkframe (stackframe), var, scalar for VICI
+
+	* faster implementation of elementsPerform: for OrdCltn
+
+	* add __builtin_fabs, __builtin_fabsf, __builtin_fabsl to get rid
+          of warnings on mathinline.h
+
+	* support GNU extensions, conditional with omitted arg (x ?: y)
+ 
+	* support GNU element labels in initializers (struct pt p = { y: 10 };)
+          and struct pt p = { .y: 10 }
+          but not their syntax for array initializers ({ [1] 1})
+          because of Objective-C using [] for messaging.
+
+	* support GNU constructor expressions (type){ ... }
+          this seems compatible with Blocks, but it is close to a syntax
+          conflict (with either our Blocks or their GNU braced expr)
+
+	* implement -go messages for various src/oclib classes
+
+	* store defs in defdic in trlunit.m
+
+	* add oclib/var.[hm] abstract superclass ( "a variable" )
+          instances are used by VICI for variables (an int, a pointer etc.)
+
+	* add o_stepbreak and o_stepnext options (for VICI stepping)
+	  these implement the 's' (step) and 'n' (next) command
+
+3.1.1   * add VICI (src/vici) -- not built by default, has its own configure
+          script.  See README in src/vici
+  
+          VICI is an Objective-C interpreter (and debugger)
+
+	* add OBJCDIR to include path of compiler driver (in addition to
+          OBJCDIR/objcrt and OBJCDIR/objpak)
+          This change applies to both objc.in, objc.m.in and objc.mpw
+
+2.3.17  * fix -at:insert: method of RunArray class for yet another bug
+          (insertion at end)
+
+	* updated config.guess and config.sub
+
+2.3.16  * fix -at:insert: method of RunArray class for bug in Richtext
+	
+	* add old DependencyGraph demo
+
+	* update website info (it's changed to http://users.pandora.be/stes)
+
+2.3.15  * minor fixes so everything compiles again with Stepstone objcc (4.3.x)
+
+	* add builtin_memset per Marcel
+	
+2.3.14  * made -w suppress all warnings (a few were not dealt with)
+
+	* fix for __restrict and __restrict__ keywords of Debian header files
+
+	* add UnixWare 7.1 to platforms file
+
+	* changed contact address to stes@pandora.be
+
+2.3.13  * add OpenVMS driver and makefiles per Pierre.Bru@spotimage.fr
+
+          (the DEC DCL driver is located in src/objc/objc.com)
+
+	* fix warning for unnamed bitfields
+
+        * fix -gendef: method in src/oclib/precdecl.m per Lionnel
+	
+	* a few (harmless) header file fixes for compilation with lcc compiler
+	
+	* fix for compilation with tcc/freebsd (tendra C compiler)
+          (support for their #pragma token VARIETY, token TYPE etc. was lost)
+	
+	* workaround for bug in gcc 1.93 (old version of gcc) that had problems
+	  with #line directive being inserted in (typecast)
+          implemented lineno & filename messages in several classes to
+	  work around this
+
+2.3.12  * deal with __extension__ as storageclass when used as typespec
+
+2.3.11  * incorporated fix for gnu __FUNCTION__ discussed on objc-users@cys.de
+         
+	* support for __typeof() (added new class src/oclib/typeof.[hm])
+
+	* add some builtin functions/types per default (for less warnings)  
+          PS: you can also get rid of that kind of warning with '-w'
+
+	  the names are now hardcoded into the executables, although Ken's
+	  old mechanism (with #pragma's, which was better), is still supported
+	  
+	* fix (innocent) warnings when compiling with -refcnt and -Wall
+	  (add new -isscalartype and initialize returnval to get rid of the
+	   'returnval may be used uninitialized warning' with -refcnt -Wall)
+	
+	* generate better linetag for goto that replaces return in -refcnt case
+
+2.3.10  * rename documentation files of BigInt to BigInt.rtf, BigInt.html etc.
+
+	* lots of libcakit changes : make compatible with -refcnt
+	
+	* fix bug with gnu braced group and -refcnt reported by marcel
+	  (egcs-2.91.66 has in strings2.h a gnu braced group in strsep_g()).
+	
+	* add messages -isbracedgroup and -setbracedgroup to compstmt
+	
+	* make -refcnt generate fewer returnlabels
+	
+	* add pragma for __builtin_constant_p to objcrt.h
+	
+	* fix idassign() for self assignment
+	
+	* fix idincref() for static id initializers with constant rhs
+	
+	* add code to casestmt.m for switch/case with -refcnt
+
+2.3.9	* add -rpath option for SGI ld to objc driver
+	
+	* use LD variable (if set) for objc -dl instead of plain 'ld'
+
+	* add method -removeKey: to Dictionary
+	  warning : this method returns the value for argument key !
+	  so removeKey is not equivalent to [[self associations] remove:key];
+
+2.3.8   * use ac_cv_prog_gcc to set cppwantsdotc variable in objc driver
+
+	* change in lex.lm for LUL suffix for SGI integer constants (e.g. 1LUL)
+          per drk@sgi.com
+
+2.3.7   * use ac_cv_prog_gcc test in configure script
+
+2.3.6	* new Rectangle methods topLeft,topCenter,topRight etc.
+	  (for Morphic) methods -center, -quickMerge:
+
+	* fix bug for Morphic for static locals and -refcnt
+	  - foo { static id c; if (!c) ... ; return c; }
+	  don't emit = (id)0 for static id c;
+	  
+	* fix bug with Blocks and -refcnt (for Morphic) new method
+	  -freeheapvarptr in blockxpr.m and compstmt.m
+
+2.3.5   * add -noI and -noLibs again to configure flags as they got lost
+          during the 2.3.1 revision
+
+2.3.4   * configure bootstrap source with snprintf=no otherwise run into
+          problem on those platforms that don't have snprintf
+
+2.3.3	* clean up Makefile of bootstrap a bit
+
+	* minor clean up drivers for mac MPW and other non-Unix 
+          (lcc,wcc,visual c++,icc etc)
+ 
+2.3.2	* remove config.cache, config.log etc. for a 'make distclean'
+
+	* configure --with-cplus now configures so that objc -cplus works
+	  (on those platforms where the c++ part works).
+
+2.3.1   * convert old configure script to new 'autoconf' script
+
+	* old script is still available as 'configure.orig' in case of problems
+
+	* new configure checks automatically what storage model the C compiler
+	  uses
+
+	* new configure script sets SGI (Silicon Graphics) to postlink=1
+	  instead of postlink=0 if using CC=cc.  With CC='gcc' or with
+          CC='cc -common' it is still postlink=0 as before.
+	
+	* fix so that boot sources are compiled with -DNDEBUG
+
+2.2.18  * add new script 'bootSrc' to make bootstrap C source
+          (the objc-2.2.18-bootstrap package)
+
+	* fix builtinfunction rule in yacc.ym for functions with types as
+	  arguments
+
+2.2.17  * fixes to objpak classes so that handlers (for -ifError:) that
+          'fall through' (resume execution at the point where the exception
+          was raised) work correctly.
+
+		int flag = 0;
+		[ { [c insert:x after:y]; } ifError:{ :m :r | flag++; }];
+		if (flag) { .. blah blah .. }
+
+	* small performance improvements to OrdCltn and String
+
+2.2.16  * compiler can now itself be compiled with OBJCOPT=-refcnt 
+
+	* changed 'configure' so that it uses 'byacc' by default, not 'bison'
+	
+	  Bison works fine, but you have to use 'byacc' not 'bison' if you
+          compile the compiler itself with -refcnt.
+
+          The reason is that byacc zeroes out the 'yyvsp' stack (global)
+          while bison is using alloca() for this; it should have an option to
+          zero out that stack allocated memory.
+
+	  If you don't care about -refcnt and if you, for some reason, 
+          don't want to use byacc, then configure with :
+
+		./configure -e 'YACC="bison -y -d"'
+
+          or
+
+		export YACC="bison -y -d"; ./configure
+
+	* replaced some -str messages by -strCopy in yacc.ym
+
+	* replaced two -str messages in src/oclib/util.m by -strCopy so that
+          util.m works correctly when compiled with -refcnt
+
+        * fix for some <math.h> asm() code on SuSE 6.0 Linux with egcs 2.91
+          (conditional code in <__math.h> using the gnu __asm statement, that
+          was #ifdef'ed for use with egcs)
+
+	* egcs as used on SuSE 6.0 also required a modification to the file
+          /usr/lib/gcc-lib/i486*/egcs*/specs (had to remove option
+          -warn-common from the egcs 'specs' file to avoid warnings)
+
+2.2.15  * Roger Vaughn <rvaughn@pobox.com> changes for CYGWIN and VisualAge
+          but on Windows (not OS/2)
+
+        * add rule per roger for
+
+	    int __cdecl atexit(void (__cdecl *)(void));
+
+	* add options (-dos and -win95) for ronny (watcom) to src/objc/objc.m
+
+2.2.14  * fix for compiling with -g3 on Debian per Marcel (worked for me
+          on red hat, but this depends on header file)
+
+2.2.13  * allow empty translation units in extern "C" { }
+
+2.2.12  * add wchar_t, __wchar_t and bool type in -cplus mode as builtin
+
+	* fix for CC on SCO Unixware (both g++ and CC work now)
+
+2.2.11  * support extern "C" and extern "C++" in objc1
+
+          this is so that _plain_ Objective-C or plain C code can be
+          compiled with a CC c++ compiler e.g.,
+
+          CC -c bar.cc
+	  objc -c -cplus foo.m
+          objc -cplus bar.o foo.o
+
+          then works, because all compiling and linking is then done by CC
+
+2.2.10  * yet another fix for USL cc -E
+
+2.2.9   * fix small bug with pragma using USL cc -E preprocessor
+          (it doesn't remove comments on the pragma line)
+          add / to separators so no space needed in : pragma foo 1/* comment
+
+2.2.8   * add -shortTags to configure for USL Unixware 7 cc\
+
+	* add ccargs flag for USL cc so that alloca is builtin defined
+         (to compile bison output)
+	
+	* add -ql and -qf for USL lprof and fprof compilers
+
+	* remove pg,otb builds from makeLibs (uncomment if you want them)
+
+	* add -G flag  for creating .so files with SCO cc
+
+2.2.7	* patches from Marcel to fix build with -refcnt
+
+	* add -lc to DLARGS for Linux per Marcel
+
+	* fix config.guess for UnixWare 7 (from SCO)
+
+	* fix configure for Unixware 7
+
+	* removed objc.exe from default in objc/Makefile.in
+
+	* fix so that also UDK cc can be used (gcc still used as default)
+	  on unixware : ./configure -e CC=cc configures for the UDK cc
+
+	* UDK cc has stdarg.h with : ap = (void*)((char*)&...)
+	  fix grammar so that ... is expr (tendra tcc is also doing this)
+
+2.2.6   * fix Block class so that Blocks and -refcnt are compatible
+         (implement Block -release).
+
+	* fix idincref of return value of Block (if id)
+
+	* give Block dtor function pointer instance variable to decr counts
+          of the heapvariables it references
+
+	* prevent -copy for Block (this should up the counts but that's not
+          yet implemented). (so made -copy notImplemented instead).
+
+	* fix AsciiFiler a bit for -refcnt (it was stuffing arbitrary pointers
+         into an OrdCltn which you can do without -refcnt but is absolutely
+         wrong with -refcnt).
+
+2.2.5   * fix runarray class (with merges from 2.2.4, 1.10.10 modfs got lost)
+
+	* run oclib source through 'indent' as used to be done in 1.x
+          (also makes it easier to do a diff)
+
+2.2.4   * renamed libs with refcnt to objcrtr,objpakr etc.
+
+        * fix OCU bug for functions locally defined extern (didn't gen OCU)
+	  (important : 'fab' was locally defining extern int yyparse() ).
+
+        * make refcnt functions send a -release message to destroy object
+
+        * make -free in refcnt case 'shouldNotImplement' so that both models
+          can't get mixed (complicated). 
+
+        * with -refcnt, add "_refcnt" field also in *class* structure
+         (this makes code compiled with -refcnt incompatible with code
+          compiled without -refcnt)
+
+        * assignments to self can now also be used with -refcnt (since both
+          class and instance now have a _refcnt field)
+
+        * code generation change for tmp objects allocated inside while(expr)
+          (and likewise do{} and for() so that side-effects of step and cond
+          expressions are dealt with)
+
+        * fix generation of extra ()'s which was screwing up line directives
+
+	* fix linetag generation in front of a idassign
+
+	* automatic implementation of -decrefs and -increfs methods
+
+2.2.3   * add Heinrichmeyer patch for linux-2.2.0-final and linux-mandrake
+
+        * add check for classes with -refcnt (automatically use -noSelfAssign)
+ 
+        * fix bug with -refcnt by placing statement of for() or while() etc.
+          inside a compound statement if needed (ifstmt, forstmt, dostmt).
+
+2.2.2   * changes in objpak for -refcnt (such as replacing *p++=0 by memset)
+
+        * made -refcnt link against refpak.a and make 'makeLibs' build refpak
+
+2.2.1   * option -refcnt for automatic generation of refcount code
+
+2.1.5   * performance improvement in Dictionary associationAt:
+          (implemented Assoc's -self method to return key)
+
+        * fix bug with blocks with more than one argument
+
+        * add BeOS again to config.sub which apparently was lost with some
+          file merge in the past  
+
+        * reimplemented SortCltn's +sortBy: method such that following works:
+
+	  id c = [SortCltn sortBy:{ :a :b | strcmp([b str],[a str]) }];
+	  [c add:[String str:"A"]];
+ 	  [c add:[String str:"B"]];
+	  [c print];
+ 
+2.1.1   * new stage 1 compiler with some support for generating ST-80 (-st80)
+
+        * support blocks in assignments
+

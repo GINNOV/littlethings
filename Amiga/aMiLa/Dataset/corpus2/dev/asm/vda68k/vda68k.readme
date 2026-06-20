@@ -1,0 +1,14 @@
+Short:        Portable M68k disassembler w/ FPU
+Author:       frank@phoenix.owl.de (Frank Wille)
+Uploader:     polluks+aminet sdf lonestar org (Stefan Haubenthal)
+Type:         dev/asm
+Version:      1.4
+Architecture: ppc-morphos; m68k-amigaos
+
+vda68k V1.4  (c)2000-2009 by Frank Wille
+M68k disassembler V0.6  (c)1999-2008 by Frank Wille
+Based on NetBSD disassembler  (c)1994 by Christian E. Hopps
+Build date: Apr 16 2017, 14:36:20
+
+Usage: vda68k [file name] [start address] [end address]
+Either file name or start address must be given, or both.

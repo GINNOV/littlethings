@@ -1,0 +1,436 @@
+Metre v1.08
+Copyright (c) 1993,1994 by Paul Long All rights reserved.
+
+Paul Long                                              September 7, 1994
+
+Internet: Paul_Long@ortel.org
+          pci!plong@ormail.intel.com
+          72607.1506@compuserve.com
+CompuServe: 72607,1506
+
+
+Introduction
+------------
+Metre is a portable rule-based software-metrics tool for Standard C.
+It reports the following metrics for each function in a C source file:
+
+         McCabe's Cyclomatic Complexity Index
+         Lines of code
+         Lines of executable code
+         Lines of comments
+         Lines of whitespace
+         Number of statements
+         Depth
+
+It also prints warnings if it encountered a goto or continue statement
+or multiple return statements in a function. After all functions are
+processed, it reports the following metrics for the entire file:
+
+         McCabe's Cyclomatic Complexity Index
+         Lines of code
+         Lines of executable code
+         Lines of comments
+         Lines of whitespace
+         Number of statements
+         Number of functions
+
+Maximum, minimum, average, and total metrics are provided where
+appropriate. Metre also prints a warning if it encountered indention
+accompished by both spaces _and_ tabs.
+
+Prior to generating the metrics, Metre prints an "Explanation and
+Guidelines" section that, among other things, explains the output
+notation. To surpress this, use the -Q comand-line option. This does not
+appear in the normal usage information that Metre displays when no
+command-line arguments are given. This is because this option is
+processed by a rule (see the Modifying Metre section) and not by the
+parser engine.
+
+If you think that some of the diagnostics that Metre generates are
+unreasonable, such as warning about gotos, don't worry--you can
+easily change how Metre behaves if you have a Standard C compiler (see
+the Modifying Metre section).
+
+
+Building Metre
+--------------
+Metre is distributed as a set of lex, yacc, and Standard C source files.
+From these, you should be able to build an executable for any
+environment that has a Standard C compiler. If you have lex and yacc,
+you can also modify the lex and yacc specifications in scan.l and
+gram.y, respectively, and regenerate the parser's C source files. Just
+in case you don't have lex/yacc, I've provided the lex_yy.c and ytab.c
+that were generated with MKS lex/yacc.
+
+For example, under MS-DOS using MKS lex/yacc and the Borland C compiler,
+the Metre executable can be built with these commands:
+
+   yacc -d gram.y
+   lex scan.l
+   bcc -w-rch -w-ccc -w-eff -emetre.exe rules.c ytab.c lex_yy.c
+
+Without the -w command-line options, I get warnings about unreachable
+code, condition always being true/false, and code having no effect.
+These warnings can be safely ignored.
+
+If you don't have lex/yacc, skip the first two lines and just compile
+and link the provided lex_yy.c and ytab.c. The -d tells yacc to generate
+a token header file that the lex specification includes. Being an MS-DOS
+implementation, this header file is called ytab.h instead of the normal
+UNIX y.tab.h. So, if you use a yacc that generates y.tab.h, you'll need
+to either rename it to ytab.h or change the #include directive in scan.l
+to include y.tab.h instead of ytab.h.
+
+For example, under UNIX using AT&T lex/yacc and acc, the Metre
+executable can be built with these commands:
+
+   yacc -d gram.y
+   mv y.tab.h ytab.h
+   lex scan.l
+   acc -o metre rules.c y.tab.c lex.yy.c
+
+If you don't have lex/yacc, compile and link the provided lex_yy.c and
+ytab.c using the following command:
+
+   acc -w -o metre rules.c ytab.c lex_yy.c
+
+Without the -w command-line option, I get a bunch of warnings about -1
+(~0) not fitting as an initializer for yy_check[] in lex_yy.c. I also
+get a few signed-vs-unsigned-chars warnings regarding yytext[]. These
+warnings can be safely ignored. However, perhaps you should not use -w
+the first time just in case there are other warnings that this would
+suppress.
+
+
+
+Test drive
+----------
+To test Metre once you have built the executable from the source, run it
+against the accompanying rules.c source file with the following command:
+
+         metre -DBOOLEAN=int rules.c
+
+This instructs Metre to replace all occurences of BOOLEAN in rules.c
+with int so that you don't need to run a preprocessor first. It then
+displays various metrics about the code contained in rules.c.
+
+
+Preprocessor
+------------
+Metre does not perform preprocessing, so you should typically run your
+source through a preprocessor first and then run the output of the
+preprocessor into Metre. For example, with Borland's MS-DOS tool set:
+
+         cpp -P- myfile.c
+
+(The -P- tells the preprocessor not to include its non-ANSI-C line
+numbers in its output.) In this case, the output would be called
+myfile.i. This is the file that should be used with Metre, as in the
+following:
+
+         metre myfile.i
+
+Since Metre output refers to the input file by name and this is may not
+be the name of the original source file (for example, you ran the
+preprocessor on it but the preprocessor didn't generate line
+directives), the -S option can be used to specify the name of the
+original file, as in -Smyfile.c. Note that this option can be repeated
+so that each one specifies a substitute file name for each input file,
+respectively. If you entered the following line:
+
+         metre -Sa.c -Sb.c a.i b.i
+
+the Metre output would use the name, "a.c", for the first file (a.i)
+and "b.c" for the second file (b.i).
+
+Metre refers to lines by number in its input file unless it encounters a
+line directive, e.g., #line 5 "startup.c" or # 503 "main.c" 2. It
+replaces the current line number and file name with whatever is
+specified in the line directive. Some preprocessors can place line
+directives in the output file that relate back to the original source
+file. If yours does, you probably want to use this option.
+
+While Metre recognizes C comments, for example, /* a comment */, it does
+not recognize C++ comments--those that begin with //.
+
+As you may have noticed in the introduction section, Metre counts and
+displays lines of comments. However, if you run your program through a
+preprocessor, the preprocessor will have most likely stripped all
+comments from its output. Metre cannot count what is not there. What is
+the solution? Well, some preprocessors provide a command-line option
+that passes comments through. If yours has this capability, you probably
+want to use it.
+
+
+Output
+------
+Use the -C command-line option to cause the parser to copy its input to
+its output, interspersing its reporting information with your source
+file. Use the -L option to redirect output to a file, as in: -Lout.txt.
+This is provided for environments that do not have command-line
+redirection, for example, VMS.
+
+
+Adaptibility
+-------------
+Metre ignores preprocessor directives (from # to end-of-line) other than
+line directives, so if your preprocessor passes any through, such as
+#pragmas, everything should be okay. This could also be useful if you
+only rely on the preprocessor for simple substitution. If so, you might
+be able to get away with running your C source file directly into Metre
+without being preprocessed. This is done in the example in the Quick
+Start section.
+
+Since some C compilers, such as Intel's iRMX C compiler, accept the
+dollar sign ($) as a valid identifier character (and because it is not
+otherwise defined in C), Metre accepts identifiers with a dollar sign.
+They are valid anywhere a letter is, for example, $100, any$more, and
+mo$ are all valid identifiers to Metre.
+
+The define command-line option allows you to perform simple
+substitutions within the input file. This may be enough to convert the
+extensions used by your compiler to something that Metre will understand
+as Standard-C syntax. For example, since Borland uses cdecl in its
+stdio.h file, I have to use the following command to get Metre to accept
+it:
+
+         metre -Dcdecl= rules.i
+
+This defines cdecl as a null string, effectively removing all
+occurrences from Metre's input stream. There may be a situation where a
+lexeme used in a declaration could be converted to another, as in the
+following:
+
+         metre -Dselector=int foo.i
+
+
+Decision points
+---------------
+There are a couple of situations in C where the presence of a decision
+point may be debatable (I assume you already know what a decision point
+is). Metre counts the conditional expression (?:) as a decision point,
+and it counts adjacent cases as one decision point. For an example of
+the latter, the following switch statement contains two decision points,
+not three.
+
+         switch (a)
+         {
+         case 0:
+            dothis();
+            break;
+         case 1:
+         case 2:
+            dothat();
+            break;
+         }
+
+Metre interprets decision points in this way so as to minimally
+influence the programmer's choice of constructs. If it did not count the
+conditional expression as a decision point, the programmer might be
+influenced to use confusing conditional expressions instead of if
+statements in order to obtain a lower CCI. Likewise, adjacent cases are
+analogous to the logical or operator (||). If Metre counted each case as
+a separate decision point, the programmer might avoid the switch
+statement in favor of an if statement with an expression that uses the
+or operator. For example,
+
+         if (a == 1 || a == 2)
+
+
+Modifying Metre
+---------------
+Like Abraxas' CodeCheck product, Metre is rule-based. Different behavior
+is obtained by simply modifying or replacing the rules in the rules.c
+file rather than modifying the more complex code of the parser engine
+(in scan.l and gram.y) that is the core of Metre. As a matter of fact,
+most of the software-metrics behavior described in this document is
+implemented with rules. Therefore, for your own good, make changes to
+rules.c if at all possible. Only tinker with gram.y and scan.l if the
+behavior you seek cannot be expressed with rules using the existing
+parser engine.
+
+Note: The rules.c file contains rules that reflect my own programming
+sensibilities. For example, it generates a warning if a function has
+more than one return statement. If you don't like this, remove the rule.
+
+The parser engine can be used to construct other tools. Think of it as
+a basic, easy-to-use parser for Standard C. As an example, by only
+providing a few rules and not modifying the parser at all, I built a
+special version of the UNIX tool, diff, that has the dual granularity
+of text lines and C functions. My version indicates whether a function
+has been removed or added, and if a function has been modified, it
+names it and then generates the normal diff output showing which lines
+have been added, removed, or modified.
+
+There must always be a rules() function linked with the parser. It
+contains a set of "rules" that define how the resulting executable
+behaves. With no rules, for example, void rules(void){}, the result is
+just a C syntax checker. Rules are of the following form:
+
+         if (<trigger>)
+            <action>
+
+Trigger is an expression of terms taken from the structs and functions
+declared in the provided metre.h header file. See the rules.c file for
+examples. Generally, trigger should include a test that the particular
+construct has begun or ended, but that is not always possible. For
+example,
+
+         if (stm.end)
+            ...
+
+See the metre.h file for other possibilities.
+
+A rule should NEVER have an else, although the action may contain if's
+with else's. The rule's else would effectively be executed ALL THE TIME
+except when the trigger occurs. Not a pretty sight.
+
+Action is any statement, including the compound statement, {...}. The
+following are examples taken from the provided rules.c file:
+
+         if (keyword("goto"))
+            ++fcn_gotos;
+
+         if (fcn.begin)
+         {
+            fcn_gotos = 0;
+            fcn_continues = 0;
+            fcn_returns = 0;
+            fcn_depth_max = 0;
+         }
+
+
+Bugs
+----
+1. In Metre, all typedef definitions have file scope. I have never seen
+anyone use block scoped typedef definitions, so I doubt whether this
+will catch anyone. Here is an example of what you cannot do:
+
+                     typedef int a;
+                     main()
+                     {
+                        typedef char *a;
+                     }
+
+Metre declares a syntax error at the second "a" because it thinks that
+it is a type specifier, like "int," and not an identifier.
+
+typedef scoping wouldn't be that hard to implement. For example,
+replace the current symbol table with a stack. Mark the beginning of a
+new scope. Push typedef names onto the stack. Search the table from the
+most recently pushed names. At the end of a scope, pop all typedef
+names off up to the first-encountered scope mark.
+
+
+History
+-------
+1.08  9/3/94   First distribution with full source.
+               Valiant attempt to make lex specification portable across
+                  different versions of lex. (yacc specification should
+                  also be portable.)
+               Added compile-time ability to turn off input buffering.
+               If present, Use # [line] <n> ["<file name>"] instead of
+                  physical line number and file name so that the
+                  original source before translation is reflected.
+1.07  3/7/94   Bug fixed where function name would be overridden by a
+                  function declaration within the function.
+1.06  2/21/94  Redundant -U command-line option removed. For example,
+                  -Uapple is equivalent to -Dapple=. Metre has no
+                  predefined constants to undefine.
+               In addition to the original MS-DOS version, versions for
+                  VMS and Sun UNIX are now provided.
+1.05  2/1/94   Obsolete -T command-line option removed.
+               Rules added to report number of comment lines (if not
+                  preprocessed out, of course).
+               Bug fixed where identifiers in the function-declarator
+                  parameter list were incorrectly interpreted as typedef
+                  identifiers. Metre now recognizes the following
+                  without a syntax error:
+                           typedef (*SIM_BODY_FP)(int status);
+                           struct {
+                              int status;
+                           };
+1.04  1/29/94  First public availability.
+
+
+Feedback
+--------
+I would like to hear what you think about Metre. What enhancements would
+you like to see?  What bugs have you found?  The highest CCI I have
+encountered is 90. Have you found a higher one? Please send e-mail to
+one of the addresses listed at the top of this document.
+
+
+Possible enhancements
+---------------------
+Here are some enhancements that I have thought about implementing in
+Metre.
+
+Features
+- Recognize C++ comments.
+- Distinguish between executable and non-executable lines.
+- Detect possibly incorrect else binding based on indention.
+- Detect no return at end of function.
+- Over-all quality index, canned, then user-defined in place of CCI.
+- Optionally, adjust CCI downward for long, shallow switch statements or
+   have separate metric to mitigate CCI.
+- Count commented-code lines.
+- Incorporate more of CodeCheck's triggers and general capabilities.
+
+Infrastructure
+- Perform block scoping on typedefs.
+- Do not display line number for module & project messages.
+- Dynamic buffer allocation and reallocation on as-needed basis.
+- Provide Standard C preprocessor. Integrated, with optional output, at
+   least for debugging.
+- Accept input from standard input if no files are specified on command
+   line. This would allow piped input from a previous command.
+
+
+Trademarks
+----------
+Trademarks are the property of their respective owners.
+
+
+Disclaimer
+----------
+THE METRE SOURCE AND INCLUDED ACCESSORY FILES ("THE SOFTWARE") ARE NOT
+WARRANTED IN ANY WAY TO BE SUITABLE FOR YOUR SITUATION. YOU USE THE
+SOFTWARE ENTIRELY AT YOUR OWN RISK.
+
+
+Licensing agreement
+-------------------
+The Metre source and included accessory files ("the software") are the
+copyrighted work of their author, Paul Long. The portions of the
+software present in all descendant manifestations of the software are
+also the copyright of Paul Long. All rights under US and international
+copyright law are reserved. You are hereby granted a limited license at
+no charge to use the software and to make copies of and distribute said
+copies of the software, as long as:
+
+1. Such use is not primarily for profit. "For profit" use is defined as
+primary use of the program whereby the user accrues financial benefit or
+gain directly from use of the software; for example, a commercial
+product that is descendant from the software, or a consultant performing
+code analysis for a client with the software. "Primary use" is defined
+as the major use of the program, or the primary reason for acquiring and
+using the program.
+
+2. Such copies maintain the complete set of files as provided in the
+original distribution set, with no changes, deletions or additions, or,
+in the case of descendant manifestations, the notice, "Metre Copyright
+(c) 1993,1994 by Paul Long All rights reserved.", appears without the
+quotation marks when the program is executed. The archive storage format
+may be changed as long as the rest of this condition is met.
+
+3. Copies are not distributed by any person, group or business that has
+as its primary purpose the distribution of free and "shareware" software
+by any means magnetic, electronic or in print, for profit. BBS
+distribution is allowed as long as no fee is charged specifically for
+this software. Bona fide non-profit user's groups, clubs and other
+organizations may copy and distribute the software as long as no charge
+is made for such service beyond a nominal disk/duplication fee not to
+exceed $5.00. For-profit organizations or businesses wishing to
+distribute the software must contact the author for licensing
+agreements.

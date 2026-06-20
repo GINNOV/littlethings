@@ -1,0 +1,29 @@
+GoldED quickstarter V 2.4+ by Stefan Berendes in Sep 1995
+Original source © 1995 by Dietmar Eilert.
+
+This is a modified version of the quickstarter included with the GoldED
+package. Replace this with the version installed by GoldEd's installer
+script (Ed or GEd).
+
+This version provides an optional FORCE/S commandline switch. If this
+is specified, the program tries to find an ARexx port of the name
+specified by the A=AREXX/K keyword and, if this port isn't found,
+starts a new instance of GoldED with the specified config.
+
+As of yet, GoldED does not support multiple configs. So I run different
+GoldED's for general editing, programming and EMail. This can easily be
+achieved by starting GoldED directly (Golded:Golded), but this will lack
+the advantages of the quickstarter. So I modified the quickstarter
+(luckily the source was included).
+
+LEGAL NOTICE
+This software is provided as is. The author may not be held responsible for
+any damage caused by using this program. Use it at your own risk.
+
+This software is © 1995 by Dietmar Eilert & Stefan Berendes. It must not
+be distributed except as part of a package written by Dietmar Eilert or
+Stefan Berendes. See packages' general readme for distribution conditions
+of whole package.
+
+If Dietmar Eilert includes this version to his GoldED package, I,
+Stefan Berendes, waive all my rights on this piece of software.

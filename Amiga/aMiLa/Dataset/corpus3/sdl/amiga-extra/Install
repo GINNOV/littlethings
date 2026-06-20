@@ -1,0 +1,52 @@
+failat 21
+
+echo Sanity checks ...
+version C:version full
+version C:copy full
+version C:makedir full
+version C:delete full
+version C:makelink full
+
+echo Copying shared object ...
+copy SDK/local/newlib/lib/libSDL3-3.4.so SObjs:
+copy SDK/local/newlib/lib/libSDL3-3.4_debug.so SObjs:
+
+echo Copying documentation ...
+makedir SYS:Documentation/SDL3
+copy README-amigaos4.md SYS:Documentation/SDL3/
+copy README.md SYS:Documentation/SDL3/
+copy WhatsNew.txt SYS:Documentation/SDL3/
+copy LICENSE.txt SYS:Documentation/SDL3/
+
+echo Copying prefs program ...
+copy SDL3 SDL3.info SYS:Prefs/
+
+set option `RequestChoice "Localization" "Would you like to install translations?" "Yes, please" "No, thanks"`
+
+If $option eq 1
+  echo Copying translations ...
+  copy Catalogs/#? Locale:Catalogs/ all
+Else
+  echo Skipped translation installation ...
+Endif
+
+set option `RequestChoice "SDK" "Would you like to install the SDK?" "Yes, please" "No, thanks"`
+
+If $option eq 1
+  echo Copying SDK files ...
+  copy SDK/#? SDK: all
+  delete SDK:local/newlib/lib/libSDL3.so
+  makelink from=SDK:local/newlib/lib/libSDL3.so to=SObjs:libSDL3-3.4.so soft
+Else
+  echo Skipped SDK installation ...
+EndIf
+
+echo Setting up link ...
+
+delete SObjs:libSDL3.so
+makelink from=SObjs:libSDL3.so to=SObjs:libSDL3-3.4.so soft
+
+echo SDL3 is installed :)
+
+set option `RequestChoice "All done" "Installation finished" "OK"`
+

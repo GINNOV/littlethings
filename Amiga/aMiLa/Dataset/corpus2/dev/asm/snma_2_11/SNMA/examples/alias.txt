@@ -1,0 +1,40 @@
+
+    SNMA arexx aliases
+    ~~~~~~~~~~~~~~~~~~
+
+    1-jul-94	    By Samu Nuojua
+
+
+ I have the following aliases defined in my s:shell-startup file to make
+ life easier. I suggest you add these or your own if you use snma a lot from
+ the shell and in arexx mode.  The macros these aliases call must be
+ in rexx: directory.
+
+;-----------------------------------------------
+alias asm   rx 'shellasm "[]"'
+alias remgb rx 'address SNMA remgb "[]"'
+alias addgb rx 'addgb [].glb i "a:include2"'
+alias seegb rx seegb
+alias quitsnma rx 'address SNMA QUIT'
+;-----------------------------------------------
+
+
+  When you type in shell:
+
+ asm	<file>
+	assembles the file
+
+ addgb	<file>
+	adds symbols and macros ending ".glb" to the global table by calling
+	the addgb.rexx macro
+
+ remgb	<name>
+	removes one include file from the global table directly calling
+	remgb snma arexx command.
+
+ seegb
+	calls the seegb macro to see what files is in global table.
+
+ quitsnma
+	signals snma to quit.
+

@@ -1,0 +1,25 @@
+Dieses Programm demonstriert die Verwendung von Startup-Dateien
+und der amiga.lib in Assembler-Projekten.
+Es wird die Funktion printf() aus der amiga.lib benutzt.
+
+BLink hat Probleme, wenn man
+
+  amiga.lib
+  astartup.obj
+  test.o
+
+zusammenlinken will. (Absturz)
+
+Ich empfehle fuer solche Sachen DLink. Dieser Linker liegt z.B. der
+DICE-Demoversion bei. Siehe auch das O.M.A. 3.0 Paket.
+Aber auch andere Linker aus dem PD-Bereich (PhxLnk, LK 1.06, ...)
+sollten gehen.
+
+Linken mit:
+
+  "dlink Astartup.obj test.o amiga.lib -o test"
+
+  Startup und Amiga.lib sind bei den gaengigen C-Compilern,
+  Assemblern, etc. dabei. (z.B. OMA 3.0, NDUK, A-Magazin-CD)
+
+

@@ -1,0 +1,293 @@
+	include	"/includes/hardware/offsets.i"
+	include	"/includes/exec/exec_lib.i"
+	include	"/includes/libraries/dos_lib.i"
+	include	"/libs/AllRoundStarter"
+atn	equ	4
+clkin	equ	5
+datain	equ	3
+clkout	equ	6
+dataout	equ	7
+	move.l	4.w,a6
+	lea	dosname,a1
+	moveq	#0,d0
+	jsr	OpenLibrary(a6)
+	move.l	d0,DosBase
+	move.l	d0,a6
+	move.l	#Fenster,d1
+	move.l	#1005,d2
+	jsr	Open(a6)
+	move.l	d0,FensterPointer
+	lea	ciabpra,a5
+MainWait	move.l	FensterPointer,d1
+	move.l	#WaitClickText,d2
+	move.l	#WaitClickEnd-WaitClickText,d3
+	move.l	DosBase,a6
+	jsr	Write(a6)
+WaitMouseClick	btst	#2,potgor+$DFF000
+	beq	Ende
+	btst	#6,ciaapra
+	bne	WaitMouseClick
+NowConnect	move.l	FensterPointer,d1
+	move.l	#WaitSerialLoad,d2
+	move.l	#WaitSerialEnd-WaitSerialLoad,d3
+	move.l	DosBase,a6
+	jsr	Write(a6)
+	clr.b	FileName-1
+	clr.b	flag
+	bsr	Init
+	bsr	GetDeviceNum
+	bsr	ReadyForNext
+	bsr	ReadChar
+	lea	FileName,a0
+ReadingName	bsr	ReadyForNext
+	bsr	ReadChar
+	move.b	d5,(a0)+
+	btst	#7,flag
+	beq	ReadingName
+	clr.b	(a0)
+	bsr	ReadyForNext
+	bsr	ReadChar		Unlisten
+	bsr	ReadyForNext
+	bsr	ReadyForNext
+	bsr	ReadChar		Talk
+	bsr	ReadyForNext
+	bsr	ReadChar		Sekund�radresse
+	bset	#dataout,(a5)
+	bsr	WAtnLow
+	bclr	#dataout,(a5)
+	bsr	WDataHigh
+	bset	#clkout,(a5)
+	bsr	ReInit
+	move.l	#DrawerName,d1
+	move.l	#-2,d2
+	move.l	DosBase,a6
+	jsr	Lock(a6)
+	tst.l	d0
+	beq	NotFound
+	move.l	d0,d7
+	move.l	FensterPointer,d1
+	move.l	#Loading,d2
+	move.l	#LoadingEnd-Loading,d3
+	jsr	Write(a6)
+	move.l	#260,d0
+	move.l	#1,d1
+	move.l	4.w,a6
+	jsr	AllocMem(a6)
+	move.l	d0,SerialData
+	move.l	d7,d1
+	move.l	SerialData,d2
+	move.l	d2,d6
+	move.l	DosBase,a6
+	jsr	Examine(a6)
+TestStern	move.l	d7,d1
+	move.l	d6,d2
+	jsr	ExNext(a6)
+	tst.l	d0
+	beq	NotFound2
+	lea	FileName,a0
+	move.l	d6,a1
+	adda.l	#8,a1
+TestingLoop	cmp.b	(a0)+,(a1)+
+	bne	TestStern
+	cmpi.b	#"*",(a0)
+	beq	FileFound
+	tst.b	(a0)
+	bne	TestingLoop
+	tst.b	(a1)
+	bne	TestStern
+FileFound	move.l	d7,d1
+	jsr	UnLock(a6)
+	move.l	d6,a1
+	adda.l	#8,a1
+	lea	FileName-1,a0
+GetFileName	move.b	(a1)+,(a0)+
+	tst.b	-1(a1)
+	bne	GetFileName
+	move.l	d6,a6
+	move.l	124(a6),DataLength
+	move.l	SerialData,a1
+	move.l	#260,d0
+	move.l	4.w,a6
+	jsr	FreeMem(a6)
+	move.l	DataLength,d0
+	move.l	#1,d1
+	jsr	AllocMem(a6)
+	move.l	d0,SerialData
+	move.l	#DrawerName,d1
+	move.l	#1005,d2
+	move.l	DosBase,a6
+	jsr	Open(a6)
+	move.l	d0,d7
+	move.l	d7,d1
+	move.l	SerialData,d2
+	move.l	DataLength,d3
+	jsr	Read(a6)
+	move.l	d7,d1
+	jsr	Close(a6)
+	move.l	SerialData,a4
+	cmpi.w	#$0004,(a4)
+	bne	NoLoadInit
+	bset	#6,flag
+NoLoadInit	bsr	Init
+	move.l	DataLength,d7
+	sub.l	#1,d7
+	bclr	#clkout,(a5)
+SendingLoop	move.b	(a4)+,d5
+	bsr	SendByte
+	sub.l	#1,d7
+	bne	SendingLoop
+	bset	#clkout,(a5)
+	bsr	WDataHigh
+	bclr	#clkout,(a5)
+	move.b	(a4)+,d5
+	bsr	LastByte
+	bsr	WAtnHigh
+	bsr	WClkHigh
+	bset	#dataout,(a5)
+	bsr	WClkLow
+	bclr	#dataout,(a5)
+	bsr	ReadChar		Untalk
+	bsr	ReadyForNext
+	bsr	ReadyForNext
+	bsr	ReadChar		Listen
+	bsr	ReadyForNext
+	bsr	ReadChar		Sekund�radresse
+	bsr	ReadyForNext
+	bsr	ReadChar		Unlisten
+	bsr	ReadyForNext
+	bsr	ReInit
+	move.l	SerialData,a1
+	move.l	DataLength,d0
+	move.l	4.w,a6
+	jsr	FreeMem(a6)
+	btst	#6,flag
+	beq	MainWait
+	bra	NowConnect
+Ende	move.l	DosBase,a6
+	move.l	FensterPointer,d1
+	jsr	Close(a6)
+	move.l	DosBase,a1
+	move.l	4.w,a6
+	jsr	CloseLibrary(a6)
+	rts
+NotFound2	move.l	SerialData,a1
+	move.l	#260,d0
+	move.l	4.w,a6
+	jsr	FreeMem(a6)
+	move.l	d7,d1
+	move.l	DosBase,a6
+	jsr	UnLock(a6)
+NotFound	bclr	#clkout,(a5)
+	bra	MainWait
+Init	move.l	4.w,a6
+	jsr	Forbid(a6)
+	move.w	#$20,intena+$DFF000
+	move.w	#$20,dmacon+$DFF000
+	move.w	#$8800,adkcon+$DFF000
+	clr.w	spr0data+$DFF000
+	clr.w	spr0datb+$DFF000
+	move.b	#0,(a5)
+	rts
+ReInit	move.w	#$800,adkcon+$DFF000
+	move.l	4.w,a6
+	jsr	Permit(a6)
+	move.w	#$8020,intena+$DFF000
+	move.w	#$8020,dmacon+$DFF000
+	rts
+ReadyForNext	bsr	WClkHigh
+	bset	#dataout,(a5)
+	bsr	WClkLow
+	clr.b	(a5)
+	rts
+WasWaitingFor	bset	#dataout,(a5)
+	move.w	#10,d1
+WasWaitingLoop	dbf	d1,WasWaitingLoop
+	clr.b	(a5)
+	bset	#7,flag
+	bra	ReadCharLoop
+	rts
+ReadChar	moveq	#0,d0
+	moveq	#0,d5
+ReadCharLoop	move.w	#20,d1
+ReadNextLoop	sub.w	#1,d1
+	beq	WasWaitingFor
+	btst	#clkin,(a5)
+	beq	ReadNextLoop
+	bsr	WClkLow
+	btst	#datain,(a5)
+	bne	NoOnReadChar
+	bset	d0,d5
+NoOnReadChar	addq.b	#1,d0
+	cmpi.b	#8,d0
+	bne	ReadCharLoop
+	rts
+GetDeviceNum	bsr	WAtnHigh
+	bsr	WClkHigh
+	bset	#dataout,(a5)
+	bsr	WClkLow
+	clr.b	(a5)
+	bsr	ReadChar
+	and.b	#15,d5
+	move.b	d5,gerat
+	rts
+WDataHigh	btst	#datain,(a5)
+	beq	WDataHigh
+	rts
+WDataLow	btst	#datain,(a5)
+	bne	WDataLow
+	rts
+WAtnHigh	btst	#atn,(a5)
+	beq	WAtnHigh
+	rts
+WAtnLow	btst	#atn,(a5)
+	bne	WAtnLow
+	rts
+WClkLow	btst	#clkin,(a5)
+	bne	WClkLow
+	rts
+WClkHigh	btst	#clkin,(a5)
+	beq	WClkHigh
+	rts
+SendByte	bsr	WDataHigh
+	bsr	WDataLow
+	bset	#clkout,(a5)
+	moveq	#40,d0
+SendByteSleep	dbf	d0,SendByteSleep
+	moveq	#0,d0
+	bclr	#dataout,(a5)
+SendByteLoop	btst	d0,d5
+	bne	SendBitLow
+	bset	#dataout,(a5)
+SendBitLow	bclr	#clkout,(a5)
+	move.w	#40,d1
+SendBitWait	dbf	d1,SendBitWait
+	bclr	#dataout,(a5)
+	bset	#clkout,(a5)
+	move.w	#40,d1
+SendBitWait2	dbf	d1,SendBitWait2
+	add.b	#1,d0
+	cmpi.b	#8,d0
+	bne	SendByteLoop
+	bclr	#clkout,(a5)
+	bclr	#dataout,(a5)
+	rts
+LastByte	bsr	WDataHigh
+	bsr	WDataLow
+	bsr	SendByte
+	rts
+DosBase	dc.l	0
+SerialData	dc.l	0
+DataLength	dc.l	0
+FensterPointer	dc.l	0
+dosname	dc.b	"dos.library",0
+DrawerName	dc.b	"dh9:c64/dat/",0
+FileName	ds.b	20
+flag	dc.b	0
+gerat	dc.b	0
+Fenster	dc.b	"CON:51/117/538/21/                     ** *  C-64 Loader  * **               ",0
+WaitClickText	dc.b	10,"Klicke links, wenn C64 zum Transfer bereit! (rechts fuer exit)"
+WaitClickEnd
+WaitSerialLoad	dc.b	10,"Amiga wartet nun auf den Ladebefehl des C64!"
+WaitSerialEnd
+Loading	dc.b	10,"Bin am Laden ..."
+LoadingEnd

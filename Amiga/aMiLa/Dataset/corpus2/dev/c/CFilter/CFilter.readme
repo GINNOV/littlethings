@@ -1,0 +1,11 @@
+Short:        Filters pre-processed C source
+Author:       aniere@massena.univ-mlv.fr
+Uploader:     aniere massena univ-mlv fr
+Type:         dev/c
+Version:      1.0
+Architecture: m68k-amigaos
+
+
+This program removes all empty lines on a C source which has been
+pre-processed.
+It needs Ixemul.library to work.

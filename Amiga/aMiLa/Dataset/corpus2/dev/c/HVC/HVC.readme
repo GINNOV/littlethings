@@ -1,0 +1,99 @@
+Short:    Small, simple and nice version/revision control system
+Author:   Rune Jacobsen «shitlips@fido.euroline.no»
+Uploader: Rune Jacobsen «shitlips@fido.euroline.no»
+Type:     dev/c
+
+                           Henry Version Control v0.3
+                                       by
+                                  Rune Jacobsen
+
+· Introduction
+
+HVC was born out of need for a simple version control system for another project
+of  mine,  Henry  (which  you  may  have guessed). I have looked at a few of the
+others, and they didn't do exactly what I wanted, so I wrote my own. Turned  out
+to be a nice little exercise :)
+
+· Why does it rule? (This section also doubles as documentation)
+
+I doubt that it does, but it's dead  simple.  Everything  is  based  around  the
+magical  file  "HVC.h"  -  a header file this program automatically generates if
+there is no such file there already. If there is one there, it will read in  the
+Version,  Revision  and  Build numbers from this file, update the time info, and
+write it back. And if you give one or more of the arguments VER, REV or BUILD it
+will  bump them by one. Simple? Yes, I think so. Also, the output you get should
+be adequate for your version needs:
+
+>--- Sample HVC.h file ---
+
+/*
+** Henry Version Control
+** By Rune Jacobsen
+*/
+
+#define VERSION 0
+#define VERSTRING "0"
+#define REVISION 3
+#define REVSTRING "3"
+#define BUILD 15
+#define BUILDSTRING "15"
+#define TIMESTRING "19:39:33"
+#define DATESTRING "8/9-97"
+
+/* EOF */
+
+>--- Sample HVC.h file ---
+
+The way I use it is that I have a "@HVC BUILD" thrown into my smakefile so  that
+every time I attempt to compile my project, the Build variable increases by one.
+Then, when I eventually decide that enough bugs have been  fixed  to  justify  a
+revision change, I do a "HVC REV" in a shell. I don't know about using the "VER"
+switch yet, as my project will probably stay at version 0 for quite a few months
+still. ;)
+
+In my C program, I have a tiny little .c file that just uses  these  definitions
+to  build  up my version string etc. This little bugger is compiled every time I
+do a smake (just takes 1-2 seconds anyway), and then the whole  goob  is  linked
+into  the  final executable. Any other .o modules in my project that needs these
+values can of course get them as external variables, and  that  way  they  don't
+need  to  be recompiled. If there is such a thing as a God, I'm sure this is the
+way (s)he intended compilation and revision control to work. ;)
+
+One thing to note is that the time string uses a 24 hour  clock,  and  the  date
+string  is in "european" form, i.e. DD/MM/YY. If this is a problem for you, mail
+me and bug me, and maybe I'll release a special one for you ;) Anyway,  this  is
+stuff  that  could easily be controlled by an env-variable, and I'll add that if
+there is any interest for it.
+
+· How much does it cost?
+
+Just a couple of bytes. HVC is Emailware, so if you use it (or  just  like  it),
+you  should  mail  me  (see  top  of  file)  and  tell  me  about it. Of course,
+suggestions etc. are welcome too.
+
+If this program is ported to any Microsoft OS, I will of course have  to  charge
+anyone who uses it $50 - $100 and add a 1.2MB .DLL for keyfile checking, to keep
+with the tradition of that community.
+
+· Revision history (Yeah, of course I had to include this, it's what it's all
+                    about, man! ;D)
+
+v0.3 (8/9-97)
+ - Initial release to Aminet
+ - Wrote readme file
+
+v0.2 (8/9-97)
+ - Added the time functions
+
+v0.1 (7/9-97)
+ - Got the idea
+ - Added ReadArgs() parsing of arguments
+ - Added parsing of already existing HVC.h file
+ - Added writing back to file
+
+· About the author
+
+Hey, my name is Rune Jacobsen and I have a car. You can email me or visit me  on
+IRC.  I  am most often on Undernet #AmigaCafe (Shitlips is the nick), but I also
+have some guest appearances on ARCnet #IBeta (same nick).
+

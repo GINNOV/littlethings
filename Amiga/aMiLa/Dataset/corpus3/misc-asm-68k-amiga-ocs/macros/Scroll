@@ -1,0 +1,15 @@
+SCROLL	macro
+	move.l	\1,a0
+	move.l	\3,d3
+	move.l	$58(a0),a0
+	move.l	$08(a0),a4
+	clr.l	d1
+	mulu	#40,d3
+	move.l	(a4),d0
+	add.l	d0,d3
+	move.l	d3,(a5)
+\4	add.l	#4,d1
+	move.l	(a5)+,(a4)+
+	cmp.l	\2,d1
+	bne	\4
+	endm

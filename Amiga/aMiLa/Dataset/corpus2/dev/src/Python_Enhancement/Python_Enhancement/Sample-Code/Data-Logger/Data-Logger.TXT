@@ -1,0 +1,118 @@
+
+                   Plotting Data From The Parallel Port.
+                   -------------------------------------
+
+                        Data-Logger Version 0.10.00.
+                        ----------------------------
+
+  To use this SW correctly the HARDWARE ONLY from the archives on AMINET:-
+
+            http://main.aminet.net/hard/hack/TestGear2.lha
+
+  'Project6', an ADC, (Analogue to Digital Converter), AND...
+
+            http://main.aminet.net/hard/hack/TestGear7.lha
+
+  a 'Data-Logger/Transient-Recorder' dedicated project...
+
+  ARE REQUIRED; OR ELSE, ensure NOTHING is connected to the AMIGA parallel
+  port to allow 'Data-Logger.py' to run in DEMO mode...
+
+  Now read on... :)
+
+  History:-
+  ---------
+
+  11-05-2007.
+  -----------
+  Version 0.10.00. Major version upgrade. Modified the 'TRIGSET' command
+  to allow for ANY 'typo' errors. Ability to now save plotted data in
+  ~#?.CSV~ format. Now working on very basic 'PATH' changing.
+
+  30-04-2007.
+  -----------
+  Version 0.00.16. Finished the triggering facilities, the trigger SET
+  POINT. Now working on saving the data in MS EXCEL (TM), ~.CSV~ format.
+  (This will shift the Version number to a new level.)
+
+  15-04-2007.
+  -----------
+  Version 0.00.15. Started the triggering facilities. Trigger modes, OFF,
+  POSitive going, NEGative going and exactly EQUal done. Working on the
+  trigger SET POINT at the moment.
+
+  12-04-2007.
+  -----------
+  Version 0.00.14. ALL buttons now completed. Other minor code changes.
+  Working on major additions, e.g. Triggering, basic statistical
+  measurements, saving data in CSV format etc. Triggering firstly.
+
+  07-04-2007.
+  -----------
+  Version 0.00.13. Modify the code so that the 'commands' now do the same
+  as the buttons and that the buttons work when the 'command' is 'executed.'
+
+  02-04-2007.
+  -----------
+  Version 0.00.12. Cleaned up the code and added many new comments.
+
+  01-04-2007.
+  -----------
+  Version 0.00.11 - Also; this is the initial version added to the 
+  Python_Enhancement.lha Version 0.00.06 archive on AMINET. Added a 'HELP'
+  listing to the code.
+
+  21-03-2007.
+  -----------
+  Version 0.00.11. See above.
+
+  14-03-2007.
+  -----------
+  Version 0.00.10. Some extra commands added.
+
+  01-03-2007.
+  -----------
+  Version 0.00.09. (Data-Logger_0_00_09), first upload to above site.
+
+  In the 'Extras' drawer are screen grabs of a semi-serious application I
+  am working on using the 'Plugins' method to generate a Data-Logger for
+  long term variation measurement. It grabs 8 bit data directly from the
+  parallel port and plots that data onto a pre-defined window.
+
+  The bright white random NOISE trace was generated from a random number
+  generator in DEMO mode without any hardware connected. The light grey
+  trace underneath the noise is the centreline marker. The black lines are
+  the -50 and +50 pixel markers.
+
+  I NOW have a fully operational model of plotting data from the parallel
+  port to the 'blue' plotting 'window'. All of the buttons are now working.
+  The one big problem is that on a standard A1200 button access is SLOW.
+  The LMB has to be pressed for about 1 second over a button for a response.
+
+  As can be seen from the source code this lunatic idea of mine is working.
+  The source code is 'Data-Logger.py' and ONLY works correctly with a
+  genuine 'Shell' or 'KingCON' shell.
+
+  Ensure the two files in the 'S' drawer are copied over to the S: volume.
+  These two files are 'Data-Logger-Startup' and 'Data-Logger.py'.
+  Ensure the 'PYTHON:' volume is where the executable file 'Python' can be
+  found and that the 'Plugins' drawer is in the 'PYTHON:' volume.
+
+  Double click the 'Data-Logger' icon and away we go... :)
+
+  At this point in time I have NO IDEA how to implement PULL DOWN MENUs!?!
+  ANY ideas and/or help would be greatly appreciated...
+
+  IMPORTANT!!!
+  ------------
+  'Data-Logger_PAR.py' is a version using 'PAR:' as a 'VOLUME' in READ mode
+  only. It WILL remain at Version 0.00.09 until 'Data-Logger.py' is near
+  total completeion. This method REQUIRES 'PAR_READ.lha' from:-
+
+                http://main.aminet.net/hard/hack/PAR_READ.lha
+
+  73...
+
+  Bazza...
+
+  Team AMIGA...

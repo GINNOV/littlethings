@@ -1,0 +1,496 @@
+Table of Contents.
+
+     Tools Created by the Install Script.
+        Compiler.
+        Libraries
+        Header Files
+     GCC Tools Required for ELF Executables
+     Compiling and Linking
+        Alignment Issues
+        ELF objects and executables
+               Compatibility with GCC 
+        Hunk objects and executables
+            Mixing 68k and PPC Code
+        ELF vs. HUNK, which should I use? 
+     Library Routines for sharing memory with 68k programs.
+     Debugging with CPRPPC     
+     Limitations
+     Examples
+        Calc
+     Shared Libraries
+        Shared Library examples
+
+
+Tools created by the Install Script.
+
+The install script does not modify any of the existing 68k
+tools. Instead, it creates a new compiler and toolset for
+generating PPC code. The files associated with the compiler
+are: 
+            scppc
+            sc1ppc.library
+            sc2ppc.library
+            sc2ppch.library
+            scpeep.library
+            scgoppc.library
+            cprppc
+            slinkppc
+            
+The install script also creates runtime liibraries; scppc.a
+is the ELF format C runtime, and scppc.lib is the HUNK format
+verison. The C++ libraries are sccxxppc.a and sccxxppc.lib.
+
+Some of the 68k header files are patched to provide the necessary
+changes for PPC support. Also, new headers are included that provide 
+inline functions for access to OS routines. These new headers are
+placed in sc:ppcinclude.
+
+
+GCC Tools Required to Create ELF Executables.
+
+To create ELF executables, you will also need the linker (ld) from
+the GCC archive. If you plan to make link libraries, you will
+also need the ELF libraries (ar). These tools can be found on
+the Phase 5 CD, or on ftp.ninemoons.com in the 'binutils'
+archive.
+
+
+Compiling.
+
+Alignment issues:
+
+By default, the PPC compiler aligns items on natural boundaries. This
+differs from the 68k compiler (which aligns items on at most 2 byte 
+boundaries). The PPC compiler supports the following #pragma to change
+the alignment:
+
+#pragma options align=mac68k
+#pragma options align=power
+#pragma options align=reset
+
+At the end of any header file, the alignemt is reset back to what it
+was before the header file was included.
+
+INCLUDE: vs PPCINCLUDE:
+
+The compiler will search PPCINCLUDE: first, followed by INCLUDE:. Any
+header file that is pulled from INCLUDE: will automatically set the 
+alignment to 68k style.
+
+
+ELF Objects and Executables
+
+To create PowerPC object modules, use the SCPPC driver instead
+of the SC driver. By default, the objects created by SCPPC are
+ELF format.
+
+Compatibility with GCC 
+
+I have tried to make the compiler compatible with GCC objects. As far
+as I know, there are only two areas where SAS/C is not compatible.
+
+  1) va_start(), va_arg(), and the va_list structure are not compatible.
+     You can call a varargs function from one compiler to the other,
+     but you cannot pass a structure of type va_list between modules
+     compiled with different compilers.
+
+  2) Passing and returning structures by value are not compatible.
+
+
+Linking ELF Executables
+
+To link with the SAS/C standard library, you must use THREE modules
+(as opposed to TWO in the 68k version) besides the objects for your
+own code. An example link command would look like:
+
+ppc-amigaos-ld -r -o exename lib:c_ppc.o <YOUR OBJECTS GO HERE> lib:scppc.a lib:end.o
+
+
+c_ppc.o is equivalent to c.o in the 68k version. Source code is also provided
+        for this module (c_ppc.c)
+        
+scppc.a is equivalent to sc.lib and scm.lib.
+
+end.o   is a new addition, required to make autoinitializers work. In the 68k
+        version SLINK performs this extra work.
+
+
+If you are linking an executable that contains C++ code, then add lib:scppccxx.a
+before lib:scppc.a on the link line, eg
+
+ppc-amigaos-ld -r -o exename lib:c_ppc.o <YOUR OBJECTS GO HERE> lib:scppccxx.a lib:scppc.a lib:end.o
+
+Note: The EXECUTE bit is not set by 'ppc-amigados-ld', so you need
+to set it yourself, eg:
+
+protect exename +e
+
+To run an ELF executable, you either need to use the RUNELF program 
+(included in this archive, sc:c/runelf), or the LoadSeg patch provided
+by Phase 5.
+
+
+Hunk Objects and Executables
+
+Firstly, these HUNK style objects are NOT compatible with WarpOS. They
+run only with the Phase 5 kernel, ppc.library.
+
+To use HUNK objects instead of ELF objects, compile with the 
+HUNKOBJ option to SCPPC. To link, use SLINKPPC with the option PPC
+to link. SLINKPPC should be backward compatible with the previous 6.58 
+version of the 68k SLINK, but I have created a new exe for now, just to 
+insure that I don't break the 68k version. Also, SLINKPPC cannot be used 
+to strip debug information from execuatbles yet. You can relink the
+objects with the NODEBUG option to get an executable without debug
+information.
+
+When you create a HUNK style executable, the startup code is still
+68k code. The 68k code handles the Workbench startup message, and
+command line arguments. It then starts a PPC task, and runs the rest
+of the PPC program.
+
+Here's an example:
+
+scppc HUNKOBJ test.c
+SLINKPPC PPC FROM lib:c.o test.o to test LIB LIB:scppc.lib
+
+
+You can also link directly from the SCPPC driver, ie:
+
+scppc HUNKOBJ test.c LINK
+
+
+
+Mixing 68k and PPC code.
+
+Every HUNK style executable is actually a mixed 68k and PPC executable.
+By default, only the startup code is 68k, howeever, it is possible
+for the PPC to call other 68k functions in the HUNK executable through
+the PPCCallM68k() kernel function. It is also possible to share global
+data between the PPC and 68k, however, extreme care should be taken
+to flush caches properly.
+
+The 68k compiler adds an underscore '_' to all global symbols (except
+regargs functions, where it add '@'). The PPC compiler does not add any
+special leading characters.  Therefore, if you write a 68k function, such
+as:
+
+foo()
+{
+}
+
+In PPC code, you can call this 68k function by doing:
+
+extern int _foo();
+bar()
+{
+    PPCCallM68k(_foo, ...);
+}
+
+
+Format of a HUNK style executable.
+
+This diagram shows the basic layout of a PPC Hunk style execuatble.
+
+   -------------------------------
+   |      c.o  (68k)             |
+   |     __main() (68k)          |   Code Hunk.
+   |                             |
+   |    PPC code                 |
+   |                             |
+   |                             |
+   -------------------------------
+   |                             |
+   | Near Data section (TOC)     |   Data Hunk
+   | A4 and R13 point here       |
+   |                             |
+   -------------------------------
+   |                             |
+   | Far data section            |   Data Hunk
+   |                             |
+   |                             |
+   -------------------------------
+   |                             |
+   | Far BSS section             |   BSS Hunk
+   |                             |
+   -------------------------------
+   | Slink generated ELF exe     |
+   | With entry point, and       |   Code Hunk
+   | branches to Kernel routines |
+   |                             |
+   -------------------------------
+
+The program starts like a normal 68k executable, running the
+standard startup code. The code in __main() (found in 
+source/ppc__main.c) loads the SLINK generated ELF stub from
+memory (the SLINK generated symbol '_ElfObject' points the
+the in memory ELF stream. The address of the PPC code is saved
+in the global variable '_ElfEntry'. It then creates a PPC task and
+waits for it to finish. The ELF entry point takes four parameters:
+1) command line  2) WB message  3) Near Data (TOC) address
+4) PPC code to jump to.
+
+Calls to the ppc.library kernel are routed (by SLINK) to an offest
+relative to '_ElfEntry', so the kernel function addresses can be 
+resolved by the ELF loader.
+
+
+
+
+ELF vs. HUNK, which should I use?
+
+There's no single best answer to this question. That is why I have
+made the compiler generate both formats. Below, I tried to give some
+advantages of each form.
+
+ELF Advantages.
+
+  1) ELF is the format that Phase 5 has choosen. This is probably the
+     single biggest reason to use ELF. Phase 5 has stated that to the
+     best way to insure that your program will run on the next Phase 5
+     machine/OS is to use ELF.
+     
+  2) ELF is a standard format. There are many tools available to 
+     manipulate ELF files.
+
+  3) There are third party libraries available in the ELF format.
+     If you use ELF, you can link with them. One example is libmoto.a,
+     a set of optimised math routines.
+
+
+HUNK Advantages.
+
+  1) It is not necessary to have the Elf LoadSeg() patch running, or
+     to use 'runelf' to run this type of executable.
+     
+  2) It is easier to mix 68k and PPC code in a single executable.
+  
+  3) Amiga style shared libraries are possible (see my proposed 
+     format of these below).
+     
+  4) If you use C++, only the HUNK version can do implicit templates
+     because of the necessary linker support. 
+
+
+Library Routines for sharing memory with 68k programs.
+
+These routines use PPCCallM68k() and use the 68k to perform the
+read and write, so it is safe to read and write system structures 
+with these routines.
+
+void Write68kLong(long value, void *ptr);
+void Write68kShort(long value, void *ptr);
+void Write68kChar(long value, void *ptr);
+long Read68kLong(void *ptr);
+long Read68kShort(void *ptr);
+long Read68kChar(void *ptr);
+
+
+Debugging With CPRPPC
+
+CPRPPC is able to debug both ELF and HUNK style executables with
+full source level debugging. It can also debug Workbench programs.
+
+
+Debugging ELF Exectuables.
+
+To debug an ELF executable, simply do:
+
+cprppc exename <arguments>
+
+CPRPPC will start the program 'exename' in the same way that RUNELF
+starts the program.
+
+CPRPPC is also able to catch the next PPC task started. This is usefull
+for debugging programs started under Workbench, or from a different 
+68k task. To do this, start CPRPPC with the -catch option. ie
+
+CPRPPC -catch <exename>
+
+Then go to another shell or use WorkBench to start the PPC program
+normally.  CPRPPC will gain control of the PPC task.
+
+
+Debugging HUNK executables.
+
+To debug a HUNK style executable, you will need to have SEGTRACKER running.
+Once it's running, use the -catch option to catch the PPC task.  In one
+shell, do:
+
+CPRPPC -catch <exename>
+
+Then in another shell, start the program to be debugged.
+
+
+Limitations:
+
+Currently, for ELF format, only the compiler and debugger are provided.
+You will need to use the linker provided with GCC.
+
+This compiler is compatible with GCC with the exception of passing
+structures by value.
+
+GST's are not supported in the PPC compiler.
+
+Placing strings in the code section is not supported. The compiler
+will ignore options to place strings in the code section, however,
+it will merge common strings with the STRMERGE option.
+
+The concept of near, far, and chip data is only supported in the
+HUNK version of the compiler. All data in the ELF compiler is treated as 
+far.
+
+
+C++ Limitations:
+
+You should use the C++ header files that are included in the Experimental
+C++ patch, not the 6.50 C++ header files. 
+
+C++ supports the INCLUDE: vs PPCINCLUDE: alignment differences, but it
+does not support #pragma options align=...
+
+
+Examples:
+
+There are two examples in the 'examples' directory. The first is a simple 
+"Hello World" program that also prints out its arguments. The second is a 
+simple RPN calculator, that I use as the first test case whenever I create
+a new compiler.
+
+Also, in that directory is a small utility to execute ELF programs, called 
+"runelf". This program runs ELF programs in the same manner as CPRPPC, 
+with respect to setting up stdio and command line arguments.
+
+
+Simply CD to the examples directory, and run smake.
+Then try
+
+   runelf hello.elf 1 2 3 4 5
+   
+or
+
+   cprppc hello.elf 1 2 3 4 5
+   
+
+To use the calculator, try something like
+
+runelf calc.elf
+
+1 2 +
+
+You can type '?' to get the list of functions it has.
+
+
+
+Shared Libraries
+
+The following is my current plan to implement PPC Shared libraries.
+The goals of this form of shared library are as follows.
+
+1) Compatible with current Amiga shared library format.
+
+2) Able to be called from either 68k or PPC code. This would
+   mean that old program could benefit from new PPC shared libraries.
+
+3) Provide ability for the shared library to run without
+   a PPC chip (may require extra coding, but it will be possible).
+
+       68k Jump table -A6                Linker generated stub in Far data
+     |-----------------------|           ---------------
+     |_______________________|           |_____________|---------+
+     |_______________________|   ------->| JMP         | ---+    |
+     |_______________________|           ---------------    |    |
+A6-> |-----------------------|                              |    |
+     |                       |                              |    |
+     |                       |                              |    |
+     |                       |                              |    |
+     -------------------------                              |    |
+                                                            |    |
+      Near Data and PPC TOC                                 |    |
+          +A6                                               |    |
+                                     -------------------    |    |
+                                     |  68k function   |  <-+    |
+                                     |                 |         |
+                                     |                 |         |
+                                     |                 |         |
+                                     -------------------         |
+                                                                 |
+                                                                 |
+                                                                 |
+                                                                 |
+                                     -------------------         |
+                                     |  PPC Function   |     <---+
+                                     |                 |
+                                     |                 |
+                                     |                 |
+                                     |                 |
+                                     -------------------
+
+
+LibOpen() will create a PPC Task for each OpenLibrary(). That PPC
+task will then be put in a wait loop waiting for msg's that signify
+a function call into the PPC code.
+
+68k code will call functions in this library through the #pragma
+mechanism. The 68k functions will then use the function dispatch
+to send a message to the PPC task.
+
+PPC code will dereference the jump table, then dereference -4 from
+the 68k stub to get the address of the PPC function in the library.
+
+LibClose() will send a termination message to the PPC Task in the
+library.
+
+
+
+Shared Library Examples
+
+
+There are three examples in the archive, in the directories 
+'samplelib1', 'samplelib2', and 'samplelib3'. 
+
+NOTE: with ppc.library V45.20 'samplelib1' is not stable for 
+unknown reasons. It does work with later experimental versions. 
+Also, it works when stepping through this example with CPR & 
+CPRPPC, so there must be a race condition somewhere.
+
+The other two examples work fine with V45.20.
+
+
+
+samplelib1
+
+This version creates a separate global data area for each 
+opener of the library. Also, a PPC task is created in
+LibOpen() for each opener.
+
+When PPC code makes a call into the library, the process that
+made the call executes the PPC code in the library directly.
+There is no messages passed.
+
+When 68k code makes a call into the library, a message is passed
+to the PPC task created in LibOpen, and the code executes in
+that task. Note: Only 8 parameters are currently passes, and
+they must be some integer or pointer type, ie no doubles, floats,
+or structs passed by value. Typically, Amiga libraries don't
+do that anyway.
+
+
+
+samplelib2
+
+There is no PPC task created in this version, and global data is
+shared between all openers of the library. In this form, all
+code must be duplicated in 68k and PPC form.
+
+
+samplelib3
+
+This version is like samplelib1, in that it has a separate copy
+of global data for each task, but it does not create the function
+dispatcher to let 68k code call the PPC routines. The 68k entry 
+points are simply do nothing stubs. The LibOpen creates a syncronous
+PPC task to run the autoinitializers, and LibClose does creates another
+to run the autoterminators.
+
+The remaining PPC entrypoints execute in the openers task.

@@ -1,0 +1,13 @@
+Short:        Guide with links to all structs + info
+Author:       P-O Yliniemi
+Uploader:     P-O Yliniemi
+Type:         dev/asm
+Version:      1.0
+Architecture: m68k-amigaos
+
+Include: has to be assigned to the main include directory, containing
+all include files (the directory containing the "exec", "dos" and all
+the other drawers) for proper operation.
+
+This guide also contains offsets for all symbols for those who don't
+have the include files.

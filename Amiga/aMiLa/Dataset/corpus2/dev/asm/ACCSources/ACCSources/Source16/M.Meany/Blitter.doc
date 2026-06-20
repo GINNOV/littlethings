@@ -1,0 +1,204 @@
+
+
+ The Bob Philosophy
+ ==================
+
+ I intend to develop a few routines that will enable programmers to 
+display, move and animate Bobs in a hardware enviroment. The routines will
+work on a couple of custom structures attached to each bob and screen.
+
+ The Bobs will be Cookie-Cut onto the screen, the background being preserved
+and restored automatically by the subroutines.
+
+ The routines will be:
+
+
+ InitBob
+ -------
+ This subroutine is called to initialise a Bob. Memory will be reserved for a
+Bob structure and damage region. The Bob structure is initialised ready for
+display.
+
+ Bob = InitBob ( Width, Height, Depth, BobData, BobMask)
+  d0		  d0      d1     d2      a0	  a1
+
+ AddImage
+ --------
+ This subroutine adds the next Bob Image to the animation part of the
+structure. All frames MUST be the same dimensions. Frames determines how
+many video frames this image is displayed for.
+
+AddImage ( BobData, Frames )
+	     a0       d0
+
+ DisplayBob
+ ----------
+ This subroutine will do the following:
+
+	1/ Restore corrupted screen area.
+	2/ Do all calculations, update anim and store in Bobs structure.
+	3/ Save area of screen about to be corrupted.
+	4/ Blit the image to the screen.
+
+DisplayBob ( XPos, YPos, Bob, Screen )
+	      d0    d1   a0     a1
+
+ InitScreen
+ ----------
+ This subroutine initialises a screen structure for the Bob system.
+
+Screen = InitScreen ( Width, Height, Depth, BPLAddress )
+  d0                    d0      d1     d2        a0
+
+
+ FreeBob
+ -------
+ This routine releases all memory allocated by InitBob.
+
+FreeBob ( Bob )
+	  a0
+
+ FreeScreen
+ ----------
+ This routine releases all memory allocated by InitScreen.
+
+FreeScreen ( Screen )
+	       a0
+
+ NOTES
+ =====
+
+ Double buffered displays will still work as the Bob structure contains the
+address to restore data at.
+
+ A Bob can only be displayed on the screen it was initialised for, or one
+of identical dimensions.
+
+ ALL Bobs must have a blank word following each display line.
+
+ These routines should save HOURS in the development of many a demo!
+
+ I did not like the Cookie-Cut minterm given in the Hardware Reference
+Manual. It had a nasty habit of not allowing background data through.
+Instead, I have used a D=B+aC minterm with:
+
+	D = destination address ( the screen )
+	A = Bobs mask ( see below )
+	B = Bobs data
+	C = Screen prior to the blit
+
+ This has the effect of displaying the Bob regardless of wether a bit is set
+or clear in the mask. The mask only operates on the background. If a bit is
+set in the mask, the background will NOT show through.
+
+ Using this technique simplifies things and the mask only has to be the size
+of 1 plane of the bob. The display routine applies the same mask to each
+bitplane during the blit.
+
+ For instance, suppose you have designed a ball:
+
+	000000000000000000
+	000111111111111000
+	000100000000001000
+	000100000000001000
+	000100000000001000
+	000100000000001000
+	000100000000001000
+	000100000000001000
+	000111111111111000
+	000000000000000000
+
+ A mask that will put a border round this, but allow the background to show
+through the middle would look like:
+
+	001111111111111100
+	001111111111111100
+	001100000000001100
+	001100000000001100
+	001100000000001100
+	001100000000001100
+	001100000000001100
+	001100000000001100
+	001111111111111100
+	001111111111111100
+
+ If you would rather use the more fiddly D=AB+aC then just alter the minterm
+value from $ce to $ca in the DisplayBob routine.
+
+						Mark, Aug 91.
+
+ Development
+ ===========
+
+ 18-8-91
+ -------
+ Had the idea for these routines while driving back from Blaines. Must have
+been the company!
+
+ 21-8-91
+ -------
+ I've been itching for tonight all week! A chance to get on the computer.
+Have decided on structures I'm going to start with and have written the
+basic allocation code.
+
+ 22-8-91
+ -------
+ The basic routines work now, though animation is still a little way off. I
+have decided to implement animation of a Bob with a seperate subroutine,
+this will make it possible to leave a Bob stationary if required, or it
+could be animated in a stationary position without having to recalculate all
+the modulos and addresses. The animate routine will only redraw a Bob if the
+frame counter reaches 0.
+
+ I have tried the routines on a 5 bitplane picture using a 4 bitplane bob ....
+No problems!
+
+ In the process I've also developed a joystick reading subroutine.
+
+ Oh Dear
+ -------
+ Major problems encountered when using multiple bobs in a double buffered
+display. It would appear I overlooked the fact that the backgrounds should
+be restored in reverse order to that used to display the bobs.
+
+ Have had to split the DisplayBob routine in two to account for this. There
+is now a seperate routine to restore the background. This has been developed
+with a double buffered display in mind, so two damage regions are maintained
+for each bob. Don't worry about this, the routines do all the nitty gritty.
+
+ I have also added a routine to switch the screens in a double buffered
+display. This only needs to be done after something has been changed!
+
+ Great fun all this blitter stuff. I may even look into interleaved bitmaps
+as suggested to me by Raistlin. Better finish these routines first though.
+
+ The display bob routine has also been updated to deal with double buffered
+displays. The original routines are fine for one bob on a non-buffered
+display, but what use is that? Original source is included so that I could
+demonstrate an effect used in some Amos demos ( not taking the piss, honest )
+This entails displaying a bob incorrectly into a double buffered display to
+create the illusion of having loads of moving bobs, when infact there is only
+the one.
+
+
+ When using these routines the following method should be adopted:
+
+		Display bobs at initial position in display
+
+LOOP		Do movement calculations
+
+		Display bobs in workscreen
+
+		Wait for VBL
+
+		Switch screens
+
+		Replace backgrounds
+
+		Goto LOOP
+
+ This can be seen in all example source.
+
+ If you think these routines will be of use let me know.
+
+					Mark.

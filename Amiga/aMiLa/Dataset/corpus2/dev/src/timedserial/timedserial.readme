@@ -1,0 +1,39 @@
+Short:     Serial I/O functions that time-out. Source included.
+Author:    Jim Steichen (jimbot@frontiernet.net)
+Uploader:  Jim Steichen (jimbot@frontiernet.net)
+Type:      dev/src
+Version:   2.0
+Requires:  C-Compiler of some sort.
+
+This is a collection of functions that control the
+Amiga Serial device fully.  They differ from most
+other functions in that they time-out if there is
+no response from the PC that's connected at the
+other end of the serial cable.
+
+The object file (TimedSerialPPC.o) was produced by 
+gcc V2.95 (see enclosed MakeFile) on an AmigaOne under OS4.0.
+
+The object file (TimedSerial.o) was produced by 
+SAS-C V6.58 (see enclosed SMakeFile) on an A4000T under OS3.9.
+ 
+See the enclosed AmigaGuide file for documentation
+on how the functions work!
+
+HISTORY
+    28-Oct-2004 - Added AmigaOS4 & gcc support.
+    
+    25-Dec-2002 - Added a boolean flag to each function that
+                  uses the timer in order to control whether
+                  the timer uses microseconds or seconds.
+                  Also modified the TranslateErrorNumber
+                  function to return a string with incorrect
+                  error number values (V2.0).
+
+    28-Sep-2000 - Added the serName parameter to the OpenSerial()
+                  function (V1.1). 
+
+    30-Dec-1998 - Added GetErrNum() & GetSerialStatus() (V1.0)
+
+    06-Nov-1996 - Created.
+

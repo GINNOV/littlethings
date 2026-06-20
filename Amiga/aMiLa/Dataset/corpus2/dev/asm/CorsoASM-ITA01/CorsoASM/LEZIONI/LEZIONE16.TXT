@@ -1,0 +1,4781 @@
+****************************************************************************
+;	IL 68020 - Scusate se ho messo dei doc in inglese, ma non ho
+;		   ancora avuto il tempo di scrivere la lezione!
+****************************************************************************
+
+Ecco i nuovi modi di indirizzamento del TFASMONE 1.28:
+
+mode_6bw_:	move.b	(a1,d1,$7fff.w),d2		; 68020++
+		move.w	(a1,d1,$7ffe.w),d2		; 68020++
+		move.l	(a1,d1,$7ffe.w),d2		; 68020++
+
+*	*	*	*	*	*	**
+
+mode_6bl_:	move.b	(a1,d1,$7fffffff.l),d2		; 68020++
+		move.w	(a1,d1,$7ffffffe.l),d2		; 68020++
+		move.l	(a1,d1,$7ffffffe.l),d2		; 68020++
+
+*	*	*	*	*	*	**
+
+mode_6cww_:	move.b	([$7fff.w,a1],d1,$7fff.w),d2		; 68020++
+		move.w	([$7ffe.w,a1],d1,$7ffe.w),d2		; 68020++
+		move.l	([$7ffe.w,a1],d1,$7ffe.w),d2		; 68020++
+
+*	*	*	*	*	*	**
+
+mode_6cwl_:	move.b	([$7fff.w,a1],d1,$7fffffff.l),d2	; 68020++
+		move.w	([$7ffe.w,a1],d1,$7ffffffe.l),d2	; 68020++
+		move.l	([$7ffe.w,a1],d1,$7ffffffe.l),d2	; 68020++
+
+*	*	*	*	*	*	**
+
+mode_6clw_:	move.b	([$7fffffff.l,a1],d1,$7fff.w),d2	; 68020++
+		move.w	([$7ffffffe.l,a1],d1,$7ffe.w),d2	; 68020++
+		move.l	([$7ffffffe.l,a1],d1,$7ffe.w),d2	; 68020++
+
+*	*	*	*	*	*	**
+
+mode_6cll_:	move.b	([$7fffffff.l,a1],d1,$7fffffff.l),d2	; 68020++
+		move.w	([$7ffffffe.l,a1],d1,$7ffffffe.l),d2	; 68020++
+		move.l	([$7ffffffe.l,a1],d1,$7ffffffe.l),d2	; 68020++
+
+*	*	*	*	*	*	**
+
+mode_6dww_:	move.b	([$7fff.w,a1,d1],$7fff.w),d2		; 68020++
+		move.w	([$7ffe.w,a1,d1],$7ffe.w),d2		; 68020++
+		move.l	([$7ffe.w,a1,d1],$7ffe.w),d2		; 68020++
+
+*	*	*	*	*	*	**
+
+mode_6dwl_:	move.b	([$7fff.w,a1,d1],$7fffffff.l),d2	; 68020++
+		move.w	([$7ffe.w,a1,d1],$7ffffffe.l),d2	; 68020++
+		move.l	([$7ffe.w,a1,d1],$7ffffffe.l),d2	; 68020++
+
+*	*	*	*	*	*	**
+
+mode_6dlw_:	move.b	([$7fffffff.l,a1,d1],$7fff.w),d2	; 68020++
+		move.w	([$7ffffffe.l,a1,d1],$7ffe.w),d2	; 68020++
+		move.l	([$7ffffffe.l,a1,d1],$7ffe.w),d2	; 68020++
+
+*	*	*	*	*	*	**
+
+mode_6dll_:	move.b	([$7fffffff.l,a1,d1],$7fffffff.l),d2	; 68020++
+		move.w	([$7ffffffe.l,a1,d1],$7ffffffe.l),d2	; 68020++
+		move.l	([$7ffffffe.l,a1,d1],$7ffffffe.l),d2	; 68020++
+
+*	*	*	*	*	*	**
+
+
+;- These are variants of the above modes except the Base Displacement or
+;- Index register are supressed
+ 
+suppress_:	move.l	([0.w,a1],d2),d3
+		move.l	([0.l,a1],d2),d3
+		move.l	([0.w,a1]),d2
+		move.l	([0.l,a1]),d2
+		move.l	([0.l]),d2
+		move.l	([0.w]),d2
+
+
+;=============================================================
+; The following PC relative modes are HIGH COMMANDS.
+;
+; Usualy the numbers used in these commands would be labels !!
+; Most assemblers create a relative mode error trying to
+; assemble these commands. When the absolute numbers are
+; labels the assembler WILL allow them.
+;
+; in Asm-One you CAN use label OR absolute numbers.
+; !!! Just be carefull with them  !!!
+;=============================================================
+
+mode_7_2_:	move.b	$7f(pc),d2
+		move.w	$7f(pc),d2
+		move.l	$7ffe(pc),d2
+
+mode_7_2labels_:
+		move.b	mode_7_2_(pc),d2
+		move.w	mode_7_2_(pc),d2
+		move.l	mode_7_2_(pc),d2
+
+; This is also mode_7_2 but in the new syntax !!!
+
+mode_7_2ns_:	move.b	($7f,pc),d2
+		move.w	($7f,pc),d2
+		move.l	($7ffe,pc),d2
+
+mode_7_2nslabels_:
+		move.b	(mode_7_2ns_,pc),d2
+		move.w	(mode_7_2ns_,pc),d2
+		move.l	(mode_7_2ns_,pc),d2
+
+*	*	*	*	*	*	**
+
+mode_7_3_:	move.b	$7e(pc,d1),d2
+		move.w	$7e(pc,d1),d2
+		move.l	$7e(pc,d1),d2
+
+mode_7_3labels_:	move.b	mode_7_3_(pc,d1),d2
+		move.w	mode_7_3_(pc,d1),d2
+		move.l	mode_7_3_(pc,d1),d2
+
+; This is also mode_7_3 but in the new syntax !!!
+
+mode_7_3ns_:	move.b	($7e.w,pc,d1),d2
+		move.w	($7e.w,pc,d1),d2
+		move.l	($7e.w,pc,d1),d2
+
+mode_7_3nslabels_:
+		move.b	((mode_7_3nslabels_).w,pc,d1),d2
+		move.w	((mode_7_3nslabels_).w,pc,d1),d2
+		move.l	((mode_7_3nslabels_).w,pc,d1),d2
+
+mode_7_3w_:	move.b	(pc,d1,$7fff.w),d2		; 68020++
+		move.w	(pc,d1,$7ffe.w),d2		; 68020++
+		move.l	(pc,d1,$7ffe.w),d2		; 68020++
+
+mode_7_3l_:	move.b	(pc,d1,$7fffffff.l),d2		; 68020++
+		move.w	(pc,d1,$7ffffffe.l),d2		; 68020++
+		move.l	(pc,d1,$7ffffffe.l),d2		; 68020++
+
+*	*	*	*	*	*	**
+
+mode_7_3postww_:
+		move.b	([$7fff.w,pc],d1,$7fff.w),d2		; 68020++
+		move.w	([$7ffe.w,pc],d1,$7ffe.w),d2		; 68020++
+		move.l	([$7ffe.w,pc],d1,$7ffe.w),d2		; 68020++
+
+mode_7_3postwwlabels_:
+	move.b	([(mode_7_3postwwlabels_).w,pc],d1,$7fff.w),d2 ; 68020++
+	move.w	([(mode_7_3postwwlabels_).w,pc],d1,$7ffe.w),d2 ; 68020++
+	move.l	([(mode_7_3postwwlabels_).w,pc],d1,$7ffe.w),d2 ; 68020++
+
+mode_7_3postwl_:
+		move.b	([$7fff.w,pc],d1,$7fffffff.l),d2	; 68020++
+		move.w	([$7ffe.w,pc],d1,$7ffffffe.l),d2	; 68020++
+		move.l	([$7ffe.w,pc],d1,$7ffffffe.l),d2	; 68020++
+
+mode_7_3postlw_:
+		move.b	([$7fffffff.l,pc],d1,$7fff.w),d2	; 68020++
+		move.w	([$7ffffffe.l,pc],d1,$7ffe.w),d2	; 68020++
+		move.l	([$7ffffffe.l,pc],d1,$7ffe.w),d2	; 68020++
+
+mode_7_3postll_:
+		move.b	([$7fffffff.l,pc],d1,$7fffffff.l),d2	; 68020++
+		move.w	([$7ffffffe.l,pc],d1,$7ffffffe.l),d2	; 68020++
+		move.l	([$7ffffffe.l,pc],d1,$7ffffffe.l),d2	; 68020++
+
+*	*	*	*	*	*	**
+
+mode_7_3preww_:	move.b	([$7fff.w,pc,d1],$7fff.w),d2		; 68020++
+		move.w	([$7ffe.w,pc,d1],$7ffe.w),d2		; 68020++
+		move.l	([$7ffe.w,pc,d1],$7ffe.w),d2		; 68020++
+
+mode_7_3prewwlabel_:
+	move.b	([(mode_7_3prewwlabel_).w,pc,d1],$7fff.w),d2 ; 68020++
+	move.w	([(mode_7_3prewwlabel_).w,pc,d1],$7ffe.w),d2 ; 68020++
+	move.l	([(mode_7_3prewwlabel_).w,pc,d1],$7ffe.w),d2 ; 68020++
+
+mode_7_3prewl_:	move.b	([$7fff.w,pc,d1],$7fffffff.l),d2	; 68020++
+		move.w	([$7ffe.w,pc,d1],$7ffffffe.l),d2	; 68020++
+		move.l	([$7ffe.w,pc,d1],$7ffffffe.l),d2	; 68020++
+
+mode_7_3prelw_:	move.b	([$7fffffff.l,pc,d1],$7fff.w),d2	; 68020++
+		move.w	([$7ffffffe.l,pc,d1],$7ffe.w),d2	; 68020++
+		move.l	([$7ffffffe.l,pc,d1],$7ffe.w),d2	; 68020++
+
+mode_7_3prell_:	move.b	([$7fffffff.l,pc,d1],$7fffffff.l),d2	; 68020++
+		move.w	([$7ffffffe.l,pc,d1],$7ffffffe.l),d2	; 68020++
+		move.l	([$7ffffffe.l,pc,d1],$7ffffffe.l),d2	; 68020++
+
+;=========================================================================
+;
+; Some examples using 68020++ adressing modes.
+;
+;-----Example 1------ jumping easier
+;
+; This instruction uses just 1 line to find and jump to a piece of
+; coding getting it's pointers from a tabel !!!
+; Change D0 to 0,1,2 or 3 to jump to example1_a,example1_b,......
+;
+
+example_1_:	moveq	#0,d0
+		jmp	([example1_tabel_,pc],d0.w*4) ; !!!!!!!!!!!!!
+
+example1_tabel_:	dc.l	example1_a_
+		dc.l	example1_b_
+		dc.l	example1_c_
+		dc.l	example1_d_
+
+example1_a_:	moveq	#4,d7
+		moveq	#0,d0
+		bra.s	example_2_
+
+example1_b_:	moveq	#3,d7
+		moveq	#0,d0
+		bra.s	example_2_
+
+example1_c_:	moveq	#2,d7
+		moveq	#0,d0
+		bra.s	example_2_
+
+example1_d_:	moveq	#1,d7
+		moveq	#0,d0
+		bra.w	example_2_
+
+
+;===============================================================
+;
+;--Example 2---- getting bits easier
+;
+;
+;                              3         2         1
+;                         10987654321098765432109876543210
+example_2_:	move.l	#%10011100100100101000100101010101,d0
+		bfextu	d0{1:5},d1
+
+
+******************************************************************************
+
+Optimizations for the 68020+
+
+by Erik H. Bakke
+
+Written  13/10-93
+
+
+--- I ------------------------- INTRODUCTION ---------------------- I ---
+
+
+1.1 Introduction
+
+The 68020+ (from here on 020) has several new registers and commands that
+help speeding up your code.
+This text also mentions some concepts new to the 68010 processor.
+This text contains information on how to use the new instructions, and
+address modes, as well as what modes are available to what instructions,
+and how much space they require.
+However, the timing diagrms for the different instructions are not
+included (I don't know them).
+
+1.2 Index
+
+    Chapter I-----------------Introduction-------------------
+        1.1   Introduction
+        1.2   Index
+    Chapter II------------New Addressing Modes---------------
+        2.1   Extended Address Register Indirect with Index mode
+        2.2   Memory Indirect modes
+    Chapter III---------------Improvements-------------------
+        3.1   General Improvements
+        3.2   The CMP2 instruction
+        3.3   Improved Multiply/Divide instructions
+        3.4   The CHK2 instruction
+        3.5   The EXTB instruction
+    Chapter IV--------------New Instructions-----------------
+        4.1   The BitField instructions
+              1...Single operand
+              2...Double operand
+        4.2   The RTD instruction
+        4.3   The BCD instructions
+              1...PACK
+              2...UNPK
+        4.4   The MC68040 Block Move instruction (MOVE16)
+        4.5   The 68010 BKPT instruction
+        4.6   The 68020 Module instructions
+        4.7   The CAS/CAS2 instructions
+        4.8   The CoProcessor interface instructions
+              1...User state
+              2...Supervisor state
+        4.9   Conditional TRAP instruction
+    Chapter V-------------Addressing mode tables-------------
+        5.1   Allowed Adressing modes
+
+--- II --------------------- NEW ADDRESSING MODES ---------------- II ---
+
+
+First, some new addressing modes:
+
+The 020 supports 18 different addressing modes, where the 68000 only
+supports 12.  The 6 new modes expand memory access.
+
+- The address register indirect with index now permit the index register
+  to be scaled by a factor of 1,2,4 or 8 to allow easy access to byte,
+  word, longword and quadword data units.  This, in turn greatly improves
+  access to arrays of such data.
+
+- The address register and PC indirect with index modes have been
+  extended to a more general syntax, allowind 32-bit displacements.
+  Any of the components of these modes are optional, giving us some very
+  interesting addressing modes, such as DATA register indirect, called
+  base displacement.
+
+- Another new concept in the 020 is the memory indirect addressing, which
+  allows intermediate use of a pointer in memory.  The contents of this
+  pointer is then used as the base address for further memory access.  We
+  will see examples of how this is used later.
+
+2.1 EXTENDED ADDRESS REGISTER INDIRECT with INDEX mode
+
+  The 020 supports a scale factor to be used with the index register.
+  This eliminates the need for an additional multiply/rotation instruction
+  to compute the correct index value.
+
+  Syntax: 1  (d8,An,Rm.Size*Scale)     uses old 8-bit displacement
+          2  (bd,An,Rm.Size*Scale)     uses 16 or 32-bit base displacement
+
+          3  (d8,PC,Rm.Size*Scale)     uses old 8-bit displacement
+          4  (bd,PC,Rm.size*Scale)     uses 16 or 32-bit base displacement
+
+
+  1  <ea>=d8+An+(Rm.Size*Scale)
+  2  <ea>=bd+An+(Rm.Size*Scale)
+
+  3  <ea>=d8+PC+(Rm.Size*Scale)
+  4  <ea>=bd+PC+(Rm.Size*Scale)
+
+  The addressing mode works just like the old version of it, except that
+  you may include the scale factor to multiply the index register by
+  1,2,4 or 8.  The old version can be regarded as having a scale factor
+  of 1.
+
+Example:
+
+  "Table" is an array of quadwords (64-bits)
+  "Element" (16 bits) is the element number to be looked up. (32-bit)
+
+       move.l (Element,pc),d0
+       move.l (Table,pc,d0.w*8),d0
+
+  This code fetches the 32-bit element as indicated by "Element" from the
+  table "Table".
+
+
+  Many forms of this addressing mode is legal, as the different elements
+  are optional.  Allowed forms may be:
+
+       (bd,An,Rm.Size)     Corresponds to the old version
+       (bd,Rm.Size*Scale)  Omits the address register from the <ea>
+       (bd)                Equivalent to absolute addressing
+       (Dm.l)              Data register indirect addressing
+       ()                  Just an <ea> of 0
+
+  If you choose to omit the PC, you may have to use the notation ZPC
+  and/or note the base displacement with .L, depending on your assembler.
+
+
+2.2 MEMORY INDIRECT modes
+
+  These modes enables the processor to step on a pointer in memory when
+  computing an <ea>.  These modes can be divided in two categories,
+  Pre-indexed and Post-indexed.
+
+  Syntax: 1  ([bd,An,Rm.Size*Scale],od)        Pre-indexed form
+          2  ([bd,An],Rm.Size*Scale,od)        Post-indexed form
+
+          3  ([bd,PC,Rm.Size*Scale],od)        Pre-indexed form
+          4  ([bd,PC],Rm.Size*Scale,od)        Post-indexed form
+
+  1  <ea>=Contents of(bd+An+Rm*Scale) + od
+  2  <ea>=Contents of(bd+An) + Rm*Scale+od
+
+  3  <ea>=Contents of(bd+PC+Rm*Scale) + od
+  4  <ea>=Contents of(bd+An) + Rm*Scale+od
+
+  The same rules apllies to these addressing modes as do for the
+  previously described modes.
+  All elements are optional and may be omitted.
+
+  Example:
+
+  On Amiga computers, graphics rendering functions need a pointer to a
+  rastport.
+  To extract this RastPort pointer from a Window sctructure the
+  following code would be used:
+
+         move.l ([WindowBase,pc],wd_RPort),a2
+
+
+
+
+
+
+When getting to grips with these addressing modes, they can greatly improve
+the performance of your program, as well as reducing the length of the
+code.
+
+
+
+
+--- III ---------------------- IMPROVEMENTS --------------------- III ---
+
+
+3.1 General improvements:
+
+  The 020 improves the branch instructions to use an 8, 16 or 32-bit
+  displacement.
+
+3.2 The CMP2 instruction
+
+  The CMP instructions are extended to compare a register against a pair of
+  bounds:
+           CMP2.Size  <ea>,Rn
+
+  The <ea> is a pointer to the bounds.  The bounds are the same size as the
+  operation.  The lower bound is stored first, then the upper bound.
+  If Rn is outside the bounds, the C flag is set, If Rn is equal to either
+  of the bounds, the Z flag is set, and both are cleared if Rn is within
+  the bounds.
+  -This operation may be used on both unsigned and signed data.
+  -If Rn is an address register, byte/word data is sign extended before
+   comparison
+
+
+3.3 Improved Multiply/Divide instructions
+
+  The 020 greatly improves the multiplication/division instructions.
+  Now, you have these possibilities:
+
+3.3.1 MULU/MULS instructions
+
+            Instruction         Precision
+  Syntax:
+         1  MULU.W <ea>,Dn      16b*16b=>32b    (68000 instruction)
+         2  MULU.L <ea>,Dl      32b*32b=>32b
+         3  MULU.L <ea>,Dh:Dl   32b*32b=>64b
+
+         The syntax and precision of the MULS instruction are identical
+         to those of the MULU instructions.
+
+3.3.1.1 MULU.W <ea>,Dn
+
+  This instruction multiplies the 16-bit value indicated by <ea> with
+  the 16-bit contents of Dn, and stores the result as a 32-bit value
+  in Dn.  This is the basic MULU instruction that is found on the
+  68000 processor.
+
+3.3.1.2 MULU.L <ea>,Dl
+
+  This instruction multiplies the 32-bit value indicated by <ea> with
+  the 32-bit contents of Dl.  This produces a 64-bit result of which
+  the low 32 bits are discarded.  The high 32 bits are then stored in
+  Dl.
+
+3.3.2.3 MULU.L <ea>,Dh:Dl
+
+  This instruction multiplies the 32-bit value indicated by <ea> with
+  the 32-bit contents of Dl.  This produces a 64-bit result.  The high
+  32 bits are stored in Dh, and the low 32 bits are stored in Dl.
+
+3.3.2 DIVU/DIVS
+
+            Instruction         Precision
+  Syntax:
+         1  DIVU.W  <ea>,Dn     32b/16b=>16r:16q   (68000 instruction)
+         2  DIVU.L  <ea>,Dq     32b/32b=>32q
+         3  DIVU.L  <ea>,Dr:Dq  64b/32b=>32r:32q
+         4  DIVUL.L <ea>,Dr:Dq  32b/32b=>32r:32q
+         
+         The syntax and precision of the DIVS instruction are identical
+         to those of the DIVU instructions
+         
+3.3.2.1 DIVU.W <ea>,Dn
+
+  This instruction divides the 32-bit contents of Dn with the 16-bit
+  value indicated by <ea>, and stores the quotient is stored in the
+  lowest word of Dn, and the remainder is stored in the highest.
+  This is the basic DIVU instruction that is found on the 68000
+  processor
+  
+3.3.2.2 DIVU.L <ea>,Dq
+
+  This instruction divides the 32-bit contents of Dq with the 32-bit
+  value indicated by <ea>, and stores the quotient in Dq.  The remainder
+  is discarded.
+
+3.3.2.3 DIVU.L <ea>,Dr:Dq
+
+  This instruction divides the 64-bit contents of Dr(MSLW):Dq(LSLW)
+  with the 32-bit value indicated by <ea> and stores the quotien in
+  Dq, and the remainder in Dr.
+
+3.3.2.4 DIVUL.L <ea>,Dr:Dq
+
+  This instruction divides the 32-bit contents of Dq with the 32-bit
+  value indicated by <ea>, and stores the quotient in Dq, and the remainder
+  in Dr.
+
+3.4 The CHK2 instruction
+
+  The 020 extends the CHK instruction to check a value against a pair
+  of bounds.  See the description of CMP2 for information about these
+  bounds.  If the value is outside the specified bounds, a CHK
+  exception is taken.
+
+3.5 The EXTB instruction
+
+  The 020 allows the direct sign extension from a byte to a longword.
+  
+  Syntax:
+         EXTB.L Dn    Extend byte to long
+  
+  Example:
+  
+  The following code:
+  
+      ext.w    d0
+      ext.l    d0
+  
+  can be replaced with:
+  
+      extb.l   d0
+      
+
+
+--- IV ---------------------- NEW INSTRUCTIONS ------------------- IV ---
+
+
+
+4.1 Bit Field Instructions:
+
+  The 020 is not confined to addressing data at byte, word or longword
+  boundaries, the new bit-field instructions allows access to data at
+  any arbitrarily bit position in a data register or memory.  The length
+  of the data may be from 1 up to 32 bits.  These instructions have a
+  different bit numbering than the ordinary instructions.  The bits are
+  numbered from the leftmost digit towards the right.
+  To indicate a bit-field, the following syntax is used:  {offset:width}
+  The "offset" is the number of bits to skip
+  The "width" is the number of bits included in the bit-field
+
+  The following bit-field is described as {13:12}
+
+  31      23      15      7      0    Ordinary bit numbering
+  |       |       |       |      |
+  -------------XXXXXXXXXXXX-------    Bit field
+  |       |       |       |      |
+  0       8       16      24     31   Bit field numbering
+
+  A bit field may also stretch across boundaries in memory, f. eks.:
+
+  31      23      15      7      031      23      15
+  |       |       |       |      ||       |       |
+  --------------------------XXXXXXXXXXXXXXXXX--------
+  |       |       |       |       |       |       |
+  0       8       16      24      32      40      48
+
+  This bit-field would have been described as {26:17}
+  In addition, the offset may be negative when used in memory.
+
+  The control of bit-field is supported by 8 instructions, 4 single-
+  operand instructions (BFTST,BFCLR,BFSET, and BFCHG), and 4 double-
+  operand instructions. (BFFFO,BFEXTU,BFEXTS, and BFINS)
+
+
+4.1.1 Single operand Bit-field instructions
+
+  These instructions can be viewed as extensions of the corresponding
+  bit instructions (BTST,BCLR,BSET, and BCHG)
+
+  Syntax:
+         1  BFTST <ea>{offset:width}   Test bit-field
+         2  BFCLR <ea>{offset:width}   Test bit-field and clear it
+         3  BFSET <ea>{offset:width}   Test bit-field and set it
+         4  BFCHG <ea>{offset:width}   Test bit-field and invert it
+
+  Each of these instructions first tests the bit-field and sets the
+  condition codes accordingly, then perform the action on the data
+  (SET,CLR or CHG).
+  Condition codes:
+         
+         N  Set if the most significant digit was 1
+         Z  Set if all bits are 0
+         C  Cleared
+         V  Cleared
+         X  Not affected
+
+  Only data register direct and control addressing modes are allowed
+  for the operand.
+  The offset may be either a value from 0-31 or contained as a 32-bit
+  signed value in a data register.
+  The width may be either a value from 1-32 or contained in the lower
+  5 bits of a data register.
+
+4.1.2 Double operand Bit-field instructions
+
+  These instruction provides more control over bit-fields, such as
+  inserting, extracting and searching
+
+  Syntax:
+		 1  BFEXTU <ea>{offset:width},Dn  Extract a bit-field
+         2  BFEXTS <ea>{offset:width},Dn  Extract and sign extend
+         3  BFINS  Dn,<ea>{offset:width}  Inserts a bitfield
+         4  BFFFO  <ea>{offset:width},Dn  Find First 1 in a BF.
+
+  Condition codes:
+
+         N  Set if the most significant bit in the BF is set
+         Z  Set if all bits in the BF are 0
+         C  Cleared
+         V  Cleared
+         X  Not affected
+
+  The offset may be either a value of 0-31 or contained as a 32-bit
+  signed value in a data register.
+  The width may be either a value of 1-32 or contained in the lower
+  5 bits of a data register.
+
+4.1.2.1 BFEXTU instruction
+
+  This instruction extracts a bit-field from the source operand,
+  right-justifies it, and places it in the destination register.
+
+4.1.2.2 BFEXTS instruction
+
+  This instruction works just like the BFEXTU (4.1.2.1) instruction,
+  but sign extends the bit-field to 32-bits before storing it in
+  the destination register.
+
+4.1.2.3 BFINS instruction
+
+  This instruction extracts the <width> lower bits of the source
+  register, and inserts it into the destination bit-field.
+
+4.1.2.4 BFFFO instruction
+
+  The bit offset of the most significant 1 in the bit-field is
+  stored in the data register.  If no 1 is found in the bit-field,
+  the sum of the offset and width is stored in the destination.
+
+
+
+The Bit-field instructions can be used for handling floating point
+numbers in software.
+
+
+
+4.2 The RTD instruction (68010 and up)
+
+  This instruction extends the operation of the RTS instruction.
+  It pops the PC off the stack, then a 16-bit displacement is added
+  to the SP.  This makes it possible to clear parameters pushed on
+  to the stack by a calling program.
+
+  Syntax:
+           RTD  #displacement
+
+  Example:
+
+     A subroutine is called with parameters on the stack.
+     The size of these parameters equals <ParamSize>
+     The subroutine allocates some stack space for local data.
+     The size of this local data equals <LocalSize>
+
+  SubRoutine:
+
+         link     a5,#-LocalSize    ;Allocate local data space
+		 movem.l  d0-a6,-(sp)       ;Save registers
+         .
+         .                          ;Do whatever...
+         .
+         movem.l  (sp)+,d0-a6       ;Restore registers
+         unlk     a5                ;Deallocate local data space
+         rtd      #ParamSize        ;Deallocate parameter space
+                                    ; and return to caller
+
+
+  Without this instruction, the stack cleanup would look like this:
+
+         movem.l  (sp)+,d0-a6
+         unlk     a5
+         move.l   (sp),(ParamSize,sp)
+         lea      (ParamSize,sp),sp
+         rts
+
+
+4.3 The BCD instructions
+
+  The 68000 has some instructions for the manipulating of BCD coded data
+  (ABCD,NBCD,SBCD).  The 020 extends this command set to include
+  instructions for packing/unpacking of such data, the PACK and UNPK
+  instructions.
+ 
+4.3.1 The PACK instruction
+
+  This instruction packs data to a format usable by the other BCD
+  instructions.  When used in memory, the instruction fetches 2 bytes of
+  data, adds a displacement, and concatenates bits 11-8 and 3-0 into
+  a single byte.  When used on a data register, the displacement and the
+  contents of the data register is added, then bits 11-8 and 3-0 are
+  contatenated to form a byte.
+  
+  This instruction is useful for encoding a decimal number stored as a
+  string of ascii characters into a usable BCD code.
+
+  Syntax:
+         1  PACK -(An),-(Am),#displacement
+         2  PACK Dn,Dm,#displacement
+         
+         
+  Example:
+
+  We want to encode the ascii string "76" ($3736) to BCD.
+  Recall that the numeric characters have ascii codes $30-$39.
+  "Data" is a pointer to the string we wish to convert.
+  
+      move.l (Data,pc),a0
+      move.w (a0),d0
+      pack   d0,d1,#$0000
+  
+  Register d1 now contains the hex value $76.
+  If we'd wished to, we could have added the BCD 12 to the number in the
+  same instruction, like this:
+  
+      pack   d0,d1,#$0102
+  
+  Register d1 now contains the hex value $88
+
+
+4.3.2 The UNPK instruction
+
+  This instruction unpacks a BCD coded number to a less compact version.
+  When used in memory, this instruction copies the 2 nibbles of the source
+  byte to the low nibble of two separate bytes, the two bytes are
+  concatenated into a word, and a displacement is added to the word.
+  When used on a data register, the nibbles are copied from the LSB or the
+  source register, and the unpacked word is placed in the LSW of the
+  destination register.
+
+  Syntax:
+         1  UNPK -(An),-(An),#displacement
+         2  UNPK Dn,Dm,#displacement  
+  
+  Example:
+  
+  We want to unpack the BCD number $76 to a printable ascii string.
+  The numberical characters start at ascii $30, so we must add this
+  value to both bytes.  The displacement is then $3030.
+  "Data" is a pointer to the string we wish to fill.
+  Register d0 is preloaded with $76
+  
+      move.l (Data,pc),a0
+      unpk   d0,d1,#$3030
+      move.w d0,(a0)
+
+4.4 The MC68040 Block move instruction (MOVE16)
+
+  This instruction uses the burst mode for rapid movement of a
+  block of data.  The instruction can be used for fast block copy,
+  memory initialization and co-processor communication.
+  
+  This instruction aligns all addresses to 16-byte boundaries by masking
+  off the lower 4 bits of the addresses.  A line of 16 bytes is copied
+  from the source to the destination address.
+  
+  Syntax:
+         1  MOVE16  (Ax)+,(Ay)+
+         2  MOVE16  xxx.L,(An)
+         3  MOVE16  xxx.L,(An)+
+         4  MOVE16  (An),xxx.L
+         5  MOVE16  (An)+,xxx.L
+  
+  For the Amiga computers, some precautions must be taken when using this
+  instruction in Chip Memory.  Fast Memory works fine, though.
+  
+  Example:
+  
+  We want to copy an area of 128 bytes from "A" to "B"
+  
+      lea     (A,pc),a0
+      lea     (B,pc),a1
+      moveq   #7,d0
+  Loop:
+      move16  (a0)+,(a1)+
+      dbf     d0,Loop
+  
+
+4.5 The 68010 BKPT instruction
+
+  This instruction is used for hardware testing, and executes differently
+  on the various members of the 68000 family, and is not described here.
+
+4.6 The 68020 Module instructions
+
+  These instructions, (CALLM and RTM) appear only on the 68020 processor,
+  and the use of them is beyond the scope of this text.
+
+4.7 The CAS/CAS2 instructions
+
+  These instructrions are provided for maintaining and protecting critical
+  data in a multiprocessor environment.  Multiprocessing is beyond the
+  scope of this text, but I'll explain these instructions anyway
+  
+  Suppose two different processes write to the same memory, and have access
+  to a shared variable.  This variable may be anything, such as a pointer
+  to a list.  Process 1 retrieves this variable in d7, and copies it to d0
+  as a backup pointer.  It then operates upon the pointer in d7.
+  Before Process 1 is finished with the operation, it is put to sleep, and
+  another process is made ready to run.  This process alters the contents
+  of our variable.  Later, our process is allowed to run again.
+  Before it can update the variable, it must test if someone else has
+  altered the variable in memory.  This is done by comparing the backup
+  pointer in d0 with the data in memory.
+  -If the values are equal, the variable has not been altered by anybody,
+   and the new value can safely be written to the variable.
+  -However, if the values are not equal, the process should reload the new
+   value of the variable, and rerun it's operation.
+  
+  The other process should protect itself in the same way as our process
+  did.
+  As a final point, the comparison and rewriting must be protected, so
+  that the other process doesn't alter the variable between the comparison
+  and rewriting.  This is done by using an indivisible RMW cycle (RMW=
+  Read-Modify-Write)
+  
+4.7.1 The CAS instruction
+
+  The instruction CAS implements this comparison between global data and
+  a register, as well as a data transfer using this RMW cycle.
+  
+  Syntax:
+         CAS.Size  Dc,Du,<ea>
+        
+  The <ea> is compared to the contents of register Dc.  If they are equal,
+  the contents of Du is written to <ea>.  If they are not equal, the
+  contents of <ea> is copied to Dc.  The Z bit reflects the result of the
+  comparison.
+  
+4.7.2 The CAS2 instruction
+
+  The CAS2 instruction works like the CAS instruction except that it
+  performs comparisons and updates on two data values.
+  
+  Syntax:
+         CAS2.Size  Dc1:Dc2,Du1:Du2,(Rn1):(Rn2)
+  
+  Rn may be any data or address register.
+  Only if the contents of Dc1 equals (Rn1) and the contents of Dc2
+  equals (Rn2) will the contents of Du1 be written to (Rn1) and
+  Du2 be written to (Rn2).  This instruction is well suited to
+  protect multi-linked lists in a multi-processor environment.
+
+
+  WARNING:
+  Like the TAS instruction, the CAS/CAS2 instructions should NOT be
+  used on an Amiga, as they are not supported by the hardware.
+  The indivisable RMW cycle conflicts with the Amiga's bus system.
+
+
+4.8 The CoProcessor interface instructions.
+
+  These instructions are outside the scope of this text, see the
+  "MC68020 CoProcessor support instructions" text by this author
+  for information about how to program using these instructions.
+  However, here is a list of the instructions:
+  
+4.8.1 User state coprocessor instructions
+
+     cpBcc     Branch on Coprocessor Condition
+     cpDBcc    Test coprocessor Condition, Decrement and Branch
+     cpGEN     Coprocessor general function
+     cpScc     Set on Coprocessor Condition
+     cpTRAPcc  Trap on Coprocessor Condition
+
+4.8.2 Supervisor state coprocessor instructions
+
+     cpRESTORE Coprocessor Restore Functions
+     cpSAVE    Coprocessor save Function
+
+4.9 Conditional TRAP instruction
+
+  The 020 allows conditional traps.  If the specified condition is true,
+  a TRAPcc exception (exception 7) will be taken.
+  
+  Syntax:
+         TRAPcc  #Data
+  
+  The <cc> may be any of the <cc>'s that are supported by the ordinary
+  conditional branch instructions.
+
+
+
+--- V ---------------------ADDRESSING MODE TABLES------------------- V ---
+
+
+5.1 Allowed Adressing modes
+
+  CMP2  Compare Register Against Bounds
+  
+      Syntax:   CMP2 <ea>,Rn
+      Size:     Byte/Word/Long
+      Length:   4 bytes+<ea> data
+      Modes:    (An)
+                (d16,An)
+                (d8,An,Xn)
+                (bd,An,Xn)
+                $xxx.W
+                $xxx.L
+                (d16,PC)
+                (d8,PC,Xn)
+                (bd,PC,Xn)
+                ([bd,An,Xn],od)
+                ([bd,An],Xn,od)
+                ([bd,PC,Xn],od)
+                ([bd,PC],Xn,od)
+  -----------------------------------
+  MULU/MULS  Multiply (Un)signed
+  
+      Syntax:   MULU/S.W <ea>,Dn    16b*16b=>32b
+                MULU/S.L <ea>,Dl    32b*32b=>32b
+                MULU/S.L <ea>,Dh:Dl 32b*32B=>64b
+      Size:     Word/Long
+      Length:   2 bytes+<ea> data  (word)
+                4 bytes+<ea> data  (long)
+      Modes: (both)
+                Dn
+                (An)
+                (An)+
+                -(An)
+                (d16,An)
+                (d8,An,Xn)
+                $xxx.W
+                $xxx.L
+                #<data>
+                (d16,PC)
+                (d8,PC,Xn)
+                (bd,An,Xn)
+                ([bd,An,Xn],od)
+                ([bd,An],Xn,od)
+                (bd,PC,Xn)
+                ([bd,PC,Xn],od)
+                ([bd,PC],Xn,od)
+  -----------------------------------
+  DIVU(L)/DIVS(L)  Divide (Un)signed
+  
+      Syntax:   DIVU.W  <ea>,Dn     32b/16b=>16r:16q
+                DIVU.L  <ea>,Dq     32b/32b=>32q
+                DIVU.L  <ea>,Dr:Dq  64b/32b=>32r:32q
+                DIVUL.L <ea>,Dr:Dq  32b/32b=>32r:32q
+      Size:     Word/Long
+      Length:   2 bytes+<ea> data (word)
+                4 bytes+<ea> data (long)
+      Modes: (both)
+                Dn
+                (An)
+                (An)+
+                -(An)
+                (d16,An)
+                (d8,An,Xn)
+                $xxx.W
+                $xxx.L
+                #<data>
+                (d16,PC)
+                (d8,PC,Xn)
+                (bd,An,Xn)
+                ([bd,An,Xn],od)
+                ([bd,An],Xn,od)
+                (bd,PC,Xn)
+                ([bd,PC,Xn],od)
+                ([bd,PC],Xn,od)
+  -----------------------------------
+  CHK2  Check Register Against Bounds
+  
+      Syntax:   CHK2 <ea>,Rn
+      Size:     Byte/Word/Long
+      Length:   4 bytes+<ea> data
+      Modes:    (An)
+                (d16,An)
+                (d8,An,Xn)
+                (bd,An,Xn)
+                $xxx.W
+                $xxx.L
+                (d16,PC)
+                (d8,PC,Xn)
+                (bd,PC,Xn)
+                ([bd,An,Xn],od)
+                ([bd,An],Xn,od)
+                ([bd,PC,Xm],od)
+                ([bd,PC],Xn,od)
+  -----------------------------------
+  EXTB  Extend Byte to long
+  
+      Syntax:   EXTB.L Dn
+      Size:     Word/Long
+      Length:   2 bytes
+      Modes:	Dn
+  -----------------------------------
+  BFxxx BitField instructions
+  
+      Syntax:   BFTST   <ea>{offset:width}    BF Test
+                BFSET   <ea>{offset:width}    BF test and Set
+                BFCLR   <ea>{offset:width}    BF test and clear
+                BFCHG   <ea>{offset:width}    BF test and Change
+                BFEXTS  <ea>{offset:width},Dn BF Extract Signed
+                BFEXTU  <ea>{offset:width},Dn BF Extract Unsigned
+                BFFFO   <ea>{offset:width},Dn BF Find First One
+                BFINS   Dn,<ea>{offset:width} BF Insert
+                
+                Both offset and width may be specified as data registers
+      Size:     The BF instructions are unsized
+      Length:   4 bytes+<ea> data
+      Modes:    Dn
+                (An)
+                (d16,An)
+                (d8,An,Xn)
+                (db,An,Xn)
+                ([bd,An,Xn],od)
+                ([bd,An],Xn,od)
+                ([bd,PC,Xn],od)
+                ([bd,PC],Xn,od)
+                $xxx.W
+                $xxx.L
+                (d16,PC)
+                (d8,PC,Xn)
+                (bd,PC,Xn)
+                ([bd,PC,Xn],od)
+                ([bd,PC],Xn,od)
+  -----------------------------------
+  RTD  Return and Deallocate
+  
+      Syntax:   RTD #displacement
+      Size:     Unsized
+      Length:   4 bytes
+      Modes:    #<data>
+  -----------------------------------
+  PACK  Pack BCD data
+  
+      Syntax:   PACK -(Ax),-(Ay),#displacement
+                PACK Dx,Dy,#displacement
+      Size:     Unsized
+      Length:   4 bytes
+      Modes:    See syntax
+  -----------------------------------
+  UNPK  Unpack BCD data
+  
+      Syntax:   UNPK -(Ax),-(Ay),#displacement
+                UNPK Dx,Dy,#displacement
+      Size:     Unsized
+      Length:   4 bytes
+      Modes:    See sntax
+  -----------------------------------
+  MOVE16  Move 16 bytes block
+  
+      Syntax:   MOVE16 (Ax)+,(Ay)+
+                MOVE16 $xxx.L,(An)
+                MOVE16 $xxx.L,(An)+
+                MOVE16 (An),$xxx.L
+                MOVE16 (An)+,$xxx.L
+      Size:     1 line (16 bytes)
+      Length:   4 bytes   (Ax)+,(Ay)+
+                6 bytes   The rest
+      Modes:    See syntax
+  -----------------------------------
+  CAS/CAS2  Compare And Swap with operand
+  
+      Syntax:  CAS  Dc,Du,<ea>
+               CAS2 Dc1:Dc2,Du1:Du2,(Rn1):(Rn2)
+      Size:    Byte/Word/Long (CAS)
+               Word/Long      (CAS2)
+      Length:  4 bytes+<ea> data (CAS)
+               6 bytes+<ea> data (CAS2)
+      Modes: (CAS)
+               (An)
+               (An)+
+               -(An)
+               (d16,An)
+               (d8,An,Xn)
+               (bd,An,Xn)
+               ([bd,An,Xn],od)
+               ([bd,An],Xn,od)
+               $xxx.W
+               $xxx.L
+  -----------------------------------
+  TRAPcc  Trap on Condition
+  
+      Syntax:  TRAPcc
+               TRAPcc.W #<data>
+               TRAPcc.L #<data>
+      Size:    Unsized/Word/Long
+      Length:  2 bytes (Unsized)
+               4 bytes (Word)
+               6 bytes (Long)
+      Modes:   #<data>
+  -----------------------------------
+
+***********************************************************************************************
+*                  The text in this document is written by Erik H. Bakke                      *
+*                           © 1993 Erik H. Bakke/Bakke SoftDev                                *
+* This document may be freely redistributed as long as it remains unchanged and together with *
+*                               the FPU programming document                                  *
+***********************************************************************************************
+*Permission is granted to Michael Glew to incorporate it in his Asp68k project, and eventually*
+*                       editing it to fit in the Asp68k environment                           *
+*Permission is granted to include this document in the HowToCode archive as long as it remains*
+*                                          unchanged.                                         *
+***********************************************************************************************
+*  For error corrections, comments etc., the author can be reached at                         *
+*                                 e-mail:  db36@hp825.bih.no                                  *
+*                                 phone:   +47-5630-5537 (13:00-21:00 GMT)                    *
+*                                 post:    Erik H. Bakke                                      *
+*                                          Bjørnen                                            *
+*                                          N-5227 SØRE NESET                                  *
+*                                          Norway                                             *
+***********************************************************************************************
+
+
+		      MOTOROLA MC68020 INSTRUCTION SET
+		      ================================
+
+
+This file contains ALL of the extra instructions and addressing modes found
+on the Motorola MC68020 processor, as found in Amiga 2000 machines with acc-
+elerator cards fitted, and which can be executed (with very few exceptions)
+on Amiga 3000 machines fitted with the Motorola MC68030 processor.
+
+
+	The file shall be divided into several sections. First, I shall cover
+the additional addressing modes available to MC68020 assembly language prog-
+rammers, and the syntaxes used for those new modes. Then, I shall cover fully
+the instruction extension words applicable to the MC68020, which follow the
+main instruction opcodes and provide the MC68020 with the instruction infor-
+mation available to access the new addressing modes. And finally, the comp-
+lete set of MC68020 extra instructions PLUS OPCODES follow, documented accor-
+ding to the standards laid down in the Official Motorola Documentation.
+
+
+		       MC68020 - NEW ADDRESSING MODES
+		       ==============================
+
+
+The principal new modes available to the MC68020 fall into two classes:memory
+indirect addressing, and bit field addressing. First, I shall outline some of
+the conventions used throughout this file. They are:
+
+
+		<EA>	: Effective Address. Stands for the
+			  address of the operand under con-
+			  sideration, whether computed at
+			  assembly-time or runtime.
+
+		{ }	: Curly braces are used to denote a
+			  bit field. Bit fields are covered
+			  below.
+
+		off	: Offset for bit fields.
+
+		wd	: Width for bit fields.
+
+		[ ]	: Denotes "contents of".
+
+		bd	: Stands for Base Displacement in
+			  memory indirect addressing.
+
+		od	: Stands for Outer Displacement in
+			  memory indirect addressing.
+
+		An	: One of the address registers A0-A7.
+
+		Xn	: Any 680x0 data or address register
+			  used in the context of an index
+			  register.
+
+		scale	: The multiplier applied to the value
+			  of the index register in memory in-
+			  direct addresing.
+
+		size	: The size attribute applied to the
+			  index register in memory indirect
+			  addressing.
+
+
+And now, for the various memory indirect addressing modes.
+
+
+1) Memory Indirect Preindexed (using Address Register).
+
+Generation	: <EA> = [bd + [An] + [Xn.s]*size] + od
+
+Assembler	: ([bd,An,Xn.s*size],od)
+
+Mode		: 110 in instruction address mode field
+
+Description	: This addressing mode uses two constant displacements,
+		  an address register, and an index register, PLUS a
+		  scale factor (five components in all).
+
+		  First, the contents of the specified Address Register
+		  are added to the value of the Base Displacement. Then,
+		  the contents of the specified Index Register are mul-
+		  tiplied by the specified scale factor (1,2,4 or 8),
+		  and this value is added to the whole.
+
+		  This value is then used as a pointer into memory, and
+		  a longword pointer extracted from memory. The value of
+		  the Outer Displacement is then added to the value of
+		  this longword pointer, and this value becomes the
+		  effective address for the specified operand.
+
+		  The legal ranges for the various components are:
+
+		  An		: Any 680x0 address register, A0-A7.
+
+		  bd		: Base displacement. Can be null, or
+				  can be word or longword sized. Word
+				  sized displacements are sign-extended
+				  to longword values prior to addition.
+
+		  Xn		: Index register. Can be either a
+				  680x0 data register or an address
+				  register.
+
+		  s		: Either .W for word operands, or
+				  .L for longword operands. NOTE:
+				  word values are sign-extended to
+				  longword values prior to addition
+				  in common with all 680x0 address
+				  arithmetic.
+
+		  size		: The legal values for the scale
+				  factor are 1,2,4 or 8.
+
+		  od		: Outer displacement. Can be null,
+				  or can be word or longword sized.
+				  Again, word-sized displacements
+				  are sign-extended to longword dis-
+				  placements prior to addition.
+
+Example		: Let bd = $40000, od = $8000, A0 contain the value
+		  $20000, D2 contain the value $100, and the longword
+		  value stored at location $60400 be $30000.
+
+		  Then, the effective address of:
+
+		  ([$40000,A0,D2.W*4],$8000.w)
+
+		  is:
+
+		  1) $40000 + $20000 + ($100 * 4)
+
+		     = $60400
+
+		  2) Contents of $60400 = $30000
+
+		  3) $30000 + $8000.w = $0003000 + $FFFF8000
+
+		     = $28000
+
+		  Therefore the effective address is $28000.
+
+
+2) Memory Indirect Postindexed (using Address Register).
+
+Generation	: <EA> = [bd + [An]] + [Xn.s]*size + od
+
+Assembler	: ([bd,An],Xn.s*size,od)
+
+Mode		: 110 in instruction address mode field
+
+Description	: This addressing mode uses the same five components as
+		  Memory Indirect Preindexed, but in a different order.
+
+		  First, the contents of the specified address register
+		  are added to the value of the Base Displacement. This
+		  value is used as a pointer into memory, from which a
+		  longword value is extracted. This value has added to
+		  it the value of the contents of the specified index
+		  register (multiplied by the given scale factor) and
+		  the value of the Outer Displacement, to create the
+		  final effective address.
+
+		  The range of legal values for the various components
+		  id identical to that for Memory Indirect Preindexed.
+
+Example		: Let bd = $1000, od = $20000, A2 contain the value
+		  $10000, D7 contain the value $40000, and the long-
+		  word value stored at $11000 be $58000.
+
+		  Then, the effective address of:
+
+		  ([$10000,A2],D7.L*1,$20000)
+
+		  is:
+
+		  1) $1000 + $10000 = $11000
+
+		  2) Contents of $11000 = $58000
+
+		  3) $58000 + $40000 + $20000 = $B8000
+
+		  Therefore the effective address is $B8000.
+
+
+3) Program Counter Memory Indirect With Preindex.
+
+Generation	: <EA> = [bd + [PC] + [Xn.s]*size] + od
+
+Assembler	: ([bd,PC,Xn.s*size],od)
+
+Mode		: 111 in instruction address mode field
+
+Description	: Add to the value of Base Displacement the value of the
+		  Program Counter, and the value contained in the speci-
+		  fied Index Register (multiplied by the specified scale
+		  factor). Use this total value as a pointer into memory
+		  and extract a longword value from this memory location.
+		  Add to this longword value the value of the Outer Dis-
+		  placement. This final result is the effective address
+		  of the operand.
+
+Example		: Let bd = $4000, PC = $2C00, D5 = $FFFF, and od = $1000.
+
+		  Let location $6BFE contain the longword $5A800.
+
+		  Then, the effective address of:
+
+		  ([$4000,PC,D5.W*2],$1000)
+
+		  is:
+
+		  1) $4000 + $2C00 + ($FFFFFFFF * 2)
+
+		     = $6BFE
+
+		  2) Contents of $6BFE = $5A800.
+
+		  3) $5A800 + $1000 = $5B800.
+
+		  Therefore the effective address is $5B800.
+
+
+4) Program Counter Memory Indirect With Postindex.
+
+Generation	: <EA> = [bd + [PC]] + [Xn.s]*size + od
+
+Assembler	: ([bd,PC],Xn.s*size,od)
+
+Mode		: 111 in instruction address mode field
+
+Description	: Add to the value of Base Displacement the value of the
+		  Program Counter, and use this as a pointer into memory.
+		  Extract the longword value stored at this address, and
+		  add to this extracted value the value of the specified
+		  Index Register (multiplied by the specified scale fac-
+		  tor), and the value of the Outer Displacement. This fi-
+		  nal value is the effective address of the operand.
+
+Example		: Let bd = $6000, PC = $1A00, D1 = $0020, and od = $7000.
+
+		  Let location $7A00 contain the longword $FC0000.
+
+		  Then, the effective address of:
+
+		  ([$6000,PC],D1.L*4,$7000)
+
+		  is:
+
+		  1) $6000 + $1A00 = $7A00
+
+		  2) Contents of $7A00 = $FC0000.
+
+		  3) $FC0000 + ($0020 * 4) + $7000 = $FC7080.
+
+		  Therefore the effective address is $FC7080.
+
+
+Note that with ANY of the memory indirect modes, the programmer can omit any
+desired component for the desired effect. For example:
+
+							        +
+	68020 Instruction			68000 Equivalent
+
+	MOVE.L	([Base]),D0			MOVE.L Base,A0
+						MOVE.L (A0),D0
+
+	MOVE.L	([Base,A0]),D0			MOVE.L	Base(A0),A0
+						MOVE.L	(A0),D0
+
+	JMP	([0,A0],D0.W*4)			ADD.W	D0,D0
+						ADD.W	D0,D0
+						MOVE.L	0(A0,D0.W),A0
+						JMP	(A0)
+
+	MOVE.W	([Base,A0],D2.L*8,Outer),D7	MOVE.L	Base(A0),A0
+						ADD.L	D2,D2
+						ADD.L	D2,D2
+						ADD.L	D2,D2
+						LEA	Outer(A0),A0
+						MOVE.L	0(A0,D2.L),D7
+
+
+Note that the 68020 forms can complete the given operation in one instruction
+whereas the 68000 needs two or more instructions to perform the same task, &
+requires extra register use. Hence the use of the '+' character to highlight
+the fact that the equivalence is NOT complete - in general the 68020 does NOT
+change the contents of the registers in the source operand UNLESS the destin-
+ation happens to be one of those registers also. Note also how the 68020 can
+access a jump table in one instruction - see the 68000 equivalent alongside!
+
+
+	It can be seen from this that the 68020 addressing extensions are so
+far ahead of the already powerful 68000 addressing modes (which still kick an
+Intel chip into a cocked hat!) that Motorola didn't need to add any more to
+the 68030 and 68040 (after all, many programmers still can't cope with single
+instructions that are equivalent to half a C program...).
+
+
+	It remains to cover bit fields. Bit fields are so radically different
+from normal addressing modes that they do take a little getting used to. The
+basic idea is that any collection of bits, of any size (within certain rest-
+rictions), aligned anywhere in memory (not even on a byte boundary!) can be
+accessed and manipulated.
+
+
+	A bit field is denoted by the legend:
+
+
+			{offset:width}
+
+
+where either of the values 'offset' or 'width' can be specified within an in-
+struction by a constant value or a data register reference. A comparison of
+bit addressing (for instructions such as BCHG) and bit field addressing is:
+
+
+			7 6 5 4 3 2 1 0
+	 Byte N-1 |	Byte N		|   Byte N+1	| Byte N+2
+
+			Bit Addressing
+
+
+			7 6 5 4 3 2 1 0
+	 Byte N-1 |	Byte N		|   Byte N+1	| Byte N+2
+			      0 1 2 3 4   5 6 7 8 9 ...
+			<---->
+			offset
+			      <------------------------>
+					width
+
+			Bit Field Addressing
+
+
+In the above, a Bit Field is a consecutive string of 1 to 32 bits, specified
+by a Base Address (the address of the byte containing Bit 0 of the Bit Field,
+byte N in the example above), an Offset (the distance in bits from the most
+significant bit of the Base Address) and the Width (number of bits that form
+the Bit Field).
+
+
+	If the Offset is specified using an immediate data value, then the
+Offset ranges from 0 to 31. Simialrly, the Width ranges from 1 to 32, but in
+this case the value is limited to the range 1-32 whether specified as an im-
+mediate value or as a data register reference.
+
+
+	When a data register is used, then the Offset specification can range
+from:
+
+			  31		 31
+			-2	to	2  - 1
+
+
+which means that the first bit of the Bit Field might reside in a byte which
+is many bytes distant from the Base Address defined in any instruction Bit
+Field reference! This facility allows scanning of Bit Field Arrays, an exam-
+ple of which is:
+
+
+	Byte:		N		N+1		N+2	  ...
+
+	Bit : 7 6 5 4 3 2 1 0 | 7 6 5 4 3 2 1 0 | 7 6 5 4 3 2 1 0 ...
+
+	BF  : 1 1 1 1 1 2 2 2   2 2 3 3 3 3 3 4   4 4 4 4 5 5 5 5 ...
+
+
+Here, Bit Field 2 follows Bit Field 1 in the array immediately. If Byte N is
+the Base Address for the entire Bit Field Array, then a data register can be
+used to contain the Offset, and the next element in the array referenced by
+adding the value of the Width (here, 5) to the value of the Offset contained
+in the data register, and use one address to reference the entire array with-
+out having to recompute the Base Address! In this case, our Bit Field Array,
+containing Bit Field elements of 5 bits, can contain up to 4 BILLION elements
+(assuming sufficient memory to store them all) all referenced via the same
+Base Address!
+
+
+	And by way of example, for the above Bit Field Array, if register A0
+of the MC68020 points to Byte N above, then the various elements are referen-
+ced as follows using immediate offset and width values:
+
+
+		Element #1	: (A0){0:5}
+
+		Element #2	: (A0){5:5}
+
+		Element #3	: (A0){10:5}
+
+			....
+
+		Element #8	: 4(A0){3:5} (NOT (A0){35:5} !!!)
+
+		Element #9	: 4(A0){8:5}
+
+
+etc.
+
+
+			   MC68020 EXTRA REGISTERS
+			   =======================
+
+
+The MC68020 possesses a number of extra registers, available to programs ex-
+ecuting in supervisor mode. Also, the status register contains extra bits. A
+summary of the registers is as follows (all registers are 32 bits wide unless
+otherwise stated):
+
+
+		D0 - D7 : Data Registers as per MC68000.
+
+		A0 - A7	: Address Registers as per MC68000.
+
+		SR	: Status Register (16 bits). See below.
+
+		CCR	: Condition Code Register as per MC68000.
+
+		A7'	: Also ISP : Interrupt Stack Pointer.
+
+		A7''	: Also MSP : Master Stack Pointer.
+
+		VBR	: Vector Base Register.
+
+		CACR	: Cache Control Register (4 bits).
+
+		CAAR	: Cache Address Register.
+
+		SFC	: Source Function Code Register (3 bits).
+
+		DFC	: Destination Function Code Register (3 bits).
+
+
+The status register bits are allocated as follows:
+
+
+		Bit	Meaning
+		---	-------
+		 0	Carry Flag (CCR).
+
+		 1	Overflow Flag (CCR).
+
+		 2	Zero Flag (CCR).
+
+		 3	Negative Flag (CCR).
+
+		 4	Extend Flag (CCR).
+
+		 8	IPL0 Interrupt Bit.
+
+		 9	IPL1 Interrupt Bit.
+
+		10	IPL2 Interrupt Bit.
+
+		12	Master Stack Bit.
+
+		13	Supervisor Mode Bit.
+
+		14	Trace On Change Of Program Flow.
+
+		15	Trace (Single-Step Through Program).
+
+
+The Vector Base Register allows different tasks to have different sets of ex-
+ception vectors located in different areas of memory. The standard addresses
+for the MC68000 exception vectors are now treated as offsets to be added to
+the contents of the VBR, and when a MC68020 exception occurs, the exception
+vector will be fetched from this new address. When the VBR contains zero, the
+MC68020 operates in an identical fashion to the MC68000.
+
+
+	The Supervisor Stack Pointer (SSP) is now divided into two different
+entities. The Interrupt Stack Pointer (ISP) is accessed when the Master Stack
+Bit of the Status Register is 0 (in which case, behaviour is identical to the
+MC68000). When the M bit is 1, then the Master Stack Pointer is used instead
+of the Interrupt Stack Pointer. The MC68020 can also access the User Stack
+Pointer (USP) in supervisor mode via the appropriate instructions as per the
+MC68000, but also has available several new instructions to access the USP.
+
+
+	The Source Function Code (SFC) and Destination Function Code (DFC)
+Registers allow MC68020-based systems equipped with a MC68851 Paged Memory
+Management Unit (PMMU) to access areas of memory protected according to the
+definitions of the 'address space' within the PMMU. The MOVEC instruction is
+used to change the contents of these registers (in supervisor mode only!) to
+allow a supervisor-mode program to read to or write from memory protected by
+a PMMU. The values that these registers store are:
+
+
+		000	Undefined, Reserved.
+		001	User Data Space.
+		010	User Program Space.
+		011	Undefined, Reserved.
+		100	Undefined, Reserved.
+		101	Supervisor Data Space.
+		110	Supervisor Program Space.
+		111	CPU Space (see CALLM, BKPT).
+
+
+	These registers are used in conjunction with the MOVES instruction in
+supervisor mode to allow supervisor-mode programs to transfer data to either
+user program/data space or supervisor program space without causing a PMMU
+exception condition (memory access violation).
+
+
+	The Cache Control Register (CACR) allows the on-chip cache memory to
+be controlled. The bits of the CACR are:
+
+
+		Bit	Meaning
+		---	-------
+		 0	E bit : 1 = enable cache
+
+		 1	F bit : 1 = freeze cache (prevent
+				    updating)
+
+		 2	CE bit : 1 = invalidate single cache
+				     entry (CPU clears valid
+				     bit for entry)
+
+		 3	C bit : 1 = invalidate all cache entries
+
+
+The entries to be invalidated using the C/CE bits are controlled by the Cache
+Address Register (CAAR). The address of the invalidated entry is written here
+PRIOR to writing to the C/CE bits using MOVEC, and allows logical or virtual
+addresses to be invalidated prior to task switching in a multiprogramming en-
+vironment.
+
+
+			MC68020 EXCEPTION VECTOR TABLE
+			==============================
+
+
+The MC68020 has an extended exception vector table. This vector table is de-
+fined by the table below. In the table, SD refers to Supervisor Data Space,
+and SP to Supervisor Program Space. FPCP refers to the Floating-Point Copro-
+cessor, and PMMU to the Paged Memory Management Unit.
+
+
+	Address	Vector	Assignment
+	-------	------	----------
+	$0000	0  SP	Reset:Initial ISP
+	$0004	1  SP	Reset:Initial PC
+	$0008	2  SD	Bus Error
+	$000C	3  SD	Address Error
+	$0010	4  SD	Illegal Instruction
+	$0014	5  SD	Zero Divide
+	$0018	6  SD	CHK/CHK2 Instruction
+	$001C	7  SD	cpTRAPcc, TRAPcc, TRAPV Instructions
+	$0020	8  SD	Privilege Violation
+	$0024	9  SD	Trace Exception
+	$0028	10 SD	Line-A Emulator (1010)
+	$002C	11 SD	Line-F Emulator (1111) & Coprocessor Instructions
+	$0030	12 SD	Unassigned, Reserved
+	$0034	13 SD	Coprocessor Protocol Violation
+	$0038	14 SD	Format Error
+	$003C	15 SD	Uninitialised Interrupt
+
+	$0040 to   SD	Unassigned, Reserved (16-23)
+	$005C
+
+	$0060	24 SD	Spurious Interrupt
+	$0064	25 SD	Level 1 Interrupt Autovector (IPL1)
+	$0068	26 SD	Level 2 Interrupt Autovector (IPL2)
+	$006C	27 SD	Level 3 Interrupt Autovector (IPL3)
+	$0070	28 SD	Level 4 Interrupt Autovector (IPL4)
+	$0074	29 SD	Level 5 Interrupt Autovector (IPL5)
+	$0078	30 SD	Level 6 Interrupt Autovector (IPL6)
+	$007C	31 SD	Level 7 Interrupt Autovector (IPL7)
+
+	$0080 to   SD	TRAP 0-15 Instruction Vectors (32-47)
+	$00BC
+
+	$00C0	48 SD	FPCP Branch Or Set on Unordered Condition
+	$00C4	49 SD	FPCP Inexact Result
+	$00C8	50 SD	FPCP Divide By Zero
+	$00CC	51 SD	FPCP Underflow
+	$00D0	52 SD	FPCP Operand Error
+	$00D4	53 SD	FPCP Overflow
+	$00D8	54 SD	FPCP Signalling NAN (Not-A-Number)
+	$00DC	55 SD	Unassigned, Reserved
+	$00E0	56 SD	PMMU Configuration Error
+	$00E4	57 SD	PMMU Illegal Operation
+	$00E8	58 SD	PMMU Access Level Violation
+
+	$00EC to   SD	Unassigned, Reserved (59-63)
+	$00FC
+
+	$0100 to   SD	User Defined Vectors (64 to 255)
+	$03FC
+
+
+Special exception vectors new to the MC68020 include the cpTRAPcc and TRAPcc
+instruction vector (shared with the MC68000 TRAPV vector) for handling those
+instructions, and the range of coprocessor handling exceptions. These include
+execptions for the MC68881/MC68882 mathematics coprocessor (FPCP), and the
+MC68851 Paged Memory Management Unit (PMMU).
+
+
+	The MC68020 now saves exception-generated data on the ISP or MSP in
+the form of Stack Frames. These take a number of formats, and if the MC68020
+encounters a Stack Frame that does not conform to these formats, then the CPU
+takes the Format Error exception. This can be triggered by an illegal format
+encountered during RTE, CALLM/RTM or cpRESTORE. This occurs if the Format
+field (see below) does not conform to the expected specifications.
+
+
+	The handling of the F-line exception changes in systems containing a
+MC68020 plus one or more coprocessors. In such systems, the exception is ta-
+ken only if the coprocessor(s) do not recognise an instruction passed to them
+unless one of the coprocessor-specific exceptions occurs.
+
+
+	Also changed is the Address Error handling-now, an address error only
+occurs when an attempt is made to execute an instruction that is not word-al-
+igned. The MC68020 can access word or longword data that is not aligned, but
+with a degradation in performance as a result. The processor creates a Bus
+Error stack frame.
+
+
+	The Bus Error exception is now created by nonexistent memory, memory
+errors reported to the CPU by external circuitry, or memory access errors of
+certain types reported by a MC68851 PMMU. Some coprocessor errors can also be
+the cause of a Bus Error-exercise CARE!
+
+
+	Coprocessor exceptions include the Floating-Point Coprocessor (FPCP)
+exceptions, which include floating-point underflow/overflow, inexact result,
+operand error, and a condition called 'Signalling NAN'. This refers to the
+use of certain special values (called NANs or 'Not-A-Number's) to signal to
+the CPU certain special conditions not signalled via the normal routes. As
+well as the FPCP exeptions, there are Paged Memory Management Unit (PMMU) ex-
+ceptions, including illegal operation, access violation (caused by operations
+such as an attempt by a user-mode program to write to a memory area designa-
+ted as part of the supervisor data space by the PMMU, or an attempt to issue
+a CALLM instruction without having been granted the correct access level), &
+the Configuration Error exception which is caused by faults in the operating
+system and its memory management (the only cure for which is to abort and re-
+boot the operating system!).
+
+
+	The final exception does not have a vector assigned to it-because it
+is a complete catastrophe for the system. A double bus fault (Bus Error with-
+in a Bus Error exception handler, for example) is considered to be so bad for
+the system that the processor enters the Halted State. The ONLY way out is an
+external RESET!
+
+
+			MC68020 EXCEPTION STACK FRAMES
+			==============================
+
+
+The MC68020 stores exception-generated data onto the ISP or MSP in the form
+of a Stack Frame. At least four words are stored on the stack, as follows:
+
+
+		SP	Status Register
+
+		SP+2	Program Counter High Word
+
+		SP+4	Program Counter Low Word
+
+		SP+6	Format Word
+
+
+The Format Word is defined by:
+
+
+		F F F F V V V V V V V V V V V V
+
+
+where FFFF is the format type field, and VVVV... is the Vector Offset field,
+identifying the exception number taken. Legal values for the FFFF field, and
+the number of words saved on the stack, are:
+
+
+		0000	Short Format (4 words)
+		0001	Throwaway Format (4 words)
+		0010	Instruction Exception (6 words)
+		0011 to Unassigned, Reserved
+		0111
+		1000	MC68010 Bus Fault (29 words)
+		1001	Coprocessor Mid-Instruction (10 words)
+		1010	MC68020 Short Bus Fault (16 words)
+		1011	MC68020 Long Bus Fault (46 words)
+		1100 to Unassigned, Reserved
+		1111
+
+For example, the Format $02 Stack Frame is defined by:
+
+
+		SP	Value of SR
+		SP+2	Value of PC High Word
+		SP+4	Value of PC Low Word
+		SP+6	Format Word
+		SP+8	Instruction Address High Word
+		SP+10	Instruction Address Low Word
+
+
+The next stack frames to be defined are the MC68020 Short Bus-Cycle Fault or
+Format $0A Frame, and the Long-Frame Bus-Cycle Fault (or Format $0B) Frame.
+First, the Format $0A Frame:
+
+
+		SP	Value of SR
+		SP+2	Program Counter (2 words)
+		SP+6	Format Word $AXXX
+		SP+8	Internal Register Value
+		SP+10	Special Status Word
+		SP+12	Instruction Pipe Stage C
+		SP+14	Instruction Pipe Stage B
+		SP+16	Data Cycle Fault Address (2 words)
+		SP+20	Internal Register Value
+		SP+22	Internal Register Value
+		SP+24	Data Output Buffer (2 words)
+		SP+28	Internal Register Value
+		SP+30	Internal Register Value
+
+
+and finally, the Format $0B Frame:
+
+
+		SP	Value of SR
+		SP+2	Program Counter (2 words)
+		SP+6	Format Word $BXXX
+		SP+8	Internal Register Value
+		SP+10	Special Status Word
+		SP+12	Instruction Pipe Stage C
+		SP+14	Instruction Pipe Stage B
+		SP+16	Data Cycle Fault Address (2 words)
+		SP+20	Internal Registers (2 words)
+		SP+24	Data Output Buffer (2 words)
+		SP+28	Internal Registers (4 words)
+		SP+36	Stage B Address (2 words)
+		SP+40	Internal Registers (2 words)
+		SP+44	Data Input Buffer (2 words)
+		SP+48	Internal Registers (22 words!)
+
+
+Information on the MC68010 Bus-Cycle Fault Format Stack Frame can be found in
+the official Motorola MC68010 User's Manual, but is not of great use here.
+
+
+		      MC68020 INSTRUCTION EXTENSION WORDS
+		      ===================================
+
+
+The MC68020 extends the range of MC68000 instructions by using a range of ex-
+tension words to the basic instructions. The format of a typical MC68020 in-
+struction is:
+
+
+		Word 1 : x x x x x x x x x x M M M R R R
+
+		Word 2 : Extension word
+
+		Word 3 : Any extra required operand words
+
+		 ...
+
+
+where the extra operand words follow in the order:source operands first, des-
+tination operands next.
+
+
+	Here, the MMM and RRR fields determine the addressing mode of the in-
+struction in accordance with the following table (applicable to ALL Motorola
+MC680x0 processors unless otherwise stated):
+
+
+	MMM	RRR	Mode
+	---	---	----
+	000	xxx	Data Register Direct : xxx = register number 0-7
+			and operand is one of D0 - D7.
+
+	001	xxx	Address Register Direct : xxx = register number 0-7
+			and operand is one of A0 - A7.
+
+	010	xxx	Address Register Indirect : xxx = 0 to 7,
+			operand is one of (A0) to (A7).
+
+	011	xxx	Postincrement:xxx = 0 to 7, operand is one
+			of (A0)+ to (A7)+.
+
+	100	xxx	Predecrement:xxx = 0 to 7, operand is on
+			of -(A0) to -(A7).
+
+	101	xxx	Address Register Indirect With Displacement:
+			xxx = 0 to 7, operand is one of
+			disp(A0) to disp(A7). The displacement word
+			follows the instruction word.
+
+	110	xxx	Address Register Indirect With Displacement
+			And Index:xxx = 0 to 7, operand is one of
+			disp(A0,Xn) to disp(A7,Xn). The index regis-
+			ter Xn is specified in the extension word(s),
+			and the displacement follows this extension
+			word.
+
+	111	000	Absolute short:address of operand follows
+			instruction word as one word.
+
+	111	001	Absolute long:address of operand follows
+			instruction word as two words.
+
+	111	010	Program Counter Indirect With Displacement.
+			The displacement follows the instruction
+			word as one word.
+
+	111	011	Program Counter Indirect With Displacement
+			And Index (all 680x0 series), and Memory Indirect
+			(68020 onwards).
+
+	111	100	Immediate Data. The immediate data follows the
+			instruction word, using one or two words as is
+			required.
+
+
+The extension words fall into two types:the brief extension word (which is a
+slight generalisation of the standard MC68000 extension word), and the full-
+format extension word (which allows memory indirect addressing modes etc).
+
+
+	First, the Brief Format extension word has the format defined by the
+template below:
+
+
+		D X X X W S S 0 d d d d d d d d
+
+
+The various fields in this extension word are:
+
+
+	D	: D/A Field. Specifies the index register type for
+		  disp(An,Xn) and disp(PC,Xn).
+
+		  0 = Data Register Dn
+
+		  1 = Address Register An
+
+	XXX	: Register number field. Specifies which register is
+		  the specified index register, ranging from 0-7.
+
+	W	: W/L field. Specifies whether the index register is
+		  word sized or longword sized.
+
+		  0 = word sized (value is sign-extended during
+		      address computation)
+
+		  1 = longword sized.
+
+	SS	: Scale field. Determines the scale in memory indirect
+		  and the extended form of the MC68000 disp(An,Xn)/
+		  disp(PC,Xn) which on the MC68020 allows the use of a
+		  scale multiplier. The values are:
+
+		  00	: Multiplier = 1
+
+		  01	: Multiplier = 2
+
+		  10	: Multiplier = 4
+
+		  11	: Multiplier = 8
+
+		  The value SS=00 corresponds to the value used in the
+		  original MC68000 extension word. The MC68020 allows
+		  multipliers to be used as in:
+
+			MOVE.W	0(A0,D2.W*2),D3
+
+	ddd..	: Displacement field. Contains the byte value of the dis-
+		  placement used in disp(An,Xn) and disp(PC,Xn) addressing
+		  modes. This byte is sign-extended to a LONGWORD value
+		  during computation of the effective address (so that a
+		  value of $80 corresponds to -128).
+
+
+The Full Format extension word is far more complex, since it must contain the
+complete definition of any memory indirect addressing modes used. The Full
+Format extension word is defined using:
+
+
+		D X X X W S S 1 B I Z Z 0 J J J
+
+
+where:
+
+
+	D	: D/A field. Specifies whether index register is
+		  a data register or an address register.
+
+		  0 = Data Register Dn
+
+		  1 = Address Register An
+
+	XXX	: Index Register Number 0-7.
+
+	W	: W/L Field. Specifies:
+
+		  0 = Index register word-sized. Contents sign-
+		      extended to longword prior to address com-
+		      putation.
+
+		  1 = Index register longword-sized.
+
+	SS	: Scale Factor field. Values are:
+
+		  00	: Multiplier = 1
+
+		  01	: Multiplier = 2
+
+		  10	: Multiplier = 4
+
+		  11	: Multiplier = 8
+
+	B	: Base Suppress (BS) field.
+
+		  0 = Add contents of base address register to
+		      base displacement.
+
+		  1 = Suppress base address register-use base
+		      displacement only.
+
+	I	: Index Suppress (IS) field.
+
+		  0 = Evaluate index operand and add to address
+
+		  1 = Suppress index operand, do not use.
+
+	ZZ	: Base Displacement Size (BD SIZE) field.
+
+		  00 = Reserved.
+
+		  01 = Null Displacement.
+
+		  10 = Base Displacement Word Sized.
+
+		  11 = Base Displacement Longword Sized.
+
+	JJJ	: Index/Indirect Selection (I/IS) Field.
+
+		  Used in conjunction with the IS bit according to
+		  the table below. 'od' refers as always to the
+		  Outer Displacement value.
+
+		  IS	I/IS		Operation
+		  --	----		---------
+		  0	000		No Memory Indirection
+		  0	001		Indirect Preindex, NULL od
+		  0	010		Indirect Preindex, word od
+		  0	011		Indirect Preindex, long od
+		  0	100		Reserved
+		  0	101		Indirect Postindex, NULL od
+		  0	110		Indirect Postindex, word od
+		  0	111		Indirect Postindex, long od
+
+		  1	000		No Memory Indirection
+		  1	001		Indirect, No index, NULL od
+		  1	010		Indirect, No index, word od
+		  1	011		Indirect, No index, long od
+
+		  1	100-111		All Reserved
+
+
+Once a Full Format extension word follows an instruction, then the Base Dis-
+placement words follow that word, and the Outer Displacement words follow on
+from those. Of course, if either the Base Displacement or the Outer Displace-
+ment do not exist (are NULL) then those words are omitted.
+
+
+	Note that for the MOVE instruction on the MC68020, it is possible to
+select both source and destination Memory Indirect operands! In this case,
+the order of the instruction words is as follows:
+
+
+		Word 1		: MOVE instruction
+
+		Word 2		: Source extension full format
+
+		Words 3,4	: Base Displacement if non-NULL,
+				  omitted otherwise
+
+		Words 5,6	: Outer Displacement if non-NULL,
+				  omitted otherwise
+
+		Word 7		: Destination extension full format
+
+		Words 8,9	: Base Displacement if non-NULL,
+				  omitted otherwise
+
+		Words 10,11	: Outer Displacement if non-NULL,
+				  omitted otherwise
+
+
+Thus a 68020 instruction can consist of as many as 11 words (!) provided that
+all of the specified components exist. Needless to say, executing such a MOVE
+takes rather longer than MOVE.W D0,D1, for example, but gives some indication
+of the enhanced power of the new 32-bit members of the family.
+
+
+		MC68020 EXTRA INSTRUCTIONS AND EXTENSIONS
+		=========================================
+
+			TO MC68000 INSTRUCTIONS
+			=======================
+
+
+Before covering specific instructions and extensions to the standard MC68000
+instructions allowed by the MC68020, the following should be noted:
+
+
+	1) Those instructions containing the MMM RRR fields to determine
+	   the addressing mode of operands retain their original format,
+	   extra values of those fields being used by the MC68020 to ac-
+	   cess new addressing modes (e.g., memory indirect). The major
+	   change is from the MC68000 instruction extension word for the
+	   indexed operands to either the MC68020 Brief Format or MC68020
+	   Full Format extension words (covered above);
+
+	2) If there ARE changes to the instruction format, then these
+	   changes will be covered below.
+
+
+The full list of extended and new instructions now follows.
+
+
+Bcc	: Branch Conditionally (Includes BRA) (MC68020)
+
+	Operation : IF condition is TRUE
+			THEN
+			  PC + d -> PC
+			ELSE
+			continue normal sequential operation
+
+	Assembler : Bcc <LABEL>
+
+	Attributes: Size=Byte,Word,Long
+
+	Description	: The conditional expression specified in the
+			  instruction is evaluated and the result tested.
+			  If the result is TRUE, then the displacement is
+			  sign-extended to 32 bits and added on to the
+			  current value of the program counter, at which
+			  point program execution resumes. If the result
+			  is FALSE, program execution continues sequen-
+			  tially as normal.
+
+	Condition Codes : NOT AFFECTED.
+
+	Instruction Format :
+
+		0 1 1 0 C C C C D D D D D D D D
+
+	Instruction Fields :
+
+		CCCC	: Condition code field. Specifies the condi-
+			  tional expression to compute prior to the
+			  branch decision. Values are given in the
+			  conditional branch table in the companion
+			  file typed_68000.doc. A field value of 0000
+			  corresponds to a BRA instruction, and a
+			  field value of 0001 corresponds to a BSR in-
+			  struction (see below).
+
+		DDDD..	: Displacement field. The 68020 accepts THREE
+			  displacement sizes. For short branches, this
+			  field contains the byte-sized displacement
+			  which is sign-extended to 32 bits prior to
+			  addition to the program counter.
+
+			  If this field contains zero (00000000) then
+			  the word following the instruction word con-
+			  tains a word-sized displacement, which is
+			  sign-extended to 32 bits prior to adding to
+			  the program counter. This mode and the prev-
+			  ious mode is available to ALL MC680x0 CPUs.
+
+			  If this field contains $FF (11111111), then
+			  the two words following the instruction word
+			  contain a longword-sized displacement to be
+			  added directly to the program counter. This
+			  mode is available to the MC68020 onwards.
+
+
+BFCHG	: Test Bit Field And Change
+
+	Operation : dst{off:wd} -> CCR
+
+		    NOT(dst{off:wd}) -> dst{off:wd}
+
+	Assembler : BFCHG <ea>{off:wd}
+
+	Attributes: Unsized.
+
+	Description	: Test the state of the specified bit field and
+			  alter the condition codes accordingly. Once
+			  the condition codes have been duly altered,
+			  invert all of the specified bits of the spec-
+			  ified bit field.
+
+	Condition Codes : X N Z V C
+			  - * * 0 0
+
+			  N : Set if the most significant bit of the
+			      bit field is zero. Cleared otherwise.
+
+			  Z : Set if all the bits of the bit field are
+			      zero. Cleared otherwise.
+
+			  V : Always Cleared.
+
+			  C : Always Cleared.
+
+			  X : Not Affected.
+
+	Instruction Format :
+
+		1 1 1 0 1 0 1 0 1 1 M M M R R R
+
+		0 0 0 0 A O O O O O B W W W W W
+
+	Instruction Fields :
+
+		MMM, RRR: See MC68020 Instruction Extension
+			  Words Above.
+
+		A	: A = 0 if the offset is an immediate
+			  value, A = 1 if the offset is con-
+			  tained in a data register.
+
+		OOO..	: Offset field. If the offset is an
+			  immediate value, then the value 0-31
+			  is stored here. If the offset is
+			  contained in a data register, then
+			  the register number D0-D7 is stored
+			  here.
+
+		B	: B = 0 if the width is an immediate
+			  value. B = 1 if the width is contained
+			  in a data register.
+
+		WWW..	: Width Field. If the width is an immed-
+			  iate value, then the values 0, 1-31 are
+			  stored here, representing a width of
+			  32, 1-31 respectively. If the width is
+			  contained in a data register, then the
+			  register number D0-D7 is stored here.
+
+	Addressing Modes : All modes EXCEPT:
+
+			   An
+			   (An)+
+			   -(An)
+			   #<data>
+
+			   and PC relative modes, are allowed for the
+			   destination operand.
+
+
+BFCLR	: Test Bit Field And Clear
+
+	Operation : dst{off:wd} -> CCR
+
+		    0 -> dst{off:wd}
+
+	Assembler : BFCLR <ea>{off:wd}
+
+	Attributes: Unsized.
+
+	Description	: Test the state of the specified bit field and
+			  alter the condition codes accordingly. Once
+			  the condition codes have been duly altered,
+			  clear all of the bits of the specified bit
+			  field.
+
+	Condition Codes : X N Z V C
+			  - * * 0 0
+
+			  N : Set if the most significant bit of the
+			      bit field is zero. Cleared otherwise.
+
+			  Z : Set if all the bits of the bit field are
+			      zero. Cleared otherwise.
+
+			  V : Always Cleared.
+
+			  C : Always Cleared.
+
+			  X : Not Affected.
+
+	Instruction Format :
+
+		1 1 1 0 1 1 0 0 1 1 M M M R R R
+
+		0 0 0 0 A O O O O O B W W W W W
+
+	Instruction Fields :
+
+		MMM, RRR: See MC68020 Instruction Extension
+			  Words Above.
+
+		A	: A = 0 if the offset is an immediate
+			  value, A = 1 if the offset is con-
+			  tained in a data register.
+
+		OOO..	: Offset field. If the offset is an
+			  immediate value, then the value 0-31
+			  is stored here. If the offset is
+			  contained in a data register, then
+			  the register number D0-D7 is stored
+			  here.
+
+		B	: B = 0 if the width is an immediate
+			  value. B = 1 if the width is contained
+			  in a data register.
+
+		WWW..	: Width Field. If the width is an immed-
+			  iate value, then the values 0, 1-31 are
+			  stored here, representing a width of
+			  32, 1-31 respectively. If the width is
+			  contained in a data register, then the
+			  register number D0-D7 is stored here.
+
+	Addressing Modes : All modes EXCEPT:
+
+			   An
+			   (An)+
+			   -(An)
+			   #<data>
+
+			   and PC relative modes, are allowed for the
+			   destination operand.
+
+
+BFEXTS	: Bit Field Extract Signed
+
+	Operation : src{off:wd} -> Dn
+
+	Assembler : BFEXTS <ea>{off:wd},Dn
+
+	Attributes: Unsized
+
+	Description	: Extract a bit field from the specified source
+			  location, sign-extend to 32 bits, and store the
+			  result in the specified data register.
+
+	Condition Codes	: X N Z V C
+			  - * * 0 0
+
+			  N Set if the most significant bit of the bit
+			    field is set. Cleared otherwise.
+
+			  Z Set if the bit field contains all zeros.
+			    Cleared otherwise.
+
+			  V Always Cleared.
+
+			  C Always Cleared.
+
+			  X Not Affected.
+
+	Instruction Format :
+
+		1 1 1 0 1 0 1 1 1 1 M M M R R R
+
+		0 D D D A O O O O O B W W W W W
+
+	Instruction Fields :
+
+		MMM, RRR: See MC68020 Instruction Extension Words
+			  above.
+
+		DDD	: Destination Data Register field. Specifies
+			  the destination data register D0-D7.
+
+		A	: A = 0 if the offset is an immediate
+			  value, A = 1 if the offset is con-
+			  tained in a data register.
+
+		OOO..	: Offset field. If the offset is an
+			  immediate value, then the value 0-31
+			  is stored here. If the offset is
+			  contained in a data register, then
+			  the register number D0-D7 is stored
+			  here.
+
+		B	: B = 0 if the width is an immediate
+			  value. B = 1 if the width is contained
+			  in a data register.
+
+		WWW..	: Width Field. If the width is an immed-
+			  iate value, then the values 0, 1-31 are
+			  stored here, representing a width of
+			  32, 1-31 respectively. If the width is
+			  contained in a data register, then the
+			  register number D0-D7 is stored here.
+
+	Addressing Modes : All modes EXCEPT:
+
+			   An
+			   (An)+
+			   -(An)
+			   #<data>
+
+			   are allowed for the source operand.
+
+
+BFEXTU	: Bit Field Extract Unsigned
+
+	Operation : src{off:wd} -> Dn
+
+	Assembler : BFEXTU <ea>{off:wd},Dn
+
+	Attributes: Unsized
+
+	Description	: Extract a bit field from the specified source
+			  location, zero-extend to 32 bits, and store the
+			  result in the specified data register.
+
+	Condition Codes	: X N Z V C
+			  - * * 0 0
+
+			  N Set if the most significant bit of the bit
+			    field is set. Cleared otherwise.
+
+			  Z Set if the bit field contains all zeros.
+			    Cleared otherwise.
+
+			  V Always Cleared.
+
+			  C Always Cleared.
+
+			  X Not Affected.
+
+	Instruction Format :
+
+		1 1 1 0 1 0 0 1 1 1 M M M R R R
+
+		0 D D D A O O O O O B W W W W W
+
+	Instruction Fields :
+
+		MMM, RRR: See MC68020 Instruction Extension Words
+			  above.
+
+		DDD	: Destination Data Register field. Specifies
+			  the destination data register D0-D7.
+
+		A	: A = 0 if the offset is an immediate
+			  value, A = 1 if the offset is con-
+			  tained in a data register.
+
+		OOO..	: Offset field. If the offset is an
+			  immediate value, then the value 0-31
+			  is stored here. If the offset is
+			  contained in a data register, then
+			  the register number D0-D7 is stored
+			  here.
+
+		B	: B = 0 if the width is an immediate
+			  value. B = 1 if the width is contained
+			  in a data register.
+
+		WWW..	: Width Field. If the width is an immed-
+			  iate value, then the values 0, 1-31 are
+			  stored here, representing a width of
+			  32, 1-31 respectively. If the width is
+			  contained in a data register, then the
+			  register number D0-D7 is stored here.
+
+	Addressing Modes : All modes EXCEPT:
+
+			   An
+			   (An)+
+			   -(An)
+			   #<data>
+
+			   are allowed for the source operand.
+
+
+BFFFO	: Bit Field Find First One
+
+	Operation : src{off:wd} bit scan -> Dn
+
+	Assembler : BFFFO <ea>{off:wd},Dn
+
+	Attributes: Unsized
+
+	Description	: Scan the specified bit field for the presence
+			  of a '1' bit, starting at the most significant
+			  bit of the bit field (the leftmost bit).
+
+			  If a '1' bit is found, then the bit offset of
+			  the first '1' bit located (which is the bit
+			  offset of the source operand plus the relative
+			  offset from the start of the bit field) is
+			  stored in the specified data register.
+
+			  If the bit field contains all zeros, then the
+			  value stored in the specified data register is
+			  the value of the source operand bit offset PLUS
+			  the value of the source operand field width,
+			  which is the offset to the next element of a
+			  bit field array. The condition codes are set
+			  according to the contents of the original bit
+			  field.
+
+	Condition Codes	: X N Z V C
+			  - * * 0 0
+
+			  N Set if the most significant bit of the bit
+			    field is 1. Cleared otherwise.
+
+			  Z Set if all bits of the bit field contain
+			    zero. Cleared otherwise.
+
+			  V Always Cleared.
+
+			  C Always Cleared.
+
+			  X Not Affected.
+
+	Instruction Format :
+
+		1 1 1 0 1 1 0 1 1 1 M M M R R R
+
+		0 D D D A O O O O O B W W W W W
+
+	Instruction Fields :
+
+		MMM, RRR: See MC68020 Instruction Extension Words
+			  above.
+
+		DDD	: Destination Data Register field. Specifies
+			  the destination data register D0-D7.
+
+		A	: A = 0 if the offset is an immediate
+			  value, A = 1 if the offset is con-
+			  tained in a data register.
+
+		OOO..	: Offset field. If the offset is an
+			  immediate value, then the value 0-31
+			  is stored here. If the offset is
+			  contained in a data register, then
+			  the register number D0-D7 is stored
+			  here.
+
+		B	: B = 0 if the width is an immediate
+			  value. B = 1 if the width is contained
+			  in a data register.
+
+		WWW..	: Width Field. If the width is an immed-
+			  iate value, then the values 0, 1-31 are
+			  stored here, representing a width of
+			  32, 1-31 respectively. If the width is
+			  contained in a data register, then the
+			  register number D0-D7 is stored here.
+
+	Addressing Modes : All modes EXCEPT:
+
+			   An
+			   (An)+
+			   -(An)
+			   #<data>
+
+			   are allowed for the source operand.
+
+
+BFINS	: Bit Field Insert
+
+	Operation : Dn -> dst{off:wd}
+
+	Assembler : BFINS Dn,<ea>{off:wd}
+
+	Attributes: Unsized
+
+	Description	: Move a bit field from the low-order bits of the
+			  specified data register and store the bits in
+			  the bit field specified by the destination lo-
+			  cation. The condition codes are set according to
+			  the FINAL STATE of the bit field after insertion.
+
+	Condition Codes	: X N Z V C
+			  - * * 0 0
+
+			  N Set if the most significant bit of the resul-
+			    tant bit field is set. Cleared otherwise.
+
+			  Z Set if the resultant bit field contains all
+			    zeros. Cleared otherwise.
+
+			  V Always Cleared.
+
+			  C Always Cleared.
+
+			  X Not Affected.
+
+	Instruction Format :
+
+		1 1 1 0 1 1 1 1 1 1 M M M R R R
+
+		0 D D D A O O O O O B W W W W W
+
+	Instruction Fields :
+
+		MMM, RRR: See MC68020 Instruction Extension Words
+			  above.
+
+		DDD	: Destination Data Register field. Specifies
+			  the destination data register D0-D7.
+
+		A	: A = 0 if the offset is an immediate
+			  value, A = 1 if the offset is con-
+			  tained in a data register.
+
+		OOO..	: Offset field. If the offset is an
+			  immediate value, then the value 0-31
+			  is stored here. If the offset is
+			  contained in a data register, then
+			  the register number D0-D7 is stored
+			  here.
+
+		B	: B = 0 if the width is an immediate
+			  value. B = 1 if the width is contained
+			  in a data register.
+
+		WWW..	: Width Field. If the width is an immed-
+			  iate value, then the values 0, 1-31 are
+			  stored here, representing a width of
+			  32, 1-31 respectively. If the width is
+			  contained in a data register, then the
+			  register number D0-D7 is stored here.
+
+	Addressing Modes : All modes EXCEPT:
+
+			   An
+			   (An)+
+			   -(An)
+			   #<data>
+
+			   and PC relative modes, are allowed for the
+			   destination operand.
+
+
+BFSET	: Test Bit Field And Set
+
+	Operation : dst{off:wd} -> CCR
+
+		    1 -> dst{off:wd}
+
+	Assembler : BFSET <ea>{off:wd}
+
+	Attributes: Unsized.
+
+	Description	: Test the state of the specified bit field and
+			  alter the condition codes accordingly. Once
+			  the condition codes have been duly altered,
+			  set all of the bits of the specified bit field
+			  (to 1).
+
+	Condition Codes : X N Z V C
+			  - * * 0 0
+
+			  N : Set if the most significant bit of the
+			      bit field is zero. Cleared otherwise.
+
+			  Z : Set if all the bits of the bit field are
+			      zero. Cleared otherwise.
+
+			  V : Always Cleared.
+
+			  C : Always Cleared.
+
+			  X : Not Affected.
+
+	Instruction Format :
+
+		1 1 1 0 1 1 1 0 1 1 M M M R R R
+
+		0 0 0 0 A O O O O O B W W W W W
+
+	Instruction Fields :
+
+		MMM, RRR: See MC68020 Instruction Extension
+			  Words Above.
+
+		A	: A = 0 if the offset is an immediate
+			  value, A = 1 if the offset is con-
+			  tained in a data register.
+
+		OOO..	: Offset field. If the offset is an
+			  immediate value, then the value 0-31
+			  is stored here. If the offset is
+			  contained in a data register, then
+			  the register number D0-D7 is stored
+			  here.
+
+		B	: B = 0 if the width is an immediate
+			  value. B = 1 if the width is contained
+			  in a data register.
+
+		WWW..	: Width Field. If the width is an immed-
+			  iate value, then the values 0, 1-31 are
+			  stored here, representing a width of
+			  32, 1-31 respectively. If the width is
+			  contained in a data register, then the
+			  register number D0-D7 is stored here.
+
+	Addressing Modes : All modes EXCEPT:
+
+			   An
+			   (An)+
+			   -(An)
+			   #<data>
+
+			   and PC relative modes, are allowed for the
+			   destination operand.
+
+
+BFTST	: Test Bit Field
+
+	Operation : dst{off:wd} -> CCR
+
+	Assembler : BFTST <ea>{off:wd}
+
+	Attributes: Unsized.
+
+	Description	: Test the state of the specified bit field and
+			  alter the condition codes accordingly.
+
+	Condition Codes : X N Z V C
+			  - * * 0 0
+
+			  N : Set if the most significant bit of the
+			      bit field is zero. Cleared otherwise.
+
+			  Z : Set if all the bits of the bit field are
+			      zero. Cleared otherwise.
+
+			  V : Always Cleared.
+
+			  C : Always Cleared.
+
+			  X : Not Affected.
+
+	Instruction Format :
+
+		1 1 1 0 1 0 0 0 1 1 M M M R R R
+
+		0 0 0 0 A O O O O O B W W W W W
+
+	Instruction Fields :
+
+		MMM, RRR: See MC68020 Instruction Extension
+			  Words Above.
+
+		A	: A = 0 if the offset is an immediate
+			  value, A = 1 if the offset is con-
+			  tained in a data register.
+
+		OOO..	: Offset field. If the offset is an
+			  immediate value, then the value 0-31
+			  is stored here. If the offset is
+			  contained in a data register, then
+			  the register number D0-D7 is stored
+			  here.
+
+		B	: B = 0 if the width is an immediate
+			  value. B = 1 if the width is contained
+			  in a data register.
+
+		WWW..	: Width Field. If the width is an immed-
+			  iate value, then the values 0, 1-31 are
+			  stored here, representing a width of
+			  32, 1-31 respectively. If the width is
+			  contained in a data register, then the
+			  register number D0-D7 is stored here.
+
+	Addressing Modes : All modes EXCEPT:
+
+			   An
+			   (An)+
+			   -(An)
+			   #<data>
+
+			   are allowed for the destination operand.
+
+
+BKPT	: Breakpoint (MC68020)
+
+	Operation : IF Breakpoint Vector Acknowledged
+			THEN
+			  execute returned operation word
+			ELSE
+			  trap via illegal instruction vector
+
+	Assembler : BKPT #<data>
+
+	Attributes: Unsized
+
+	Description	: This instruction is used in conjunction
+			  with external hardware support to provide
+			  a breakpoint function for debuggers and
+			  real-time emulators. As such, the opera-
+			  tion will be implementation dependent.
+
+			  Typically, this instruction will be sup-
+			  ported by the MC68851 Paged Memory Manage-
+			  Ment Unit, which contains the hardware re-
+			  quired to replace the overwritten instruc-
+			  tion word.
+
+			  The MC68020 generates a Breakpoint Acknow-
+			  edge bus cycle, with the immediate data on
+			  address lines A2-A4, address lines A0 and A1
+			  on the address bus being pulled low.
+
+			  The normal response to a BKPT by supporting
+			  hardware is to send an operation word (typi-
+			  cally the original replaced instruction) on
+			  the data lines with the DSACKx signal asser-
+			  ted (this is an ACTIVE LOW signal). The op-
+			  eration word is executed in place of the
+			  breakpoint instruction.
+
+			  For the exception response, a bus error sig-
+			  nal will cause the MC68020 to take the ille-
+			  gal instruction exception.
+
+			  If external support for this instruction is
+			  NOT provided in hardware, then the illegal
+			  instruction exception is taken.
+
+	Condition Codes : NOT AFFECTED.
+
+	Instruction Format :
+
+		0 1 0 0 1 0 0 0 0 1 0 0 1 V V V
+
+	Instruction Fields :
+
+		VVV	: Vector field. Specified the breakpoint for which
+			  the processor is to request the corresponding
+			  operation word. Eight breakpoints from BKPT #0
+			  to BKPT #7 are supported by the MC68851, and
+			  the MC68851 can save overwritten instructions
+			  and replace them upon execution of the BKPT
+			  instruction. Other hardware support possibil-
+			  ities exist, but the MC68851 PMMU is THE support
+			  system recommended by Motorola.
+
+
+BSR	: Branch To Subroutine (MC68020 onwards)
+
+	Operation : SP - 4 -> SP
+		    PC -> (SP)
+		    PC + d -> PC
+
+	Assembler : BSR <label>
+
+	Attributes: Size=Byte, Word, Long
+
+	Description	: The long word address of the instruction
+			  immediately following the BSR instruction
+			  is pushed onto the stack. The value of the
+			  displacement is then added to the value of
+			  the program counter, and program execution
+			  continues at this new location.
+
+			  For the 68020, the BSR instruction is ex-
+			  tended to allow longword displacements to
+			  be specified, allowing relative subroutine
+			  calls to be performed across the entire
+			  address space of the machine.
+
+	Condition Codes : NOT AFFECTED.
+
+	Instruction Format :
+
+		0 1 1 0 0 0 0 1 D D D D D D D D
+
+	Instruction Fields :
+
+		DDDD..	: Displacement field. The 68020 accepts THREE
+			  displacement sizes. For short branches, this
+			  field contains the byte-sized displacement
+			  which is sign-extended to 32 bits prior to
+			  addition to the program counter.
+
+			  If this field contains zero (00000000) then
+			  the word following the instruction word con-
+			  tains a word-sized displacement, which is
+			  sign-extended to 32 bits prior to adding to
+			  the program counter. This and the previous
+			  mode is available to all MC680x0 CPUs.
+
+			  If this field contains $FF (11111111), then
+			  the two words following the instruction word
+			  contain a longword-sized displacement to be
+			  added directly to the program counter. This
+			  mode is available to the MC68020 onwards.
+
+
+CALLM	: Call Module (MC68020 ONLY!)
+
+	Operation : Save current module state on stack.
+		    Load new module state from destination.
+
+	Assembler : CALLM #<data>,<ea>
+
+	Attributes: Unsized.
+
+	Description	: The destination effective address is the
+			  address of a module descriptor. A module
+			  frame is created at the top of the stack,
+			  and the current module state is saved in
+			  the stack frame thus reserved.
+
+			  A new module state is loaded from the de-
+			  scriptor addressed by the destination op-
+			  erand. Up to 255 bytes of arguments are
+			  passed to the new module, the size of the
+			  argument block being specified in the source
+			  immediate operand. 
+
+	Condition Codes : NOT AFFECTED.
+
+	Instruction Format:
+
+		0 0 0 0 0 1 1 0 1 1 M M M R R R
+
+		0 0 0 0 0 0 0 0 A A A A A A A A
+
+	Instruction Fields:
+
+		MMM, RRR: See MC68020 Instruction Extension
+			  Words Above.
+
+		AAA...	: Argument Count field. Specifies the number
+			  of bytes of arguments to be transferred to
+			  the new module (as specified in the source
+			  operand). Legal values are from 0 to 255
+			  bytes. This same number of bytes is removed
+			  from the stack by the RTM instruction (see
+			  below).
+
+	Addressing Modes : All modes EXCEPT:
+
+			   An
+			   (An)+
+			   -(An)
+			   #<data>
+
+			   are allowed for the destination operand.
+
+
+CAS	: Compare And Swap With Operand
+
+	Operation : dst - Dc -> CCR
+
+		    IF Z=1
+			THEN
+			  Du -> dst
+			ELSE
+			  dst -> Dc
+
+	Assembler : CAS Dc,Du,<ea>
+
+	Attributes: Size = Byte, Word, Long
+
+	Description	: This instruction performs a Compare And Swap
+			  operation. The destination operand is com-
+			  pared with the contents of the data register
+			  containing the comparison operand (here, Dc)
+			  and the condition codes set accrordingly. If
+			  the Zero flag is set (indicating that the two
+			  operands have equal values), then the contents
+			  of the data register containing the update op-
+			  erand (here, Du) is moved to the destination
+			  location. If the Zero flag is cleared, then
+			  the destination operand is left unchanged, and
+			  its value moved to the data register used to
+			  store the comparison operand.
+
+			  This operation is performed using an indivis-
+			  ible read-modify-write cycle to allow synchron-
+			  isation of several processors. See notes below.
+
+	Condition Codes : X N Z V C
+
+			  N : Set if the result is negative. Cleared
+			      otherwise.
+
+			  Z : Set if the result is zero. Cleared other-
+			      wise.
+
+			  V : Set if an overflow is generated. Cleared
+			      otherwise.
+
+			  C : Set if a carry is generated. Cleared
+			      otherwise.
+
+			  X : Not Affected.
+
+	Instruction Format :
+
+		0 0 0 0 1 Z Z 0 1 1 M M M R R R
+
+		0 0 0 0 0 0 0 U U U 0 0 0 C C C
+
+	Instruction Fields:
+
+		MMM, RRR: See MC68020 Instruction Extension
+			  Words Above.
+
+		ZZ	: Size field. Specifies the size of the
+			  operation:
+
+			  01 = Byte operation.
+			  10 = Word operation.
+			  11 = Long operation.
+
+		UUU	: Specifies the data register to be used to
+			  contain the update operand to be moved to
+			  the destination effective address if the
+			  comparison is successful.
+
+		CCC	: Specifies the data register to be used to
+			  contain the comparison operand to compare
+			  with the destination operand.
+
+	Addressing Modes : All modes EXCEPT:
+
+			   Dn
+			   An
+			   #<data>
+
+			   and PC relative modes, are allowed for the
+			   destination operand.
+
+	Notes : This instruction may be used to manage a linked list
+		safely in a multiprocessor environment, where the
+		linked list is used to manage a resource shared be-
+		tween several processors and their tasks.
+
+
+CAS2	: Compare And Swap Two Operands Simultaneously
+
+	Operation : dst1 - Dc1 -> CCR
+
+		    IF Z=1
+			THEN
+			  dst2 - Dc2 -> CCR
+			  IF Z=1
+			      THEN
+				Du1 -> dst1
+				Du2 -> dst2
+			      ELSE
+				dst1 -> Dc1
+				dst2 -> Dc2
+			ELSE
+			  dst1 -> Dc1
+			  dst2 -> Dc2
+
+	Assembler : CAS Dc1:Dc2,Du1:Du2,(Rn1):(Rn2)
+
+	Attributes: Size = Word, Long
+
+	Description	: This operation first compares the contents of
+			  the first compare operand and the first dest-
+			  ination operand, and sets the condition codes.
+
+			  If the Zero flag is set after this first com-
+			  parison, a second comparison is made, between
+			  the second comparison operand and the second
+			  destination operand, and the condition codes
+			  set accordingly.
+
+			  If the Zero flag is set after the second com-
+			  parison, then the contents of the two update
+			  operands are moved to the respective destin-
+			  ation operands.
+
+			  If either comparison fails, and the Zero flag
+			  is cleared, then the destination operands are
+			  left unmodified, and the values of the destin-
+			  ation operands are copied to the respective
+			  comparison operands.
+
+			  NOTE : Due to the complexity of this instruction,
+			  the programmer is free to specify data registers
+			  in the destination operands, and use them as if
+			  they were address registers. This is the ONLY
+			  instruction where such freedom is allowed! For
+			  example, it is legal to use:
+
+				CAS2 D0:D1,D2:D3,(D4):(D5)
+
+			  and use D4 and D5 as though they were address
+			  registers using the (An) addressing mode.
+
+			  This operation is performed using an indivis-
+			  ible read-modify-write cycle to allow synchron-
+			  isation of several processors. See notes below.
+			  
+
+	Condition Codes : X N Z V C
+
+			  N : Set if the result is negative. Cleared
+			      otherwise.
+
+			  Z : Set if the result is zero. Cleared other-
+			      wise.
+
+			  V : Set if an overflow is generated. Cleared
+			      otherwise.
+
+			  C : Set if a carry is generated. Cleared
+			      otherwise.
+
+			  X : Not Affected.
+
+	Instruction Format :
+
+		0 0 0 0 1 Z Z 0 1 1 1 1 1 1 0 0
+
+		A R R R 0 0 0 U U U 0 0 0 C C C
+
+		B S S S 0 0 0 V V V 0 0 0 D D D
+
+	Instruction Fields:
+
+		MMM, RRR: See MC68020 Instruction Extension
+			  Words Above.
+
+		ZZ	: Size field. Specifies the size of the
+			  operation:
+
+			  01 = Byte operation.
+
+			  10 = Word operation.
+
+			  11 = Long operation.
+
+		A	: D/A1 field. A = 0 if the RRR field specifies
+			  a data register for the Rn1 operand, A = 1 if
+			  the RRR field specifies an address register.
+
+		RRR	: Register number for the Rn1 operand above.
+
+		UUU	: Specifies which data register is to be used
+			  for the first update operand (Du1 above).
+
+		CCC	: Specifies which data register is to be used
+			  for the first comparison operand (Dc1 above).
+
+		B	: D/A2 field. B = 0 if the SSS field specifies
+			  a data register for the Rn2 operand, B = 1 if
+			  the SSS field specifies an address register.
+
+		SSS	: Register number for the Rn2 operand above.
+
+		VVV	: Specifies which data register is to be used
+			  for the second update operand (Du2 above).
+
+		DDD	: Specifies which data register is to be used
+			  for the second comparison operand (Dc2 above).
+
+	Addressing Modes : All modes EXCEPT:
+
+			   Dn
+			   An
+			   (An)+
+			   -(An)
+			   #<data>
+
+			   and PC relative modes, are allowed for the
+			   destination operand.
+
+	Notes : This instruction may be used to safely update a doubly-
+		linked list in a multiprocessor environment where that
+		list is used to manage a resource shared across several
+		processors and their tasks.
+
+
+CHK	: Check Register Against Bounds (MC68020)
+
+	Operation : IF Dn < 0 OR Dn > <ea>
+			THEN
+			  TRAP (CHK exception vector)
+			ELSE
+			  continue normal execution
+
+	Assembler : CHK <ea>,Dn
+
+	Attributes: Size = Word, Long.
+
+	Description	: The content of the data register is examined
+			  and compared to the upper bound stored at the
+			  source effective address. The upper bound is
+			  a twos complement integer.
+
+			  If the register value is less than zero, or
+			  greater than the upper bound, then the pro-
+			  cessor initiates exception processing via the
+			  CHK exception vector.
+
+			  The 68000 version of this instruction only
+			  allows word-sized comparisons. The instruction
+			  in this case is identical across both proces-
+			  sors (see ZZZ field below).
+
+	Condition Codes : X N Z V C
+			  - * U U U
+
+			  N : Set if Dn<0, cleared if Dn> <ea>.
+			      Undefined otherwise.
+
+			  Z : Undefined.
+
+			  V : Undefined.
+
+			  C : Undefined.
+
+			  X : Not Affected.
+
+	Instruction Format :
+
+		0 1 0 0 D D D Z Z Z R R R M M M
+
+	Instruction Fields :
+
+		MMM, RRR: See MC68020 Instruction Extension
+			  Words Above.
+
+		ZZZ	: Size field. The two legal values
+			  are:
+
+			  110 : Word operation.
+
+			  100 : Long operation.
+
+		DDD	: Data Register field. Specifies the data
+			  register to use for the destination op-
+			  erand.
+
+
+	Addressing Modes : All modes EXECPT An (address register
+			   direct) are allowed.
+
+
+CHK2	: Check Register Against Bounds Pair And TRAP
+
+	Operation : IF Dn < <ea lower bound>
+			OR
+		       Dn > <ea upper bound>
+			THEN
+			  TRAP (CHK exception vector)
+			ELSE
+			  continue normal execution
+
+	Assembler : CHK2 <ea>,Rn
+
+	Attributes: Size = Byte, Word, Long.
+
+	Description	: The contents of the specified register (here,
+			  either data or address register) are compared
+			  with the PAIR of bounds specifiers stored at
+			  the source effective address in the order:
+
+				<ea>	: Lower Bound
+				<ea+N>	: Upper Bound
+
+			  where N is the size of the operand.
+
+			  If the value of the specified register is less
+			  than the value of the lower bound, or greater
+			  than the value of the upper bound, then an ex-
+			  ception is taken via the CHK exception vector.
+			  If the value lies within the specified bounds,
+			  then execution continues as normal.
+
+			  If the destination register is a data register,
+			  then the comparison only affects that portion of
+			  the data register whose size is specified.
+
+			  If the destination register is an address regi-
+			  ster, then the bounds values are sign-extended
+			  to 32 bits before the comparison is performed. 
+
+			  Note:either a signed or an unsigned comparison
+			  can be performed. For signed comparisons, the
+			  lower bound should be arithmetically smaller,
+			  and for unsigned comparisons, the lower bound
+			  should be logically smaller.
+
+	Condition Codes : X N Z V C
+			  - U * U *
+
+			  N : Undefined.
+
+			  Z : Set if Rn is equal to either bound. Cleared
+			      otherwise.
+
+			  V : Undefined.
+
+			  C : Set if Rn is out of bounds. Cleared other-
+			      wise.
+
+			  X : Not Affected.
+
+	Instruction Format :
+
+		0 0 0 0 0 Z Z 0 1 1 M M M R R R
+
+		A D D D 1 0 0 0 0 0 0 0 0 0 0 0
+
+	Instruction Fields :
+
+		MMM, RRR: See MC68020 Instruction Extension
+			  Words Above.
+
+		ZZ	: Size field. The two legal values
+			  are:
+
+			  01 : Byte operation.
+
+			  10 : Word operation.
+
+			  11 : Long operation.
+
+		A	: D/A field. A = 0 if the register to be checked
+			  is a data register, A = 1 if the register to be
+			  checked is an address register.
+
+		DDD	: Register field. Specifies the data or address
+			  register to use for the destination operand.
+
+
+	Addressing Modes : All modes EXECPT:
+
+			   Dn
+			   An
+			   (An)+
+			   -(An)
+			   #<data>
+
+			   are allowed for the source operand.
+
+
+CMP2	: Check Register Against Bounds Pair
+
+	Operation : Compare Rn against upper & lower bounds -> CCR
+
+	Assembler : CHK2 <ea>,Rn
+
+	Attributes: Size = Byte, Word, Long.
+
+	Description	: The contents of the specified register (here,
+			  either data or address register) are compared
+			  with the PAIR of bounds specifiers stored at
+			  the source effective address in the order:
+
+				<ea>	: Lower Bound
+				<ea+N>	: Upper Bound
+
+			  where N is the size of the operand.
+
+			  If the destination register is a data register,
+			  then the comparison only affects that portion of
+			  the data register whose size is specified.
+
+			  If the destination register is an address regi-
+			  ster, then the bounds values are sign-extended
+			  to 32 bits before the comparison is performed. 
+
+			  Note:either a signed or an unsigned comparison
+			  can be performed. For signed comparisons, the
+			  lower bound should be arithmetically smaller,
+			  and for unsigned comparisons, the lower bound
+			  should be logically smaller.
+
+			  This instruction is analogous to CHK2, but is
+			  provided to allow comparisons without the need
+			  for exception processing.
+
+	Condition Codes : X N Z V C
+			  - U * U *
+
+			  N : Undefined.
+
+			  Z : Set if Rn is equal to either bound. Cleared
+			      otherwise.
+
+			  V : Undefined.
+
+			  C : Set if Rn is out of bounds. Cleared other-
+			      wise.
+
+			  X : Not Affected.
+
+	Instruction Format :
+
+		0 0 0 0 0 Z Z 0 1 1 M M M R R R
+
+		A D D D 0 0 0 0 0 0 0 0 0 0 0 0
+
+	Instruction Fields :
+
+		MMM, RRR: See MC68020 Instruction Extension
+			  Words Above.
+
+		ZZ	: Size field. The two legal values
+			  are:
+
+			  01 : Byte operation.
+
+			  10 : Word operation.
+
+			  11 : Long operation.
+
+		A	: D/A field. A = 0 if the register to be checked
+			  is a data register, A = 1 if the register to be
+			  checked is an address register.
+
+		DDD	: Register field. Specifies the data or address
+			  register to use for the destination operand.
+
+
+	Addressing Modes : All modes EXECPT:
+
+			   Dn
+			   An
+			   (An)+
+			   -(An)
+			   #<data>
+
+			   are allowed for the source operand.
+
+
+cpBcc	: Branch On Coprocessor Condition
+
+	Operation : If cpcc = TRUE
+			THEN
+			  PC + d -> PC
+			ELSE
+			  continue normal execution
+
+	Assembler : cpBcc <label>
+
+	Attributes: Size = Word, Long
+
+	Description	: If the specified coprocessor condition is
+			  true, then the value of the displacement
+			  is added onto the value of the program
+			  counter, and execution continues at this
+			  new location. If the specified coprocessor
+			  condition is false, then execution contin-
+			  ues at the next instruction in sequence.
+
+			  If the branch is a word branch, then the
+			  displacement is sign-extended to 32 bits
+			  before being added to the PC.
+
+	Condition Codes : NOT AFFECTED.
+
+	Instruction Format :
+
+		1 1 1 1 I I I 0 1 W C C C C C C
+
+		X X X X X X X X X X X X X X X X
+
+	Instruction Fields :
+
+		III	: Coprocessor ID field. Specifies the
+			  coprocessor that is to perform this
+			  operation.
+
+			  Current values:
+
+			  000 = MC68851 Paged Memory Management Unit
+
+			  001 = MC6881/68882 Mathematics Coprocessor
+
+		W	: W/L field. W = 0 specifies a word-length
+			  branch, W = 1 specifies a longword-length
+			  branch.
+
+		CCC...	: Coprocessor condition field. Contains the
+			  condition specification for the given co-
+			  processor. This field is passed to the
+			  coprocessor, which provides directives to
+			  the CPU for processing this instruction.
+
+		XXX...	: Optional Coprocessor Defined Extension Word(s)
+
+		Following these words are either one word for a 16-bit
+		branch displacement, or two words for a 32-bit displace-
+		ment branch.
+
+
+cpDBcc	: Test Coprocessor Condition, Decrement And Branch
+
+	Operation : IF cpcc = FALSE
+			THEN
+			  Dn - 1 -> Dn
+			  IF Dn <> -1
+				THEN
+				  PC + d -> PC
+				ELSE
+				  continue normal execution
+			ELSE
+			  continue normal execution
+
+	Assembler : cpDBcc Dn,<label>
+
+	Attributes: Size = Word.
+
+	Description	: If the specified coprocessor condition is true,
+			  then execution continues with the next instruc-
+			  tion. If the specified coprocessor condition is
+			  false, then the low order word of the specified
+			  data register is decremented by 1. If the result
+			  of this decrementation is equal to -1, execution
+			  continues with the next instruction. Otherwise
+			  the 16-bit displacement is sign-extended to 32
+			  bits and added on to the program counter, and ex-
+			  ecution continues at this new location.
+
+	Condition Codes : NOT AFFECTED.
+
+	Instruction Format :
+
+		1 1 1 1 I I I 0 0 1 0 0 1 D D D
+
+		0 0 0 0 0 0 0 0 0 0 C C C C C C
+
+		X X X X X X X X X X X X X X X X
+
+	Instruction Fields :
+
+		III	: Coprocessor ID field. Specifies the coprocesor
+			  that is to process this operation. See cpBcc
+			  above for current coprocessor IDs.
+
+		DDD	: Data Register field. Specifies the data regis-
+			  ter to be used as the counter.
+
+		CCC...	: Coprocessor condition field. Contains the
+			  condition specification for the given co-
+			  processor. This field is passed to the
+			  coprocessor, which provides directives to
+			  the CPU for processing this instruction.
+
+		XXX...	: Optional Coprocessor Defined Extension Word(s).
+
+		Following these words is a 16-bit word containing the
+		displacement to be used.
+
+
+cpGEN	: Coprocessor General Function.
+
+	Operation : Pass Command Word To Coprocessor.
+
+	Assembler : cpGEN <parameters>
+
+		    <parameters> as defined by given coprocessor
+
+	Attributes: Unsized.
+
+	Description	: This instruction is used by coprocessors to
+			  specify the general data movement and data
+			  processing operations for the specified co-
+			  processor. The coprocessor determines the
+			  operation from the Coprocessor Command Word
+			  immediately following the cpGEN command word.
+
+			  Usually, a coprocessor defines specific ins-
+			  tances of this instruction to provide its in-
+			  struction set.
+
+	Condition Codes : Determined By Coprocessor. Unchanged Otherwise.
+
+	Instruction Format :
+
+		1 1 1 1 I I I 0 0 0 M M M R R R
+
+		C C C C C C C C C C C C C C C C
+
+		X X X X X X X X X X X X X X X X
+
+	Instruction Fields :
+
+		III	: Coprocessor ID field. Specifies the coprocesor
+			  that is to process this operation. See cpBcc
+			  above for current coprocessor IDs.
+
+		MMM, RRR: See MC68020 Instruction Extension Words Above.
+			  Used to specify an operand in main memory for
+			  the coprocessor operation if specified, or
+			  the CPU registers.
+
+		CCC...	: Coprocessor Command Field. Specifies the co-
+			  processor instruction to be performed.
+
+		XXX...	: Optional Coprocessor Defined Extension Word(s).
+
+
+cpRESTORE	: Restore Coprocessor Machine State
+
+		  (PRIVIEGED INSTRUCTION)
+
+	Operation : IF supervisor state
+			THEN
+			  Restore Coprocessor Machine State
+			ELSE
+			  TRAP (Privilege Violation).
+
+	Assembler : cpRESTORE <ea>
+
+	Attributes: Unsized.
+
+	Description	: If the CPU is in supervisor mode, then restore
+			  the machine state of the coprocessor as saved
+			  earlier by a cpSAVE instruction (see below).
+			  If the CPU is in user mode, take the Privilege
+			  Violation exception.
+
+	Condition Codes : NOT AFFECTED.
+
+	Instruction Format :
+
+		1 1 1 1 I I I 1 0 1 M M M R R
+
+	Instruction Fields :
+
+		III	: Coprocessor ID field. Specifies the coprocesor
+			  that is to process this operation. See cpBcc
+			  above for current coprocessor IDs.
+
+		MMM, RRR: See MC68020 Instruction Extension Words Above.
+			  Used to specify the effective address of the
+			  saved coprocessor state to restore.
+
+	Addressing Modes : All EXECPT:
+
+			   Dn
+			   An
+			   -(An)
+			   #<data>
+
+			   are allowed for the effective address operand.
+
+	Notes : If the coprocessor passes a communication format word
+		of the 'come again' form for continued processing,
+		pending interrupts are not serviced. It is the PRO-
+		GRAMMER'S responsibility to take account of this!
+
+
+cpSAVE	: Save Coprocessor Machine State
+
+	  (PRIVILEGED INSTRUCTION)
+
+	Operation : IF supervisor state
+			THEN
+			  Save Coprocessor Machine State
+			ELSE
+			  TRAP (Privilege Violation).
+
+	Assembler : cpSAVE <ea>
+
+	Attributes: Unsized.
+
+	Description	: If the CPU is in the supervisor mode, then
+			  save the entire machine state of the speci-
+			  fied coprocessor at the destination effec-
+			  tive address. If the CPU is in user mode,
+			  then take the Privilege Violation exception.
+
+	Condition Codes : NOT AFFECTED.
+
+	Instruction Format :
+
+		1 1 1 1 I I I 1 0 0 M M M R R R
+
+	Instruction Fields :
+
+		III	: Coprocessor ID field. Specifies the coprocesor
+			  that is to process this operation. See cpBcc
+			  above for current coprocessor IDs.
+
+		MMM, RRR: See MC68020 Instruction Extension Words Above.
+			  Used to specify the effective address of the
+			  saved coprocessor state to restore.
+
+	Addressing Modes : All EXECPT:
+
+			   Dn
+			   An
+			   (An)+
+			   #<data>
+
+			   are allowed for the effective address operand.
+
+
+cpScc	: Set On Coprocessor Condition
+
+	Operation : IF cpcc = TRUE
+			THEN
+			  1111...111 -> dst
+			ELSE
+			  0000...000 -> dst
+
+	Assembler : cpScc <ea>
+
+	Attributes: Size = Byte.
+
+	Description	: Test the specified coprocessor condition. If
+			  the condition is TRUE, set all bits of the
+			  byte destination operand. If the condition
+			  is FALSE, clear all bits of the byte desti-
+			  nation operand.
+
+	Condition Codes : NOT FFFECTED.
+
+	Instruction Format :
+
+		1 1 1 1 I I I 0 0 1 M M M R R R
+
+		0 0 0 0 0 0 0 0 0 0 C C C C C C
+
+		X X X X X X X X X X X X X X X X
+
+	Instruction Fields :
+
+		III	: Coprocessor ID field. Specifies the coprocesor
+			  that is to process this operation. See cpBcc
+			  above for current coprocessor IDs.
+
+		MMM, RRR: See MC68020 Instruction Extension Words Above.
+			  Used to specify an operand in main memory for
+			  the coprocessor operation if specified, or
+			  the CPU registers.
+
+		CCC...	: Coprocessor Condition Field. Specifies the co-
+			  processor condition to be tested.
+
+		XXX...	: Optional Coprocessor Defined Extension Word(s).
+
+	Addressing Modes : All EXECPT:
+
+			   An
+			   #<data>
+
+			   are allowed for the effective address operand.
+
+
+cpTRAPcc	: Trap On Coprocessor Condition.
+
+	Operation : IF cpcc = TRUE
+			THEN
+			  TRAP (cpTRAP exception vector)
+			ELSE
+			  continue normal execution.
+
+	Assembler : cpTRAPcc #<data>
+
+	Attributes: Unsized or Size = Word.
+
+	Description	: If the selected coprocessor condition is true,
+			  then the CPU initiates exception processing.
+			  The vector number is generated to reference the
+			  TRAPV/TRAPcc exception vector, and the stacked
+			  value of the program counter is the address of
+			  the next instruction. If the selected condition
+			  is false, then execution continues with the next
+			  instruction. Following the condition word and
+			  any coprocessor defined extension words is a
+			  user-defined data operand specified as immediate
+			  data, to be used by the trap handler.
+
+	Condition Codes : NOT AFFECTED.
+
+	Instuction Format :
+
+		1 1 1 1 I I I 0 0 1 1 1 1 M M M
+
+		0 0 0 0 0 0 0 0 0 0 C C C C C C
+
+		X X X X X X X X X X X X X X X X
+
+	Instruction Fields :
+
+		III	: Coprocessor ID field. Specifies the coprocesor
+			  that is to process this operation. See cpBcc
+			  above for current coprocessor IDs.
+
+		MMM	: Op-Mode field. Specifies the instruction form.
+
+			  010 : Instruction is followed by one operand
+				word.
+
+			  011 : Instruction is followed by two operand
+				words.
+
+			  100 : Instruction has no operand words.
+
+		CCC...	: Coprocessor Condition field. Specifies the co-
+			  processor condition to be tested.
+
+		XXX...	: Optional Coprocessor Defined Extension Word(s).
+
+		If the Op-Mode field specifies one or two immediate data
+		operand words, then the operand words follow the optional
+		coprocessor defined extension words.
+
+
+DIVSL	: Divide Signed Long.
+
+	Operation : dst/src -> dst
+
+	Assembler : DIVS.L <ea>,Dq	;32/32 -> 32r
+		    DIVS.L <ea>,Dr:Dq	;64/32 -> 32r:32q
+		    DIVSL.L <ea>,Dr:Dq	;32/32 -> 32r:32q
+
+	Attributes: Size = Word, Long.
+
+	Description	: Divide the destination operand by the source
+			  operand, and store the result in the destina-
+			  tion. The operation is performed using signed
+			  arithmetic.
+
+			  The first long form operates on a 32-bit divi-
+			  dend (the destination) and a 32-bit divisor
+			  (the source). The result is a 32-bit quotient
+			  stored in the destination, and the remainder
+			  is discarded.
+
+			  The second long form operates on a 64-bit divi-
+			  dend (the destination) and a 32-bit divisor (the
+			  source). The result is a 32-bit quotient and a
+			  32-bit remainder.
+
+			  The third long form operates on a 32-bit divi-
+			  dend (the destination) and a 32-bit divisor (the
+			  source). The result is a 32-bit quotient and a
+			  32-bit remainder.
+
+			  Two special conditions may arise:
+
+			  1) Division by zero : take the Zero Divide
+			     exception.
+
+			  2) Overflow detected & set before completion
+			     of the instruction. If this occurs, then
+			     the destination operand(s) are not affected.
+
+	Condition Codes : X N Z V C
+			  - * * * 0
+
+			  N : Set if the quotient is negative. Undefined if
+			      overflow or divide by zero.
+
+			  Z : Set if the quotient is zero. Cleared otherwise.
+			      Undefined if overflow or divide by zero.
+
+			  V : Set if division overflow is detected. Cleared
+			      otherwise.
+
+			  C : Always Cleared.
+
+			  X : Not Affected.
+
+	Instruction Format :
+
+		0 1 0 0 1 1 0 0 0 1 M M M R R R
+
+		0 Q Q Q 1 Z 0 0 0 0 0 0 0 D D D
+
+	Instruction Fields :
+
+		MMM, RRR: See MC68020 Instruction Extension Words Above.
+
+		QQQ	: Specifies the data register used to hold the
+			  quotient.
+
+		Z	: Size field. Selects a 32-bit or 64-bit dividend.
+
+			  0 = 32-bit dividend in register Dq.
+
+			  1 = 64-bit dividend in register Dr:Dq.
+
+		DDD	: Specifies the data register used to hold the
+			  remainder. If Dr = Dq, then only the quotient
+			  is returned (1st long form). If the size
+			  field is 1, this specifies the data register
+			  containing the high 32 bits of the 64-bit divi-
+			  dend.
+
+	Addressing Modes : All EXCEPT An are allowed for the source
+			   operand.
+
+
+DIVUL	: Divide Unsigned Long.
+
+	Operation : dst/src -> dst
+
+	Assembler : DIVU.L <ea>,Dq	;32/32 -> 32r
+		    DIVU.L <ea>,Dr:Dq	;64/32 -> 32r:32q
+		    DIVUL.L <ea>,Dr:Dq	;32/32 -> 32r:32q
+
+	Attributes: Size = Word, Long.
+
+	Description	: Divide the destination operand by the source
+			  operand, and store the result in the destina-
+			  tion. The operation is performed using unsigned
+			  arithmetic.
+
+			  The first long form operates on a 32-bit divi-
+			  dend (the destination) and a 32-bit divisor
+			  (the source). The result is a 32-bit quotient
+			  stored in the destination, and the remainder
+			  is discarded.
+
+			  The second long form operates on a 64-bit divi-
+			  dend (the destination) and a 32-bit divisor (the
+			  source). The result is a 32-bit quotient and a
+			  32-bit remainder.
+
+			  The third long form operates on a 32-bit divi-
+			  dend (the destination) and a 32-bit divisor (the
+			  source). The result is a 32-bit quotient and a
+			  32-bit remainder.
+
+			  Two special conditions may arise:
+
+			  1) Division by zero : take the Zero Divide
+			     exception.
+
+			  2) Overflow detected & set before completion
+			     of the instruction. If this occurs, then
+			     the destination operand(s) are not affected.
+
+	Condition Codes : X N Z V C
+			  - * * * 0
+
+			  N : Set if the quotient is negative. Undefined if
+			      overflow or divide by zero.
+
+			  Z : Set if the quotient is zero. Cleared otherwise.
+			      Undefined if overflow or divide by zero.
+
+			  V : Set if division overflow is detected. Cleared
+			      otherwise.
+
+			  C : Always Cleared.
+
+			  X : Not Affected.
+
+	Instruction Format :
+
+		0 1 0 0 1 1 0 0 0 1 M M M R R R
+
+		0 Q Q Q 0 Z 0 0 0 0 0 0 0 D D D
+
+	Instruction Fields :
+
+		MMM, RRR: See MC68020 Instruction Extension Words Above.
+
+		QQQ	: Specifies the data register used to hold the
+			  quotient.
+
+		Z	: Size field. Selects a 32-bit or 64-bit dividend.
+
+			  0 = 32-bit dividend in register Dq.
+
+			  1 = 64-bit dividend in register Dr:Dq.
+
+		DDD	: Specifies the data register used to hold the
+			  remainder. If Dr = Dq, then only the quotient
+			  is returned (1st long form). If the size
+			  field is 1, this specifies the data register
+			  containing the high 32 bits of the 64-bit divi-
+			  dend.
+
+	Addressing Modes : All EXCEPT An are allowed for the source
+			   operand.
+
+
+EXT	: Sign Extend (MC68020).
+
+	Operation : dst (sign-extend) -> dst
+
+	Assembler : EXT.W Dn	;extend byte to word
+		    EXT.L Dn	;extend word to long
+		    EXTB.L Dn	;extend byte to long
+
+	Attributes: Size = Byte, Word, Long.
+
+	Description	: Sign-extend the operand contained in the desti-
+			  nation data register, according to the specified
+			  size.
+
+			  EXT.W copies bit 7 to bits [15:8] of the data
+			  register. This instruction is available on all
+			  MC680x0 CPUs.
+
+			  EXT.L copies bit 15 to bits [31:16] of the data
+			  register. This instruction is avaialble on all
+			  MC680x0 CPUs.
+
+			  EXTB.L copies bit 7 to bits [31:8] of the data
+			  register. This instruction is avaialble on the
+			  MC68020 onwards.
+
+			  The instruction formats for EXT.W and EXT.L are
+			  identical to the MC68000 EXT instruction. The
+			  Op-Mode field provides for extensions to the
+			  instruction set for higher processors such as
+			  the MC68020.
+
+	Condition Codes : X N Z V C
+			  - * * 0 0
+
+			  N : Set if the result is negative. Cleared
+			      otherwise.
+
+			  Z : Set if the result is zero. Cleared
+			      otherwise.
+
+			  V : Always Cleared.
+
+			  C : Always Cleared.
+
+			  X : Not Affected.
+
+	Instruction Format :
+
+		0 1 0 0 1 0 0 M M M 0 0 0 D D D
+
+	Instruction Fields :
+
+		MMM	: Op-Mode field. Specifies the size of the
+			  sign-extension operation.
+
+			  010 : sign-extend byte to word.
+
+			  011 : sign-extend word to long.
+
+			  111 : sign-extend byte to long.
+
+		DDD	: Register field. Specifies which data register
+			  to use.
+
+
+MOVEC	: Move Control Register
+
+	  (PRIVILEGED INSTRUCTION)
+
+	Operation : IF supervisor state
+			THEN
+			  Rc -> Rn or Rn -> Rc
+			ELSE
+			  TRAP (Privilege Violation).
+
+	Assembler : MOVEC Rc,Rn
+		    MOVEC Rn,Rc
+
+	Attributes: Size = Long.
+
+	Description	: If the CPU is in supervisor mode, then copy the
+			  contents of the specified control register to
+			  the specified general register, or copy the con-
+			  tents of the specified general register to the
+			  specified control register. If the CPU is in
+			  user mode, then take the Priivlege Violation ex-
+			  ception.
+
+			  The data transfer is ALWAYS a 32-bit transfer,
+			  even though the register may be implemented with
+			  fewer bits. Unimplemented bits are read as zeros
+			  and ignored when written.
+
+	Condition Codes : NOT AFFECTED.
+
+	Instuction Format :
+
+		0 1 0 0 1 1 1 0 0 1 1 1 1 0 1 D
+
+		A R R R C C C C C C C C C C C C
+
+	Instruction Fields :
+
+		D	: Dr field. Specifies the direction of data
+			  transfer.
+
+			  0 = control register to general register.
+
+			  1 = general register to control register.
+
+		A	: A/D field. Specifies the type of general
+			  register.
+
+			  0 = Data Register.
+
+			  1 = Address Register.
+
+		RRR	: General Register field. Specifies which data
+			  or address register is used.
+
+		CCC...	: Control Register field. Specifies the control
+			  register used. Values are:
+
+			  $000	: Source Function Code (SFC) Register.
+			  $001	: Destination Function Code (DFC)
+				  Register.
+			  $002	: Cache Control Register (CACR).
+			  $800	: User Stack Pointer (USP).
+			  $801	: Vector Base Register (VBR).
+			  $802	: Cache Address Register (CAAR).
+			  $803	: Master Stack Pointer (MSP).
+			  $804	: Interrupt Stack Pointer (ISP).
+
+			  All other codes cause an illegal instruction
+			  exception.
+
+
+MOVES	: Move Address Space
+
+	  (PRIVILEGED INSTRUCTION)
+
+	Operation : IF supervisor state
+			THEN
+			  Rn -> dst[DFC]
+			  or
+			  src[SFC] -> Rn
+			ELSE
+			  TRAP (Privilege Violation).
+
+	Assembler : MOVES <ea>,Rn
+		    MOVES Rn,<ea>
+
+	Attributes: Size = Byte, Word, Long.
+
+	Description	: Move the operand, using the specified size, from
+			  the specified general register to a location wit-
+			  hin the address space defined by the destination
+			  function code (DFC) register. Or, move the oper-
+			  and, using the specified size, from the location
+			  within the address space defined by the source
+			  function code (SFC) register to the specified
+			  general register.
+
+			  This transfer is ONLY performed if the CPU is in
+			  supervisor mode. If the CPU is in user mode, then
+			  the Privilege Violation exception is taken.
+
+			  For suitable values of the SFC and DFC registers,
+			  see MC68020 Extra Registers above.
+
+	Condition Codes : NOT AFFECTED.
+
+	Instruction Format :
+
+		0 0 0 0 1 1 1 0 Z Z M M M R R R
+
+		A D D D X 0 0 0 0 0 0 0 0 0 0 0
+
+	Instruction Fields :
+
+		ZZ	: Size field. Specifies the size of the operation.
+
+			  00 = Byte Operation.
+	
+			  01 = Word Operation.
+
+			  10 = Long Operation.
+
+		MMM, RRR: See MC68020 Instruction Extension Words Above.
+
+		A	: A/D field. Specifies whether the general register
+			  is a data or address register. 0 = data register,
+			  1 = address register.
+
+		DDD	: Specifies which general register D0-D7 or A0-A7
+			  is used.
+
+		X	: Direction field. 0 = from <ea> to general regis-
+			  ter, 1 = general register to <ea>.
+
+	Addressing Modes : All EXCEPT Dn, An and #<data> are allowed for
+			   the address operand in each case.
+
+	Notes : MOVES.x An,(An)+ or MOVES.x An,-(An) where the same address
+		register is used for both source and destination operands,
+		is an undefined operation. The value stored in memory is
+		undefined. On the MC68010 and MC68020 implementations, the
+		value stored is the increment or decrement value of An. This
+		implementation MAY NOT APPEAR on future devices.
+
+
+MULS	: Multiply Signed (MC68020 Extended Version)
+
+	Operation : dst * src -> dst
+
+	Assembler : MULS.L <ea>,Dl	;32x32 -> 32
+		    MULS.L <ea>,Dh:Dl	;32x32 -> 64
+
+	Attributes: Size = Long.
+
+	Description	: Multiply two operands using signed arithmetic,
+			  and store the result in the specified destina-
+			  tion.
+
+			  In the first form, two 32-bit numbers are multi-
+			  plied together, and a 32-bit result is stored in
+			  the specified destination.
+
+			  In the second form, two 32-bit numbers are multi-
+			  plied together, these numbers being stored at the
+			  source effective address and in the register des-
+			  ignated Dl above. The result is stored as a 64-
+			  bit value in Dh:Dl, Dh containing the high 32
+			  bits, and Dl the low 32 bits of the result.
+
+	Condition Codes : X N Z V C
+			  - * * * 0
+
+			  N : Set if the result is negative. Cleared
+			      otherwise.
+
+			  Z : Set if the result is zero. Cleared other-
+			      wise.
+
+			  V : Set if overflow detected. Cleared other-
+			      wise.
+
+			  C : Always Cleared.
+
+			  X : Not Affected.
+
+			  NOTE : Overflow (V=1) can ONLY occur with the
+			  first form of the instruction. This occurs when
+			  the high 32 bits of the result are NOT EQUAL to
+			  the sign-extension of the low 32 bits.
+
+	Instruction Format :
+
+		0 1 0 0 1 1 0 0 0 0 M M M R R R
+
+		0 L L L 1 Z 0 0 0 0 0 0 0 H H H
+
+
+	Instruction Fields :
+
+		MMM, RRR: See MC68020 Instruction Extension Words Above.
+			  Define the addressing mode of the source oper-
+			  and.
+
+		LLL	: Register Dl field. Specifies which data register
+			  is to be used as the Dl register in the above
+			  specification.
+
+		Z	: Size field. A 0 value indicates a 32-bit product,
+			  a 1 value indicates a 64-bit product.
+
+		HHH	: Register Dh field. Specifies which data register
+			  is to be used as the Dh register in the above
+			  specification. If Dh = Dl and Sz =1, then the
+			  result of the operation are undefined. If Sz=0,
+			  this field is unused (generally set to 0).
+
+
+MULU: Multiply Unsigned (MC68020 Extended Version)
+
+	Operation : dst * src -> dst
+
+	Assembler : MULU.L <ea>,Dl	;32x32 -> 32
+		    MULU.L <ea>,Dh:Dl	;32x32 -> 64
+
+	Attributes: Size = Long.
+
+	Description	: Multiply two operands using unsigned arithmetic,
+			  and store the result in the specified destina-
+			  tion.
+
+			  In the first form, two 32-bit numbers are multi-
+			  plied together, and a 32-bit result is stored in
+			  the specified destination.
+
+			  In the second form, two 32-bit numbers are multi-
+			  plied together, these numbers being stored at the
+			  source effective address and in the register des-
+			  ignated Dl above. The result is stored as a 64-
+			  bit value in Dh:Dl, Dh containing the high 32
+			  bits, and Dl the low 32 bits of the result.
+
+	Condition Codes : X N Z V C
+			  - * * * 0
+
+			  N : Set if the result is negative. Cleared
+			      otherwise.
+
+			  Z : Set if the result is zero. Cleared other-
+			      wise.
+
+			  V : Set if overflow detected. Cleared other-
+			      wise.
+
+			  C : Always Cleared.
+
+			  X : Not Affected.
+
+			  NOTE : Overflow (V=1) can ONLY occur with the
+			  first form of the instruction. This occurs when
+			  the high 32 bits of the result are NOT EQUAL to
+			  the sign-extension of the low 32 bits.
+
+	Instruction Format :
+
+		0 1 0 0 1 1 0 0 0 0 M M M R R R
+
+		0 L L L 0 Z 0 0 0 0 0 0 0 H H H
+
+
+	Instruction Fields :
+
+		MMM, RRR: See MC68020 Instruction Extension Words Above.
+			  Define the addressing mode of the source oper-
+			  and.
+
+		LLL	: Register Dl field. Specifies which data register
+			  is to be used as the Dl register in the above
+			  specification.
+
+		Z	: Size field. A 0 value indicates a 32-bit product,
+			  a 1 value indicates a 64-bit product.
+
+		HHH	: Register Dh field. Specifies which data register
+			  is to be used as the Dh register in the above
+			  specification. If Dh = Dl and Sz =1, then the
+			  result of the operation are undefined. If Sz=0,
+			  this field is unused (generally set to 0).
+
+
+PACK	: Pack data into a single byte.
+
+	Operation : src (unpacked BCD) + adjustment -> dst (packed BCD)
+
+	Assembler : PACK -(Ax),-(Ay),#<adjustment>
+		    PACK Dx,Dy,#<adjustment>
+
+	Attributes: Unsized.
+
+	Description	: The low four bits of two separate bytes are
+			  adjusted and packed into a single byte.
+
+			  When the source and destination operands are
+			  data registers, the operation is performed as
+			  follows:
+
+			  src : xxxxabcdyyyyefgh +
+
+			  adj : ....****....####
+
+			  The highlighted bits (marked '*' and '#') are
+			  then transferred to the destination as follows:
+
+			  dst : ****####
+
+			  When the source and destination operands are
+			  predecrement operands, two bytes are fetched
+			  from the source, concatenated to form a 16-
+			  bit operand, and the adjustment added as above.
+			  Then, the bits are transferred to the destina-
+			  tion byte as above and the data pointers are
+			  adjusted accordingly.
+
+	Condition Codes : NOT AFFECTED.
+
+	Instruction Format :
+
+		1 0 0 0 Y Y Y 1 0 1 0 0 M X X X
+
+		A A A A A A A A A A A A A A A A
+
+	Instruction Fields :
+
+		YYY	: Register Dy/Ay field:specifies the destina-
+			  tion register used.
+
+		XXX	: Register Dx/Ax field:specifies the source
+			  register used.
+
+		M	: Register/Memory Mode (R/M) field. Specifies
+			  whether the addressing mode is data register
+			  direct or predecrement.
+
+			  0 : Instruction is PACK Dx,Dy
+
+			  1 : Instruction is PACK -(Ax),-(Ay)
+
+		AAA...	: Adjustment field. Contains the immediate data to
+			  be added to the source operand. Appropriate con-
+			  stants can be used to translate ASCII or EBCDIC
+			  strings to packed BCD.
+
+	Example : PACK D1,D0,#0
+
+		  Before : D0 = $0000,
+
+			   D1 = $3231 (= ASCII string "21").
+
+			   Split word into bytes = $32, $31
+
+			   Zero out upper nibbles = $02, $01
+
+			   Concatenate these bytes to a word = $0201
+
+			   Add adjustment : $0201 + $0000 = $0201
+
+			   Now pack nibbles $2, $1 into a byte = $21
+
+		  After  : D0 = $0021.
+
+
+RTD	: Return And Deallocate Parameters
+
+	Operation : (SP) -> PC
+		    SP + d -> SP
+
+	Assembler : RTD #<displacement>
+
+	Attributes: Unsized.
+
+	Description	: The program counter is pulled from the stack.
+			  The previous value of the program counter is
+			  lost. Then, the 16-bit displacement value is
+			  sign-extended to 32 bits and added to the
+			  stack pointer.
+
+	Condition Codes : NOT AFFECTED.
+
+	Instruction Format :
+
+		0 1 0 0 1 1 1 0 0 1 1 1 0 1 0 0
+
+		D D D D D D D D D D D D D D D D
+
+	Instruction Fields :
+
+		DDD...	: Displacement field. Specifies the 16-bit
+			  displacement to sign-extend and add to the
+			  stack pointer after pulling the program
+			  counter from the stack.
+
+
+RTE	: Return From Exception (MC68020)
+
+	  (PRIVILEGED INSTRUCTION).
+
+	Operation : IF supervisor state
+			THEN
+			  (SP) -> SR
+			  SP + 2 -> SP
+			  (SP) -> PC
+			  SP + 4 -> SP
+			  (SP) -> Internal Format Word register
+			  Interpret format word and pull stack
+			  frame off stack, restore state
+			ELSE
+			  TRAP (Privilege Violation)
+
+	Assembler : RTE
+
+	Attributes: Unsized.
+
+	Description	: If the CPU is in the supervisor state, then
+			  pull the status register from the stack,
+			  followed by the program counter. Then pull
+			  the stack frame format word from the stack,
+			  and examine the format field to determine
+			  if any extra words are to be pulled from
+			  the stack, and how many. If extra words are
+			  to be pulled from the stack, pull them and
+			  restore to internal registers if needed.
+
+			  If the CPU is in the user state, then the
+			  CPU takes the Privilege Violation excep-
+			  tion.
+
+	Condition Codes : ALL AFFECTED ACCORDING TO THE WORD PULLED FROM
+			  THE STACK.
+
+	Instruction Format :
+
+		0 1 0 0 1 1 1 0 0 1 1 1 0 0 1 1
+
+	Stack Frame Format Word Format (pulled off the stack by the
+	RTE instruction) :
+
+		F F F F 0 0 V V V V V V V V V V
+
+	Stack Frame Format Word Fields :
+			  
+		FFFF	: Format field. Specifies the format of the
+			  stack frame to be pulled from the stack.
+			  Values interpreted are:
+
+			  0000	: Short Format. Only four words are
+				  removed from the stack (SR, PC and
+				  this format word).
+
+			  0001	: Throwaway Format. Four words are
+				  removed from the currently active
+				  stack, and SR only is updated from
+				  this stack frame. Then, the CPU
+				  begins executing the RTE from the
+				  top of the active stack AFTER pul-
+				  ling SR. This format is used to
+				  mark the bottom of the Interrupt
+				  Stack, and when the CPU is using
+				  the Master Stack for exception
+				  processing.
+
+			  0010	: Instruction Error format. Six words
+				  are pulled from the top of the stack.
+				  The first four words are as for the
+				  short format:the remaining two words
+				  are discarded.
+
+			  1000	: MC68010 Long Format. The MC68020 takes
+				  a Format Error exception.
+
+			  1001	: Coprocessor Mid-Instruction Format. 10
+				  words are removed from the stack. Re-
+				  sumes coprocessor instruction execution.
+
+			  1010	: MC68020 Short Format. 16 words are re-
+				  moved from the stack. Resumes instruc-
+				  tion execution.
+
+			  1011	: MC68020 Long Format. 46 words are re-
+				  moved from the stack. Resumes instruc-
+				  tion execution.
+
+			  Any other values:the CPU takes a Format Error
+			  exception.
+
+		VVV...	: Vector Offset field. This field contains the
+			  exception number that was generated.
+
+
+RTM	: Return From Module
+
+	Operation : Reload saved module state from stack.
+
+	Assembler : RTM Rn
+
+	Attributes: Unsized.
+
+	Description	: A previously saved module state (as saved by
+			  the CALLM instruction) is reloaded from the
+			  top of the stack. After the module state is
+			  retrieved from the top of the stack, the
+			  caller's stack pointer is incremented by the
+			  argument count value in the module state.
+
+			  Like CALLM above, this instruction requires
+			  external hardware support, usually from the
+			  MC68851 Paged Memory Management Unit (PMMU)
+			  but also from other sources.
+
+	Condition Codes : ALL AFFECTED ACCORDING TO THE CONTENT OF THE
+			  WORD ON THE STACK.
+
+	Instruction Format :
+
+		0 0 0 0 0 1 1 0 1 1 0 0 A R R R
+
+	Instruction Fields :
+
+		A	: D/A field. Specifies whether the module data
+			  pointer is a data or an address register.
+
+			  0 = Data Register.
+
+			  1 = Address Register.
+
+		RRR	: Register Field. Specifies the register number
+			  for the module data pointer which is to be
+			  restored from the saved module state. If the
+			  register specified is A7 (SP), the updated
+			  value of the register reflects the stack poin-
+			  ter operations, and the saved module data area
+			  pointer is lost.
+
+
+TRAP	: TRAP Instruction (MC68020)
+
+	Operation : SSP - 2 -> SSP
+		    Format/Offset -> (SSP)
+		    SSP - 4 -> SSP
+		    PC -> (SSP)
+		    SSP - 2 -> SSP
+		    SR -> (SSP)
+		    TRAP Vector Address -> PC
+
+	Assembler : TRAP #<vector>
+
+	Attributes: Unsized.
+
+	Description	: The processor initiates exception processing.
+			  The vector number is generated to reference
+			  the TRAP instruction vector specified by the
+			  low order four bits of the instruction.
+
+			  Sixteen TRAP instruction vectors (0-15) are
+			  available.
+
+	Condition Codes : NOT AFFECTED.
+
+	Instruction Format :
+
+		0 1 0 0 1 1 1 0 0 1 0 0 V V V V
+
+	Instruction Fields :
+
+		VVVV	: Vector Field. Specifies which TRAP vector
+			  contains the new value of the program coun-
+			  ter to be loaded.
+
+
+
+TRAPcc	: Trap On Condition
+
+	Operation : IF condition = TRUE
+			THEN
+			  TRAP (TRAPV/TRAPcc Vector)
+			ELSE
+			  continue normal execution
+
+	Assembler : TRAPcc
+		    TRAPcc.W #<data>
+		    TRAPcc.L #<data)
+
+	Attributes: Unsized or Size = Word, Long.
+
+	Description	: If the condition specified in the instruction is
+			  true, then the CPU initiates exception processing.
+			  The vector number is generated to reference the
+			  TRAPcc exception vector. The stacked program val-
+			  ue points to the next instruction after the TRAPcc.
+			  If the condition specified is false, then no oper-
+			  ation occurs, and execution continues at the ins-
+			  truction immediately following the TRAPcc.
+
+			  If an immediate data operand is specified, then
+			  the word (or words) containing that data follow
+			  the TRAPcc instruction immedaitely, and this data
+			  is available to the programmer as a user-definable
+			  data field for use within the trap handler. For a
+			  full list of CPU conditions see typed_68000.doc.
+
+	Condition Codes : NOT AFFECTED.
+
+	Instruction Format :
+
+		0 1 0 1 C C C C 1 1 1 1 1 M M M
+
+		W W W W W W W W W W W W W W W W
+
+		L L L L L L L L L L L L L L L L
+
+	Instruction Fields :
+
+		CCCC	: Condition Code field. Selects one of the 16
+			  possible conditions for the TRAPcc instruc-
+			  tion. For a full list of conditions see the
+			  companion file typed_68000.doc.
+
+		MMM	: Op-Mode field. Selects the instruction form.
+
+			  010 : Instruction is followed by one operand
+				word.
+
+			  011 : Instruction is followed by two operand
+				words.
+
+			  100 : Instruction has no following operand
+				words.
+
+
+UNPK	: Unpack BCD
+
+	Operation : src (Packed BCD) + adjustment -> dst (Unpacked BCD)
+
+	Assembler : UNPK -(Ax),-(Ay),#<adjustment>
+		    UNPK Dx,Dy,#<adjustment>
+
+	Attributes: Unsized.
+
+	Description	: In the unpack operation, the byte operand is
+			  split into its two component nibbles, and each
+			  nibble is then zero-extended to a byte value.
+			  These new byte values are concatenated into a
+			  single 16-bit value. Then, the value of the ad-
+			  justment is added to this 16-bit value, and the
+			  two resulting bytes moved to the destination.
+
+			  If the destination is a data register, then the
+			  result is moved as a single 16-bit word to the
+			  data register.
+
+	Condition Codes : NOT AFFECTED.
+
+	Instruction Format :
+
+		1 0 0 0 Y Y Y 1 1 0 0 0 M X X X
+
+		A A A A A A A A A A A A A A A A
+
+	Instruction Fields :
+
+		YYY	: Register Dy/Ay field:specifies the destina-
+			  tion register used.
+
+		XXX	: Register Dx/Ax field:specifies the source
+			  register used.
+
+		M	: Register/Memory Mode (R/M) field. Specifies
+			  whether the addressing mode is data register
+			  direct or predecrement.
+
+			  0 : Instruction is UNPK Dx,Dy
+
+			  1 : Instruction is UNPK -(Ax),-(Ay)
+
+		AAA...	: Adjustment field. Contains the immediate data to
+			  be added to the source operand. Appropriate con-
+			  stants can be used to translate packed BCD to
+			  ASCII or EBCDIC strings.
+
+	Example : UNPK D1,D0,#$3030
+
+		  Before : D1 = $0021 (BCD 21)
+
+			   Unpack nibbles into bytes = $02, 01
+
+			   Concatenate bytes to word = $0201
+
+			   $0201 + $3030 = $3231
+
+		  After  : D0 = $3132 (ASCII "21")
+

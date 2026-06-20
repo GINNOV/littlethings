@@ -1,0 +1,28 @@
+Short   : An Easy Audio Library
+Author  : Matthew J Fletcher
+Uploader: amimjf@connectfree.co.uk
+Version : 39.1
+Type    : dev/c
+Replaces: -
+Requires: 68020 / OS3.x / Brain
+
+
+The EasyAudio Library, does exactly what it says on the tin, it provides
+an easy (and i mean really easy) interface to the amigas sound capabilities.
+It does all this in as system friendly fashion as possible, so your programs
+will contain full error checking without you doing any of the hard work
+yourself.
+
+Most of the library calls are implemented as single liners, and the others
+are as simple as i could make them whilst still giveing you some control.
+
+Also provided is full gcc source code, so you should be able to compile it
+yourself if you want. A full set of headers is provided so you can call the
+functions from any compiler or assembler.
+
+There a a few examples showing how you can use the functions, in C just to
+prove how easy the interface is.
+
+(C) Copyright 1999-2000 Matthew J Fletcher - All Rights Reserved.
+amimjf@connectfree.co.uk - www.amimjf.connectfree.co.uk
+

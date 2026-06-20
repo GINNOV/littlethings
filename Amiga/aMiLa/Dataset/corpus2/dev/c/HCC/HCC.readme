@@ -1,0 +1,12 @@
+Short:        Port of Limited's C Complier, Sozobon. V2.0
+Author:       Sozobon
+Version:      2.0
+Architecture: m68k-amigaos
+Source:       Fish collection
+
+Amiga port of Sozobon, Limited's C Compiler.  Can completely compile
+itself, supports 32 bit ints, and optimizer can 'registerize' variables.
+Includes compiler, optimizer, tool for creating interface code for Amiga
+system calls, startup code, C library, include files, and library routines
+that work with Motorola FFP format.  Uses assembler A68k, linker BLink, and
+provided run-time shared C library CClib.library.  

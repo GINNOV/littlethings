@@ -1,0 +1,15 @@
+Short:        A fast 18bit truecolor ham8 c2p routine
+Author:       juhpin@juhpin.freenet.hut.fi (Juha Pinola)
+Uploader:     sepsink freenet hut fi (Seppo Sinkkonen)
+Type:         dev/asm
+Architecture: m68k-amigaos
+
+A fast 18bit truecolor ham8 c2p routine by ASA/Cirion.
+
+AsAc2p18bit.s  v1.0   25-8-96
+- On 030/28Mhz machine this takes 1.6 frames from processor to convert
+- And then it activates blitter to make 1 blit for every plane
+- Long word writes to chipmem !
+- Double buffering !
+- Linear !
+- free to use/spread , noncommercial use only.

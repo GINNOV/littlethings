@@ -1,0 +1,1796 @@
+
+
+			   A6809 Cross Assembler
+			   =====================
+
+
+			      By Dave Edwards
+			      ===============
+
+
+				Version 1.0
+				===========
+
+
+
+Contents:
+--------
+
+Introduction
+Conditions Of Use
+MC6809 Fundamentals
+Addressing Modes
+Indexed Addressing
+Indirect Addressing
+MC6809 Instructions
+Assembler Directives
+Accepted Syntaxes for A6809
+Assembler Labels
+Arithmetic Expressions
+String Syntax
+Error Handling
+Known Bugs
+Bibliography
+
+
+Introduction
+------------
+
+	A6809 is a cross assembler for Motorola 6809 processors and process-
+ors compatible with the 6809 instruction set. It is invoked from the CLI by
+typing:
+
+
+		A6809 <sourcefile> <objectfile>
+
+
+where <sourcefile> is a standard AmigaDOS CLI source file specification such
+as "DF0:myprog.s" describing the source file, and <objectfile> is a standard
+AmigaDOS file specification describing the intended binary file to be gener-
+ated by the program. The arguments MUST appear in the specified order!
+
+
+	The source file should be a raw ASCII text file, as written using a
+standard Amiga text editor such as the HiSoft DevPac assembler editor or the
+CygnusEd Professional (lines end in $0A characters). The object file produced
+is a raw binary file, suitable for direct downloading to another machine via
+the serial or parallel port, provided that suitable connectors exist AND that
+suitable comms software to receive the file exists on the target machine.
+
+
+	A6809 is a two-pass assembler. Where possible, helpful messages are
+displayed during execution, and errors are reported fully. A6809 will list
+the offending lines containing errors prior to reporting the kind of error,
+and some care has gone into the error messages to make diagnosis easier, but
+ultimately the programmer will require a certain minimum level of knowledge
+in order to use it.
+
+
+	Below I shall cover 6809 assembly language syntax as accepted by the
+A6809 program, operators allowed within expressions, and various literature
+sources for the interested reader. Experienced 6809 programmers will not need
+to read the entire DOC file, merely skip through to the essentials later on
+in the file. Newcomers to 6809 assembler will find this file contains enough
+information to get you started, but I recommend all newcomers to examine the
+bibliography at the end of the file for comprehensive tutorial material.
+
+
+Conditions Of Use
+-----------------
+
+	A6809 is a Public Domain program in its version 1.0 incarnation. The
+A6809 program is to be used on the understanding that the author accepts no
+responsibility for any loss or damage to disc-based files, etc., that may oc-
+cur during its use/misuse.
+
+
+	A6809 may be offered by the current user to new users subject to the
+following:
+
+
+	1) No fee may be charged for the program by the current user
+	   for A6809 itself. The current user is free to charge new
+	   users for postage and for blank discs used for distribu-
+	   tion. Alternatively, new users should send blank discs and
+	   return postage to any known current user for copying.
+
+		PD houses are welcome to make separate arrangements
+	   for supply to their customers (including supply of later
+	   versions with enhancements). PD houses are also welcome
+	   to make arrangements for supplying the source code to any
+	   user wishing it (via any mutually compatible licenceware
+	   agreement).
+
+	2) All of the following files MUST be copied along with the
+	   A6809 program:
+
+			A6809.DOC (This File)
+
+	   and all example 6809 source code files with the extension
+	  '.6809' as supplied on the original disc.
+
+	3) Any bugs other than those outlined in this DOC file found
+	   by the current user are to be reported both to the new
+	   user and to the author, in a separate file called
+
+			A6809_BUGS.DOC
+
+	   Users reporting new bugs to the author are requested to
+	   provide as much detailed information as possible to allow
+	   debugging to proceed. Users who report bugs and send a
+	   blank disc will be provided with a debugged, updated ver-
+	   sion of A6809 as a replacement.
+
+
+A6809 is written in 68000 assembler, and can be obtained by sending a blank
+disc plus return postage to:
+
+
+			D.W Edwards
+			232 Hale Road
+			WIDNES
+			Cheshire
+			WA8 8QA
+			England
+
+
+unless I change my address (not likely just yet). Enquiries from PD houses &
+other such outlets are welcome - I shall be providing a series of cross ass-
+emblers for several processors in due course, and intend to provide a comp-
+lete set for 6502/Z80/6809/8086 as time allows, so PD houses are welcome to
+enquire about providing the complete set on one disc when they all exist.
+
+
+	Anyone wanting a cross assembler for an unusual processor (Anyone out
+there heard of the WS65816, the F8 or the Cosmac 1802?) please supply a FULL
+instruction set with opcodes and address modes, plus details of the assembly
+language syntax in a plain ASCII file on a blank disc. Oh, and if anyone out
+there has a full 80386 instruction set to give away, I'll return the favour
+by writing an 80386 assembler for you in due course, ditto for the TMS34020,
+i860 and Inmos T800. Also, since I collect instruction sets as a hobby, any
+kind user with TI9900, Z8000, R6000, MC8800 or SPARC instruction sets will
+make my day with a copy on disc...
+
+
+	Finally, a request to all users. If you like or dislike the program,
+send a letter to me with constructive criticisms/praise/helpful suggestions
+for future enhancements. I will eventually reply to you all if an S.A.E is
+enclosed.
+
+
+MC6809 Fundamentals
+-------------------
+
+	The Motorola 6809 family of processors has an architecture based on
+the earlier 6800 series, but with numerous extensions. The registers found on
+the 6809 are:
+
+
+		A, B		: 8-bit Accumulators.
+
+		D		: Actually A and B above combined
+				  to form a single 16-bit accumu-
+				  lator.
+
+		CC		: Condition Code Register.
+				  Contains the various flags.
+				  See below.
+
+		DP		: Direct Page Register.
+
+		X, Y		: 16-bit Index Registers.
+
+		S, U		: System and User Stack
+				  Pointers.
+
+		PC		: Program Counter.
+
+
+Those used to the 6800 will recognise A,B,X,S,PC and CC, but U, Y and DP are
+new. Y is an extra index register and U is an extra stack pointer, and serve
+the same functions as the X and S registers of the earlier chips.
+
+
+	The CC register, or Condition Code register, contains the flags for
+various tests and control functions. The CC register is made up as follows:
+
+
+	Bit	Flag	Function
+	---	----	--------
+	 7	 E	Used by the 6809 to determine stack contents.
+			During an interrupt, PC and CC are saved. If
+			the E bit is set, then the entire machine state
+			is saved (all other registers EXCEPT S) too. For
+			example, RTI pops CC first. If E=1, then ALL reg-
+			isters are popped, PC last, else PC alone is popped.
+			CWAI sets E prior to pushing the machine state
+			on the stack, as do the software interrupt (SWI)
+			instructions.
+
+	 6	 F	Fast Interrupt Disable. If F=1, fast IRQ inter-
+			rupts are disabled. During an FIRQ, PC and CC
+			alone are pushed.
+
+	 5	 I	Interrupt Disable. If I=1, normal IRQ interrupts
+			are disabled. During an IRQ, the entire machine
+			state is pushed onto the system stack (except S).
+
+	 4	 H	Half-Carry bit. Used internally by DAA for decimal
+			adjust.
+
+	 3	 N	Negative flag. N=1 if arithmetic operations gener-
+			ate a negative result when using signed arithmetic.
+
+	 2	 Z	Zero flag. Z=1 if the result of an operation is zero.
+
+	 1	 V	Overflow flag. V=1 if an overflow occurs.
+
+	 0	 C	Carry flag. C=1 if a carry occurs, or a 1 is shifted
+			or rotated out of an operand.
+
+
+	The D register is not a new register as such. It actually consists of
+the two accumulators A and B, treated as a single 16-bit entity. This is sim-
+ilar to the way in which Z80 programmers can treat registers B and C as the
+single entity BC, D and E as DE, and H and L as HL on the Z80. Where an oper-
+ation can be performed upon A or B, it can usually (but NOT always!) be per-
+formed upon D.
+
+
+	DP, the Direct Page Register, is a new register with a new function.
+Those familiar with 6800 and 6502 processors will know about 'zero-page add-
+ressing'. In zero-page addressing, the two-byte address normally needed for
+a memory reference is supplied as ONE byte of data to the instruction. This
+data byte contains the value of the LOW byte of the address desired, and the
+HIGH byte is normally set to zero. This mode has the advantage of faster ex-
+ecution of instructions (one data byte instead of two to be fetched and de-
+coded) but the disadvantage of restricting such faster access to the memory
+address range 0 to 255.
+
+
+	On the 6809, this restriction is removed. The DP register is used to
+contain the HIGH byte of the 'zero-page' address, and hence means that this
+mode is no longer confined to page zero (bytes 0-255) of memory. As a result,
+this mode is known as Direct Page Addressing on the 6809, since ANY page of
+memory can now be accessed using the faster instructions. If the value zero
+is stored in the DP register, then the 6809 behaves like the 6800. The abil-
+ity to access ANY page by changing the contents of the DP register allows a
+programmer to speed up program execution in critical code by loading DP with
+a given value, then using Direct Page Addressing throughout (Direct Page in-
+structions execute typically 1 or 2 cycles faster than those using full 16-
+bit absolute memory addresses, called 'Extended Addresses' on the 6809).
+
+
+	The 6809 has a fair number of interrupt vectors. Locations at the top
+of memory are reserved for interrupt vectors (16-bit addresses). These vect-
+ors are loaded into the PC during an interrupt. They are:
+
+
+	FFFE/FFFF	Reset vector
+	FFFC/FFFD	Non-maskable interrupt (NMI)
+	FFFA/FFFB	Software interrupt 1 (SWI 1) vector
+	FFF8/FFF9	Normal interrupt request (IRQ)
+	FFF6/FFF7	Fast interrupt request (FIRQ)
+	FFF4/FFF5	Software interrupt 2 (SWI 2) vector
+	FFF2/FFF3	Software interrupt 3 (SWI 3) vector
+
+
+	If, for example, FFFC/FFFD contains the address $1A00, then the PC is
+loaded with $1A00 from these two locations when the 6809 receives an NMI. The
+other vectors work in an identical fashion.
+
+	The reset vector is loaded into the PC on power-up. The NMI, FIRQ and
+IRQ vectors are loaded whenever the appropriate interrupt is generated, and
+work in a manner analogous to 68000 exceptions (for those who know about such
+things). The SWI 1, SWI 2 and SWI 3 interrupt vectors are loaded whenever the
+specified sofware interrupt instruction is encountered in a user program (the
+SWI instructions are analogous to 68000 TRAPs). Several 6809-based machines
+use them for interfacing the operating system to user programs, where a func-
+tion number is passed to the software interrupt in, say, A or B, and other
+parameters are passed in other registers.
+
+
+	And now, it is time to describe the 6809 addressing modes.
+
+
+Addressing Modes
+----------------
+
+	The fundamental addressing modes available on the 6809 are:
+
+
+			Inherent
+			Immediate
+			Direct Page
+			Extended
+			Indexed
+			Relative
+
+
+The Indexed mode is further enhanced on the 6809 by the provision of numerous
+variations on the basic theme. The scheme below describes these modes in de-
+tail.
+
+
+		Mode		Syntax		Description
+		----		------		-----------
+
+	      Inherent		Register	Instruction operand is
+				name, e.g.	a 6809 register. The
+				D, S		register's identity is
+						encoded within the in-
+						struction.
+
+
+	      Immediate		#{value}	Instruction operand is
+						a numeric constant. Can
+						be specified directly or
+						via a defined assembler
+						label. The "#" prefix
+						denotes an immediate
+						operand. The constant
+						occupies either 1 or 2
+						bytes following the in-
+						struction.
+
+
+	     Direct Page	<{value}	Instruction operand is
+						a memory address. The
+						contents of the speci-
+						fied memory address is
+						the ultimate operand.
+						The "<" prefix denotes
+						a direct page operand.
+						The address is formed by
+						the expression:
+
+
+						  (DP * 256) + ADDR
+
+
+						where DP is the contents
+						of the Direct Page Regi-
+						ster. ADDR occupies 1 byte
+						following the instruction.
+
+
+	     Extended		>{value}	Instruction operand is a
+						memory address. The address
+						occupies 2 bytes following
+						the instruction. The ">"
+						prefix denotes an extended
+						operand.
+
+
+	     Indexed		offset,R	Instruction operand is a
+						memory address. Here, "R"
+						is a 16-bit index register,
+						and "offset" is some value
+						to be added to the contents
+						of "R" before being used as
+						a memory address.
+
+							See below for the
+						full list of indexed mode
+						variations.
+
+
+	     Relative		label		Instruction operand is a
+						displacement to be added to
+						the current value of the PC
+						before being used as a memory
+						reference. Used by branch
+						instructions.
+
+
+Indexed Addressing
+------------------
+
+	On the 6800, indexed addressing is a simple matter. On the 6809, this
+is no longer the case. Hence a separate section to describe it.
+
+
+	6800 indexed addressing consists solely of a signed 8-bit displace-
+ment and an index register. Since the 6800 has the X register as its sole in-
+dex register, a 6800 indexed address looks like this:
+
+
+			$40,X  or
+
+			LABEL,X
+
+
+Here, LABEL must be a value between -128 and +127.
+
+
+	The 6809 changes all of this. Now four registers can be used as index
+registers, X, Y, S and U. Also, displacements can be full 16-bit constants,
+such as:
+
+
+			3000,X
+
+			1024,U
+
+			LABEL,Y
+
+
+Here, LABEL can be any 16-bit value. Furthermore, the 6809 allows the PC to
+be used as an index register for this mode (although the Motorola documenta-
+tion enforces a distinction, calling this mode Program Counter Relative). In
+the case of PC Relative mode, we can have operands such as:
+
+
+			-4,PC
+
+
+The standard Motorola assembler conventions use PCR, not PC here. A6809 uses
+PC, as in:
+
+
+			TABLE,PC
+
+
+as opposed to the official standard, which is:
+
+
+			TABLE,PCR
+
+
+However, not content with this, the 6809 allows the "offset" part of an in-
+dexed operand to be one of the accumulators (NOT in PC Relative mode!). This
+mode is called Accumulator-Offset Indexed, and its syntax is:
+
+
+			A,X
+
+			B,S
+
+			D,Y
+
+
+Note that in ALL cases, the "offset" operands are SIGNED displacements, and
+in the case of 8-bit operands, sign-extended to 16 bits before the address
+arithmetic is performed. Also, note that in ALL of the above cases, the index
+register values are COPIED to internal temporary registers of the 6809 before
+the value of the "offset" operand is added on to this copy and sent out along
+the 6809 address bus. The contents of the index registers are PRESERVED while
+all of this is happening (unless the instruction is one to load the given in-
+dex register AFTER the operand has been referenced, such as LDX).
+
+
+	Finally, 6809 assembler allows Autoincrement and Autodecrement modes.
+Unlike the other modes, where the contents of index registers are left alone
+by the address computation as outlined above, the index registers are either
+incremented or decremented by these modes. First, Autoincrement mode:
+
+
+				,X+
+
+				,X++
+
+
+Note that NO offset is specified. It is ILLEGAL to do so in this mode. Here,
+the X register contents are used to reference memory, and then either 1 or 2
+is added onto the contents of X. This allows tables or arrays to be scanned
+linearly. In the case of:
+
+
+				,X+
+
+
+one (1) is added onto X after referencing the memory address, and in the case
+of:
+
+
+				,X++
+
+
+two (2) is added on.
+
+
+	Autodecrement mode is different. It has the syntax:
+
+
+				,-X
+
+				,--X
+
+
+and in this case, 1 or 2 is subtracted from the index register BEFORE the in-
+dex register is used to reference memory. In this way, index registers can be
+used to create stacks that behave identically to the system stack (6809 stack
+operations are basically ,-S and ,S+ operations done using dedicated push and
+pop instructions) or the user stack (6809 systems allow the U register to be
+used as a second stack pointer, with its own push and pop instructions). Once
+more, it is ILLEGAL to use PC as an index register with the Autoincrement and
+Autodecrement modes.
+
+
+Indirect Addressing
+-------------------
+
+	This is where the 6809 becomes a fun chip to program. It is legal to
+take indexed or extended operands, and convert them to Indirect operands. The
+syntax of an Indirect operand is:
+
+
+			[operand]
+
+
+Note that SQUARE brackets are used! This type of operand allows pointers to
+be stored in memory and used directly. For example, if address $6000 contains
+the byte $40, and address $6001 contains the byte $30, it is possible to use
+an instruction with an operand:
+
+
+			$6000
+
+
+to either read the $40 byte, or the 16-bit word $4030 in the case of instruc-
+tions with a 16-bit destination such as LDX. However, on the 6809 it is also
+possible to use an operand:
+
+
+			[$6000]
+
+
+This reads the $4030 word, and uses that as another address from which to get
+some data! If, for example, address $4030 contains the byte $FE, it is possi-
+ble to issue an instruction such as:
+
+
+			LDA $6000
+
+
+after which A will contain $40, or an instruction such as:
+
+
+			LDA [$6000]
+
+
+after which A will contain $FE. To make matters even more interesting, it is
+possible to use the following indirect indexed operands wherever it is legal
+to use a normal indexed operand:
+
+
+			[,X]		offset is zero!
+
+			[LABEL,X]
+
+			[A,X]
+
+			[B,X]
+
+			[D,X]
+
+			[,X++]		Note:[,X+] is illegal!
+
+			[,--X]		Note:[,-X] is illegal!
+
+			[LABEL,PC]
+
+
+That should cover the fundamentals of 6809 addressing modes.
+
+
+MC6809 Instructions
+-------------------
+
+	The 6809 accepts the following instructions, and the following oper-
+ands for those instructions:
+
+
+ABX						Add contents of B to X
+
+ADCA, ADCB	immediate, direct,		Add contents of memory
+		extended, indexed		to A or B with carry
+						(byte only)
+
+ADDA, ADDB	immediate, direct,		Add contents of memory
+		extended, indexed		to A or B without carry
+						(byte only)
+
+ADDD		immediate, direct,		Add contents of memory
+		extended, indexed		to D without carry
+						(word only)
+
+ANDA, ANDB	immediate, direct,		Logical AND contents of
+		extended, indexed		memory to A or B
+						(byte only)
+
+ANDCC		immediate			Logical AND immediate
+						data to CC register
+						(byte only)
+
+ASLA, ASLB	inherent			Arithmetic shift left
+						contents of A or B
+
+ASL		direct, extended,		Arithmetic shift left
+		indexed				contents of memory
+						(byte only)
+
+ASRA, ASRB	inherent			Arithmetic shift right
+						contents of A or B
+
+ASR		direct, extended,		Arithmetic shift right
+		indexed				contents of memory
+						(byte only)
+
+Bxx, LBxx	Relative			Branch on Condition.
+						See below for full
+						list of conditions
+
+BITA, BITB	immediate, direct,		AND contents of memory
+		extended, indexed		to A or B, set CC bits
+						(byte only)
+
+BSR, LBSR	Relative			Branch to Subroutine. A
+						relative version of JSR
+
+CLRA, CLRB	inherent			Clear A or B
+
+CLR		direct, extended,		Clear contents of memory
+		indexed				(byte only). Note that
+						memory is read before it
+						is cleared (significant
+						where memory-mapped I/O
+						is accessed)
+
+CMPA, CMPB	immediate, direct,		Compare memory byte with
+		extended, indexed		A or B
+
+CMPD, CMPX,	immediate, direct,		Compare memory word (16 bits)
+CMPS, CMPU,	extended, indexed		with D, X, S, U or Y
+CMPY
+
+COMA, COMB	inherent			Complement A or B (convert
+						all 0 bits to 1 and vice
+						versa)
+
+COM		direct, extended,		Complement contents of
+		indexed				memory (byte only)
+
+CWAI		immediate			Clear CC bits, wait for
+						interrupt (byte only),
+						e.g., CWAI #$30
+
+DAA		inherent			Decimal addition adjust on
+						accumulator A
+
+DECA, DECB	inherent			Decrement contents of A
+						or B
+
+DEC		direct, extended,		Decrement contents of
+		indexed				memory (byte only)
+
+EORA, EORB	immediate, direct,		Logical exclusive-OR  con-
+		extended, indexed		tents of memory to A or B
+						(byte only)
+
+EXG		inherent			Exchange contents of the
+						specified registers
+
+INCA, INCB	inherent			Increment contents of A
+						or B
+
+INC		direct, extended,		Increment contents of
+		indexed				memory (byte only)
+
+JMP		direct, extended,		Jump to new program lo-
+		indexed				cation
+
+JSR		direct, extended,		Jump to subroutine
+		indexed
+
+LDA, LDB	immediate, direct,		Load A or B with memory
+		extended, indexed		byte
+
+LDD, LDX,	immediate, direct,		Load D, X, S, U or Y
+LDS, LDU,	extended, indexed		with memory word
+LDY
+
+LEAX, LEAY,	indexed				Load effective address
+LEAS, LEAU					into X, Y, U or S
+						(word only)
+			
+LSLA, LSLB	inherent			Logical shift left
+						contents of A or B
+
+LSL		direct, extended,		Logical shift left
+		indexed				contents of memory
+						(byte only)
+
+LSRA, LSRB	inherent			Logical shift right
+						contents of A or B
+
+LSR		direct, extended,		Logical shift right
+		indexed				contents of memory
+						(byte only)
+
+MUL		inherent			Multiply A by B, store
+						result in D
+
+NEGA, NEGB	inherent			Negate A or B
+
+NEG		direct, extended,		Negate contents of
+		indexed				memory (byte only)
+
+NOP		inherent			No operation
+
+ORA, ORB	immediate, direct,		Logical inclusive-OR  con-
+		extended, indexed		tents of memory to A or B
+						(byte only)
+
+ORCC		immediate			Logical OR bits into CC
+						register (byte only)
+
+PSHS		inherent (register list),	Push registers onto stack
+		immediate			pointed to by S
+
+PSHU		inherent (register list),	Push registers onto stack
+		immediate			pointed to by U
+
+PULS		inherent (register list),	Pop registers off stack
+		immediate			pointed to by S
+
+PULU		inherent (register list),	Pop registers off stack
+		immediate			pointed to by U
+
+ROLA, ROLB	inherent			Rotate left contents
+						of A or B
+
+ROL		direct, extended,		Rotate left contents
+		indexed				of memory (byte only)
+
+RORA, RORB	inherent			Rotate right contents
+						of A or B
+
+ROR		direct, extended,		Rotate right contents
+		indexed				of memory (byte only)
+
+RTI		inherent			Return from interrupt
+
+RTS		inherent			Return from subroutine
+
+SBCA, SBCB	immediate, direct,		Subtract contents of memory
+		extended, indexed		from A or B with borrow
+						(byte only)
+
+SEX		inherent			Sign extend. If bit 7 of B
+						is 1, load A with $FF, else
+						load A with 0
+
+STA, STB	immediate, direct,		Store A or B into memory
+		extended, indexed		(byte only)
+
+STD, STX,	immediate, direct,		Store D, X, S, U or Y
+STS, STU,	extended, indexed		into memory (word only)
+STY
+
+SUBA, SUBB	immediate, direct,		Subtract contents of memory
+		extended, indexed		from A or B without borrow
+						(byte only)
+
+SUBD		immediate, direct,		Subtract contents of memory
+		extended, indexed		from D without borrow
+						(word only)
+
+SWI		inherent			Software interrupt. Variants
+						are SWI, SWI 2, SWI 3
+
+SYNC		inherent			Halt processor & wait for
+						interrupt
+
+TFR		inherent			Transfer contents of one
+						register to another
+
+TSTA, TSTB	inherent			Test value of A or B, set
+						CC bits accordingly
+
+TST		direct, extended,		Test contents of memory,
+		indexed				set CC bits accordingly
+						(byte only)
+
+
+The mnemonics above are the accepted official Motorola 6809 mnemonics. They
+are accepted by A6809, as are all of the addressing mode syntaxes outlined in
+earlier sections (exceptions noted where they occur). And in case anyone has
+any reservations, SEX is the accepted mnemonic for the 6809 sign extend in-
+struction and not wishful thinking on my part.
+
+
+	Those instructions that take two register operands (EXG, TFR) and a
+register list operand (the push and pop instructions) expect register names
+separated by commas, as in:
+
+
+			EXG	A,DP
+
+			PSHS	X,Y,DP,CC,PC
+
+
+In the case of TFR, the register order is important, so that:
+
+
+			TFR	A,DP
+
+
+transfers the contents of the A register into the DP register. For EXG, this
+is not important (register contents are exchanged), so that:
+
+
+			EXG	A,DP
+
+
+and:
+
+
+			EXG	DP,A
+
+
+are the same.
+
+
+	For push and pop instructions, the machine code consists of the ins-
+truction byte followed by an immediate data postbyte, each bit corresponding
+to a register. The 6809 automatically pushes the registers onto the stack in
+a specific order, and in the case of 16-bit registers, pushes the LOW byte of
+the register first (push instructions SUBTRACT from the stack pointer BEFORE
+writing to memory). The same occurs for pop instructions:registers are popped
+in a specific order (the reverse of the push order, naturally), and when 16-
+bit registers are popped, they are popped HIGH byte first (pop instructions
+ADD to the stack pointer AFTER reading a byte from memory). The following are
+examples of legal push and pop instructions:
+
+
+		PSHS	X,Y,DP,CC
+		PSHU	PC,D
+		PSHU	PC,A,B		;since D=AB, same as above
+		PULU	X,S
+		PULS	Y,U
+		PULU	A
+
+
+Notice that PSHS S etc., and PSHU U etc., are ILLEGAL, as are any PSHS/PULS
+instructions containing S in the register list and any PSHU/PULU containing
+U in the register list (S and U have the same bit in the instruction post-
+byte!).
+
+
+	Furthermore, note that the order in which the 6809 stores memory ad-
+dresses is:
+
+
+			HIGH	LOW
+
+
+so that if the address $3AF2 is stored at location $4000, $4000 contains the
+byte $3A, and location $4001 contains the byte $F2.
+
+
+	The full list of conditions for Bxx and LBxx comprises the following
+conditional tests. Under the heading 'Sign', N/A refers to basic tests upon a
+given flag, S refers to signed arithmetic tests, U refers to unsigned arith-
+metic tests, and B refers to those tests applicable to both signed arithmetic
+and unsigned arithemtic. Under 'Test', r>m is taken to read 'contents of reg-
+ister greater than contents of memory' after a CMP instruction.
+
+
+	Instruction		Test		Sign
+	-----------		----		----
+
+	BCC, LBCC		C=0		N/A
+	BCS, LBCS		C=1		N/A
+
+	BEQ, LBEQ		Z=1		B
+
+	BGE, LBGE		r>=m		S
+	BGT, LBGT		r>m		S
+
+	BHI, LBHI		r>m		U
+	BHS, LBHS		r>=m		U
+
+	BLE, LBLE		r<=m		S
+
+	BLO, LBLO		r<m		U
+	BLS, LBLS		r<=m		U
+
+	BLT, LBLT		r<m		S
+
+	BMI, LBMI		N=1		B
+	BNE, LBNE		Z=0		B
+	BPL, LBPL		N=0		B
+
+	BRA, LBRA		No Test		B
+	BRN, LBRN		No Test		B
+
+	BVC, LBVC		V=0		S
+	BVS, LBVS		V=1		S
+
+
+The instruction BRA/LBRA is a 'branch always' instruction (similar to BRA on
+68000 processors), which acts as a relative version of JMP. The BRN/LBRN in-
+struction is a 'branch never' instruction, provided to make the instruction
+set symnmetric. It is basically a NOP instruction that takes either 3 or 5
+cycles (3 for BRN, 5 for LBRN) as opposed to the normal 2-cycle NOP, and can
+be used to create precisely calculated delay loops.
+
+
+Assembler Directives
+--------------------
+
+	A6809 accepts several directives in its version 1.0 incarnation, the
+list comprising ORG, EQU, DEF, RES, OPT, SETDP, SHORT and LONG. These differ
+from those directives defined in, for example, the Sybex book on 6809 assem-
+bler directives as being part of the Motorola 6809 standard, but the intent-
+ion has been to provide reasonable directives with some enhancements in the
+case of RES.
+
+
+	ORG sets the initial load address of the program. A6809 accepts both
+constants and labels for ORG, and indeed arithmetic expressions provided that
+all labels contained therein have been previously defined. For example:
+
+
+			ORG	$2000
+
+
+sets the assembly start address to $2000.
+
+
+	EQU is used to assign a value to a label, so that heavily used cons-
+tants (or constants that could change when the program is moved to a differ-
+ent target machine) can be handled symbolically. For example:
+
+
+
+	label		EQU	$1A00
+
+
+assigns 'label' to be equal to the value $1A00. The EQU directive assigns its
+values directly, treating them all as 16-bit constants (unlike some assembler
+programs which allow such constructs as EQUB and EQUW to assign byte and word
+values respectively). The reason for this is that the expression handler con-
+tains all of the operators required for byte extraction, including the unary
+operators '<' and '>', which extract the high byte and low byte of the given
+16-bit operand respectively. So, for example, it is possible to use:
+
+
+	VAL_LO		EQU	<$2080
+	VAL_HI		EQU	>$2080
+
+
+These lines will assign VAL_LO to $80 and VAL_HI to $20 respectively.
+
+
+	DEF defines a byte or a word at a given location. DEFB defines a byte
+and DEFW defines a word to be inserted into the code at the given address. To
+embed strings within the code, DEFS and DEFT are used. DEFS inserts a string
+into the code, as in:
+
+
+			DEFS	"Hello, World"
+			DEFB	0
+
+
+DEFT is used to insert a special kind of string-a TOKENISED ASCII string. A
+string of this form has bit 7 of the last character set, and is used exten-
+sively in such programs as BASIC interpreters on 8-bit home computers. This
+facility is provided for anyone writing programs with a need for such strings
+to be embedded. More information about strings is given below.
+
+
+	RES reserves a block of memory. RESB reserves a block of bytes, and
+RESW reserves a block of words. An optional filler argument can be supplied,
+which can be used to determine the contents of the block. If the filler is
+not supplied, the block is filled with zero bytes or words. For example:
+
+
+		RESB	200
+
+
+reserves 200 bytes of space within the object code. By default, RES fills the
+space with zero bytes, as does:
+
+
+		RESB	200,0
+
+
+Alternatively:
+
+
+		RESW	60,$4AFC
+
+
+reserves 60 WORDS (120 bytes) of space, filling the space with repeated cop-
+ies of the data word $4AFC (68000 programmers will recognise this as the op-
+code for an illegal instruction-on the 6809, this is a DECA followed by a
+LDD extended address, the next $4AFC being taken as the address).
+
+
+	OPT sets various assembler options. The allowed options within ver-
+sion 1.0 of A6809 are:
+
+
+		A+, A-		Assemble to file/syntax check
+				only
+
+		E+, E-		Wait on error for keypress/
+				continue on error (see 'error
+				handling' below)
+
+		L+, L-		List to output device on/off
+
+		S+, S-		Show symbol table at end of
+				assembly on/off
+
+		T+, T-		Show instruction timings
+				on/off. Instruction timings
+				are given as machine clock
+				cycles.
+
+
+These options can be specified in a list, separated by commas. A6809 treats
+all of the '-' options as default settings, so that when A6809 processes its
+input source file, it behaves as though the first line of the file was:
+
+
+		OPT	A-,E-,L-,S-,T-
+
+
+If the user wishes to change the settings, then the appropriate line MUST be
+written into the code. This means that if the programmer wishes to create an
+object file, the line:
+
+
+		OPT	A+
+
+
+MUST appear early in the file and BEFORE any actual code is encountered, else
+A6809 will only perform a syntax check and report errors on screen instead of
+writing out the assembled code to the destination file. Obviously, a line of
+the form:
+
+
+		OPT	A+,S+,T-
+
+
+will also direct A6809 to perform an assembly, this time also directing the
+program to print out a symbol table listing at the end, and directing A6809
+to omit display of timing information. Note that if a line of the form:
+
+
+		OPT	L-,T+
+
+
+appears (with or without other options) then the timing data will only appear
+if an error occurs and the line containing the error is listed. Usually, the
+assembler will generate the simplest instruction that it can if an error is
+encountered before it has sufficient information to create a complete instr-
+uction, so that if an illegal JMP in inherent mode is encountered, A6809 will
+generate a JMP absolute and list the opcodes and timing for that.
+
+
+	And please, even though it's obvious to the experienced programmer,
+DON'T change the A+/A- setting midway through the code! It's easily done if
+copying an OPT from one part to another, for example, to change the listing
+directive, within an editor program such as CygnusEd and then editing the
+copied line. In one case, the object file may never be written out, and in
+another case, an incomplete object file could be written out, leading to a
+disastrous situation if the code is downloaded and executed on a target ma-
+chine!
+
+
+	One final word about OPT L+. Any comment lines of the form:
+
+
+		;comment
+
+
+that do NOT contain opcodes or operands and contribute nothing to the even-
+tual machine code are listed as null lines. Also, comments are stripped from
+lines of the form:
+
+
+		label	lda	#$20		;space char
+
+
+prior to listing using OPT L+.
+
+
+	SETDP is the Set Direct Page directive. It does NOT generate code to
+load the DP register - that is the PROGRAMMER'S responsibility. It is used to
+inform the assembler which page is to be used as the direct page, and allow
+the assembler to check if direct page operands point to the correct area of
+memory. The recommended method of use is a sequence of lines of the form:
+
+
+		DPAGE	EQU	$0A
+
+			LDA	#DPAGE
+			TFR	A,DP		;set direct page
+			SETDP	DPAGE		;& tell A6809 about it
+
+
+(which just happens to appear, minus the leading EQUate, in the Sybex book on
+6809 programming!). This sequence of lines can occur anywhere in a program at
+a point where the current direct page reference needs to be changed.
+
+
+	This allows the programmer to define one of the 256 pages of memory
+as the direct page, and then check 16-bit memory operands against this value
+to ensure that they lie within the specified direct page. For example, if the
+line:
+
+
+			SETDP	$0C
+
+
+sets page $0C (memory addresses $0C00-$0CFF) to be the direct page, then any
+labels assigned by EQUates of the folllowing kind:
+
+
+		_IOCTL1	EQU	$0C00
+		_IOCTL2	EQU	$0C01
+
+
+that appear in actual assembly language statements such as:
+
+
+			LDA	<_IOCTL2
+
+
+will be checked to see if they lie within the direct page, and an error mes-
+sage generated if they liie outside the direct page. Needless to say, if any
+labels are EQUated to values in the range 0-255, and used as offsets from the
+direct page, as in:
+
+
+		_OFF1	EQU	0
+		_OFF2	EQU	1
+
+			...
+
+			LDA	<_OFF1
+
+
+will NOT be checked as such, but assumed to be offsets from the direct page.
+This checking ONLY occurs if the direct page addressing mode prefix '<' has
+been used in the operand:if the extended mode prefix '>' appears or has been
+omitted, then an extended mode address is assumed.
+
+
+	SHORT and LONG are provided to allow the programmer to specify which
+of the PC relative modes to use. The 6809 can accept either an 8-bit or a 16-
+bit offset for PC relative instructions such as:
+
+
+			LDA	label,PC
+
+
+but since the assembler cannot always determine which is the most appropriate
+offset mode to use (unresolved forward references, for example) then the LONG
+and SHORT directives allow selection by the programmer. SHORT forces the use
+of an 8-bit PC relative offset (and is in fact the default setting-any offset
+will be coerced to SHORT if the SHORT directive is omitted), and LONG forces
+the assembler to generate a full 16-bit offset.
+
+
+	These directives are necessary because the 6809 selects 8-bit or 16-
+bit offsets via a different instruction postbyte in the indexed mode instruc-
+tion. Failure to select the correct postbyte within the assembler would be a
+disaster, so these directives allow the correct selection.
+
+
+	If SHORT is selected (or LONG omitted), then the assembler tests the
+resulting offset to see if it will genuinely fit within 8 bits. If not, the
+assembler reports an error (to stop this, insert a LONG directive forcing a
+full 16-bit offset). Of course, should it be desirable to force a LONG offset
+for timing purposes within a loop, even if the offset is a true SHORT, the
+programmer has the freedom to do this. The usage of these directives is as
+follows:
+
+
+			LONG
+			LDA	LABEL,PC
+
+
+			SHORT
+			LDA	[OFFSET,PC]
+
+
+LONG and SHORT both function correctly with indirect indexed modes as well as
+normal indexed modes.
+
+
+Accepted Syntaxes for A6809
+---------------------------
+
+	A6809 accepts 6809 opcodes in ALMOST the same form as stated in the
+official Motorola documentation (as listed above in '6809 Opcodes). The major
+differences are:
+
+
+		Standard		A6809 Form
+		--------		----------
+
+		  SWI2			  SWI  2
+		  SWI3			  SWI  3
+
+
+In addition, SWI can be written as 'SWI 1' just to make the syntax consistent
+throughout.
+
+
+	The syntaxes for the various possible operands that are accepted by
+A6809 are listed below. Allowed operands can include labels in any position
+where a numeric constant is legal, and even complete arithmetic expressions
+in those same positions. Arithmetic expressions are covered in their own sec-
+tion below. Case is only significant for labels:for opcodes and the names of
+various 6809 registers in those positions expected for legal operands, letter
+case is NOT significant. The examples given in the table below are all legal
+examples accepted by A6809.
+
+
+	Operand		Type
+	-------		----
+	1234		Decimal constant (range 0-65535)
+
+	$1234		Hexadecimal constant (range 0-65535)
+	$FA00
+	$fa00
+
+	%10010100	Binary constant (range 0-65535)
+
+	@377		Octal (Base 8) constant (range 0-65535)
+
+	_LABEL		Label (case is significant)
+	label
+
+	#1234		Immediate mode constant
+	#label
+
+	<$2800		Direct Page Address operand
+	<label		(uses the 'less than' character '<')
+
+	>$FFFE		Extended Address operand
+	>_LABEL		(uses the 'greater than' character '>')
+
+	0,X		Zero-Offset Indexed operand
+	,x
+
+	$FF,X		Constant-Offset Indexed Operand
+	LABEL,y
+
+	A,S		Accumulator-Offset Indexed Operand
+	b,x
+	D,Y
+
+	,X+		Autoincrement operand
+	,y++
+
+	,-S		Autodecrement operand
+	,--u
+
+	$400,PC		Program Counter Relative operand
+	label,pc
+
+	[,X]		All of these are legal Indirect
+	[0,Y]		operands!
+	[label,u]
+	[A,Y]
+	[b,s]
+	[d,u]
+	[,x+]
+	[,Y++]
+	[,-s]
+	[,--U]
+	[$FF,PC]
+	[label,pc]
+	[$FFFE]
+	[label]
+
+
+This should be sufficiently flexible for most users (I hope!).
+
+
+Assembler Labels
+----------------
+
+	In version 1.0 of A6809, labels can be up to 13 characters long, and
+can contain letters, digits and the underscore character '_'. For example:
+
+
+			label
+			LABEL
+			Label
+			Longer_Label
+			Screen001
+			d1234
+			_system
+			__
+
+
+are all legal labels. Labels MUST begin with a letter or an underscore char-
+acter, but from the second character onwards, digits can be mixed with let-
+ters and underscores in any desired order.
+
+
+	There is ONE RESTRICTION upon this. Labels that begin with a sequence
+of characters capable of being misinterpreted as a 6809 opcode will cause the
+assembler to spit out misleading error messages! For example, the label:
+
+
+			Compar
+
+
+CANNOT be used, because the first three characters match the COM opcode. If a
+label of this sort is encountered, prefixing it with an underscore or other
+legal label character, as in:
+
+
+			_Compar
+
+
+will solve the problem.
+
+
+Arithmetic Expressions
+----------------------
+
+	A6809 accepts complex arithmetic expressions (within which labels
+are legal operands) which can appear in any operand where a constant or a
+label would be legally acceptable. The full list of operators for use within
+expressions passed to A6809 in user source programs is (binary operators are
+first, followed by unary operators):
+
+
+		^^		exponentiation e.g., 2^^3
+
+		&&		logical AND
+		||		logical OR
+
+		<<		left shift
+		>>		right shift
+
+		>=		relational >=
+		<=		relational <=
+		<>		relational <>
+		>		relational >
+		<		relational <
+
+		/		division
+		*		multipication
+		+		addition
+		-		subtraction
+
+		=		relational =
+
+		&		bitwise AND
+		^		bitwise XOR
+		|		bitwise OR
+
+		-		unary minus
+
+		~~		logical NOT
+
+		~		complement
+
+		>		get high byte
+		<		get low byte
+
+
+In the above table, the relational operators and the logical operators have a
+common and consistent operation. In the case of relational operators, a test
+of the two arguments is performed according to the condition, and the result
+is passed back to the remainder of the expression as TRUE or FALSE (TRUE is
+taken to be the constant -1, FALSE is taken to be zero).
+
+
+	In the case of the logical operators, the given logical operation is
+performed on the assumption that ANY non-zero operand is TRUE, and any zero
+operand is FALSE. These values are converted to TRUE and FALSE prior to the
+operation being performed (so that a bitwise AND or bitwise OR produces the
+desired result) so that nonzero values are forced to equal TRUE (since zero
+is FALSE already, the conversion does not matter in this case). In the case
+of logical NOT, this returns TRUE if the input was zero (FALSE), and FALSE if
+the input was non-zero (converted to TRUE before the NOT operation).
+
+
+	The shift operators >> and << are equivalent to the ASL/ASR instruc-
+tions of the 68000, in that a shift count can be specified. For example:
+
+
+			label>>4
+
+
+arithmetically shifts the value of 'label' 4 bit positions to the right (an
+effective division by 16). An arithmetic shift is used in order to preserve
+signs in signed arithmetic. In the case of:
+
+
+			label<<5
+
+
+the value of 'label' is arithmetically shifted left 5 places (effectively a
+multiplication by 32).
+
+
+	Unary operators are handled in a slightly idiosyncratic way. They
+ALWAYS apply to the following operand before any binary operator, so that in
+the case of:
+
+
+			-5+16
+
+
+the unary minus is applied to the 5 before the addition. If the user requires
+the negation of an entire expression then parentheses can be used, as in:
+
+
+			-(5+16)
+
+
+Parentheses can be used wherever they are required, so that such expressions
+as:
+
+
+		table_base+((offset*16)-$100)*2
+
+
+are perfectly acceptable, even within complex addressing modes, so that it is
+possible to write a 6809 instruction such as:
+
+
+		CMPA	[table_base+((offset*16)-$100)*2,PC]
+
+
+and A6809 will accept it quite happily. Errors that are trapped within user
+expressions include attempted division by zero and label undefined on Pass 2
+of the assembly.
+
+
+String Syntax
+-------------
+
+	A6809 accepts strings as arguments for the DEFS/DEFT directives. The
+strings MUST be enclosed using the double quote character, as in:
+
+
+			DEFS	"Legal String"
+
+
+A6809 provides a useful set of extensions to normal ASCII strings. Should the
+programmer require certain characters to be contained within the string, then
+they can be embedded by preceding the given character with a backslash ("\").
+This allows quotes to be embedded, as in:
+
+
+			DEFS	"\"Hello, World\""
+
+
+Secondly, control characters (ASCII $00 to $1F) can be embedded by using the
+"^" character. To embed a carriage return/linefeed sequence, use:
+
+
+			DEFS	"String^M^J"
+
+
+To embed the '^' and '\' characters themselves, use:
+
+
+			DEFS	"\^string\\"
+
+
+The '\' character forces A6809 to copy the following character verbatim, and
+'^' forces A6809 to AND the ASCII code of the following character with $1F to
+create control characters. So, on machines using CTRL-L to clear the screen,
+one can use:
+
+
+			DEFS	"^L\"Hello, World\"^M^J^@"
+
+
+to create a string containing the characters:
+
+
+			"Hello, World"
+
+
+followed by CTRL-M, CTRL-J and ASCII NUL (CTRL-@ is ASCII NUL). Again, users
+should find this facility flexible enough for their needs.
+
+
+	Single-character strings are also allowed within expressions as a re-
+sult of some minor extension of the expression handler by myself while reco-
+vering from tonsilitis (gee, what a hero!). The following lines are examples
+of legal A6809 assembler statements:
+
+
+			LDA	#"L
+			LDB	#"D"
+
+
+The same notes concerning the use of the '\' and the '^' characters applies
+to these single-character string arguments too. So, if you wish to load the
+accumulator A with special characters, use any of the following:
+
+
+			LDA	#"\"		;loads A with "
+			LDA	#"\""		;so does this
+			LDA	#"\\		;loads A with \
+			LDA	#"\\"		;so does this
+			LDA	#"\^		;loads A with ^
+			LDA	#"\^"		;so does this
+			LDA	#"^A"		;loads A with CTRL-A
+			LDA	#"^A"		;so does this
+			LDA	#"^a		;and this
+			LDA	#"^a"		;and this!
+			LDA	#"^@		;loads with ASCII NUL
+
+
+Again, the backslash character means 'use the next character verbatim', and
+the '^' character means 'use the next character, and convert to a CTRL-char-
+acter'.
+
+
+	In fact, the programmer can even use single-character strings in ex-
+pressions, such as the following:
+
+
+			LDA	#"0"+8		;tested and works!
+
+
+or even more complex expressions if desired, although it should be noted that
+embedding such strings in complex expressions might make debugging the resul-
+ting 6809 source much harder if there exists an obscure bug in the code!
+
+
+	Note that I have NOT allowed two-character strings such as:
+
+
+			LDD	#"LD	;sorry, illegal!
+
+
+to be used in this form. Basically I couldn't get round to it once I'd OD'd
+on the medicine I'd been prescribed (I didn't know that soluble Panadol can
+make one hallucinate!) and in any case I think that what I've done so far is
+flexible enough! If you disagree, pay me for the source and write the feature
+in yourself!
+
+
+Error Handling
+--------------
+
+	The E+/E- options of the OPT directive allow errors to be handled in
+one of two ways. With E-, the assembly error is displayed and assembly con-
+tinues. This could lead to messages scrolling off the screen if there is a
+large number of errors in the source file passed to A6809. Since the program-
+mer usually wishes to keep track of where the errors are, the E+ option is
+provided.
+
+
+	If E+ is selected, once an error is reported, the programmer is in-
+formed that A6809 is waiting. A message of the form:
+
+
+	Press [ENTER] To Continue, [ESC] Then [ENTER] To Abort
+
+
+is displayed at the CLI. The programmer can either press ENTER to continue
+the assembly, or ESC then ENTER to abort at that stage. While A6809 waits,
+the programmer has the chance to jot down line numbers where errors occur,
+and then jump straight to them within the editor chosen for source editing.
+The full list of assembly-time error messages is:
+
+
+	Unrecognised Intruction : Pretty obvious. The opcode
+	found is not a legal 6809 opcode or a legal A6809
+	assembler directive.
+
+
+	Operand Size Clash Byte/Word : Occurs if something such
+	as EXG A,PC is tried where the registers are of incom-
+	patible size.
+
+
+	Illegal Addressing Mode : Pretty obvious. The addressing
+	mode of the operand is not allowed with the instruction,
+	e.g., STA #$20.
+
+
+	Long Branch Required : Means that a short branch instruc-
+	tion cannot be computed, and that the branch must be con-
+	verted to a long branch, e.g., BCC to LBCC.
+
+
+	Illegal Option Specified : OPT accepts ONLY A,E,L,S and T
+	options.
+
+
+	Illegal Indirection : Means that an operand of the form
+	[,X+] or [,-X] etc., has been created, which is illegal.
+
+
+	Label Undefined : Pretty obvious. Means that the operand
+	is a stand-alone label that doesn't exist.
+
+
+	Label Already Defined : Pretty obvious. Two identical
+	labels exist in the source. Case is significant, so
+	that the labels "label" and "LABEL" are different.
+
+
+	Missing Character : Again obvious. The character missing
+	is also displayed.
+
+
+	Malformed Complex Expression : The expression handler could
+	not make sense of the expression found. Also occurs if an
+	expression contains an undefined label on Pass 2.
+
+
+	Illegal Index Register : Means that something such as ,PC+
+	or the like has been tried, which is illegal, as are forms
+	such as ,D.
+
+
+	Illegal Accumulator Specified : Means that either the wrong
+	accumulator has been specified as in ANDX (illegal) or as in
+	LDA S,X. Again all these forms are illegal.
+
+
+	Division By Zero In Expression : Pretty obvious. Can occur if
+	dividing by a label value on Pass 1 - CAUTION!
+
+
+	Mismatched Direct Page Reference : A6809 checks all direct page
+	operands to see if they match the page specified by the SETDP
+	directive. If the label equals a byte-sized value, it is treated
+	as an offset. If the label equals a word-sized value, the upper
+	byte is checked to see if it matches SETDP. If it doesn't, an
+	error is reported.
+
+
+	Push/Pop Instruction Register Clash : Means that something of
+	the form PSHS S,D or PULU A,B,PC,U has been tried. Again this
+	is illegal.
+
+
+	Operand Too Large : Pretty obvious. Attempt made to use a word
+	sized immediate operand, for example, with a byte-sized accu-
+	mulator as in ANDA #$3000.
+
+
+	Illegal SWI Instruction : The ONLY allowed forms are:
+
+			SWI
+			SWI 1
+			SWI 2
+			SWI 3
+
+	All others are ILLEGAL.
+
+
+	Missing Operand : A6809 has found something of the form:
+
+			LDA
+
+	which is obviously a mistake.
+
+
+	Illegal Type For DEF/RES Directive : The allowed types for
+	the DEF directive are:
+
+			DEFB <byte list>
+			DEFW <word list>
+			DEFS "string"
+			DEFT "string"
+
+	where <byte list> and <word list> are lists of values that
+	are separated by commas. The allowed types for the RES dir-
+	ective are:
+
+			RESB size <,filler>
+			RESW size <,filler>
+
+
+	where <,filler> is an option fill byte or word, allowing the
+	programmer to specify the contents of the reserved area.
+
+
+If any other error message (e.g., out of memory) occurs, it's time to panic!
+Also, if for some reason the DOS library can't be loaded (which means that it
+is time to fetch a repair man out to your Amiga), A6809 bombs out without so
+much as a by or leave. I could have used an Exec Alert, but they're tedious
+to use and if A6809 ever did pop one up, your machine would still be useless
+because if DOS can't be opened, it's a £40 repair bill. If you don't get the
+title message at the start, then your Amiga's ROMS have been cremated (have
+you been opening it up and combing your hair over the CMOS chips? A common
+cause of death in Amigaland...).
+
+
+Known Bugs
+----------
+
+	So far, there are relatively few bugs. One quirk of A6809's operation
+that might be considered a bug is the generation of an error message if there
+is no destination file name specified in the command line, even if the pro-
+grammer intends to perform a syntax check only. Also, the destination file is
+opened and closed, resulting in a file of zero size occupying space on disc
+if a syntax check alone is performed. The reason for this is to prevent the
+program performing any time-consuming assembly operations if there is a DOS
+error of some sort (e.g., disc full or insufficient RAM space for a RAM disc
+entry) and allow A6809 to abort immediately.
+
+
+	Oh, yes. The lack of an Alert for no DOS library could be considered
+a bug, but your machine is dead anyway if DOS isn't available, so what's the
+point? You'll find that your machine is dead upon switch-on if this condition
+ever occurs, so you'll probably never see A6809 bomb out this way!
+
+
+	STOP PRESS:there IS a bug lurking in A6809 Version 1.0, but since I
+have offered this version to ACC for tutorial purposes, it's up to you, dear
+ACC members, to find out what it is! Be warned, it's quite a subtle one, and
+I know how to fix it (but having moved on to Version 2.0 I no longer need to)
+but if you think I'm letting you off that lightly you've another think com-
+ing!
+
+
+Bibliography
+------------
+
+	One recommended text for 6809 assembler programmers is yet another
+of the Sybex series, 'Programming the 6809' by Rodnay Zaks and William Lab-
+iak. No doubt there is a companion volume in the Osborne-McGraw-Hill series
+by Lance A. Leventhal, just as there are companion volumes for the 6502, Z80,
+8086, 68000 and Z8000. If there is, get hold of it. If your personal prefer-
+ence is for the Leventhal series of progrmaming manuals (having chosen to buy
+his 68000 guide for assembler programming on the Amiga) then buy his for the
+6809 too, otherwise buy the Sybex one. Since I only know about the aforemen-
+tioned Leventhal books, and do NOT know if he has written one for the 6809, I
+cannot give an accurate appraisal (what sort of documentation appraises books
+that the author hasn't read in any case?) but if it exists, and it is up to
+the usual standard (his 68000 book is VERY good!), it should be well worth a
+look.
+
+
+	Experienced assembler programmers for other processors may already
+have established a personal preference with respect to programming manuals. I
+do NOT have a preference vis-a-vis Sybex and the Leventhal series, finding a
+wealth of useful information in BOTH. Also, since I write DOC files on many
+different subjects, as well as my own software, I have a duty to be as impar-
+tial as circumstances allow. If Lance Leventhal is reading this, and wants me
+to recommend any 6809 books that he has written, I'll happily accept one as a
+Christmas or birthday present and give it a suitably fulsome review!
+
+
+Programming the 6809			By Rodnay Zaks & William Labiak
+SYBEX Books				ISBN 0 89588 078 4
+
+The MC6809 Cookbook			By Carl R. Warren
+Tab Books Inc. Pennysylvania
+
+6809 Microcomputer Programming &	By Andrew C. Staugaard
+Interfacing
+Howard W. Sams & Co Inc.
+Indianapolis
+
+Motorola MC6809 - MC6809E
+Programming Manual
+Motorola Inc.
+
+
+And if it exists (according to the Sybex book flyleaf it does):
+
+
+Programming the 6809			By Lance A. Leventhal
+Osborne-McGraw-Hill
+
+
+
+
+
+

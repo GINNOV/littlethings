@@ -1,0 +1,56 @@
+Short:    easy-to-use API for RTG chunky display
+Author:   no-email@for.now (Harry "Piru" Sintonen)
+Type:     dev/c
+Requires: MC68020, OCS, Kickstart 3.0 (see awin.doc for compiling req)
+Version:  1.0.13
+
+Major changes in 1.0.13:
+
+ - implemented real CGFX/P96 16bit for window and non-directdraw
+   screen mode. to try it set option `useargb16 on'
+ - depth 16 8bit emulation had wrong palette in >8 bit screen
+   modes. fixed
+ - awreadargs had a bug: it wasn't able to clear any awodargs
+   flags. fixed
+ - depth 16 directdraw bugged. fixed
+
+awin is a easy-to-use API for RTG chunky display. It is intended
+to be used with games, demos and gfx intensive applications
+(could be used with scopes, screen blankers, etc.).
+
+This archive contains full sourcecode to awin. Read awin.doc
+for more details.
+
+
+Also there is a simple demo program included awindemo.c, see
+Makefile and SMakefile.
+
+Initially this demo opens a window with 320x240 innersize and
+shows simple `pseudo'plasma, rotatezoomer and tunnel effects.
+For info about some awin commandline features do
+`awindemo68k ?' or `awindemoppc ?'.
+
+Both awindemo68k and awindemoppc load bunny.pal, bunny.raw,
+glas2.pal and glas2.raw.
+
+awindemo68k requires minimum MC68020, OCS, Kickstart 3.0 and
+SetPatch.
+
+Additionally awindemoppc requires ppc.library V46.6+ and
+naturally PowerPC processor.
+
+
+IMPORTANT! As I ran out of time some features of awin are
+untested, remarkably: cgxvideo.library support. Also some
+things I would have wanted to implement and some m68k
+optimizations are missing (that is those routines have only
+c versions included). Probably there is some bugs in it, too.
+
+
+  - Harry "Piru" Sintonen
+
+P.S. I will have my military service from January 4th 1999 on.
+It would be great if someone would take over awin development
+meanwhile. That is to do some stuff mentioned in awin.c todo
+section + other fixes and improvements and test it carefully
+and then upload updated versions to aminet.

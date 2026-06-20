@@ -1,0 +1,509 @@
+                                  MemMan
+                                Version 2.1
+                            Low-Memory manager
+                         Copyright 1992 Bryan FORD
+
+Warning:  DO NOT try to use MemMan without FULLY reading this documentation!
+
+
+                                Disclaimer
+                                ~~~~~~~~~~
+
+    This program is provided "as is" without warranty of any kind, either
+expressed or implied, including, but not limited to, the implied warranty
+of fitness for a particular purpose.  The entire risk as to the results,
+reliability and performance of this program is assumed by you.
+
+
+
+                               Distribution
+                               ~~~~~~~~~~~~
+
+    MemMan may be freely distributed as long as it is complete (none of the
+files listed below are left out), all of the files are unmodified, and no
+charge is made for such distribution other than a small fee to cover the
+cost of copying.  (In effect, no profit may be made through distribution of
+this program).  You may modify this code for your own personal use, but you
+may not distribute modified versions.  (If you improve MemMan, just send
+your modifications back to me - I'll incorporate them into the master,
+giving appropriate credit to you, and we won't have hundreds of different
+versions of MemMan floating around.)
+
+    You may use the object code derived from this source code, or your own
+modified version of this source code, in your own public domain, freeware,
+shareware, or otherwise freely distributable programs, as long as you state
+that you used MemMan and mention the name of its author (Bryan Ford)
+somewhere in your documentation.  You may also distribute the
+memman.library with your freely distributable programs.  You do not need to
+obtain any kind of license to use it in freely distributable software.
+
+    If you want to distribute MemMan, the memman.library, or any modified
+version of MemMan, in either source or object form, with a commercial
+package, you must first obtain a license from me (Bryan Ford).  The cost of
+the license will be equal to the retail price of the commercial program in
+which MemMan is used.  Additionally, you must send me a copy of the program
+as soon as it is finished and released.  The license fee covers all future
+versions of your program; however you must send me copies of any major
+updates you release afterwards, if they still use Bovs.  This license cost
+will never increase, but I reserve the right to decrease or eliminate it.
+
+    The MemMan distribution must contain the following files, complete and
+unmodified:
+
+        MemMan.doc      MemMan documentation (this file)
+        memman.library  MemMan runtime library
+        MemMan.o        Linkable version of MemMan
+        MemMan.fd       Entrypoints for memman.library
+        MemMan.h        Header for C programs using MemMan
+        MemMan.i        Same, for assembly language
+        MemMan.asm      Source to MemMan (A68k only)
+        MemManLib.asm   Source to memman.library interface (A68k only)
+        Macros.i        Macros you'll need for the above two files
+        LMKfile         SAS/C makefile for everything
+        test            Program to test memman.library
+        test.c          Source for test program
+
+
+
+                              Acknowledgments
+                              ~~~~~~~~~~~~~~~
+
+    Michael Sinz of Commodore for his valuable suggestions for improving
+this code and making it more compatible with future versions of the OS.
+
+    David Le Blanc for the library version and the test program.
+
+
+
+                               Introduction
+                               ~~~~~~~~~~~~
+
+    MemMan is a short assembly language module which allows your
+application to be called whenever there is a memory shortage during an
+AllocMem() call.  This allows your application to free up any memory it can
+do without so another program can use the memory.  Resident libraries and
+devices use a similar system to automatically unload them if the system
+runs out of memory.  However, MemMan provides two very important features
+that the standard expunging system doesn't.  First, MemMan doesn't require
+an application to free everything it possibly can all at once.  The
+application can free a little bit of memory, then MemMan will try the
+allocation again, and if the allocation still fails, the application can
+free more memory, and so on.  Second, to go along with this, the
+application can tell MemMan how "important" a given piece of memory is.
+This allows the application to free some types of buffers or caches first
+while keeping other more valuable items until the last minute.
+
+    To use MemMan, you will either need to link the "MemMan.o" file into
+your program, or use the runtime "memman.library".  Either way, MemMan
+should work with either SAS/C 5.10 or Manx.  In program modules that use
+MemMan, you will need to include the header file "MemMan.h" or MemMan.i" as
+appropriate.  If you're using the runtime library from a C program, you
+must #define the symbol MM_RUNLIB before including MemMan.h.
+
+    At the very beginning of your program you must call the MMInit()
+function to initialize MemMan.  If you're using the runtime library, you
+don't need to do this, but you need to open memman.library and put the
+library base in MMBase.  At the very end of your program, if you're using
+the linked library, you must call MMFinish() to shut it down.  (If you're
+using the memman.library, you just need to close the library.)  During your
+program, you use the MMAddNode() and MMRemNode() functions to tell MemMan
+about things that can be freed during a memory crunch.  All of these
+functions are described in detail later in the document.
+
+    If you would like to make your own modifications to MemMan, you will
+probably need the A68k assembler by Charlie Gibbs.  It will only work with
+a version LATER than version 2.71.  This is because MemMan makes use of
+some enhancements to A68k which I have made just recently, and as of this
+writing, the new version of A68k that can assemble it has not been released
+yet.  Also, MemMan.asm references the include files "memman.i" and
+"macros.i" in a subdirectory called "bry".  You will either need to create
+this subdirectory on your system and put these files into that directory,
+or change MemMan.asm to reference them where you want them.  ("macros.i" is
+full of strange and interesting macros that I commonly use.)
+
+
+
+                                 Functions
+                                 ~~~~~~~~~
+
+    This section describes in detail the functions that MemMan makes
+available to the the application.  These functions are externally defined
+by MemMan.o as both assembly-language-style functions without any name
+prefix, as well as prefixed with '_' to allow calls from SAS/C and Manx C.
+To call these functions from assembly language, all you need to do is
+'xref' the names and put the appropriate arguments in the appropriate
+registers before 'bsr'- or 'jsr'ing to the function.  For SAS/C and Manx C,
+you just need to include the header file "MemMan.h" which prototypes these
+functions and tells the compiler which registers to use for arguments.  (To
+use the runtime library, you must define MM_RUNLIB before including this
+file.) For other compilers or languages, you may have to do a little
+adaptation.
+
+
+    int Success = MMInit(void)
+           D0
+
+    Initializes MemMan.  (This function does not exist in the runtime
+library.)  You must call this before calling any other MemMan function
+except for MMFinish().  You must test the return code - if it is zero, it
+means that there wasn't enough memory to initialize.  (The first time
+MemMan is initialized in the system, some code is made permanently
+resident.  Other invocations of programs that use MemMan then use this code
+without allocating anything else.)  You must NEVER call MMInit() more than
+once in your program!
+
+
+    void MMFinish(void)
+
+    Closes down MemMan.  (This function does not exist in the runtime
+library.)  This never actually causes memory to be freed (the resident code
+remains in memory until reboot), but it puts the AllocMem() patch "to
+sleep" so it uses a minimum of CPU resources while MemMan is not in use. It
+is not dangerous to call MMFinish() more than once, to call it without ever
+calling MMInit(), or to call it after MMInit() has failed.  However, after
+you call MMFinish(), you may not call ANY other MemMan functions before
+your program terminates.
+
+    Before calling MMFinish() (or closing MMBase, in the case of the
+runtime library), ALL MMNodes you own MUST have been taken off MemMan's
+list!  Remember that the MMList is not private to your application - it is
+used by other applications that are running MemMan at the same time, and it
+remains in memory even after all applications using MemMan have terminated.
+(The same list will be used again the next time some program starts using
+MemMan.)
+
+
+    void MMAddNode(struct MMNode *node)
+                       A1
+
+    Adds an MMNode to the systemwide MMList.  An MMNode represents an item
+that can be freed on demand.  (See the 'MMNodes' section below for details
+on creating these structures.) This function has protection against adding
+a node twice, so as long as you don't muck with the ln_Type field in the
+Node, you can call MMAddNode() any time you want to make sure a particular
+MMNode is on the list.  This function is very simple and quick, especially
+if the node is already on the list, so there's no problem with calling this
+function often.  You may call this function from any interrupt code except
+the Non-Maskable Interrupt (NMI).
+
+
+    void MMRemNode(struct MMNode *node)
+                       A1
+
+    Removes an MMNode from the MMList.  As with MMAddNode(), you don't have
+to worry about calling this function with an MMNode that wasn't already on
+the list (as long as you call it with a valid MMNode).  Also like
+MMAddNode(), this function executes very quickly, so you can call it often,
+and you may call this function from any interrupt code except NMI.
+
+
+
+                                  MMNodes
+                                  ~~~~~~~
+
+    To use MemMan, you will need to create structures called MMNodes.  This
+structure is defined in C as follows:
+
+struct MMNode
+  {
+    struct Node Node;
+    long (*GetRidFunc)(long size,long memtype,void *data);
+    void *GetRidData;
+  };
+
+    Each MMNode structure is generally associated with one particular piece
+of memory (or several pieces closely tied together) that may be freed on
+demand when the system needs more memory.  MMNodes are added to a single
+system-wide list (the same for all applications currently using MemMan) by
+MMAddNode(), in order of priority.
+
+    When a memory crunch occurs and some AllocMem() call is about to fail,
+MemMan starts traversing the system MMList.  It first calls the routine
+associated with the MMNode of highest priority, then retries the AllocMem()
+call once, then if it still fails, it finds the next lower MMNode in
+priority and tries again, and so on.  If one of the calls frees up enough
+memory to allow the AllocMem() to succeed, MemMan will stop traversing the
+list immediately, so the lower-priority nodes aren't affected.  If MemMan
+gets all the way through the MMList and still can't get enough memory to
+satisfy the AllocMem() request, it will finally fail and return NULL to the
+original caller of AllocMem().
+
+    You can create an MMNode as either a static/global variable in your
+program, or allocate it dynamically with AllocMem().  If you use
+AllocMem(), you MUST either use the MEMF_CLEAR flag, or explicitly clear
+the ln_Type field in the Node structure to zero before calling MMAddNode()
+or MMRemNode() with it.  (Static/global variables get initialized to zero
+before the program starts, so you don't have to worry about it in this
+case.)
+
+    You should set the ln_Pri field in the Node to an appropriate priority
+level.  (See the 'Priorities' section for guidelines on selecting a
+priority level.) The GetRidFunc pointer should point to the function in
+your application which will be called during a memory crunch, in order to
+free some memory. (See the 'GetRidFuncs' section below for information on
+creating these functions.)  The GetRidData pointer can be anything you
+want, and is simply passed to the GetRidFunc whenever it is called.
+
+    You should (though you don't have to) set the ln_Name field in the Node
+to the name of your program or some other descriptive string.  This may be
+helpful for debugging programs that use MemMan.
+
+    Once you have created and initialized an MMNode, you can add it to the
+system list at any time with MMAddNode(), and remove it later with
+MMRemNode().  To emphasize again what I said before, ALL nodes you add MUST
+be removed from the system list before your program ends.
+
+
+
+                                GetRidFuncs
+                                ~~~~~~~~~~~
+
+    The GetRidFunc pointed to by a MMNode is the function that MemMan will
+call whenever there is a memory crunch and it needs you to free some
+memory.  Note that it takes register arguments, NOT standard C-style stack
+arguments.  In SAS/C, you must define the function as __regargs; in Manx,
+I'm not sure what you do, but I know it's possible.  The GetRidFunc will be
+called with the following arguments:
+
+    long GetRidFunc(long MemSize, long MemType, void *GetRidData)
+     DO         D0        D1          A0
+
+    The first two arguments are simply the arguments from the AllocMem()
+call that is causing the memory crunch.  In general, you shouldn't need to
+look at MemSize, but it's there just in case you find some use for it.  You
+can look at the MemType parameter to see if giving up your memory will
+actually benefit the caller at all.  For example, if the caller specifies
+MEMF_CHIP and you know for sure that the memory you can free is not chip
+memory, then you don't need to free your memory.  (Remember, though, that
+AllocMem() may return chip memory even if you didn't specifically ask for
+it.)
+
+    The GetRidData argument is simply a copy of the GetRidData pointer you
+supplied in the MMNode.  You can use it as a pointer back to the MMNode, or
+to some other related data structure, or whatever.
+
+    The GetRidFunc must return nonzero if any memory at all was freed, or
+zero if it couldn't free anything.  If a GetRidFunc returns zero,
+
+    Since your GetRidFunc may be called by any Task or Process in the
+system, at any time AllocMem() can be called, you must be very careful when
+writing it.  Here are some specific rules you must observe:
+
+    You must not depend on any registers, except for the specified
+arguments.  For SAS/C, this means you must use the __saveds qualifier when
+defining the function.
+
+    Be sure to disable stack checking for the GetRidFunc. For SAS/C, you
+can use __interrupt, or you can supply -v on the command line to disable
+stack checking for the whole program.
+
+    Standard Amiga register saving conventions must be used - your function
+must save all registers except D0, D1, A0, and A1.  Most compilers should
+automatically comply with this requirement.
+
+    The GetRidFunc must NEVER break the Forbid() state by calling Wait() or
+any function that might indirectly call it.  If another task is permitted
+to execute while MemMan is in the middle of the MMList, things could get
+very interesting.
+
+    Since it can be called from Tasks as well as Processes, it must NEVER
+call the dos.library, or any functions that might call the dos.library.
+(Sorry, no swapping memory out to disk from a GetRidFunc, although you may
+send a signal or message to a process to do it later.)
+
+    The GetRidFunc must use VERY LITTLE stack space.  This means no big
+Un*x-style auto arrays!  Ideally, the GetRidFunc should use no more
+(actually a little less) stack space than the actual AllocMem() function
+uses, which is very small.  (I haven't checked to see exactly what it is.)
+
+    The GetRidFunc must NEVER call MMAddNode() or anything that could call
+this function.  This could cause the MMList to be changed while MemMan is
+traversing it.
+
+    The GetRidFunc MAY call MMRemNode() on the CURRENT node (the MMNode
+that caused this call to be made) but NEVER on any OTHER node.
+
+    The GetRidFunc may call AllocMem() and FreeMem().  The general
+intention, of course, is to call FreeMem() at least once.  It is possible
+to swap chip-memory data into fast memory in a GetRidFunc by allocating a
+block of MEMF_FAST memory, copying the chip memory data into the new block,
+and freeing the old block.
+
+    To summarize, you shoul make sure your GetRidFunc is defined correctly
+if you're using a high-level language, and keep your GetRidFunc as simple
+and direct as possible.  If possible, limit your calls to AllocMem(),
+FreeMem(), and MMRemNode() only.
+
+
+
+                             Choosing Priority
+                             ~~~~~~~~~~~~~~~~~
+
+    MemMan traverses the MMList in order of priority from highest priority
+to lowest priority.  Therefore, MMNodes with highest priority will be
+called first.  You should assign your MMNodes with high priorities for
+pieces of memory that aren't needed very much or can be recovered easily,
+and assign lower priorities for those that you'd really like to keep if at
+all possible.  Although this may be the opposite of what you would normally
+expect (having nodes of the lowest priority being the most "important" to
+keep in memory), there is a good reason for this:  When several MMNodes
+have the same priority, the first one to be added will be called first,
+creating a kind of least-recently-used (LRU) caching system.  This results
+from how Exec's Enqueue() function operates.  If the list were to be
+traversed from the tail to the head, as might seem more natural, then the
+most recently added nodes of the same priority would be called first, which
+is not generally a good algorithm for memory management.
+
+    It is a good idea to choose priority for your nodes carefully, since
+priority not only affects order of calls to your application, but also
+affects the order of calls to different applications.  Remember that your
+MMNodes may be mixed in with the MMNodes of many other applications using
+MemMan at the same time.
+
+    Priority should be chosen according to the penalty incurred for freeing
+that memory (time delays for restoring the data, disk reloads, etc.).  Here
+are some general guidelines for selecting priority:
+
+    100 and up:  Use these for pieces of memory that are mostly unnecessary
+or that can be recovered with almost no effort or time delay.  You might
+create large speed-up buffers and such with this priority: things that
+benefit system performance if enough memory is available, but are not
+necessary to correct functioning, and can be easily recovered later if
+needed.
+
+    50 to 100:  Use these priority levels for things that may require time
+delays or cause other small nuisances in order to restore them later.  For
+example, precalculated data tables and such would fit into this category -
+things that aren't really needed at the moment, but may be a slight pain to
+get back later when they are needed.
+
+    -50 to 50:  These priority levels are intended for memory that isn't
+needed immediately, but contains cached data that will need to be reloaded
+from disk (as opposed to simply recalculated) if needed later.  My overlay
+supervisor "Bovs" uses priority 0 for all overlay nodes not currently in
+use.
+
+    -100 to -50:  This range is for data that can still be recovered, but
+only at great expense.  For example, large data tables which take a while
+to recaulculate, or data that must be reloaded and decompressed if needed
+again.
+
+
+    Below -100:  These levels should be used for data that CANNOT be
+recovered at all.  For example, you could put an application's undo buffers
+at this level.  It's better to lose some undo capability than to not be
+able to use the program at all, but the undo buffers should be retained as
+long as possible.
+
+
+
+                              Final Warnings
+                              ~~~~~~~~~~~~~~
+
+    Always MMInit() before using MMAddNode() or MMRemNode().  (You may call
+MMFinish() without calling MMInit().)
+
+    Never call MMInit() more than once in your program.
+
+    Never call MMAddNode() or the dos.library from a GetRidFunc.
+
+    Never call MMRemNode() on any MMNode OTHER than the one that caused
+this particular GetRidFunc call.
+
+    Never allow a GetRidFunc to break the Forbid() state by calling
+anything that might cause a Wait().
+
+    Use as little stack space as possible in your GetRidFunc.
+
+    Finally, one more time:  ALWAYS remove ALL MMNodes you added BEFORE
+calling MMFinish() or closing the library!  This can't be stressed enough.
+If you fail to do this, you will most likely NOT see any immediate
+problems.  The problems will only show up the next time you run out of
+memory, and even then only if the MemMan patch is currently "awake" (when
+an application is using MemMan).  You should test your program VERY
+thoroughly for bugs in this area.
+
+    Be VERY careful to follow these rules.  Test your program thoroughly,
+bang it to its limits, and subject it to every known program terror.
+MemMan and the operating system are not very forgiving of mistakes when it
+comes to low-level programming like this.
+
+
+
+                                   Hints
+                                   ~~~~~
+
+    Don't keep MMNodes on the system list unless they actually represent
+free-able data.  When you want to lock something in memory, use MMRemNode()
+to prevent it from being expunged.  Then when you unlock it, use
+MMAddNode() to put it back on the list.  A GetRidFunc should ideally be
+able to simply FreeMem() and return, without having to check locks or
+anything.  MMAddNode() and MMRemNode() are completely atomic, and may be
+called from any task or interrupt except the NMI.  They are also very
+quick, so adding and removing MMNodes won't put a great burden on the
+system.
+
+    When debugging your program, use the 'Avail FLUSH' command in 2.0 (if
+you have 2.0; if you don't, now would be a good time to get it) to test
+your program's handling of memory crunches.  Play around with your program
+a little, get some caches loaded, etc., then use 'Avail FLUSH' to force
+MemMan into action.  Make sure the system doesn't crash, and make sure
+memory is being freed as expected.  Run your program several times in a
+row, in each case "exercising" MemMan, to make sure your program is not
+leaving "stale" MMNodes on the global list.  Finally, run several copies of
+your program simultaneously to make sure they don't interfere with each
+other.  If you happen to have another program that also uses MemMan (such
+as MultiPlayer or another program that uses Bovs), load up a copy or two of
+that alongside as well.  Another good program to test with is FragIt by
+Justin V. McCormick.  Really bash it out.
+
+
+
+                                  History
+                                  ~~~~~~~
+
+2.1 (18-Feb-92)
+        GetRidFunc() calling convention changed - it now returns nonzero if
+            any memory was freed, zero if it couldn't free anything.
+        MMAddNode() and MMRemNode() may now be called from interrupt code,
+            or from different tasks or processes.
+        A GetRidFunc may now call AllocMem().
+        Changed semaphore name to MemMan21.
+        Other small reworkings - MemMan should be completely bulletproof now.
+
+2.0 (4-Dec-91)
+        Added runtime library and test program (originally by David Le Blanc).
+        Changed format of MMNode to use a standard Node structure.
+        Changed semaphore name to MemMan2 to avoid version conflicts.
+
+
+
+                              Contact Address
+                              ~~~~~~~~~~~~~~~
+
+    I tend to move around a great deal, so mail sent directly to me
+sometimes has a hard time catching up.  If you want mail to reach me (it
+may take a while, but it WILL reach me), send it to this address:
+
+        Bryan Ford
+        8749 Alta Hills Circle
+        Sandy, UT 84093
+
+    I can be reached more quickly (for the time being anyway) on the phone
+or through one of the electronic mail addresses below:
+
+        (801) 585-4619
+        bryan.ford@m.cc.utah.edu
+        baf0863@cc.utah.edu
+        baf0863@utahcca.bitnet
+
+    If you want to get something to me through the mail more quickly, FIRST
+call or E-mail me to make sure I'm still here, then send it to this
+address:
+
+        Bryan Ford
+        27104 Ballif Hall
+        University of Utah
+        Salt Lake City, UT 84112
+
+

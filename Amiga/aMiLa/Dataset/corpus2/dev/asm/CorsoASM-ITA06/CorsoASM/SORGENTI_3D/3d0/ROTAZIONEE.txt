@@ -1,0 +1,101 @@
+
+ROTATE:
+	lea	D_OBJ(pc),a1		;object points coordinates
+	lea	D_BUFFER(pc),a2		;rotations buffer
+	lea	COORD_X(pc),a3		;store X
+	lea	COORD_Y(pc),a4		;store Y
+	lea	COORD_Z(pc),a5		;store Z
+	move.w	ROTX(pc),d0		;Make rotations
+	add.w	d0,AX
+	and.w	#$03ff,AX
+	move.w	ROTY(pc),d0
+	add.w	d0,AY
+	and.w	#$03ff,AY
+	move.w	ROTZ(pc),d0
+	add.w	d0,AZ			
+	and.w	#$03ff,AZ
+	moveq.l	#$0c,d7
+	move.w	POINTS(pc),a0		;number of points	
+
+D_LOOP:
+ROTATE_X:
+	lea	COSX(pc),a6		;load cosines and sines table
+
+	move.w	(a1)+,d0		;d0 = x
+	move.w	(a1)+,d1		;d1 = y
+	move.w	(a1)+,d2		;d2 = z
+	move.w	d0,(a2)			;x -> buffer
+	move.w	(a6),d4			;d4 = cos(x)*4096
+	muls	d1,d4			;d4 = y*cos(x)*4096
+	move.w	2(a6),d5		;d5 = sin(x)*4096
+	muls	d2,d5			;d5 = z*sin(x)*4096
+	sub.l	d5,d4			;d4 = (y*cos(x)-z*sin(x))*4096
+	asr.l	d7,d4			;d4 = y*cos(x)-z*sin(x)
+	move.w	d4,$02(a2)		;d4 -> buffer+2
+	move.w	(a6)+,d4		;d4 = cos(x)*4096
+	muls	d2,d4			;d4 = z*cos(x)*4096
+	move.w	(a6)+,d5		;d5 = sin(x)*4096
+	muls	d1,d5			;d5 = y*sin(x)*4096
+	add.l	d5,d4			;d4 = (z*cos(x)+y*sin(x))*4096
+	asr.l	d7,d4			;d4 = z*cos(x)+y*sin(x)
+	move.w	d4,$04(a2)		;d4 -> buffer+4
+
+ROTATE_Y:
+	move.w	(a2),d0			;d0 = x
+	move.w	$02(a2),d2		;d2 = y
+	move.w	$04(a2),d1		;d1 = z
+	move.w	(a6),d4			;d4 = cos(y)*4096
+	muls	d0,d4			;d4 = x*cos(y)*4096
+	move.w	2(a6),d5		;d5 = sin(y)*4096
+	muls	d1,d5			;d5 = z*sin(y)*4096
+	sub.l	d5,d4			;d4 = (x*cos(y)-z*sin(y))*4096
+	asr.l	d7,d4			;d4 = x*cos(y)-z*sin(y)
+	move.w	d4,(a2)			;d4 -> buffer
+	move.w	d2,$02(a2)		;d2 -> buffer+2
+	move.w	(a6)+,d4		;d4 = cos(y)*4096
+	muls	d1,d4			;d4 = z*cos(y)*4096
+	move.w	(a6)+,d5		;d5 = sin(y)*4096
+	muls	d0,d5			;d5 = x*sin(y)*4096
+	add.l	d5,d4			;d4 = (z*cos(y)+x*sin(y))*4096
+	asr.l	d7,d4			;d4 = z*cos(y)+x*sin(y)
+	move.w	d4,$04(a2)		;d4 -> buffer+4
+
+ROTATE_Z:
+	move.w	(a2),d1			;d1 = x
+	move.w	$02(a2),d2		;d2 = y
+	move.w	$04(a2),d0		;d0 = z
+	move.w	(a6),d4			;d4 = cos(z)*4096
+	muls	d1,d4			;d4 = x*cos(z)*4096
+	move.w	2(a6),d5		;d5 = sin(z)*4096
+	muls	d2,d5			;d5 = y*sin(z)*4096
+	sub.l	d5,d4			;d4 = (x*cos(z)-y*sin(z))*4096
+	asr.l	d7,d4			;d4 = x*cos(z)-y*sin(z)
+	move.w	d4,(a2)			;d4 -> buffer
+	move.w	(a6)+,d4		;d4 = cos(z)*4096
+	muls	d2,d4			;d4 = y*cos(z)*4096
+	move.w	(a6),d5			;d5 = sin(z)
+	muls	d1,d5			;d5 = x*sin(z)
+	add.l	d5,d4			;d4 = (y*cos(z)+x*sin(z))*4096
+	asr.l	d7,d4			;d4 = y*cos(z)+x*sin(z)
+	sub.w	D,d0			;sub an offset value (distance)
+	move.w	d0,(a5)+		;d0 -> store Z
+	move.w	d0,d2			;d0 -> d2
+	move.w	(a2),d0			;d0 = X
+	move.w	d4,d1			;d1 = Y
+	move.w	#$00f0,d4		;d4 = distance
+	move.w	d4,d5			;d4 -> d5
+	muls	d4,d0			;d0 = distance*x
+	muls	d4,d1			;d1 = distance*y
+	sub.w	d2,d5			;d5 = distance-z
+	divs	d5,d0			;d0 = x(relative)
+	divs	d5,d1			;d1 = y(relative)
+	move.w	d0,(a3)+		;d0 -> store X
+	move.w	d1,(a4)+		;d1 -> store Y
+	cmp.w	#0,a0			;move all points...
+	beq	EX
+	subq.w	#1,a0
+	bra	D_LOOP
+EX:	rts				;end...
+	
+*************************
+

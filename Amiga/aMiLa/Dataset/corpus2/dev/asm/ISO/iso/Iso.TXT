@@ -1,0 +1,19 @@
+MACHINE:A1200 or possibly lower.
+CODE:Andyrew
+GFX:OJ
+LEFT SHIFT EXIT		 
+
+Earlier this year (1997) me and oj had an idea for a stradegy war game
+like hack and populous. 
+I got as far as the level display 
+when i got diablo on the PC (now go wash your monitor!)
+
+Anyway we quickly abandoned this idea and went started on minermadness4
+
+use cursor keys to move around
+and  f10 shows level map and F9 brings you back to the iso display.
+
+BUGS:
+	only a minor one which i would have fixed anyway,
+	if you move the cursor keys while showing the map
+	it displays the ISO screen but in funny colours

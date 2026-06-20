@@ -1,0 +1,9 @@
+Short:        GUI for GNU C Compiler (gcc)
+Author:       Marcin "CzAjA" Czajkowski, czajus@poczta.onet.pl, http://softfactory.prv.pl
+Uploader:     Marcin "CzAjA" Czajkowski, czajus poczta onet pl
+Type:         gfx/misc
+Version:      0.99
+Requires:     wizard.library (NOT INCLUDED!), GCC, 68020+
+Architecture: m68k-amigaos
+
+

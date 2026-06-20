@@ -1,0 +1,783 @@
+#ifndef DESIGNER_LOCALE_H
+#define DESIGNER_LOCALE_H
+
+
+/****************************************************************************/
+
+
+/* This file was created automatically by CatComp.
+ * Do NOT edit by hand!
+ */
+
+
+#ifndef EXEC_TYPES_H
+#include <exec/types.h>
+#endif
+
+#ifdef CATCOMP_ARRAY
+#undef CATCOMP_NUMBERS
+#undef CATCOMP_STRINGS
+#define CATCOMP_NUMBERS
+#define CATCOMP_STRINGS
+#endif
+
+#ifdef CATCOMP_BLOCK
+#undef CATCOMP_STRINGS
+#define CATCOMP_STRINGS
+#endif
+
+
+/****************************************************************************/
+
+
+#ifdef CATCOMP_NUMBERS
+
+#define MSG__COMMANDS 0
+#define MSG__ARGUMENTS 1
+#define MSG__ADDCOMMAND 2
+#define MSG__CUTCOMMAND 3
+#define MSG__PASTECOMMAND 4
+#define MSG__COPYCOMMAND 5
+#define MSG__UPCOMMAND 6
+#define MSG__DOWNCOMMAND 7
+#define MSG__ADDARGUMENT 8
+#define MSG__CUTARGUMENT 9
+#define MSG__PASTEARGUMENT 10
+#define MSG__COPYARGUMENT 11
+#define MSG__UPARGUMENT 12
+#define MSG__DOWNARGUMENT 13
+#define MSG__ALWAYS 14
+#define MSG__KEYWORD 15
+#define MSG__NUMBER 16
+#define MSG__SWITCH 17
+#define MSG__TOGGLE 18
+#define MSG__MULTIPLE 19
+#define MSG__FINAL 20
+#define MSG_K_OWNSCREEN 21
+#define MSG_K_BACKDROP 22
+#define MSG_K_SHANGHAI 23
+#define MSG_K_SIMPLEREFRESH 24
+#define MSG_K_CLOSEWB 25
+#define MSG_SELECTSCREENMODE 26
+#define MSG_SELECTFONT 27
+#define MSG_K_USESCREENFONT 28
+#define MSG_ADJUSTPALETTE 29
+#define MSG_PROJECT 30
+#define MSG_K_NEW 31
+#define MSG_K_OPENPROJECT 32
+#define MSG_K_SAVE 33
+#define MSG_K_APPEND 34
+#define MSG_K_SAVEAS 35
+#define MSG_GENERATESOURCE 36
+#define MSG_GENERATECSOURCE 37
+#define MSG_GENERATEESOURCE 38
+#define MSG_GENERATEASMSOURCE 39
+#define MSG_GENERATEOBERONSOURCE 40
+#define MSG_GENERATEMODULA2SOURCE 41
+#define MSG_K_QUIT 42
+#define MSG_K_ASSIGN 43
+#define MSG_K_OTHER 44
+#define MSG_K_STARTRECORDING 45
+#define MSG_K_STOPRECORDING 46
+#define MSG_K_COMMANDSHELL 47
+#define MSG_K_OPENMACROS 48
+#define MSG_K_SAVEMACROS 49
+#define MSG_K_SAVEMACROSAS 50
+#define MSG_SETTINGS 51
+#define MSG_K_CODEWINDOW 52
+#define MSG_K_OPENSETTINGS 53
+#define MSG_K_SAVESETTINGS 54
+#define MSG_K_SAVESETTINGSAS 55
+#define MSG_HELP 56
+#define MSG_HELPABOUT 57
+#define MSG_HELPCONTENTS 58
+#define MSG_HELPINDEX 59
+#define MSG_HELPHELP 60
+#define MSG_HELPCOMMANDS 61
+#define MSG_HELPARGUMENTS 62
+#define MSG_HELPSETTINGS 63
+#define MSG_HELPMACROS 64
+#define MSG_HELPAREXXCOMMANDS 65
+#define MSG_HELPFLAGS 66
+#define MSG_HELPAUTHOR 67
+#define MSG_OUTOFMEMORY 68
+#define MSG_COULDNOTOPENWB 69
+#define MSG_COULDNOTCLOSEWB 70
+#define MSG_OKCANCEL 71
+#define MSG_SELECTGUI 72
+#define MSG_IFFERROR1 73
+#define MSG_IFFERROR2 74
+#define MSG_NOTFOUND 75
+#define MSG_STILLVISITORS 76
+#define MSG_PROJECTCHANGED 77
+#define MSG_PROJECTCHANGEDBUTTONS 78
+#define MSG_K_SAVEWHENEXIT 79
+#define MSG_K_ACKNOWLEDGE 80
+#define MSG_GENERATE 81
+#define MSG__MAIN 82
+#define MSG__AREXXHANDLER 83
+#define MSG__TEMPLATES 84
+#define MSG__HANDLE 85
+#define MSG_BYIDS 86
+#define MSG_CALLFUNCTIONS 87
+#define MSG_GENERAL 88
+#define MSG__AUTHOR 89
+#define MSG__COPYRIGHT 90
+#define MSG__VERSION 91
+#define MSG__PORTNAME 92
+#define MSG_COMMANDSHELLTITLE 93
+#define MSG_RETRYCANCEL 94
+#define MSG_QUIT 95
+#define MSG_K_SORTCOMMANDS 96
+#define MSG_K_SORTARGUMENTS 97
+#define MSG_LIBRARYNOTFOUND 98
+#define MSG_NOTASSIGNED 99
+#define MSG_AREXX 100
+#define MSG_EDIT 101
+#define MSG_K_LASTSAVED 102
+#define MSG_ASSIGNMACROS 103
+#define MSG__OK 104
+#define MSG_OK 105
+#define MSG_ABOUTTEXT 106
+#define MSG_SELECTMACRO 107
+#define MSG_SAVEPROJECT 108
+#define MSG_APPENDPROJECT 109
+#define MSG_OPENPROJECT 110
+#define MSG_CLEAR 111
+#define MSG_CODESETTINGS 112
+#define MSG_RESTORE 113
+#define MSG_SAVE 114
+#define MSG_APPEND 115
+#define MSG_OPEN 116
+#define MSG_NOAREXXPORT 117
+#define MSG_RESETGUI 118
+#define MSG_K_ICONIFY 119
+#define MSG_ICONIFY 120
+#define MSG_STORECONTENTS 121
+#define MSG_UNNAMED 122
+#define MSG_MACROGENERATION 123
+#define MSG_SAVEMACROS 124
+#define MSG_OPENMACROS 125
+#define MSG_SAVERECORDEDMACRO 126
+#define MSG_RUNMACRO 127
+#define MSG_RUN 128
+#define MSG_OVERWRITE 129
+#define MSG_YESNO 130
+#define MSG_VERSION 131
+
+#endif /* CATCOMP_NUMBERS */
+
+
+/****************************************************************************/
+
+
+#ifdef CATCOMP_STRINGS
+
+#define MSG__COMMANDS_STR "Co_mmands"
+#define MSG__ARGUMENTS_STR "A_rguments"
+#define MSG__ADDCOMMAND_STR "_Add"
+#define MSG__CUTCOMMAND_STR "_Cut"
+#define MSG__PASTECOMMAND_STR "Past_e"
+#define MSG__COPYCOMMAND_STR "C_opy"
+#define MSG__UPCOMMAND_STR "_Up"
+#define MSG__DOWNCOMMAND_STR "Do_wn"
+#define MSG__ADDARGUMENT_STR "A_dd"
+#define MSG__CUTARGUMENT_STR "Cu_t"
+#define MSG__PASTEARGUMENT_STR "Pa_ste"
+#define MSG__COPYARGUMENT_STR "Cop_y"
+#define MSG__UPARGUMENT_STR "U_p"
+#define MSG__DOWNARGUMENT_STR "Dow_n"
+#define MSG__ALWAYS_STR "A_lways"
+#define MSG__KEYWORD_STR "_Keyword"
+#define MSG__NUMBER_STR "Num_ber"
+#define MSG__SWITCH_STR "Switc_h"
+#define MSG__TOGGLE_STR "To_ggle"
+#define MSG__MULTIPLE_STR "Mult_iple"
+#define MSG__FINAL_STR "_Final"
+#define MSG_K_OWNSCREEN_STR "Own screen"
+#define MSG_K_BACKDROP_STR "Backdrop"
+#define MSG_K_SHANGHAI_STR "Shanghai"
+#define MSG_K_SIMPLEREFRESH_STR "Simple refresh"
+#define MSG_K_CLOSEWB_STR "Close Workbench"
+#define MSG_SELECTSCREENMODE_STR "Select screenmode..."
+#define MSG_SELECTFONT_STR "Select font..."
+#define MSG_K_USESCREENFONT_STR "Use screen's font"
+#define MSG_ADJUSTPALETTE_STR "Adjust palette..."
+#define MSG_PROJECT_STR "Project"
+#define MSG_K_NEW_STR "N\0New..."
+#define MSG_K_OPENPROJECT_STR "O\0Open..."
+#define MSG_K_SAVE_STR "S\0Save"
+#define MSG_K_APPEND_STR "Append..."
+#define MSG_K_SAVEAS_STR "A\0Save as..."
+#define MSG_GENERATESOURCE_STR "Generate source"
+#define MSG_GENERATECSOURCE_STR "Generate C source code"
+#define MSG_GENERATEESOURCE_STR "Generate E source code"
+#define MSG_GENERATEASMSOURCE_STR "Generate Asm source code"
+#define MSG_GENERATEOBERONSOURCE_STR "Generate Oberon source code"
+#define MSG_GENERATEMODULA2SOURCE_STR "Generate Modula-2 source code"
+#define MSG_K_QUIT_STR "Q\0Quit"
+#define MSG_K_ASSIGN_STR "Assign macros..."
+#define MSG_K_OTHER_STR "Other..."
+#define MSG_K_STARTRECORDING_STR "Start recording"
+#define MSG_K_STOPRECORDING_STR "Stop recording"
+#define MSG_K_COMMANDSHELL_STR "H\0CommandShell..."
+#define MSG_K_OPENMACROS_STR "Open..."
+#define MSG_K_SAVEMACROS_STR "Save"
+#define MSG_K_SAVEMACROSAS_STR "Save as..."
+#define MSG_SETTINGS_STR "Settings"
+#define MSG_K_CODEWINDOW_STR "G\0Settings..."
+#define MSG_K_OPENSETTINGS_STR "Open..."
+#define MSG_K_SAVESETTINGS_STR "Save"
+#define MSG_K_SAVESETTINGSAS_STR "Save as..."
+#define MSG_HELP_STR "Help"
+#define MSG_HELPABOUT_STR "?\0About..."
+#define MSG_HELPCONTENTS_STR "Contents..."
+#define MSG_HELPINDEX_STR "Index..."
+#define MSG_HELPHELP_STR "Help..."
+#define MSG_HELPCOMMANDS_STR "Commands..."
+#define MSG_HELPARGUMENTS_STR "Arguments..."
+#define MSG_HELPSETTINGS_STR "Settings..."
+#define MSG_HELPMACROS_STR "Macros..."
+#define MSG_HELPAREXXCOMMANDS_STR "ARexx commands..."
+#define MSG_HELPFLAGS_STR "Argument switches..."
+#define MSG_HELPAUTHOR_STR "About the author..."
+#define MSG_OUTOFMEMORY_STR "Out of memory!"
+#define MSG_COULDNOTOPENWB_STR "Could not open Workbench"
+#define MSG_COULDNOTCLOSEWB_STR "Could not close Workbench"
+#define MSG_OKCANCEL_STR "OK|Cancel"
+#define MSG_SELECTGUI_STR "Select env-file"
+#define MSG_IFFERROR1_STR "IFF-scan aborted: File is corrupt."
+#define MSG_IFFERROR2_STR "Not a known IFF file!"
+#define MSG_NOTFOUND_STR "'%s'\nnot found!"
+#define MSG_STILLVISITORS_STR "Cannot %s. There are\n%ld alien window(s) on the screen."
+#define MSG_PROJECTCHANGED_STR "%ld changes have been done to\n'%s'. %s anyway?"
+#define MSG_PROJECTCHANGEDBUTTONS_STR "%s|Save, then %s|Cancel"
+#define MSG_K_SAVEWHENEXIT_STR "Save when exit"
+#define MSG_K_ACKNOWLEDGE_STR "Acknowledge"
+#define MSG_GENERATE_STR "Generate"
+#define MSG__MAIN_STR "_Main code"
+#define MSG__AREXXHANDLER_STR "ARe_xx handler"
+#define MSG__TEMPLATES_STR "_Templates"
+#define MSG__HANDLE_STR "_Handle"
+#define MSG_BYIDS_STR "By IDs"
+#define MSG_CALLFUNCTIONS_STR "Call functions"
+#define MSG_GENERAL_STR "General"
+#define MSG__AUTHOR_STR "_Author"
+#define MSG__COPYRIGHT_STR "_Copyright"
+#define MSG__VERSION_STR "_Version"
+#define MSG__PORTNAME_STR "_Portname"
+#define MSG_COMMANDSHELLTITLE_STR "ARexx CommandShell"
+#define MSG_RETRYCANCEL_STR "Retry|Cancel"
+#define MSG_QUIT_STR "Quit"
+#define MSG_K_SORTCOMMANDS_STR "R\0Sort commands"
+#define MSG_K_SORTARGUMENTS_STR "T\0Sort arguments"
+#define MSG_LIBRARYNOTFOUND_STR "%s %ld not found"
+#define MSG_NOTASSIGNED_STR "<not assigned>"
+#define MSG_AREXX_STR "ARexx"
+#define MSG_EDIT_STR "Edit"
+#define MSG_K_LASTSAVED_STR "L\0Last saved"
+#define MSG_ASSIGNMACROS_STR "Assign macros"
+#define MSG__OK_STR "_OK"
+#define MSG_OK_STR "OK"
+#define MSG_ABOUTTEXT_STR "%s V%s - %s\n\nCompiled on %s - %s\n\nARexx port: '%s'\nScreen: '%s'\n\nProject contains %ld commands.\n\nMove the mousepointer over an object or menu item and press HELP to display help for that object."
+#define MSG_SELECTMACRO_STR "Select macro"
+#define MSG_SAVEPROJECT_STR "Save project"
+#define MSG_APPENDPROJECT_STR "Append project"
+#define MSG_OPENPROJECT_STR "Open project"
+#define MSG_CLEAR_STR "Clear"
+#define MSG_CODESETTINGS_STR "Code settings"
+#define MSG_RESTORE_STR "Restore"
+#define MSG_SAVE_STR "Save"
+#define MSG_APPEND_STR "Append"
+#define MSG_OPEN_STR "Open"
+#define MSG_NOAREXXPORT_STR "-* No ARexx port *-"
+#define MSG_RESETGUI_STR "Reset"
+#define MSG_K_ICONIFY_STR ".\0Iconify"
+#define MSG_ICONIFY_STR "Iconify"
+#define MSG_STORECONTENTS_STR "Store the contents of this\nrequester in the macro?"
+#define MSG_UNNAMED_STR "Unnamed"
+#define MSG_MACROGENERATION_STR "Macro generation"
+#define MSG_SAVEMACROS_STR "Save macro definitions"
+#define MSG_OPENMACROS_STR "Open macro definitions"
+#define MSG_SAVERECORDEDMACRO_STR "Save recorded macro"
+#define MSG_RUNMACRO_STR "Run macro"
+#define MSG_RUN_STR "Run"
+#define MSG_OVERWRITE_STR "File already exists:\n'%s'\nOverwrite?"
+#define MSG_YESNO_STR "Yes|No"
+#define MSG_VERSION_STR "Version %s"
+
+#endif /* CATCOMP_STRINGS */
+
+
+/****************************************************************************/
+
+
+#ifdef CATCOMP_ARRAY
+
+struct CatCompArrayType
+{
+    LONG   cca_ID;
+    STRPTR cca_Str;
+};
+
+static const struct CatCompArrayType CatCompArray[] =
+{
+    {MSG__COMMANDS,(STRPTR)MSG__COMMANDS_STR},
+    {MSG__ARGUMENTS,(STRPTR)MSG__ARGUMENTS_STR},
+    {MSG__ADDCOMMAND,(STRPTR)MSG__ADDCOMMAND_STR},
+    {MSG__CUTCOMMAND,(STRPTR)MSG__CUTCOMMAND_STR},
+    {MSG__PASTECOMMAND,(STRPTR)MSG__PASTECOMMAND_STR},
+    {MSG__COPYCOMMAND,(STRPTR)MSG__COPYCOMMAND_STR},
+    {MSG__UPCOMMAND,(STRPTR)MSG__UPCOMMAND_STR},
+    {MSG__DOWNCOMMAND,(STRPTR)MSG__DOWNCOMMAND_STR},
+    {MSG__ADDARGUMENT,(STRPTR)MSG__ADDARGUMENT_STR},
+    {MSG__CUTARGUMENT,(STRPTR)MSG__CUTARGUMENT_STR},
+    {MSG__PASTEARGUMENT,(STRPTR)MSG__PASTEARGUMENT_STR},
+    {MSG__COPYARGUMENT,(STRPTR)MSG__COPYARGUMENT_STR},
+    {MSG__UPARGUMENT,(STRPTR)MSG__UPARGUMENT_STR},
+    {MSG__DOWNARGUMENT,(STRPTR)MSG__DOWNARGUMENT_STR},
+    {MSG__ALWAYS,(STRPTR)MSG__ALWAYS_STR},
+    {MSG__KEYWORD,(STRPTR)MSG__KEYWORD_STR},
+    {MSG__NUMBER,(STRPTR)MSG__NUMBER_STR},
+    {MSG__SWITCH,(STRPTR)MSG__SWITCH_STR},
+    {MSG__TOGGLE,(STRPTR)MSG__TOGGLE_STR},
+    {MSG__MULTIPLE,(STRPTR)MSG__MULTIPLE_STR},
+    {MSG__FINAL,(STRPTR)MSG__FINAL_STR},
+    {MSG_K_OWNSCREEN,(STRPTR)MSG_K_OWNSCREEN_STR},
+    {MSG_K_BACKDROP,(STRPTR)MSG_K_BACKDROP_STR},
+    {MSG_K_SHANGHAI,(STRPTR)MSG_K_SHANGHAI_STR},
+    {MSG_K_SIMPLEREFRESH,(STRPTR)MSG_K_SIMPLEREFRESH_STR},
+    {MSG_K_CLOSEWB,(STRPTR)MSG_K_CLOSEWB_STR},
+    {MSG_SELECTSCREENMODE,(STRPTR)MSG_SELECTSCREENMODE_STR},
+    {MSG_SELECTFONT,(STRPTR)MSG_SELECTFONT_STR},
+    {MSG_K_USESCREENFONT,(STRPTR)MSG_K_USESCREENFONT_STR},
+    {MSG_ADJUSTPALETTE,(STRPTR)MSG_ADJUSTPALETTE_STR},
+    {MSG_PROJECT,(STRPTR)MSG_PROJECT_STR},
+    {MSG_K_NEW,(STRPTR)MSG_K_NEW_STR},
+    {MSG_K_OPENPROJECT,(STRPTR)MSG_K_OPENPROJECT_STR},
+    {MSG_K_SAVE,(STRPTR)MSG_K_SAVE_STR},
+    {MSG_K_APPEND,(STRPTR)MSG_K_APPEND_STR},
+    {MSG_K_SAVEAS,(STRPTR)MSG_K_SAVEAS_STR},
+    {MSG_GENERATESOURCE,(STRPTR)MSG_GENERATESOURCE_STR},
+    {MSG_GENERATECSOURCE,(STRPTR)MSG_GENERATECSOURCE_STR},
+    {MSG_GENERATEESOURCE,(STRPTR)MSG_GENERATEESOURCE_STR},
+    {MSG_GENERATEASMSOURCE,(STRPTR)MSG_GENERATEASMSOURCE_STR},
+    {MSG_GENERATEOBERONSOURCE,(STRPTR)MSG_GENERATEOBERONSOURCE_STR},
+    {MSG_GENERATEMODULA2SOURCE,(STRPTR)MSG_GENERATEMODULA2SOURCE_STR},
+    {MSG_K_QUIT,(STRPTR)MSG_K_QUIT_STR},
+    {MSG_K_ASSIGN,(STRPTR)MSG_K_ASSIGN_STR},
+    {MSG_K_OTHER,(STRPTR)MSG_K_OTHER_STR},
+    {MSG_K_STARTRECORDING,(STRPTR)MSG_K_STARTRECORDING_STR},
+    {MSG_K_STOPRECORDING,(STRPTR)MSG_K_STOPRECORDING_STR},
+    {MSG_K_COMMANDSHELL,(STRPTR)MSG_K_COMMANDSHELL_STR},
+    {MSG_K_OPENMACROS,(STRPTR)MSG_K_OPENMACROS_STR},
+    {MSG_K_SAVEMACROS,(STRPTR)MSG_K_SAVEMACROS_STR},
+    {MSG_K_SAVEMACROSAS,(STRPTR)MSG_K_SAVEMACROSAS_STR},
+    {MSG_SETTINGS,(STRPTR)MSG_SETTINGS_STR},
+    {MSG_K_CODEWINDOW,(STRPTR)MSG_K_CODEWINDOW_STR},
+    {MSG_K_OPENSETTINGS,(STRPTR)MSG_K_OPENSETTINGS_STR},
+    {MSG_K_SAVESETTINGS,(STRPTR)MSG_K_SAVESETTINGS_STR},
+    {MSG_K_SAVESETTINGSAS,(STRPTR)MSG_K_SAVESETTINGSAS_STR},
+    {MSG_HELP,(STRPTR)MSG_HELP_STR},
+    {MSG_HELPABOUT,(STRPTR)MSG_HELPABOUT_STR},
+    {MSG_HELPCONTENTS,(STRPTR)MSG_HELPCONTENTS_STR},
+    {MSG_HELPINDEX,(STRPTR)MSG_HELPINDEX_STR},
+    {MSG_HELPHELP,(STRPTR)MSG_HELPHELP_STR},
+    {MSG_HELPCOMMANDS,(STRPTR)MSG_HELPCOMMANDS_STR},
+    {MSG_HELPARGUMENTS,(STRPTR)MSG_HELPARGUMENTS_STR},
+    {MSG_HELPSETTINGS,(STRPTR)MSG_HELPSETTINGS_STR},
+    {MSG_HELPMACROS,(STRPTR)MSG_HELPMACROS_STR},
+    {MSG_HELPAREXXCOMMANDS,(STRPTR)MSG_HELPAREXXCOMMANDS_STR},
+    {MSG_HELPFLAGS,(STRPTR)MSG_HELPFLAGS_STR},
+    {MSG_HELPAUTHOR,(STRPTR)MSG_HELPAUTHOR_STR},
+    {MSG_OUTOFMEMORY,(STRPTR)MSG_OUTOFMEMORY_STR},
+    {MSG_COULDNOTOPENWB,(STRPTR)MSG_COULDNOTOPENWB_STR},
+    {MSG_COULDNOTCLOSEWB,(STRPTR)MSG_COULDNOTCLOSEWB_STR},
+    {MSG_OKCANCEL,(STRPTR)MSG_OKCANCEL_STR},
+    {MSG_SELECTGUI,(STRPTR)MSG_SELECTGUI_STR},
+    {MSG_IFFERROR1,(STRPTR)MSG_IFFERROR1_STR},
+    {MSG_IFFERROR2,(STRPTR)MSG_IFFERROR2_STR},
+    {MSG_NOTFOUND,(STRPTR)MSG_NOTFOUND_STR},
+    {MSG_STILLVISITORS,(STRPTR)MSG_STILLVISITORS_STR},
+    {MSG_PROJECTCHANGED,(STRPTR)MSG_PROJECTCHANGED_STR},
+    {MSG_PROJECTCHANGEDBUTTONS,(STRPTR)MSG_PROJECTCHANGEDBUTTONS_STR},
+    {MSG_K_SAVEWHENEXIT,(STRPTR)MSG_K_SAVEWHENEXIT_STR},
+    {MSG_K_ACKNOWLEDGE,(STRPTR)MSG_K_ACKNOWLEDGE_STR},
+    {MSG_GENERATE,(STRPTR)MSG_GENERATE_STR},
+    {MSG__MAIN,(STRPTR)MSG__MAIN_STR},
+    {MSG__AREXXHANDLER,(STRPTR)MSG__AREXXHANDLER_STR},
+    {MSG__TEMPLATES,(STRPTR)MSG__TEMPLATES_STR},
+    {MSG__HANDLE,(STRPTR)MSG__HANDLE_STR},
+    {MSG_BYIDS,(STRPTR)MSG_BYIDS_STR},
+    {MSG_CALLFUNCTIONS,(STRPTR)MSG_CALLFUNCTIONS_STR},
+    {MSG_GENERAL,(STRPTR)MSG_GENERAL_STR},
+    {MSG__AUTHOR,(STRPTR)MSG__AUTHOR_STR},
+    {MSG__COPYRIGHT,(STRPTR)MSG__COPYRIGHT_STR},
+    {MSG__VERSION,(STRPTR)MSG__VERSION_STR},
+    {MSG__PORTNAME,(STRPTR)MSG__PORTNAME_STR},
+    {MSG_COMMANDSHELLTITLE,(STRPTR)MSG_COMMANDSHELLTITLE_STR},
+    {MSG_RETRYCANCEL,(STRPTR)MSG_RETRYCANCEL_STR},
+    {MSG_QUIT,(STRPTR)MSG_QUIT_STR},
+    {MSG_K_SORTCOMMANDS,(STRPTR)MSG_K_SORTCOMMANDS_STR},
+    {MSG_K_SORTARGUMENTS,(STRPTR)MSG_K_SORTARGUMENTS_STR},
+    {MSG_LIBRARYNOTFOUND,(STRPTR)MSG_LIBRARYNOTFOUND_STR},
+    {MSG_NOTASSIGNED,(STRPTR)MSG_NOTASSIGNED_STR},
+    {MSG_AREXX,(STRPTR)MSG_AREXX_STR},
+    {MSG_EDIT,(STRPTR)MSG_EDIT_STR},
+    {MSG_K_LASTSAVED,(STRPTR)MSG_K_LASTSAVED_STR},
+    {MSG_ASSIGNMACROS,(STRPTR)MSG_ASSIGNMACROS_STR},
+    {MSG__OK,(STRPTR)MSG__OK_STR},
+    {MSG_OK,(STRPTR)MSG_OK_STR},
+    {MSG_ABOUTTEXT,(STRPTR)MSG_ABOUTTEXT_STR},
+    {MSG_SELECTMACRO,(STRPTR)MSG_SELECTMACRO_STR},
+    {MSG_SAVEPROJECT,(STRPTR)MSG_SAVEPROJECT_STR},
+    {MSG_APPENDPROJECT,(STRPTR)MSG_APPENDPROJECT_STR},
+    {MSG_OPENPROJECT,(STRPTR)MSG_OPENPROJECT_STR},
+    {MSG_CLEAR,(STRPTR)MSG_CLEAR_STR},
+    {MSG_CODESETTINGS,(STRPTR)MSG_CODESETTINGS_STR},
+    {MSG_RESTORE,(STRPTR)MSG_RESTORE_STR},
+    {MSG_SAVE,(STRPTR)MSG_SAVE_STR},
+    {MSG_APPEND,(STRPTR)MSG_APPEND_STR},
+    {MSG_OPEN,(STRPTR)MSG_OPEN_STR},
+    {MSG_NOAREXXPORT,(STRPTR)MSG_NOAREXXPORT_STR},
+    {MSG_RESETGUI,(STRPTR)MSG_RESETGUI_STR},
+    {MSG_K_ICONIFY,(STRPTR)MSG_K_ICONIFY_STR},
+    {MSG_ICONIFY,(STRPTR)MSG_ICONIFY_STR},
+    {MSG_STORECONTENTS,(STRPTR)MSG_STORECONTENTS_STR},
+    {MSG_UNNAMED,(STRPTR)MSG_UNNAMED_STR},
+    {MSG_MACROGENERATION,(STRPTR)MSG_MACROGENERATION_STR},
+    {MSG_SAVEMACROS,(STRPTR)MSG_SAVEMACROS_STR},
+    {MSG_OPENMACROS,(STRPTR)MSG_OPENMACROS_STR},
+    {MSG_SAVERECORDEDMACRO,(STRPTR)MSG_SAVERECORDEDMACRO_STR},
+    {MSG_RUNMACRO,(STRPTR)MSG_RUNMACRO_STR},
+    {MSG_RUN,(STRPTR)MSG_RUN_STR},
+    {MSG_OVERWRITE,(STRPTR)MSG_OVERWRITE_STR},
+    {MSG_YESNO,(STRPTR)MSG_YESNO_STR},
+    {MSG_VERSION,(STRPTR)MSG_VERSION_STR},
+};
+
+#endif /* CATCOMP_ARRAY */
+
+
+/****************************************************************************/
+
+
+#ifdef CATCOMP_BLOCK
+
+static const char CatCompBlock[] =
+{
+    "\x00\x00\x00\x00\x00\x0A"
+    MSG__COMMANDS_STR "\x00"
+    "\x00\x00\x00\x01\x00\x0C"
+    MSG__ARGUMENTS_STR "\x00\x00"
+    "\x00\x00\x00\x02\x00\x06"
+    MSG__ADDCOMMAND_STR "\x00\x00"
+    "\x00\x00\x00\x03\x00\x06"
+    MSG__CUTCOMMAND_STR "\x00\x00"
+    "\x00\x00\x00\x04\x00\x08"
+    MSG__PASTECOMMAND_STR "\x00\x00"
+    "\x00\x00\x00\x05\x00\x06"
+    MSG__COPYCOMMAND_STR "\x00"
+    "\x00\x00\x00\x06\x00\x04"
+    MSG__UPCOMMAND_STR "\x00"
+    "\x00\x00\x00\x07\x00\x06"
+    MSG__DOWNCOMMAND_STR "\x00"
+    "\x00\x00\x00\x08\x00\x06"
+    MSG__ADDARGUMENT_STR "\x00\x00"
+    "\x00\x00\x00\x09\x00\x06"
+    MSG__CUTARGUMENT_STR "\x00\x00"
+    "\x00\x00\x00\x0A\x00\x08"
+    MSG__PASTEARGUMENT_STR "\x00\x00"
+    "\x00\x00\x00\x0B\x00\x06"
+    MSG__COPYARGUMENT_STR "\x00"
+    "\x00\x00\x00\x0C\x00\x04"
+    MSG__UPARGUMENT_STR "\x00"
+    "\x00\x00\x00\x0D\x00\x06"
+    MSG__DOWNARGUMENT_STR "\x00"
+    "\x00\x00\x00\x0E\x00\x08"
+    MSG__ALWAYS_STR "\x00"
+    "\x00\x00\x00\x0F\x00\x0A"
+    MSG__KEYWORD_STR "\x00\x00"
+    "\x00\x00\x00\x10\x00\x08"
+    MSG__NUMBER_STR "\x00"
+    "\x00\x00\x00\x11\x00\x08"
+    MSG__SWITCH_STR "\x00"
+    "\x00\x00\x00\x12\x00\x08"
+    MSG__TOGGLE_STR "\x00"
+    "\x00\x00\x00\x13\x00\x0A"
+    MSG__MULTIPLE_STR "\x00"
+    "\x00\x00\x00\x14\x00\x08"
+    MSG__FINAL_STR "\x00\x00"
+    "\x00\x00\x00\x15\x00\x0C"
+    MSG_K_OWNSCREEN_STR "\x00\x00"
+    "\x00\x00\x00\x16\x00\x0A"
+    MSG_K_BACKDROP_STR "\x00\x00"
+    "\x00\x00\x00\x17\x00\x0A"
+    MSG_K_SHANGHAI_STR "\x00\x00"
+    "\x00\x00\x00\x18\x00\x10"
+    MSG_K_SIMPLEREFRESH_STR "\x00\x00"
+    "\x00\x00\x00\x19\x00\x10"
+    MSG_K_CLOSEWB_STR "\x00"
+    "\x00\x00\x00\x1A\x00\x16"
+    MSG_SELECTSCREENMODE_STR "\x00\x00"
+    "\x00\x00\x00\x1B\x00\x10"
+    MSG_SELECTFONT_STR "\x00\x00"
+    "\x00\x00\x00\x1C\x00\x12"
+    MSG_K_USESCREENFONT_STR "\x00"
+    "\x00\x00\x00\x1D\x00\x12"
+    MSG_ADJUSTPALETTE_STR "\x00"
+    "\x00\x00\x00\x1E\x00\x08"
+    MSG_PROJECT_STR "\x00"
+    "\x00\x00\x00\x1F\x00\x0A"
+    MSG_K_NEW_STR "\x00\x00"
+    "\x00\x00\x00\x20\x00\x0A"
+    MSG_K_OPENPROJECT_STR "\x00"
+    "\x00\x00\x00\x21\x00\x08"
+    MSG_K_SAVE_STR "\x00\x00"
+    "\x00\x00\x00\x22\x00\x0A"
+    MSG_K_APPEND_STR "\x00"
+    "\x00\x00\x00\x23\x00\x0E"
+    MSG_K_SAVEAS_STR "\x00\x00"
+    "\x00\x00\x00\x24\x00\x10"
+    MSG_GENERATESOURCE_STR "\x00"
+    "\x00\x00\x00\x25\x00\x18"
+    MSG_GENERATECSOURCE_STR "\x00\x00"
+    "\x00\x00\x00\x26\x00\x18"
+    MSG_GENERATEESOURCE_STR "\x00\x00"
+    "\x00\x00\x00\x27\x00\x1A"
+    MSG_GENERATEASMSOURCE_STR "\x00\x00"
+    "\x00\x00\x00\x28\x00\x1C"
+    MSG_GENERATEOBERONSOURCE_STR "\x00"
+    "\x00\x00\x00\x29\x00\x1E"
+    MSG_GENERATEMODULA2SOURCE_STR "\x00"
+    "\x00\x00\x00\x2A\x00\x08"
+    MSG_K_QUIT_STR "\x00\x00"
+    "\x00\x00\x00\x2B\x00\x12"
+    MSG_K_ASSIGN_STR "\x00\x00"
+    "\x00\x00\x00\x2C\x00\x0A"
+    MSG_K_OTHER_STR "\x00\x00"
+    "\x00\x00\x00\x2D\x00\x10"
+    MSG_K_STARTRECORDING_STR "\x00"
+    "\x00\x00\x00\x2E\x00\x10"
+    MSG_K_STOPRECORDING_STR "\x00\x00"
+    "\x00\x00\x00\x2F\x00\x12"
+    MSG_K_COMMANDSHELL_STR "\x00"
+    "\x00\x00\x00\x30\x00\x08"
+    MSG_K_OPENMACROS_STR "\x00"
+    "\x00\x00\x00\x31\x00\x06"
+    MSG_K_SAVEMACROS_STR "\x00\x00"
+    "\x00\x00\x00\x32\x00\x0C"
+    MSG_K_SAVEMACROSAS_STR "\x00\x00"
+    "\x00\x00\x00\x33\x00\x0A"
+    MSG_SETTINGS_STR "\x00\x00"
+    "\x00\x00\x00\x34\x00\x0E"
+    MSG_K_CODEWINDOW_STR "\x00"
+    "\x00\x00\x00\x35\x00\x08"
+    MSG_K_OPENSETTINGS_STR "\x00"
+    "\x00\x00\x00\x36\x00\x06"
+    MSG_K_SAVESETTINGS_STR "\x00\x00"
+    "\x00\x00\x00\x37\x00\x0C"
+    MSG_K_SAVESETTINGSAS_STR "\x00\x00"
+    "\x00\x00\x00\x38\x00\x06"
+    MSG_HELP_STR "\x00\x00"
+    "\x00\x00\x00\x39\x00\x0C"
+    MSG_HELPABOUT_STR "\x00\x00"
+    "\x00\x00\x00\x3A\x00\x0C"
+    MSG_HELPCONTENTS_STR "\x00"
+    "\x00\x00\x00\x3B\x00\x0A"
+    MSG_HELPINDEX_STR "\x00\x00"
+    "\x00\x00\x00\x3C\x00\x08"
+    MSG_HELPHELP_STR "\x00"
+    "\x00\x00\x00\x3D\x00\x0C"
+    MSG_HELPCOMMANDS_STR "\x00"
+    "\x00\x00\x00\x3E\x00\x0E"
+    MSG_HELPARGUMENTS_STR "\x00\x00"
+    "\x00\x00\x00\x3F\x00\x0C"
+    MSG_HELPSETTINGS_STR "\x00"
+    "\x00\x00\x00\x40\x00\x0A"
+    MSG_HELPMACROS_STR "\x00"
+    "\x00\x00\x00\x41\x00\x12"
+    MSG_HELPAREXXCOMMANDS_STR "\x00"
+    "\x00\x00\x00\x42\x00\x16"
+    MSG_HELPFLAGS_STR "\x00\x00"
+    "\x00\x00\x00\x43\x00\x14"
+    MSG_HELPAUTHOR_STR "\x00"
+    "\x00\x00\x00\x44\x00\x10"
+    MSG_OUTOFMEMORY_STR "\x00\x00"
+    "\x00\x00\x00\x45\x00\x1A"
+    MSG_COULDNOTOPENWB_STR "\x00\x00"
+    "\x00\x00\x00\x46\x00\x1A"
+    MSG_COULDNOTCLOSEWB_STR "\x00"
+    "\x00\x00\x00\x47\x00\x0A"
+    MSG_OKCANCEL_STR "\x00"
+    "\x00\x00\x00\x48\x00\x10"
+    MSG_SELECTGUI_STR "\x00"
+    "\x00\x00\x00\x49\x00\x24"
+    MSG_IFFERROR1_STR "\x00\x00"
+    "\x00\x00\x00\x4A\x00\x16"
+    MSG_IFFERROR2_STR "\x00"
+    "\x00\x00\x00\x4B\x00\x10"
+    MSG_NOTFOUND_STR "\x00"
+    "\x00\x00\x00\x4C\x00\x38"
+    MSG_STILLVISITORS_STR "\x00"
+    "\x00\x00\x00\x4D\x00\x30"
+    MSG_PROJECTCHANGED_STR "\x00\x00"
+    "\x00\x00\x00\x4E\x00\x18"
+    MSG_PROJECTCHANGEDBUTTONS_STR "\x00"
+    "\x00\x00\x00\x4F\x00\x10"
+    MSG_K_SAVEWHENEXIT_STR "\x00\x00"
+    "\x00\x00\x00\x50\x00\x0C"
+    MSG_K_ACKNOWLEDGE_STR "\x00"
+    "\x00\x00\x00\x51\x00\x0A"
+    MSG_GENERATE_STR "\x00\x00"
+    "\x00\x00\x00\x52\x00\x0C"
+    MSG__MAIN_STR "\x00\x00"
+    "\x00\x00\x00\x53\x00\x10"
+    MSG__AREXXHANDLER_STR "\x00\x00"
+    "\x00\x00\x00\x54\x00\x0C"
+    MSG__TEMPLATES_STR "\x00\x00"
+    "\x00\x00\x00\x55\x00\x08"
+    MSG__HANDLE_STR "\x00"
+    "\x00\x00\x00\x56\x00\x08"
+    MSG_BYIDS_STR "\x00\x00"
+    "\x00\x00\x00\x57\x00\x10"
+    MSG_CALLFUNCTIONS_STR "\x00\x00"
+    "\x00\x00\x00\x58\x00\x08"
+    MSG_GENERAL_STR "\x00"
+    "\x00\x00\x00\x59\x00\x08"
+    MSG__AUTHOR_STR "\x00"
+    "\x00\x00\x00\x5A\x00\x0C"
+    MSG__COPYRIGHT_STR "\x00\x00"
+    "\x00\x00\x00\x5B\x00\x0A"
+    MSG__VERSION_STR "\x00\x00"
+    "\x00\x00\x00\x5C\x00\x0A"
+    MSG__PORTNAME_STR "\x00"
+    "\x00\x00\x00\x5D\x00\x14"
+    MSG_COMMANDSHELLTITLE_STR "\x00\x00"
+    "\x00\x00\x00\x5E\x00\x0E"
+    MSG_RETRYCANCEL_STR "\x00\x00"
+    "\x00\x00\x00\x5F\x00\x06"
+    MSG_QUIT_STR "\x00\x00"
+    "\x00\x00\x00\x60\x00\x10"
+    MSG_K_SORTCOMMANDS_STR "\x00"
+    "\x00\x00\x00\x61\x00\x12"
+    MSG_K_SORTARGUMENTS_STR "\x00\x00"
+    "\x00\x00\x00\x62\x00\x12"
+    MSG_LIBRARYNOTFOUND_STR "\x00\x00"
+    "\x00\x00\x00\x63\x00\x10"
+    MSG_NOTASSIGNED_STR "\x00\x00"
+    "\x00\x00\x00\x64\x00\x06"
+    MSG_AREXX_STR "\x00"
+    "\x00\x00\x00\x65\x00\x06"
+    MSG_EDIT_STR "\x00\x00"
+    "\x00\x00\x00\x66\x00\x0E"
+    MSG_K_LASTSAVED_STR "\x00\x00"
+    "\x00\x00\x00\x67\x00\x0E"
+    MSG_ASSIGNMACROS_STR "\x00"
+    "\x00\x00\x00\x68\x00\x04"
+    MSG__OK_STR "\x00"
+    "\x00\x00\x00\x69\x00\x04"
+    MSG_OK_STR "\x00\x00"
+    "\x00\x00\x00\x6A\x00\xC4"
+    MSG_ABOUTTEXT_STR "\x00\x00"
+    "\x00\x00\x00\x6B\x00\x0E"
+    MSG_SELECTMACRO_STR "\x00\x00"
+    "\x00\x00\x00\x6C\x00\x0E"
+    MSG_SAVEPROJECT_STR "\x00\x00"
+    "\x00\x00\x00\x6D\x00\x10"
+    MSG_APPENDPROJECT_STR "\x00\x00"
+    "\x00\x00\x00\x6E\x00\x0E"
+    MSG_OPENPROJECT_STR "\x00\x00"
+    "\x00\x00\x00\x6F\x00\x06"
+    MSG_CLEAR_STR "\x00"
+    "\x00\x00\x00\x70\x00\x0E"
+    MSG_CODESETTINGS_STR "\x00"
+    "\x00\x00\x00\x71\x00\x08"
+    MSG_RESTORE_STR "\x00"
+    "\x00\x00\x00\x72\x00\x06"
+    MSG_SAVE_STR "\x00\x00"
+    "\x00\x00\x00\x73\x00\x08"
+    MSG_APPEND_STR "\x00\x00"
+    "\x00\x00\x00\x74\x00\x06"
+    MSG_OPEN_STR "\x00\x00"
+    "\x00\x00\x00\x75\x00\x14"
+    MSG_NOAREXXPORT_STR "\x00"
+    "\x00\x00\x00\x76\x00\x06"
+    MSG_RESETGUI_STR "\x00"
+    "\x00\x00\x00\x77\x00\x0A"
+    MSG_K_ICONIFY_STR "\x00"
+    "\x00\x00\x00\x78\x00\x08"
+    MSG_ICONIFY_STR "\x00"
+    "\x00\x00\x00\x79\x00\x34"
+    MSG_STORECONTENTS_STR "\x00\x00"
+    "\x00\x00\x00\x7A\x00\x08"
+    MSG_UNNAMED_STR "\x00"
+    "\x00\x00\x00\x7B\x00\x12"
+    MSG_MACROGENERATION_STR "\x00\x00"
+    "\x00\x00\x00\x7C\x00\x18"
+    MSG_SAVEMACROS_STR "\x00\x00"
+    "\x00\x00\x00\x7D\x00\x18"
+    MSG_OPENMACROS_STR "\x00\x00"
+    "\x00\x00\x00\x7E\x00\x14"
+    MSG_SAVERECORDEDMACRO_STR "\x00"
+    "\x00\x00\x00\x7F\x00\x0A"
+    MSG_RUNMACRO_STR "\x00"
+    "\x00\x00\x00\x80\x00\x04"
+    MSG_RUN_STR "\x00"
+    "\x00\x00\x00\x81\x00\x26"
+    MSG_OVERWRITE_STR "\x00\x00"
+    "\x00\x00\x00\x82\x00\x08"
+    MSG_YESNO_STR "\x00\x00"
+    "\x00\x00\x00\x83\x00\x0C"
+    MSG_VERSION_STR "\x00\x00"
+};
+
+#endif /* CATCOMP_BLOCK */
+
+
+/****************************************************************************/
+
+
+struct LocaleInfo
+{
+    APTR li_LocaleBase;
+    APTR li_Catalog;
+};
+
+
+#ifdef CATCOMP_CODE
+
+STRPTR GetString(struct LocaleInfo *li, LONG stringNum)
+{
+LONG   *l;
+UWORD  *w;
+STRPTR  builtIn;
+
+    l = (LONG *)CatCompBlock;
+
+    while (*l != stringNum)
+    {
+        w = (UWORD *)((ULONG)l + 4);
+        l = (LONG *)((ULONG)l + (ULONG)*w + 6);
+    }
+    builtIn = (STRPTR)((ULONG)l + 6);
+
+#define XLocaleBase LocaleBase
+#define LocaleBase li->li_LocaleBase
+    
+    if (LocaleBase)
+        return(GetCatalogStr(li->li_Catalog,stringNum,builtIn));
+#define LocaleBase XLocaleBase
+#undef XLocaleBase
+
+    return(builtIn);
+}
+
+
+#endif /* CATCOMP_CODE */
+
+
+/****************************************************************************/
+
+
+#endif /* DESIGNER_LOCALE_H */
