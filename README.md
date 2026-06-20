@@ -1,30 +1,24 @@
-# Little Things
+# ONE MAN'S JUNK IS ANOTHER MAN'S TREASURE
 
-A pile of personal projects, experiments, tools, notes, and recovered source snapshots. Some things are useful as-is. Some are reference material. Some are just here because losing them twice would be stupid.
+Littlethings is a personal collection of tools, experiments, source snapshots, hardware projects, and notes.
 
-There is no repo-wide build. Start in the folder for the thing you care about.
+Fro the Amiga, the most polished entries are collected on the project [site](https://ginnov.github.io/littlethings/).
 
-## Where Things Are
+## START HERE
 
-| Folder | What it is for |
-| --- | --- |
-| `Amiga/` | Commodore Amiga tools, source archives, tutorials, emulator notes, model/fine-tuning work, and the GitHub Pages source for the public project index. Start with `Amiga/README.md`. |
-| `Amiga/Tools/` | macOS and Amiga utilities, including release builds where they exist. |
-| `Amiga/aMiLa/` | Amiga language/model work: source corpus notes, fine-tuning scripts, model output, and related docs. |
-| `Amiga/Tutorials/` | Notes and walkthroughs from Amiga experiments. |
-| `Web_Apps/xbook-console/` | XBook Console: local bookmark/knowledge triage app. Contains the Next.js web app, Prisma database schema, tests, build scripts, and Tauri desktop packaging. |
-| `Web_Apps/Mouth_Chart_FDI/` | Dental notation/charting web app experiment. |
-| `Hardware/` | Raspberry Pi, Flume, SensorTag, Sleepia, and robotics work. Expect project-specific setup. |
-| `Animations/` | Animation experiments and media assets. |
-| `Apple_Watch_Apps/` | Older Apple Watch experiments. |
-| `docs/` | Shared notes, images, KB articles, and tutorial material. |
-| `useful_scripts/` | Small scripts for media/file cleanup tasks. Read `useful_scripts/README.md` before running them on anything important. |
+| Folder | What is in it | Notes |
+| --- | --- | --- |
+| `Amiga/` | Commodore Amiga tools, tutorials, source archives, and docs. | Includes Amiga Playground and the active retrocomputing work. |
+| `Hardware/` | Raspberry Pi, SensorTag, Flume, Sleepia, and robotics projects. | Small hardware experiments and notes. |
+| `Animations/` | Animation experiments and media assets. | Sketches, renders, and supporting files. |
+| `Apple_Watch_Apps/` | Small Apple Watch experiments. | Small,silly and usuful WatchOS projects. |
+| `Web_Apps/` | Browser-based experiments and small web apps. | Project-specific setup lives nearby. |
+| `useful_scripts/` | Shell scripts for media and file organization tasks. | Small utilities, usually self-contained. |
+| `docs/` | The GitHub Pages site and supporting reference material. | Source for the public project pages. |
 
-## Things To Know
+## PROJECT STATUS
 
-- `Web_Apps/xbook-console/` tracks app code, migrations, tests, and desktop packaging. It should not track personal SQLite databases, credentials, or local app data.
-- `Amiga/aMiLa/Dataset/` is intentionally ignored. Do not bring that subtree back just to satisfy an automated dependency PR.
-- Imported source snapshots may have their own license, README style, build assumptions, and dependency age. Check inside the specific folder before running or publishing anything from it.
-- Dependency updates should be made in the package path that actually exists in the repo. If a bot opens a PR against ignored or removed material, close it or recreate the fix in the right place.
+This is a collection rather than a single product. Setup, build steps, and release notes live inside the individual project folders.
+Reach out if you have questions or cool things to share.
 
 ;mE
