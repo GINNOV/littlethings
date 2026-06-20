@@ -1,5 +1,0 @@
-/* */
-
-address command AMIFTP
-
-'QUIT'

@@ -1,1 +1,0 @@
-QSTARTUP	SET	1

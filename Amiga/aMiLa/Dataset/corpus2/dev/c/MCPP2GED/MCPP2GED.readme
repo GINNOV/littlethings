@@ -1,9 +1,0 @@
-Short:        Dev-Environment for MaxonC++ and GED
-Author:       willi@twi.rhein-main.de (Thomas Wilhelmi)
-Uploader:     willi twi rhein-main de (Thomas Wilhelmi)
-Type:         dev/c
-Architecture: m68k-amigaos
-
-This is  an development-environment for MaxonC++
-and the Editor GoldED. It works almost like the
-enclosed environment with the Maxon-Edward.

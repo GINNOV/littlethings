@@ -1,5 +1,0 @@
-##base _ScrollerBase
-##bias 30
-##public
-SCROLLER_GetClass()()
-##end

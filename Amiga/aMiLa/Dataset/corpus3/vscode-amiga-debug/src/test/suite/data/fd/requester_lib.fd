@@ -1,5 +1,0 @@
-##base _RequesterBase
-##bias 30
-##public
-REQUESTER_GetClass()()
-##end

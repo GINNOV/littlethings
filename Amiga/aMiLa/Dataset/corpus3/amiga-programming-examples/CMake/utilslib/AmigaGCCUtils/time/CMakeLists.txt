@@ -1,6 +1,0 @@
-
-set(SOURCES ${SOURCES}
-	${CMAKE_CURRENT_SOURCE_DIR}/timeutils.cpp
-
-	PARENT_SCOPE
-)

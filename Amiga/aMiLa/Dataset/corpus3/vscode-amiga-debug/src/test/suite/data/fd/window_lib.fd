@@ -1,5 +1,0 @@
-##base _WindowBase
-##bias 30
-##public
-WINDOW_GetClass()()
-##end

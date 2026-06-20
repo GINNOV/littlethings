@@ -1,5 +1,0 @@
-If $XBLIT EQ 0
- SetENV XBLIT 1
-Else
- SetENV XBLIT 0
-Endif

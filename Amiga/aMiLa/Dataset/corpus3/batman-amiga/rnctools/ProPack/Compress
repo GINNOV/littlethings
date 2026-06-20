@@ -1,8 +1,0 @@
-.key opt1,opt2,input
-.bra {
-.ket }
-
-copy {input} ram:test.pp
-cd ram:
-source:propack/propack {opt1} {opt2} test.pp
-delete ram:test.pp

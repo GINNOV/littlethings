@@ -1,8 +1,0 @@
-Short:        library to store data to IFF files.
-Author:       beust@sophia.inria.fr
-Uploader:     beust sophia inria fr
-Type:         dev/c
-Architecture: m68k-amigaos
-
-This library will allow you to implement quickly the menus Open/Save/Save as...
-of your application. It uses named records and the files saved are IFF.

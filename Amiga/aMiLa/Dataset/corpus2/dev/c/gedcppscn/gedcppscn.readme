@@ -1,7 +1,0 @@
-Short:        C++ scanner for GoldED (method, class)
-Author:       gatig@dragon.klte.hu (Gáti Gergely)
-Uploader:     gatig dragon klte hu (Gáti Gergely)
-Type:         dev/c
-Architecture: m68k-amigaos
-
-Simple C++ function and class scanner for GoldED.

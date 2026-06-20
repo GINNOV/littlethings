@@ -1,7 +1,0 @@
-Short:        Eg. of fast OS-friendly double buffering
-Author:       g.sanderson@ais.gu.edu.au
-Type:         dev/src
-Architecture: m68k-amigaos
-
-This archive contains example source codes of how to use OS 3.x
-double buffering routines.

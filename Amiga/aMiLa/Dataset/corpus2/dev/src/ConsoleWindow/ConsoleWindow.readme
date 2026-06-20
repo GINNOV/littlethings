@@ -1,8 +1,0 @@
-Short:        Example to find intuition pointer.
-Author:       Andy Finkel and Robert Burns
-Architecture: m68k-amigaos
-Source:       Fish collection
-
-Example program for finding the intuition pointer to an AmigaDos CON: or
-RAW: window, so you can do WindowToFront, graphics, and other interesting
-things.  (Requires AmigaDos 1.2) 

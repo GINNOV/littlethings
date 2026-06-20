@@ -1,3 +1,0 @@
-.key file/a
-RUN CASM -A <file>.asm -o PROD/D<file>.obj
-

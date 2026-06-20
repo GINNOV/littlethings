@@ -1,1 +1,0 @@
-b(struct z *a){}

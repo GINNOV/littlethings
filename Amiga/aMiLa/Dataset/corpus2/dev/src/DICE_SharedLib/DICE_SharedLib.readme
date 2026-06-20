@@ -1,9 +1,0 @@
-Short:        Example Shared Library Code for DICE
-Author:       Wez Furlong <wez@twinklestar.demon.co.uk>
-Uploader:     Wez Furlong <wez twinklestar demon co uk>
-Type:         dev/src
-Architecture: m68k-amigaos
-
-This code is an example of how to build a shared library under DICE.
-
-Full source code, no binaries - build them yourself :)

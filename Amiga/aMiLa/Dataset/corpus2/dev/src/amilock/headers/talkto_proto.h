@@ -1,1 +1,0 @@
-unsigned long TalkTo(char *,char *,char *,unsigned long);

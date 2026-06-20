@@ -1,7 +1,0 @@
-Short:        Example DOS device driver. V1.10
-Author:       Matt Dillon
-Version:      1.10
-Architecture: m68k-amigaos
-Source:       Fish collection
-
-Example DOS device driver in Manx C.  

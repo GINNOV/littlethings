@@ -1,7 +1,0 @@
-FADD:/NewFolder
-FMV:/NewFolder:/Church
-IMV:/church.iff:/Church/church.iff
-FADD:/NewFolder
-FMV:/NewFolder:/TitleScreen
-IADD:00000001:/TitleScreen/titleprg.iff
-IDSET:/TitleScreen/titleprg.iff:c0a8018ea9c2449831513000

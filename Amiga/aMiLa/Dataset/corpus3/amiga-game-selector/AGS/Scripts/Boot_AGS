@@ -1,6 +1,0 @@
-cls
-echo "You will now boot to Amiga Game Selector by default."
-setenv BOOT AGS
-copy ENV:BOOT ENVARC:BOOT
-wait 2
-endcli

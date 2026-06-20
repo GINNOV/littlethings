@@ -1,7 +1,0 @@
-ÝSTART  000     ORT
-TOWN HOUSE
-ÝEND..
-
-ÝSTOP.
-
-

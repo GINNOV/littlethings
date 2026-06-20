@@ -1,5 +1,0 @@
-.key file/a
-copy <file> df1:D2D
-copy <file> df1:Dos-2-Dos
-copy READ.ME df1:
-

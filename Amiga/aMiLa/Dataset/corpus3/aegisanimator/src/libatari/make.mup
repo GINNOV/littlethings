@@ -1,5 +1,0 @@
-for i in aline backgrou blasthli clock color draw_on_ drawpoly fillpoly init_sys input jimblit memory prim pull saves sync syscalls
-do
-	\megamax\mmcc $i.c
-	test $? -eq 0 || { echo "compiling $i.c failed"; break; }
-done

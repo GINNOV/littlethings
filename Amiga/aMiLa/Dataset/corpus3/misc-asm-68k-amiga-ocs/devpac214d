@@ -1,3 +1,0 @@
-cd config
-; subfolder needed for relative pathes during assembly (/includes/...) and runtime (/images/...)
-c:GenAm2

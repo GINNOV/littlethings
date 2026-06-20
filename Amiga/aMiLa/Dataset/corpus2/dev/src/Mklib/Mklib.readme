@@ -1,8 +1,0 @@
-Short:        Example of building a shared library.
-Author:       Edwin Hoogerbeets with C-functions from several different authors.
-Architecture: m68k-amigaos
-Source:       Fish collection
-
-Another example of building a shared library that evolved from "Elib" on
-disk number 87.  Also included is a library, Edlib, which contains several
-functions not included in the Manx standard libraries.  

@@ -1,7 +1,0 @@
-Short:        Analyze flow of a C-program.
-Author:       Originally from Usenet with major revisions by Kevin Braunsdorf
-Architecture: m68k-amigaos
-Source:       Fish collection
-
-A little utility to help analyze the flow of a C-program by laying out the
-functions called in a hierarchical manner.  

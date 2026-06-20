@@ -1,1 +1,0 @@
-void vmwRegisterAllocateAll(Block root);

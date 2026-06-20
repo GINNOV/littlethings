@@ -1,9 +1,0 @@
-Short:        UCSD filesystem xadmaster client
-Author:       polluks@sdf.lonestar.org (Stefan Haubenthal)
-Uploader:     polluks sdf lonestar org (Stefan Haubenthal)
-Type:         dev/src
-Version:      1.0
-Requires:     util/arc/xadmaster.lha or OS 3.9
-Architecture: m68k-amigaos
-
-

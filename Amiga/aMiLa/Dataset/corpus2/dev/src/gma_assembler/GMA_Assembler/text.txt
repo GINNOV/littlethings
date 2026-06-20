@@ -1,3 +1,0 @@
-Dieses Thema wird ja eigentlich in jedem Kurs durchgekaut.
-Eine einfache Textausgabe in's CLI-Fenster ueber die
-Dos-Funktion Write().

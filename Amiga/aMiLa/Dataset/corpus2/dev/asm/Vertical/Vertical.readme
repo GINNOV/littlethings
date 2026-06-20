@@ -1,9 +1,0 @@
-Short:        AGA Vertical (with ASM source)
-Author:       The_Widds@MSN.COM (Andyrew)
-Uploader:     The_Widds MSN COM (Andyrew)
-Type:         dev/asm
-Architecture: m68k-amigaos
-
-This is smart little game that i still code every now and then.
-It only works in AGA as it uses 64wide sprites and 2 16col playfields
-It looks really pretty.

@@ -1,5 +1,0 @@
-##base _TextFieldBase
-##bias 30
-##public
-TEXTEDITOR_GetClass()()
-##end

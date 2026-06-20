@@ -86,3 +86,6 @@ Amiga/aMiLa/**/*.a
 Amiga/aMiLa/.antigravitycli/
 Web_Apps/xbook-console/.antigravitycli
 Web_Apps/xbook-console/.next
+
+# Amiga datasets
+Amiga/aMiLa/Dataset/

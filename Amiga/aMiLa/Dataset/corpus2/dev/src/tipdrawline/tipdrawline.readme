@@ -1,9 +1,0 @@
-Short:        Fast blitter line draw routine
-Architecture: m68k-amigaos
-
->>> This is 'TIPDrawLine.S' = a Blitter Drawline Routine (in Assembler) from
-    TIP/SPREADPOINT. By the way, it's faster than the one from TEC !!! Yep !
-    (This Source is only usefull for Coders ;) OK ?
-
-						'ALFred' - DOCTOR PSI / ZENITH
-

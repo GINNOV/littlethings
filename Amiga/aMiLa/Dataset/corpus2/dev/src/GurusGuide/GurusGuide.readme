@@ -1,8 +1,0 @@
-Short:        Source files for "Guru's Guide".
-Author:       Carl Sassenrath
-Architecture: m68k-amigaos
-Source:       Fish collection
-
-The source files for all examples published in the "Guru's Guide,
-Meditation #1: Interrupts" by Carl Sassenrath, the architect of the Amiga's
-low-level multitasking operating system and designer of Exec.  

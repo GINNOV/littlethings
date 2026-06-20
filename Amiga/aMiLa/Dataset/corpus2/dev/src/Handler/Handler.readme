@@ -1,6 +1,0 @@
-Short:        Example AmigaDOS handler in non-BCPL.
-Author:       Phillip Lindsay
-Architecture: m68k-amigaos
-Source:       Fish collection
-
-An example that implements an AmigaDos Handler (device) in non-BCPL format.

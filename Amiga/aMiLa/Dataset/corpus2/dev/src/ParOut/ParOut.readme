@@ -1,7 +1,0 @@
-Short:        Shows how to allocate/use parallel port.
-Author:       Jeff Glatt
-Architecture: m68k-amigaos
-Source:       Fish collection
-
-Shows how to allocate and communicate directly with the parallel port
-hardware from an assembly language program.  

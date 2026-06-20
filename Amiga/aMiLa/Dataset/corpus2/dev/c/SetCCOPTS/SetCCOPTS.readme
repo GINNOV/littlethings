@@ -1,8 +1,0 @@
-Short:        Easily deals with MANX 'CCOPTS' env var. V1.00
-Author:       Stephan Flother
-Version:      1.00
-Architecture: m68k-amigaos
-Source:       Fish collection
-
-Lets you easily deal with the MANX 'CCOPTS' environment variable.  You can
-store settings to disk.  Has a complete intuition interface.  

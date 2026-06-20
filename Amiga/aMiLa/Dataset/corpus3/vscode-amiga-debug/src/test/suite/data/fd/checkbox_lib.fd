@@ -1,5 +1,0 @@
-##base _CheckBoxBase
-##bias 30
-##public
-CHECKBOX_GetClass()()
-##end

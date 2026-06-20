@@ -1,2 +1,0 @@
-Echo "Removing ADF file from memory."
-execute s:remove.script

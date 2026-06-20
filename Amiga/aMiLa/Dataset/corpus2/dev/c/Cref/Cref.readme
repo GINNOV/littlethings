@@ -1,7 +1,0 @@
-Short:        A C cross referencer program.
-Author:       Mike Edmonds; Joel Swank
-Architecture: m68k-amigaos
-Source:       Fish collection
-
-A C cross referencer program.  Prints out your code with line-numbers and
-complete key-word cross-referencing.

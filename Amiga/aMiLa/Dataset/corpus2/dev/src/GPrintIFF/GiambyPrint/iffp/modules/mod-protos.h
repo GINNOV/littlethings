@@ -1,6 +1,0 @@
-
-/* MACHINE GENERATED */
-
-
-/* screen.c             */
-

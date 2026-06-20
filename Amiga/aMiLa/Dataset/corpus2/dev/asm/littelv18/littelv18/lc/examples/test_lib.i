@@ -1,5 +1,0 @@
-Inc10 EQU -30
-Inc100 EQU -36
-Inc10p EQU -42
-Delay100 EQU -48
-Bla EQU -54

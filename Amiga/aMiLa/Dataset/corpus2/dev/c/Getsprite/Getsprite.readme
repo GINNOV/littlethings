@@ -1,6 +1,0 @@
-Short:        Convert DPaint brushes into C source.
-Author:       Michael Warner
-Architecture: m68k-amigaos
-Source:       Fish collection
-
-A simple little program to convert Dpaint brushes into C-source.  

@@ -1,1 +1,0 @@
-VPOSRLOFBIT		equ 15

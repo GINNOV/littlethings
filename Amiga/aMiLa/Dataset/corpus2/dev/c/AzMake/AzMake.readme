@@ -1,9 +1,0 @@
-Short:        Work environment for Aztec C, V2.3
-Architecture: m68k-amigaos
-Source:       Fred Fish
-
-AzMake		A work environment for Aztec C.  You can compile, assemble,
-		link, print, etc your programs by clicking a gadget.  Typing
-		in the Shell is out.  Version 2.3, an update to version 1.1
-		on disk number 586.  Binary only, shareware.
-		Author:  Christian Friedel

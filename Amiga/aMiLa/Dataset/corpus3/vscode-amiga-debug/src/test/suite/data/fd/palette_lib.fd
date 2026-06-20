@@ -1,5 +1,0 @@
-##base _PaletteBase
-##bias 30
-##public
-PALETTE_GetClass()()
-##end

@@ -1,5 +1,0 @@
-##base _GetScreenModeBase
-##bias 30
-##public
-GETSCREENMODE_GetClass()()
-##end

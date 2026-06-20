@@ -1,1 +1,0 @@
-RSTARTUP	SET 1

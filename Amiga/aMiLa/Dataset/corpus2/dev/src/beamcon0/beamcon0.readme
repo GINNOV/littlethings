@@ -1,7 +1,0 @@
-Short:        Example asm source to read the BEAMCON0 register
-Author:       f.farenga@agora.stm.it (Fabrizio Farenga)
-Uploader:     f farenga agora stm it (Fabrizio Farenga)
-Type:         dev/src
-Architecture: m68k-amigaos
-
-Date:     07-Jul-95

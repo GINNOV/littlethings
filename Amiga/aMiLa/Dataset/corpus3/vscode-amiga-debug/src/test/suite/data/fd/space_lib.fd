@@ -1,5 +1,0 @@
-##base _SpaceBase
-##bias 30
-##public
-SPACE_GetClass()()
-##end

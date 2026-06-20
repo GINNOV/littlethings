@@ -1,2 +1,0 @@
-Translate equ -30
-

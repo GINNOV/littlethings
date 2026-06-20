@@ -1,5 +1,0 @@
-A large crate, resembling an Egyptian sarcophagus, but with one difference - it has a small window, allowing you to peek inside.
-Attached to it is a set of devices with blinking lights and a screen displaying messages.
-Some exposed slots suggest that certain components are missing.
-The entire structure emits unsettling sounds - hssss... pffff... - reminding one of a certain asthmatic figure from a distant galaxy.
-Inside the sarcophagus, there is a man. A living man. His breathing is slow but steady. He appears to be in a deep sleep.

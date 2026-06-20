@@ -1,8 +1,0 @@
-Short:        Complete Aztec source to rot3d.lha demo
-Author:       freund@cis.uab.edu (Jason Freund), dalbec@cs.arizona.edu (Gabe Dalbec)
-Uploader:     freund cis uab edu (Jason Freund)
-Type:         dev/src
-Architecture: m68k-amigaos
-
-See Aminet:demo/euro/rot3d.lha.  Texture mapping maze demo.  Requires FPU.
-Can be converted to compile under SAS with a little effort.

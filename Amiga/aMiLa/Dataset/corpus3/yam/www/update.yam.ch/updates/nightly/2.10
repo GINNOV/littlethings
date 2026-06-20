@@ -1,8 +1,0 @@
-VERSION: 2.10-dev
-BUILDID: 20250425
-BUILDDATE: 25.04.2025
-URL: m68k-amigaos https://github.com/jens-maus/yam/releases/download/nightly-builds/YAM210dev-20250425-e5ea83-AmigaOS3.lha
-URL: ppc-amigaos https://github.com/jens-maus/yam/releases/download/nightly-builds/YAM210dev-20250425-e5ea83-AmigaOS4.lha
-URL: ppc-morphos https://github.com/jens-maus/yam/releases/download/nightly-builds/YAM210dev-20250425-e5ea83-MorphOS.lha
-CHANGES:
-For a list of recent changes, see https://github.com/jens-maus/yam/commits/master/

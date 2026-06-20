@@ -1,9 +1,0 @@
-Short:        Creates INLINE libraries for DICE C Compiler
-Author:       inri%pisaug.adsp.sub.org@cbmvax.cbm.commodore.com (Giuseppe Sacco)
-Architecture: m68k-amigaos
-
-DCCInline is a utility that allows to improve code quality of any
-program that is to be compiled with DICE 2.06.40R (or higher).
-DCCInline makes use of the possibility of the new version of the
-compiler of passing parameters to functions using registers.
-It creates a registerized version of any library.

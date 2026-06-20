@@ -1,6 +1,0 @@
-Short:        Demo of how to use ARP filerequester
-Author:       Andreas Ackermann
-Architecture: m68k-amigaos
-Source:       Fish collection
-
-A demonstration of how to use the ARP filerequester from AmigaBasic.  

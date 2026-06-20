@@ -1,3 +1,0 @@
-void vmwParse(char *filename);
-   
-   

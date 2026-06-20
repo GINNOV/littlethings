@@ -1,4 +1,0 @@
-cls
-list >T:Mods ags:mods LFORMAT "SetEnv Module *"%P%N*""
-RandomE T:Mods
-Copy ENV:Module ENVARC:

@@ -1,9 +1,0 @@
-Short:        Gen assembly includes from C includes. V1.1
-Author:       Goetz Mueller
-Version:      1.1
-Architecture: m68k-amigaos
-Source:       Fish collection
-
-Translates C include files into assembler include files.  Useful for
-programmers that use both C and assembler code in the same program.  Helps
-to keep the structure definitions consistent.  

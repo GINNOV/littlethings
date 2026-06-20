@@ -1,7 +1,0 @@
-Short:        Yet Another SAS2CED environment
-Type:         dev/c
-Architecture: m68k-amigaos
-
-Yet Another SAS 2 CED environment.  Compile, Make, and step through errors
-without ever leaving CED.  It will open, close, and save (if modified) all
-files which it opens, so it is really clean.

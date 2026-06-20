@@ -1,9 +1,0 @@
-Short:        Useful error handling routines. V0.6
-Author:       Gerald T Hewes
-Version:      0.6
-Architecture: m68k-amigaos
-Source:       Fish collection
-
-Exception is a set of error handling routines that provide a programmer
-with the ability to easily handle often difficult to implement routines.
-Routines such as no more memory, file not open, read/write error....etc.  

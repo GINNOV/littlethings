@@ -1,5 +1,0 @@
-##base _LabelBase
-##bias 30
-##public
-LABEL_GetClass()()
-##end

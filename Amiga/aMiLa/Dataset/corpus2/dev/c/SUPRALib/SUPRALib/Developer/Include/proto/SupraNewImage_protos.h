@@ -1,1 +1,0 @@
-int	main ();		/* main.c	*/

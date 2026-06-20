@@ -1,5 +1,0 @@
-If $HW EQ "Real"
- Quit
-Endif
-
-uae-configuration cachesize 0

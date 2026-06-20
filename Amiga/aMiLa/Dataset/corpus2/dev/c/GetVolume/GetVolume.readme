@@ -1,7 +1,0 @@
-Short:        Example program to get volume name.
-Author:       Chuck McManis
-Architecture: m68k-amigaos
-Source:       Fish collection
-
-Sample program to get the volume name of the volume that a given file
-resides on.  Works on any device, even the RAM: device.  

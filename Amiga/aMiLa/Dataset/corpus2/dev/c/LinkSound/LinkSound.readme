@@ -1,7 +1,0 @@
-Short:        Functions to link to for sound "beeps".
-Author:       Dieter Bruns
-Architecture: m68k-amigaos
-Source:       Fish collection
-
-Two examples of functions that you can link with your own code to produce a
-short musical "beep" or a sound that is similar to striking a drum.  

@@ -1,8 +1,0 @@
-Short:        Circle Squared algorthm example.
-Author:       Bill DuPree
-Architecture: m68k-amigaos
-Source:       Fish collection
-
-Implementation of Circle Squared algorthm from Sept '86 Scientific American
-"Computer Recreations" column.  Produces wildly colorful but mathematically
-precise patterns.  

@@ -1,7 +1,0 @@
-Short:        Implement 4BSD directory access routines
-Author:       Mike Meyer
-Architecture: m68k-amigaos
-Source:       Fish collection
-
-Library that implements the 4BSD unix directory access routines (opendir,
-closedir, readdir, etc).  

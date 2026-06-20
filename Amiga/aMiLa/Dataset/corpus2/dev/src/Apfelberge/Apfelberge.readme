@@ -1,8 +1,0 @@
-Short:        3D fractal example, includes MOS port
-Author:       polluks@sdf.lonestar.org (Stefan Haubenthal)
-Uploader:     polluks sdf lonestar org (Stefan Haubenthal)
-Type:         dev/src
-Version:      3.0
-Architecture: m68k-amigaos
-
-

@@ -1,9 +1,0 @@
-Short:        MultiSelect Gadtools ListViews Demo OS3.0+
-Author:       mark@topic.demon.co.uk
-Uploader:     mark topic demon co uk
-Type:         dev/c
-Architecture: m68k-amigaos
-
-Example source code and executable showing how to
-implement Multiple Select Gadtools List Views with
-OS3.0+. Compiles with SASC 6.56.

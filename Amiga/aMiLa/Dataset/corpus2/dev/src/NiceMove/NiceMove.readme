@@ -1,7 +1,0 @@
-Short:        Examples in C of MOUSEMOVOE handling
-Architecture: m68k-amigaos
-
-NiceMove	Some different examples in C of MOUSEMOVE event handling during
-		high CPU or DMA usage.  Version 1.00, first release.  Includes
-		source and a sample program.
-		Author:  Thies Wellpott

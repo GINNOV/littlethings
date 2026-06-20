@@ -1,8 +1,0 @@
-Short:        Demo use of DOS packets.
-Author:       Carolyn Scheppner
-Architecture: m68k-amigaos
-Source:       Fish collection
-
-Demos the use of DOS packets, finding the Window pointer and ConUnit
-pointer of the CLI window, toggling Raw mode, getting cursor position and
-limits from the ConUnit, and ESC-sequence cursor positioning.  

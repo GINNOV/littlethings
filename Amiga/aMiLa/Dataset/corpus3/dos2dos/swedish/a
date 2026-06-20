@@ -1,3 +1,0 @@
-.key file/a
-assem <file>.asm -o <file>.obj -c=SW80000
-

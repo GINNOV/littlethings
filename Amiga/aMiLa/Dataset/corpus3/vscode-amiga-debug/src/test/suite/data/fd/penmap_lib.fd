@@ -1,5 +1,0 @@
-##base _PenMapBase
-##bias 30
-##public
-PENMAP_GetClass()()
-##end

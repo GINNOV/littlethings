@@ -1,9 +1,0 @@
-Short:        Src for libiconv.a
-Author:       Jan-Erik Karlsson (trg@privat.utfors.se)
-Uploader:     Jan-Erik Karlsson (trg privat utfors se)
-Type:         dev/c
-Version:      1.4
-Architecture: m68k-amigaos
-Required:     gcc
-
-this is the source for the libiconv.a library.

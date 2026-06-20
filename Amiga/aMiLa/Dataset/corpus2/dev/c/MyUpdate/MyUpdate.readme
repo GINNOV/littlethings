@@ -1,8 +1,0 @@
-Short:        Automatically strip comments from C hdrs
-Author:       Joe Mueller
-Architecture: m68k-amigaos
-Source:       Fish collection
-
-A disk update utility that also provides support for automatically
-stripping comments from C header files and for interactive verification on
-a per file basis.  

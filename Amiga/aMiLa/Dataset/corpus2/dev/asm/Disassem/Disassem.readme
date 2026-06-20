@@ -1,9 +1,0 @@
-Short:        A simple 68000 disassembler.
-Author:       Bill Rogers
-Architecture: m68k-amigaos
-Source:       Fish collection
-
-A simple 68000 disassembler.  Reads standard Amiga object files and
-disassembles the code sections.  Data sections are dumped in hex.  The
-actual disassember routines are set up to be callable from a user program
-so instructions in memory can be disassembled dynamically.  

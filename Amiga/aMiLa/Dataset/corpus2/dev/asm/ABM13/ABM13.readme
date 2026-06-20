@@ -1,8 +1,0 @@
-Short:        Converts binaries into binary asm source
-Author:       gkrolik@poczta.onet.pl (Grzegorz Krolik)
-Uploader:     gkrolik poczta onet pl (Grzegorz Krolik)
-Type:         dev/asm
-Version:      1.3
-Architecture: m68k-amigaos
-
-

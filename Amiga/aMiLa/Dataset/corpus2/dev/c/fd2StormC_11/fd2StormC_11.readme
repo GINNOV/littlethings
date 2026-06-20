@@ -1,8 +1,0 @@
-Short:        Creates Storm-C pragmas from FD-file
-Author:       Michael_Conrad@BL.maus.de
-Uploader:     Michael_Conrad BL maus de
-Type:         dev/c
-Architecture: m68k-amigaos
-
-This little ARexx script creates a pragma-file
-for the Storm-C/C++ Compiler from any given FD-file.

@@ -1,5 +1,0 @@
-Short:        'Trackloader'. Doesn't use trackdisk.device.
-Type:         dev/asm
-Architecture: m68k-amigaos
-
-

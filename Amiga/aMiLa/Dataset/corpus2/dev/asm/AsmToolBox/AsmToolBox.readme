@@ -1,7 +1,0 @@
-Short:        An assembler "tool box".
-Author:       Warren Ring
-Architecture: m68k-amigaos
-Source:       Fish collection
-
-An assembler "toolbox" created to make interfacing between assembler
-programs and AmigaDOS easy.  

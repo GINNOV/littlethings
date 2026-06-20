@@ -1,6 +1,0 @@
-copy mfcmd.asm df1:dev/
-copy mfamy.asm df1:dev/
-copy mfio.asm df1:dev/
-copy mffmt.asm df1:dev/
-;copy mfend.asm df1:dev/
-copy mf.i df1:dev/
