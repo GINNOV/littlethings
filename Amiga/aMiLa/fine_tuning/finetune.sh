@@ -28,7 +28,7 @@ uv run python -m mlx_lm.lora \
   --model "$BASE_MODEL" \
   --train \
   --data "$DATA_DIR" \
-  --iters 1500 \
+  --iters 300 \
   --batch-size 2 \
   --learning-rate 2e-5 \
   --adapter-path "$ADAPTER_PATH" \
