@@ -25,11 +25,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Pages content
-        uses: actions/checkout@v4
-        with:
-          sparse-checkout: docs
-          sparse-checkout-cone-mode: true
-          submodules: false
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          git sparse-checkout init --cone
+          git sparse-checkout set docs
+          git fetch --depth=1 --filter=blob:none origin "${GITHUB_SHA}"
+          git checkout --force FETCH_HEAD
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
