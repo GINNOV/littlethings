@@ -1,0 +1,52 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "xbook",
+  "version": "0.1.0",
+  "identifier": "com.blife.xbook",
+  "build": {
+    "frontendDist": "../tauri-dist",
+    "devUrl": "http://localhost:3000",
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build:desktop"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "XBook Console",
+        "width": 800,
+        "height": 600,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["app"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "resources": [
+      "resources/**/*"
+    ],
+    "android": {
+      "debugApplicationIdSuffix": ".debug"
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDY2ODg0RUFDNkI5MDUwMkYKUldRdlVKQnJyRTZJWmxRd2lJanppWFplV0pDMXdyaFdCZm1vaDhLd2pIcFRlcU5EWVZLVmF1NGsK",
+      "endpoints": [
+        "https://raw.githubusercontent.com/blifemove/xbook/main/update.json"
+      ]
+    }
+  }
+}
