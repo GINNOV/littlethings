@@ -164,7 +164,7 @@ This will compile the Next.js production build, copy all backend assets (includi
 ### Under the Hood
 
 - **Self-contained Server:** On startup, the desktop app spawns a hidden background Node.js server using the bundled node binary and a wrapper script (`start-server.js`).
-- **OS Application Data:** The SQLite database is created and migrated automatically in the user's application support folder (e.g. `~/Library/Application Support/xbook/dev.db` on macOS) to prevent write failures inside the read-only application bundle.
+- **OS Application Data:** The SQLite database is created and migrated automatically in the user's home directory (e.g. `~/.xbook/dev.db`) to prevent write failures inside the read-only application bundle.
 - **Secure Auto-Updater:** The app checks for signed releases automatically on boot. Update payloads are signed and cryptographically verified using the public key configured in `tauri.conf.json`.
 - **Default Browser OAuth:** OAuth logins launch in the default system browser to support existing sessions and prevent Google's embedded webview block, returning credentials back to the local app.
 

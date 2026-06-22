@@ -14,11 +14,34 @@ test.describe("Operations & Logs", () => {
         { id: "999002", type: "enrichment_batch", source: "yt", status: "completed", startedAt: new Date(Date.now() - 3600000), finishedAt: new Date() },
       ]
     });
+
+    await prisma.bookmark.upsert({
+      where: { id: "e2e-bookmark-x" },
+      update: {
+        source: "x",
+        tweetUrl: "https://x.com/i/web/status/e2e-bookmark-x",
+        text: "E2E bookmark source text for UI validation.",
+        authorUsername: "e2e_author",
+        summary: null,
+        category: null,
+        tags: null,
+      },
+      create: {
+        id: "e2e-bookmark-x",
+        source: "x",
+        tweetUrl: "https://x.com/i/web/status/e2e-bookmark-x",
+        text: "E2E bookmark source text for UI validation.",
+        authorUsername: "e2e_author",
+      },
+    });
   });
 
   test.afterEach(async () => {
     await prisma.operationRun.deleteMany({
       where: { id: { in: ["999001", "999002"] } }
+    });
+    await prisma.bookmark.deleteMany({
+      where: { id: "e2e-bookmark-x" }
     });
   });
 
@@ -50,10 +73,8 @@ test.describe("Operations & Logs", () => {
     const stopAllBtn = page.getByRole("button", { name: "Stop all operations" });
     await expect(stopAllBtn).toBeVisible();
     
-    // Mock the confirm dialog
-    page.on('dialog', dialog => dialog.accept());
-    
     await stopAllBtn.click();
+    await page.getByRole("button", { name: "Stop All", exact: true }).click();
     
     // After stopping, wait for the status to update in the UI (lowercase stopped in the list)
     await expect(page.locator(".font-bold", { hasText: "stopped" }).first()).toBeVisible();
@@ -63,18 +84,23 @@ test.describe("Operations & Logs", () => {
   });
 
   test("Clear all logs button works", async ({ page }) => {
+    await prisma.operationRun.update({
+      where: { id: "999001" },
+      data: { status: "stopped" },
+    });
+
     await page.goto("/processing");
     
-    const clearBtn = page.getByRole("button", { name: "Clear all logs" });
+    const clearBtn = page.getByRole("button", { name: "Clear history" });
     await expect(clearBtn).toBeVisible();
     
-    page.on('dialog', dialog => dialog.accept());
     await clearBtn.click();
+    await page.getByRole("button", { name: "Clear History", exact: true }).click();
     
     // List should be empty (excluding the system e2e-operation-run if it exists, or just check the list text)
     // Actually the button clears EVERYTHING, so we should re-seed if we want ui.spec.ts to pass.
     // A better way is to run ui.spec.ts first or make them independent.
-    await expect(page.getByText("No processing runs match the current filters.")).toBeVisible();
+    await expect(page.getByText("No runs match filters.")).toBeVisible();
     
     const count = await prisma.operationRun.count();
     expect(count).toBe(0);
@@ -141,8 +167,8 @@ expect(callCount).toBe(2);
     const stopAllBtn = page.getByRole("button", { name: "Stop all operations" });
     await expect(stopAllBtn).toBeVisible();
     
-    page.on('dialog', dialog => dialog.accept());
     await stopAllBtn.click();
+    await page.getByRole("button", { name: "Stop All", exact: true }).click();
     
     await expect(page.locator(".font-bold", { hasText: "stopped" }).first()).toBeVisible();
     
