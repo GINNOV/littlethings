@@ -78,8 +78,8 @@ if (fs.existsSync(prismaSrc)) {
   copyRecursiveSync(prismaSrc, prismaDest);
 }
 
-console.log("6. Copying prisma migration runtime to Tauri resources...");
-[
+console.log("6. Copying prisma migration runtime and its dependencies to Tauri resources...");
+const prismaPackages = [
   "prisma",
   "@prisma/config",
   "@prisma/debug",
@@ -87,7 +87,40 @@ console.log("6. Copying prisma migration runtime to Tauri resources...");
   "@prisma/engines-version",
   "@prisma/fetch-engine",
   "@prisma/get-platform",
-].forEach(copyPackageToServer);
+];
+
+const copiedPackages = new Set();
+function copyPackageAndDependencies(packageName) {
+  if (copiedPackages.has(packageName)) return;
+  copiedPackages.add(packageName);
+
+  const packageSrc = path.join(__dirname, "..", "node_modules", packageName);
+  const packageDest = path.join(tauriServerDir, "node_modules", packageName);
+
+  if (!fs.existsSync(packageSrc)) {
+    return;
+  }
+
+  // Copy the package directory
+  copyRecursiveSync(packageSrc, packageDest);
+
+  // Read package.json to recursively copy dependencies
+  const pkgJsonPath = path.join(packageSrc, "package.json");
+  if (fs.existsSync(pkgJsonPath)) {
+    try {
+      const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, "utf8"));
+      if (pkgJson.dependencies) {
+        Object.keys(pkgJson.dependencies).forEach((depName) => {
+          copyPackageAndDependencies(depName);
+        });
+      }
+    } catch (err) {
+      console.error(`Failed to parse package.json for ${packageName}:`, err);
+    }
+  }
+}
+
+prismaPackages.forEach(copyPackageAndDependencies);
 
 console.log("7. Copying start-server.js to Tauri resources...");
 const startServerSrc = path.join(__dirname, "..", "start-server.js");

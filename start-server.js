@@ -3,22 +3,48 @@ const path = require("path");
 const fs = require("fs");
 const os = require("os");
 
-// Determine the platform-specific application directory for the database
+// Database and configuration directory (stored outside the app bundle in a known location)
 const home = os.homedir();
-let appDir;
-
-if (process.platform === "darwin") {
-  appDir = path.join(home, "Library", "Application Support", "xbook");
-} else if (process.platform === "win32") {
-  appDir = path.join(process.env.APPDATA || path.join(home, "AppData", "Roaming"), "xbook");
-} else {
-  appDir = path.join(home, ".config", "xbook");
-}
+const appDir = path.join(home, ".xbook");
 
 // Ensure the directory exists
 if (!fs.existsSync(appDir)) {
   fs.mkdirSync(appDir, { recursive: true });
 }
+
+// Set up server logging to a file in the app support directory
+const logFile = path.join(appDir, "server.log");
+const logStream = fs.createWriteStream(logFile, { flags: "a" });
+
+// Write a session divider
+logStream.write(`\n--- Server Session Started: ${new Date().toISOString()} ---\n`);
+
+// Helper to log errors safely
+function logInternalError(message, error) {
+  const errMsg = `[xbook-server] ${message}: ${error ? error.stack || error.message || error : ""}\n`;
+  logStream.write(errMsg);
+  try {
+    process.stderr.write(errMsg);
+  } catch (e) {}
+}
+
+// Redirect stdout and stderr so that we capture all console outputs
+const originalStdoutWrite = process.stdout.write.bind(process.stdout);
+const originalStderrWrite = process.stderr.write.bind(process.stderr);
+
+process.stdout.write = (chunk, encoding, callback) => {
+  try {
+    logStream.write(chunk, encoding);
+  } catch (e) {}
+  return originalStdoutWrite(chunk, encoding, callback);
+};
+
+process.stderr.write = (chunk, encoding, callback) => {
+  try {
+    logStream.write(chunk, encoding);
+  } catch (e) {}
+  return originalStderrWrite(chunk, encoding, callback);
+};
 
 const dbPath = path.join(appDir, "dev.db");
 process.env.DATABASE_URL = `file:${dbPath}`;
@@ -44,17 +70,21 @@ try {
         "",
       ].join("\n")
     );
-    execSync(`node "${prismaCliPath}" migrate deploy --config="${prismaConfigPath}"`, {
-      stdio: "inherit",
+    
+    // Redirect migration process output directly to log file
+    const logFd = fs.openSync(logFile, "a");
+    execSync(`"${process.execPath}" "${prismaCliPath}" migrate deploy --config="${prismaConfigPath}"`, {
+      stdio: [0, logFd, logFd],
       env: { ...process.env, DATABASE_URL: process.env.DATABASE_URL },
       cwd: __dirname,
     });
+    fs.closeSync(logFd);
     console.log("[xbook-server] Database migrations successfully applied.");
   } else {
     console.warn("[xbook-server] Prisma CLI or schema.prisma not found. Skipping auto-migration.");
   }
 } catch (err) {
-  console.error("[xbook-server] Database migration failed:", err.message);
+  logInternalError("Database migration failed", err);
   process.exit(1);
 }
 

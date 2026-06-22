@@ -131,13 +131,14 @@ test("dashboard, libraries, folders, processing, and settings routes render", as
   });
 
   await page.goto("/processing?runId=999101");
-  await expect(page.getByRole("heading", { name: /Processing/ })).toBeVisible();
+  await expect(page.locator("h1", { hasText: "Processing" })).toBeVisible();
   await expect(page.getByText("Seeded processing run for UI validation.").first()).toBeVisible();
   
   await expect(page.getByText("Seeded event for processing monitor.").first()).toBeVisible();
 
   await page.goto("/settings");
   await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
+  await page.getByText("LLM configuration").click();
   await expect(page.getByText("Store LLM technical logs")).toBeVisible();
   await expect(page.getByRole("button", { name: "Clear processing history" })).toBeVisible();
 });
