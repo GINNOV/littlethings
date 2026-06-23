@@ -2,7 +2,23 @@ const { execSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 
-function copyRecursiveSync(src, dest) {
+const STANDALONE_SKIP_DIRS = new Set([
+  "src-tauri",
+  "tauri-dist",
+  "tests",
+  ".git",
+]);
+
+const STANDALONE_SKIP_FILES = new Set([
+  "dev.db",
+  "tsconfig.tsbuildinfo",
+]);
+
+function shouldSkipStandaloneEntry(name) {
+  return STANDALONE_SKIP_DIRS.has(name) || STANDALONE_SKIP_FILES.has(name);
+}
+
+function copyRecursiveSync(src, dest, { filter } = {}) {
   const exists = fs.existsSync(src);
   const stats = exists && fs.statSync(src);
   const isDirectory = exists && stats.isDirectory();
@@ -11,9 +27,13 @@ function copyRecursiveSync(src, dest) {
       fs.mkdirSync(dest, { recursive: true });
     }
     fs.readdirSync(src).forEach((childItemName) => {
+      if (filter && !filter(childItemName)) {
+        return;
+      }
       copyRecursiveSync(
         path.join(src, childItemName),
-        path.join(dest, childItemName)
+        path.join(dest, childItemName),
+        { filter }
       );
     });
   } else {
@@ -55,7 +75,9 @@ fs.writeFileSync(
 );
 
 console.log("2. Copying standalone files to Tauri resources...");
-copyRecursiveSync(standaloneDir, tauriServerDir);
+copyRecursiveSync(standaloneDir, tauriServerDir, {
+  filter: (name) => !shouldSkipStandaloneEntry(name),
+});
 
 console.log("3. Copying public assets to Tauri resources...");
 const publicSrc = path.join(__dirname, "..", "public");
