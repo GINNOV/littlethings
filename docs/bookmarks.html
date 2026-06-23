@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bookmarks Organizer - AI-Powered Bookmarks Optimizer</title>
+    <link rel="stylesheet" href="/littlethings/common/style.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    
+    <script>
+      (function() {
+        const savedTheme = localStorage.getItem('theme') || 
+                           (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        if (savedTheme === 'dark') {
+          document.documentElement.classList.add('dark-theme');
+          document.body?.classList.add('dark-theme');
+        } else {
+          document.documentElement.classList.remove('dark-theme');
+          document.body?.classList.remove('dark-theme');
+        }
+      })();
+    </script>
+  </head>
+  <body class="dark-theme bookmarks-page-bg">
+    
+    
+      
+    
+
+    <main class="bookmarks-page-main">
+      
+<div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-4xl mx-auto">
+    
+    
+    <div class="mb-8">
+      <a href="/" class="inline-flex items-center text-sm font-semibold text-slate-400 hover:text-white transition-colors gap-2 text-decoration-none">
+        <i class="fas fa-arrow-left"></i> Back to Workspace Hub
+      </a>
+    </div>
+
+    
+    <div class="rounded-2xl overflow-hidden border border-slate-700/50 bg-slate-900/60 backdrop-blur-md shadow-2xl mb-12">
+      <div class="aspect-[21/9] w-full overflow-hidden bg-slate-950">
+        <img src="/littlethings/images/bookmarks/splash.png" alt="Bookmarks Organizer Banner" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='https://placehold.co/800x350/0F172A/F59E0B?text=BOOKMARKS+ORGANIZER&font=press-start-2p';">
+      </div>
+      
+      <div class="p-8 sm:p-10">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-8">
+          <div>
+            <h1 class="text-4xl font-extrabold text-white tracking-tight" style="font-family: 'Inter', sans-serif;">
+              Bookmarks Organizer
+            </h1>
+            <p class="text-lg text-amber-400 font-semibold mt-1">
+              AI-Powered Browser Bookmarks Optimizer & Organizer
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-3">
+            <a href="https://github.com/GINNOV/Ultimate-Chrome-Bookmarks" target="_blank" class="inline-flex items-center justify-center py-3 px-6 rounded-xl font-semibold text-amber-300 border border-amber-500/30 hover:border-amber-500/50 hover:bg-amber-500/10 active:bg-amber-500/20 transition-all gap-2 text-decoration-none">
+              <i class="fas fa-code"></i> Source Code
+            </a>
+            <a href="https://github.com/GINNOV/Ultimate-Chrome-Bookmarks/releases/download/v0.1.0-build-42/UltimateOrganizer-0.1.0-build-42.dmg" target="_blank" class="inline-flex items-center justify-center py-3 px-6 rounded-xl font-semibold text-white bg-amber-600 hover:bg-amber-700 active:bg-amber-800 transition-all shadow-lg shadow-amber-600/30 gap-2 text-decoration-none">
+              <i class="fas fa-download"></i> Download DMG
+            </a>
+          </div>
+        </div>
+
+        
+        <p class="text-slate-300 leading-relaxed text-justify mb-8 text-base">
+          <strong>Bookmarks Organizer</strong> is a native macOS utility built to clean up, categorize, and restructure your chaotic browser bookmarks using local AI models. Connecting directly to your local <strong>Ollama</strong> or <strong>LM Studio</strong> instance, it analyzes your bookmarks library, automatically generates clean and consistent names based on page contents, builds a logically nested folder structure, and helps you merge duplicate links seamlessly.
+        </p>
+
+        <hr class="border-slate-800 my-8" />
+
+        
+        <h2 class="text-2xl font-bold text-white mb-6">Core Capabilities</h2>
+        <div class="grid gap-6 sm:grid-cols-2 mb-10">
+          <div class="p-5 rounded-xl bg-slate-950/40 border border-slate-850">
+            <h3 class="text-lg font-bold text-amber-300 mb-2 flex items-center gap-2">
+              <i class="fas fa-magic"></i> Auto-Renaming
+            </h3>
+            <p class="text-sm text-slate-400 leading-relaxed text-justify">
+              Leverages local LLMs (e.g. Llama 3) to generate clean, descriptive names for bookmarks based on their URL and original titles.
+            </p>
+          </div>
+
+          <div class="p-5 rounded-xl bg-slate-950/40 border border-slate-850">
+            <h3 class="text-lg font-bold text-amber-300 mb-2 flex items-center gap-2">
+              <i class="fas fa-folder-tree"></i> Deep Hierarchy
+            </h3>
+            <p class="text-sm text-slate-400 leading-relaxed text-justify">
+              Presents "The Librarian," a prompt-based categorization system that structures your bookmarks library into nested, clean folders.
+            </p>
+          </div>
+
+          <div class="p-5 rounded-xl bg-slate-950/40 border border-slate-850">
+            <h3 class="text-lg font-bold text-amber-300 mb-2 flex items-center gap-2">
+              <i class="fas fa-columns"></i> Staging Area Review
+            </h3>
+            <p class="text-sm text-slate-400 leading-relaxed text-justify">
+              Compare current vs. proposed folder layouts side-by-side. Make manual adjustments and drag-and-drop items before writing changes.
+            </p>
+          </div>
+
+          <div class="p-5 rounded-xl bg-slate-950/40 border border-slate-850">
+            <h3 class="text-lg font-bold text-amber-300 mb-2 flex items-center gap-2">
+              <i class="fas fa-shield-halved"></i> Conflict Detection & Safety
+            </h3>
+            <p class="text-sm text-slate-400 leading-relaxed text-justify">
+              Protects browser configuration. Detects if Google Chrome is running and locks direct writing until it is closed to avoid corruption.
+            </p>
+          </div>
+        </div>
+
+        
+        <h2 class="text-2xl font-bold text-white mb-4">How it Works</h2>
+        <p class="text-slate-300 leading-relaxed text-justify mb-8 text-sm">
+          Simply open the application, select your Chrome profile folder, and trigger a library import. Bookmarks Organizer parses the browser JSON structure into a local SwiftData sandbox. From there, you can choose <strong>Fast Mode</strong> (relying on page metadata) or <strong>Deep Mode</strong> (fetching page contents), process them with a local model, check the proposed edits, and write the updates back to your active browser library in one click.
+        </p>
+
+        
+        <h2 class="text-2xl font-bold text-white mb-6">Setup Modes</h2>
+        <div class="space-y-6">
+          <div class="border-l-4 border-amber-500 pl-4 py-1">
+            <h3 class="text-lg font-bold text-white mb-1">1. Normal Setup (.dmg Installer)</h3>
+            <p class="text-sm text-slate-400 leading-relaxed text-justify">
+              Download the release DMG bundle, open the installer, and drag <code>UltimateOrganizer.app</code> into your Applications folder. Ensure you have Ollama or LM Studio active on port <code>11434</code> or <code>1234</code>.
+            </p>
+          </div>
+
+          <div class="border-l-4 border-slate-500 pl-4 py-1">
+            <h3 class="text-lg font-bold text-white mb-1">2. Developer Setup (Swift & Xcode)</h3>
+            <p class="text-sm text-slate-400 leading-relaxed text-justify">
+              Clone the source code from GitHub, open the directory in Xcode or use Swift Package Manager. Compile and run using <code>./script/build_and_run.sh</code> or test the package logic directly.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    
+  </div>
+</div>
+
+<style>
+  .bookmarks-page-bg {
+    background-color: #0b0f19;
+    background-image: radial-gradient(circle at 50% 10%, #451a03 0%, #09090b 70%);
+  }
+  .bookmarks-page-main {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    backdrop-filter: none;
+  }
+</style>
+
+    </main>
+
+    
+      
+    
+
+    
+    <script src="/littlethings/common/js/copy-code.js"></script>
+  </body>
+</html>
