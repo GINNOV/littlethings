@@ -54,13 +54,6 @@
 				<description>&lt;p&gt;An introduction to using hardware sprites on the Amiga. Learn how to define sprite data, position sprites, and create simple animations. The Amiga&#39;s hardware sprites were a game-changer, allowing for fast, smooth-moving objects without needing to redraw the background (a process managed by the Blitter!).&lt;/p&gt;&#xA;&lt;h3&gt;What is a Hardware Sprite?&lt;/h3&gt;&#xA;&lt;p&gt;A hardware sprite is a separate, small graphical object that the Amiga&#39;s video hardware can display on top of the normal background screen. The Amiga has 8 hardware sprites, each 16 pixels wide and any height. They have their own color palettes and their positions can be updated independently of the main screen, making them perfect for characters, bullets, and cursors.&lt;/p&gt;</description>
 			</item>
 			<item>
-				<title>Bookmarks Organizer</title>
-				<link>https://ginnov.github.io/littlethings/bookmarks.html</link>
-				<pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-				<guid>https://ginnov.github.io/littlethings/bookmarks.html</guid>
-				<description></description>
-			</item>
-			<item>
 				<title>Developer Resources</title>
 				<link>https://ginnov.github.io/littlethings/amiga/resources.html</link>
 				<pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>

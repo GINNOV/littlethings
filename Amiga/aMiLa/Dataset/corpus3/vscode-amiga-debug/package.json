@@ -1,0 +1,610 @@
+{
+	"name": "amiga-debug",
+	"displayName": "Amiga C/C++ Compile, Debug & Profile",
+	"publisher": "BartmanAbyss",
+	"description": "One-stop VS Code Extension to compile, debug and profile Amiga C/C++ programs compiled by the bundled gcc 15.1 with the bundled WinUAE/FS-UAE and GDB",
+	"repository": {
+		"url": "https://github.com/BartmanAbyss/vscode-amiga-debug"
+	},
+	"version": "1.8.2",
+	"license": "GPL-3.0-or-later",
+	"engines": {
+		"vscode": "^1.46.0"
+	},
+	"categories": [
+		"Debuggers"
+	],
+	"icon": "icon.png",
+	"activationEvents": [
+		"onDebug",
+		"onCommand:amiga.bin-path",
+		"onCommand:amiga.initProject",
+		"onCommand:amiga.terminal",
+		"onCommand:amiga.profileSize",
+		"onCommand:amiga.shrinkler",
+		"onCommand:amiga.disassembleElf",
+		"onCommand:amiga.exe2adf",
+		"onCommand:amiga.cleanTemp",
+		"onCommand:amiga.externalResources.gradientMaster",
+		"onCommand:amiga.externalResources.imageTool",
+		"onCommand:amiga.externalResources.colorReducer",
+		"onCommand:amiga.externalResources.bltconCheatSheet",
+		"onCommand:amiga.externalResources.amigaHRM",
+		"onCustomEditor:amiga.profile",
+		"onCustomEditor:amiga.objdump",
+		"onCustomEditor:amiga.savestate",
+		"onLanguage:amiga.assembly",
+		"onLanguage:m68k",
+		"workspaceContains:.vscode/amiga.json"
+	],
+	"main": "./dist/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "amiga.registers.selectedNode",
+				"title": "Selected"
+			},
+			{
+				"command": "amiga.registers.copyValue",
+				"title": "Copy Value"
+			},
+			{
+				"command": "amiga.registers.setFormat",
+				"title": "Set Value Format"
+			},
+			{
+				"category": "Amiga",
+				"command": "amiga.examineMemory",
+				"title": "View Memory"
+			},
+			{
+				"category": "Amiga",
+				"command": "amiga.examineMemoryVariable",
+				"title": "View Memory"
+			},
+			{
+				"category": "Amiga",
+				"command": "amiga.examineMemoryVariableIndirect",
+				"title": "View Memory (pointer)"
+			},
+			{
+				"category": "Amiga",
+				"command": "amiga.viewDisassembly",
+				"title": "View Disassembly (Function)"
+			},
+			{
+				"category": "Amiga",
+				"command": "amiga.setForceDisassembly",
+				"title": "Set Force Disassembly"
+			},
+			{
+				"category": "Amiga",
+				"command": "amiga.setDisassembledMemory",
+				"title": "Set Disassembled Memory"
+			},
+			{
+				"category": "Amiga",
+				"command": "amiga.initProject",
+				"title": "Init Project"
+			},
+			{
+				"category": "Amiga",
+				"command": "amiga.cleanTemp",
+				"title": "Clean Temp Files"
+			},
+			{
+				"category": "Amiga",
+				"command": "amiga.startProfile",
+				"title": "Profile",
+				"icon": "$(graph)"
+			},
+			{
+				"category": "Amiga",
+				"command": "amiga.startProfileMulti",
+				"title": "Profile (Multi)",
+				"icon": "$(settings)"
+			},
+			{
+				"category": "Amiga",
+				"command": "amiga.profileSize",
+				"title": "Amiga: Profile File Size"
+			},
+			{
+				"category": "Amiga",
+				"command": "amiga.disassembleElf",
+				"title": "Amiga: Disassemble ELF File"
+			},
+			{
+				"category": "Amiga",
+				"command": "amiga.shrinkler",
+				"title": "Amiga: Shrinkle File"
+			},
+			{
+				"category": "Amiga",
+				"command": "amiga.externalResources.gradientMaster",
+				"title": "Open Gradient Master"
+			},
+			{
+				"category": "Amiga",
+				"command": "amiga.externalResources.imageTool",
+				"title": "Open Image Tool"
+			},
+			{
+				"category": "Amiga",
+				"command": "amiga.externalResources.colorReducer",
+				"title": "Open Color Reducer"
+			},
+			{
+				"category": "Amiga",
+				"command": "amiga.externalResources.bltconCheatSheet",
+				"title": "Open BLTCON Cheat Sheet"
+			},
+			{
+				"category": "Amiga",
+				"command": "amiga.externalResources.amigaHRM",
+				"title": "Open Amiga Hardware Reference Manual"
+			},
+			{
+				"category": "Amiga",
+				"command": "amiga.terminal",
+				"title": "Open Terminal"
+			},
+			{
+				"category": "Amiga",
+				"command": "amiga.exe2adf",
+				"title": "Amiga: Convert EXE to ADF"
+			},
+			{
+				"category": "Amiga",
+				"command": "amiga.toggleCounts",
+				"title": "Toggle Cycle Counts"
+			}
+		],
+		"languages": [
+			{
+				"id": "amiga.disassembly",
+				"aliases": [
+					"Amiga Disassembly"
+				],
+				"extensions": [
+					".amigaasm"
+				],
+				"configuration": "./amiga.disassembly-language-configuration.json"
+			},
+			{
+				"id": "amiga.assembly",
+				"aliases": [
+					"Amiga Assembly (GAS)"
+				],
+				"extensions": [
+					".s"
+				],
+				"configuration": "./amiga.assembly-language-configuration.json"
+			},
+			{
+				"id": "amiga.savestate",
+				"extensions": [
+					".uss"
+				],
+				"icon": {
+					"light": "icon.png",
+					"dark": "icon.png"
+				}
+			},
+			{
+				"id": "amiga.profile",
+				"extensions": [
+					".amigaprofile",
+					".shrinklerstats"
+				],
+				"icon": {
+					"light": "icon.png",
+					"dark": "icon.png"
+				}
+			},
+			{
+				"id": "amiga.objdump",
+				"extensions": [
+					".objdump"
+				],
+				"icon": {
+					"light": "icon.png",
+					"dark": "icon.png"
+				}
+			}
+		],
+		"grammars": [
+			{
+				"language": "amiga.disassembly",
+				"scopeName": "source.amiga-disassembly",
+				"path": "./syntaxes/amiga-disassembly.json"
+			},
+			{
+				"language": "amiga.assembly",
+				"scopeName": "source.amiga-assembly",
+				"path": "./syntaxes/amiga-assembly.json"
+			}
+		],
+		"customEditors": [
+			{
+				"viewType": "amiga.profile",
+				"displayName": "Amiga Profile Visualizer",
+				"priority": "default",
+				"selector": [
+					{
+						"filenamePattern": "*.amigaprofile"
+					},
+					{
+						"filenamePattern": "*.shrinklerstats"
+					}
+				]
+			},
+			{
+				"viewType": "amiga.objdump",
+				"displayName": "Amiga ELF Disassembly",
+				"priority": "default",
+				"selector": [
+					{
+						"filenamePattern": "*.objdump"
+					}
+				]
+			},
+			{
+				"viewType": "amiga.savestate",
+				"displayName": "Amiga WinUAE Savestate",
+				"priority": "default",
+				"selector": [
+					{
+						"filenamePattern": "*.uss"
+					}
+				]
+			}
+		],
+		"breakpoints": [
+			{
+				"language": "c"
+			},
+			{
+				"language": "cpp"
+			},
+			{
+				"language": "amiga.assembly"
+			},
+			{
+				"language": "amiga.disassembly"
+			},
+			{
+				"language": "m68k"
+			}
+		],
+		"debuggers": [
+			{
+				"type": "amiga",
+				"label": "Amiga Debug",
+				"program": "./dist/debugAdapter.js",
+				"runtime": "node",
+				"configurationAttributes": {
+					"launch": {
+						"required": [
+							"program"
+						],
+						"properties": {
+							"config": {
+								"type": "string",
+								"description": "Amiga model (A500, A1200, A4000)",
+								"default": "A500",
+								"enum": [
+									"A500",
+									"A1200",
+									"A1200-FAST",
+									"A1200-030",
+									"A3000",
+									"A4000"
+								]
+							},
+							"program": {
+								"type": "string",
+								"description": "Absolute path to a executable file.",
+								"default": ""
+							},
+							"endcli": {
+								"type": "boolean",
+								"description": "Run with EndCLI so you can call CloseWorkBench()",
+								"default": false
+							},
+							"stack": {
+								"type": "string",
+								"description": "Override stack size (in bytes)",
+								"default": ""
+							},
+							"uaelog": {
+								"type": "boolean",
+								"description": "Show WinUAE log output in debug console",
+								"default": true
+							},
+							"kickstart": {
+								"type": "string",
+								"description": "Absolute path to a Kickstart ROM",
+								"default": ""
+							},
+							"cpuboard": {
+								"type": "string",
+								"description": "Absolute path to a CPU Board Extension ROM",
+								"default": ""
+							},
+							"chipmem": {
+								"type": "string",
+								"description": "Override CHIP memory size. Set to empty string for configuration defaults.",
+								"default": "",
+								"enum": [
+									"",
+									"256k",
+									"512k",
+									"1m",
+									"1.5m",
+									"2m"
+								]
+							},
+							"fastmem": {
+								"type": "string",
+								"description": "Override FAST memory size. Set to empty string for configuration defaults.",
+								"default": "",
+								"enum": [
+									"",
+									"0",
+									"64k",
+									"128k",
+									"256k",
+									"512k",
+									"1M",
+									"2M",
+									"4M",
+									"8M"
+								]
+							},
+							"slowmem": {
+								"type": "string",
+								"description": "Override SLOW memory size. Set to empty string for configuration defaults.",
+								"default": "",
+								"enum": [
+									"",
+									"0",
+									"512k",
+									"1M",
+									"1.8M"
+								]
+							},
+							"ntsc": {
+								"type": "boolean",
+								"description": "NTSC mode",
+								"default": false
+							},
+							"emuargs": {
+								"type": "array",
+								"items": {
+									"type": "string",
+									"title": "argument"
+								},
+								"description": "Addtional CLI arguments for emulator",
+								"default": []
+							}
+						}
+					}
+				},
+				"initialConfigurations": [
+					{
+						"type": "amiga",
+						"request": "launch",
+						"name": "Ask for file name",
+						"config": "A500",
+						"program": "",
+						"kickstart": "<Enter path to KICKSTART 1.3 ROM here>"
+					}
+				],
+				"configurationSnippets": [
+					{
+						"label": "Amiga Debug: Launch",
+						"description": "A new configuration for debugging Amiga projects.",
+						"body": {
+							"type": "amiga",
+							"request": "launch",
+							"name": "Ask for file name",
+							"config": "A500",
+							"program": "",
+							"kickstart": "<Enter path to KICKSTART 1.3 ROM here>"
+						}
+					}
+				]
+			}
+		],
+		"menus": {
+			"commandPalette": [
+				{
+					"command": "amiga.registers.copyValue",
+					"when": "false"
+				},
+				{
+					"command": "amiga.examineMemory",
+					"when": "debugType == amiga"
+				},
+				{
+					"command": "amiga.viewDisassembly",
+					"when": "debugType == amiga"
+				},
+				{
+					"command": "amiga.setForceDisassembly",
+					"when": "debugType == amiga"
+				}
+			],
+			"view/item/context": [
+				{
+					"command": "amiga.registers.copyValue",
+					"when": "view == amiga.registers && viewItem == register"
+				},
+				{
+					"command": "amiga.registers.copyValue",
+					"when": "view == amiga.customRegisters && viewItem == register"
+				},
+				{
+					"command": "amiga.registers.copyValue",
+					"when": "view == amiga.registers && viewItem == field"
+				},
+				{
+					"command": "amiga.registers.setFormat",
+					"when": "view == amiga.registers || view == amiga.customRegisters"
+				}
+			],
+			"debug/toolBar": [
+				{
+					"command": "amiga.startProfileMulti",
+					"when": "debugType == amiga"
+				},
+				{
+					"command": "amiga.startProfile",
+					"when": "debugType == amiga"
+				}
+			],
+			"debug/variables/context": [
+				{
+					"command": "amiga.examineMemoryVariable",
+					"when": "debugType == amiga"
+				},
+				{
+					"command": "amiga.examineMemoryVariableIndirect",
+					"when": "debugType == amiga"
+				}
+			],
+			"view/title": [],
+			"explorer/context": [
+				{
+					"command": "amiga.profileSize",
+					"group": "1_amiga",
+					"when": "resourceExtname == '.elf'"
+				},
+				{
+					"command": "amiga.disassembleElf",
+					"group": "1_amiga",
+					"when": "resourceExtname == '.elf'"
+				},
+				{
+					"command": "amiga.shrinkler",
+					"group": "1_amiga",
+					"when": "resourceExtname == '.exe'"
+				},
+				{
+					"command": "amiga.exe2adf",
+					"group": "1_amiga",
+					"when": "resourceExtname == '.exe'"
+				}
+			]
+		},
+		"views": {
+			"debug": [
+				{
+					"id": "amiga.disassembledMemory",
+					"name": "Disassembled Memory",
+					"when": "debugType == amiga"
+				},
+				{
+					"id": "amiga.registers",
+					"name": "CPU Registers",
+					"when": "debugType == amiga"
+				},
+				{
+					"id": "amiga.customRegisters",
+					"name": "Custom Registers",
+					"when": "debugType == amiga"
+				}
+			]
+		},
+		"configuration": [
+			{
+				"title": "Amiga C/C++ Compile, Debug & Profile",
+				"properties": {
+					"amiga.program": {
+						"type": "string",
+						"default": "out/a",
+						"description": "Path to the output program (without extension), relative to the workspace."
+					},
+					"amiga.rom-paths.A500": {
+						"type": "string",
+						"default": "c:/amiga/KICK13.rom",
+						"description": "Path to the Kickstart ROM for A500 models."
+					},
+					"amiga.rom-paths.A1200": {
+						"type": "string",
+						"default": "c:/amiga/KICK31.rom",
+						"description": "Path to the Kickstart ROM for A1200 models."
+					},
+					"amiga.rom-paths.A4000": {
+						"type": "string",
+						"default": "c:/amiga/KICK31.rom",
+						"description": "Path to the Kickstart ROM for A4000 models."
+					}
+				}
+			}
+		]
+	},
+	"scripts": {
+		"vscode:prepublish": "webpack --mode=production",
+		"compile": "webpack --mode=development",
+		"watch": "webpack --watch --mode=development",
+		"lint": "eslint -c .eslintrc.js --ext .ts,.tsx src"
+	},
+	"devDependencies": {
+		"@types/glob": "^8.1.0",
+		"@types/mocha": "^10.0.6",
+		"@types/node": "^20.11.16",
+		"@types/pubsub-js": "^1.8.6",
+		"@types/react-highlight-words": "^0.16.7",
+		"@types/react-tabs": "^2.3.4",
+		"@types/vscode": "^1.46",
+		"@typescript-eslint/eslint-plugin": "^6.21.0",
+		"@typescript-eslint/parser": "^6.21.0",
+		"base64-encoding": "^0.15.0-alpha.0",
+		"clean-webpack-plugin": "^4.0.0",
+		"css-loader": "^6.10.0",
+		"devtools-protocol": "^0.0.1255431",
+		"eslint": "^8.56.0",
+		"eslint-config-prettier": "^9.1.0",
+		"eslint-plugin-import": "^2.29.1",
+		"eslint-plugin-jsdoc": "^48.0.6",
+		"eslint-plugin-prefer-arrow": "^1.2.3",
+		"fork-ts-checker-webpack-plugin": "^9.0.2",
+		"glob": "^8.1.0",
+		"markdown-to-jsx": "^7.4.1",
+		"mocha": "^10.2.0",
+		"preact": "^10.19.3",
+		"preact-virtual-list": "^0.3.1",
+		"pubsub-js": "^1.9.4",
+		"raw-loader": "^4.0.2",
+		"react": "npm:@preact/compat@^17.1.2",
+		"react-dom": "npm:@preact/compat@^17.1.2",
+		"react-highlight-words": "^0.20.0",
+		"react-split": "^2.0.14",
+		"react-tabs": "^4.3.0",
+		"source-map-loader": "^5.0.0",
+		"style-loader": "^3.3.4",
+		"svg-inline-loader": "^0.8.2",
+		"terser-webpack-plugin": "^5.3.10",
+		"ts-loader": "^9.5.1",
+		"ts-node": "^10.9.2",
+		"typescript": "^5.3.3",
+		"vscode-debugadapter-testsupport": "^1.51.0",
+		"vscode-test": "^1.6.1",
+		"webpack": "^5.90.1",
+		"webpack-cli": "^5.1.4",
+		"zustand": "^4.5.0"
+	},
+	"dependencies": {
+		"m68kdecode": "^1.1.4",
+		"vscode-cpptools": "^6.1.0",
+		"vscode-debugadapter": "^1.51.0",
+		"vscode-debugprotocol": "^1.51.0",
+		"vscode-jsonrpc": "^8.2.0"
+	},
+	"vsce": {
+		"dependencies": false,
+		"useYarn": false
+	}
+}
