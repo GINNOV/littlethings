@@ -47,7 +47,7 @@ export function useActions(source: "x" | "yt", enrichBatchSize: number, soundOnC
     }
   };
 
-  const runEnrich = async (full = false) => {
+  const runEnrich = async (full = false, reprocess = false) => {
     const key = source === "x" ? "enrichX" : "enrichYt";
     setLoad(key, true); setMessage("Starting...");
     try {
@@ -61,6 +61,7 @@ export function useActions(source: "x" | "yt", enrichBatchSize: number, soundOnC
         const limit = full ? 500 : (source === "yt" ? 200 : enrichBatchSize);
         let url = `/api/enrich?source=${source}&limit=${limit}`;
         if (full) url += "&full=true";
+        if (reprocess) url += "&reprocess=true";
         if (runId) url += `&runId=${runId}`;
 
         const res = await fetch(url, { method: "POST" });

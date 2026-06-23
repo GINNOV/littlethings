@@ -33,6 +33,7 @@ pub fn run() {
   tauri::Builder::default()
     .manage(server_process)
     .plugin(tauri_plugin_updater::Builder::new().build())
+    .plugin(tauri_plugin_window_state::Builder::new().build())
     .invoke_handler(tauri::generate_handler![open_in_browser, relaunch_app])
     .setup(|app| {
       if cfg!(debug_assertions) {

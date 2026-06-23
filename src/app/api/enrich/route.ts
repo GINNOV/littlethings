@@ -87,6 +87,7 @@ export async function POST(request: Request) {
   const limitParam = url.searchParams.get("limit"), concurrencyParam = url.searchParams.get("concurrency");
   const sourceParam = url.searchParams.get("source"), folderIdParam = url.searchParams.get("folderId");
   const runIdParam = url.searchParams.get("runId"), fullParam = url.searchParams.get("full") === "true";
+  const reprocessParam = url.searchParams.get("reprocess") === "true";
   
   const source = sourceParam === "x" || sourceParam === "yt" ? sourceParam : null;
   const folderId = folderIdParam?.trim() ? folderIdParam.trim() : null;
@@ -101,29 +102,41 @@ export async function POST(request: Request) {
   const concurrency = concurrencyParam ? Math.min(MAX_ENRICH_CONCURRENCY, Math.max(1, Number(concurrencyParam))) : settings?.llmConcurrency ?? 1;
 
   const pendingWhere = { 
-    AND: [
-      { OR: [{ summary: null }, { summary: "" }] },
-      { OR: [{ category: null }, { category: "" }] }
-    ],
-    ...(!fullParam ? { enrichmentFailures: { lt: 3 } } : {}),
+    ...(!reprocessParam ? {
+      AND: [
+        { OR: [{ summary: null }, { summary: "" }] },
+        { OR: [{ category: null }, { category: "" }] }
+      ]
+    } : {}),
+    ...(!fullParam && !reprocessParam ? { enrichmentFailures: { lt: 3 } } : {}),
     ...(source ? { source } : {}), 
     ...(folderId ? { folderId } : {}) 
   };
 
+  const attemptedIds = new Set<string>();
+
   let run: OperationRun | null = null;
   if (runIdParam) {
     run = await prisma.operationRun.findUnique({ where: { id: runIdParam } });
-    if (run) await prisma.operationRun.update({ where: { id: run.id }, data: { status: "running" } });
+    if (run) {
+      await prisma.operationRun.update({ where: { id: run.id }, data: { status: "running" } });
+      const pastEvents = await prisma.processingEvent.findMany({
+        where: { runId: run.id, bookmarkId: { not: null } },
+        select: { bookmarkId: true }
+      });
+      for (const ev of pastEvents) {
+        if (ev.bookmarkId) attemptedIds.add(ev.bookmarkId);
+      }
+    }
   }
   
   if (!run) {
     const totalPending = await prisma.bookmark.count({ where: pendingWhere });
-    run = await createOperationRun({ type: folderId ? "folder_enrichment" : "enrichment_batch", source, total: totalPending, notes: `${folderId ? `folder:${folderId}` : `batch:${batchLimit}`}. concurrency:${concurrency}` });
+    run = await createOperationRun({ type: folderId ? "folder_enrichment" : "enrichment_batch", source, total: totalPending, notes: `${folderId ? `folder:${folderId}` : `batch:${batchLimit}`}. concurrency:${concurrency}${reprocessParam ? " reprocess" : ""}` });
   }
 
   if (!run) return NextResponse.json({ ok: false, error: "Failed to initialize operation run" }, { status: 500 });
   const activeRun = run;
-  const attemptedIds = new Set<string>();
 
   try {
     await validateModelAvailability();
