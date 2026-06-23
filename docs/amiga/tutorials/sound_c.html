@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head><script src="/littlethings/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=littlethings/livereload" data-no-instant defer></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Interactive Sound: The &#39;Push My Button&#39; Tutorial - Back to Amiga Dev Hub</title>
+    <link rel="stylesheet" href="/littlethings/common/style.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    
+    <script>
+      (function() {
+        const savedTheme = localStorage.getItem('theme') || 
+                           (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        if (savedTheme === 'dark') {
+          document.documentElement.classList.add('dark-theme');
+          document.body?.classList.add('dark-theme');
+        } else {
+          document.documentElement.classList.remove('dark-theme');
+          document.body?.classList.remove('dark-theme');
+        }
+      })();
+    </script>
+  </head>
+  <body class="dark-theme ">
+    
+    
+      
+        <header>
+    <div class="header-content">
+        <a href="/littlethings/amiga/index.html">
+            <img src="/littlethings/images/back_to_the_amiga.png" alt="Back to Amiga Dev Hub Logo" class="header-logo" onerror="this.onerror=null;this.src='https://placehold.co/180x50/003366/FF8800?text=Amiga+Dev+Hub&font=press-start-2p';this.alt='Amiga Dev Hub';">
+        </a>
+        <button class="menu-toggle" id="menu-toggle-btn">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+    <nav class="sidebar" id="header-nav">
+        <ul>
+            <li><a href="/littlethings/amiga/index.html" id="nav-projects" class="">PROJECTS</a></li>
+            <li><a href="/littlethings/amiga/walkthroughs.html" id="nav-tutorials" class="active">TUTORIALS</a></li>
+            <li><a href="/littlethings/amiga/resources.html" id="nav-resources" class="">RESOURCES</a></li>
+            <li><a href="/littlethings/amiga/about.html" id="nav-about" class="">ABOUT</a></li>
+        </ul>
+    </nav>
+</header>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      const menuToggle = document.getElementById('menu-toggle-btn');
+      const sidebar = document.querySelector('#header-nav ul');
+      if (menuToggle && sidebar) {
+          if (window.innerWidth < 768) sidebar.classList.add('hidden');
+          menuToggle.addEventListener('click', () => sidebar.classList.toggle('hidden'));
+          window.addEventListener('resize', () => {
+              if (window.innerWidth >= 768) {
+                  sidebar.classList.remove('hidden');
+              } else {
+                  sidebar.classList.add('hidden');
+              }
+          });
+      }
+  });
+</script>
+
+      
+    
+
+    <main class="content-page">
+      
+<section>
+  <h2>Interactive Sound: The &#39;Push My Button&#39; Tutorial</h2>
+  <p>So far, we've made things move on screen. Now, let's make some noise! The Amiga's four 8-bit sound channels, collectively named "Paula," gave it an audio capability that was light-years ahead of its time. This tutorial will guide you through loading a sound sample, drawing a button on the screen, and playing the sound when the user clicks the button.</p>
+<h3>The Concept: Events and Audio</h3>
+<p>Unlike our previous examples that took over the whole system, this program will run as a proper AmigaDOS process. We'll open a window, draw our button, and then enter a loop to wait for user input (events). When we detect a mouse click inside our button's area, we'll trigger the sound and provide some visual feedback by changing the button's color.</p>
+<img src="https://placehold.co/600x350/9333ea/ddd6fe?text=Amiga+Audio+Fun&font=press-start-2p" alt="Illustration of an Amiga playing sound" class="w-full max-w-lg mx-auto my-8 rounded-lg shadow-lg border-2 border-gray-600" />
+<h3>Preparing Your Sound Sample</h3>
+<p>The Amiga hardware plays raw 8-bit signed audio samples. You can't just use an MP3 or WAV file directly. You'll need to convert your sound into the Amiga's native `8SVX` IFF format.</p>
+<ol class="list-decimal list-inside space-y-2 pl-4">
+    <li>Find a sound effect you like (a short `.wav` file is perfect).</li>
+    <li>Use a modern audio editor like <a href="https://www.audacityteam.org/" target="_blank" rel="noopener noreferrer">Audacity</a> to convert it. Open your sound, change the format to "Other uncompressed files", and under "Header," select "SDS (Amiga 8SVX)". Set the encoding to "Signed 8-bit PCM".</li>
+    <li>Save this new file as `sound.8svx`.</li>
+</ol>
+<h4>The Code (button_sound.c):</h4>
+<div class="code-block-wrapper">
+    <button class="copy-code-button"><i class="far fa-copy"></i> Copy</button>
+    <pre><code>/*
+ * button_sound.c - A simple program to demonstrate
+ * interactive sound playback on the Amiga.
+ * - Opens a window
+ * - Draws a button
+ * - Plays a sound on mouse click
+ */
+<p>#include &lt;proto/exec.h&gt;
+#include &lt;proto/dos.h&gt;
+#include &lt;proto/graphics.h&gt;
+#include &lt;proto/intuition.h&gt;
+#include &lt;proto/datatypes.h&gt;</p>
+<p>#include &lt;datatypes/soundclass.h&gt;
+#include &lt;stdio.h&gt;</p>
+<p>/* Globals */
+struct Library *ExecBase = NULL;
+struct Library *DOSBase = NULL;
+struct Library *GfxBase = NULL;
+struct Library *IntuitionBase = NULL;
+struct Library *DataTypesBase = NULL;</p>
+<p>struct Window *win = NULL;
+Object *sound_obj = NULL;</p>
+<p>/* Cleanup function */
+void cleanup(int code) {
+if (sound_obj) DisposeDTObject(sound_obj);
+if (DOSBase) CloseLibrary(DOSBase);
+if (DataTypesBase) CloseLibrary(DataTypesBase);
+if (win) CloseWindow(win);
+if (IntuitionBase) CloseLibrary(IntuitionBase);
+if (GfxBase) CloseLibrary(GfxBase);
+exit(code);
+}</p>
+<p>/* Draws the button in a specific state */
+void draw_button(int state) {
+SetAPen(win-&gt;RPort, (state == 1) ? 2 : 1); // state 1 = pressed (color 2), 0 = normal (color 1)
+RectFill(win-&gt;RPort, 100, 40, 220, 60);</p>
+<pre><code>SetAPen(win-&amp;gt;RPort, (state == 1) ? 1 : 2);
+Move(win-&amp;gt;RPort, 140, 50);
+Text(win-&amp;gt;RPort, &quot;Play Sound&quot;, 10);
+</code></pre>
+<p>}</p>
+<p>int main(void) {
+ExecBase = (*(struct ExecBase **)4);</p>
+<pre><code>/* Open necessary libraries */
+GfxBase = OpenLibrary(&quot;graphics.library&quot;, 37);
+IntuitionBase = OpenLibrary(&quot;intuition.library&quot;, 37);
+DOSBase = OpenLibrary(&quot;dos.library&quot;, 37);
+DataTypesBase = OpenLibrary(&quot;datatypes.library&quot;, 37);
+if (!GfxBase || !IntuitionBase || !DOSBase || !DataTypesBase) {
+    puts(&quot;Failed to open a required library.&quot;);
+    cleanup(20);
+}
+
+/* Load the sound file using DataTypes */
+sound_obj = NewDTObject(&quot;sound.8svx&quot;, DTA_SourceType, DTST_FILE, DTA_GroupID, GID_SOUND, TAG_END);
+if (!sound_obj) {
+    puts(&quot;Could not load sound.8svx. Make sure it's in the same directory.&quot;);
+    cleanup(20);
+}
+
+/* Open a simple window */
+win = OpenWindowTags(NULL,
+    WA_Width, 320, WA_Height, 100,
+    WA_Title, &quot;Sound Player&quot;,
+    WA_IDCMP, IDCMP_CLOSEWINDOW | IDCMP_MOUSEBUTTONS,
+    WA_Activate, TRUE,
+    WA_DragBar, TRUE,
+    WA_CloseGadget, TRUE,
+    TAG_END);
+if (!win) {
+    puts(&quot;Could not open window.&quot;);
+    cleanup(20);
+}
+
+draw_button(0); // Draw initial button state
+
+/* --- Main event loop --- */
+BOOL running = TRUE;
+while(running) {
+    struct IntuiMessage *msg;
+    Wait(1L &amp;lt;&amp;lt; win-&amp;gt;UserPort-&amp;gt;mp_SigBit);
+    while(msg = (struct IntuiMessage *)GetMsg(win-&amp;gt;UserPort)) {
+        if (msg-&amp;gt;Class == IDCMP_CLOSEWINDOW) {
+            running = FALSE;
+        }
+        if (msg-&amp;gt;Class == IDCMP_MOUSEBUTTONS) {
+            if (msg-&amp;gt;Code == SELECTDOWN) {
+                // Check if click is inside our button area
+                if (msg-&amp;gt;MouseX &amp;gt;= 100 &amp;&amp; msg-&amp;gt;MouseX &amp;lt;= 220 &amp;&amp;
+                    msg-&amp;gt;MouseY &amp;gt;= 40 &amp;&amp; msg-&amp;gt;MouseY &amp;lt;= 60)
+                {
+                    draw_button(1); // Animate: pressed state
+                    DoDTMethod(sound_obj, NULL, NULL, DTM_PLAY, NULL, SNDA_DEST_AUDION, 0, TAG_END);
+                }
+            }
+            if (msg-&amp;gt;Code == SELECTUP) {
+                draw_button(0); // Animate: normal state
+            }
+        }
+        ReplyMsg((struct Message *)msg);
+    }
+}
+
+cleanup(0);
+return 0;
+</code></pre>
+<p>}
+</code></pre></p>
+</div>
+<h4>How to Compile and Run on macOS</h4>
+<ol class="list-decimal list-inside space-y-2 pl-4">
+    <li><strong>Save the Code:</strong> Save the C code above into a file named `button_sound.c`.</li>
+    <li><strong>Get your Sound:</strong> Make sure you have your `sound.8svx` file in the same folder.</li>
+    <li><strong>Compile:</strong> Open your Terminal. If you've set up the vbcc environment variables from the previous tutorial, you can use this simple command:
+         <div class="code-block-wrapper">
+            <button class="copy-code-button"><i class="far fa-copy"></i> Copy</button>
+            <pre><code>vc +kick13 -o button_sound button_sound.c -lauto -lamiga</code></pre>
+        </div>
+        <p class="mt-2 text-sm">This command tells vbcc to link the necessary Amiga libraries (`-lamiga` and `-lauto`) for OS functions and create an executable named `button_sound`.</p>
+    </li>
+     <li><strong>Run in Emulator:</strong> In vAmiga or FS-UAE, mount the folder containing your new `button_sound` executable and `sound.8svx`. Boot into Workbench, open the Shell, and run your program by typing `button_sound`.</li>
+     <li><strong>See the Result:</strong> A window will open with a button. Click it to hear your sound play and see the button animate!</li>
+</ol>
+
+</section>
+
+
+
+    </main>
+
+    
+      
+        <footer>
+    <p>🍕 <a href="https://about.me/marioesposito" class="link" style="text-decoration: underline;">windrago</a> was here.</p>
+    <button id="theme-toggle">Toggle Theme</button>
+</footer>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      const themeToggle = document.getElementById('theme-toggle');
+      if (themeToggle) {
+          const applyTheme = (theme) => {
+              if (theme === 'dark') {
+                  document.documentElement.classList.add('dark-theme');
+                  document.body.classList.add('dark-theme');
+                  themeToggle.textContent = 'Light Mode';
+              } else {
+                  document.documentElement.classList.remove('dark-theme');
+                  document.body.classList.remove('dark-theme');
+                  themeToggle.textContent = 'Dark Mode';
+              }
+          };
+          
+          const savedTheme = localStorage.getItem('theme') || 
+                             (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          applyTheme(savedTheme);
+          
+          themeToggle.addEventListener('click', () => {
+              const newTheme = document.body.classList.contains('dark-theme') ? 'light' : 'dark';
+              localStorage.setItem('theme', newTheme);
+              applyTheme(newTheme);
+          });
+      }
+  });
+</script>
+
+      
+    
+
+    
+    <script src="/littlethings/common/js/copy-code.js"></script>
+  </body>
+</html>

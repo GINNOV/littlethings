@@ -1,39 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-	<meta name="generator" content="Hugo 0.163.3"><script src="/littlethings/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=littlethings/livereload" data-no-instant defer></script>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Workspace Hub - Littlethings</title>
-    <link rel="stylesheet" href="/littlethings/common/style.css" />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
-    />
-    
-    <script>
-      (function() {
-        const savedTheme = localStorage.getItem('theme') || 
-                           (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        if (savedTheme === 'dark') {
-          document.documentElement.classList.add('dark-theme');
-          document.body?.classList.add('dark-theme');
-        } else {
-          document.documentElement.classList.remove('dark-theme');
-          document.body?.classList.remove('dark-theme');
-        }
-      })();
-    </script>
-  </head>
-  <body class="dark-theme hub-page-bg">
-    
-    
-      
-    
+{{ define "title" }}Workspace Hub - Littlethings{{ end }}
+{{ define "bodyclass" }}hub-page-bg{{ end }}
+{{ define "mainclass" }}hub-page-main{{ end }}
 
-    <main class="hub-page-main">
-      
+{{ define "main" }}
 <div class="min-h-screen flex flex-col justify-between py-12 px-4 sm:px-6 lg:px-8">
   <div class="max-w-5xl mx-auto w-full text-center mt-8">
     <h1 class="font-bold tracking-tight text-white mb-4" style="font-family: 'Press Start 2P', cursive; font-size: 2.2rem; line-height: 1.4; text-shadow: 0 0 10px rgba(124, 58, 237, 0.5);">
@@ -43,13 +12,13 @@
       A personal collection of tools, experiments, source archives, and development workspaces. Select a hub to begin.
     </p>
 
-    
+    <!-- Project selection grid -->
     <div class="mt-16 grid gap-10 md:grid-cols-2 max-w-4xl mx-auto">
       
-      
+      <!-- Card 1: XBOOK -->
       <div class="group relative flex flex-col justify-between rounded-2xl overflow-hidden bg-slate-900/60 border border-slate-700/50 backdrop-blur-md shadow-2xl transition-all duration-300 hover:scale-[1.03] hover:border-violet-500 hover:shadow-violet-500/20">
         <div class="aspect-video w-full overflow-hidden bg-slate-850">
-          <img src="/littlethings/images/xbook/splash.jpg" alt="XBOOK Console Splash" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" onerror="this.onerror=null;this.src='https://placehold.co/600x350/0F172A/8B5CF6?text=XBOOK+CONSOLE&font=press-start-2p';">
+          <img src="{{ "images/xbook/splash.jpg" | relURL }}" alt="XBOOK Console Splash" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" onerror="this.onerror=null;this.src='https://placehold.co/600x350/0F172A/8B5CF6?text=XBOOK+CONSOLE&font=press-start-2p';">
         </div>
         <div class="p-8 flex-grow flex flex-col justify-between">
           <div>
@@ -61,17 +30,17 @@
             </p>
           </div>
           <div class="mt-4">
-            <a href="/littlethings/xbook.html" class="w-full py-3 px-6 rounded-xl font-semibold text-center text-white bg-violet-600 hover:bg-violet-700 active:bg-violet-800 transition-all shadow-lg shadow-violet-600/30 inline-block text-decoration-none">
+            <a href="{{ "xbook.html" | relURL }}" class="w-full py-3 px-6 rounded-xl font-semibold text-center text-white bg-violet-600 hover:bg-violet-700 active:bg-violet-800 transition-all shadow-lg shadow-violet-600/30 inline-block text-decoration-none">
               Explore Console
             </a>
           </div>
         </div>
       </div>
 
-      
+      <!-- Card 2: AMIGA -->
       <div class="group relative flex flex-col justify-between rounded-2xl overflow-hidden bg-slate-900/60 border border-slate-700/50 backdrop-blur-md shadow-2xl transition-all duration-300 hover:scale-[1.03] hover:border-amber-500 hover:shadow-amber-500/20">
         <div class="aspect-video w-full overflow-hidden bg-slate-850">
-          <img src="/littlethings/images/projects-header.jpg" alt="Amiga Dev Hub" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" onerror="this.onerror=null;this.src='https://placehold.co/600x350/0F172A/F59E0B?text=AMIGA+DEV+HUB&font=press-start-2p';">
+          <img src="{{ "images/projects-header.jpg" | relURL }}" alt="Amiga Dev Hub" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" onerror="this.onerror=null;this.src='https://placehold.co/600x350/0F172A/F59E0B?text=AMIGA+DEV+HUB&font=press-start-2p';">
         </div>
         <div class="p-8 flex-grow flex flex-col justify-between">
           <div>
@@ -83,7 +52,7 @@
             </p>
           </div>
           <div class="mt-4">
-            <a href="/littlethings/amiga/index.html" class="w-full py-3 px-6 rounded-xl font-semibold text-center text-white bg-amber-600 hover:bg-amber-700 active:bg-amber-800 transition-all shadow-lg shadow-amber-600/30 inline-block text-decoration-none">
+            <a href="{{ "amiga/index.html" | relURL }}" class="w-full py-3 px-6 rounded-xl font-semibold text-center text-white bg-amber-600 hover:bg-amber-700 active:bg-amber-800 transition-all shadow-lg shadow-amber-600/30 inline-block text-decoration-none">
               Enter Dev Hub
             </a>
           </div>
@@ -109,14 +78,4 @@
     padding: 0 !important;
   }
 </style>
-
-    </main>
-
-    
-      
-    
-
-    
-    <script src="/littlethings/common/js/copy-code.js"></script>
-  </body>
-</html>
+{{ end }}
