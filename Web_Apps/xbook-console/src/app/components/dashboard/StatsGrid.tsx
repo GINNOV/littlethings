@@ -16,7 +16,7 @@ export function StatsGrid({ tab, total, summarized, pending, usedCount, cap, bal
   return (
     <section className="grid gap-6 lg:grid-cols-3">
       <AccountStats tab={tab} used={usedCount} cap={cap} bal={balance} live={!!liveXUsage} cost={costPerCall} sum={summarized} pend={pending} total={total} />
-      <SyncCard tab={tab} enrichSize={enrichBatchSize} pend={pending} last={lastSync} settings={settings} />
+      <SyncCard tab={tab} enrichSize={enrichBatchSize} pend={pending} total={total} last={lastSync} settings={settings} />
       <EnrichmentSummary sum={summarized} pend={pending} failed={failedRunsCount} skipped={skippedItemsCount} />
     </section>
   );

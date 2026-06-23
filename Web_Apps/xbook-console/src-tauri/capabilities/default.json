@@ -13,6 +13,7 @@
   "permissions": [
     "core:default",
     "updater:allow-check",
-    "updater:allow-download-and-install"
+    "updater:allow-download-and-install",
+    "window-state:default"
   ]
 }

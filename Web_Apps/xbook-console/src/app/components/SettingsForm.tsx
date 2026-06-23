@@ -7,6 +7,7 @@ import { LLMSettings } from "./settings/LLMSettings";
 import { AudioSettings } from "./settings/AudioSettings";
 import { UsageSettings } from "./settings/UsageSettings";
 import { AgentApiSettings } from "./settings/AgentApiSettings";
+import { DatabaseSettings } from "./settings/DatabaseSettings";
 import { primaryButtonClass } from "./settings/SharedFields";
 import { Settings } from "./settings/types";
 
@@ -57,6 +58,7 @@ function SettingsFormBody({
       <AudioSettings />
       <UsageSettings usedThisMonth={usedThisMonth} />
       <AgentApiSettings baseUrl={agentApiBaseUrl} tokenConfigured={agentApiTokenConfigured} />
+      <DatabaseSettings />
 
       <div className="flex flex-wrap items-center gap-4">
         <button

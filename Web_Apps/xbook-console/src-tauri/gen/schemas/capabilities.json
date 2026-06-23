@@ -1,1 +1,1 @@
-{"default":{"identifier":"default","description":"enables the default permissions","remote":{"urls":["http://localhost:3000/**"]},"local":true,"windows":["main"],"permissions":["core:default","updater:allow-check","updater:allow-download-and-install"]}}
+{"default":{"identifier":"default","description":"enables the default permissions","remote":{"urls":["http://localhost:3000/**"]},"local":true,"windows":["main"],"permissions":["core:default","updater:allow-check","updater:allow-download-and-install","window-state:default"]}}
