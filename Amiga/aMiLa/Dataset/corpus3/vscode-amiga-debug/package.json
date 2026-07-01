@@ -606,5 +606,17 @@
 	"vsce": {
 		"dependencies": false,
 		"useYarn": false
+	},
+	"overrides": {
+		"@tootallnate/once": "2.0.1",
+		"braces": "3.0.3",
+		"debug": "4.4.3",
+		"diff": "8.0.4",
+		"flatted": "3.4.2",
+		"js-yaml": "4.2.0",
+		"minimatch": "9.0.7",
+		"picomatch": "2.3.2",
+		"postcss": "8.5.10",
+		"serialize-javascript": "7.0.5"
 	}
 }

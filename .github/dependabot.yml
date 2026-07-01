@@ -1,0 +1,13 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
+    ignore:
+      - dependency-name: "*"
+    exclude-paths:
+      - "Amiga/aMiLa/Dataset/**"
+      - "Hardware/Flume/flume-dashboard/.next/**"
+      - "Web_Apps/xbook-console/.next/**"
