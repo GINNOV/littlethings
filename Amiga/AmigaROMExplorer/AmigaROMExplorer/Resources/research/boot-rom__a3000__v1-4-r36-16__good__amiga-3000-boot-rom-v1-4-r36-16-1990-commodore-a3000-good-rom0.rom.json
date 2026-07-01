@@ -1,0 +1,22 @@
+{
+  "compatibilityNotes" : "A3000 and A3000T only. Required in addition to the appropriate Kickstart\/SuperKickstart image.",
+  "contentsDescription" : "Low-level diagnostics, memory sizing, SCSI\/CPU setup, and handoff logic. Smaller than Kickstart and executed before the main OS ROM.",
+  "hardwareIDs" : [
+    "a3000"
+  ],
+  "history" : "The Amiga 3000 (1990) introduced a more workstation-like boot path. Boot ROM v1.4 r36.16 is the canonical pair split across ROM0 and ROM1 sockets.",
+  "notableLibraries" : [
+
+  ],
+  "purpose" : "Brings the A3000 hardware to a state where SuperKickstart or standard Kickstart can be loaded from ROM or disk.",
+  "researchSource" : "knowledgeBase",
+  "researchedAt" : 803408194.759128,
+  "romID" : "boot-rom\/a3000\/v1-4-r36-16\/good\/amiga-3000-boot-rom-v1-4-r36-16-1990-commodore-a3000-good-rom0.rom",
+  "summary" : "A3000 boot ROM providing early startup code before Kickstart takes over. The A3000 uses a two-stage boot process with separate ROM0 and ROM1 images.",
+  "technicalInsights" : [
+    "ROM0 and ROM1 are not interchangeable; emulators must load both in correct order.",
+    "Boot ROM works with A3000 SuperKickstart images for full OS features.",
+    "Useful for studying how Commodore separated diagnostics from the main Kickstart payload."
+  ],
+  "title" : "Amiga 3000 Boot-ROM v1.4 r36.16"
+}

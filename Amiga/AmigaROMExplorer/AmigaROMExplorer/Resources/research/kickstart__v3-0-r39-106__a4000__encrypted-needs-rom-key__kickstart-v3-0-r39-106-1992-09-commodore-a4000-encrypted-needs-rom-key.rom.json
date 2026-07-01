@@ -1,0 +1,28 @@
+{
+  "compatibilityNotes" : "Emulators and real hardware require a legally obtained ROM matching the target machine. Non-good variants may be useful for preservation study but can behave differently in emulators.",
+  "contentsDescription" : "AGA-aware Kickstart with 3.x Workbench, CD32 support hooks, and improved system services.",
+  "hardwareIDs" : [
+    "a4000"
+  ],
+  "history" : "1992–1994: A1200, A4000, and CD32 era. Kickstart 3.1 (r40.x) is the final classic generation.",
+  "notableLibraries" : [
+    "exec.library",
+    "graphics.library",
+    "intuition.library",
+    "dos.library",
+    "asl.library",
+    "commodities.library"
+  ],
+  "purpose" : "Stored in ROM (or loaded from disk on early A1000 setups), Kickstart initializes custom chips, brings up Chip RAM, installs core libraries, and hands control to boot media or the Workbench desktop.",
+  "researchSource" : "knowledgeBase",
+  "researchedAt" : 803408194.787287,
+  "romID" : "kickstart\/v3-0-r39-106\/a4000\/encrypted-needs-rom-key\/kickstart-v3-0-r39-106-1992-09-commodore-a4000-encrypted-needs-rom-key.rom",
+  "summary" : "Kickstart is the Amiga's resident operating system firmware. This encrypted image targets Amiga 4000 and provides the Exec kernel, device drivers, Intuition GUI, and DOS library needed to boot Workbench or games.",
+  "technicalInsights" : [
+    "512 KB ROM for most 3.x images; some machines need exact revision (r40.068 for A1200).",
+    "Beta and hack images document late Commodore engineering.",
+    "Manifest status: Installed",
+    "Dump class: Encrypted — verify behavior before relying on it for production emulation."
+  ],
+  "title" : "Kickstart v3.0 r39.106"
+}

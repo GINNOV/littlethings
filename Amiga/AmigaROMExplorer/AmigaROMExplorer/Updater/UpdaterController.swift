@@ -1,0 +1,17 @@
+import Sparkle
+
+final class UpdaterController {
+    private let updaterController: SPUStandardUpdaterController
+
+    init(startingUpdater: Bool = true) {
+        updaterController = SPUStandardUpdaterController(
+            startingUpdater: startingUpdater,
+            updaterDelegate: nil,
+            userDriverDelegate: nil
+        )
+    }
+
+    func checkForUpdates() {
+        updaterController.checkForUpdates(nil)
+    }
+}
