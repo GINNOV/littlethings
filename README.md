@@ -2,7 +2,7 @@
 
 Littlethings is a personal collection of tools, experiments, source snapshots, hardware projects, and notes.
 
-Fro the Amiga, the most polished entries are collected on the project [site](https://ginnov.github.io/littlethings/).
+Fro the Amiga, the most polished entries are collected on the project [site](https://ginnov.github.io/).
 
 ## START HERE
 
