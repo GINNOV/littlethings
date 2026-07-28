@@ -142,11 +142,13 @@ if ! command -v create-dmg &> /dev/null; then
     brew install create-dmg || { echo "Failed to install create-dmg"; exit 1; }
 fi
 
-# Self-sign the app
-echo "Self-signing the app..."
-codesign --sign - --force --deep "$APP_PATH" || {
-    echo "Warning: Code signing failed. Continuing without signature."
-}
+# Preserve a valid nested signature. Re-signing with --deep strips extension
+# entitlements and prevents Quick Look from loading the plug-ins.
+if codesign --verify --deep --strict "$APP_PATH"; then
+    echo "Using the app's existing valid signature."
+else
+    echo "Warning: App is not signed. The DMG will contain an unsigned build."
+fi
 
 # Create temporary source folder
 TEMP_DIR=$(mktemp -d)
