@@ -9,7 +9,6 @@ import SwiftUI
 
 struct UtilitiesCommands: Commands {
     @FocusedBinding(\.document) var document: PixDeluxeDocument?
-    private let imageConverter = ImageConverter()
 
     var body: some Commands {
         CommandMenu("Utilities") {
@@ -20,32 +19,7 @@ struct UtilitiesCommands: Commands {
             .keyboardShortcut("h", modifiers: [.command, .shift])
 
             Button("Convert to IFF...") {
-                let openPanel = NSOpenPanel()
-                openPanel.allowedContentTypes = [.png, .jpeg]
-                openPanel.canChooseFiles = true
-                openPanel.canChooseDirectories = false
-                openPanel.allowsMultipleSelection = false
-
-                guard openPanel.runModal() == .OK, let url = openPanel.url else {
-                    print("ℹ️ Import file selection cancelled by user.")
-                    return
-                }
-                
-                let dialog = ColorDepthDialog()
-                guard let nPlanes = dialog.runModal() else {
-                    print("ℹ️ IFF conversion cancelled by user at color depth selection.")
-                    return
-                }
-
-                Task {
-                    if let newURL = await imageConverter.convert(url: url, nPlanes: nPlanes) {
-                        NSDocumentController.shared.openDocument(withContentsOf: newURL, display: true) { document, alreadyOpen, error in
-                            if let error = error {
-                                print("❌ Failed to open IFF: \(error.localizedDescription)")
-                            }
-                        }
-                    }
-                }
+                beginIFFConversion()
             }
 
             Divider()
@@ -59,6 +33,103 @@ struct UtilitiesCommands: Commands {
                 document?.exportToJPEG()
             }
             .disabled(document?.image == nil)
+        }
+    }
+
+    @MainActor
+    private func beginIFFConversion() {
+        let openPanel = NSOpenPanel()
+        openPanel.allowedContentTypes = [.png, .jpeg]
+        openPanel.canChooseFiles = true
+        openPanel.canChooseDirectories = false
+        openPanel.allowsMultipleSelection = true
+
+        guard openPanel.runModal() == .OK, !openPanel.urls.isEmpty else {
+            return
+        }
+
+        let inputURLs = openPanel.urls
+        guard let outputDirectory = outputDirectory(for: inputURLs) else {
+            return
+        }
+
+        let colorDepthDialog = ColorDepthDialog()
+        guard let nPlanes = colorDepthDialog.runModal() else {
+            return
+        }
+
+        let converter = BatchImageConverter()
+        var conversionTask: Task<Void, Never>?
+        let progressDialog = BatchConversionProgressDialog(totalCount: inputURLs.count) {
+            conversionTask?.cancel()
+        }
+
+        progressDialog.show()
+        conversionTask = Task {
+            let result = await converter.convert(
+                inputURLs: inputURLs,
+                outputDirectory: outputDirectory,
+                nPlanes: nPlanes
+            ) { progress in
+                progressDialog.update(
+                    BatchConversionProgressPresentation(
+                        completedCount: progress.completedCount,
+                        totalCount: progress.totalCount,
+                        currentFilename: progress.currentInputURL.lastPathComponent
+                    )
+                )
+            }
+
+            if inputURLs.count == 1, let outputURL = result.successes.first?.outputURL {
+                progressDialog.close()
+                openConvertedDocument(at: outputURL)
+                return
+            }
+
+            progressDialog.showSummary(
+                BatchConversionSummaryPresentation(
+                    successfulURLs: result.successes.map(\.outputURL),
+                    failures: result.failures.map {
+                        BatchConversionFailurePresentation(
+                            filename: $0.inputURL.lastPathComponent,
+                            reason: $0.message
+                        )
+                    },
+                    outputDirectory: outputDirectory,
+                    wasCancelled: result.wasCancelled
+                )
+            )
+        }
+    }
+
+    @MainActor
+    private func outputDirectory(for inputURLs: [URL]) -> URL? {
+        guard inputURLs.count > 1 else {
+            return FileManager.default.temporaryDirectory
+        }
+
+        let panel = NSOpenPanel()
+        panel.title = "Choose an Output Folder"
+        panel.prompt = "Choose"
+        panel.canChooseFiles = false
+        panel.canChooseDirectories = true
+        panel.allowsMultipleSelection = false
+        panel.canCreateDirectories = true
+
+        guard panel.runModal() == .OK else {
+            return nil
+        }
+        return panel.url
+    }
+
+    @MainActor
+    private func openConvertedDocument(at url: URL) {
+        NSDocumentController.shared.openDocument(withContentsOf: url, display: true) { _, _, error in
+            if let error {
+                let alert = NSAlert(error: error)
+                alert.messageText = "Couldn’t Open Converted Image"
+                alert.runModal()
+            }
         }
     }
 }

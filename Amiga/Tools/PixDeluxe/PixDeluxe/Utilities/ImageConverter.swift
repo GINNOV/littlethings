@@ -7,6 +7,23 @@
 import AppKit
 import UniformTypeIdentifiers
 
+enum ImageConversionError: LocalizedError {
+    case invalidPlaneCount(Int)
+    case imageLoadFailed(URL)
+    case quantizationFailed(URL)
+
+    var errorDescription: String? {
+        switch self {
+        case .invalidPlaneCount(let count):
+            return "Only 1–8 bitplanes are supported (received \(count))."
+        case .imageLoadFailed(let url):
+            return "Could not load \(url.lastPathComponent) as an image."
+        case .quantizationFailed(let url):
+            return "Could not quantize \(url.lastPathComponent)."
+        }
+    }
+}
+
 func timestamp(_ label: String) {
     print("⏱️ [\(label)] at \(Date().timeIntervalSince1970)")
 }
@@ -80,9 +97,28 @@ class ImageConverter: ObservableObject {
     }
 
     func convert(url: URL, nPlanes: Int) async -> URL? {
-        guard nPlanes > 0 && nPlanes <= 8 else {
-            print("❌ Only 1–8 planes supported.")
+        let outputURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+            .appendingPathComponent(url.deletingPathExtension().lastPathComponent)
+            .appendingPathExtension("iff")
+
+        do {
+            try FileManager.default.createDirectory(
+                at: outputURL.deletingLastPathComponent(),
+                withIntermediateDirectories: true
+            )
+            try await convert(url: url, nPlanes: nPlanes, outputURL: outputURL)
+            return outputURL
+        } catch {
+            print("❌ Conversion failed: \(error.localizedDescription)")
+            await MainActor.run { isConverting = false }
             return nil
+        }
+    }
+
+    func convert(url: URL, nPlanes: Int, outputURL: URL) async throws {
+        guard (1...8).contains(nPlanes) else {
+            throw ImageConversionError.invalidPlaneCount(nPlanes)
         }
 
         await MainActor.run {
@@ -90,13 +126,17 @@ class ImageConverter: ObservableObject {
             conversionProgress = 0.0
             conversionStatusText = "Loading..."
         }
+        defer {
+            Task { @MainActor in
+                isConverting = false
+            }
+        }
 
+        try Task.checkCancellation()
         timestamp("Start convert")
 
         guard let nsImage = NSImage(contentsOf: url) else {
-            print("❌ Image load failed.")
-            await MainActor.run { isConverting = false }
-            return nil
+            throw ImageConversionError.imageLoadFailed(url)
         }
 
         let numColors = 1 << nPlanes
@@ -107,13 +147,9 @@ class ImageConverter: ObservableObject {
 
         timestamp("Start quantization")
 
-        guard let (indexedPixels, palette, width, height) = await quantize(image: nsImage, numberOfColors: numColors) else {
-            print("❌ Quantization failed.")
-            await MainActor.run { isConverting = false }
-            return nil
+        guard let (indexedPixels, palette, width, height) = try await quantize(image: nsImage, numberOfColors: numColors) else {
+            throw ImageConversionError.quantizationFailed(url)
         }
-
-        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(url.deletingPathExtension().lastPathComponent + ".iff")
 
         await MainActor.run {
             conversionProgress = 0.8
@@ -122,25 +158,17 @@ class ImageConverter: ObservableObject {
 
         timestamp("Creating IFF file")
 
-        do {
-            try await createIFFFile(indexedPixels: indexedPixels, palette: palette, width: width, height: height, nPlanes: nPlanes, outputURL: tempURL)
-            timestamp("IFF file created")
-        } catch {
-            print("❌ IFF write failed: \(error.localizedDescription)")
-            await MainActor.run { isConverting = false }
-            return nil
-        }
+        try Task.checkCancellation()
+        try await createIFFFile(indexedPixels: indexedPixels, palette: palette, width: width, height: height, nPlanes: nPlanes, outputURL: outputURL)
+        timestamp("IFF file created")
 
         await MainActor.run {
-            isConverting = false
             conversionProgress = 1.0
             conversionStatusText = "Done!"
         }
-
-        return tempURL
     }
 
-    private func quantize(image: NSImage, numberOfColors: Int) async -> (indexedPixels: [UInt8], palette: [NSColor], width: Int, height: Int)? {
+    private func quantize(image: NSImage, numberOfColors: Int) async throws -> (indexedPixels: [UInt8], palette: [NSColor], width: Int, height: Int)? {
         guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return nil }
 
         let width = cgImage.width
@@ -171,23 +199,39 @@ class ImageConverter: ObservableObject {
 
         print("📊 Extracted \(pixels.count) pixels")
 
-        let sampled = pixels.count > 4096 ? Array(pixels.shuffled().prefix(4096)) : pixels
-        let palette = await medianCutQuantization(pixels: sampled, numberOfColors: numberOfColors)
+        let sampled: [NSColor]
+        if pixels.count > 4096 {
+            let stride = max(1, pixels.count / 4096)
+            sampled = Swift.stride(from: 0, to: pixels.count, by: stride)
+                .prefix(4096)
+                .map { pixels[$0] }
+        } else {
+            sampled = pixels
+        }
+        let palette = try await medianCutQuantization(pixels: sampled, numberOfColors: numberOfColors)
 
         timestamp("Palette created")
 
-        let indexed = pixels.map { color in
-            findNearestColorIndex(pixel: color, palette: palette)
+        var indexed = [UInt8]()
+        indexed.reserveCapacity(pixels.count)
+        for (index, color) in pixels.enumerated() {
+            if index.isMultiple(of: 4096) {
+                try Task.checkCancellation()
+            }
+            indexed.append(findNearestColorIndex(pixel: color, palette: palette))
         }
 
         timestamp("Quantization complete")
         return (indexed, palette, width, height)
     }
 
-    private func medianCutQuantization(pixels: [NSColor], numberOfColors: Int) async -> [NSColor] {
+    private func medianCutQuantization(pixels: [NSColor], numberOfColors: Int) async throws -> [NSColor] {
         var buckets: [ColorBucket] = [ColorBucket(colors: pixels)]
         while buckets.count < numberOfColors {
-            guard let bucket = buckets.max(by: { $0.range < $1.range }) else { break }
+            try Task.checkCancellation()
+            guard let bucket = buckets
+                .filter({ $0.colors.count > 1 })
+                .max(by: { $0.range < $1.range }) else { break }
             let (b1, b2) = splitBucket(bucket)
             if let i = buckets.firstIndex(where: { $0 === bucket }) {
                 buckets.remove(at: i)
@@ -239,7 +283,7 @@ class ImageConverter: ObservableObject {
     }
 
     private func convertToBitPlanes(indexedPixels: [UInt8], width: Int, height: Int, nPlanes: Int) -> Data {
-        let bytesPerRow = (width + 7) / 8
+        let bytesPerRow = ((width + 15) / 16) * 2
         let totalSize = bytesPerRow * height * nPlanes
         var planar = Data(count: totalSize)
 
@@ -248,7 +292,7 @@ class ImageConverter: ObservableObject {
                 let color = indexedPixels[y * width + x]
                 for plane in 0..<nPlanes {
                     let bit = (color >> plane) & 1
-                    let byteIndex = (plane * height + y) * bytesPerRow + (x / 8)
+                    let byteIndex = (y * nPlanes + plane) * bytesPerRow + (x / 8)
                     let mask = UInt8(1 << (7 - (x % 8)))
                     if bit == 1 {
                         planar[byteIndex] |= mask
@@ -313,7 +357,7 @@ class ImageConverter: ObservableObject {
             UInt8((finalSize >> 8) & 0xFF), UInt8(finalSize & 0xFF)
         ])
 
-        try data.write(to: outputURL)
+        try data.write(to: outputURL, options: .atomic)
         print("✅ Wrote IFF to \(outputURL.path)")
 
         let tail = data.suffix(32)

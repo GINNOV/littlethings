@@ -6,9 +6,24 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		AC5FA9512E50CFB200823F5D /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = AC5FA9502E50CFB200823F5D /* Sparkle */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		ACDE0A8D2E13FD04004886A6 /* PixDeluxe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PixDeluxe.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B10000012E51000000000001 /* PixDeluxeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PixDeluxeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXContainerItemProxy section */
+		B10000022E51000000000002 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = ACDE0A852E13FD04004886A6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = ACDE0A8C2E13FD04004886A6;
+			remoteInfo = PixDeluxe;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
 		AC96C6A62E1D2F1700EF77F5 /* Exceptions for "PixDeluxe" folder in "PixDeluxe" target */ = {
@@ -29,10 +44,23 @@
 			path = PixDeluxe;
 			sourceTree = "<group>";
 		};
+		B10000032E51000000000003 /* PixDeluxeTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = PixDeluxeTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		ACDE0A8A2E13FD04004886A6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AC5FA9512E50CFB200823F5D /* Sparkle in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B10000042E51000000000004 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -53,6 +81,7 @@
 			isa = PBXGroup;
 			children = (
 				ACDE0A8F2E13FD04004886A6 /* PixDeluxe */,
+				B10000032E51000000000003 /* PixDeluxeTests */,
 				AC35228B2E1424BB0000EE0B /* Frameworks */,
 				ACDE0A8E2E13FD04004886A6 /* Products */,
 			);
@@ -62,6 +91,7 @@
 			isa = PBXGroup;
 			children = (
 				ACDE0A8D2E13FD04004886A6 /* PixDeluxe.app */,
+				B10000012E51000000000001 /* PixDeluxeTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -86,10 +116,32 @@
 			);
 			name = PixDeluxe;
 			packageProductDependencies = (
+				AC5FA9502E50CFB200823F5D /* Sparkle */,
 			);
 			productName = PixDeluxe;
 			productReference = ACDE0A8D2E13FD04004886A6 /* PixDeluxe.app */;
 			productType = "com.apple.product-type.application";
+		};
+		B10000052E51000000000005 /* PixDeluxeTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B10000062E51000000000006 /* Build configuration list for PBXNativeTarget "PixDeluxeTests" */;
+			buildPhases = (
+				B10000072E51000000000007 /* Sources */,
+				B10000042E51000000000004 /* Frameworks */,
+				B10000082E51000000000008 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B10000092E51000000000009 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				B10000032E51000000000003 /* PixDeluxeTests */,
+			);
+			name = PixDeluxeTests;
+			productName = PixDeluxeTests;
+			productReference = B10000012E51000000000001 /* PixDeluxeTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
@@ -104,6 +156,10 @@
 					ACDE0A8C2E13FD04004886A6 = {
 						CreatedOnToolsVersion = 16.4;
 					};
+					B10000052E51000000000005 = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = ACDE0A8C2E13FD04004886A6;
+					};
 				};
 			};
 			buildConfigurationList = ACDE0A882E13FD04004886A6 /* Build configuration list for PBXProject "PixDeluxe" */;
@@ -116,6 +172,7 @@
 			mainGroup = ACDE0A842E13FD04004886A6;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				AC5FA94F2E50CFB200823F5D /* XCRemoteSwiftPackageReference "Sparkle" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = ACDE0A8E2E13FD04004886A6 /* Products */;
@@ -123,12 +180,20 @@
 			projectRoot = "";
 			targets = (
 				ACDE0A8C2E13FD04004886A6 /* PixDeluxe */,
+				B10000052E51000000000005 /* PixDeluxeTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		ACDE0A8B2E13FD04004886A6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B10000082E51000000000008 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -145,7 +210,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B10000072E51000000000007 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		B10000092E51000000000009 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = ACDE0A8C2E13FD04004886A6 /* PixDeluxe */;
+			targetProxy = B10000022E51000000000002 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		ACDE0A972E13FD05004886A6 /* Debug */ = {
@@ -202,7 +282,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 15.5;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -260,7 +340,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 15.5;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
@@ -290,6 +370,7 @@
 					"@executable_path/../Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/PixDeluxe/IFFLib/libilbm";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.PixDeluxe;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -322,6 +403,7 @@
 					"@executable_path/../Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/PixDeluxe/IFFLib/libilbm";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.PixDeluxe;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -329,6 +411,38 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "PixDeluxe/libiff-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		B100000A2E5100000000000A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = QQ9PTQU945;
+				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/PixDeluxe/IFFLib/libilbm/**";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.PixDeluxeTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PixDeluxe.app/Contents/MacOS/PixDeluxe";
+			};
+			name = Debug;
+		};
+		B100000B2E5100000000000B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = QQ9PTQU945;
+				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/PixDeluxe/IFFLib/libilbm/**";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.PixDeluxeTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PixDeluxe.app/Contents/MacOS/PixDeluxe";
 			};
 			name = Release;
 		};
@@ -353,7 +467,35 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		B10000062E51000000000006 /* Build configuration list for PBXNativeTarget "PixDeluxeTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B100000A2E5100000000000A /* Debug */,
+				B100000B2E5100000000000B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		AC5FA94F2E50CFB200823F5D /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.7.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		AC5FA9502E50CFB200823F5D /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AC5FA94F2E50CFB200823F5D /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = ACDE0A852E13FD04004886A6 /* Project object */;
 }
