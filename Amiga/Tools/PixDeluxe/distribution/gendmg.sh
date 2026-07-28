@@ -7,6 +7,7 @@ set -e
 APP_PATH="$HOME/Downloads/PixDeluxe.app"
 DMG_PATH="$HOME/Downloads/PixDeluxe.dmg" # Will be modified with version and build
 README_PATH=""
+CHANGELOG_PATH=""
 BACKGROUND_IMAGE="./dmg_assets/dmg-background.png"
 VOLUME_ICON="./dmg_assets/dmg-icon.icns"
 VOLUME_NAME="App Installer"
@@ -25,9 +26,10 @@ MIN_SPACE_MB=1024
 
 # Usage function
 usage() {
-    echo "Usage: $0 --readme <readme_path> [--app <app_path>] [--dmg <dmg_path>] [--background <background_path>] [--volicon <volicon_path>]"
+    echo "Usage: $0 --readme <readme_path> [--changelog <changelog_path>] [--app <app_path>] [--dmg <dmg_path>] [--background <background_path>] [--volicon <volicon_path>]"
     echo "Required:"
     echo "  --readme <readme_path>   Path to the README file to include in the DMG"
+    echo "  --changelog <path>       Optional path to a changelog to include in the DMG"
     echo "Optional:"
     echo "  --app <app_path>         Path to the app (default: $APP_PATH)"
     echo "  --dmg <dmg_path>         Path to the output DMG (default: $DMG_PATH)"
@@ -45,6 +47,7 @@ while [[ "$#" -gt 0 ]]; do
         --app) APP_PATH="$2"; shift ;;
         --dmg) DMG_PATH="$2"; shift ;;
         --readme) README_PATH="$2"; shift ;;
+        --changelog) CHANGELOG_PATH="$2"; shift ;;
         --background) BACKGROUND_IMAGE="$2"; shift ;;
         --volicon) VOLUME_ICON="$2"; shift ;;
         *) usage ;;
@@ -93,6 +96,7 @@ echo "APP_VERSION: $APP_VERSION"
 echo "BUILD_NUMBER: $BUILD_NUMBER"
 echo "DMG_PATH: $DMG_PATH"
 echo "README_PATH: $README_PATH"
+echo "CHANGELOG_PATH: $CHANGELOG_PATH"
 echo "BACKGROUND_IMAGE: $BACKGROUND_IMAGE"
 echo "VOLUME_ICON: $VOLUME_ICON"
 echo "VOLUME_NAME: $VOLUME_NAME"
@@ -110,6 +114,10 @@ if [ ! -d "$APP_PATH" ]; then
 fi
 if [ ! -f "$README_PATH" ]; then
     echo "Error: README file not found at $README_PATH"
+    exit 1
+fi
+if [ -n "$CHANGELOG_PATH" ] && [ ! -f "$CHANGELOG_PATH" ]; then
+    echo "Error: Changelog file not found at $CHANGELOG_PATH"
     exit 1
 fi
 if [ ! -f "$BACKGROUND_IMAGE" ]; then
@@ -130,8 +138,8 @@ fi
 
 # Check disk space
 DMG_DIR=$(dirname "$DMG_PATH")
-AVAILABLE_SPACE=$(df -P "$DMG_DIR" | tail -1 | awk '{print $4}' | awk '{print $1 / 1024}') # MB
-if (( $(echo "$AVAILABLE_SPACE < $MIN_SPACE_MB" | bc -l) )); then
+AVAILABLE_SPACE=$(df -Pk "$DMG_DIR" | awk 'END { print int($4 / 1024) }')
+if [ "$AVAILABLE_SPACE" -lt "$MIN_SPACE_MB" ]; then
     echo "Error: Insufficient disk space. At least $MIN_SPACE_MB MB is required, but only ${AVAILABLE_SPACE} MB is available."
     exit 1
 fi
@@ -157,6 +165,9 @@ trap 'rm -rf "$TEMP_DIR"' EXIT
 cp -R "$APP_PATH" "$TEMP_DIR/"
 README_FILENAME=$(basename "$README_PATH")
 cp "$README_PATH" "$TEMP_DIR/$README_FILENAME"
+if [ -n "$CHANGELOG_PATH" ]; then
+    cp "$CHANGELOG_PATH" "$TEMP_DIR/$(basename "$CHANGELOG_PATH")"
+fi
 
 # Verify source folder contents
 ls "$TEMP_DIR/"
