@@ -2,15 +2,14 @@
 <rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
   <channel>
     <item><title>Version 1.7</title><description><![CDATA[
-<h4>Stability and compatibility</h4>
+<h4>Sparkle installation bridge</h4>
 <ul>
-    <li>Added universal Apple Silicon and Intel support with a project-local libopenmpt build.</li>
-    <li>Fixed shuffle, pause, seek, queue filtering, and stale playback callback behavior.</li>
-    <li>Made library scans cancellable and cache invalidation recursive and format-aware.</li>
-    <li>Made rename, rating, and trash operations report failures without losing files.</li>
-    <li>Extended Quick Look support to every module format recognized by AuDeluxe.</li>
+    <li>Completed Sparkle&apos;s sandboxed installer configuration for future automatic updates.</li>
+    <li>Rotated the Sparkle update key and added a release-time key consistency check.</li>
+    <li>Documented Sentinel as a free first-install workaround for macOS quarantine.</li>
+    <li>This build is a one-time manual update; automatic updates resume after build 79 is installed.</li>
 </ul>
-]]></description><pubDate>Tue, 28 Jul 2026 13:35:41 +0200</pubDate><enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/AuDeluxe-1.7_78.zip" sparkle:version="78" sparkle:shortVersionString="1.7" length="12217005" type="application/octet-stream" sparkle:edSignature="XJ3XEU+kcZb4iTFOKBIoQRFzs+i/N76E4EvbJF9ENLylWFaf68dbAAUZeq1/TkVX4S+SVQLNI2DFOSUknxkRBA==" /></item><item><title>Version 1.6</title><description>
+]]></description><pubDate>Wed, 29 Jul 2026 16:28:23 +0200</pubDate><enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/AuDeluxe-1.7_79.zip" sparkle:version="79" sparkle:shortVersionString="1.7" length="12217184" type="application/octet-stream" sparkle:edSignature="bJozw6uwEXF5Vcl08ZKiWpLQUnbEwdhl0on64quTbwmf65ojjqgp9/GbBZ3dzCPjdj6rCIHh8x62Afuk9sxqBQ==" /></item><item><title>Version 1.6</title><description>
 &lt;h4&gt;New Features&lt;/h4&gt;
 &lt;ul&gt;
     &lt;li&gt;Added Sparkle for automatic application updates.&lt;/li&gt;

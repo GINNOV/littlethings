@@ -9,13 +9,12 @@ SCHEME="AuDeluxe - Release"
 CONFIGURATION="Release"
 
 RELEASE_NOTES_CONTENT='
-<h4>Stability and compatibility</h4>
+<h4>Sparkle installation bridge</h4>
 <ul>
-    <li>Added universal Apple Silicon and Intel support with a project-local libopenmpt build.</li>
-    <li>Fixed shuffle, pause, seek, queue filtering, and stale playback callback behavior.</li>
-    <li>Made library scans cancellable and cache invalidation recursive and format-aware.</li>
-    <li>Made rename, rating, and trash operations report failures without losing files.</li>
-    <li>Extended Quick Look support to every module format recognized by AuDeluxe.</li>
+    <li>Completed Sparkle&apos;s sandboxed installer configuration for future automatic updates.</li>
+    <li>Rotated the Sparkle update key and added a release-time key consistency check.</li>
+    <li>Documented Sentinel as a free first-install workaround for macOS quarantine.</li>
+    <li>This build is a one-time manual update; automatic updates resume after build 79 is installed.</li>
 </ul>
 '
 # --- END: Configuration for AuDeluxe ---
@@ -113,6 +112,21 @@ if ! /usr/libexec/PlistBuddy -c "Print :SUPublicEDKey" "$INFO_PLIST_PATH" >/dev/
 fi
 APP_PUB=$(/usr/libexec/PlistBuddy -c "Print :SUPublicEDKey" "$INFO_PLIST_PATH")
 
+if [[ "$(/usr/libexec/PlistBuddy -c "Print :SUEnableInstallerLauncherService" "$INFO_PLIST_PATH" 2>/dev/null)" != "true" ]]; then
+    echo "Error: SUEnableInstallerLauncherService must be enabled for the sandboxed app"
+    exit 1
+fi
+
+APP_ENTITLEMENTS=$(/usr/bin/codesign -d --entitlements :- "$APP_PATH" 2>/dev/null)
+for mach_service in \
+    "com.theblifemovement.AuDeluxe-spks" \
+    "com.theblifemovement.AuDeluxe-spki"; do
+    if ! grep -Fq "<string>${mach_service}</string>" <<< "$APP_ENTITLEMENTS"; then
+        echo "Error: Missing Sparkle Mach service entitlement: ${mach_service}"
+        exit 1
+    fi
+done
+
 # --- Key verification step ---
 if [[ -n "${SPARKLE_PUBLIC_KEY:-}" ]]; then
     if [[ "$APP_PUB" != "$SPARKLE_PUBLIC_KEY" ]]; then
@@ -185,9 +199,15 @@ echo "Locating Sparkle sign_update tool..."
 OBJROOT=$(xcodebuild -project "$PROJECT_PATH" -scheme "$SCHEME" -showBuildSettings -json | grep -o '"OBJROOT" : "[^"]*' | cut -d'"' -f4)
 PROJECT_DERIVED_DATA_ROOT=$(dirname "$(dirname "$OBJROOT")")
 SIGN_UPDATE_TOOL="${PROJECT_DERIVED_DATA_ROOT}/SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update"
+GENERATE_KEYS_TOOL="${PROJECT_DERIVED_DATA_ROOT}/SourcePackages/artifacts/sparkle/Sparkle/bin/generate_keys"
 
 if [ ! -x "$SIGN_UPDATE_TOOL" ]; then
     echo "Error: sign_update tool not found or not executable. Looked in: ${SIGN_UPDATE_TOOL}"
+    exit 1
+fi
+
+if [ ! -x "$GENERATE_KEYS_TOOL" ]; then
+    echo "Error: generate_keys tool not found or not executable. Looked in: ${GENERATE_KEYS_TOOL}"
     exit 1
 fi
 
@@ -199,6 +219,17 @@ if [[ -z "${SPARKLE_KEY_CONTENTS}" && -n "${SPARKLE_PRIVATE_KEY_PATH:-}" ]]; the
         exit 1
     fi
     SPARKLE_KEY_CONTENTS="$(cat "$SPARKLE_PRIVATE_KEY_PATH")"
+fi
+
+if [[ -z "$SPARKLE_KEY_CONTENTS" ]]; then
+    KEYCHAIN_PUB=$("$GENERATE_KEYS_TOOL" -p)
+    if [[ "$APP_PUB" != "$KEYCHAIN_PUB" ]]; then
+        echo "Error: SUPublicEDKey does not match the default Sparkle Keychain account"
+        echo "App:      $APP_PUB"
+        echo "Keychain: $KEYCHAIN_PUB"
+        exit 1
+    fi
+    echo "✓ SUPublicEDKey matches the default Sparkle Keychain account"
 fi
 
 echo "Signing the ZIP file..."

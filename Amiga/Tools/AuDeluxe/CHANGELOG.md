@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.7 (build 79) - 2026-07-29
+
+- Completed Sparkle's sandboxed installer configuration so future
+  EdDSA-signed updates can be installed from inside AuDeluxe.
+- Rotated the Sparkle key used by build 79 and added a packaging check that
+  prevents publishing an update signed by a different key.
+- Documented Sentinel as a free, user-approved first-install workaround for
+  Macs that quarantine the unnotarized app.
+- Build 79 is a one-time manual update; automatic updates resume after it is
+  installed.
+
 ## 1.7 (build 78) - 2026-07-28
 
 - Added universal Apple Silicon and Intel builds from a pinned, project-local
