@@ -9,25 +9,20 @@ SCHEME="AuDeluxe - Release"
 CONFIGURATION="Release"
 
 RELEASE_NOTES_CONTENT='
-<h4>New Features</h4>
+<h4>Stability and compatibility</h4>
 <ul>
-    <li>Added Sparkle for automatic application updates.</li>
-    <li>Implemented a caching system for faster startup times.</li>
-    <li>Added a search bar to the playlist view.</li>
-    <li>Added a jump link for the currently playing song.</li>
-    <li>Added a menu bar to control music without switching to the app.</li>
-</ul>
-<h4>Bug Fixes</h4>
-<ul>
-    <li>Fixed an issue where the default sort order was not applied on launch.</li>
-    <li>Loopback worked but the timeline was not moving.</li>
+    <li>Added universal Apple Silicon and Intel support with a project-local libopenmpt build.</li>
+    <li>Fixed shuffle, pause, seek, queue filtering, and stale playback callback behavior.</li>
+    <li>Made library scans cancellable and cache invalidation recursive and format-aware.</li>
+    <li>Made rename, rating, and trash operations report failures without losing files.</li>
+    <li>Extended Quick Look support to every module format recognized by AuDeluxe.</li>
 </ul>
 '
 # --- END: Configuration for AuDeluxe ---
 
-ARCHIVE_PATH="./build/${PROJECT_NAME}.xcarchive"
-EXPORT_PATH="./build"
-APP_PATH="${EXPORT_PATH}/${PROJECT_NAME}.app"
+ARCHIVE_PATH=""
+EXPORT_PATH=""
+APP_PATH=""
 DMG_BASE_PATH="../releases/${PROJECT_NAME}.dmg"
 README_PATH="dmg_assets/README.md"
 BACKGROUND_IMAGE="dmg_assets/dmg-background.png"
@@ -57,6 +52,9 @@ while [[ "${#}" -gt 0 ]]; do
 done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ARCHIVE_PATH="${SCRIPT_DIR}/build/${PROJECT_NAME}.xcarchive"
+EXPORT_PATH="${SCRIPT_DIR}/build"
+APP_PATH="${EXPORT_PATH}/${PROJECT_NAME}.app"
 README_PATH="${SCRIPT_DIR}/${README_PATH}"
 BACKGROUND_IMAGE="${SCRIPT_DIR}/${BACKGROUND_IMAGE}"
 VOLUME_ICON="${SCRIPT_DIR}/${VOLUME_ICON}"
@@ -65,7 +63,7 @@ DMG_DIR="${SCRIPT_DIR}/../../releases"
 DMG_BASE_PATH="${DMG_DIR}/${PROJECT_NAME}.dmg"
 PROJECT_PATH="${SCRIPT_DIR}/${PROJECT_PATH}"
 
-for file in "$PROJECT_PATH" "$README_PATH" "$BACKGROUND_IMAGE" "$VOLUME_ICON" "$EXPORT_OPTIONS_PLIST" "./gendmg.sh"; do
+for file in "$PROJECT_PATH" "$README_PATH" "$BACKGROUND_IMAGE" "$VOLUME_ICON" "$EXPORT_OPTIONS_PLIST" "$SCRIPT_DIR/gendmg.sh"; do
     if [ ! -e "$file" ]; then
         echo "Error: Required file not found at $file"
         exit 1
@@ -74,8 +72,8 @@ done
 
 mkdir -p "$DMG_DIR"
 
-AVAILABLE_SPACE=$(df -P "$DMG_DIR" | tail -1 | awk '{print $4}' | awk '{print $1 / 1024}')
-if (( $(echo "$AVAILABLE_SPACE < $MIN_SPACE_MB" | bc -l) )); then
+AVAILABLE_SPACE=$(df -Pm "$DMG_DIR" | awk 'END { print $4 }')
+if (( AVAILABLE_SPACE < MIN_SPACE_MB )); then
     echo "Error: Insufficient disk space. Need $MIN_SPACE_MB MB, got ${AVAILABLE_SPACE} MB."
     exit 1
 fi
@@ -90,15 +88,23 @@ xcodebuild archive \
     -scheme "$SCHEME" \
     -configuration "$CONFIGURATION" \
     -archivePath "$ARCHIVE_PATH" \
-    CODE_SIGN_IDENTITY="" \
-    CODE_SIGNING_REQUIRED=NO \
-    CODE_SIGNING_ALLOWED=NO \
-    -allowProvisioningUpdates \
+    ARCHS="arm64 x86_64" \
+    ONLY_ACTIVE_ARCH=NO \
     -skipPackagePluginValidation \
     -skipMacroValidation
 
 echo "Copying .app from archive..."
 cp -R "$ARCHIVE_PATH/Products/Applications/${PROJECT_NAME}.app" "$APP_PATH"
+
+for executable in \
+    "$APP_PATH/Contents/MacOS/$PROJECT_NAME" \
+    "$APP_PATH/Contents/PlugIns/AuDeluxeQL.appex/Contents/MacOS/AuDeluxeQL"; do
+    ARCHITECTURES="$(lipo -archs "$executable")"
+    if [[ "$ARCHITECTURES" != *arm64* || "$ARCHITECTURES" != *x86_64* ]]; then
+        echo "Error: Expected a universal binary, got '$ARCHITECTURES' for $executable"
+        exit 1
+    fi
+done
 
 INFO_PLIST_PATH="${APP_PATH}/Contents/Info.plist"
 if ! /usr/libexec/PlistBuddy -c "Print :SUPublicEDKey" "$INFO_PLIST_PATH" >/dev/null 2>&1; then
@@ -173,11 +179,7 @@ echo "Creating ZIP for Sparkle signing..."
 ZIP_NAME="${PROJECT_NAME}-${VERSION}_${BUILD_NUMBER}.zip"
 ZIP_PATH="${DMG_DIR}/${ZIP_NAME}"
 
-# Create ZIP from the .app
-(
-    cd "$EXPORT_PATH"
-    /usr/bin/zip -r -y "$ZIP_PATH" "${PROJECT_NAME}.app" >/dev/null
-)
+/usr/bin/ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "$ZIP_PATH"
 
 echo "Locating Sparkle sign_update tool..."
 OBJROOT=$(xcodebuild -project "$PROJECT_PATH" -scheme "$SCHEME" -showBuildSettings -json | grep -o '"OBJROOT" : "[^"]*' | cut -d'"' -f4)

@@ -41,26 +41,30 @@ nonisolated func getMetadata(for fileURL: URL, ratingKey: String, titleKey: Stri
     return PlaylistItem(fileURL: fileURL, metadata: metadataDict, rating: rating)
 }
 
-nonisolated func setAttribute(key: String, value: Any, forFileAt fileURL: URL, in musicFolderURL: URL) {
-    guard musicFolderURL.startAccessingSecurityScopedResource() else { return }
-    defer { musicFolderURL.stopAccessingSecurityScopedResource() }
-    
+nonisolated func setAttribute(key: String, value: Any, forFileAt fileURL: URL) throws {
     let data: Data?
     if let intValue = value as? Int {
         var val = intValue
         data = Data(bytes: &val, count: MemoryLayout<Int>.size)
     } else if let stringValue = value as? String {
         data = stringValue.data(using: .utf8)
-    } else { return }
+    } else {
+        throw FileOperationError.mutationFailed("Unsupported metadata value.")
+    }
     
-    guard let attrData = data else { return }
+    guard let attrData = data else {
+        throw FileOperationError.mutationFailed("Metadata could not be encoded.")
+    }
     
-    _ = fileURL.path.withCString { cPath in
+    let result = fileURL.path.withCString { cPath in
         key.withCString { cKey in
             attrData.withUnsafeBytes { valuePtr in
                 setxattr(cPath, cKey, valuePtr.baseAddress, valuePtr.count, 0, 0)
             }
         }
+    }
+    guard result == 0 else {
+        throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
     }
 }
 
@@ -83,5 +87,7 @@ nonisolated private func getStringAttribute(key: String, forFileAt fileURL: URL)
 
 nonisolated private func getIntAttribute(key: String, forFileAt fileURL: URL) -> Int {
     guard let data = getAttribute(key: key, forFileAt: fileURL), data.count == MemoryLayout<Int>.size else { return 0 }
-    return data.withUnsafeBytes { $0.load(as: Int.self) }
+    var value = 0
+    _ = withUnsafeMutableBytes(of: &value) { data.copyBytes(to: $0) }
+    return value
 }

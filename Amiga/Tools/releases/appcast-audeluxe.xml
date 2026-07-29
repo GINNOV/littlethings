@@ -1,20 +1,29 @@
 <?xml version='1.0' encoding='utf-8'?>
 <rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
   <channel>
-    <item><title>Version 1.6</title><description><![CDATA[
-<h4>New Features</h4>
+    <item><title>Version 1.7</title><description><![CDATA[
+<h4>Stability and compatibility</h4>
 <ul>
-    <li>Added Sparkle for automatic application updates.</li>
-    <li>Implemented a caching system for faster startup times.</li>
-    <li>Added a search bar to the playlist view.</li>
-    <li>Added a jump link for the currently playing song.</li>
-    <li>Added a menu bar to control music without switching to the app.</li>
+    <li>Added universal Apple Silicon and Intel support with a project-local libopenmpt build.</li>
+    <li>Fixed shuffle, pause, seek, queue filtering, and stale playback callback behavior.</li>
+    <li>Made library scans cancellable and cache invalidation recursive and format-aware.</li>
+    <li>Made rename, rating, and trash operations report failures without losing files.</li>
+    <li>Extended Quick Look support to every module format recognized by AuDeluxe.</li>
 </ul>
-<h4>Bug Fixes</h4>
-<ul>
-    <li>Fixed an issue where the default sort order was not applied on launch.</li>
-    <li>Loopback worked but the timeline was not moving.</li>
-</ul>
-]]></description><pubDate>Mon, 18 Aug 2025 19:36:40 +0200</pubDate><enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/AuDeluxe-1.6_77.zip" sparkle:version="77" sparkle:shortVersionString="1.6" length="10008814" type="application/octet-stream" sparkle:edSignature="pDxZ/yofCupAUFEGcQrAXR7Bwz7spRK67/CjeyQQODtoz8e5S9DaheChKkzP44XcO9xg49YOZ0SbhRuFCiJUDQ==" /></item><title>AuDeluxe Changelog</title>
+]]></description><pubDate>Tue, 28 Jul 2026 13:35:41 +0200</pubDate><enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/AuDeluxe-1.7_78.zip" sparkle:version="78" sparkle:shortVersionString="1.7" length="12217005" type="application/octet-stream" sparkle:edSignature="XJ3XEU+kcZb4iTFOKBIoQRFzs+i/N76E4EvbJF9ENLylWFaf68dbAAUZeq1/TkVX4S+SVQLNI2DFOSUknxkRBA==" /></item><item><title>Version 1.6</title><description>
+&lt;h4&gt;New Features&lt;/h4&gt;
+&lt;ul&gt;
+    &lt;li&gt;Added Sparkle for automatic application updates.&lt;/li&gt;
+    &lt;li&gt;Implemented a caching system for faster startup times.&lt;/li&gt;
+    &lt;li&gt;Added a search bar to the playlist view.&lt;/li&gt;
+    &lt;li&gt;Added a jump link for the currently playing song.&lt;/li&gt;
+    &lt;li&gt;Added a menu bar to control music without switching to the app.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;Bug Fixes&lt;/h4&gt;
+&lt;ul&gt;
+    &lt;li&gt;Fixed an issue where the default sort order was not applied on launch.&lt;/li&gt;
+    &lt;li&gt;Loopback worked but the timeline was not moving.&lt;/li&gt;
+&lt;/ul&gt;
+</description><pubDate>Mon, 18 Aug 2025 19:36:40 +0200</pubDate><enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/AuDeluxe-1.6_77.zip" sparkle:version="77" sparkle:shortVersionString="1.6" length="10008814" type="application/octet-stream" sparkle:edSignature="pDxZ/yofCupAUFEGcQrAXR7Bwz7spRK67/CjeyQQODtoz8e5S9DaheChKkzP44XcO9xg49YOZ0SbhRuFCiJUDQ==" /></item><title>AuDeluxe Changelog</title>
   </channel>
 </rss>

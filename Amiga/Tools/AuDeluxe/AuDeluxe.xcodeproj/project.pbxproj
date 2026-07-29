@@ -13,12 +13,18 @@
 		AC681EBB2E2A38650082D5AC /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = AC681EB92E2A38570082D5AC /* libc++.tbd */; };
 		AC681EBD2E2A38E00082D5AC /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = AC681EBC2E2A38E00082D5AC /* libz.tbd */; };
 		AC681EBE2E2A38FE0082D5AC /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = AC681EBC2E2A38E00082D5AC /* libz.tbd */; };
-		AC681EC32E2A3C900082D5AC /* libmpg123.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AC681EC22E2A3C820082D5AC /* libmpg123.a */; };
 		AC9B79092E50CED500D609FB /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = AC9B79082E50CED500D609FB /* Sparkle */; };
 		ACAD811A2E29417F002E64E7 /* AuDeluxeQL.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = ACAD810B2E29417F002E64E7 /* AuDeluxeQL.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		B10000012F00000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AC7C05212E253580007F777F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AC7C05282E253580007F777F;
+			remoteInfo = AuDeluxe;
+		};
 		ACAD81182E29417F002E64E7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = AC7C05212E253580007F777F /* Project object */;
@@ -48,6 +54,7 @@
 		AC681EB92E2A38570082D5AC /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
 		AC681EBC2E2A38E00082D5AC /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		AC681EC22E2A3C820082D5AC /* libmpg123.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmpg123.a; path = Libraries/libmpg123.a; sourceTree = "<group>"; };
+		B10000022F00000000000002 /* AuDeluxeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AuDeluxeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AC7C05292E253580007F777F /* AuDeluxe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AuDeluxe.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AC7C053C2E253643007F777F /* AuDeluxe-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "AuDeluxe-Bridging-Header.h"; path = "AuDeluxe/AuDeluxe-Bridging-Header.h"; sourceTree = "<group>"; };
 		ACAD810B2E29417F002E64E7 /* AuDeluxeQL.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = AuDeluxeQL.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -99,6 +106,11 @@
 			path = AuDeluxeQL;
 			sourceTree = "<group>";
 		};
+		B10000032F00000000000003 /* AuDeluxeTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = AuDeluxeTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -120,7 +132,13 @@
 				AC681EBE2E2A38FE0082D5AC /* libz.tbd in Frameworks */,
 				AC681EBB2E2A38650082D5AC /* libc++.tbd in Frameworks */,
 				AC681E7C2E2A35200082D5AC /* libopenmpt.a in Frameworks */,
-				AC681EC32E2A3C900082D5AC /* libmpg123.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B10000042F00000000000004 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -133,6 +151,7 @@
 				AC7C053C2E253643007F777F /* AuDeluxe-Bridging-Header.h */,
 				AC7C052B2E253580007F777F /* AuDeluxe */,
 				ACAD810E2E29417F002E64E7 /* AuDeluxeQL */,
+				B10000032F00000000000003 /* AuDeluxeTests */,
 				AC7C05382E253617007F777F /* Frameworks */,
 				AC7C052A2E253580007F777F /* Products */,
 			);
@@ -143,6 +162,7 @@
 			children = (
 				AC7C05292E253580007F777F /* AuDeluxe.app */,
 				ACAD810B2E29417F002E64E7 /* AuDeluxeQL.appex */,
+				B10000022F00000000000002 /* AuDeluxeTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -212,6 +232,29 @@
 			productReference = ACAD810B2E29417F002E64E7 /* AuDeluxeQL.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		B10000052F00000000000005 /* AuDeluxeTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B10000062F00000000000006 /* Build configuration list for PBXNativeTarget "AuDeluxeTests" */;
+			buildPhases = (
+				B10000072F00000000000007 /* Sources */,
+				B10000042F00000000000004 /* Frameworks */,
+				B10000082F00000000000008 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B10000092F00000000000009 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				B10000032F00000000000003 /* AuDeluxeTests */,
+			);
+			name = AuDeluxeTests;
+			packageProductDependencies = (
+			);
+			productName = AuDeluxeTests;
+			productReference = B10000022F00000000000002 /* AuDeluxeTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -227,6 +270,10 @@
 					};
 					ACAD810A2E29417F002E64E7 = {
 						CreatedOnToolsVersion = 16.4;
+					};
+					B10000052F00000000000005 = {
+						CreatedOnToolsVersion = 26.0;
+						TestTargetID = AC7C05282E253580007F777F;
 					};
 				};
 			};
@@ -249,6 +296,7 @@
 			targets = (
 				AC7C05282E253580007F777F /* AuDeluxe */,
 				ACAD810A2E29417F002E64E7 /* AuDeluxeQL */,
+				B10000052F00000000000005 /* AuDeluxeTests */,
 			);
 		};
 /* End PBXProject section */
@@ -262,6 +310,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		ACAD81092E29417F002E64E7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B10000082F00000000000008 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -285,9 +340,21 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B10000072F00000000000007 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		B10000092F00000000000009 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AC7C05282E253580007F777F /* AuDeluxe */;
+			targetProxy = B10000012F00000000000001 /* PBXContainerItemProxy */;
+		};
 		ACAD81192E29417F002E64E7 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = ACAD810A2E29417F002E64E7 /* AuDeluxeQL */;
@@ -350,7 +417,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 15.5;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -408,7 +475,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 15.5;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
@@ -422,17 +489,15 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = AuDeluxe/AuDeluxe.entitlements;
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 77;
+				CURRENT_PROJECT_VERSION = 78;
 				DEVELOPMENT_TEAM = QQ9PTQU945;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
-				EXCLUDED_ARCHS = x86_64;
 				GENERATE_INFOPLIST_FILE = YES;
-				HEADER_SEARCH_PATHS = /opt/homebrew/include;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/Libraries/include";
 				INFOPLIST_FILE = AuDeluxe/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
@@ -443,10 +508,8 @@
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/Libraries",
-					/opt/homebrew/Cellar/mpg123/1.33.0/lib,
 				);
-				MARKETING_VERSION = 1.6;
-				OTHER_LDFLAGS = "-lmpg123";
+				MARKETING_VERSION = 1.7;
 				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.AuDeluxe;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -462,17 +525,15 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = AuDeluxe/AuDeluxe.entitlements;
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 77;
+				CURRENT_PROJECT_VERSION = 78;
 				DEVELOPMENT_TEAM = QQ9PTQU945;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
-				EXCLUDED_ARCHS = x86_64;
 				GENERATE_INFOPLIST_FILE = YES;
-				HEADER_SEARCH_PATHS = /opt/homebrew/include;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/Libraries/include";
 				INFOPLIST_FILE = AuDeluxe/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
@@ -483,10 +544,8 @@
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/Libraries",
-					/opt/homebrew/Cellar/mpg123/1.33.0/lib,
 				);
-				MARKETING_VERSION = 1.6;
-				OTHER_LDFLAGS = "-lmpg123";
+				MARKETING_VERSION = 1.7;
 				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.AuDeluxe;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -500,23 +559,20 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = AuDeluxeQL/AuDeluxeQL.entitlements;
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 77;
+				CURRENT_PROJECT_VERSION = 78;
 				DEVELOPMENT_TEAM = QQ9PTQU945;
 				ENABLE_HARDENED_RUNTIME = YES;
-				EXCLUDED_ARCHS = x86_64;
 				GENERATE_INFOPLIST_FILE = YES;
-				HEADER_SEARCH_PATHS = /opt/homebrew/include;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/Libraries/include";
 				INFOPLIST_FILE = AuDeluxeQL/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = AuDeluxeQL;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = "";
 				LIBRARY_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/Libraries",
-					/opt/homebrew/Cellar/mpg123/1.33.0/lib,
 				);
-				MARKETING_VERSION = 1.5.0;
+				MARKETING_VERSION = 1.7;
 				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.AuDeluxe.AuDeluxeQL;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -530,29 +586,58 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = AuDeluxeQL/AuDeluxeQL.entitlements;
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 77;
+				CURRENT_PROJECT_VERSION = 78;
 				DEVELOPMENT_TEAM = QQ9PTQU945;
 				ENABLE_HARDENED_RUNTIME = YES;
-				EXCLUDED_ARCHS = x86_64;
 				GENERATE_INFOPLIST_FILE = YES;
-				HEADER_SEARCH_PATHS = /opt/homebrew/include;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/Libraries/include";
 				INFOPLIST_FILE = AuDeluxeQL/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = AuDeluxeQL;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = "";
 				LIBRARY_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/Libraries",
-					/opt/homebrew/Cellar/mpg123/1.33.0/lib,
 				);
-				MARKETING_VERSION = 1.5.0;
+				MARKETING_VERSION = 1.7;
 				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.AuDeluxe.AuDeluxeQL;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/AuDeluxeQL/AuDeluxeQL-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		B100000A2F0000000000000A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = QQ9PTQU945;
+				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/Libraries/include";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.AuDeluxeTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AuDeluxe.app/Contents/MacOS/AuDeluxe";
+			};
+			name = Debug;
+		};
+		B100000B2F0000000000000B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = QQ9PTQU945;
+				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/Libraries/include";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.AuDeluxeTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AuDeluxe.app/Contents/MacOS/AuDeluxe";
 			};
 			name = Release;
 		};
@@ -582,6 +667,15 @@
 			buildConfigurations = (
 				ACAD811C2E29417F002E64E7 /* Debug */,
 				ACAD811D2E29417F002E64E7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B10000062F00000000000006 /* Build configuration list for PBXNativeTarget "AuDeluxeTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B100000A2F0000000000000A /* Debug */,
+				B100000B2F0000000000000B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
