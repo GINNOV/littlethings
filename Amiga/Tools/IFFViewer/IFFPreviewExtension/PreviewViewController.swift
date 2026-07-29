@@ -49,10 +49,10 @@ class PreviewViewController: NSViewController, QLPreviewingController {
             if enableDebugSpew { print("[DEBUG] Calling C function iff_createImageFromData...") }
             // The C function returns an Unmanaged<CGImage>.
             // We must take ownership of the memory from Core Foundation.
-            if let unmanagedImage = iff_createImageFromData(baseAddress.assumingMemoryBound(to: UInt8.self), fileData.count, true) {
+            if let image = iff_createSafeImageFromData(baseAddress.assumingMemoryBound(to: UInt8.self), fileData.count, true) {
                 logger.log("C function successfully returned an image.")
                 if enableDebugSpew { print("[DEBUG] C function successfully returned an image.") }
-                return unmanagedImage.takeRetainedValue()
+                return image
             } else {
                 logger.error("C function iff_createImageFromData returned nil.")
                 if enableDebugSpew { print("[ERROR] C function iff_createImageFromData returned nil.") }

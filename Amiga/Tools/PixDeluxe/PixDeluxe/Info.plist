@@ -19,7 +19,7 @@
 			<string>Default</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>com.theblifemovement.iff-image</string>
+				<string>com.theblifemovement.amiga-iff-image</string>
 			</array>
 		</dict>
 	</array>
@@ -29,12 +29,11 @@
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>public.data</string>
-				<string>public.image</string>
 			</array>
 			<key>UTTypeDescription</key>
 			<string>Amiga IFF Image</string>
 			<key>UTTypeIdentifier</key>
-			<string>com.theblifemovement.iff-image</string>
+			<string>com.theblifemovement.amiga-iff-image</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>

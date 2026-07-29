@@ -13,16 +13,13 @@ import os.log
 let logger = Logger(subsystem: "com.theblifemovement.AuDeluxe.AuDeluxeQL", category: "Preview")
 
 class PreviewViewController: NSViewController, QLPreviewingController {
-    
-    func preparePreviewOfFile(at url: URL) async throws {
-        
-        logger.log("Starting async preview for file: \(url.path, privacy: .public)")
+    private static let maximumPreviewSize = 64 * 1_024 * 1_024
 
-        guard let item = getMetadata(for: url) else {
+    func preparePreviewOfFile(at url: URL) async throws {
+        logger.log("Starting async preview for file: \(url.lastPathComponent, privacy: .private)")
+
+        guard let item = try getMetadata(for: url) else {
             logger.error("Failed to get metadata for file. Throwing error.")
-            struct MetadataError: LocalizedError {
-                var errorDescription: String? { "Could not read the module's metadata." }
-            }
             throw MetadataError()
         }
         
@@ -32,7 +29,12 @@ class PreviewViewController: NSViewController, QLPreviewingController {
         let previewSwiftUIView = AuDeluxePreviewView(item: item)
         
         let hostingController = NSHostingController(rootView: previewSwiftUIView)
-        
+
+        children.forEach { child in
+            child.view.removeFromSuperview()
+            child.removeFromParent()
+        }
+        addChild(hostingController)
         self.view.addSubview(hostingController.view)
         hostingController.view.frame = self.view.bounds
         hostingController.view.autoresizingMask = [.width, .height]
@@ -42,14 +44,19 @@ class PreviewViewController: NSViewController, QLPreviewingController {
         logger.log("Preview preparation complete.")
     }
     
-    private func getMetadata(for fileURL: URL) -> PlaylistItem? {
-        // ... (this function remains the same) ...
-        logger.log("Attempting to get metadata for URL: \(fileURL.path, privacy: .public)")
-        
-        guard let data = try? Data(contentsOf: fileURL) else {
-            logger.error("Failed to read data from file.")
-            return nil
+    private func getMetadata(for fileURL: URL) throws -> PlaylistItem? {
+        logger.log("Attempting to get metadata for: \(fileURL.lastPathComponent, privacy: .private)")
+
+        let values = try fileURL.resourceValues(forKeys: [.fileSizeKey, .isRegularFileKey])
+        guard values.isRegularFile == true,
+              let fileSize = values.fileSize,
+              fileSize > 0,
+              fileSize <= Self.maximumPreviewSize else {
+            throw MetadataError()
         }
+
+        let data = try Data(contentsOf: fileURL, options: .mappedIfSafe)
+        guard data.count <= Self.maximumPreviewSize else { throw MetadataError() }
         logger.log("Successfully read \(data.count) bytes.")
 
         let modulePtr = data.withUnsafeBytes { openmpt_module_create_from_memory2($0.baseAddress, $0.count, nil, nil, nil, nil, nil, nil, nil) }
@@ -82,4 +89,8 @@ class PreviewViewController: NSViewController, QLPreviewingController {
         
         return PlaylistItem(fileURL: fileURL, metadata: metadataDict, rating: 0)
     }
+}
+
+private struct MetadataError: LocalizedError {
+    var errorDescription: String? { "Could not safely read the module's metadata." }
 }

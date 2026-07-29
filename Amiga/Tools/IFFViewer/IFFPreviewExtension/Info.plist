@@ -10,10 +10,8 @@
 			<false/>
 			<key>QLSupportedContentTypes</key>
 			<array>
+				<string>com.theblifemovement.amiga-iff-image</string>
 				<string>com.theblifemovement.iff-image</string>
-				<string>dyn.ah62d4rv4ge80w3xg</string>
-				<string>public.ilbm</string>
-				<string>com.ea.iff</string>
 			</array>
 			<key>QLSupportsSearchableItems</key>
 			<false/>
@@ -22,28 +20,6 @@
 		<string>com.apple.quicklook.preview</string>
 		<key>NSExtensionPrincipalClass</key>
 		<string>$(PRODUCT_MODULE_NAME).PreviewViewController</string>
-		<key>UTExportedTypeDeclarations</key>
-		<array>
-			<dict>
-				<key>UTTypeDescription</key>
-				<string>IFF Image</string>
-				<key>UTTypeIdentifier</key>
-				<string>com.theblifemovement.iff-image</string>
-				<key>UTTypeTagSpecification</key>
-				<dict>
-					<key>public.filename-extension</key>
-					<array>
-						<string>iff</string>
-						<string>lbm</string>
-					</array>
-				</dict>
-				<key>UTTypeConformsTo</key>
-				<array>
-					<string>public.image</string>
-					<string>public.data</string>
-				</array>
-			</dict>
-		</array>
 	</dict>
 </dict>
 </plist>

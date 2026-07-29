@@ -12,6 +12,8 @@
 		ACCDF6072E1BF54000BC736E /* QuickLook.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ACCDF6062E1BF54000BC736E /* QuickLook.framework */; };
 		ACCDF6092E1BF54D00BC736E /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ACCDF6082E1BF54D00BC736E /* SwiftUI.framework */; };
 		ACCDF60B2E1BF55700BC736E /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ACCDF60A2E1BF55700BC736E /* AppKit.framework */; };
+		B10000010000000000000001 /* IFFThumbnailExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B10000020000000000000002 /* IFFThumbnailExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		B10000030000000000000003 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = B10000040000000000000004 /* Sparkle */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -21,6 +23,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = ACCDF5EB2E1BEEA800BC736E;
 			remoteInfo = IFFPreviewExtension;
+		};
+		B10000050000000000000005 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = ACCDF5D12E1BEE8600BC736E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B10000060000000000000006;
+			remoteInfo = IFFThumbnailExtension;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -32,6 +41,7 @@
 			dstSubfolderSpec = 13;
 			files = (
 				ACCDF5FC2E1BEEA800BC736E /* IFFPreviewExtension.appex in Embed Foundation Extensions */,
+				B10000010000000000000001 /* IFFThumbnailExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -45,9 +55,17 @@
 		ACCDF6062E1BF54000BC736E /* QuickLook.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuickLook.framework; path = System/Library/Frameworks/QuickLook.framework; sourceTree = SDKROOT; };
 		ACCDF6082E1BF54D00BC736E /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		ACCDF60A2E1BF55700BC736E /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		B10000020000000000000002 /* IFFThumbnailExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = IFFThumbnailExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		B10000110000000000000011 /* Exceptions for "IFFViewer" folder in "IFFViewer" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = ACCDF5D82E1BEE8600BC736E /* IFFViewer */;
+		};
 		ACCDF5FD2E1BEEA800BC736E /* Exceptions for "IFFPreviewExtension" folder in "IFFPreviewExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -55,11 +73,21 @@
 			);
 			target = ACCDF5EB2E1BEEA800BC736E /* IFFPreviewExtension */;
 		};
+		B10000070000000000000007 /* Exceptions for "IFFThumbnailExtension" folder in "IFFThumbnailExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = B10000060000000000000006 /* IFFThumbnailExtension */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		ACCDF5DB2E1BEE8600BC736E /* IFFViewer */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B10000110000000000000011 /* Exceptions for "IFFViewer" folder in "IFFViewer" target */,
+			);
 			path = IFFViewer;
 			sourceTree = "<group>";
 		};
@@ -71,6 +99,14 @@
 			path = IFFPreviewExtension;
 			sourceTree = "<group>";
 		};
+		B10000080000000000000008 /* IFFThumbnailExtension */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B10000070000000000000007 /* Exceptions for "IFFThumbnailExtension" folder in "IFFThumbnailExtension" target */,
+			);
+			path = IFFThumbnailExtension;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -78,6 +114,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B10000030000000000000003 /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -92,6 +129,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B10000090000000000000009 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -100,6 +144,7 @@
 			children = (
 				ACCDF5DB2E1BEE8600BC736E /* IFFViewer */,
 				ACCDF5F02E1BEEA800BC736E /* IFFPreviewExtension */,
+				B10000080000000000000008 /* IFFThumbnailExtension */,
 				ACCDF5ED2E1BEEA800BC736E /* Frameworks */,
 				ACCDF5DA2E1BEE8600BC736E /* Products */,
 			);
@@ -110,6 +155,7 @@
 			children = (
 				ACCDF5D92E1BEE8600BC736E /* IFFViewer.app */,
 				ACCDF5EC2E1BEEA800BC736E /* IFFPreviewExtension.appex */,
+				B10000020000000000000002 /* IFFThumbnailExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -141,12 +187,14 @@
 			);
 			dependencies = (
 				ACCDF5FB2E1BEEA800BC736E /* PBXTargetDependency */,
+				B100000A000000000000000A /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				ACCDF5DB2E1BEE8600BC736E /* IFFViewer */,
 			);
 			name = IFFViewer;
 			packageProductDependencies = (
+				B10000040000000000000004 /* Sparkle */,
 			);
 			productName = IFFViewer;
 			productReference = ACCDF5D92E1BEE8600BC736E /* IFFViewer.app */;
@@ -174,6 +222,28 @@
 			productReference = ACCDF5EC2E1BEEA800BC736E /* IFFPreviewExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		B10000060000000000000006 /* IFFThumbnailExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B100000B000000000000000B /* Build configuration list for PBXNativeTarget "IFFThumbnailExtension" */;
+			buildPhases = (
+				B100000C000000000000000C /* Sources */,
+				B10000090000000000000009 /* Frameworks */,
+				B100000D000000000000000D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				B10000080000000000000008 /* IFFThumbnailExtension */,
+			);
+			name = IFFThumbnailExtension;
+			packageProductDependencies = (
+			);
+			productName = IFFThumbnailExtension;
+			productReference = B10000020000000000000002 /* IFFThumbnailExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -191,6 +261,9 @@
 						CreatedOnToolsVersion = 16.4;
 						LastSwiftMigration = 1640;
 					};
+					B10000060000000000000006 = {
+						CreatedOnToolsVersion = 16.4;
+					};
 				};
 			};
 			buildConfigurationList = ACCDF5D42E1BEE8600BC736E /* Build configuration list for PBXProject "IFFViewer" */;
@@ -204,11 +277,15 @@
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
 			productRefGroup = ACCDF5DA2E1BEE8600BC736E /* Products */;
+			packageReferences = (
+				B100000E000000000000000E /* XCRemoteSwiftPackageReference "Sparkle" */,
+			);
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				ACCDF5D82E1BEE8600BC736E /* IFFViewer */,
 				ACCDF5EB2E1BEEA800BC736E /* IFFPreviewExtension */,
+				B10000060000000000000006 /* IFFThumbnailExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -222,6 +299,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		ACCDF5EA2E1BEEA800BC736E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B100000D000000000000000D /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -245,6 +329,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B100000C000000000000000C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -252,6 +343,11 @@
 			isa = PBXTargetDependency;
 			target = ACCDF5EB2E1BEEA800BC736E /* IFFPreviewExtension */;
 			targetProxy = ACCDF5FA2E1BEEA800BC736E /* PBXContainerItemProxy */;
+		};
+		B100000A000000000000000A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B10000060000000000000006 /* IFFThumbnailExtension */;
+			targetProxy = B10000050000000000000005 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -310,7 +406,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 15.5;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -368,7 +464,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 15.5;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
@@ -382,14 +478,14 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = IFFViewer/IFFViewer.entitlements;
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 38;
+				CURRENT_PROJECT_VERSION = 40;
 				DEVELOPMENT_TEAM = QQ9PTQU945;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = IFFViewer/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -411,14 +507,14 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = IFFViewer/IFFViewer.entitlements;
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 38;
+				CURRENT_PROJECT_VERSION = 40;
 				DEVELOPMENT_TEAM = QQ9PTQU945;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = IFFViewer/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -439,11 +535,12 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = IFFPreviewExtension/IFFPreviewExtension.entitlements;
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 38;
+				CURRENT_PROJECT_VERSION = 40;
 				DEVELOPMENT_TEAM = QQ9PTQU945;
 				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = IFFPreviewExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = IFFPreviewExtension;
@@ -469,11 +566,12 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = IFFPreviewExtension/IFFPreviewExtension.entitlements;
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 38;
+				CURRENT_PROJECT_VERSION = 40;
 				DEVELOPMENT_TEAM = QQ9PTQU945;
 				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = IFFPreviewExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = IFFPreviewExtension;
@@ -489,6 +587,65 @@
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "IFFPreviewExtension/IFFPreviewExtension-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		B100000F000000000000000F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = IFFThumbnailExtension/IFFThumbnailExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 40;
+				DEVELOPMENT_TEAM = QQ9PTQU945;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = IFFThumbnailExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = IFFThumbnailExtension;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.IFFViewer.ThumbnailExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "IFFThumbnailExtension/IFFThumbnailExtension-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		B10000100000000000000010 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = IFFThumbnailExtension/IFFThumbnailExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 40;
+				DEVELOPMENT_TEAM = QQ9PTQU945;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = IFFThumbnailExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = IFFThumbnailExtension;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.IFFViewer.ThumbnailExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "IFFThumbnailExtension/IFFThumbnailExtension-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
@@ -523,7 +680,35 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		B100000B000000000000000B /* Build configuration list for PBXNativeTarget "IFFThumbnailExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B100000F000000000000000F /* Debug */,
+				B10000100000000000000010 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		B100000E000000000000000E /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.7.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B10000040000000000000004 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B100000E000000000000000E /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = ACCDF5D12E1BEE8600BC736E /* Project object */;
 }

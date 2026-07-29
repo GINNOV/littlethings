@@ -20,34 +20,25 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     @Published var isLooping = false
     @Published var isShuffling = false
     @Published var searchText: String = ""
-    
+    @Published var presentedError: FileOperationError?
+
     @Published var sortOrder: SortOrder = .name {
         didSet { Task { await applySort() } }
     }
-    
+
     // MARK: - Playlist Properties
     @Published var allPlaylistItems: [PlaylistItem] = []
     @Published var activePlaylist: Playlist? = nil
-    
+    private var shuffledIDs: [PlaylistItem.ID]?
+
     var playlistItems: [PlaylistItem] {
-        var itemsToShow: [PlaylistItem]
-        
-        if let activePlaylist = activePlaylist {
-            let urls = Set(activePlaylist.fileURLs)
-            itemsToShow = allPlaylistItems.filter { urls.contains($0.fileURL) }
-        } else {
-            itemsToShow = allPlaylistItems
-        }
-        
-        if !searchText.trimmingCharacters(in: .whitespaces).isEmpty {
-            itemsToShow = itemsToShow.filter { item in
-                let titleMatch = item.title.range(of: searchText, options: .caseInsensitive) != nil
-                let artistMatch = item.artist.range(of: searchText, options: .caseInsensitive) != nil
-                return titleMatch || artistMatch
-            }
-        }
-        
-        return sortItems(itemsToShow)
+        PlaybackQueue.make(
+            items: allPlaylistItems,
+            activePlaylist: activePlaylist,
+            searchText: searchText,
+            sortOrder: sortOrder,
+            shuffledIDs: shuffledIDs
+        )
     }
 
     // MARK: - Tracker Data Properties
@@ -55,7 +46,7 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     @Published var currentRow: Int32 = -1
     @Published var currentPattern: Int32 = -1
     @Published var numChannels: Int32 = 0
-    
+
     var isTrackerVisible = false
 
     // MARK: - Private Properties
@@ -65,6 +56,8 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     private var processingFormat: AVAudioFormat!
     var currentlyPlayingFileURL: URL?
     private var timeUpdateTask: Task<Void, Never>?
+    private var scanTask: Task<Void, Never>?
+    private var scanGeneration: UInt64 = 0
     
     private let moduleActor = ModuleActor()
     private let uiModuleActor = ModuleActor()
@@ -72,16 +65,14 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     private let visibleWindowSize = 51
     private var halfWindowSize: Int { visibleWindowSize / 2 }
     
-    let supportedExtensions = [
-        "mod", "s3m", "xm", "it", "med", "okt", "mtm", "669", "dsm", "far", "ptm", "ult",
-        "amf", "ams", "dbm", "dmf", "imf", "j2b", "mdl", "mo3", "psm", "stm", "stx", "umx"
-    ]
+    let supportedExtensions = ModuleFormat.supportedExtensions
     let ratingKey = "com.audeluxe.rating"
     let titleKey = "com.audeluxe.title"
     let artistKey = "com.audeluxe.artist"
     private var pendingBufferCount = 0
     private var reachedEndOfFile = false
     private let targetPendingBuffers = 10
+    private var bufferGeneration: UInt64 = 0
     
     weak var settingsStore: SettingsStore?
     private var scannedMusicFolderURL: URL?
@@ -131,47 +122,75 @@ final class OpenMPTEngine: ObservableObject, Sendable {
 
     // MARK: - Public Control Methods
     func clearAllSongs() {
+        scanTask?.cancel()
+        scanTask = nil
+        scanGeneration &+= 1
         self.allPlaylistItems = []
         self.activePlaylist = nil
         self.objectWillChange.send()
     }
-    
-    func scanMusicFolder(for musicFolderURL: URL) async {
-        self.scannedMusicFolderURL = musicFolderURL
 
-        if await loadPlaylistFromCache(for: musicFolderURL) {
-            if debug { print("OpenMPTEngine: Successfully loaded playlist from cache.") }
+    func requestMusicFolderScan(for musicFolderURL: URL?) {
+        scanTask?.cancel()
+        guard let musicFolderURL else {
+            clearAllSongs()
             return
         }
+        scanTask = Task { [weak self] in
+            await self?.scanMusicFolder(for: musicFolderURL)
+        }
+    }
 
-        if debug { print("OpenMPTEngine: Cache invalid or not found. Performing full scan.") }
-        let items = await Task.detached(priority: .userInitiated) { [supportedExtensions, ratingKey, titleKey, artistKey] () -> [PlaylistItem] in
-            guard musicFolderURL.startAccessingSecurityScopedResource() else { return [] }
-            defer { musicFolderURL.stopAccessingSecurityScopedResource() }
+    func scanMusicFolder(for musicFolderURL: URL) async {
+        self.scannedMusicFolderURL = musicFolderURL
+        scanGeneration &+= 1
+        let generation = scanGeneration
+        let cacheURL = self.cacheURL
 
-            var playlistItems: [PlaylistItem] = []
-            let fileManager = FileManager.default
-            guard let enumerator = fileManager.enumerator(at: musicFolderURL, includingPropertiesForKeys: [.isRegularFileKey, .contentModificationDateKey], options: [.skipsHiddenFiles, .skipsPackageDescendants]) else {
-                return []
-            }
-            
-            let allURLs = enumerator.allObjects as? [URL] ?? []
-
-            for fileURL in allURLs {
-                if isPlayable(fileURL: fileURL, supportedExtensions: supportedExtensions),
-                   let metadata = getMetadata(for: fileURL, ratingKey: ratingKey, titleKey: titleKey, artistKey: artistKey) {
-                    playlistItems.append(metadata)
+        do {
+            let result = try await Task.detached(priority: .userInitiated) { [ratingKey, titleKey, artistKey] in
+                guard musicFolderURL.startAccessingSecurityScopedResource() else {
+                    return (items: [PlaylistItem](), fingerprint: LibraryFingerprint(entries: []), usedCache: false)
                 }
-            }
-            return playlistItems
-        }.value
-        
-        self.allPlaylistItems = items
-        self.activePlaylist = nil
-        await applySort()
-        await savePlaylistToCache(items: items, for: musicFolderURL)
+                defer { musicFolderURL.stopAccessingSecurityScopedResource() }
 
-        if debug { print("OpenMPTEngine: Found \(items.count) playable files and saved to cache.") }
+                let discovery = try LibraryFingerprint.discover(in: musicFolderURL)
+                if let cacheURL,
+                   let data = try? Data(contentsOf: cacheURL),
+                   let cache = try? JSONDecoder().decode(PlaylistCache.self, from: data),
+                   cache.fingerprint == discovery.fingerprint {
+                    return (cache.items, discovery.fingerprint, true)
+                }
+
+                var items: [PlaylistItem] = []
+                for fileURL in discovery.moduleURLs {
+                    try Task.checkCancellation()
+                    if let metadata = getMetadata(
+                        for: fileURL,
+                        ratingKey: ratingKey,
+                        titleKey: titleKey,
+                        artistKey: artistKey
+                    ) {
+                        items.append(metadata)
+                    }
+                }
+                return (items, discovery.fingerprint, false)
+            }.value
+
+            guard generation == scanGeneration, !Task.isCancelled else { return }
+            allPlaylistItems = result.items
+            activePlaylist = nil
+            await applySort()
+            if !result.usedCache {
+                savePlaylistToCache(items: result.items, fingerprint: result.fingerprint)
+            }
+        } catch is CancellationError {
+            return
+        } catch {
+            guard generation == scanGeneration else { return }
+            allPlaylistItems = []
+            activePlaylist = nil
+        }
     }
 
     func play(fileURL: URL, musicFolderURL: URL) async {
@@ -272,7 +291,7 @@ final class OpenMPTEngine: ObservableObject, Sendable {
         guard isPlaying else { return }
         timeUpdateTask?.cancel()
         timeUpdateTask = nil
-        playerNode.stop()
+        playerNode.pause()
         audioEngine.pause()
         isPlaying = false
     }
@@ -292,6 +311,7 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     func stopAndReset() async {
         timeUpdateTask?.cancel()
         timeUpdateTask = nil
+        bufferGeneration &+= 1
         
         if audioEngine.isRunning {
             playerNode.stop()
@@ -336,30 +356,68 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     func toggleShuffle(selectionID: PlaylistItem.ID?) {
         self.isShuffling.toggle()
         if isShuffling {
-            let selectedItem = allPlaylistItems.first { $0.id == selectionID }
-            var shuffledItems = allPlaylistItems.shuffled()
-            if let item = selectedItem, let index = shuffledItems.firstIndex(of: item) {
-                shuffledItems.remove(at: index)
-                shuffledItems.insert(item, at: 0)
+            var ids = PlaybackQueue.make(
+                items: allPlaylistItems,
+                activePlaylist: activePlaylist,
+                searchText: searchText,
+                sortOrder: sortOrder,
+                shuffledIDs: nil
+            ).map(\.id).shuffled()
+            if let selectionID, let index = ids.firstIndex(of: selectionID) {
+                ids.remove(at: index)
+                ids.insert(selectionID, at: 0)
             }
-            self.allPlaylistItems = shuffledItems
+            shuffledIDs = ids
         } else {
-            Task { await self.applySort() }
+            shuffledIDs = nil
         }
+        objectWillChange.send()
     }
     
     func seek(to time: TimeInterval) async {
-        let isLooping = self.isLooping
-        let duration = self.currentSongDuration
-        
-        await Task.detached(priority: .userInitiated) {
-            var effectiveTime = time
-            if isLooping && duration > 0 {
-                effectiveTime = time.truncatingRemainder(dividingBy: duration)
+        guard currentlyPlayingFileURL != nil else { return }
+
+        let shouldResume = isPlaying
+        let effectiveTime: TimeInterval
+        if isLooping && currentSongDuration > 0 {
+            effectiveTime = time.truncatingRemainder(dividingBy: currentSongDuration)
+        } else {
+            effectiveTime = min(max(time, 0), currentSongDuration)
+        }
+
+        timeUpdateTask?.cancel()
+        timeUpdateTask = nil
+        bufferGeneration &+= 1
+        playerNode.stop()
+        playerNode.reset()
+        pendingBufferCount = 0
+        reachedEndOfFile = false
+
+        await moduleActor.setPosition(seconds: effectiveTime)
+        await uiModuleActor.setPosition(seconds: effectiveTime)
+        currentPlaybackTime = effectiveTime
+
+        var buffers: [AVAudioPCMBuffer] = []
+        for _ in 0..<targetPendingBuffers {
+            guard let buffer = await renderBuffer() else {
+                reachedEndOfFile = true
+                break
             }
-            await self.moduleActor.setPosition(seconds: effectiveTime)
-            await self.uiModuleActor.setPosition(seconds: effectiveTime)
-        }.value
+            buffers.append(buffer)
+        }
+        for buffer in buffers {
+            scheduleBuffer(buffer)
+        }
+
+        guard shouldResume else { return }
+        do {
+            try audioEngine.start()
+            playerNode.play()
+            isPlaying = true
+            startTimeUpdateTimer()
+        } catch {
+            await stopAndReset()
+        }
     }
     
     func setActivePlaylist(_ playlist: Playlist?) {
@@ -454,16 +512,18 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     }
     
     private func scheduleBuffer(_ buffer: AVAudioPCMBuffer) {
+        let generation = bufferGeneration
         pendingBufferCount += 1
         if debug { print("OpenMPTEngine: Scheduled buffer, pending: \(pendingBufferCount)") }
         playerNode.scheduleBuffer(buffer) { [weak self] in
             Task {
-                await self?.handleBufferCompletion()
+                await self?.handleBufferCompletion(generation: generation)
             }
         }
     }
     
-    private func handleBufferCompletion() async {
+    private func handleBufferCompletion(generation: UInt64) async {
+        guard generation == bufferGeneration else { return }
         pendingBufferCount -= 1
         if debug { print("OpenMPTEngine: Buffer completed, pending: \(pendingBufferCount)") }
 
@@ -505,7 +565,6 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     }
 
     private func applySort() async {
-        if self.isShuffling { self.isShuffling = false }
         let sortedItems = sortItems(self.allPlaylistItems)
         self.allPlaylistItems = sortedItems
     }
@@ -518,60 +577,68 @@ final class OpenMPTEngine: ObservableObject, Sendable {
         }
     }
     
-    func rateFile(fileURL: URL, rating: Int, musicFolderURL: URL) {
-        setAttribute(key: ratingKey, value: rating, forFileAt: fileURL, in: musicFolderURL)
+    @discardableResult
+    func rateFile(fileURL: URL, rating: Int, musicFolderURL: URL) -> Bool {
+        guard musicFolderURL.startAccessingSecurityScopedResource() else {
+            presentedError = .accessDenied
+            return false
+        }
+        defer { musicFolderURL.stopAccessingSecurityScopedResource() }
+
+        do {
+            try setAttribute(key: ratingKey, value: rating, forFileAt: fileURL)
+            return true
+        } catch {
+            presentedError = .mutationFailed(error.localizedDescription)
+            return false
+        }
     }
     
     func updateFile(from oldURL: URL, to newURL: URL, newTitle: String, newArtist: String, musicFolderURL: URL) async -> Bool {
-        setAttribute(key: titleKey, value: newTitle, forFileAt: oldURL, in: musicFolderURL)
-        setAttribute(key: artistKey, value: newArtist, forFileAt: oldURL, in: musicFolderURL)
-        if oldURL.lastPathComponent != newURL.lastPathComponent {
-            guard musicFolderURL.startAccessingSecurityScopedResource() else { return false }
-            defer { musicFolderURL.stopAccessingSecurityScopedResource() }
-            do {
-                try FileManager.default.moveItem(at: oldURL, to: newURL)
-                return true
-            } catch {
-                if debug { print("Error renaming file: \(error)") }
-                return false
-            }
-        }
-        return true
-    }
-    
-    // MARK: - Caching Logic
-    private func loadPlaylistFromCache(for musicFolderURL: URL) async -> Bool {
-        guard let cacheURL = self.cacheURL, FileManager.default.fileExists(atPath: cacheURL.path) else { return false }
-
-        do {
-            let folderAttributes = try FileManager.default.attributesOfItem(atPath: musicFolderURL.path)
-            guard let folderModificationDate = folderAttributes[.modificationDate] as? Date else { return false }
-
-            let data = try Data(contentsOf: cacheURL)
-            let cache = try JSONDecoder().decode(PlaylistCache.self, from: data)
-
-            if Calendar.current.compare(folderModificationDate, to: cache.folderModificationDate, toGranularity: .second) == .orderedSame {
-                self.allPlaylistItems = cache.items
-                await self.applySort()
-                return true
-            }
-        } catch {
-            if debug { print("Error loading cache: \(error.localizedDescription)") }
-            try? FileManager.default.removeItem(at: cacheURL)
+        guard musicFolderURL.startAccessingSecurityScopedResource() else {
+            presentedError = .accessDenied
             return false
         }
+        defer { musicFolderURL.stopAccessingSecurityScopedResource() }
 
-        return false
+        do {
+            try FileMutator.update(from: oldURL, to: newURL) { updatedURL in
+                try setAttribute(key: titleKey, value: newTitle, forFileAt: updatedURL)
+                try setAttribute(key: artistKey, value: newArtist, forFileAt: updatedURL)
+            }
+            return true
+        } catch let error as FileOperationError {
+            presentedError = error
+            return false
+        } catch {
+            presentedError = .mutationFailed(error.localizedDescription)
+            return false
+        }
     }
 
-    private func savePlaylistToCache(items: [PlaylistItem], for musicFolderURL: URL) async {
+    func trashFile(_ item: PlaylistItem, musicFolderURL: URL) -> Bool {
+        guard musicFolderURL.startAccessingSecurityScopedResource() else {
+            presentedError = .accessDenied
+            return false
+        }
+        defer { musicFolderURL.stopAccessingSecurityScopedResource() }
+
+        do {
+            try FileManager.default.trashItem(at: item.fileURL, resultingItemURL: nil)
+            requestMusicFolderScan(for: musicFolderURL)
+            return true
+        } catch {
+            presentedError = .mutationFailed(error.localizedDescription)
+            return false
+        }
+    }
+
+    // MARK: - Caching Logic
+    private func savePlaylistToCache(items: [PlaylistItem], fingerprint: LibraryFingerprint) {
         guard let cacheURL = self.cacheURL else { return }
 
         do {
-            let folderAttributes = try FileManager.default.attributesOfItem(atPath: musicFolderURL.path)
-            guard let folderModificationDate = folderAttributes[.modificationDate] as? Date else { return }
-
-            let cache = PlaylistCache(folderModificationDate: folderModificationDate, items: items)
+            let cache = PlaylistCache(fingerprint: fingerprint, items: items)
             let data = try JSONEncoder().encode(cache)
             
             let directoryURL = cacheURL.deletingLastPathComponent()
@@ -584,6 +651,7 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     }
     
     deinit {
+        scanTask?.cancel()
         if let observer = configChangeObserver {
             NotificationCenter.default.removeObserver(observer)
         }

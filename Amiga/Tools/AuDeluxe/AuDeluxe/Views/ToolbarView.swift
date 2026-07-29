@@ -121,10 +121,8 @@ struct ToolbarItems: ToolbarContent {
               let item = engine.playlistItems.first(where: { $0.id == selectedID }),
               let musicFolderURL = settings.musicFolderURL else { return }
 
-        engine.rateFile(fileURL: item.fileURL, rating: rating, musicFolderURL: musicFolderURL)
-
-        // This is the corrected line
-        if let index = engine.allPlaylistItems.firstIndex(where: { $0.id == selectedID }) {
+        if engine.rateFile(fileURL: item.fileURL, rating: rating, musicFolderURL: musicFolderURL),
+           let index = engine.allPlaylistItems.firstIndex(where: { $0.id == selectedID }) {
             engine.allPlaylistItems[index].rating = rating
         }
     }

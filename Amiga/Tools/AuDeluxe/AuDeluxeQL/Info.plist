@@ -10,7 +10,7 @@
             <false/>
             <key>QLSupportedContentTypes</key>
             <array>
-                <string>com.theblifemovement.audeluxe.mod</string>
+                <string>com.theblifemovement.audeluxe.module</string>
             </array>
             <key>QLSupportsSearchableItems</key>
             <false/>
@@ -19,26 +19,6 @@
         <string>com.apple.quicklook.preview</string>
         <key>NSExtensionPrincipalClass</key>
         <string>$(PRODUCT_MODULE_NAME).PreviewViewController</string>
-        <key>UTExportedTypeDeclarations</key>
-        <array>
-            <dict>
-                <key>UTTypeConformsTo</key>
-                <array>
-                    <string>public.data</string>
-                </array>
-                <key>UTTypeDescription</key>
-                <string>Protracker Module</string>
-                <key>UTTypeIdentifier</key>
-                <string>com.theblifemovement.audeluxe.mod</string>
-                <key>UTTypeTagSpecification</key>
-                <dict>
-                    <key>public.filename-extension</key>
-                    <array>
-                        <string>mod</string>
-                    </array>
-                </dict>
-            </dict>
-        </array>
     </dict>
 </dict>
 </plist>

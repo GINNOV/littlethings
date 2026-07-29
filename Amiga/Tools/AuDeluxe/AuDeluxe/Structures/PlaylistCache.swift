@@ -8,6 +8,6 @@
 import Foundation
 
 struct PlaylistCache: Codable {
-    let folderModificationDate: Date
+    let fingerprint: LibraryFingerprint
     let items: [PlaylistItem]
 }
