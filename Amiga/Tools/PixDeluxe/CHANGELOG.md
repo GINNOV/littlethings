@@ -2,6 +2,22 @@
 
 All notable changes to PixDeluxe are documented here.
 
+## 1.0 (Build 112) - 2026-07-29
+
+### Changed
+
+- Completed Sparkle's sandboxed installer configuration so future
+  EdDSA-signed updates can be installed from inside PixDeluxe.
+- Embedded the Sparkle public key used to sign build 112 and added packaging
+  checks that prevent publishing with a mismatched signing key.
+- Added the missing **Check for Updates** command to the application menu.
+- Enabled outbound network access required for Sparkle to retrieve appcasts and
+  update archives from inside the sandbox.
+- Documented Sentinel as a free first-install workaround for Macs that
+  quarantine the unnotarized app.
+- Build 112 is a one-time manual update; automatic updates resume after it is
+  installed.
+
 ## 1.0 (Build 111) - 2026-07-28
 
 ### Added

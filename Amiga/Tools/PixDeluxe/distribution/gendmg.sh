@@ -150,12 +150,6 @@ if ! command -v create-dmg &> /dev/null; then
     brew install create-dmg || { echo "Failed to install create-dmg"; exit 1; }
 fi
 
-# Self-sign the app
-echo "Self-signing the app..."
-codesign --sign - --force --deep "$APP_PATH" || {
-    echo "Warning: Code signing failed. Continuing without signature."
-}
-
 # Create temporary source folder
 TEMP_DIR=$(mktemp -d)
 echo "TEMP_DIR: $TEMP_DIR"

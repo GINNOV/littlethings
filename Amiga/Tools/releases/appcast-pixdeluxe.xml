@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+  <channel>
+    <title>PixDeluxe Changelog</title>
+    <item>
+      <title>Version 1.0</title>
+      <description><![CDATA[
+<h4>Sparkle installation bridge</h4>
+<ul>
+    <li>Completed Sparkle&apos;s sandboxed installer configuration for future automatic updates.</li>
+    <li>Embedded and verified the Sparkle update key used to sign build 112.</li>
+    <li>Added the missing Check for Updates command.</li>
+    <li>This build is a one-time manual update; automatic updates resume after build 112 is installed.</li>
+</ul>
+]]></description>
+      <pubDate>Wed, 29 Jul 2026 16:56:15 +0200</pubDate>
+      <enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/PixDeluxe-1.0_112.zip" sparkle:version="112" sparkle:shortVersionString="1.0" length="5963491" type="application/octet-stream" sparkle:edSignature="32ET3Cea/9j8p/0eXtnaX2ZOl8OqPxFl5UH8smLpDLLooZ3u3oZ2HodGt1vQ31MoucNPlQ99po8wAf4OOkx+DA==" />
+    </item>
+  </channel>
+</rss>
