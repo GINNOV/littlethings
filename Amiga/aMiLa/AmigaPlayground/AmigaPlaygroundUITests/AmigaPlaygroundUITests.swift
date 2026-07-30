@@ -69,6 +69,7 @@ final class AmigaPlaygroundUITests: XCTestCase {
             NSPredicate(format: "title BEGINSWITH %@", "Settings")
         )
         XCTAssertEqual(settingsItems.count, 1, "The app menu must expose one Settings item.")
+        XCTAssertTrue(menuBar.menuBarItems["Amiga Playground"].menuItems["Check for Updates..."].exists)
 
         menuBar.menuBarItems["Emulator"].click()
         XCTAssertTrue(menuBar.menuBarItems["Emulator"].menuItems["Run Default Emulator"].exists)

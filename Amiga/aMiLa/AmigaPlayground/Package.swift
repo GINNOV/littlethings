@@ -6,8 +6,15 @@ let package = Package(
     platforms: [
         .macOS(.v14)
     ],
+    products: [
+        .executable(name: "MLXServerHelper", targets: ["MLXServerHelper"])
+    ],
     dependencies: [],
     targets: [
+        .executableTarget(
+            name: "MLXServerHelper",
+            path: "Helpers/MLXServerHelper"
+        ),
         .executableTarget(
             name: "AmigaPlayground",
             dependencies: [],
@@ -16,6 +23,7 @@ let package = Package(
                 ".build",
                 ".codex",
                 "build",
+                "Helpers",
                 "AmigaPlayground.app",
                 "AmigaPlaygroundTests",
                 "AmigaPlayground.xcodeproj",

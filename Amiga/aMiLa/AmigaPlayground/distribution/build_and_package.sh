@@ -46,9 +46,10 @@ done
 
 mkdir -p "$DMG_DIR" || { echo "Error: Failed to create $DMG_DIR"; exit 1; }
 
-AVAILABLE_SPACE=$(df -P "$DMG_DIR" | tail -1 | awk '{print $4}' | awk '{print $1 / 1024}')
-if (( $(echo "$AVAILABLE_SPACE < $MIN_SPACE_MB" | bc -l) )); then
-    echo "Error: Insufficient disk space. Need $MIN_SPACE_MB MB, got ${AVAILABLE_SPACE} MB."
+AVAILABLE_SPACE_KB=$(df -Pk "$DMG_DIR" | awk 'END {print $4}')
+REQUIRED_SPACE_KB=$((MIN_SPACE_MB * 1024))
+if (( AVAILABLE_SPACE_KB < REQUIRED_SPACE_KB )); then
+    echo "Error: Insufficient disk space. Need $MIN_SPACE_MB MB."
     exit 1
 fi
 

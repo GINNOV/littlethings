@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+  <channel>
+    <title>Amiga Playground Changelog</title>
+    <item>
+      <title>Version 1.0.0 (Build 38)</title>
+      <description><![CDATA[
+<h4>Sparkle updates</h4>
+<ul>
+    <li>Added signed automatic updates and a Check for Updates command.</li>
+    <li>Embedded the Sparkle framework and connected the release feed.</li>
+    <li>Repaired the release pipeline for the bundled MLX server helper.</li>
+</ul>
+]]></description>
+      <pubDate>Thu, 30 Jul 2026 12:25:15 +0200</pubDate>
+      <enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/AmigaPlayground-1.0.0_38.dmg" sparkle:version="38" sparkle:shortVersionString="1.0.0" length="3915992" type="application/octet-stream" sparkle:edSignature="tjNCR2rEGzBpWxlsAvktz0sHeFVd4n5fcN43RQywaP/O8XBYE0qfIKuIN2jdMF1nuGkkQlL6gz8OZX7H//P8Dw==" />
+    </item>
+  </channel>
+</rss>

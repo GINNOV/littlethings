@@ -4,6 +4,7 @@ import AppKit
 @main
 struct AmigaPlaygroundApp: App {
     @Environment(\.openWindow) private var openWindow
+    private let updaterController = UpdaterController()
 
     var body: some Scene {
         WindowGroup {
@@ -25,6 +26,7 @@ struct AmigaPlaygroundApp: App {
             }
 
             AmigaPlaygroundCommands()
+            UpdaterCommands(updaterController: updaterController)
         }
 
         Settings {
