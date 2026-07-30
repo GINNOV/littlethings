@@ -108,6 +108,7 @@ main.content-page {
 /* General Section Styling */
 section {
     background-color: #fff; 
+    color: #333;
     padding: 2rem; 
     border-radius: 0.5rem; 
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); 
@@ -115,6 +116,7 @@ section {
 }
 body.dark-theme section {
     background-color: #1E293B; 
+    color: #E2E8F0;
 }
 .content-page section p, .content-page section ul, .content-page section ol {
     margin-bottom: 1.25rem;
@@ -249,7 +251,7 @@ body:not(.dark-theme) .project-card h3 {
     margin-bottom: 1.5rem; 
 }
 body.dark-theme .project-card p {
-    color: #94A3B8; 
+    color: #CBD5E1;
 }
 body:not(.dark-theme) .project-card p {
     color: #4b5563; 
@@ -259,6 +261,8 @@ body:not(.dark-theme) .project-card p {
 .project-button-container {
     display: flex;
     flex-direction: column; 
+    flex-wrap: wrap;
+    width: 100%;
 }
 
 a.project-button { 
@@ -398,6 +402,7 @@ code {
     .project-card:not(.reverse) .md-img-container { padding-right: 1.5rem; padding-left: 0; }
     .md-text-container { width: 60%; }
     .project-button-container { flex-direction: row; gap: 1rem; }
+    .project-button-container .project-button { flex: 1 1 10rem; }
     .project-button { margin-bottom: 0; }
 }
 
