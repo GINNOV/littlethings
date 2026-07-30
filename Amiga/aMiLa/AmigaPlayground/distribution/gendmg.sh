@@ -129,9 +129,10 @@ fi
 
 # Check disk space
 DMG_DIR=$(dirname "$DMG_PATH")
-AVAILABLE_SPACE=$(df -P "$DMG_DIR" | tail -1 | awk '{print $4}' | awk '{print $1 / 1024}') # MB
-if (( $(echo "$AVAILABLE_SPACE < $MIN_SPACE_MB" | bc -l) )); then
-    echo "Error: Insufficient disk space. At least $MIN_SPACE_MB MB is required, but only ${AVAILABLE_SPACE} MB is available."
+AVAILABLE_SPACE_KB=$(df -Pk "$DMG_DIR" | awk 'END {print $4}')
+REQUIRED_SPACE_KB=$((MIN_SPACE_MB * 1024))
+if (( AVAILABLE_SPACE_KB < REQUIRED_SPACE_KB )); then
+    echo "Error: Insufficient disk space. At least $MIN_SPACE_MB MB is required."
     exit 1
 fi
 
