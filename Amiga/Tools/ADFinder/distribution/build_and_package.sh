@@ -140,10 +140,16 @@ fi
 echo "Creating ZIP for Sparkle..."
 /usr/bin/ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "$STAGED_ZIP_PATH"
 
-OBJROOT=$(xcodebuild -project "$PROJECT_PATH" -scheme "$SCHEME" -showBuildSettings -json | sed -n 's/.*"OBJROOT" : "\([^"]*\)".*/\1/p' | head -1)
-PROJECT_DERIVED_DATA_ROOT=$(dirname "$(dirname "$OBJROOT")")
-SIGN_UPDATE_TOOL="${PROJECT_DERIVED_DATA_ROOT}/SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update"
-GENERATE_KEYS_TOOL="${PROJECT_DERIVED_DATA_ROOT}/SourcePackages/artifacts/sparkle/Sparkle/bin/generate_keys"
+SPARKLE_TOOL_ROOT=$(find "$HOME/Library/Developer/Xcode/DerivedData" \
+    -path '*/SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update' \
+    -type f -perm +111 -print -quit)
+if [[ -z "$SPARKLE_TOOL_ROOT" ]]; then
+    echo "Error: Sparkle tools were not found in Xcode DerivedData"
+    exit 1
+fi
+SPARKLE_TOOL_ROOT=$(dirname "$SPARKLE_TOOL_ROOT")
+SIGN_UPDATE_TOOL="${SPARKLE_TOOL_ROOT}/sign_update"
+GENERATE_KEYS_TOOL="${SPARKLE_TOOL_ROOT}/generate_keys"
 
 for tool in "$SIGN_UPDATE_TOOL" "$GENERATE_KEYS_TOOL"; do
     if [[ ! -x "$tool" ]]; then
