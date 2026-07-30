@@ -160,10 +160,18 @@ done
 
 KEYCHAIN_PUBLIC_KEY=$("$GENERATE_KEYS_TOOL" --account "$SPARKLE_KEY_ACCOUNT" -p)
 if [[ "$APP_PUBLIC_KEY" != "$KEYCHAIN_PUBLIC_KEY" ]]; then
-    echo "Error: SUPublicEDKey does not match the default Sparkle Keychain account"
+    echo "Error: SUPublicEDKey does not match the ${SPARKLE_KEY_ACCOUNT} Sparkle Keychain account"
     exit 1
 fi
-RAW_SIGNATURE_OUTPUT=$("$SIGN_UPDATE_TOOL" --account "$SPARKLE_KEY_ACCOUNT" "$STAGED_ZIP_PATH")
+if [[ -n "${SPARKLE_PRIVATE_KEY_PATH:-}" ]]; then
+    if [[ ! -f "$SPARKLE_PRIVATE_KEY_PATH" ]]; then
+        echo "Error: SPARKLE_PRIVATE_KEY_PATH not found: $SPARKLE_PRIVATE_KEY_PATH"
+        exit 1
+    fi
+    RAW_SIGNATURE_OUTPUT=$("$SIGN_UPDATE_TOOL" --ed-key-file "$SPARKLE_PRIVATE_KEY_PATH" "$STAGED_ZIP_PATH")
+else
+    RAW_SIGNATURE_OUTPUT=$("$SIGN_UPDATE_TOOL" --account "$SPARKLE_KEY_ACCOUNT" "$STAGED_ZIP_PATH")
+fi
 
 SIGNATURE=$(sed -n 's/.*sparkle:edSignature="\([^"]*\)".*/\1/p' <<< "$RAW_SIGNATURE_OUTPUT")
 ZIP_SIZE=$(sed -n 's/.*length="\([^"]*\)".*/\1/p' <<< "$RAW_SIGNATURE_OUTPUT")

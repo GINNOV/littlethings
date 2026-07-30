@@ -85,7 +85,6 @@ jobs:
             xcodebuild -resolvePackageDependencies -project ../ADFinder.xcodeproj -scheme ADFinder
             GENERATE_KEYS=$(find "$HOME/Library/Developer/Xcode/DerivedData" -path '*/Sparkle/bin/generate_keys' -type f -perm +111 -print -quit)
             "$GENERATE_KEYS" --account ADFinder -f "$SPARKLE_KEY_FILE"
-            rm -f "$SPARKLE_KEY_FILE"
           fi
           
           ./build_and_package.sh --project ../ADFinder.xcodeproj --scheme "ADFinder" --configuration Release
@@ -103,6 +102,13 @@ jobs:
           ZIP_FILE="${DMG_FILE%.dmg}.zip"
           test -f "$ZIP_FILE"
           echo "ZIP_FILE=$ZIP_FILE" >> $GITHUB_OUTPUT
+
+      - name: Remove temporary Sparkle key
+        if: always()
+        run: |
+          if [ -n "${SPARKLE_KEY_FILE:-}" ] && [ -f "$SPARKLE_KEY_FILE" ]; then
+            rm -f "$SPARKLE_KEY_FILE"
+          fi
 
       - name: Commit, Clean, and Push DMG
         run: |
