@@ -5,7 +5,9 @@
 	<key>SUFeedURL</key>
 	<string>https://raw.githubusercontent.com/GINNOV/littlethings/master/Amiga/Tools/releases/appcast-adfinder.xml</string>
 	<key>SUPublicEDKey</key>
-	<string>Oq4b/BX26tC2nXfh+dmMFoHFP9RN8lyqxcgrZPY+Pd8=</string>
+	<string>3xsOOrcTKscID6fgEJL+0iiGJpUJWd9vcSJkdr5KO4U=</string>
+	<key>SUEnableInstallerLauncherService</key>
+	<true/>
 	<key>UTImportedTypeDeclarations</key>
 	<array>
 		<dict>
@@ -42,7 +44,7 @@
 			<dict>
 				<key>public.filename-extension</key>
 				<array>
-					<string>adf</string>
+					<string>hdf</string>
 				</array>
 				<key>public.mime-type</key>
 				<string>application/x-hdf</string>
@@ -87,7 +89,7 @@
 			<dict>
 				<key>public.filename-extension</key>
 				<array>
-					<string>adf</string>
+					<string>hdf</string>
 				</array>
 				<key>public.mime-type</key>
 				<string>application/x-hdf</string>
@@ -101,7 +103,7 @@
 	<key>CFBundleGetInfoString</key>
 	<string></string>
 	<key>NSDesktopFolderUsageDescription</key>
-	<string>Grant permission to access ADF/HDF files</string>
+	<string>ADFinder needs access to open ADF/HDF files</string>
 	<key>NSAppTransportSecurity</key>
 	<dict/>
 </dict>

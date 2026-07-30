@@ -1,17 +1,19 @@
 #!/bin/bash
 
-set -e
+set -euo pipefail
 
 # --- START: Configuration for ADFinder ---
 PROJECT_NAME="ADFinder"
 PROJECT_PATH="../${PROJECT_NAME}.xcodeproj"
-SCHEME="ADFinder - Release"
+SCHEME="ADFinder"
 CONFIGURATION="Release"
+SPARKLE_KEY_ACCOUNT="ADFinder"
 RELEASE_NOTES_CONTENT='
 <ul>
-    <li>you can drop file structures now</li>
-    <li>Recent files from open button</li>
-    <li>version checker added</li>
+    <li>One-time manual upgrade to ADFinder&rsquo;s new dedicated Sparkle signing key.</li>
+    <li>Repaired and hardened automatic updates for subsequent releases.</li>
+    <li>Corrected HDF document registration.</li>
+    <li>Added automated coverage for disk comparison and application metadata.</li>
 </ul>
 '
 # --- END: Configuration for ADFinder ---
@@ -21,9 +23,11 @@ EXPORT_PATH="./build"
 APP_PATH="${EXPORT_PATH}/${PROJECT_NAME}.app"
 DMG_BASE_PATH="../releases/${PROJECT_NAME}.dmg"
 README_PATH="dmg_assets/README.md"
+CHANGELOG_PATH="../CHANGELOG.md"
 BACKGROUND_IMAGE="dmg_assets/dmg-background.png"
 VOLUME_ICON="dmg_assets/dmg-icon.icns"
 EXPORT_OPTIONS_PLIST="exportOptions.plist"
+ENTITLEMENTS_PATH="../ADFinder/ADFinder.entitlements"
 MIN_SPACE_MB=1024
 
 usage() {
@@ -44,14 +48,15 @@ done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 README_PATH="${SCRIPT_DIR}/${README_PATH}"
+CHANGELOG_PATH="${SCRIPT_DIR}/${CHANGELOG_PATH}"
 BACKGROUND_IMAGE="${SCRIPT_DIR}/${BACKGROUND_IMAGE}"
 VOLUME_ICON="${SCRIPT_DIR}/${VOLUME_ICON}"
 EXPORT_OPTIONS_PLIST="${SCRIPT_DIR}/${EXPORT_OPTIONS_PLIST}"
+ENTITLEMENTS_PATH="${SCRIPT_DIR}/${ENTITLEMENTS_PATH}"
 DMG_DIR="${SCRIPT_DIR}/../../releases"
-DMG_BASE_PATH="${DMG_DIR}/${PROJECT_NAME}.dmg"
 PROJECT_PATH="${SCRIPT_DIR}/${PROJECT_PATH}"
 
-for file in "$PROJECT_PATH" "$README_PATH" "$BACKGROUND_IMAGE" "$VOLUME_ICON" "$EXPORT_OPTIONS_PLIST" "./gendmg.sh"; do
+for file in "$PROJECT_PATH" "$README_PATH" "$CHANGELOG_PATH" "$BACKGROUND_IMAGE" "$VOLUME_ICON" "$EXPORT_OPTIONS_PLIST" "$ENTITLEMENTS_PATH" "$SCRIPT_DIR/gendmg.sh"; do
     if [ ! -e "$file" ]; then
         echo "Error: Required file not found at $file"
         exit 1
@@ -59,9 +64,12 @@ for file in "$PROJECT_PATH" "$README_PATH" "$BACKGROUND_IMAGE" "$VOLUME_ICON" "$
 done
 
 mkdir -p "$DMG_DIR" || { echo "Error: Failed to create $DMG_DIR"; exit 1; }
+RELEASE_STAGING_DIR=$(mktemp -d "${DMG_DIR}/.${PROJECT_NAME}-release.XXXXXX")
+trap 'rm -rf "$RELEASE_STAGING_DIR"' EXIT
+DMG_BASE_PATH="${RELEASE_STAGING_DIR}/${PROJECT_NAME}.dmg"
 
-AVAILABLE_SPACE=$(df -P "$DMG_DIR" | tail -1 | awk '{print $4}' | awk '{print $1 / 1024}')
-if (( $(echo "$AVAILABLE_SPACE < $MIN_SPACE_MB" | bc -l) )); then
+AVAILABLE_SPACE=$(df -Pk "$DMG_DIR" | awk 'END { print int($4 / 1024) }')
+if [ "$AVAILABLE_SPACE" -lt "$MIN_SPACE_MB" ]; then
     echo "Error: Insufficient disk space. Need $MIN_SPACE_MB MB, got ${AVAILABLE_SPACE} MB."
     exit 1
 fi
@@ -96,6 +104,7 @@ fi
 echo "Creating DMG with gendmg.sh..."
 bash "$SCRIPT_DIR/gendmg.sh" \
     --readme "$README_PATH" \
+    --entitlements "$ENTITLEMENTS_PATH" \
     --app "$APP_PATH" \
     --dmg "$DMG_BASE_PATH" \
     --background "$BACKGROUND_IMAGE" \
@@ -104,115 +113,83 @@ bash "$SCRIPT_DIR/gendmg.sh" \
 
 echo "Build and packaging complete."
 
-# --- START: Appcast Update Logic ---
-
-echo "--- Updating appcast.xml ---"
-
 INFO_PLIST_PATH="${APP_PATH}/Contents/Info.plist"
 VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$INFO_PLIST_PATH")
 BUILD_NUMBER=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$INFO_PLIST_PATH")
+APP_PUBLIC_KEY=$(/usr/libexec/PlistBuddy -c "Print :SUPublicEDKey" "$INFO_PLIST_PATH")
+
+if [[ "$(/usr/libexec/PlistBuddy -c "Print :SUEnableInstallerLauncherService" "$INFO_PLIST_PATH" 2>/dev/null)" != "true" ]]; then
+    echo "Error: SUEnableInstallerLauncherService must be enabled for the sandboxed app"
+    exit 1
+fi
 
 DMG_NAME="${PROJECT_NAME}-${VERSION}_${BUILD_NUMBER}.dmg"
+STAGED_DMG_PATH="${RELEASE_STAGING_DIR}/${DMG_NAME}"
 DMG_FINAL_PATH="${DMG_DIR}/${DMG_NAME}"
+ZIP_NAME="${PROJECT_NAME}-${VERSION}_${BUILD_NUMBER}.zip"
+STAGED_ZIP_PATH="${RELEASE_STAGING_DIR}/${ZIP_NAME}"
+ZIP_PATH="${DMG_DIR}/${ZIP_NAME}"
+STAGED_APPCAST_PATH="${RELEASE_STAGING_DIR}/appcast-adfinder.xml"
 APPCAST_PATH="${DMG_DIR}/appcast-adfinder.xml"
 
-if [ ! -f "$DMG_FINAL_PATH" ]; then
-    echo "Error: Final DMG not found at $DMG_FINAL_PATH after running gendmg.sh"
+if [ ! -f "$STAGED_DMG_PATH" ]; then
+    echo "Error: Staged DMG not found at $STAGED_DMG_PATH after running gendmg.sh"
     exit 1
 fi
 
-echo "Signing the DMG..."
-OBJROOT=$(xcodebuild -project "$PROJECT_PATH" -scheme "$SCHEME" -showBuildSettings -json | grep -o '"OBJROOT" : "[^"]*' | cut -d'"' -f4)
+echo "Creating ZIP for Sparkle..."
+/usr/bin/ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "$STAGED_ZIP_PATH"
+
+OBJROOT=$(xcodebuild -project "$PROJECT_PATH" -scheme "$SCHEME" -showBuildSettings -json | sed -n 's/.*"OBJROOT" : "\([^"]*\)".*/\1/p' | head -1)
 PROJECT_DERIVED_DATA_ROOT=$(dirname "$(dirname "$OBJROOT")")
 SIGN_UPDATE_TOOL="${PROJECT_DERIVED_DATA_ROOT}/SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update"
+GENERATE_KEYS_TOOL="${PROJECT_DERIVED_DATA_ROOT}/SourcePackages/artifacts/sparkle/Sparkle/bin/generate_keys"
 
-if [ ! -f "$SIGN_UPDATE_TOOL" ]; then
-    echo "Error: sign_update tool not found. Looked in: ${SIGN_UPDATE_TOOL}"
+for tool in "$SIGN_UPDATE_TOOL" "$GENERATE_KEYS_TOOL"; do
+    if [[ ! -x "$tool" ]]; then
+        echo "Error: Sparkle tool not found: $tool"
+        exit 1
+    fi
+done
+
+KEYCHAIN_PUBLIC_KEY=$("$GENERATE_KEYS_TOOL" --account "$SPARKLE_KEY_ACCOUNT" -p)
+if [[ "$APP_PUBLIC_KEY" != "$KEYCHAIN_PUBLIC_KEY" ]]; then
+    echo "Error: SUPublicEDKey does not match the default Sparkle Keychain account"
+    exit 1
+fi
+RAW_SIGNATURE_OUTPUT=$("$SIGN_UPDATE_TOOL" --account "$SPARKLE_KEY_ACCOUNT" "$STAGED_ZIP_PATH")
+
+SIGNATURE=$(sed -n 's/.*sparkle:edSignature="\([^"]*\)".*/\1/p' <<< "$RAW_SIGNATURE_OUTPUT")
+ZIP_SIZE=$(sed -n 's/.*length="\([^"]*\)".*/\1/p' <<< "$RAW_SIGNATURE_OUTPUT")
+SIGNATURE=$(tr -d '\r\n' <<< "$SIGNATURE")
+
+if [[ -z "$SIGNATURE" || -z "$ZIP_SIZE" ]]; then
+    echo "Error: sign_update returned an unexpected result"
     exit 1
 fi
 
-SIGNATURE=$("$SIGN_UPDATE_TOOL" "$DMG_FINAL_PATH")
-echo "Signature: $SIGNATURE"
-
-DMG_SIZE=$(stat -f %z "$DMG_FINAL_PATH")
 PUB_DATE=$(date -R)
-DOWNLOAD_URL="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/$DMG_NAME"
-
-if [ ! -f "$APPCAST_PATH" ]; then
-    echo "Creating new appcast file at ${APPCAST_PATH}"
-    echo '<?xml version="1.0" encoding="utf-8"?>
+DOWNLOAD_URL="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/$ZIP_NAME"
+cat > "$STAGED_APPCAST_PATH" <<XML
+<?xml version="1.0" encoding="utf-8"?>
 <rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
-    <channel>
-        <title>ADFinder Changelog</title>
-    </channel>
-</rss>' > "$APPCAST_PATH"
-fi
+  <channel>
+    <title>ADFinder Changelog</title>
+    <item>
+      <title>Version ${VERSION}</title>
+      <description><![CDATA[${RELEASE_NOTES_CONTENT}]]></description>
+      <pubDate>${PUB_DATE}</pubDate>
+      <enclosure url="${DOWNLOAD_URL}" sparkle:version="${BUILD_NUMBER}" sparkle:shortVersionString="${VERSION}" length="${ZIP_SIZE}" type="application/octet-stream" sparkle:edSignature="${SIGNATURE}" />
+    </item>
+  </channel>
+</rss>
+XML
 
-DESCRIPTION_PLACEHOLDER="##SPARKLE_DESCRIPTION_PLACEHOLDER##"
+xmllint --noout "$STAGED_APPCAST_PATH"
 
-python3 -c "
-import xml.etree.ElementTree as ET
-import sys
-import re
-
-appcast_path = sys.argv[1]
-version = sys.argv[2]
-build_number = sys.argv[3]
-dmg_url = sys.argv[4]
-dmg_size = sys.argv[5]
-pub_date = sys.argv[6]
-description_placeholder = sys.argv[7]
-signature = sys.argv[8]
-
-sparkle_namespace = 'http://www.andymatuschak.org/xml-namespaces/sparkle'
-ET.register_namespace('sparkle', sparkle_namespace)
-
-# AI_REVIEW: This is the robust fix. Read the file as text, fix the namespace with a regex if missing, then parse. #END_REVIEW
-with open(appcast_path, 'r') as f:
-    xml_content = f.read()
-
-if not re.search(r'<rss[^>]*xmlns:sparkle=', xml_content):
-    print('Sparkle namespace missing from appcast root. Fixing...')
-    xml_content = re.sub(r'(<rss[^>]*)', r'\\1 xmlns:sparkle=\"' + sparkle_namespace + '\"', xml_content, count=1)
-
-tree = ET.ElementTree(ET.fromstring(xml_content))
-root = tree.getroot()
-channel = root.find('channel')
-
-for item in channel.findall('item'):
-    enclosure = item.find('enclosure')
-    if enclosure is not None:
-        short_version = enclosure.get(f'{{{sparkle_namespace}}}shortVersionString')
-        if short_version == version:
-            print(f'Found existing item for version {version}. Removing it.')
-            channel.remove(item)
-
-new_item = ET.Element('item')
-title = ET.SubElement(new_item, 'title')
-title.text = f'Version {version}'
-
-description = ET.SubElement(new_item, 'description')
-description.text = description_placeholder
-
-pub_date_element = ET.SubElement(new_item, 'pubDate')
-pub_date_element.text = pub_date
-
-enclosure = ET.SubElement(new_item, 'enclosure')
-enclosure.set('url', dmg_url)
-enclosure.set(f'{{{sparkle_namespace}}}version', build_number)
-enclosure.set(f'{{{sparkle_namespace}}}shortVersionString', version)
-enclosure.set('length', dmg_size)
-enclosure.set('type', 'application/octet-stream')
-enclosure.set(f'{{{sparkle_namespace}}}edSignature', signature)
-
-channel.insert(0, new_item)
-tree.write(appcast_path, encoding='utf-8', xml_declaration=True)
-
-print(f'Successfully added Version {version} (Build {build_number}) to {appcast_path}')
-" "$APPCAST_PATH" "$VERSION" "$BUILD_NUMBER" "$DOWNLOAD_URL" "$DMG_SIZE" "$PUB_DATE" "$DESCRIPTION_PLACEHOLDER" "$SIGNATURE"
-
-perl -i -p0e "s|${DESCRIPTION_PLACEHOLDER}|<![CDATA[${RELEASE_NOTES_CONTENT}]]>|g" "$APPCAST_PATH"
-
-# --- END: Appcast Update Logic ---
-
-echo "--- All Done! ---"
+mv "$STAGED_DMG_PATH" "$DMG_FINAL_PATH"
+mv "$STAGED_ZIP_PATH" "$ZIP_PATH"
+mv "$STAGED_APPCAST_PATH" "$APPCAST_PATH"
+echo "Created DMG: ${DMG_FINAL_PATH}"
+echo "Created ZIP: ${ZIP_PATH}"
+echo "Updated appcast: ${APPCAST_PATH}"

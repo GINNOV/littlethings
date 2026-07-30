@@ -4,9 +4,9 @@
 # Trigger:
 # - Runs on a push to the 'master' branch ONLY if the commit message
 #   includes the string '#build-adfinder'.
-# - Manual runs via 'workflow_dispatch' will be skipped by the job's 'if' condition.
+# - Manual runs via 'workflow_dispatch' are always allowed.
 
-name: Build and Commit ADFinder DMG
+name: Build and Commit ADFinder Release
 
 on:
   push:
@@ -15,7 +15,7 @@ on:
 
 jobs:
   build-and-commit-dmg:
-    if: contains(github.event.head_commit.message, '#build-adfinder')
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '#build-adfinder')
     runs-on: macos-latest
     steps:
       - name: Checkout code
@@ -26,6 +26,25 @@ jobs:
 
       - name: Install create-dmg dependency
         run: brew install create-dmg
+
+      - name: Import Sparkle release key
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "$SPARKLE_PRIVATE_KEY"
+          KEY_FILE=$(mktemp)
+          trap 'rm -f "$KEY_FILE"' EXIT
+          chmod 600 "$KEY_FILE"
+          printf '%s' "$SPARKLE_PRIVATE_KEY" > "$KEY_FILE"
+          GENERATE_KEYS=$(find "$RUNNER_TEMP" "$HOME/Library/Developer/Xcode/DerivedData" -path '*/Sparkle/bin/generate_keys' -type f -perm +111 -print -quit 2>/dev/null || true)
+          if [ -z "$GENERATE_KEYS" ]; then
+            echo "Sparkle tools are resolved during the build; key import will run after dependency resolution."
+            echo "SPARKLE_KEY_FILE=$KEY_FILE" >> "$GITHUB_ENV"
+            trap - EXIT
+          else
+            "$GENERATE_KEYS" --account ADFinder -f "$KEY_FILE"
+          fi
 
       - name: Check and select Xcode version
         run: |
@@ -57,16 +76,17 @@ jobs:
           
           cd Amiga/Tools/ADFinder/distribution
 
-          # Update DMG output directory
-          sed -i '' 's|DMG_DIR="${SCRIPT_DIR}/../releases"|DMG_DIR="${SCRIPT_DIR}/../../releases"|' build_and_package.sh
-
-          # Update DMG filename format to ADFinder-<version>_<build>.dmg
-          sed -i '' 's|DMG_PATH="$DMG_DIR/${DMG_BASE}-${APP_VERSION}_${BUILD_NUMBER}.dmg"|DMG_PATH="$DMG_DIR/ADFinder-${APP_VERSION}_${BUILD_NUMBER}.dmg"|' gendmg.sh
-          
           chmod +x build_and_package.sh
           chmod +x gendmg.sh
+
+          if [ -n "${SPARKLE_KEY_FILE:-}" ]; then
+            xcodebuild -resolvePackageDependencies -project ../ADFinder.xcodeproj -scheme ADFinder
+            GENERATE_KEYS=$(find "$HOME/Library/Developer/Xcode/DerivedData" -path '*/Sparkle/bin/generate_keys' -type f -perm +111 -print -quit)
+            "$GENERATE_KEYS" --account ADFinder -f "$SPARKLE_KEY_FILE"
+            rm -f "$SPARKLE_KEY_FILE"
+          fi
           
-          ./build_and_package.sh --project ../ADFinder.xcodeproj --scheme "ADFinder - Release" --configuration Release
+          ./build_and_package.sh --project ../ADFinder.xcodeproj --scheme "ADFinder" --configuration Release
           
           cd ../../../..
 
@@ -78,6 +98,9 @@ jobs:
           fi
           echo "Found newest DMG: $DMG_FILE"
           echo "DMG_FILE=$DMG_FILE" >> $GITHUB_OUTPUT
+          ZIP_FILE="${DMG_FILE%.dmg}.zip"
+          test -f "$ZIP_FILE"
+          echo "ZIP_FILE=$ZIP_FILE" >> $GITHUB_OUTPUT
 
       - name: Commit, Clean, and Push DMG
         run: |
@@ -85,12 +108,10 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
-          git checkout -- Amiga/Tools/ADFinder/distribution/build_and_package.sh
-          git checkout -- Amiga/Tools/ADFinder/distribution/gendmg.sh
-          
           DMG_TO_COMMIT="${{ steps.build_step.outputs.DMG_FILE }}"
+          ZIP_TO_COMMIT="${{ steps.build_step.outputs.ZIP_FILE }}"
           echo "Adding '$DMG_TO_COMMIT' to Git."
-          git add "$DMG_TO_COMMIT"
+          git add "$DMG_TO_COMMIT" "$ZIP_TO_COMMIT" Amiga/Tools/releases/appcast-adfinder.xml
 
           # Clean up old builds, keeping latest 3
           cd Amiga/Tools/releases
@@ -101,6 +122,10 @@ jobs:
             echo "$FILES_TO_DELETE" | xargs git rm
           else
             echo "No old builds to delete (fewer than 4 found)."
+          fi
+          ZIP_FILES_TO_DELETE=$(ls -t ADFinder-*_*.zip 2>/dev/null | tail -n +4 || true)
+          if [ -n "$ZIP_FILES_TO_DELETE" ]; then
+            echo "$ZIP_FILES_TO_DELETE" | xargs git rm
           fi
           cd ../../..
 

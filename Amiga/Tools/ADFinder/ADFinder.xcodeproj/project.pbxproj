@@ -25,7 +25,18 @@
 /* Begin PBXFileReference section */
 		AC779D402DE101C300210E27 /* ADFinder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ADFinder.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AC779D712DE1039800210E27 /* ADFinder-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ADFinder-Bridging-Header.h"; path = "ADFinder/ADFinder-Bridging-Header.h"; sourceTree = "<group>"; };
+		B20000012F00000000000001 /* ADFinderTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ADFinderTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXContainerItemProxy section */
+		B20000022F00000000000002 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AC779D382DE101C300210E27 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AC779D3F2DE101C300210E27;
+			remoteInfo = ADFinder;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
 		AC77A89B2DE17C6F00210E27 /* Exceptions for "ADFinder" folder in "ADFinder" target */ = {
@@ -46,6 +57,11 @@
 			path = ADFinder;
 			sourceTree = "<group>";
 		};
+		B20000032F00000000000003 /* ADFinderTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = ADFinderTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,6 +73,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B20000042F00000000000004 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -65,6 +88,7 @@
 			children = (
 				AC779D712DE1039800210E27 /* ADFinder-Bridging-Header.h */,
 				AC779D422DE101C300210E27 /* ADFinder */,
+				B20000032F00000000000003 /* ADFinderTests */,
 				AC779D412DE101C300210E27 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -73,6 +97,7 @@
 			isa = PBXGroup;
 			children = (
 				AC779D402DE101C300210E27 /* ADFinder.app */,
+				B20000012F00000000000001 /* ADFinderTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -104,6 +129,27 @@
 			productReference = AC779D402DE101C300210E27 /* ADFinder.app */;
 			productType = "com.apple.product-type.application";
 		};
+		B20000052F00000000000005 /* ADFinderTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B20000062F00000000000006 /* Build configuration list for PBXNativeTarget "ADFinderTests" */;
+			buildPhases = (
+				B20000072F00000000000007 /* Sources */,
+				B20000042F00000000000004 /* Frameworks */,
+				B20000082F00000000000008 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B20000092F00000000000009 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				B20000032F00000000000003 /* ADFinderTests */,
+			);
+			name = ADFinderTests;
+			productName = ADFinderTests;
+			productReference = B20000012F00000000000001 /* ADFinderTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -117,6 +163,10 @@
 					AC779D3F2DE101C300210E27 = {
 						CreatedOnToolsVersion = 16.3;
 						LastSwiftMigration = 1630;
+					};
+					B20000052F00000000000005 = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = AC779D3F2DE101C300210E27;
 					};
 				};
 			};
@@ -138,12 +188,20 @@
 			projectRoot = "";
 			targets = (
 				AC779D3F2DE101C300210E27 /* ADFinder */,
+				B20000052F00000000000005 /* ADFinderTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		AC779D3E2DE101C300210E27 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B20000082F00000000000008 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -160,7 +218,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B20000072F00000000000007 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		B20000092F00000000000009 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AC779D3F2DE101C300210E27 /* ADFinder */;
+			targetProxy = B20000022F00000000000002 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		AC779D4A2DE101C400210E27 /* Debug */ = {
@@ -222,7 +295,7 @@
 				HEADER_SEARCH_PATHS = "$(SRCROOT)/ADFinder/ADFHeaders";
 				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/ADFinder/ADFLibrary";
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 15.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -286,7 +359,7 @@
 				HEADER_SEARCH_PATHS = "$(SRCROOT)/ADFinder/ADFHeaders";
 				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/ADFinder/ADFLibrary";
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 15.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
@@ -307,7 +380,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1238;
+				CURRENT_PROJECT_VERSION = 1239;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = QQ9PTQU945;
@@ -328,7 +401,7 @@
 					"$(PROJECT_DIR)/ADFinder/ADFLibrary",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 1.2.4;
+				MARKETING_VERSION = 1.2.5;
 				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.ADFinder;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -352,7 +425,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1238;
+				CURRENT_PROJECT_VERSION = 1239;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = QQ9PTQU945;
@@ -373,7 +446,7 @@
 					"$(PROJECT_DIR)/ADFinder/ADFLibrary",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 1.2.4;
+				MARKETING_VERSION = 1.2.5;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.ADFinder;
@@ -382,6 +455,36 @@
 				REGISTER_APP_GROUPS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		B200000A2F0000000000000A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = QQ9PTQU945;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.ADFinderTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ADFinder.app/Contents/MacOS/ADFinder";
+			};
+			name = Debug;
+		};
+		B200000B2F0000000000000B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = QQ9PTQU945;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.ADFinderTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ADFinder.app/Contents/MacOS/ADFinder";
 			};
 			name = Release;
 		};
@@ -402,6 +505,15 @@
 			buildConfigurations = (
 				AC779D4D2DE101C400210E27 /* Debug */,
 				AC779D4E2DE101C400210E27 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B20000062F00000000000006 /* Build configuration list for PBXNativeTarget "ADFinderTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B200000A2F0000000000000A /* Debug */,
+				B200000B2F0000000000000B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

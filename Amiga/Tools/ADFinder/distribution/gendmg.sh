@@ -7,6 +7,7 @@ set -e
 APP_PATH="$HOME/Downloads/ADFinder.app"
 DMG_PATH="$HOME/Downloads/ADFinder.dmg" # Will be modified with version and build
 README_PATH=""
+ENTITLEMENTS_PATH=""
 BACKGROUND_IMAGE="./dmg_assets/dmg-background.png"
 VOLUME_ICON="./dmg_assets/dmg-icon.icns"
 VOLUME_NAME="App Installer"
@@ -25,10 +26,11 @@ MIN_SPACE_MB=1024
 
 # Usage function
 usage() {
-    echo "Usage: $0 --readme <readme_path> [--app <app_path>] [--dmg <dmg_path>] [--background <background_path>] [--volicon <volicon_path>]"
+    echo "Usage: $0 --readme <readme_path> [--entitlements <path>] [--app <app_path>] [--dmg <dmg_path>] [--background <background_path>] [--volicon <volicon_path>]"
     echo "Required:"
     echo "  --readme <readme_path>   Path to the README file to include in the DMG"
     echo "Optional:"
+    echo "  --entitlements <path>    Entitlements to preserve when ad-hoc signing"
     echo "  --app <app_path>         Path to the app (default: $APP_PATH)"
     echo "  --dmg <dmg_path>         Path to the output DMG (default: $DMG_PATH)"
     echo "  --background <path>      Path to the background image (default: $BACKGROUND_IMAGE)"
@@ -44,6 +46,7 @@ while [[ "$#" -gt 0 ]]; do
         --app) APP_PATH="$2"; shift ;;
         --dmg) DMG_PATH="$2"; shift ;;
         --readme) README_PATH="$2"; shift ;;
+        --entitlements) ENTITLEMENTS_PATH="$2"; shift ;;
         --background) BACKGROUND_IMAGE="$2"; shift ;;
         --volicon) VOLUME_ICON="$2"; shift ;;
         *) usage ;;
@@ -119,6 +122,10 @@ if [ ! -f "$VOLUME_ICON" ]; then
     echo "Error: Volume icon not found at $VOLUME_ICON"
     exit 1
 fi
+if [ -n "$ENTITLEMENTS_PATH" ] && [ ! -f "$ENTITLEMENTS_PATH" ]; then
+    echo "Error: Entitlements file not found at $ENTITLEMENTS_PATH"
+    exit 1
+fi
 
 # Interactive check for existing DMG has been removed for CI/CD compatibility.
 # The script will now always overwrite an existing DMG.
@@ -141,11 +148,24 @@ if ! command -v create-dmg &> /dev/null; then
     brew install create-dmg || { echo "Failed to install create-dmg"; exit 1; }
 fi
 
-# Self-sign the app
+# Self-sign the app while preserving its sandbox contract.
 echo "Self-signing the app..."
-codesign --sign - --force --deep "$APP_PATH" || {
-    echo "Warning: Code signing failed. Continuing without signature."
-}
+if [ -n "$ENTITLEMENTS_PATH" ]; then
+    BUNDLE_IDENTIFIER=$(/usr/libexec/PlistBuddy -c "Print CFBundleIdentifier" "$INFO_PLIST")
+    RESOLVED_ENTITLEMENTS=$(mktemp)
+    sed "s/\$(PRODUCT_BUNDLE_IDENTIFIER)/${BUNDLE_IDENTIFIER}/g" "$ENTITLEMENTS_PATH" > "$RESOLVED_ENTITLEMENTS"
+    if ! codesign --sign - --force --deep --entitlements "$RESOLVED_ENTITLEMENTS" "$APP_PATH"; then
+        rm -f "$RESOLVED_ENTITLEMENTS"
+        echo "Error: Code signing failed"
+        exit 1
+    fi
+    rm -f "$RESOLVED_ENTITLEMENTS"
+else
+    codesign --sign - --force --deep "$APP_PATH" || {
+        echo "Error: Code signing failed"
+        exit 1
+    }
+fi
 
 # Create temporary source folder
 TEMP_DIR=$(mktemp -d)

@@ -1,11 +1,18 @@
-# Quarantine Flag
-Some apps are not signed (Apple needs more money for that...) and by default they are marked as "no trusted developer", you need to remove the default quarantine flag. To do that you have three **free** options. Pick the one easiest for you.
+# Installing ADFinder
 
-**Terminal**:
-just run this command `xattr -rc ~/Downloads/ADFinder.app`
+ADFinder is not notarized with Apple, so macOS may identify it as being from an
+unidentified developer after download.
 
-**GUI**: Sentil is a great app for managing the quarantine and signing. Free to use. It's [here](https://github.com/alienator88/Sentinel).
+For a free graphical option, install
+[Sentinel](https://github.com/alienator88/Sentinel), drag ADFinder onto it, and
+choose **Unquarantine**. Do not use Sentinel's self-sign action.
 
-**Prerefences**: If you know what this means I don't have to explain how to use it. :-) 
+Alternatively, copy ADFinder to Applications and run:
 
-Enjoy.
+```bash
+xattr -rc "/Applications/ADFinder.app"
+```
+
+ADFinder requires macOS 15 or later and currently supports Apple silicon Macs.
+After the first installation, signed updates are available from
+**ADFinder → Check for Updates…**.
