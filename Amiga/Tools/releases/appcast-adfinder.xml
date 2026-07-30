@@ -1,20 +1,24 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
-    <channel>
-        <item><title>Version 1.2.4</title><description><![CDATA[
-<ul>
-    <li>you can drop file structures now</li>
-    <li>Recent files from open button</li>
-    <li>version checker added</li>
-</ul>
-]]></description><pubDate>Sat, 16 Aug 2025 18:50:25 +0200</pubDate><enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/ADFinder-1.2.4_1238.dmg" sparkle:version="1238" sparkle:shortVersionString="1.2.4" length="7917850" type="application/octet-stream" sparkle:edSignature="sparkle:edSignature=&quot;+ca34K5NzuGoEDH7/c3aF/rq1I6LRfSzlq8l98d72yJWvhrZYwhZ2v65KWL8cSQF1DB0qDFOyj2atR6uyhXTBw==&quot; length=&quot;7917850&quot;" /></item><item><title>Version 1.2.3</title><sparkle:releaseNotesLink>https://raw.githubusercontent.com/GINNOV/littlethings/master/Amiga/Tools/releases/changelogs.html</sparkle:releaseNotesLink><pubDate>Tue, 12 Aug 2025 21:06:42 +0200</pubDate><enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/ADFinder-1.2.3_1237.dmg" sparkle:version="1237" sparkle:shortVersionString="1.2.3" length="7918208" type="application/octet-stream" /></item><item><title>Version 1.2.3</title><sparkle:releaseNotesLink>https://raw.githubusercontent.com/GINNOV/littlethings/master/Amiga/Tools/releases/changelogs.html</sparkle:releaseNotesLink><pubDate>Tue, 12 Aug 2025 20:59:29 +0200</pubDate><enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/ADFinder-1.2.3_1237.dmg" sparkle:version="1237" sparkle:shortVersionString="1.2.3" length="7916169" type="application/octet-stream" /></item><title>ADFinder Changelog</title>
-        <item>
-            <title>Version 1.2.1</title>
-            <sparkle:releaseNotesLink>
-                https://raw.githubusercontent.com/GINNOV/littlethings/master/Amiga/Tools/releases/changelogs.html#adfinder
-            </sparkle:releaseNotesLink>
-            <pubDate>Tue, 12 Aug 2025 12:00:00 +0000</pubDate>
-            <enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/ADFinder-1.2.1_1184.dmg" sparkle:version="1184" sparkle:shortVersionString="1.2.1" length="0" type="application/octet-stream" />
-        </item>
-    </channel>
+  <channel>
+    <title>ADFinder Changelog</title>
+    <item>
+      <title>Version 1.2.4</title>
+      <description><![CDATA[
+        <ul>
+          <li>You can now drop complete file structures into disk images.</li>
+          <li>Recently opened images are available from the Open menu.</li>
+          <li>Added automatic update support through Sparkle.</li>
+        </ul>
+      ]]></description>
+      <pubDate>Sat, 16 Aug 2025 18:50:25 +0200</pubDate>
+      <enclosure
+        url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/ADFinder-1.2.4_1238.dmg"
+        sparkle:version="1238"
+        sparkle:shortVersionString="1.2.4"
+        length="7917850"
+        type="application/octet-stream"
+        sparkle:edSignature="+ca34K5NzuGoEDH7/c3aF/rq1I6LRfSzlq8l98d72yJWvhrZYwhZ2v65KWL8cSQF1DB0qDFOyj2atR6uyhXTBw==" />
+    </item>
+  </channel>
 </rss>

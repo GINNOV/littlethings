@@ -20,7 +20,6 @@ struct ADFinderApp: App {
     @State private var recentFilesService = RecentFilesService()
     @State private var logStore = LogStore.shared
     
-    // Create an instance of our updater controller.
     private let updaterController = UpdaterController()
     
     @Environment(\.openWindow) internal var openWindow
@@ -46,7 +45,7 @@ struct ADFinderApp: App {
                 .environment(logStore)
                 .onAppear {
                     if !Self.didRunUpdateCheck {
-                        checkForUpdates()
+                        presentWhatsNewIfNeeded()
                         Self.didRunUpdateCheck = true
                     }
                 }
@@ -59,7 +58,6 @@ struct ADFinderApp: App {
                     NotificationCenter.default.post(name: .showAboutWindow, object: nil)
                 }
                 
-                // Add the "Check for Updates..." button.
                 Button("Check for Updates...") {
                     updaterController.checkForUpdates()
                 }
@@ -113,7 +111,7 @@ struct ADFinderApp: App {
                 .environment(logStore)
                 .onAppear {
                     if !Self.didRunUpdateCheck {
-                        checkForUpdates()
+                        presentWhatsNewIfNeeded()
                         Self.didRunUpdateCheck = true
                     }
                 }
@@ -138,7 +136,7 @@ struct ADFinderApp: App {
         }
     }
     
-    private func checkForUpdates() {
+    private func presentWhatsNewIfNeeded() {
         let currentVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
         
         if !dontShowWhatsNew && currentVersion != lastVersionPromptedFor {

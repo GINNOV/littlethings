@@ -1,52 +1,91 @@
 # ADFinder
 
-I found myself wanting to work on an ADF image in the same way modern computers allow to manage files. 
+ADFinder is a native macOS manager for Amiga ADF and HDF disk images. It uses
+[ADFlib](https://github.com/adflib/ADFlib) for Amiga filesystem access and
+provides a Finder-like interface for inspecting and modifying disk images.
 
-macOS spoils users with the easy going user interface and I didn't find any tool out there that would offer the rich experience and being compatible with the need of an amiga engineer. But I did find a [fantastic library](https://github.com/adflib/ADFlib) that would enable me to get the job done.
+## Download and requirements
 
-So I start building it. Details and pre-built app are [here](https://ginnov.github.io/littlethings/)
+- Current release: [ADFinder 1.2.5, build 1239](https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/ADFinder-1.2.5_1239.dmg)
+- Requires macOS 15 or later.
+- The current build supports Apple silicon Macs.
+- The application is free and currently distributed without Apple notarization.
 
-## Features List
+macOS may quarantine the downloaded application. For a free graphical
+first-install option, drag ADFinder onto
+[Sentinel](https://github.com/alienator88/Sentinel), then choose
+**Unquarantine**. Do not use Sentinel's self-sign action. Alternatively, after
+copying ADFinder to Applications, run:
 
-1.	✅ Load ADFs that workbench can read
-2.	✅ Show the content of files in a HEX editor
-3.	✅ Navigate folder structure back and forth
-4.	✅ Delete files and folder
-5.	✅ Create an ADF from scratch
-6.	✅ Open ADF images by dropping the image over the files’ window
-7.	✅ Show disk layout, file usage and other stats
-8.	✅ Create new folders
-9.	✅ Rename files and folders
-10.	✅ Sorting (different kinds)
-11.	✅ Preferences
-12.	✅ Create blank images for FSO/FFS
-13. ✅ Add files to image
-14. ✅ Set file permissions and attributes
-15. ✅ Get Info of permissions and attributes
-16. ✅ Text Editor built in for startup sequence galore!
-17. ✅ Compare two ADFs by (Sector map / Block inspector)
-18. ✅ Export files to macOS
-19. ✅ Generate disk content report (dir and pemissions)
-20. ✅ Generate HexDump of a disk
-21.	✅ IFF Image viewer
-22.	✅ IFF image converter	
+```bash
+xattr -rc "/Applications/ADFinder.app"
+```
 
-## Work in Progress / Thinking about
-the items below move up as they get done.
+Once installed, ADFinder checks for signed updates through Sparkle. You can also
+select **ADFinder → Check for Updates…**.
 
-19.	👷🏻 Add files via Drag and Drop (lo pri)
-21.	👷🏻 Auto convert audio when adding them to an image
+## Features
 
+- Open, create, and save ADF and HDF images.
+- Navigate Amiga directories and inspect file metadata.
+- Add, export, rename, and delete files and directories.
+- Import nested macOS folder structures.
+- Respect or explicitly override Amiga protection flags.
+- Rename volumes and create OFS or FFS images.
+- Inspect disk usage, boot blocks, sectors, and file contents.
+- Edit text files and generate directory or hexadecimal reports.
+- Compare two disk images sector by sector.
+- Preview supported files with Quick Look.
+- Open recent images and use supported actions from Shortcuts.
 
+## Build
 
-## Users requests
-* ✅ Change volume's name [[warpdesign](https://github.com/warpdesign)]
+The checked-in ADFlib archive is currently arm64-only, so build on an Apple
+silicon Mac with Xcode:
 
+```bash
+cd Amiga/Tools/ADFinder
+xcodebuild \
+  -project ADFinder.xcodeproj \
+  -scheme ADFinder \
+  -configuration Debug \
+  CODE_SIGNING_ALLOWED=NO \
+  build
+```
 
-# What it looks like?
-I took a bunch of screenshots, I don't always keep them up to date but [here](https://ginnov.github.io/littlethings/adfinder_learnmore.html) you'll find what's up now.
+To run the automated tests:
 
-# Engineering tips
-To make it easier on less terminal experienced coders I provided with the code the unmodified [ADFLib](https://github.com/adflib/ADFlib) library built only for Apple Silicon and Universal. However, if for some reason, you would like to use the source code, the repo doesn't provide instructions on how to build for macOS, I always write done what I figure out and [here](https://github.com/GINNOV/littlethings/tree/master/Amiga/Tools/ADFinder/distribution/docs) you find the steps I took to build the library. I hope it helps.
+```bash
+xcodebuild \
+  test \
+  -project ADFinder.xcodeproj \
+  -scheme ADFinder \
+  CODE_SIGNING_ALLOWED=NO
+```
 
-I also put together a general architecture doc for how the app is structured to help others that want to to fork and dork around it. It's here (link to come)
+ADFlib build notes are in
+[distribution/docs/build_adflib.md](distribution/docs/build_adflib.md).
+
+## Releases
+
+The release workflow creates a DMG for first-time installation and a signed ZIP
+used by Sparkle for automatic updates.
+
+Release signing expects the Sparkle private key in the macOS Keychain. The
+matching public key is stored in `ADFinder/Info.plist`; packaging stops if the
+keys do not match. Release artifacts are staged and published together only
+after signing and appcast validation succeed.
+
+The dedicated ADFinder key is stored in the `GI Business` 1Password vault under
+**ADFinder Sparkle Update Keys**, tagged `development`, `Projects`, and
+`Sparkle`. Import its private-key field into the `ADFinder` Sparkle Keychain
+account before packaging. Version 1.2.5 is a one-time manual upgrade after the
+legacy 1.2.4 key was lost; automatic updates resume after 1.2.5.
+
+See [CHANGELOG.md](CHANGELOG.md) for release history.
+
+## Project links
+
+- [Product page](https://ginnov.github.io/littlethings/amiga/index.html)
+- [Screenshots](https://ginnov.github.io/littlethings/amiga/adfinder_learnmore.html)
+- [Source repository](https://github.com/GINNOV/littlethings/tree/master/Amiga/Tools/ADFinder)
