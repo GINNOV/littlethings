@@ -39,11 +39,12 @@ jobs:
           trap 'rm -f "$KEY_FILE"' EXIT
           chmod 600 "$KEY_FILE"
           printf '%s' "$SPARKLE_PRIVATE_KEY" > "$KEY_FILE"
+          echo "SPARKLE_KEY_FILE=$KEY_FILE" >> "$GITHUB_ENV"
+          echo "SPARKLE_PRIVATE_KEY_PATH=$KEY_FILE" >> "$GITHUB_ENV"
+          trap - EXIT
           GENERATE_KEYS=$(find "$RUNNER_TEMP" "$HOME/Library/Developer/Xcode/DerivedData" -path '*/Sparkle/bin/generate_keys' -type f -perm +111 -print -quit 2>/dev/null || true)
           if [ -z "$GENERATE_KEYS" ]; then
             echo "Sparkle tools are resolved during the build; key import will run after dependency resolution."
-            echo "SPARKLE_KEY_FILE=$KEY_FILE" >> "$GITHUB_ENV"
-            trap - EXIT
           else
             "$GENERATE_KEYS" --account ADFinder -f "$KEY_FILE"
           fi
@@ -106,8 +107,8 @@ jobs:
       - name: Remove temporary Sparkle key
         if: always()
         run: |
-          if [ -n "${SPARKLE_KEY_FILE:-}" ] && [ -f "$SPARKLE_KEY_FILE" ]; then
-            rm -f "$SPARKLE_KEY_FILE"
+          if [ -n "${SPARKLE_PRIVATE_KEY_PATH:-}" ] && [ -f "$SPARKLE_PRIVATE_KEY_PATH" ]; then
+            rm -f "$SPARKLE_PRIVATE_KEY_PATH"
           fi
 
       - name: Commit, Clean, and Push DMG
