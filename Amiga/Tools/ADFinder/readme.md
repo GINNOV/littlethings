@@ -6,7 +6,7 @@ provides a Finder-like interface for inspecting and modifying disk images.
 
 ## Download and requirements
 
-- Current release: [ADFinder 1.2.5, build 1239](https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/ADFinder-1.2.5_1239.dmg)
+- Current release: [ADFinder 1.2.5, build 1239](https://media.githubusercontent.com/media/GINNOV/littlethings/master/Amiga/Tools/releases/ADFinder-1.2.5_1239.dmg)
 - Requires macOS 15 or later.
 - The current build supports Apple silicon Macs.
 - The application is free and currently distributed without Apple notarization.

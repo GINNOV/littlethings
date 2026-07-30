@@ -183,7 +183,7 @@ if [[ -z "$SIGNATURE" || -z "$ZIP_SIZE" ]]; then
 fi
 
 PUB_DATE=$(date -R)
-DOWNLOAD_URL="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/$ZIP_NAME"
+DOWNLOAD_URL="https://media.githubusercontent.com/media/GINNOV/littlethings/master/Amiga/Tools/releases/$ZIP_NAME"
 cat > "$STAGED_APPCAST_PATH" <<XML
 <?xml version="1.0" encoding="utf-8"?>
 <rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">

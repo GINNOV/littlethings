@@ -11,7 +11,7 @@ slideshow: true
 
 ADFinder 1.2.5 requires macOS 15 or later and currently supports Apple silicon
 Macs. Download the
-[current DMG](https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/ADFinder-1.2.5_1239.dmg),
+[current DMG](https://media.githubusercontent.com/media/GINNOV/littlethings/master/Amiga/Tools/releases/ADFinder-1.2.5_1239.dmg),
 or review the [release history](https://github.com/GINNOV/littlethings/blob/master/Amiga/Tools/ADFinder/CHANGELOG.md).
 
 This version is a one-time manual update because ADFinder moved to a dedicated
