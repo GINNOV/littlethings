@@ -3,22 +3,17 @@
   <channel>
     <title>ADFinder Changelog</title>
     <item>
-      <title>Version 1.2.4</title>
+      <title>Version 1.2.5</title>
       <description><![CDATA[
-        <ul>
-          <li>You can now drop complete file structures into disk images.</li>
-          <li>Recently opened images are available from the Open menu.</li>
-          <li>Added automatic update support through Sparkle.</li>
-        </ul>
-      ]]></description>
-      <pubDate>Sat, 16 Aug 2025 18:50:25 +0200</pubDate>
-      <enclosure
-        url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/ADFinder-1.2.4_1238.dmg"
-        sparkle:version="1238"
-        sparkle:shortVersionString="1.2.4"
-        length="7917850"
-        type="application/octet-stream"
-        sparkle:edSignature="+ca34K5NzuGoEDH7/c3aF/rq1I6LRfSzlq8l98d72yJWvhrZYwhZ2v65KWL8cSQF1DB0qDFOyj2atR6uyhXTBw==" />
+<ul>
+    <li>One-time manual upgrade to ADFinder&rsquo;s new dedicated Sparkle signing key.</li>
+    <li>Repaired and hardened automatic updates for subsequent releases.</li>
+    <li>Corrected HDF document registration.</li>
+    <li>Added automated coverage for disk comparison and application metadata.</li>
+</ul>
+]]></description>
+      <pubDate>Thu, 30 Jul 2026 09:51:39 +0000</pubDate>
+      <enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/ADFinder-1.2.5_1239.zip" sparkle:version="1239" sparkle:shortVersionString="1.2.5" length="3920301" type="application/octet-stream" sparkle:edSignature="+t6lGHC4hTxzkCwj18Q2EfSCUrWRsQk9FJxxI0i6jIOC2dUm2d3dZOy5RhNJKUkmsyjp6H5PTW+8Ci+M6/Q8Cg==" />
     </item>
   </channel>
 </rss>
