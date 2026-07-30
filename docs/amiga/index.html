@@ -1,573 +1,88 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head><script src="/littlethings/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=littlethings/livereload" data-no-instant defer></script>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Projects - Back to Amiga Dev Hub</title>
-    <link rel="stylesheet" href="/littlethings/common/style.css" />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
-    />
-    
-    <script>
-      (function() {
-        const savedTheme = localStorage.getItem('theme') || 
-                           (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        if (savedTheme === 'dark') {
-          document.documentElement.classList.add('dark-theme');
-          document.body?.classList.add('dark-theme');
-        } else {
-          document.documentElement.classList.remove('dark-theme');
-          document.body?.classList.remove('dark-theme');
-        }
-      })();
-    </script>
-  </head>
-  <body class="dark-theme projects-page-dark-theme">
-    
-    
-      
-        <header>
-    <div class="header-content">
-        <a href="/littlethings/amiga/index.html">
-            <img src="/littlethings/images/back_to_the_amiga.png" alt="Back to Amiga Dev Hub Logo" class="header-logo" onerror="this.onerror=null;this.src='https://placehold.co/180x50/003366/FF8800?text=Amiga+Dev+Hub&font=press-start-2p';this.alt='Amiga Dev Hub';">
-        </a>
-        <button class="menu-toggle" id="menu-toggle-btn">
-            <i class="fas fa-bars"></i>
-        </button>
-    </div>
-    <nav class="sidebar" id="header-nav">
-        <ul>
-            <li><a href="/littlethings/amiga/index.html" id="nav-projects" class="active">PROJECTS</a></li>
-            <li><a href="/littlethings/amiga/walkthroughs.html" id="nav-tutorials" class="">TUTORIALS</a></li>
-            <li><a href="/littlethings/amiga/resources.html" id="nav-resources" class="">RESOURCES</a></li>
-            <li><a href="/littlethings/amiga/about.html" id="nav-about" class="">ABOUT</a></li>
-        </ul>
-    </nav>
-</header>
-
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-      const menuToggle = document.getElementById('menu-toggle-btn');
-      const sidebar = document.querySelector('#header-nav ul');
-      if (menuToggle && sidebar) {
-          if (window.innerWidth < 768) sidebar.classList.add('hidden');
-          menuToggle.addEventListener('click', () => sidebar.classList.toggle('hidden'));
-          window.addEventListener('resize', () => {
-              if (window.innerWidth >= 768) {
-                  sidebar.classList.remove('hidden');
-              } else {
-                  sidebar.classList.add('hidden');
-              }
-          });
-      }
-  });
-</script>
-
-      
-    
-
-    <main class="projects-list-main">
-      
-      <section class="text-center mb-16">
-        <img
-          src="/littlethings/images/projects-header.jpg"
-          alt="Project Showcase"
-          class="projects-title-image"
-          onerror="this.onerror=null;this.src='https://placehold.co/700x150/0F172A/FF8800?text=PROJECT+SHOWCASE&font=press-start-2p';this.alt='Project Showcase';"
-        />
-        A collection of tools and projects that I have built for the Amiga
-        community. They aim to support Amiga developers and users in their
-        daily tasks.
-      </section>
-      
-      <article class="project-card">
-        <div class="md-img-container">
-          <img
-            src="/littlethings/images/tools/adf-finder.png"
-            onerror="this.onerror=null;this.src='https://placehold.co/600x350/0F172A/FF8800?text=ADF+Finder&font=press-start-2p';this.alt='ADF Finder';"
-            alt="ADF Finder"
-            class="project-image"
-          />
-        </div>
-        <div class="md-text-container">
-          <h3>ADF.inder</h3>
-          <p>
-            There are many ADF tools out there but they almost feel to me that
-            the author got a phone call for an important meeting and decided to
-            not go back to finish what they started. I wanted an Opus File
-            Manager for macOS users to handle Amiga disks. So I built it and
-            when I got the call, I told to my non existing secretary "no calls
-            today, I am coding".
-          </p>
-          <p>
-            <br />ADF.inder allows you to operate on Amiga Disk images like
-            there's no tomorrow. You can add/remove files, edit content, create
-            images, I mean I haven't found a limitation yet. Click the learn
-            more button to see the current list of features.
-          </p>
-          <div class="project-button-container">
-            <a
-              href="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/"
-              target="_blank"
-              aria-label="Download ADF.inder"
-              title="Download ADF.inder"
-              class="download-button project-button icon-only"
-            >
-              <i class="fas fa-download" aria-hidden="true"></i>
-            </a>
-            <a
-              href="https://github.com/GINNOV/littlethings/tree/master/Amiga/Tools/ADFinder"
-              target="_blank"
-              class="source-button project-button"
-            >
-              <i class="fab fa-github"></i>Source Code
-            </a>
-            <a
-              href="/littlethings/amiga/adfinder_learnmore.html"
-              class="learn-button project-button"
-            >
-              <i class="fas fa-book"></i>Learn More
-            </a>
-            <a
-              href="https://youtu.be/VbA_1HRuDFE"
-              target="_blank"
-              aria-label="Watch ADF.inder demo"
-              title="Watch ADF.inder demo"
-              class="demo-button project-button icon-only"
-            >
-              <i class="fas fa-video" aria-hidden="true"></i>
-            </a>
-          </div>
-        </div>
-      </article>
-      
-
-      
-      <article class="project-card reverse">
-        <div class="md-img-container">
-          <img
-            src="/littlethings/images/tools/pixDeluxe.jpg"
-            onerror="this.onerror=null;this.src='https://placehold.co/600x350/0F172A/FF8800?text=PixDeluxe&font=press-start-2p';this.alt='Hanle IFF Amiga files';"
-            alt="Command line file manager for ADFs"
-            class="project-image"
-          />
-        </div>
-        <div class="md-text-container">
-          <h3>PixDeluxe</h3>
-          <p>
-            Say that you have a large collection of Amiga images and you want to
-            easily browse them, or you want to convert them to a different
-            format, or snop meta details, or you want to apply a filter to them.
-            You probably got the point.
-          </p>
-          <p>
-            Well...well, my dear fellow Amiganian. PixDeluxe is here to save the
-            day. It opens IFF images, it can convert them to PNG, show image
-            format details and more.
-          </p>
-          <p>
-            macOS may quarantine this unnotarized build. For a free, graphical
-            first-install option, drag PixDeluxe onto
-            <a href="https://github.com/alienator88/Sentinel" target="_blank" rel="noopener noreferrer">Sentinel</a>
-            and choose <strong>Unquarantine</strong>. Never use Sentinel's
-            self-sign action. Build 112 is a one-time manual update; Sparkle
-            handles future updates through <strong>Check for Updates</strong>.
-          </p>
-          <div class="project-button-container">
-            <a
-              href="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/PixDeluxe-1.0_112.dmg"
-              target="_blank"
-              aria-label="Download PixDeluxe"
-              title="Download PixDeluxe"
-              class="download-button project-button icon-only"
-            >
-              <i class="fas fa-download" aria-hidden="true"></i>
-            </a>
-            <a
-              href="https://github.com/GINNOV/littlethings/tree/master/Amiga/Tools/PixDeluxe"
-              class="source-button project-button"
-            >
-              <i class="fab fa-github"></i>Source Code
-            </a>
-            <a
-              href="https://github.com/GINNOV/littlethings/blob/master/Amiga/Tools/PixDeluxe/CHANGELOG.md"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="learn-button project-button"
-            >
-              <i class="fas fa-list-ul"></i>LOG
-            </a>
-            <a
-              href="/littlethings/amiga/pixdeluxe_learnmore.html"
-              class="learn-button project-button"
-            >
-              <i class="fas fa-book"></i>Learn More
-            </a>
-            <a
-              href="https://youtu.be/VLCZ00ZfSTI"
-              target="_blank"
-              aria-label="Watch PixDeluxe demo"
-              title="Watch PixDeluxe demo"
-              class="demo-button project-button icon-only"
-            >
-              <i class="fas fa-video" aria-hidden="true"></i>
-            </a>
-          </div>
-        </div>
-      </article>
-      
-
-      
-      <article class="project-card">
-        <div class="md-img-container">
-          <img
-            src="/littlethings/images/tools/pixDeluxeQL.png"
-            onerror="this.onerror=null;this.src='https://placehold.co/600x350/0F172A/FF8800?text=PixDeluxeQL&font=press-start-2p';this.alt='Hanle IFF Amiga files for quickview';"
-            alt="Preview IFF Amiga files with Quick Look"
-            class="project-image"
-          />
-        </div>
-        <div class="md-text-container">
-          <h3>PixDeluxe Quick Look</h3>
-          <p>
-            Say that you have a large collection of Amiga images (IFF) and you
-            want to easily preview them while cruising through your macOS
-            finder.
-          </p>
-          <p>
-            There has been a plugin around for about
-            <a href="https://github.com/dalton-tulou/ql-iff">12 years</a> now
-            but it doesn't work reliably anymore. So I brought it back to life.
-            Download, move the app inside your Applications folder and then run
-            it once. The rest will be history.
-          </p>
-          <div class="project-button-container">
-            <a
-              href="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/"
-              target="_blank"
-              aria-label="Download IFFViewer"
-              title="Download IFFViewer"
-              class="download-button project-button icon-only"
-            >
-              <i class="fas fa-download" aria-hidden="true"></i>
-            </a>
-            <a
-              href="https://github.com/GINNOV/littlethings/tree/master/Amiga/Tools/IFFViewer"
-              class="source-button project-button"
-            >
-              <i class="fab fa-github"></i>Source Code
-            </a>
-            <a
-              href="https://github.com/GINNOV/littlethings/blob/master/Amiga/Tools/IFFViewer/CHANGELOG.md"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="learn-button project-button"
-            >
-              <i class="fas fa-list-ul"></i>LOG
-            </a>
-            <a
-              href="https://youtu.be/VLCZ00ZfSTI"
-              target="_blank"
-              aria-label="Watch PixDeluxe Quick Look demo"
-              title="Watch PixDeluxe Quick Look demo"
-              class="demo-button project-button icon-only"
-            >
-              <i class="fas fa-video" aria-hidden="true"></i>
-            </a>
-          </div>
-        </div>
-      </article>
-      
-
-      
-      <article class="project-card reverse">
-        <div class="md-img-container">
-          <img
-            src="/littlethings/images/tools/AuDeluxe.png"
-            onerror="this.onerror=null;this.src='https://placehold.co/600x350/0F172A/FF8800?text=AuDeluxe&font=press-start-2p';this.alt='Player for Amiga audio files';"
-            alt="Play many Amiga audio format"
-            class="project-image"
-          />
-        </div>
-        <div class="md-text-container">
-          <h3>AuDeluxe</h3>
-          <p>
-            I enjoy listening to Amiga audio files while I code. I have a collection of Amiga audio files and I wanted a
-            player that can handle all of them. I tried some players but they didn't have the macOS ethos I was looking for.
-          </p>
-          <p>
-            I wanted a modern player that can handle all Amiga audio formats
-            and that can be used as a Quick Look plugin as well. So I built
-            AuDeluxe. It supports all formats exposed by
-            <a href="https://github.com/OpenMPT/openmpt">OpenMPT</a>. Happy listening!
-          </p>
-          <p>
-            macOS may quarantine this unnotarized build. For a free, graphical
-            first-install option, drag AuDeluxe onto
-            <a href="https://github.com/alienator88/Sentinel" target="_blank" rel="noopener noreferrer">Sentinel</a>
-            and choose <strong>Unquarantine</strong>.
-            Build 79 is a one-time manual update; Sparkle handles future updates.
-          </p>
-          <div class="project-button-container">
-            <a
-              href="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/AuDeluxe-1.7_79.dmg"
-              target="_blank"
-              aria-label="Download AuDeluxe"
-              title="Download AuDeluxe"
-              class="download-button project-button icon-only"
-            >
-              <i class="fas fa-download" aria-hidden="true"></i>
-            </a>
-            <a
-              href="https://github.com/GINNOV/littlethings/tree/master/Amiga/Tools/AuDeluxe"
-              class="source-button project-button"
-            >
-              <i class="fab fa-github"></i>Source Code
-            </a>
-            <a
-              href="https://github.com/GINNOV/littlethings/blob/master/Amiga/Tools/AuDeluxe/CHANGELOG.md"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="learn-button project-button"
-            >
-              <i class="fas fa-list-ul"></i>LOG
-            </a>
-            <a
-              href="/littlethings/amiga/audeluxe_learnmore.html"
-              class="learn-button project-button"
-            >
-              <i class="fas fa-book"></i>Learn More
-            </a>
-            <a
-              href="https://youtu.be/ei7pR4tumos"
-              target="_blank"
-              aria-label="Watch AuDeluxe demo"
-              title="Watch AuDeluxe demo"
-              class="demo-button project-button icon-only"
-            >
-              <i class="fas fa-video" aria-hidden="true"></i>
-            </a>
-          </div>
-        </div>
-      </article>
-      
-
-      
-      <article class="project-card">
-        <div class="md-img-container">
-          <img
-            src="/littlethings/images/tools/amiga-playground.png"
-            onerror="this.onerror=null;this.src='https://placehold.co/600x350/0F172A/FF8800?text=Amiga+Playground&font=press-start-2p';this.alt='Amiga Playground';"
-            alt="Amiga Playground editor and emulator workspace"
-            class="project-image"
-          />
-        </div>
-        <div class="md-text-container">
-          <h3>Amiga Playground</h3>
-          <p>
-            Amiga Playground is a native macOS workspace for writing,
-            generating, assembling, and testing Commodore Amiga 68k code. It
-            brings the editor, assistant, compiler console, ADF export, and
-            emulator launch paths into one place.
-          </p>
-          <p>
-            The assistant can generate Motorola 68000 assembly, help repair
-            assembler errors, and work with a local MLX model published as
-            Antigravity Amiga 68k. It is built for quick experiments: ask for a
-            copper list, assemble it, export a disk, and run it in FS-UAE,
-            vAmiga, or the embedded web emulator.
-          </p>
-          <div class="project-button-container">
-            <a
-              href="https://github.com/GINNOV/littlethings/blob/master/Amiga/Tools/releases/AmigaPlayground-1.0.0_37.dmg?raw=1"
-              target="_blank"
-              aria-label="Download Amiga Playground"
-              title="Download Amiga Playground"
-              class="download-button project-button icon-only"
-            >
-              <i class="fas fa-download" aria-hidden="true"></i>
-            </a>
-            <a
-              href="https://github.com/GINNOV/littlethings/tree/master/Amiga/aMiLa/AmigaPlayground"
-              target="_blank"
-              class="source-button project-button"
-            >
-              <i class="fab fa-github"></i>Source Code
-            </a>
-            <a
-              href="https://huggingface.co/bmove/antigravity-amiga-68k"
-              target="_blank"
-              class="learn-button project-button"
-            >
-              <i class="fas fa-book"></i>Learn More
-            </a>
-          </div>
-        </div>
-      </article>
-      
-
-      
-      <article class="project-card reverse">
-        <div class="md-img-container">
-          <img
-            src="/littlethings/images/tools/amiga-rom-explorer.png"
-            onerror="this.onerror=null;this.src='https://placehold.co/600x350/0F172A/FF8800?text=Amiga+ROM+Explorer&font=press-start-2p';this.alt='Amiga ROM Explorer';"
-            alt="Amiga ROM Explorer firmware catalog"
-            class="project-image"
-          />
-        </div>
-        <div class="md-text-container">
-          <h3>Amiga ROM Explorer</h3>
-          <p>
-            Kickstart revisions, boot ROMs, extended ROMs, and cartridge firmware
-            all have stories — which machine they belong to, what changed between
-            revisions, and which dump quality matters for emulation. I wanted a
-            native macOS atlas for that firmware history, not another folder of
-            cryptic filenames.
-          </p>
-          <p>
-            Amiga ROM Explorer ships a bundled reference catalog with researched
-            profiles for 125+ entries. Browse immediately in reference mode, or
-            point it at your own legally obtained ROM library to match files,
-            checksums, and hardware targets. Sparkle keeps updates flowing.
-          </p>
-          <div class="project-button-container">
-            <a
-              href="https://github.com/GINNOV/littlethings/blob/master/Amiga/Tools/releases/AmigaROMExplorer-1.0_8.dmg?raw=1"
-              target="_blank"
-              aria-label="Download Amiga ROM Explorer"
-              title="Download Amiga ROM Explorer"
-              class="download-button project-button icon-only"
-            >
-              <i class="fas fa-download" aria-hidden="true"></i>
-            </a>
-            <a
-              href="https://github.com/GINNOV/littlethings/tree/master/Amiga/AmigaROMExplorer"
-              target="_blank"
-              class="source-button project-button"
-            >
-              <i class="fab fa-github"></i>Source Code
-            </a>
-            <a
-              href="https://archive.org/details/commodore-amiga-firmware"
-              target="_blank"
-              class="learn-button project-button"
-            >
-              <i class="fas fa-book"></i>Learn More
-            </a>
-          </div>
-        </div>
-      </article>
-      
-
-      
-      <article class="project-card">
-        <div class="md-img-container">
-          <img
-            src="/littlethings/images/tools/send2adf.png"
-            onerror="this.onerror=null;this.src='https://placehold.co/600x350/0F172A/FF8800?text=send+to+ADF&font=press-start-2p';this.alt='send to ADF';"
-            alt="send to ADF"
-            class="project-image"
-          />
-        </div>
-        <div class="md-text-container">
-          <h3>send to ADF</h3>
-          <p>
-            Quite often I find myself to test out a demo that I baked
-            from source code. It's never just one file, add resources, a startup
-            sequence and so on. Often I do those things from command line,
-            including opening the file in
-            <a href="https://dirkwhoffmann.github.io/vAmiga/">vAmiga</a>. I know
-            about xdftool but I wanted something more independent that the whole
-            amitools package.
-          </p>
-          <p>
-            send2adf, it's a C based tool that you can keep in
-            your /usr/local/bin folder, no fancy installations. Straight from
-            terminal you add a file or an entire folder structure in one shot to a dynamically created ADF file.
-          </p>
-          <div class="project-button-container">
-            <a
-              href="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/send2adf.zip"
-              target="_blank"
-              aria-label="Download send2adf"
-              title="Download send2adf"
-              class="download-button project-button icon-only"
-            >
-              <i class="fas fa-download" aria-hidden="true"></i>
-            </a>
-            <a
-              href="https://github.com/GINNOV/littlethings/tree/master/Amiga/Tools/send2adf"
-              class="source-button project-button"
-            >
-              <i class="fab fa-github"></i>Source Code
-            </a>
-            <a
-              href="https://github.com/GINNOV/littlethings/blob/master/Amiga/Tools/send2adf/docs/learned_lesson.md"
-              target="_blank"
-              class="learn-button project-button"
-            >
-              <i class="fas fa-book"></i>Learn More
-            </a>
-            <a
-              href="https://youtu.be/-0sbKGi0hmQ"
-              target="_blank"
-              aria-label="Watch send2adf demo"
-              title="Watch send2adf demo"
-              class="demo-button project-button icon-only"
-            >
-              <i class="fas fa-video" aria-hidden="true"></i>
-            </a>
-          </div>
-        </div>
-      </article>
-      
-
-    </main>
-
-    
-      
-        <footer>
-    <p>🍕 <a href="https://about.me/marioesposito" class="link" style="text-decoration: underline;">windrago</a> was here.</p>
-    <button id="theme-toggle">Toggle Theme</button>
-</footer>
-
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-      const themeToggle = document.getElementById('theme-toggle');
-      if (themeToggle) {
-          const applyTheme = (theme) => {
-              if (theme === 'dark') {
-                  document.documentElement.classList.add('dark-theme');
-                  document.body.classList.add('dark-theme');
-                  themeToggle.textContent = 'Light Mode';
-              } else {
-                  document.documentElement.classList.remove('dark-theme');
-                  document.body.classList.remove('dark-theme');
-                  themeToggle.textContent = 'Dark Mode';
-              }
-          };
-          
-          const savedTheme = localStorage.getItem('theme') || 
-                             (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-          applyTheme(savedTheme);
-          
-          themeToggle.addEventListener('click', () => {
-              const newTheme = document.body.classList.contains('dark-theme') ? 'light' : 'dark';
-              localStorage.setItem('theme', newTheme);
-              applyTheme(newTheme);
-          });
-      }
-  });
-</script>
-
-      
-    
-
-    
-    <script src="/littlethings/common/js/copy-code.js"></script>
-  </body>
-</html>
+<!doctype html><html lang=en><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Projects - Back to Amiga Dev Hub</title><link rel=stylesheet href=/littlethings/common/style.css><script src=https://cdn.tailwindcss.com></script><link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css><script>(function(){const e=localStorage.getItem("theme")||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");e==="dark"?(document.documentElement.classList.add("dark-theme"),document.body?.classList.add("dark-theme")):(document.documentElement.classList.remove("dark-theme"),document.body?.classList.remove("dark-theme"))})()</script></head><body class="dark-theme projects-page-dark-theme"><header><div class=header-content><a href=/littlethings/amiga/index.html><img src=/littlethings/images/back_to_the_amiga.png alt="Back to Amiga Dev Hub Logo" class=header-logo onerror='this.onerror=null,this.src="https://placehold.co/180x50/003366/FF8800?text=Amiga+Dev+Hub&font=press-start-2p",this.alt="Amiga Dev Hub"'>
+</a><button class=menu-toggle id=menu-toggle-btn>
+<i class="fas fa-bars"></i></button></div><nav class=sidebar id=header-nav><ul><li><a href=/littlethings/amiga/index.html id=nav-projects class=active>PROJECTS</a></li><li><a href=/littlethings/amiga/walkthroughs.html id=nav-tutorials>TUTORIALS</a></li><li><a href=/littlethings/amiga/resources.html id=nav-resources>RESOURCES</a></li><li><a href=/littlethings/amiga/about.html id=nav-about>ABOUT</a></li></ul></nav></header><script>document.addEventListener("DOMContentLoaded",function(){const t=document.getElementById("menu-toggle-btn"),e=document.querySelector("#header-nav ul");t&&e&&(window.innerWidth<768&&e.classList.add("hidden"),t.addEventListener("click",()=>e.classList.toggle("hidden")),window.addEventListener("resize",()=>{window.innerWidth>=768?e.classList.remove("hidden"):e.classList.add("hidden")}))})</script><main class=projects-list-main><section class="text-center mb-16"><img src=/littlethings/images/projects-header.jpg alt="Project Showcase" class=projects-title-image onerror='this.onerror=null,this.src="https://placehold.co/700x150/0F172A/FF8800?text=PROJECT+SHOWCASE&font=press-start-2p",this.alt="Project Showcase"'>
+A collection of tools and projects that I have built for the Amiga
+community. They aim to support Amiga developers and users in their
+daily tasks.</section><article class=project-card><div class=md-img-container><img src=/littlethings/images/tools/adf-finder.png onerror='this.onerror=null,this.src="https://placehold.co/600x350/0F172A/FF8800?text=ADF+Finder&font=press-start-2p",this.alt="ADF Finder"' alt="ADF Finder" class=project-image></div><div class=md-text-container><h3>ADF.inder</h3><p>There are many ADF tools out there but they almost feel to me that
+the author got a phone call for an important meeting and decided to
+not go back to finish what they started. I wanted an Opus File
+Manager for macOS users to handle Amiga disks. So I built it and
+when I got the call, I told to my non existing secretary "no calls
+today, I am coding".</p><p><br>ADF.inder allows you to operate on Amiga Disk images like
+there's no tomorrow. You can add/remove files, edit content, create
+images, I mean I haven't found a limitation yet. Click the learn
+more button to see the current list of features.</p><p>ADFinder 1.2.5 requires macOS 15 or later and currently supports
+Apple silicon Macs. macOS may quarantine this unnotarized build.
+For a free graphical first-install option, drag ADFinder onto
+<a href=https://github.com/alienator88/Sentinel target=_blank rel="noopener noreferrer">Sentinel</a>
+and choose <strong>Unquarantine</strong>. Never use Sentinel's
+self-sign action. This release is a one-time manual update; future
+releases are delivered through
+<strong>Check for Updates</strong>.</p><div class=project-button-container><a href=https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/ADFinder-1.2.5_1239.dmg target=_blank class="download-button project-button"><i class="fas fa-download"></i>Download
+</a><a href=https://github.com/GINNOV/littlethings/tree/master/Amiga/Tools/ADFinder target=_blank class="source-button project-button"><i class="fab fa-github"></i>Source Code
+</a><a href=/littlethings/amiga/adfinder_learnmore.html class="learn-button project-button"><i class="fas fa-book"></i>Learn More
+</a><a href=https://github.com/GINNOV/littlethings/blob/master/Amiga/Tools/ADFinder/CHANGELOG.md target=_blank rel="noopener noreferrer" class="learn-button project-button"><i class="fas fa-list-ul"></i>LOG
+</a><a href=https://youtu.be/VbA_1HRuDFE target=_blank class="demo-button project-button icon-only"><i class="fas fa-video"></i></a></div></div></article><article class="project-card reverse"><div class=md-img-container><img src=/littlethings/images/tools/pixDeluxe.jpg onerror='this.onerror=null,this.src="https://placehold.co/600x350/0F172A/FF8800?text=PixDeluxe&font=press-start-2p",this.alt="Hanle IFF Amiga files"' alt="Command line file manager for ADFs" class=project-image></div><div class=md-text-container><h3>PixDeluxe</h3><p>Say that you have a large collection of Amiga images and you want to
+easily browse them, or you want to convert them to a different
+format, or snop meta details, or you want to apply a filter to them.
+You probably got the point.</p><p>Well...well, my dear fellow Amiganian. PixDeluxe is here to save the
+day. It opens IFF images, it can convert them to PNG, show image
+format details and more.</p><p>macOS may quarantine this unnotarized build. For a free, graphical
+first-install option, drag PixDeluxe onto
+<a href=https://github.com/alienator88/Sentinel target=_blank rel="noopener noreferrer">Sentinel</a>
+and choose <strong>Unquarantine</strong>. Never use Sentinel's
+self-sign action. Build 112 is a one-time manual update; Sparkle
+handles future updates through <strong>Check for Updates</strong>.</p><div class=project-button-container><a href=https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/PixDeluxe-1.0_112.dmg target=_blank class="download-button project-button"><i class="fas fa-download"></i>Download
+</a><a href=https://github.com/GINNOV/littlethings/tree/master/Amiga/Tools/PixDeluxe class="source-button project-button"><i class="fab fa-github"></i>Source Code
+</a><a href=https://github.com/GINNOV/littlethings/blob/master/Amiga/Tools/PixDeluxe/CHANGELOG.md target=_blank rel="noopener noreferrer" class="learn-button project-button"><i class="fas fa-list-ul"></i>LOG
+</a><a href=/littlethings/amiga/pixdeluxe_learnmore.html class="learn-button project-button"><i class="fas fa-book"></i>Learn More
+</a><a href=https://youtu.be/VLCZ00ZfSTI target=_blank class="demo-button project-button icon-only"><i class="fas fa-video"></i></a></div></div></article><article class=project-card><div class=md-img-container><img src=/littlethings/images/tools/pixDeluxeQL.png onerror='this.onerror=null,this.src="https://placehold.co/600x350/0F172A/FF8800?text=PixDeluxeQL&font=press-start-2p",this.alt="Hanle IFF Amiga files for quickview"' alt="Preview IFF Amiga files with Quick Look" class=project-image></div><div class=md-text-container><h3>PixDeluxe Quick Look</h3><p>Say that you have a large collection of Amiga images (IFF) and you
+want to easily preview them while cruising through your macOS
+finder.</p><p>There has been a plugin around for about
+<a href=https://github.com/dalton-tulou/ql-iff>12 years</a> now
+but it doesn't work reliably anymore. So I brought it back to life.
+Download, move the app inside your Applications folder and then run
+it once. The rest will be history.</p><div class=project-button-container><a href=https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/ target=_blank class="download-button project-button"><i class="fas fa-download"></i>Download
+</a><a href=https://github.com/GINNOV/littlethings/tree/master/Amiga/Tools/IFFViewer class="source-button project-button"><i class="fab fa-github"></i>Source Code
+</a><a href=https://youtu.be/VLCZ00ZfSTI target=_blank class="demo-button project-button icon-only"><i class="fas fa-video"></i></a></div></div></article><article class="project-card reverse"><div class=md-img-container><img src=/littlethings/images/tools/AuDeluxe.png onerror='this.onerror=null,this.src="https://placehold.co/600x350/0F172A/FF8800?text=AuDeluxe&font=press-start-2p",this.alt="Player for Amiga audio files"' alt="Play many Amiga audio format" class=project-image></div><div class=md-text-container><h3>AuDeluxe</h3><p>I enjoy listening to Amiga audio files while I code. I have a collection of Amiga audio files and I wanted a
+player that can handle all of them. I tried some players but they didn't have the macOS ethos I was looking for.</p><p>I wanted a modern player that can handle all Amiga audio formats
+and that can be used as a Quick Look plugin as well. So I built
+AuDeluxe. It supports all formats exposed by
+<a href=https://github.com/OpenMPT/openmpt>OpenMPT</a>. Happy listening!</p><p>macOS may quarantine this unnotarized build. For a free, graphical
+first-install option, drag AuDeluxe onto
+<a href=https://github.com/alienator88/Sentinel target=_blank rel="noopener noreferrer">Sentinel</a>
+and choose <strong>Unquarantine</strong>.
+Build 79 is a one-time manual update; Sparkle handles future updates.</p><div class=project-button-container><a href=https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/AuDeluxe-1.7_79.dmg target=_blank class="download-button project-button"><i class="fas fa-download"></i>Download
+</a><a href=https://github.com/GINNOV/littlethings/tree/master/Amiga/Tools/AuDeluxe class="source-button project-button"><i class="fab fa-github"></i>Source Code
+</a><a href=https://github.com/GINNOV/littlethings/blob/master/Amiga/Tools/AuDeluxe/CHANGELOG.md target=_blank rel="noopener noreferrer" class="learn-button project-button"><i class="fas fa-list-ul"></i>LOG
+</a><a href=/littlethings/amiga/audeluxe_learnmore.html class="learn-button project-button"><i class="fas fa-book"></i>Learn More
+</a><a href=https://youtu.be/ei7pR4tumos target=_blank class="demo-button project-button icon-only"><i class="fas fa-video"></i></a></div></div></article><article class=project-card><div class=md-img-container><img src=/littlethings/images/tools/amiga-playground.png onerror='this.onerror=null,this.src="https://placehold.co/600x350/0F172A/FF8800?text=Amiga+Playground&font=press-start-2p",this.alt="Amiga Playground"' alt="Amiga Playground editor and emulator workspace" class=project-image></div><div class=md-text-container><h3>Amiga Playground</h3><p>Amiga Playground is a native macOS workspace for writing,
+generating, assembling, and testing Commodore Amiga 68k code. It
+brings the editor, assistant, compiler console, ADF export, and
+emulator launch paths into one place.</p><p>The assistant can generate Motorola 68000 assembly, help repair
+assembler errors, and work with a local MLX model published as
+Antigravity Amiga 68k. It is built for quick experiments: ask for a
+copper list, assemble it, export a disk, and run it in FS-UAE,
+vAmiga, or the embedded web emulator.</p><div class=project-button-container><a href="https://github.com/GINNOV/littlethings/blob/master/Amiga/Tools/releases/AmigaPlayground-1.0.0_37.dmg?raw=1" target=_blank class="download-button project-button"><i class="fas fa-download"></i>Download
+</a><a href=https://github.com/GINNOV/littlethings/tree/master/Amiga/aMiLa/AmigaPlayground target=_blank class="source-button project-button"><i class="fab fa-github"></i>Source Code
+</a><a href=https://huggingface.co/bmove/antigravity-amiga-68k target=_blank class="learn-button project-button"><i class="fas fa-book"></i>Learn More</a></div></div></article><article class="project-card reverse"><div class=md-img-container><img src=/littlethings/images/tools/amiga-rom-explorer.png onerror='this.onerror=null,this.src="https://placehold.co/600x350/0F172A/FF8800?text=Amiga+ROM+Explorer&font=press-start-2p",this.alt="Amiga ROM Explorer"' alt="Amiga ROM Explorer firmware catalog" class=project-image></div><div class=md-text-container><h3>Amiga ROM Explorer</h3><p>Kickstart revisions, boot ROMs, extended ROMs, and cartridge firmware
+all have stories — which machine they belong to, what changed between
+revisions, and which dump quality matters for emulation. I wanted a
+native macOS atlas for that firmware history, not another folder of
+cryptic filenames.</p><p>Amiga ROM Explorer ships a bundled reference catalog with researched
+profiles for 125+ entries. Browse immediately in reference mode, or
+point it at your own legally obtained ROM library to match files,
+checksums, and hardware targets. Sparkle keeps updates flowing.</p><div class=project-button-container><a href="https://github.com/GINNOV/littlethings/blob/master/Amiga/Tools/releases/AmigaROMExplorer-1.0_8.dmg?raw=1" target=_blank class="download-button project-button"><i class="fas fa-download"></i>Download
+</a><a href=https://github.com/GINNOV/littlethings/tree/master/Amiga/AmigaROMExplorer target=_blank class="source-button project-button"><i class="fab fa-github"></i>Source Code
+</a><a href=https://archive.org/details/commodore-amiga-firmware target=_blank class="learn-button project-button"><i class="fas fa-book"></i>Learn More</a></div></div></article><article class=project-card><div class=md-img-container><img src=/littlethings/images/tools/send2adf.png onerror='this.onerror=null,this.src="https://placehold.co/600x350/0F172A/FF8800?text=send+to+ADF&font=press-start-2p",this.alt="send to ADF"' alt="send to ADF" class=project-image></div><div class=md-text-container><h3>send to ADF</h3><p>Quite often I find myself to test out a demo that I baked
+from source code. It's never just one file, add resources, a startup
+sequence and so on. Often I do those things from command line,
+including opening the file in
+<a href=https://dirkwhoffmann.github.io/vAmiga/>vAmiga</a>. I know
+about xdftool but I wanted something more independent that the whole
+amitools package.</p><p>send2adf, it's a C based tool that you can keep in
+your /usr/local/bin folder, no fancy installations. Straight from
+terminal you add a file or an entire folder structure in one shot to a dynamically created ADF file.</p><div class=project-button-container><a href=https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/send2adf.zip target=_blank class="download-button project-button"><i class="fas fa-download"></i>Download
+</a><a href=https://github.com/GINNOV/littlethings/tree/master/Amiga/Tools/send2adf class="source-button project-button"><i class="fab fa-github"></i>Source Code
+</a><a href=https://github.com/GINNOV/littlethings/blob/master/Amiga/Tools/send2adf/docs/learned_lesson.md target=_blank class="learn-button project-button"><i class="fas fa-book"></i>Learn More
+</a><a href=https://youtu.be/-0sbKGi0hmQ target=_blank class="demo-button project-button icon-only"><i class="fas fa-video"></i></a></div></div></article></main><footer><p>🍕 <a href=https://about.me/marioesposito class=link style=text-decoration:underline>windrago</a> was here.</p><button id=theme-toggle>Toggle Theme</button></footer><script>document.addEventListener("DOMContentLoaded",function(){const e=document.getElementById("theme-toggle");if(e){const t=t=>{t==="dark"?(document.documentElement.classList.add("dark-theme"),document.body.classList.add("dark-theme"),e.textContent="Light Mode"):(document.documentElement.classList.remove("dark-theme"),document.body.classList.remove("dark-theme"),e.textContent="Dark Mode")},n=localStorage.getItem("theme")||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");t(n),e.addEventListener("click",()=>{const e=document.body.classList.contains("dark-theme")?"light":"dark";localStorage.setItem("theme",e),t(e)})}})</script><script src=/littlethings/common/js/copy-code.js></script></body></html>
