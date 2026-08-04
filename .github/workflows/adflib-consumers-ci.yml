@@ -1,0 +1,504 @@
+name: Coordinated ADFlib consumer CI
+
+on:
+  pull_request_target:
+    paths:
+      - Amiga/Tools/build-support/adflib/**
+      - Amiga/Tools/send2adf/**
+      - Amiga/Tools/ADFinder/**
+      - .github/workflows/adflib-consumers-ci.yml
+  push:
+    branches: [master]
+    paths:
+      - Amiga/Tools/build-support/adflib/**
+      - Amiga/Tools/send2adf/**
+      - Amiga/Tools/ADFinder/**
+      - .github/workflows/adflib-consumers-ci.yml
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: Closed non-production dispatch fixture
+        required: true
+        type: choice
+        default: none
+        options:
+          - none
+          - repository-mismatch
+  workflow_call:
+    inputs:
+      candidate_ref:
+        required: true
+        type: string
+      candidate_bundle_artifact:
+        required: true
+        type: string
+      candidate_bundle_run_id:
+        required: true
+        type: string
+      candidate_bundle_artifact_id:
+        required: true
+        type: string
+      candidate_bundle_sha256:
+        required: true
+        type: string
+      candidate_bundle_commit:
+        required: true
+        type: string
+      channel:
+        required: true
+        type: string
+      effective_owner_repo:
+        required: true
+        type: string
+      effective_version:
+        required: true
+        type: string
+      effective_tag:
+        required: true
+        type: string
+      effective_commit:
+        required: true
+        type: string
+      effective_tree_sha:
+        required: true
+        type: string
+      effective_url:
+        required: true
+        type: string
+      effective_tree_manifest_sha256:
+        required: true
+        type: string
+      transport_sha256:
+        required: true
+        type: string
+      upload_failure_logs:
+        required: false
+        type: boolean
+        default: true
+      verification_nonce:
+        required: true
+        type: string
+      compatibility_fixture:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  resolve-identity:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    outputs:
+      trusted_sha: ${{ steps.trusted.outputs.sha }}
+      candidate_sha: ${{ steps.route.outputs.candidate_sha }}
+      candidate_transport: ${{ steps.route.outputs.candidate_transport }}
+      channel: ${{ steps.identity.outputs.channel }}
+      effective_owner_repo: ${{ steps.identity.outputs.effective_owner_repo }}
+      effective_version: ${{ steps.identity.outputs.effective_version }}
+      effective_tag: ${{ steps.identity.outputs.effective_tag }}
+      effective_commit: ${{ steps.identity.outputs.effective_commit }}
+      effective_tree_sha: ${{ steps.identity.outputs.effective_tree_sha }}
+      effective_url: ${{ steps.identity.outputs.effective_url }}
+      effective_tree_manifest_sha256: ${{ steps.identity.outputs.effective_tree_manifest_sha256 }}
+      transport_sha256: ${{ steps.identity.outputs.transport_sha256 }}
+      upload_failure_logs: ${{ steps.identity.outputs.upload_failure_logs }}
+      verification_nonce: ${{ steps.identity.outputs.verification_nonce }}
+      compatibility_fixture: ${{ steps.identity.outputs.compatibility_fixture }}
+    steps:
+      - name: Resolve trusted default branch
+        id: trusted
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          default_sha="$(curl --fail --silent --show-error --location \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'Accept: application/vnd.github+json' \
+            "https://api.github.com/repos/$REPOSITORY/git/ref/heads/master" \
+            | python3 -c 'import json,sys; print(json.load(sys.stdin)["object"]["sha"])')"
+          [[ "$default_sha" =~ ^[0-9a-f]{40}$ ]]
+          echo "sha=$default_sha" >> "$GITHUB_OUTPUT"
+      - name: Check out trusted controls
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ steps.trusted.outputs.sha }}
+          path: trusted-controls
+          persist-credentials: false
+      - name: Verify fixture authority and route candidate
+        id: route
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_REPOSITORY: ${{ github.repository }}
+          EVENT_SHA: ${{ github.sha }}
+          PR_HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          WORKFLOW_REF: ${{ github.workflow_ref }}
+          TRUSTED_SHA: ${{ steps.trusted.outputs.sha }}
+          FIXTURE: ${{ inputs.fixture }}
+          CANDIDATE_REF: ${{ inputs.candidate_ref }}
+          CANDIDATE_BUNDLE_ARTIFACT: ${{ inputs.candidate_bundle_artifact }}
+          CANDIDATE_BUNDLE_RUN_ID: ${{ inputs.candidate_bundle_run_id }}
+          CANDIDATE_BUNDLE_ARTIFACT_ID: ${{ inputs.candidate_bundle_artifact_id }}
+          CANDIDATE_BUNDLE_SHA256: ${{ inputs.candidate_bundle_sha256 }}
+          CANDIDATE_BUNDLE_COMMIT: ${{ inputs.candidate_bundle_commit }}
+          CHANNEL: ${{ inputs.channel }}
+          EFFECTIVE_OWNER_REPO: ${{ inputs.effective_owner_repo }}
+          EFFECTIVE_VERSION: ${{ inputs.effective_version }}
+          EFFECTIVE_TAG: ${{ inputs.effective_tag }}
+          EFFECTIVE_COMMIT: ${{ inputs.effective_commit }}
+          EFFECTIVE_TREE_SHA: ${{ inputs.effective_tree_sha }}
+          EFFECTIVE_URL: ${{ inputs.effective_url }}
+          EFFECTIVE_TREE_MANIFEST_SHA256: ${{ inputs.effective_tree_manifest_sha256 }}
+          TRANSPORT_SHA256: ${{ inputs.transport_sha256 }}
+          UPLOAD_FAILURE_LOGS: ${{ inputs.upload_failure_logs }}
+          VERIFICATION_NONCE: ${{ inputs.verification_nonce }}
+          COMPATIBILITY_FIXTURE: ${{ inputs.compatibility_fixture }}
+        run: |
+          set -euo pipefail
+          OUTPUT_FILE="$GITHUB_OUTPUT" python3 trusted-controls/Amiga/Tools/build-support/adflib/tests/consumer_workflow_contract.py route
+      - name: Verify producing artifact identity
+        if: steps.route.outputs.candidate_transport == 'bundle'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ inputs.candidate_bundle_run_id }}
+          CANDIDATE_BUNDLE_ARTIFACT: ${{ inputs.candidate_bundle_artifact }}
+          CANDIDATE_BUNDLE_ARTIFACT_ID: ${{ inputs.candidate_bundle_artifact_id }}
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location --header "Authorization: Bearer $GH_TOKEN" --header 'Accept: application/vnd.github+json' "https://api.github.com/repos/$REPOSITORY/actions/runs/$RUN_ID/artifacts?per_page=100" > "$RUNNER_TEMP/candidate-artifacts.json"
+          python3 trusted-controls/Amiga/Tools/build-support/adflib/tests/consumer_workflow_contract.py verify-artifact-metadata "$RUNNER_TEMP/candidate-artifacts.json"
+      - name: Download immutable candidate bundle
+        if: steps.route.outputs.candidate_transport == 'bundle'
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: ${{ inputs.candidate_bundle_artifact }}
+          run-id: ${{ inputs.candidate_bundle_run_id }}
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          path: candidate-transport
+      - name: Materialize verified candidate bundle
+        if: steps.route.outputs.candidate_transport == 'bundle'
+        env:
+          EXPECTED_BUNDLE_SHA256: ${{ inputs.candidate_bundle_sha256 }}
+          EXPECTED_CANDIDATE_COMMIT: ${{ inputs.candidate_bundle_commit }}
+          EXPECTED_CHANNEL: ${{ inputs.channel }}
+          EXPECTED_OWNER_REPO: ${{ inputs.effective_owner_repo }}
+          EXPECTED_VERSION: ${{ inputs.effective_version }}
+          EXPECTED_TAG: ${{ inputs.effective_tag }}
+          EXPECTED_COMMIT: ${{ inputs.effective_commit }}
+          EXPECTED_TREE_SHA: ${{ inputs.effective_tree_sha }}
+          EXPECTED_URL: ${{ inputs.effective_url }}
+          EXPECTED_TREE_MANIFEST_SHA256: ${{ inputs.effective_tree_manifest_sha256 }}
+          EXPECTED_TRANSPORT_SHA256: ${{ inputs.transport_sha256 }}
+          OUTPUT_FILE: ${{ runner.temp }}/bundle-output
+        run: python3 trusted-controls/Amiga/Tools/build-support/adflib/tests/consumer_workflow_contract.py materialize-bundle candidate-transport candidate
+      - name: Check out immutable candidate ref
+        if: steps.route.outputs.candidate_transport == 'ref'
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ steps.route.outputs.candidate_sha }}
+          path: candidate
+          persist-credentials: false
+      - name: Resolve complete candidate identity
+        id: identity
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_REPOSITORY: ${{ github.repository }}
+          EVENT_SHA: ${{ github.sha }}
+          PR_HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          WORKFLOW_REF: ${{ github.workflow_ref }}
+          TRUSTED_SHA: ${{ steps.trusted.outputs.sha }}
+          FIXTURE: ${{ inputs.fixture }}
+          CANDIDATE_REF: ${{ inputs.candidate_ref }}
+          CANDIDATE_BUNDLE_ARTIFACT: ${{ inputs.candidate_bundle_artifact }}
+          CANDIDATE_BUNDLE_RUN_ID: ${{ inputs.candidate_bundle_run_id }}
+          CANDIDATE_BUNDLE_ARTIFACT_ID: ${{ inputs.candidate_bundle_artifact_id }}
+          CANDIDATE_BUNDLE_SHA256: ${{ inputs.candidate_bundle_sha256 }}
+          CANDIDATE_BUNDLE_COMMIT: ${{ inputs.candidate_bundle_commit }}
+          CHANNEL: ${{ inputs.channel }}
+          EFFECTIVE_OWNER_REPO: ${{ inputs.effective_owner_repo }}
+          EFFECTIVE_VERSION: ${{ inputs.effective_version }}
+          EFFECTIVE_TAG: ${{ inputs.effective_tag }}
+          EFFECTIVE_COMMIT: ${{ inputs.effective_commit }}
+          EFFECTIVE_TREE_SHA: ${{ inputs.effective_tree_sha }}
+          EFFECTIVE_URL: ${{ inputs.effective_url }}
+          EFFECTIVE_TREE_MANIFEST_SHA256: ${{ inputs.effective_tree_manifest_sha256 }}
+          TRANSPORT_SHA256: ${{ inputs.transport_sha256 }}
+          UPLOAD_FAILURE_LOGS: ${{ inputs.upload_failure_logs }}
+          VERIFICATION_NONCE: ${{ inputs.verification_nonce }}
+          COMPATIBILITY_FIXTURE: ${{ inputs.compatibility_fixture }}
+        run: |
+          set -euo pipefail
+          OUTPUT_FILE="$GITHUB_OUTPUT" python3 trusted-controls/Amiga/Tools/build-support/adflib/tests/consumer_workflow_contract.py resolve candidate/Amiga/Tools/build-support/adflib/ADFlibDependency.cmake
+
+  send2adf:
+    name: send2adf-${{ matrix.os }}-${{ matrix.arch }}
+    needs: resolve-identity
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-arm64
+            runner: macos-15
+            arch: arm64
+          - os: macos-x86_64
+            runner: ${{ format('macos-15-{0}', 'intel') }}
+            arch: x86_64
+          - os: linux-x86_64
+            runner: ubuntu-24.04
+            arch: x86_64
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+    steps:
+      - name: Check out trusted controls
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ needs.resolve-identity.outputs.trusted_sha }}
+          path: trusted-controls
+          persist-credentials: false
+      - name: Download immutable candidate bundle
+        if: needs.resolve-identity.outputs.candidate_transport == 'bundle'
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: ${{ inputs.candidate_bundle_artifact }}
+          run-id: ${{ inputs.candidate_bundle_run_id }}
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          path: candidate-transport
+      - name: Materialize verified candidate bundle
+        if: needs.resolve-identity.outputs.candidate_transport == 'bundle'
+        env:
+          EXPECTED_BUNDLE_SHA256: ${{ inputs.candidate_bundle_sha256 }}
+          EXPECTED_CANDIDATE_COMMIT: ${{ inputs.candidate_bundle_commit }}
+          EXPECTED_CHANNEL: ${{ inputs.channel }}
+          EXPECTED_OWNER_REPO: ${{ inputs.effective_owner_repo }}
+          EXPECTED_VERSION: ${{ inputs.effective_version }}
+          EXPECTED_TAG: ${{ inputs.effective_tag }}
+          EXPECTED_COMMIT: ${{ inputs.effective_commit }}
+          EXPECTED_TREE_SHA: ${{ inputs.effective_tree_sha }}
+          EXPECTED_URL: ${{ inputs.effective_url }}
+          EXPECTED_TREE_MANIFEST_SHA256: ${{ inputs.effective_tree_manifest_sha256 }}
+          EXPECTED_TRANSPORT_SHA256: ${{ inputs.transport_sha256 }}
+          OUTPUT_FILE: ${{ runner.temp }}/bundle-output
+        run: python3 trusted-controls/Amiga/Tools/build-support/adflib/tests/consumer_workflow_contract.py materialize-bundle candidate-transport candidate
+      - name: Check out immutable candidate ref
+        if: needs.resolve-identity.outputs.candidate_transport == 'ref'
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ needs.resolve-identity.outputs.candidate_sha }}
+          path: candidate
+          persist-credentials: false
+      - name: Enforce compatibility fixture contract
+        env:
+          EFFECTIVE_CHANNEL: ${{ needs.resolve-identity.outputs.channel }}
+          ADFLIB_COMPATIBILITY_FIXTURE: ${{ needs.resolve-identity.outputs.compatibility_fixture }}
+        run: python3 trusted-controls/Amiga/Tools/build-support/adflib/tests/consumer_workflow_contract.py compatibility-preflight
+      - name: Restore verified dependency cache
+        uses: actions/cache/restore@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: ${{ runner.temp }}/adflib-readonly-cache
+          key: adflib-${{ needs.resolve-identity.outputs.effective_commit }}-${{ needs.resolve-identity.outputs.transport_sha256 }}-${{ matrix.runner }}-${{ matrix.arch }}
+      - name: Provision immutable ADFlib source
+        env:
+          EXPECTED_CHANNEL: ${{ needs.resolve-identity.outputs.channel }}
+          EXPECTED_OWNER_REPO: ${{ needs.resolve-identity.outputs.effective_owner_repo }}
+          EXPECTED_VERSION: ${{ needs.resolve-identity.outputs.effective_version }}
+          EXPECTED_TAG: ${{ needs.resolve-identity.outputs.effective_tag }}
+          EXPECTED_COMMIT: ${{ needs.resolve-identity.outputs.effective_commit }}
+          EXPECTED_TREE_SHA: ${{ needs.resolve-identity.outputs.effective_tree_sha }}
+          EXPECTED_URL: ${{ needs.resolve-identity.outputs.effective_url }}
+          EXPECTED_TREE_MANIFEST_SHA256: ${{ needs.resolve-identity.outputs.effective_tree_manifest_sha256 }}
+          EXPECTED_TRANSPORT_SHA256: ${{ needs.resolve-identity.outputs.transport_sha256 }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/provision-home" "$RUNNER_TEMP/adflib-readonly-cache"
+          case "$EXPECTED_CHANNEL" in
+            stable) effective_manifest="$GITHUB_WORKSPACE/candidate/Amiga/Tools/build-support/adflib/ADFlibDependency.cmake" ;;
+            canary)
+              effective_manifest="$RUNNER_TEMP/adflib-readonly-cache/ADFlibCanaryDependency.cmake"
+              python3 trusted-controls/Amiga/Tools/build-support/adflib/tests/consumer_workflow_contract.py write-canary-manifest trusted-controls/Amiga/Tools/build-support/adflib/ADFlibDependency.cmake "$effective_manifest"
+              ;;
+            *) exit 2 ;;
+          esac
+          ADFLIB_SOURCE_ROOT="$(env -i HOME="$RUNNER_TEMP/provision-home" PATH="$PATH" python3 trusted-controls/Amiga/Tools/build-support/adflib/stage_adflib.py --manifest "$effective_manifest" --connected --artifacts "$RUNNER_TEMP/adflib-readonly-cache" --print-source-root)"
+          echo "ADFLIB_SOURCE_ROOT=$ADFLIB_SOURCE_ROOT" >> "$GITHUB_ENV"
+      - name: Build and test without credentials or network
+        env:
+          EXPECTED_ARCH: ${{ matrix.arch }}
+          EXPECTED_CHANNEL: ${{ needs.resolve-identity.outputs.channel }}
+          EXPECTED_OWNER_REPO: ${{ needs.resolve-identity.outputs.effective_owner_repo }}
+          EXPECTED_VERSION: ${{ needs.resolve-identity.outputs.effective_version }}
+          EXPECTED_TAG: ${{ needs.resolve-identity.outputs.effective_tag }}
+          EXPECTED_COMMIT: ${{ needs.resolve-identity.outputs.effective_commit }}
+          EXPECTED_TREE_SHA: ${{ needs.resolve-identity.outputs.effective_tree_sha }}
+          EXPECTED_URL: ${{ needs.resolve-identity.outputs.effective_url }}
+          EXPECTED_TREE_MANIFEST_SHA256: ${{ needs.resolve-identity.outputs.effective_tree_manifest_sha256 }}
+          EXPECTED_TRANSPORT_SHA256: ${{ needs.resolve-identity.outputs.transport_sha256 }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/consumer-home" "$RUNNER_TEMP/send2adf-build" "$RUNNER_TEMP/adflib-readonly-cache"
+          broker=(sudo -n python3 "$GITHUB_WORKSPACE/trusted-controls/Amiga/Tools/build-support/adflib/tests/consumer_sandbox.py" --trusted-root "$GITHUB_WORKSPACE/trusted-controls" --source-root "$GITHUB_WORKSPACE/candidate" --cache-root "$RUNNER_TEMP/adflib-readonly-cache" --build-root "$RUNNER_TEMP/send2adf-build" --home-root "$RUNNER_TEMP/consumer-home")
+          case "$EXPECTED_CHANNEL" in
+            stable) canary_args=(-DFETCHCONTENT_FULLY_DISCONNECTED=ON -DFETCHCONTENT_SOURCE_DIR_ADF="$ADFLIB_SOURCE_ROOT") ;;
+            canary) canary_args=(-DFETCHCONTENT_FULLY_DISCONNECTED=ON -DFETCHCONTENT_SOURCE_DIR_ADF="$ADFLIB_SOURCE_ROOT" -DSEND2ADF_TESTING=ON -DADFLIB_CANARY=ON -DADFLIB_CANARY_COMMIT="$EXPECTED_COMMIT" -DADFLIB_CANARY_TREE_SHA="$EXPECTED_TREE_SHA" -DADFLIB_CANARY_ARCHIVE_URL="$EXPECTED_URL" -DADFLIB_CANARY_TREE_MANIFEST_SHA256="$EXPECTED_TREE_MANIFEST_SHA256" -DADFLIB_CANARY_TRANSPORT_SHA256="$EXPECTED_TRANSPORT_SHA256") ;;
+            *) exit 2 ;;
+          esac
+          "${broker[@]}" --working-directory "$GITHUB_WORKSPACE/candidate/Amiga/Tools/send2adf" -- cmake --preset ci -B "$RUNNER_TEMP/send2adf-build" "${canary_args[@]}"
+          "${broker[@]}" --working-directory "$RUNNER_TEMP/send2adf-build" -- cmake --build "$RUNNER_TEMP/send2adf-build"
+          "${broker[@]}" --working-directory "$RUNNER_TEMP/send2adf-build" -- ctest --test-dir "$RUNNER_TEMP/send2adf-build" --output-on-failure
+          binary="$RUNNER_TEMP/send2adf-build/send2adf"
+          file "$binary" | tee "$RUNNER_TEMP/send2adf-architecture.log"
+          if [[ "$(uname -s)" == Darwin ]]; then
+            [[ "$(lipo -archs "$binary")" == "$EXPECTED_ARCH" ]]
+          else
+            readelf -h "$binary" | tee -a "$RUNNER_TEMP/send2adf-architecture.log"
+            [[ "$EXPECTED_ARCH" == x86_64 ]]
+            readelf -h "$binary" | grep -F 'Advanced Micro Devices X86-64'
+          fi
+          "${broker[@]}" --working-directory "$RUNNER_TEMP/send2adf-build" -- "$binary" --build-identity > "$RUNNER_TEMP/send2adf-identity.json"
+          python3 "$GITHUB_WORKSPACE/trusted-controls/Amiga/Tools/build-support/adflib/tests/consumer_workflow_contract.py" compare-builder "$RUNNER_TEMP/send2adf-identity.json"
+      - name: Upload failure logs
+        if: failure() && needs.resolve-identity.outputs.upload_failure_logs == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: send2adf-failure-${{ matrix.os }}
+          path: ${{ runner.temp }}/send2adf-architecture.log
+          if-no-files-found: warn
+
+  adfinder:
+    name: adfinder-${{ matrix.os }}-${{ matrix.arch }}
+    needs: resolve-identity
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-arm64
+            runner: macos-15
+            arch: arm64
+          - os: macos-x86_64
+            runner: ${{ format('macos-15-{0}', 'intel') }}
+            arch: x86_64
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+    steps:
+      - name: Check out trusted controls
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ needs.resolve-identity.outputs.trusted_sha }}
+          path: trusted-controls
+          persist-credentials: false
+      - name: Download immutable candidate bundle
+        if: needs.resolve-identity.outputs.candidate_transport == 'bundle'
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: ${{ inputs.candidate_bundle_artifact }}
+          run-id: ${{ inputs.candidate_bundle_run_id }}
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          path: candidate-transport
+      - name: Materialize verified candidate bundle
+        if: needs.resolve-identity.outputs.candidate_transport == 'bundle'
+        env:
+          EXPECTED_BUNDLE_SHA256: ${{ inputs.candidate_bundle_sha256 }}
+          EXPECTED_CANDIDATE_COMMIT: ${{ inputs.candidate_bundle_commit }}
+          EXPECTED_CHANNEL: ${{ inputs.channel }}
+          EXPECTED_OWNER_REPO: ${{ inputs.effective_owner_repo }}
+          EXPECTED_VERSION: ${{ inputs.effective_version }}
+          EXPECTED_TAG: ${{ inputs.effective_tag }}
+          EXPECTED_COMMIT: ${{ inputs.effective_commit }}
+          EXPECTED_TREE_SHA: ${{ inputs.effective_tree_sha }}
+          EXPECTED_URL: ${{ inputs.effective_url }}
+          EXPECTED_TREE_MANIFEST_SHA256: ${{ inputs.effective_tree_manifest_sha256 }}
+          EXPECTED_TRANSPORT_SHA256: ${{ inputs.transport_sha256 }}
+          OUTPUT_FILE: ${{ runner.temp }}/bundle-output
+        run: python3 trusted-controls/Amiga/Tools/build-support/adflib/tests/consumer_workflow_contract.py materialize-bundle candidate-transport candidate
+      - name: Check out immutable candidate ref
+        if: needs.resolve-identity.outputs.candidate_transport == 'ref'
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ needs.resolve-identity.outputs.candidate_sha }}
+          path: candidate
+          persist-credentials: false
+      - name: Enforce compatibility fixture contract
+        env:
+          EFFECTIVE_CHANNEL: ${{ needs.resolve-identity.outputs.channel }}
+          ADFLIB_COMPATIBILITY_FIXTURE: ${{ needs.resolve-identity.outputs.compatibility_fixture }}
+        run: python3 trusted-controls/Amiga/Tools/build-support/adflib/tests/consumer_workflow_contract.py compatibility-preflight
+      - name: Restore verified dependency cache
+        uses: actions/cache/restore@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: ${{ runner.temp }}/adflib-readonly-cache
+          key: adflib-${{ needs.resolve-identity.outputs.effective_commit }}-${{ needs.resolve-identity.outputs.transport_sha256 }}-${{ matrix.runner }}-${{ matrix.arch }}
+      - name: Provision immutable sources
+        env:
+          EXPECTED_CHANNEL: ${{ needs.resolve-identity.outputs.channel }}
+          EXPECTED_OWNER_REPO: ${{ needs.resolve-identity.outputs.effective_owner_repo }}
+          EXPECTED_VERSION: ${{ needs.resolve-identity.outputs.effective_version }}
+          EXPECTED_TAG: ${{ needs.resolve-identity.outputs.effective_tag }}
+          EXPECTED_COMMIT: ${{ needs.resolve-identity.outputs.effective_commit }}
+          EXPECTED_TREE_SHA: ${{ needs.resolve-identity.outputs.effective_tree_sha }}
+          EXPECTED_URL: ${{ needs.resolve-identity.outputs.effective_url }}
+          EXPECTED_TREE_MANIFEST_SHA256: ${{ needs.resolve-identity.outputs.effective_tree_manifest_sha256 }}
+          EXPECTED_TRANSPORT_SHA256: ${{ needs.resolve-identity.outputs.transport_sha256 }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/provision-home"
+          mkdir -p "$RUNNER_TEMP/readonly-cache"
+          case "$EXPECTED_CHANNEL" in
+            stable) effective_manifest="$GITHUB_WORKSPACE/candidate/Amiga/Tools/build-support/adflib/ADFlibDependency.cmake" ;;
+            canary)
+              effective_manifest="$RUNNER_TEMP/readonly-cache/ADFlibCanaryDependency.cmake"
+              python3 trusted-controls/Amiga/Tools/build-support/adflib/tests/consumer_workflow_contract.py write-canary-manifest trusted-controls/Amiga/Tools/build-support/adflib/ADFlibDependency.cmake "$effective_manifest"
+              ;;
+            *) exit 2 ;;
+          esac
+          ADFLIB_SOURCE_ROOT="$(env -i HOME="$RUNNER_TEMP/provision-home" PATH="$PATH" python3 trusted-controls/Amiga/Tools/build-support/adflib/stage_adflib.py --manifest "$effective_manifest" --connected --artifacts "$RUNNER_TEMP/readonly-cache/adflib" --print-source-root)"
+          SPM_ROOT="$(env -i HOME="$RUNNER_TEMP/provision-home" PATH="$PATH" python3 trusted-controls/Amiga/Tools/ADFinder/distribution/resolve_swift_packages.py --project candidate/Amiga/Tools/ADFinder/ADFinder.xcodeproj --artifacts "$RUNNER_TEMP/readonly-cache/swiftpm" --print-source-packages-path)"
+          echo "ADFLIB_SOURCE_ROOT=$ADFLIB_SOURCE_ROOT" >> "$GITHUB_ENV"
+          echo "SPM_ROOT=$SPM_ROOT" >> "$GITHUB_ENV"
+          echo "ADFLIB_EFFECTIVE_MANIFEST=$effective_manifest" >> "$GITHUB_ENV"
+      - name: Xcode owns dependency build and native tests
+        env:
+          EXPECTED_ARCH: ${{ matrix.arch }}
+          EXPECTED_CHANNEL: ${{ needs.resolve-identity.outputs.channel }}
+          EXPECTED_OWNER_REPO: ${{ needs.resolve-identity.outputs.effective_owner_repo }}
+          EXPECTED_VERSION: ${{ needs.resolve-identity.outputs.effective_version }}
+          EXPECTED_TAG: ${{ needs.resolve-identity.outputs.effective_tag }}
+          EXPECTED_COMMIT: ${{ needs.resolve-identity.outputs.effective_commit }}
+          EXPECTED_TREE_SHA: ${{ needs.resolve-identity.outputs.effective_tree_sha }}
+          EXPECTED_URL: ${{ needs.resolve-identity.outputs.effective_url }}
+          EXPECTED_TREE_MANIFEST_SHA256: ${{ needs.resolve-identity.outputs.effective_tree_manifest_sha256 }}
+          EXPECTED_TRANSPORT_SHA256: ${{ needs.resolve-identity.outputs.transport_sha256 }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/consumer-home"
+          mkdir -p "$RUNNER_TEMP/adfinder-derived"
+          broker=(sudo -n python3 "$GITHUB_WORKSPACE/trusted-controls/Amiga/Tools/build-support/adflib/tests/consumer_sandbox.py" --trusted-root "$GITHUB_WORKSPACE/trusted-controls" --source-root "$GITHUB_WORKSPACE/candidate" --cache-root "$RUNNER_TEMP/readonly-cache" --build-root "$RUNNER_TEMP/adfinder-derived" --home-root "$RUNNER_TEMP/consumer-home" --working-directory "$GITHUB_WORKSPACE/candidate")
+          common=(-project Amiga/Tools/ADFinder/ADFinder.xcodeproj -scheme ADFinder -destination platform=macOS -derivedDataPath "$RUNNER_TEMP/adfinder-derived" ARCHS="$EXPECTED_ARCH" ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO ADFLIB_VERIFIED_SOURCE_ROOT="$ADFLIB_SOURCE_ROOT" -clonedSourcePackagesDirPath "$SPM_ROOT" -disableAutomaticPackageResolution)
+          case "$EXPECTED_CHANNEL" in
+            stable) canary_args=() ;;
+            canary) canary_args=(ADFLIB_CANARY=ON ADFLIB_CANARY_CI=1 ADFLIB_TEST_MANIFEST_OVERRIDE="$ADFLIB_EFFECTIVE_MANIFEST" ADFLIB_TEST_IDENTITY_OVERRIDE="$RUNNER_TEMP/readonly-cache/adflib/adflib-identity.json") ;;
+            *) exit 2 ;;
+          esac
+          "${broker[@]}" -- xcodebuild test -configuration Debug "${common[@]}" "${canary_args[@]}"
+          "${broker[@]}" -- xcodebuild build -configuration Release "${common[@]}" "${canary_args[@]}"
+          library="$(find "$RUNNER_TEMP/adfinder-derived" -path "*/adflib/Release/$EXPECTED_ARCH/libadf.a" -print -quit)"
+          test -n "$library"
+          file "$library" | tee "$RUNNER_TEMP/adfinder-architecture.log"
+          [[ "$(lipo -archs "$library")" == "$EXPECTED_ARCH" ]]
+          identity="$(dirname "$library")/adflib-identity.json"
+          python3 "$GITHUB_WORKSPACE/trusted-controls/Amiga/Tools/build-support/adflib/tests/consumer_workflow_contract.py" compare-builder "$identity"
+      - name: Upload failure logs
+        if: failure() && needs.resolve-identity.outputs.upload_failure_logs == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: adfinder-failure-${{ matrix.os }}
+          path: ${{ runner.temp }}/adfinder-architecture.log
+          if-no-files-found: warn

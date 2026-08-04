@@ -1,0 +1,112 @@
+name: send2adf sealed triplet
+
+on:
+  workflow_call:
+    inputs:
+      runner:
+        required: true
+        type: string
+      platform:
+        required: true
+        type: string
+      architecture:
+        required: true
+        type: string
+      version:
+        required: true
+        type: string
+      target_sha:
+        required: true
+        type: string
+      epoch:
+        required: true
+        type: string
+      source_artifact_id:
+        required: true
+        type: string
+      source_artifact_digest:
+        required: true
+        type: string
+      source_archive_sha256:
+        required: true
+        type: string
+      source_filename:
+        required: true
+        type: string
+    outputs:
+      artifact_id:
+        value: ${{ jobs.package.outputs.artifact_id }}
+      artifact_digest:
+        value: ${{ jobs.package.outputs.artifact_digest }}
+      archive_sha256:
+        value: ${{ jobs.package.outputs.archive_sha256 }}
+      filename:
+        value: ${{ jobs.package.outputs.filename }}
+      target_sha:
+        value: ${{ jobs.package.outputs.target_sha }}
+      producer_run_id:
+        value: ${{ jobs.package.outputs.producer_run_id }}
+      producer_job:
+        value: ${{ jobs.package.outputs.producer_job }}
+      receipt_json:
+        value: ${{ jobs.package.outputs.receipt_json }}
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  package:
+    runs-on: ${{ inputs.runner }}
+    outputs:
+      artifact_id: ${{ steps.upload.outputs.artifact-id }}
+      artifact_digest: ${{ steps.upload.outputs.artifact-digest }}
+      archive_sha256: ${{ steps.binary.outputs.archive_sha256 }}
+      filename: ${{ steps.binary.outputs.filename }}
+      target_sha: ${{ inputs.target_sha }}
+      producer_run_id: ${{ github.run_id }}
+      producer_job: ${{ inputs.platform }}-${{ inputs.architecture }}
+      receipt_json: ${{ steps.receipt.outputs.receipt_json }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ inputs.target_sha }}
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          artifact-ids: ${{ inputs.source_artifact_id }}
+          path: source-transport
+      - id: binary
+        run: |
+          set -euo pipefail
+          source_archive="source-transport/${{ inputs.source_filename }}"
+          [[ "$(shasum -a 256 "$source_archive" | cut -d' ' -f1)" == '${{ inputs.source_archive_sha256 }}' ]]
+          source_root="$(python3 Amiga/Tools/build-support/adflib/stage_adflib.py --connected --artifacts "$RUNNER_TEMP/adflib" --print-source-root)"
+          for pass in 1 2; do
+            cmake -S Amiga/Tools/send2adf -B "$RUNNER_TEMP/build-$pass" -DSEND2ADF_PRODUCTION_BUILD=ON -DBUILD_TESTING=ON -DFETCHCONTENT_FULLY_DISCONNECTED=ON -DFETCHCONTENT_SOURCE_DIR_ADF="$source_root"
+            cmake --build "$RUNNER_TEMP/build-$pass"
+            ctest --test-dir "$RUNNER_TEMP/build-$pass" --output-on-failure
+            mkdir -p "$RUNNER_TEMP/legal-$pass"
+            cp Amiga/Tools/build-support/adflib/ADFlibLicenseApprovals.json "$RUNNER_TEMP/legal-$pass/"
+            printf '%s' '${{ vars.ADFLIB_POST_MERGE_LICENSE_RECEIPT_B64 }}' | base64 --decode > "$RUNNER_TEMP/legal-$pass/post-merge-license-receipt.json"
+            compiler="$(${CC:-cc} --version | head -1)"; cmake_version="$(cmake --version | head -1)"
+            name="send2adf-${{ inputs.version }}-${{ inputs.platform }}-${{ inputs.architecture }}.tar.gz"
+            python3 Amiga/Tools/send2adf/scripts/package_release.py binary --repository-root "$GITHUB_WORKSPACE" --binary "$RUNNER_TEMP/build-$pass/send2adf" --source-archive "$source_archive" --legal-root "$RUNNER_TEMP/legal-$pass" --output "$RUNNER_TEMP/pass-$pass/$name" --version '${{ inputs.version }}' --target-sha '${{ inputs.target_sha }}' --platform '${{ inputs.platform }}' --architecture '${{ inputs.architecture }}' --epoch '${{ inputs.epoch }}' --runner-image '${{ inputs.runner }}' --compiler-version "$compiler" --cmake-version "$cmake_version" --source-artifact-id '${{ inputs.source_artifact_id }}' --source-service-digest 'sha256:${{ inputs.source_artifact_digest }}'
+          done
+          cmp "$RUNNER_TEMP/pass-1/$name" "$RUNNER_TEMP/pass-2/$name"
+          mkdir "$RUNNER_TEMP/verify"; cp "$source_archive" "$RUNNER_TEMP/pass-1/$name" "$RUNNER_TEMP/verify/"
+          python3 Amiga/Tools/send2adf/scripts/package_release.py checksums --output "$RUNNER_TEMP/verify/SHA256SUMS" "$RUNNER_TEMP/verify"/*.tar.gz
+          python3 Amiga/Tools/send2adf/scripts/verify_release.py --directory "$RUNNER_TEMP/verify" --native-archive "$name"
+          mkdir release-triplet; cp "$RUNNER_TEMP/pass-1/$name" release-triplet/
+          printf 'archive_sha256=%s\nfilename=%s\n' "$(shasum -a 256 "release-triplet/$name" | cut -d' ' -f1)" "$name" >> "$GITHUB_OUTPUT"
+      - id: upload
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: send2adf-${{ inputs.platform }}-${{ inputs.architecture }}-${{ github.run_id }}
+          path: release-triplet
+          retention-days: 1
+          if-no-files-found: error
+      - id: receipt
+        run: |
+          python3 Amiga/Tools/send2adf/scripts/release_artifacts.py receipt "$RUNNER_TEMP/triplet-receipt.json" --kind '${{ inputs.platform }}-${{ inputs.architecture }}' --artifact-id '${{ steps.upload.outputs.artifact-id }}' --artifact-name 'send2adf-${{ inputs.platform }}-${{ inputs.architecture }}-${{ github.run_id }}' --service-digest 'sha256:${{ steps.upload.outputs.artifact-digest }}' --archive-sha256 '${{ steps.binary.outputs.archive_sha256 }}' --filename '${{ steps.binary.outputs.filename }}' --target-sha '${{ inputs.target_sha }}' --producer-run-id '${{ github.run_id }}' --producer-job '${{ inputs.platform }}-${{ inputs.architecture }}'
+          printf 'receipt_json=%s\n' "$(tr -d '\n' < "$RUNNER_TEMP/triplet-receipt.json")" >> "$GITHUB_OUTPUT"

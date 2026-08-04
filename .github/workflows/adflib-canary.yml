@@ -1,0 +1,201 @@
+name: ADFlib upstream master canary
+run-name: adflib-canary ${{ inputs.verification_nonce || github.run_id }}
+
+on:
+  schedule:
+    - cron: '17 6 * * 4'
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: Closed canary QA fixture
+        required: true
+        type: choice
+        default: none
+        options:
+          - none
+          - incompatible-master
+          - environment-denial
+      verification_nonce:
+        description: Unique lowercase UUIDv4 correlation value
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  manual-approval:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    environment: adflib-verification
+    permissions:
+      contents: read
+    steps:
+      - name: Protected approval accepted
+        env:
+          FIXTURE: ${{ inputs.fixture }}
+        run: test "$FIXTURE" != environment-denial
+
+  preflight:
+    if: always() && (github.event_name == 'schedule' || needs.manual-approval.result == 'success')
+    needs: manual-approval
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    outputs:
+      trusted_sha: ${{ steps.trusted.outputs.sha }}
+      fixture: ${{ steps.authorize.outputs.fixture }}
+      compatibility_fixture: ${{ steps.authorize.outputs.compatibility_fixture }}
+      verification_nonce: ${{ steps.authorize.outputs.verification_nonce }}
+      manifest_sha256: ${{ steps.manifest.outputs.sha256 }}
+    steps:
+      - name: Resolve trusted default branch
+        id: trusted
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          trusted_sha="$(curl --fail --silent --show-error --location --header "Authorization: Bearer $GH_TOKEN" --header 'Accept: application/vnd.github+json' "https://api.github.com/repos/$REPOSITORY/git/ref/heads/master" | python3 -c 'import json,sys; print(json.load(sys.stdin)["object"]["sha"])')"
+          [[ "$trusted_sha" =~ ^[0-9a-f]{40}$ ]]
+          echo "sha=$trusted_sha" >> "$GITHUB_OUTPUT"
+      - name: Check out trusted controls
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ steps.trusted.outputs.sha }}
+          path: trusted-controls
+          persist-credentials: false
+      - name: Authorize exact default-branch invocation
+        id: authorize
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_SHA: ${{ github.sha }}
+          TRUSTED_SHA: ${{ steps.trusted.outputs.sha }}
+          WORKFLOW_REF: ${{ github.workflow_ref }}
+          WORKFLOW_SHA: ${{ github.workflow_sha }}
+          FIXTURE: ${{ inputs.fixture }}
+          VERIFICATION_NONCE: ${{ inputs.verification_nonce }}
+          OUTPUT_FILE: ${{ runner.temp }}/canary-authorize-output
+        run: |
+          set -euo pipefail
+          OUTPUT_FILE="$GITHUB_OUTPUT" python3 trusted-controls/Amiga/Tools/build-support/adflib/canary_coordinator.py authorize
+      - name: Verify owner-supplied settings prerequisite
+        env:
+          ADFLIB_SETTINGS_READ_TOKEN: ${{ secrets.ADFLIB_SETTINGS_READ_TOKEN }}
+          EXPECTED_APPROVER_TEAM: ${{ vars.ADFLIB_AUTOMATION_APPROVER_TEAM }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          test -n "$ADFLIB_SETTINGS_READ_TOKEN"
+          test -n "$EXPECTED_APPROVER_TEAM"
+          header="Authorization: Bearer $ADFLIB_SETTINGS_READ_TOKEN"
+          curl --fail --silent --show-error --location --header "$header" --header 'Accept: application/vnd.github+json' "https://api.github.com/repos/$REPOSITORY" > "$RUNNER_TEMP/repository.json"
+          curl --fail --silent --show-error --location --header "$header" --header 'Accept: application/vnd.github+json' "https://api.github.com/repos/$REPOSITORY/environments/adflib-verification" > "$RUNNER_TEMP/environment.json"
+          curl --fail --silent --show-error --location --header "$header" --header 'Accept: application/vnd.github+json' "https://api.github.com/repos/$REPOSITORY/actions/permissions/workflow" > "$RUNNER_TEMP/actions.json"
+          curl --fail --silent --show-error --location --header "$header" --header 'Accept: application/vnd.github+json' "https://api.github.com/repos/$REPOSITORY/actions/variables/ADFLIB_AUTOMATION_APPROVER_TEAM" > "$RUNNER_TEMP/variable.json"
+          unset ADFLIB_SETTINGS_READ_TOKEN header
+          python3 trusted-controls/Amiga/Tools/build-support/adflib/canary_coordinator.py preflight --repository "$RUNNER_TEMP/repository.json" --environment "$RUNNER_TEMP/environment.json" --actions "$RUNNER_TEMP/actions.json" --variable "$RUNNER_TEMP/variable.json"
+      - name: Capture production manifest digest
+        id: manifest
+        run: |
+          set -euo pipefail
+          digest="$(python3 -c 'import hashlib,pathlib; print(hashlib.sha256(pathlib.Path("trusted-controls/Amiga/Tools/build-support/adflib/ADFlibDependency.cmake").read_bytes()).hexdigest())')"
+          echo "sha256=$digest" >> "$GITHUB_OUTPUT"
+
+  resolve-master:
+    needs: preflight
+    if: needs.preflight.outputs.fixture != 'environment-denial'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    outputs:
+      effective_owner_repo: ${{ steps.resolve.outputs.effective_owner_repo }}
+      effective_version: ${{ steps.resolve.outputs.effective_version }}
+      effective_tag: ${{ steps.resolve.outputs.effective_tag }}
+      effective_commit: ${{ steps.resolve.outputs.effective_commit }}
+      effective_tree_sha: ${{ steps.resolve.outputs.effective_tree_sha }}
+      effective_url: ${{ steps.resolve.outputs.effective_url }}
+      effective_tree_manifest_sha256: ${{ steps.resolve.outputs.effective_tree_manifest_sha256 }}
+      transport_sha256: ${{ steps.resolve.outputs.transport_sha256 }}
+    steps:
+      - name: Check out trusted controls
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ needs.preflight.outputs.trusted_sha }}
+          path: trusted-controls
+          persist-credentials: false
+      - name: Resolve and verify upstream master once
+        id: resolve
+        run: |
+          set -euo pipefail
+          python3 trusted-controls/Amiga/Tools/build-support/adflib/canary_resolver.py resolve --artifacts "$RUNNER_TEMP/adflib-canary" --output "$GITHUB_OUTPUT"
+
+  consumers:
+    needs: [preflight, resolve-master]
+    permissions:
+      contents: read
+    uses: ./.github/workflows/adflib-consumers-ci.yml
+    with:
+      candidate_ref: ${{ needs.preflight.outputs.trusted_sha }}
+      candidate_bundle_artifact: ''
+      candidate_bundle_run_id: ''
+      candidate_bundle_artifact_id: ''
+      candidate_bundle_sha256: ''
+      candidate_bundle_commit: ''
+      channel: canary
+      effective_owner_repo: ${{ needs.resolve-master.outputs.effective_owner_repo }}
+      effective_version: ${{ needs.resolve-master.outputs.effective_version }}
+      effective_tag: ${{ needs.resolve-master.outputs.effective_tag }}
+      effective_commit: ${{ needs.resolve-master.outputs.effective_commit }}
+      effective_tree_sha: ${{ needs.resolve-master.outputs.effective_tree_sha }}
+      effective_url: ${{ needs.resolve-master.outputs.effective_url }}
+      effective_tree_manifest_sha256: ${{ needs.resolve-master.outputs.effective_tree_manifest_sha256 }}
+      transport_sha256: ${{ needs.resolve-master.outputs.transport_sha256 }}
+      compatibility_fixture: ${{ needs.preflight.outputs.compatibility_fixture }}
+      upload_failure_logs: false
+      verification_nonce: ${{ needs.preflight.outputs.verification_nonce }}
+
+  audit:
+    if: always() && needs.resolve-master.result == 'success'
+    needs: [preflight, resolve-master, consumers]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Check out immutable trusted source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ needs.preflight.outputs.trusted_sha }}
+          path: trusted-controls
+          persist-credentials: false
+      - name: Prove production state remained unchanged
+        env:
+          EXPECTED_MANIFEST_SHA256: ${{ needs.preflight.outputs.manifest_sha256 }}
+        run: |
+          set -euo pipefail
+          observed="$(python3 -c 'import hashlib,pathlib; print(hashlib.sha256(pathlib.Path("trusted-controls/Amiga/Tools/build-support/adflib/ADFlibDependency.cmake").read_bytes()).hexdigest())')"
+          test "$observed" = "$EXPECTED_MANIFEST_SHA256"
+          git -C trusted-controls diff --exit-code
+      - name: Publish nonblocking canary summary
+        env:
+          RESULT: ${{ needs.consumers.result }}
+          COMMIT: ${{ needs.resolve-master.outputs.effective_commit }}
+          TREE_SHA: ${{ needs.resolve-master.outputs.effective_tree_sha }}
+          URL: ${{ needs.resolve-master.outputs.effective_url }}
+          TREE_MANIFEST_SHA256: ${{ needs.resolve-master.outputs.effective_tree_manifest_sha256 }}
+          TRANSPORT_SHA256: ${{ needs.resolve-master.outputs.transport_sha256 }}
+        run: |
+          {
+            echo '## ADFlib upstream master canary'
+            echo "- Canary result: $RESULT"
+            echo '- channel=canary'
+            echo '- owner_repo=adflib/ADFlib'
+            echo '- version=0.0.0-canary'
+            echo '- tag=master'
+            echo "- commit=$COMMIT"
+            echo "- tree_sha=$TREE_SHA"
+            echo "- url=$URL"
+            echo "- tree_manifest_sha256=$TREE_MANIFEST_SHA256"
+            echo "- transport_sha256=$TRANSPORT_SHA256"
+            echo '- upload_failure_logs=false; artifact API actions=0'
+          } >> "$GITHUB_STEP_SUMMARY"

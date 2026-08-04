@@ -1,0 +1,264 @@
+name: send2adf release
+
+on:
+  push:
+    tags:
+      - send2adf-v*.*.*
+  workflow_dispatch:
+    inputs:
+      mode:
+        required: true
+        type: choice
+        options: [validate, publish, recover-owned]
+      tag:
+        required: true
+        type: string
+      expected_sha:
+        required: true
+        type: string
+      observed_lease_sha:
+        required: false
+        type: string
+      observed_release_id:
+        required: false
+        type: string
+      observed_inventory_sha256:
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: send2adf-release-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      mode: ${{ steps.identity.outputs.mode }}
+      tag: ${{ steps.identity.outputs.tag }}
+      target_sha: ${{ steps.identity.outputs.target_sha }}
+      version: ${{ steps.identity.outputs.version }}
+      epoch: ${{ steps.identity.outputs.epoch }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - id: identity
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_MODE: ${{ inputs.mode }}
+          INPUT_TAG: ${{ inputs.tag }}
+          INPUT_EXPECTED_SHA: ${{ inputs.expected_sha }}
+          INPUT_LEASE_SHA: ${{ inputs.observed_lease_sha }}
+          INPUT_RELEASE_ID: ${{ inputs.observed_release_id }}
+          INPUT_INVENTORY_SHA256: ${{ inputs.observed_inventory_sha256 }}
+          SETTINGS_APPROVER_TEAM: ${{ vars.ADFLIB_AUTOMATION_APPROVER_TEAM }}
+          SETTINGS_APP_ID: ${{ vars.ADFLIB_AUTOMATION_APP_ID }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mode="$INPUT_MODE"; tag="$INPUT_TAG"; expected="$INPUT_EXPECTED_SHA"
+          if [[ "$EVENT_NAME" == push ]]; then mode=publish; tag="$GITHUB_REF_NAME"; expected="$GITHUB_SHA"; fi
+          [[ "$mode" == validate || "$mode" == publish || "$mode" == recover-owned ]]
+          [[ "$tag" =~ ^send2adf-v([0-9]+\.[0-9]+\.[0-9]+)$ ]]
+          [[ "$expected" =~ ^[0-9a-f]{40}$ ]]
+          version="${BASH_REMATCH[1]}"
+          cmake_version="$(sed -nE 's/^project\(send2adf VERSION ([0-9]+\.[0-9]+\.[0-9]+).*/\1/p' Amiga/Tools/send2adf/CMakeLists.txt)"
+          [[ "$version" == "$cmake_version" ]]
+          tag_target="$(git rev-list -n 1 "$tag")"; [[ "$tag_target" == "$expected" ]]
+          master_sha="$(git ls-remote origin refs/heads/master | cut -f1)"; [[ "$master_sha" =~ ^[0-9a-f]{40}$ ]]
+          [[ -n "$SETTINGS_APPROVER_TEAM" && "$SETTINGS_APP_ID" =~ ^[1-9][0-9]*$ ]]
+          if [[ "$mode" == publish ]]; then [[ "$master_sha" == "$expected" ]]; fi
+          if [[ "$mode" == validate ]]; then [[ "$GITHUB_SHA" == "$expected" ]]; fi
+          if [[ "$mode" == recover-owned ]]; then
+            [[ "$INPUT_LEASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+            [[ "$INPUT_RELEASE_ID" == absent || "$INPUT_RELEASE_ID" =~ ^[1-9][0-9]*$ ]]
+            [[ "$INPUT_INVENTORY_SHA256" == absent || "$INPUT_INVENTORY_SHA256" =~ ^[0-9a-f]{64}$ ]]
+          else
+            [[ -z "$INPUT_LEASE_SHA$INPUT_RELEASE_ID$INPUT_INVENTORY_SHA256" ]]
+          fi
+          git diff --quiet && git diff --cached --quiet
+          [[ "$(git status --porcelain --untracked-files=all)" == "" ]]
+          epoch="$(git show -s --format=%ct "$expected")"
+          printf 'mode=%s\ntag=%s\ntarget_sha=%s\nversion=%s\nepoch=%s\n' "$mode" "$tag" "$expected" "$version" "$epoch" >> "$GITHUB_OUTPUT"
+      - name: Verify protected authority settings
+        env:
+          GH_TOKEN: ${{ secrets.ADFLIB_SETTINGS_READ_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          APPROVER_TEAM: ${{ vars.ADFLIB_AUTOMATION_APPROVER_TEAM }}
+        run: |
+          set -euo pipefail
+          test -n "$GH_TOKEN"; test -n "$APPROVER_TEAM"
+          curl --fail --silent --show-error --header "Authorization: Bearer $GH_TOKEN" "https://api.github.com/repos/$REPOSITORY/environments/send2adf-release" > "$RUNNER_TEMP/environment.json"
+          curl --fail --silent --show-error --header "Authorization: Bearer $GH_TOKEN" "https://api.github.com/repos/$REPOSITORY/rulesets?includes_parents=false" > "$RUNNER_TEMP/rulesets.json"
+          python3 Amiga/Tools/send2adf/scripts/release_authority.py settings "$RUNNER_TEMP/environment.json" "$RUNNER_TEMP/rulesets.json" "$APPROVER_TEAM"
+      - name: Run release test and sanitizer gates
+        run: |
+          cd Amiga/Tools/send2adf
+          cmake --preset ci
+          cmake --build --preset ci
+          ctest --preset ci --output-on-failure
+          cd "$GITHUB_WORKSPACE"
+          cmake -S Amiga/Tools/send2adf -B "$RUNNER_TEMP/sanitized" -DSEND2ADF_SANITIZERS=address,undefined -DBUILD_TESTING=ON
+          cmake --build "$RUNNER_TEMP/sanitized"
+          ctest --test-dir "$RUNNER_TEMP/sanitized" --output-on-failure
+
+  source-archive:
+    needs: preflight
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    outputs:
+      artifact_id: ${{ steps.upload.outputs.artifact-id }}
+      artifact_digest: ${{ steps.upload.outputs.artifact-digest }}
+      archive_sha256: ${{ steps.package.outputs.archive_sha256 }}
+      filename: ${{ steps.package.outputs.filename }}
+      target_sha: ${{ needs.preflight.outputs.target_sha }}
+      provenance_input_sha256: ${{ steps.package.outputs.provenance_input_sha256 }}
+      receipt_json: ${{ steps.receipt.outputs.receipt_json }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ needs.preflight.outputs.target_sha }}
+          persist-credentials: false
+      - id: package
+        run: |
+          set -euo pipefail
+          source_root="$(python3 Amiga/Tools/build-support/adflib/stage_adflib.py --connected --artifacts "$RUNNER_TEMP/adflib" --print-source-root)"
+          transport="$(find "$RUNNER_TEMP/adflib" -name 'ADFlib-*-transport.tar.gz' -type f -print -quit)"
+          name="send2adf-${{ needs.preflight.outputs.version }}-source.tar.gz"
+          for pass in 1 2; do
+            python3 Amiga/Tools/send2adf/scripts/package_release.py source --repository-root "$GITHUB_WORKSPACE" --adflib-source "$source_root" --adflib-transport "$transport" --output "$RUNNER_TEMP/pass-$pass/$name" --version '${{ needs.preflight.outputs.version }}' --epoch '${{ needs.preflight.outputs.epoch }}'
+          done
+          cmp "$RUNNER_TEMP/pass-1/$name" "$RUNNER_TEMP/pass-2/$name"
+          mkdir release-source; cp "$RUNNER_TEMP/pass-1/$name" release-source/
+          digest="$(sha256sum "release-source/$name" | cut -d' ' -f1)"
+          input_digest="$(printf '%s\n%s\n%s\n' '${{ needs.preflight.outputs.target_sha }}' '${{ needs.preflight.outputs.version }}' '${{ needs.preflight.outputs.epoch }}' | sha256sum | cut -d' ' -f1)"
+          printf 'archive_sha256=%s\nfilename=%s\nprovenance_input_sha256=%s\n' "$digest" "$name" "$input_digest" >> "$GITHUB_OUTPUT"
+      - id: upload
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: send2adf-source-${{ github.run_id }}
+          path: release-source
+          retention-days: 1
+          if-no-files-found: error
+      - id: receipt
+        run: |
+          python3 Amiga/Tools/send2adf/scripts/release_artifacts.py receipt "$RUNNER_TEMP/source-receipt.json" --kind source --artifact-id '${{ steps.upload.outputs.artifact-id }}' --artifact-name 'send2adf-source-${{ github.run_id }}' --service-digest 'sha256:${{ steps.upload.outputs.artifact-digest }}' --archive-sha256 '${{ steps.package.outputs.archive_sha256 }}' --filename '${{ steps.package.outputs.filename }}' --target-sha '${{ needs.preflight.outputs.target_sha }}' --producer-run-id '${{ github.run_id }}' --producer-job source-archive
+          printf 'receipt_json=%s\n' "$(tr -d '\n' < "$RUNNER_TEMP/source-receipt.json")" >> "$GITHUB_OUTPUT"
+
+  triplet-macos-arm64:
+    needs: [preflight, source-archive]
+    uses: ./.github/workflows/send2adf-triplet.yml
+    with:
+      runner: macos-15
+      platform: macos
+      architecture: arm64
+      version: ${{ needs.preflight.outputs.version }}
+      target_sha: ${{ needs.preflight.outputs.target_sha }}
+      epoch: ${{ needs.preflight.outputs.epoch }}
+      source_artifact_id: ${{ needs.source-archive.outputs.artifact_id }}
+      source_artifact_digest: ${{ needs.source-archive.outputs.artifact_digest }}
+      source_archive_sha256: ${{ needs.source-archive.outputs.archive_sha256 }}
+      source_filename: ${{ needs.source-archive.outputs.filename }}
+    secrets: inherit
+
+  triplet-macos-x86-64:
+    needs: [preflight, source-archive]
+    uses: ./.github/workflows/send2adf-triplet.yml
+    with:
+      runner: macos-15-intel
+      platform: macos
+      architecture: x86_64
+      version: ${{ needs.preflight.outputs.version }}
+      target_sha: ${{ needs.preflight.outputs.target_sha }}
+      epoch: ${{ needs.preflight.outputs.epoch }}
+      source_artifact_id: ${{ needs.source-archive.outputs.artifact_id }}
+      source_artifact_digest: ${{ needs.source-archive.outputs.artifact_digest }}
+      source_archive_sha256: ${{ needs.source-archive.outputs.archive_sha256 }}
+      source_filename: ${{ needs.source-archive.outputs.filename }}
+    secrets: inherit
+
+  triplet-linux-x86-64:
+    needs: [preflight, source-archive]
+    uses: ./.github/workflows/send2adf-triplet.yml
+    with:
+      runner: ubuntu-24.04
+      platform: linux
+      architecture: x86_64
+      version: ${{ needs.preflight.outputs.version }}
+      target_sha: ${{ needs.preflight.outputs.target_sha }}
+      epoch: ${{ needs.preflight.outputs.epoch }}
+      source_artifact_id: ${{ needs.source-archive.outputs.artifact_id }}
+      source_artifact_digest: ${{ needs.source-archive.outputs.artifact_digest }}
+      source_archive_sha256: ${{ needs.source-archive.outputs.archive_sha256 }}
+      source_filename: ${{ needs.source-archive.outputs.filename }}
+    secrets: inherit
+
+  release:
+    needs: [preflight, source-archive, triplet-macos-arm64, triplet-macos-x86-64, triplet-linux-x86-64]
+    runs-on: ubuntu-24.04
+    environment: send2adf-release
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ needs.preflight.outputs.target_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_RECEIPT: ${{ needs.source-archive.outputs.receipt_json }}
+          MACOS_ARM64_RECEIPT: ${{ needs.triplet-macos-arm64.outputs.receipt_json }}
+          MACOS_X86_64_RECEIPT: ${{ needs.triplet-macos-x86-64.outputs.receipt_json }}
+          LINUX_X86_64_RECEIPT: ${{ needs.triplet-linux-x86-64.outputs.receipt_json }}
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/receipts"
+          printf '%s\n' "$SOURCE_RECEIPT" > "$RUNNER_TEMP/receipts/source.json"
+          printf '%s\n' "$MACOS_ARM64_RECEIPT" > "$RUNNER_TEMP/receipts/macos-arm64.json"
+          printf '%s\n' "$MACOS_X86_64_RECEIPT" > "$RUNNER_TEMP/receipts/macos-x86_64.json"
+          printf '%s\n' "$LINUX_X86_64_RECEIPT" > "$RUNNER_TEMP/receipts/linux-x86_64.json"
+          python3 Amiga/Tools/send2adf/scripts/release_artifacts.py seal "$RUNNER_TEMP/matrix-receipt.json" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" '${{ needs.preflight.outputs.target_sha }}' "$RUNNER_TEMP/receipts/"*.json
+          python3 Amiga/Tools/send2adf/scripts/release_artifacts.py collect "$GITHUB_REPOSITORY" "$RUNNER_TEMP/matrix-receipt.json" "$RUNNER_TEMP/release" "$GITHUB_RUN_ID" '${{ needs.preflight.outputs.target_sha }}'
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: send2adf-matrix-receipt-${{ github.run_id }}
+          path: ${{ runner.temp }}/matrix-receipt.json
+          retention-days: 1
+          if-no-files-found: error
+      - run: |
+          python3 Amiga/Tools/send2adf/scripts/package_release.py checksums --output "$RUNNER_TEMP/release/SHA256SUMS" "$RUNNER_TEMP/release"/*.tar.gz
+          python3 Amiga/Tools/send2adf/scripts/verify_release.py --directory "$RUNNER_TEMP/release" --native-archive ''
+      - if: needs.preflight.outputs.mode != 'validate'
+        id: app-token
+        uses: actions/create-github-app-token@a8d616148505b5069dccd32f177bb87d7f39123b
+        with:
+          app-id: ${{ vars.ADFLIB_AUTOMATION_APP_ID }}
+          private-key: ${{ secrets.ADFLIB_AUTOMATION_APP_PRIVATE_KEY }}
+          owner: ${{ vars.ADFLIB_AUTOMATION_APP_INSTALLATION_OWNER }}
+          permission-contents: write
+          permission-actions: read
+      - if: needs.preflight.outputs.mode != 'validate'
+        env:
+          APP_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          set -euo pipefail
+          socket="$RUNNER_TEMP/release-token.sock"
+          printf '%s' "$APP_TOKEN" | python3 Amiga/Tools/build-support/adflib/adflib_credential_broker.py "$socket" & broker=$!
+          unset APP_TOKEN; while [[ ! -S "$socket" ]]; do kill -0 "$broker"; done
+          trap 'kill "$broker"; wait "$broker" || true' EXIT
+          python3 Amiga/Tools/send2adf/scripts/release_authority.py publish "$RUNNER_TEMP/release" --repository "$GITHUB_REPOSITORY" --workflow '.github/workflows/send2adf-release.yml' --socket "$socket" --tag '${{ needs.preflight.outputs.tag }}' --target-sha '${{ needs.preflight.outputs.target_sha }}' --app-id '${{ vars.ADFLIB_AUTOMATION_APP_ID }}' --run-id "$GITHUB_RUN_ID" --mode '${{ needs.preflight.outputs.mode }}' --observed-lease-sha '${{ inputs.observed_lease_sha }}' --observed-release-id '${{ inputs.observed_release_id }}' --observed-inventory-sha256 '${{ inputs.observed_inventory_sha256 }}'
+      - if: always()
+        run: |
+          test '${{ needs.preflight.outputs.mode }}' != validate || test '${{ steps.app-token.outcome }}' != success
+          echo 'internal artifacts use retention-days=1; GitHub expiry is the configured cleanup mechanism'

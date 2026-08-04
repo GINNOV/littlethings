@@ -1,139 +1,48 @@
-# This workflow builds the ADFinder application, packages it into a .dmg,
-# and then commits the DMG file back to the repository.
-#
-# Trigger:
-# - Runs on a push to the 'master' branch ONLY if the commit message
-#   includes the string '#build-adfinder'.
-# - Manual runs via 'workflow_dispatch' are always allowed.
-
-name: Build and Commit ADFinder Release
+name: Validate ADFinder packages
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
-  build-and-commit-dmg:
-    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '#build-adfinder')
-    runs-on: macos-latest
+  build-adfinder:
+    strategy:
+      matrix:
+        runner: [macos-15, macos-15-intel]
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.GH_PAT }}
-
-      - name: Install create-dmg dependency
-        run: brew install create-dmg
-
-      - name: Import Sparkle release key
+      - uses: actions/checkout@v4
+      - run: brew install create-dmg
+      - name: Provision immutable dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          ADFLIB_SOURCE_ROOT="$(python3 Amiga/Tools/build-support/adflib/stage_adflib.py --connected --artifacts "$PWD/.artifacts/adflib" --print-source-root)"
+          SPM_ROOT="$(python3 Amiga/Tools/ADFinder/distribution/resolve_swift_packages.py --project Amiga/Tools/ADFinder/ADFinder.xcodeproj --artifacts "$PWD/.artifacts/swiftpm" --print-source-packages-path)"
+          echo "ADFLIB_SOURCE_ROOT=$ADFLIB_SOURCE_ROOT" >> "$GITHUB_ENV"
+          echo "SPM_ROOT=$SPM_ROOT" >> "$GITHUB_ENV"
+      - name: Test and package without network
+        shell: bash
         env:
-          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+          HTTP_PROXY: http://127.0.0.1:9
+          HTTPS_PROXY: http://127.0.0.1:9
+          ALL_PROXY: http://127.0.0.1:9
+          GIT_CONFIG_COUNT: 1
+          GIT_CONFIG_KEY_0: http.proxy
+          GIT_CONFIG_VALUE_0: http://127.0.0.1:9
         run: |
           set -euo pipefail
-          test -n "$SPARKLE_PRIVATE_KEY"
-          KEY_FILE=$(mktemp)
-          trap 'rm -f "$KEY_FILE"' EXIT
-          chmod 600 "$KEY_FILE"
-          printf '%s' "$SPARKLE_PRIVATE_KEY" > "$KEY_FILE"
-          GENERATE_KEYS=$(find "$RUNNER_TEMP" "$HOME/Library/Developer/Xcode/DerivedData" -path '*/Sparkle/bin/generate_keys' -type f -perm +111 -print -quit 2>/dev/null || true)
-          if [ -z "$GENERATE_KEYS" ]; then
-            echo "Sparkle tools are resolved during the build; key import will run after dependency resolution."
-            echo "SPARKLE_KEY_FILE=$KEY_FILE" >> "$GITHUB_ENV"
-            trap - EXIT
-          else
-            "$GENERATE_KEYS" --account ADFinder -f "$KEY_FILE"
-          fi
-
-      - name: Check and select Xcode version
-        run: |
-          echo "Default Xcode version:"
-          xcodebuild -version
-          echo "Available Xcode installations:"
-          ls -d /Applications/Xcode*.app
-          
-          for version in 16.2 16.1 16.0 16; do
-            if [ -d "/Applications/Xcode_${version}.app" ]; then
-              echo "Found Xcode ${version}. Selecting it."
-              sudo xcode-select -s "/Applications/Xcode_${version}.app/Contents/Developer"
-              break
-            fi
-          done
-
-          echo "Selected Xcode version:"
-          xcodebuild -version
-
-          if [ "$(xcodebuild -version | awk '/Xcode/ {print $2}' | cut -d. -f1)" -lt 16 ]; then
-             echo "::error::Failed to select Xcode 16.x. The active version is still less than 16."
-             exit 1
-          fi
-
-      - name: Build .app and Create .dmg
-        id: build_step
-        run: |
-          set -euo pipefail
-          
-          cd Amiga/Tools/ADFinder/distribution
-
-          chmod +x build_and_package.sh
-          chmod +x gendmg.sh
-
-          if [ -n "${SPARKLE_KEY_FILE:-}" ]; then
-            xcodebuild -resolvePackageDependencies -project ../ADFinder.xcodeproj -scheme ADFinder
-            GENERATE_KEYS=$(find "$HOME/Library/Developer/Xcode/DerivedData" -path '*/Sparkle/bin/generate_keys' -type f -perm +111 -print -quit)
-            "$GENERATE_KEYS" --account ADFinder -f "$SPARKLE_KEY_FILE"
-            rm -f "$SPARKLE_KEY_FILE"
-          fi
-          
-          ./build_and_package.sh --project ../ADFinder.xcodeproj --scheme "ADFinder" --configuration Release
-          
-          cd ../../../..
-
-          # Find the newest DMG file with the new format
-          DMG_FILE=$(find Amiga/Tools/releases -name "ADFinder-*_*.dmg" -type f -print0 | xargs -0 ls -t | head -n1)
-          if [ -z "$DMG_FILE" ]; then
-            echo "::error::Could not find the created DMG file from the repo root."
-            exit 1
-          fi
-          echo "Found newest DMG: $DMG_FILE"
-          echo "DMG_FILE=$DMG_FILE" >> $GITHUB_OUTPUT
-          ZIP_FILE="${DMG_FILE%.dmg}.zip"
-          test -f "$ZIP_FILE"
-          echo "ZIP_FILE=$ZIP_FILE" >> $GITHUB_OUTPUT
-
-      - name: Commit, Clean, and Push DMG
-        run: |
-          set -euo pipefail
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-
-          DMG_TO_COMMIT="${{ steps.build_step.outputs.DMG_FILE }}"
-          ZIP_TO_COMMIT="${{ steps.build_step.outputs.ZIP_FILE }}"
-          echo "Adding '$DMG_TO_COMMIT' to Git."
-          git add "$DMG_TO_COMMIT" "$ZIP_TO_COMMIT" Amiga/Tools/releases/appcast-adfinder.xml
-
-          # Clean up old builds, keeping latest 3
-          cd Amiga/Tools/releases
-          FILES_TO_DELETE=$(ls -t ADFinder-*_*.dmg | tail -n +4)
-          if [ -n "$FILES_TO_DELETE" ]; then
-            echo "Deleting old DMGs:"
-            echo "$FILES_TO_DELETE"
-            echo "$FILES_TO_DELETE" | xargs git rm
-          else
-            echo "No old builds to delete (fewer than 4 found)."
-          fi
-          ZIP_FILES_TO_DELETE=$(ls -t ADFinder-*_*.zip 2>/dev/null | tail -n +4 || true)
-          if [ -n "$ZIP_FILES_TO_DELETE" ]; then
-            echo "$ZIP_FILES_TO_DELETE" | xargs git rm
-          fi
-          cd ../../..
-
-          if ! git diff --staged --quiet; then
-            echo "Committing changes..."
-            BUILD_NUMBER=$(echo "$DMG_TO_COMMIT" | sed -n 's/.*_//; s/.dmg//p')
-            git commit -m "CI: Add ADFinder build ${BUILD_NUMBER}"
-            git push origin master
-          else
-            echo "No new file or deletions to commit."
-          fi
+          arch="$(uname -m)"
+          xcodebuild test -project Amiga/Tools/ADFinder/ADFinder.xcodeproj -scheme ADFinder -configuration Debug -destination 'platform=macOS' -derivedDataPath "$PWD/.artifacts/adfinder-derived" ARCHS="$arch" ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO ADFLIB_VERIFIED_SOURCE_ROOT="$ADFLIB_SOURCE_ROOT" -clonedSourcePackagesDirPath "$SPM_ROOT" -disableAutomaticPackageResolution
+          ADFLIB_VERIFIED_SOURCE_ROOT="$ADFLIB_SOURCE_ROOT" ADFLIB_SWIFTPM_SOURCE_PACKAGES="$SPM_ROOT" bash Amiga/Tools/ADFinder/distribution/build_and_package.sh --unsigned --output "$PWD/.artifacts/adfinder-packages" --include-source
+      - uses: actions/upload-artifact@v4
+        with:
+          name: adfinder-${{ matrix.runner }}
+          path: .artifacts/adfinder-packages
+          if-no-files-found: error

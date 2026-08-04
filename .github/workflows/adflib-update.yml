@@ -1,0 +1,439 @@
+name: Coordinated stable ADFlib update
+
+on:
+  schedule:
+    - cron: "23 7 * * 2"
+  workflow_dispatch:
+    inputs:
+      mode:
+        required: true
+        type: choice
+        default: production
+        options: [production, fixture-noop, fixture-upgrade, fixture-failure, recover-owned]
+      recovery_action:
+        required: false
+        type: string
+        default: ""
+      observed_lease_sha:
+        required: false
+        type: string
+      observed_ref_sha:
+        required: false
+        type: string
+      observed_pr_head_sha:
+        required: false
+        type: string
+      observed_pr_number:
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: adflib-stable-update
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    outputs:
+      default_sha: ${{ steps.authority.outputs.default_sha }}
+      mode: ${{ steps.authority.outputs.mode }}
+      authority_digest: ${{ steps.authority.outputs.authority_digest }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: master
+          persist-credentials: false
+      - name: Require reviewed automation authority before loading settings credentials
+        run: |
+          set -euo pipefail
+          test -f .github/adflib-automation-policy.json || { printf '%s\n' 'external_authority_prerequisite_missing: signed receipt, literal approver team/environment, CODEOWNERS, rulesets, App installation/permissions, Actions PR setting'; exit 1; }
+          python3 Amiga/Tools/build-support/adflib/stable_update_policy.py schema --policy .github/adflib-automation-policy.json
+      - id: authority
+        env:
+          REPOSITORY: ${{ github.repository }}
+          REQUESTED_MODE: ${{ inputs.mode }}
+          APPROVER_TEAM: ${{ vars.ADFLIB_AUTOMATION_APPROVER_TEAM }}
+          APP_ID: ${{ vars.ADFLIB_AUTOMATION_APP_ID }}
+          AUTHORITY_ALLOWED_SIGNER: ${{ vars.ADFLIB_AUTHORITY_ALLOWED_SIGNER }}
+          AUTHORITY_FINGERPRINT: ${{ vars.ADFLIB_AUTHORITY_FINGERPRINT }}
+          AUTHORITY_IDENTITY: ${{ vars.ADFLIB_AUTHORITY_IDENTITY }}
+        run: |
+          set -euo pipefail
+          test -n "$APPROVER_TEAM"; test -n "$APP_ID"; test -n "$AUTHORITY_ALLOWED_SIGNER"; test -n "$AUTHORITY_FINGERPRINT"; test -n "$AUTHORITY_IDENTITY"
+          printf '%s\n' "$AUTHORITY_ALLOWED_SIGNER" > "$RUNNER_TEMP/adflib-authority-allowed-signers"
+          authority_digest="$(python3 Amiga/Tools/build-support/adflib/stable_update_settings.py --repository "$REPOSITORY" --policy .github/adflib-automation-policy.json --output "$RUNNER_TEMP/adflib-settings-snapshot.json" --allowed-signers "$RUNNER_TEMP/adflib-authority-allowed-signers" --identity "$AUTHORITY_IDENTITY" --fingerprint "$AUTHORITY_FINGERPRINT" <<'ADFLIB_SETTINGS_TOKEN'
+          ${{ secrets.ADFLIB_SETTINGS_READ_TOKEN }}
+          ADFLIB_SETTINGS_TOKEN
+          )"
+          master="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["trusted_master_sha"])' "$RUNNER_TEMP/adflib-settings-snapshot.json")"
+          [[ "$master" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$master"
+          [[ "$authority_digest" =~ ^[0-9a-f]{64}$ ]]
+          python3 Amiga/Tools/build-support/adflib/stable_update_policy.py validate --policy .github/adflib-automation-policy.json --snapshot "$RUNNER_TEMP/adflib-settings-snapshot.json"
+          mode="${REQUESTED_MODE:-production}"
+          if [[ "${{ github.event_name }}" == workflow_dispatch && "$mode" != production && "$mode" != recover-owned ]]; then
+            test '${{ github.sha }}' = "$master"
+            test '${{ github.workflow_ref }}' = "$REPOSITORY/.github/workflows/adflib-update.yml@$master"
+          fi
+          echo "default_sha=$master" >> "$GITHUB_OUTPUT"; echo "mode=$mode" >> "$GITHUB_OUTPUT"; echo "authority_digest=$authority_digest" >> "$GITHUB_OUTPUT"
+      - env:
+          MODE: ${{ steps.authority.outputs.mode }}
+          RECOVERY_ACTION: ${{ inputs.recovery_action }}
+          OBSERVED_LEASE_SHA: ${{ inputs.observed_lease_sha }}
+          OBSERVED_REF_SHA: ${{ inputs.observed_ref_sha }}
+          OBSERVED_PR_HEAD_SHA: ${{ inputs.observed_pr_head_sha }}
+          OBSERVED_PR_NUMBER: ${{ inputs.observed_pr_number }}
+        run: |
+          set -euo pipefail
+          python3 Amiga/Tools/build-support/adflib/stable_update_coordinator.py validate-dispatch --mode "$MODE" --recovery-action "$RECOVERY_ACTION" --observed-lease-sha "$OBSERVED_LEASE_SHA" --observed-ref-sha "$OBSERVED_REF_SHA" --observed-pr-head-sha "$OBSERVED_PR_HEAD_SHA" --observed-pr-number "$OBSERVED_PR_NUMBER"
+
+  approval:
+    needs: preflight
+    if: github.event_name == 'workflow_dispatch' && inputs.mode != 'production'
+    runs-on: ubuntu-24.04
+    environment: adflib-verification
+    permissions:
+      contents: read
+    steps:
+      - run: test '${{ needs.preflight.outputs.default_sha }}' = '${{ github.sha }}'
+
+  candidate:
+    needs: [preflight, approval]
+    if: always() && needs.preflight.result == 'success' && needs.preflight.outputs.mode != 'recover-owned' && (needs.approval.result == 'success' || needs.approval.result == 'skipped')
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    outputs:
+      changed: ${{ steps.resolve.outputs.changed }}
+      candidate_sha: ${{ steps.resolve.outputs.candidate_sha }}
+      version: ${{ steps.identity.outputs.version }}
+      tag: ${{ steps.identity.outputs.tag }}
+      commit: ${{ steps.identity.outputs.commit }}
+      tree_sha: ${{ steps.identity.outputs.tree_sha }}
+      url: ${{ steps.identity.outputs.url }}
+      tree_manifest_sha256: ${{ steps.identity.outputs.tree_manifest_sha256 }}
+      transport_sha256: ${{ steps.bundle.outputs.transport_sha256 }}
+      artifact_id: ${{ steps.upload.outputs.artifact-id }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ needs.preflight.outputs.default_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - id: resolve
+        env:
+          MODE: ${{ needs.preflight.outputs.mode }}
+        run: |
+          set -euo pipefail
+          if [[ "$MODE" == fixture-noop ]]; then echo 'changed=false' >> "$GITHUB_OUTPUT"; exit 0; fi
+          if [[ "$MODE" == production ]]; then
+            set +e; python3 Amiga/Tools/build-support/adflib/update_adflib.py > "$RUNNER_TEMP/updater.json"; status=$?; set -e
+            result="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["status"])' < "$RUNNER_TEMP/updater.json")"
+            test "$result" != license_review_required; test "$status" = 0
+            test "$(git diff --name-only | tr -d '\n')" = Amiga/Tools/build-support/adflib/ADFlibDependency.cmake
+            git config user.name adflib-automation-app; git config user.email adflib-automation-app@users.noreply.github.com
+            git add Amiga/Tools/build-support/adflib/ADFlibDependency.cmake; git commit -m 'deps(adflib): prepare stable candidate'
+          else
+            git config user.name adflib-fixture; git config user.email adflib-fixture@users.noreply.github.com
+            git commit --allow-empty -m "test(adflib): $MODE candidate"
+          fi
+          echo 'changed=true' >> "$GITHUB_OUTPUT"; echo "candidate_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - id: identity
+        if: steps.resolve.outputs.changed == 'true'
+        run: |
+          python3 - "$GITHUB_OUTPUT" <<'PY'
+          import pathlib,re,sys
+          text=pathlib.Path('Amiga/Tools/build-support/adflib/ADFlibDependency.cmake').read_text()
+          fields=dict(re.findall(r'^set\((ADFLIB_[A-Z0-9_]+) "([^"]+)"\)$',text,re.M))
+          for output,field in {'version':'ADFLIB_VERSION','tag':'ADFLIB_TAG','commit':'ADFLIB_COMMIT','tree_sha':'ADFLIB_TREE_SHA','url':'ADFLIB_ARCHIVE_URL','tree_manifest_sha256':'ADFLIB_TREE_MANIFEST_SHA256'}.items():
+              pathlib.Path(sys.argv[1]).open('a').write(f'{output}={fields[field]}\n')
+          PY
+      - id: bundle
+        if: steps.resolve.outputs.changed == 'true'
+        env:
+          CHANNEL: stable
+          OWNER_REPO: adflib/ADFlib
+          VERSION: ${{ steps.identity.outputs.version }}
+          TAG: ${{ steps.identity.outputs.tag }}
+          COMMIT: ${{ steps.identity.outputs.commit }}
+          TREE_SHA: ${{ steps.identity.outputs.tree_sha }}
+          ARCHIVE_URL: ${{ steps.identity.outputs.url }}
+          TREE_MANIFEST_SHA256: ${{ steps.identity.outputs.tree_manifest_sha256 }}
+          CANDIDATE_COMMIT: ${{ steps.resolve.outputs.candidate_sha }}
+          MODE: ${{ needs.preflight.outputs.mode }}
+        run: |
+          set -euo pipefail
+          mkdir candidate-transport; git update-ref refs/heads/adflib-candidate/${GITHUB_RUN_ID} '${{ steps.resolve.outputs.candidate_sha }}'
+          git bundle create candidate-transport/candidate.bundle refs/heads/adflib-candidate/${GITHUB_RUN_ID}
+          digest="$(sha256sum candidate-transport/candidate.bundle | cut -d' ' -f1)"; printf '%s  candidate.bundle\n' "$digest" > candidate-transport/bundle.sha256
+          BUNDLE_SHA256="$digest" python3 - <<'PY'
+          import json, os, pathlib
+          identity = {"channel": os.environ["CHANNEL"], "owner_repo": os.environ["OWNER_REPO"], "version": os.environ["VERSION"], "tag": os.environ["TAG"], "commit": os.environ["COMMIT"], "tree_sha": os.environ["TREE_SHA"], "url": os.environ["ARCHIVE_URL"], "tree_manifest_sha256": os.environ["TREE_MANIFEST_SHA256"], "transport_sha256": os.environ["BUNDLE_SHA256"]}
+          payload = {"bundle_sha256": os.environ["BUNDLE_SHA256"], "candidate_commit": os.environ["CANDIDATE_COMMIT"], "canonical_identity": identity, "schema": "adflib-consumer-bundle/v1"}
+          if os.environ["MODE"] == "fixture-failure":
+              payload["candidate_commit"] = "0" * 40
+          pathlib.Path("candidate-transport/candidate-identity.json").write_text(json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n")
+          PY
+          echo "transport_sha256=$digest" >> "$GITHUB_OUTPUT"
+      - id: upload
+        if: steps.resolve.outputs.changed == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: adflib-candidate-${{ github.run_id }}
+          path: candidate-transport
+          retention-days: 1
+
+  reconcile:
+    needs: [preflight, approval]
+    if: always() && needs.preflight.result == 'success' && needs.preflight.outputs.authority_digest != '' && (needs.approval.result == 'success' || needs.approval.result == 'skipped') && (needs.preflight.outputs.mode == 'production' || needs.preflight.outputs.mode == 'recover-owned')
+    runs-on: ubuntu-24.04
+    environment: adflib-verification
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/create-github-app-token@a8d616148505b5069dccd32f177bb87d7f39123b
+        id: token
+        with:
+          app-id: ${{ vars.ADFLIB_AUTOMATION_APP_ID }}
+          private-key: ${{ secrets.ADFLIB_AUTOMATION_APP_PRIVATE_KEY }}
+          owner: ${{ vars.ADFLIB_AUTOMATION_APP_INSTALLATION_OWNER }}
+          permission-contents: write
+          permission-actions: read
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ needs.preflight.outputs.default_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - env:
+          APP_TOKEN: ${{ steps.token.outputs.token }}
+        run: |
+          set -euo pipefail
+          socket="$RUNNER_TEMP/adflib-token.sock"; printf '%s' "$APP_TOKEN" | python3 Amiga/Tools/build-support/adflib/adflib_credential_broker.py "$socket" & broker=$!; unset APP_TOKEN
+          while [[ ! -S "$socket" ]]; do kill -0 "$broker"; done; trap 'kill "$broker"; wait "$broker" || true' EXIT
+          python3 Amiga/Tools/build-support/adflib/stable_update_github.py reconcile --repository "$GITHUB_REPOSITORY" --worktree "$GITHUB_WORKSPACE" --socket "$socket" --app-id '${{ vars.ADFLIB_AUTOMATION_APP_ID }}'
+
+  validation-ref:
+    needs: [preflight, candidate, reconcile]
+    if: needs.candidate.outputs.changed == 'true' && needs.preflight.outputs.mode == 'production' && needs.preflight.outputs.authority_digest != '' && needs.reconcile.result == 'success'
+    runs-on: ubuntu-24.04
+    environment: adflib-verification
+    permissions:
+      contents: read
+    outputs:
+      lease_ref: ${{ steps.create.outputs.lease_ref }}
+      validation_ref: ${{ steps.create.outputs.validation_ref }}
+    steps:
+      - uses: actions/create-github-app-token@a8d616148505b5069dccd32f177bb87d7f39123b
+        id: token
+        with:
+          app-id: ${{ vars.ADFLIB_AUTOMATION_APP_ID }}
+          private-key: ${{ secrets.ADFLIB_AUTOMATION_APP_PRIVATE_KEY }}
+          owner: ${{ vars.ADFLIB_AUTOMATION_APP_INSTALLATION_OWNER }}
+          permission-contents: write
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: adflib-candidate-${{ github.run_id }}
+          path: candidate-transport
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ needs.preflight.outputs.default_sha }}
+          path: controls
+          persist-credentials: false
+      - id: create
+        env:
+          APP_TOKEN: ${{ steps.token.outputs.token }}
+        run: |
+          set -euo pipefail
+          git clone --no-checkout --no-local candidate-transport/candidate.bundle candidate; git -C candidate checkout --detach '${{ needs.candidate.outputs.candidate_sha }}'
+          cp -R controls/Amiga/Tools/build-support/adflib candidate/Amiga/Tools/build-support/
+          python3 - '${{ needs.candidate.outputs.candidate_sha }}' '${{ needs.candidate.outputs.version }}' '${{ needs.candidate.outputs.tag }}' '${{ needs.candidate.outputs.commit }}' '${{ needs.candidate.outputs.tree_sha }}' '${{ needs.candidate.outputs.tree_manifest_sha256 }}' > candidate.json <<'PY'
+          import json,sys
+          print(json.dumps({'tip':sys.argv[1],'version':sys.argv[2],'tag':sys.argv[3],'commit':sys.argv[4],'tree':sys.argv[5],'tree_manifest_sha256':sys.argv[6],'creator_run_id':int(__import__('os').environ['GITHUB_RUN_ID']),'updater_run_url':f"https://github.com/{__import__('os').environ['GITHUB_REPOSITORY']}/actions/runs/{__import__('os').environ['GITHUB_RUN_ID']}",'workflow_source_sha':'${{ needs.preflight.outputs.default_sha }}','results':['send2adf-arm64','send2adf-x86_64','send2adf-linux','adfinder-arm64','adfinder-x86_64']}))
+          PY
+          socket="$RUNNER_TEMP/adflib-token.sock"; printf '%s' "$APP_TOKEN" | python3 controls/Amiga/Tools/build-support/adflib/adflib_credential_broker.py "$socket" & broker=$!; unset APP_TOKEN
+          while [[ ! -S "$socket" ]]; do kill -0 "$broker"; done; trap 'kill "$broker"; wait "$broker" || true' EXIT
+          refs="$(python3 controls/Amiga/Tools/build-support/adflib/stable_update_github.py validation-create --candidate candidate.json --nonce '${{ github.run_attempt }}' --repository "$GITHUB_REPOSITORY" --worktree "$GITHUB_WORKSPACE/candidate" --socket "$socket" --app-id '${{ vars.ADFLIB_AUTOMATION_APP_ID }}')"
+          python3 - "$refs" "$GITHUB_OUTPUT" <<'PY'
+          import json,pathlib,sys
+          lease,validation=json.loads(sys.argv[1]); pathlib.Path(sys.argv[2]).write_text(f'lease_ref={lease}\nvalidation_ref={validation}\n')
+          PY
+
+  validate:
+    needs: [preflight, candidate, validation-ref]
+    if: always() && needs.candidate.outputs.changed == 'true' && (needs.validation-ref.result == 'success' || (needs.validation-ref.result == 'skipped' && needs.preflight.outputs.mode != 'production'))
+    permissions:
+      contents: read
+    uses: ./.github/workflows/adflib-consumers-ci.yml
+    with:
+      candidate_ref: ${{ needs.preflight.outputs.mode == 'production' && needs.candidate.outputs.candidate_sha || '' }}
+      candidate_bundle_artifact: ${{ needs.preflight.outputs.mode == 'production' && '' || format('adflib-candidate-{0}', github.run_id) }}
+      candidate_bundle_run_id: ${{ github.run_id }}
+      candidate_bundle_artifact_id: ${{ needs.candidate.outputs.artifact_id }}
+      candidate_bundle_sha256: ${{ needs.candidate.outputs.transport_sha256 }}
+      candidate_bundle_commit: ${{ needs.candidate.outputs.candidate_sha }}
+      channel: stable
+      effective_owner_repo: adflib/ADFlib
+      effective_version: ${{ needs.candidate.outputs.version }}
+      effective_tag: ${{ needs.candidate.outputs.tag }}
+      effective_commit: ${{ needs.candidate.outputs.commit }}
+      effective_tree_sha: ${{ needs.candidate.outputs.tree_sha }}
+      effective_url: ${{ needs.candidate.outputs.url }}
+      effective_tree_manifest_sha256: ${{ needs.candidate.outputs.tree_manifest_sha256 }}
+      transport_sha256: ${{ needs.candidate.outputs.transport_sha256 }}
+      upload_failure_logs: true
+      verification_nonce: ${{ format('{0}-{1}', github.run_id, github.run_attempt) }}
+      compatibility_fixture: none
+
+  cleanup:
+    needs: [preflight, candidate, validation-ref, validate]
+    if: always() && needs.preflight.outputs.authority_digest != '' && needs.validation-ref.result == 'success'
+    runs-on: ubuntu-24.04
+    environment: adflib-verification
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/create-github-app-token@a8d616148505b5069dccd32f177bb87d7f39123b
+        id: token
+        with:
+          app-id: ${{ vars.ADFLIB_AUTOMATION_APP_ID }}
+          private-key: ${{ secrets.ADFLIB_AUTOMATION_APP_PRIVATE_KEY }}
+          owner: ${{ vars.ADFLIB_AUTOMATION_APP_INSTALLATION_OWNER }}
+          permission-contents: write
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ needs.preflight.outputs.default_sha }}
+          persist-credentials: false
+      - env:
+          APP_TOKEN: ${{ steps.token.outputs.token }}
+        run: |
+          set -euo pipefail
+          python3 - '${{ needs.candidate.outputs.candidate_sha }}' > candidate.json <<'PY'
+          import json,sys
+          print(json.dumps({'tip':sys.argv[1],'version':'${{ needs.candidate.outputs.version }}','tag':'${{ needs.candidate.outputs.tag }}','commit':'${{ needs.candidate.outputs.commit }}','tree':'${{ needs.candidate.outputs.tree_sha }}','tree_manifest_sha256':'${{ needs.candidate.outputs.tree_manifest_sha256 }}','creator_run_id':int('${{ github.run_id }}'),'updater_run_url':'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}','workflow_source_sha':'${{ needs.preflight.outputs.default_sha }}','results':['send2adf-arm64','send2adf-x86_64','send2adf-linux','adfinder-arm64','adfinder-x86_64']}))
+          PY
+          socket="$RUNNER_TEMP/adflib-token.sock"; printf '%s' "$APP_TOKEN" | python3 Amiga/Tools/build-support/adflib/adflib_credential_broker.py "$socket" & broker=$!; unset APP_TOKEN
+          while [[ ! -S "$socket" ]]; do kill -0 "$broker"; done; trap 'kill "$broker"; wait "$broker" || true' EXIT
+          python3 Amiga/Tools/build-support/adflib/stable_update_github.py validation-cleanup --candidate candidate.json --lease-ref '${{ needs.validation-ref.outputs.lease_ref }}' --validation-ref '${{ needs.validation-ref.outputs.validation_ref }}' --repository "$GITHUB_REPOSITORY" --worktree "$GITHUB_WORKSPACE" --socket "$socket" --app-id '${{ vars.ADFLIB_AUTOMATION_APP_ID }}'
+
+  snapshot-pr-runs:
+    needs: [preflight, candidate, validate, cleanup]
+    if: needs.preflight.outputs.mode == 'production' && needs.preflight.outputs.authority_digest != '' && needs.validate.result == 'success' && needs.cleanup.result == 'success'
+    runs-on: ubuntu-24.04
+    permissions:
+      actions: read
+      contents: read
+    outputs:
+      run_ids: ${{ steps.snapshot.outputs.run_ids }}
+    steps:
+      - id: snapshot
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          ids="$(curl --fail --silent --show-error -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/workflows/adflib-consumers-ci.yml/runs?event=pull_request_target&per_page=100" | python3 -c 'import json,sys; print(",".join(str(run["id"]) for run in json.load(sys.stdin)["workflow_runs"]))')"
+          echo "run_ids=$ids" >> "$GITHUB_OUTPUT"
+
+  promote:
+    needs: [preflight, candidate, validate, cleanup, snapshot-pr-runs]
+    if: needs.preflight.outputs.mode == 'production' && needs.preflight.outputs.authority_digest != '' && needs.validate.result == 'success' && needs.cleanup.result == 'success'
+    runs-on: ubuntu-24.04
+    environment: adflib-verification
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/create-github-app-token@a8d616148505b5069dccd32f177bb87d7f39123b
+        id: token
+        with:
+          app-id: ${{ vars.ADFLIB_AUTOMATION_APP_ID }}
+          private-key: ${{ secrets.ADFLIB_AUTOMATION_APP_PRIVATE_KEY }}
+          owner: ${{ vars.ADFLIB_AUTOMATION_APP_INSTALLATION_OWNER }}
+          permission-contents: write
+          permission-pull-requests: write
+          permission-actions: read
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ needs.preflight.outputs.default_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - env:
+          APP_TOKEN: ${{ steps.token.outputs.token }}
+        run: |
+          set -euo pipefail
+          python3 - > candidate.json <<'PY'
+          import json
+          print(json.dumps({'tip':'${{ needs.candidate.outputs.candidate_sha }}','version':'${{ needs.candidate.outputs.version }}','tag':'${{ needs.candidate.outputs.tag }}','commit':'${{ needs.candidate.outputs.commit }}','tree':'${{ needs.candidate.outputs.tree_sha }}','tree_manifest_sha256':'${{ needs.candidate.outputs.tree_manifest_sha256 }}','creator_run_id':int('${{ github.run_id }}'),'updater_run_url':'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}','workflow_source_sha':'${{ needs.preflight.outputs.default_sha }}','results':['send2adf-arm64=success','send2adf-x86_64=success','send2adf-linux=success','adfinder-arm64=success','adfinder-x86_64=success']}))
+          PY
+          socket="$RUNNER_TEMP/adflib-token.sock"; printf '%s' "$APP_TOKEN" | python3 Amiga/Tools/build-support/adflib/adflib_credential_broker.py "$socket" & broker=$!; unset APP_TOKEN
+          while [[ ! -S "$socket" ]]; do kill -0 "$broker"; done; trap 'kill "$broker"; wait "$broker" || true' EXIT
+          python3 Amiga/Tools/build-support/adflib/stable_update_github.py promote --candidate candidate.json --repository "$GITHUB_REPOSITORY" --worktree "$GITHUB_WORKSPACE" --socket "$socket" --app-id '${{ vars.ADFLIB_AUTOMATION_APP_ID }}'
+
+  supplemental-pr-run:
+    needs: [preflight, candidate, snapshot-pr-runs, promote]
+    if: needs.preflight.outputs.authority_digest != '' && needs.promote.result == 'success'
+    runs-on: ubuntu-24.04
+    environment: adflib-verification
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/create-github-app-token@a8d616148505b5069dccd32f177bb87d7f39123b
+        id: token
+        with:
+          app-id: ${{ vars.ADFLIB_AUTOMATION_APP_ID }}
+          private-key: ${{ secrets.ADFLIB_AUTOMATION_APP_PRIVATE_KEY }}
+          owner: ${{ vars.ADFLIB_AUTOMATION_APP_INSTALLATION_OWNER }}
+          permission-actions: read
+          permission-contents: write
+          permission-pull-requests: write
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ needs.preflight.outputs.default_sha }}
+          persist-credentials: false
+      - env:
+          APP_TOKEN: ${{ steps.token.outputs.token }}
+          PRE_RUN_IDS: ${{ needs.snapshot-pr-runs.outputs.run_ids }}
+        run: |
+          set -euo pipefail
+          python3 - > candidate.json <<'PY'
+          import json
+          print(json.dumps({'tip':'${{ needs.candidate.outputs.candidate_sha }}','version':'${{ needs.candidate.outputs.version }}','tag':'${{ needs.candidate.outputs.tag }}','commit':'${{ needs.candidate.outputs.commit }}','tree':'${{ needs.candidate.outputs.tree_sha }}','tree_manifest_sha256':'${{ needs.candidate.outputs.tree_manifest_sha256 }}','creator_run_id':int('${{ github.run_id }}'),'updater_run_url':'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}','workflow_source_sha':'${{ needs.preflight.outputs.default_sha }}','results':['send2adf-arm64=success','send2adf-x86_64=success','send2adf-linux=success','adfinder-arm64=success','adfinder-x86_64=success']}))
+          PY
+          socket="$RUNNER_TEMP/adflib-token.sock"; printf '%s' "$APP_TOKEN" | python3 Amiga/Tools/build-support/adflib/adflib_credential_broker.py "$socket" & broker=$!; unset APP_TOKEN
+          while [[ ! -S "$socket" ]]; do kill -0 "$broker"; done; trap 'kill "$broker"; wait "$broker" || true' EXIT
+          for attempt in {1..30}; do
+            if python3 Amiga/Tools/build-support/adflib/stable_update_github.py supplemental --candidate candidate.json --pre-run-ids "$PRE_RUN_IDS" --repository "$GITHUB_REPOSITORY" --worktree "$GITHUB_WORKSPACE" --socket "$socket" --app-id '${{ vars.ADFLIB_AUTOMATION_APP_ID }}'; then exit 0; fi
+            sleep 10
+          done
+          exit 1
+
+  recover-owned:
+    needs: [preflight, approval, reconcile]
+    if: always() && needs.preflight.outputs.authority_digest != '' && needs.preflight.outputs.mode == 'recover-owned' && needs.reconcile.result == 'success'
+    runs-on: ubuntu-24.04
+    environment: adflib-verification
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/create-github-app-token@a8d616148505b5069dccd32f177bb87d7f39123b
+        id: token
+        with:
+          app-id: ${{ vars.ADFLIB_AUTOMATION_APP_ID }}
+          private-key: ${{ secrets.ADFLIB_AUTOMATION_APP_PRIVATE_KEY }}
+          owner: ${{ vars.ADFLIB_AUTOMATION_APP_INSTALLATION_OWNER }}
+          permission-contents: write
+          permission-pull-requests: write
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ needs.preflight.outputs.default_sha }}
+          persist-credentials: false
+      - env:
+          APP_TOKEN: ${{ steps.token.outputs.token }}
+        run: |
+          set -euo pipefail
+          socket="$RUNNER_TEMP/adflib-token.sock"; printf '%s' "$APP_TOKEN" | python3 Amiga/Tools/build-support/adflib/adflib_credential_broker.py "$socket" & broker=$!; unset APP_TOKEN
+          while [[ ! -S "$socket" ]]; do kill -0 "$broker"; done; trap 'kill "$broker"; wait "$broker" || true' EXIT
+          python3 Amiga/Tools/build-support/adflib/stable_update_github.py recover --action '${{ inputs.recovery_action }}' --observed-lease '${{ inputs.observed_lease_sha }}' --observed-branch '${{ inputs.observed_ref_sha }}' --observed-pr '${{ inputs.observed_pr_number }}' --observed-pr-head '${{ inputs.observed_pr_head_sha }}' --repository "$GITHUB_REPOSITORY" --worktree "$GITHUB_WORKSPACE" --socket "$socket" --app-id '${{ vars.ADFLIB_AUTOMATION_APP_ID }}'
