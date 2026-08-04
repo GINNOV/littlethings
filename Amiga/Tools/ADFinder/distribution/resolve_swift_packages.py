@@ -94,6 +94,7 @@ def run(arguments: argparse.Namespace) -> int:
             str(source_packages),
         ],
         check=True,
+        stdout=sys.stderr if arguments.print_source_packages_path else None,
     )
     checkout = source_packages / "checkouts/Sparkle"
     head = subprocess.run(
