@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+@testable import ADFinder
 
 @MainActor
 struct ADFlibBridgeCompatibilityTests {
