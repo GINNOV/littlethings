@@ -13,7 +13,7 @@ struct ADFlibBridgeCompatibilityTests {
         let manifestVersion = try #require(identity["version"] as? String)
         let service = ADFService()
         let imageURL = try #require(service.createNewBlankADF(volumeName: "BRIDGETEST", fsType: FS_TYPE_OFS_SWIFT, bootBlockType: .generic))
-        let inputURL = FileManager.default.temporaryDirectory.appendingPathComponent("known-\(UUID().uuidString).txt")
+        let inputURL = FileManager.default.temporaryDirectory.appendingPathComponent("known.txt")
         let expected = Data("known bridge payload\n".utf8)
         try expected.write(to: inputURL)
         defer {
