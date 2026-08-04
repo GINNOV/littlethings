@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://littlethings.invalid/send2adf-final-lane-v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["attempt_id", "capability_id", "files", "final_sha", "lane", "probe", "protocol", "status"],
+  "properties": {
+    "attempt_id": {"type": "string", "pattern": "^[0-9a-f-]{36}$"},
+    "capability_id": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
+    "files": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["path", "sha256"], "properties": {"path": {"type": "string"}, "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}}},
+    "final_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "lane": {"enum": ["compliance", "quality", "manual-qa", "scope"]},
+    "probe": {"type": ["string", "null"]},
+    "protocol": {"const": "send2adf-final-verification/v1"},
+    "status": {"const": "untrusted_submission"}
+  }
+}

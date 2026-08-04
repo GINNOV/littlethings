@@ -1,0 +1,59 @@
+{
+  "workflow": "adflib-consumers-ci.yml",
+  "workflow_kind": "consumer",
+  "nonce": "123e4567-e89b-42d3-a456-426614174000",
+  "head_sha": "cccccccccccccccccccccccccccccccccccccccc",
+  "workflow_source_sha": "dddddddddddddddddddddddddddddddddddddddd",
+  "actor": "verification-actor",
+  "evidence_name": "consumer-contract.json",
+  "prior_runs": [
+    {
+      "id": 101,
+      "workflow": "adflib-consumers-ci.yml",
+      "event": "workflow_dispatch",
+      "head_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "actor": "verification-actor",
+      "name": "consumer prior-nonce"
+    }
+  ],
+  "runs_after_dispatch": [
+    {
+      "id": 101,
+      "workflow": "adflib-consumers-ci.yml",
+      "event": "workflow_dispatch",
+      "head_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "workflow_source_sha": "dddddddddddddddddddddddddddddddddddddddd",
+      "actor": "verification-actor",
+      "name": "consumer prior-nonce",
+      "status": "completed",
+      "conclusion": "success",
+      "artifacts": {}
+    },
+    {
+      "id": 102,
+      "workflow": "adflib-consumers-ci.yml",
+      "event": "workflow_dispatch",
+      "head_sha": "cccccccccccccccccccccccccccccccccccccccc",
+      "workflow_source_sha": "dddddddddddddddddddddddddddddddddddddddd",
+      "actor": "verification-actor",
+      "name": "consumer 123e4567-e89b-42d3-a456-426614174000",
+      "status": "completed",
+      "conclusion": "success",
+      "artifacts": {
+        "consumer-contract.json": "{\"matrix_legs\":5,\"status\":\"success\"}\n"
+      }
+    },
+    {
+      "id": 103,
+      "workflow": "adflib-consumers-ci.yml",
+      "event": "workflow_dispatch",
+      "head_sha": "cccccccccccccccccccccccccccccccccccccccc",
+      "workflow_source_sha": "dddddddddddddddddddddddddddddddddddddddd",
+      "actor": "other-actor",
+      "name": "consumer 123e4567-e89b-42d3-a456-426614174000",
+      "status": "completed",
+      "conclusion": "success",
+      "artifacts": {}
+    }
+  ]
+}

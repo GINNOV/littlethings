@@ -1,0 +1,7 @@
+cmd(){
+    $adfinfo "$dumpFile"
+}
+
+comment(){
+    echo "adfinfo ${dumpFile} (not formatted device)"
+}

@@ -1,152 +1,96 @@
-# Compiling file2adf with ADFlib on macOS (Apple Silicon & Intel)
+# Shared ADFlib dependency contract
 
-This guide provides step-by-step instructions to compile the `file2adf` utility, which depends on the `ADFlib` library, on a macOS system. These instructions should work for both Apple Silicon (ARM64) and Intel (x86_64) Macs.
+`send2adf` and ADFinder have one dependency definition:
+`Amiga/Tools/build-support/adflib/ADFlibDependency.cmake`. Do not add a second
+version, commit, URL, checksum, vendored archive, prebuilt library, package pin,
+or system-prefix fallback to either consumer.
 
-## Prerequisites
+The manifest binds the stable version and tag to the exact upstream commit,
+Git tree, canonical archive URL, canonical tree-manifest digest, verified
+transport and local-cache digests, patch digest, and reviewed symlink
+materialization policy. `stage_adflib.py` rejects redirects outside the exact
+contract, traversal, special files, submodules, unreviewed symlinks, truncated
+trees, tree mismatches, archive mismatches, and patch drift.
 
-Before you begin, ensure you have the following installed:
+## Consumer builds
 
-1.  **Xcode Command Line Tools:**
-    These tools include the Clang compiler, `make`, and other essential development utilities. If you haven't installed them yet, open Terminal and run:
-    ```bash
-    xcode-select --install
-    ```
+From `Amiga/Tools/send2adf`, use the `ci`, `production`, `release`, `asan`, or
+`asan-ubsan` CMake preset. The `production` and `release` presets prohibit
+`SEND2ADF_TESTING` and `ADFLIB_CANARY`. Install with `make install`; no global
+ADFlib installation is read or modified.
 
-2.  **Homebrew:**
-    Homebrew is a package manager for macOS that simplifies the installation of software. If you don't have it, install it by following the instructions on [brew.sh](https://brew.sh/).
+ADFinder's Xcode build phase invokes `build-for-xcode.sh` with a verified source
+root, output root, `Debug` or `Release`, and `arm64` or `x86_64`. The builder
+creates an architecture-qualified private `libadf.a`, headers, identity,
+transport, build stamp, and `adflib-provenance.json`. Stable builds reject all
+test overrides. Canary builds require `ADFLIB_CANARY=ON`,
+`ADFLIB_CANARY_CI=1`, a complete generated manifest, and byte-identical
+identity evidence.
 
-3.  **Autoconf, Automake, Libtool, Gettext (via Homebrew):**
-    These tools are required to generate the `configure` script for ADFlib. Install them using Homebrew:
-    ```bash
-    brew install autoconf automake libtool gettext
-    ```
-    You might also need to ensure `gettext` is in your PATH. Homebrew will usually provide instructions if this is needed (e.g., `echo 'export PATH="/opt/homebrew/opt/gettext/bin:$PATH"' >> ~/.zshrc`).
+The real ADFinder app and package require a supported macOS/Xcode host and the
+pinned offline SwiftPM closure. Xcode 26.6 is a known blocker on this host, so a
+local standalone derived ADFlib/lifecycle/package fixture is evidence only; it
+must not be represented as a successful app build. Hosted macOS arm64 and
+x86_64 validation remains mandatory.
 
-4.  **Zlib:**
-    ADFlib depends on zlib. While macOS comes with a version, installing it via Homebrew ensures you have a compatible version for the build.
-    ```bash
-    brew install zlib
-    ```
+## Stable update policy
 
-## Step 1: Download and Compile ADFlib
+Run `python3 Amiga/Tools/build-support/adflib/update_adflib.py --check` from the
+repository root to inspect the latest stable release. Exit 0 means current or
+no stable candidate, exit 1 means an approved update is available, exit 2 is a
+contract error, and exit 3 means legal review is required. `--dry-run` never
+edits the manifest. A real update may replace only the six candidate identity
+fields after an exact license-ledger entry and post-merge receipt approve the
+candidate inventory and corresponding-source digest.
 
-1.  **Clone the ADFlib Repository:**
-```bash
-git clone https://github.com/adflib/ADFlib.git
-cd ADFlib
-```
+Scheduled automation creates an updater-owned candidate bundle, validates both
+consumers on three send2adf and two ADFinder native legs, and opens or refreshes
+one manifest-only PR at the exact tested tip. The automation application may
+write only its owned refs, lease records, and PR. It cannot push or merge the
+default branch. A current identity is a no-op and leaves no ref, lease, PR, or
+artifact.
 
-2.  **Generate the Configure Script:**
-    Run the `autogen.sh` script. This might require you to `chmod +x autogen.sh` first if it's not executable.
-    ```bash
-    sh autogen.sh
-    ```
-    If this fails, ensure `autoconf`, `automake`, and `libtool` are correctly installed and in your PATH.
+Canary automation follows the latest upstream default-branch commit with a
+complete identity adapter. It never mutates the stable manifest, opens a PR,
+uploads a release artifact, or packages either consumer. An incompatible
+candidate must produce a deterministic red preflight before build mutation.
 
-3.  **Create a Build Directory and Configure:**
-    It's good practice to build in a separate directory.
-    ```bash
-    mkdir build
-    cd build
-    ```
-    Now, run the `configure` script. We'll specify the architecture and an installation prefix.
-    * For **Apple Silicon (ARM64) Macs**:
-        ```bash
-        ../configure CFLAGS="-arch arm64 -I/opt/homebrew/include" \
-                     CXXFLAGS="-arch arm64 -I/opt/homebrew/include" \
-                     LDFLAGS="-arch arm64 -L/opt/homebrew/lib" \
-                     --prefix=/usr/local/adflib 
-        ```
-    * For **Intel (x86_64) Macs**:
-        ```bash
-        ../configure CFLAGS="-arch x86_64 -I/opt/homebrew/include" \
-                     CXXFLAGS="-arch x86_64 -I/opt/homebrew/include" \
-                     LDFLAGS="-arch x86_64 -L/opt/homebrew/lib" \
-                     --prefix=/usr/local/adflib
-        ```
-    The `-I/opt/homebrew/include` and `-L/opt/homebrew/lib` flags help `configure` find Homebrew-installed dependencies like `zlib`. `/opt/homebrew/` is the default Homebrew prefix on Apple Silicon; for Intel, it's often `/usr/local/`. Adjust if your Homebrew prefix is different.
-    The `--prefix=/usr/local/adflib` means ADFlib will be installed into `/usr/local/adflib`. You can choose a different location, but you'll need to adjust the `Makefile` for `file2adf` accordingly.
+## Maintainer runbook
 
-4.  **Compile ADFlib:**
-    ```bash
-    make
-    ```
-    You can use `make -jN` (where N is the number of CPU cores) to speed up compilation (e.g., `make -j4`).
+- **No-op:** confirm `status=current` or `status=no_stable_candidate` and that no
+  updater-owned ref, lease, PR, or artifact was created.
+- **Approved upgrade:** review the manifest-only diff, candidate bundle and
+  transport digests, license inventory and receipt, five consumer legs, exact
+  tested tip, and two-parent/tree merge proof before merging.
+- **Updater failure:** preserve unowned state; remove only authenticated,
+  updater-owned validation state. Do not edit the production manifest.
+- **Consumer compatibility failure:** keep the stable manifest unchanged,
+  delete the owned validation ref and lease, attach failure evidence, and wait
+  for a new candidate or consumer fix.
+- **Canary failure:** record the read-only failure; do not open a stable PR or
+  create packages.
+- **Release dry-run failure:** discard only the local staging directory. Never
+  create a tag, release, appcast item, or download link from local validation.
+- **Supervisor missing or preflight mismatch:** stop before credentials or
+  dispatch, preserve all manifests and artifacts, install only the independently
+  approved root-owned launcher/toolchain, then start a fresh preflight.
+- **Rollback before merge:** close the owned PR and remove its authenticated
+  branch/lease. **After merge:** open a reviewed manifest-only revert (or
+  forward-fix) PR, validate it through the same five legs, and merge it with the
+  same two-parent/tree proof.
+- **Post-merge final-gate failure:** abort only owned validation state, revoke
+  the dispatch token, open the reviewed revert or forward-fix PR, and start a
+  fresh UUID and evidence directory. Never reuse receipts, nonces, tokens, or
+  evidence directories.
 
-5.  **Install ADFlib:**
-    ```bash
-    sudo make install
-    ```
-    This will copy the compiled library and header files to the directory specified by `--prefix` (e.g., `/usr/local/adflib`).
-
-## Step 2: Compile `file2adf`
-
-1.  **Navigate to your `file2adf` Project Directory:**
-    This is the directory containing `file2adf.c` and the `Makefile`.
-    ```bash
-    cd /path/to/your/file2adf_project 
-    ```
-
-2.  **Ensure the `Makefile` is Correct:**
-    The `Makefile` for `file2adf` should look like this (or similar to the one provided in the Canvas `makefile_file2adf`):
-
-    ```makefile
-    # Makefile for compiling file2adf.c and linking against ADFlib
-
-    ADFLIB_PREFIX=/usr/local/adflib
-    CC=cc
-    CFLAGS=-O2 -I$(ADFLIB_PREFIX)/include/adf
-    LDFLAGS=-L$(ADFLIB_PREFIX)/lib -Wl,-rpath,$(ADFLIB_PREFIX)/lib -ladf
-    TARGET=file2adf
-    SRC=file2adf.c
-    OBJ=$(SRC:.c=.o)
-
-    all: $(TARGET)
-
-    $(TARGET): $(OBJ)
-    	@echo "Linking $(TARGET)..."
-    	$(CC) -o $(TARGET) $(OBJ) $(LDFLAGS)
-    	@echo "$(TARGET) built successfully."
-
-    $(OBJ): $(SRC)
-    	@echo "Compiling $(SRC)..."
-    	$(CC) $(CFLAGS) -c $(SRC) -o $(OBJ)
-
-    clean:
-    	@echo "Cleaning up..."
-    	rm -f $(TARGET) $(OBJ)
-
-    .PHONY: all clean
-    ```
-    Key points in this Makefile:
-    * `ADFLIB_PREFIX` should match the `--prefix` used when installing ADFlib.
-    * `CFLAGS` includes `-I$(ADFLIB_PREFIX)/include/adf` because ADFlib installs its headers in an `adf` subdirectory.
-    * `LDFLAGS` includes `-L$(ADFLIB_PREFIX)/lib` to find the library and `-Wl,-rpath,$(ADFLIB_PREFIX)/lib` to help the executable find the dynamic library at runtime.
-
-3.  **Compile `file2adf`:**
-    ```bash
-    make
-    ```
-
-4.  **Run `file2adf`:**
-    If compilation is successful, you can run your program:
-    ```bash
-    ./file2adf [arguments]
-    ```
+The final verifier is a separate installed security boundary. Repository
+fixtures prove local routing and fail-closed behavior, not installation,
+reviewer approval, credentials, hosted checks, or a release verdict.
 
 ## Troubleshooting
 
-* **`adflib.h` not found:**
-    * Ensure `sudo make install` for ADFlib completed successfully.
-    * Verify that `adflib.h` exists in `/usr/local/adflib/include/adf/` (or your chosen prefix + `/include/adf/`).
-    * Double-check the `CFLAGS` in your `file2adf` Makefile.
-* **Linker errors (library not found, e.g., `-ladf`):**
-    * Ensure `sudo make install` for ADFlib completed successfully.
-    * Verify that `libadf.dylib` (or `libadf.a`) exists in `/usr/local/adflib/lib/`.
-    * Double-check the `LDFLAGS` in your `file2adf` Makefile, especially the `-L` path.
-* **`autogen.sh` errors:**
-    * Make sure `autoconf`, `automake`, `libtool`, and `gettext` are installed via Homebrew and accessible in your PATH.
-* **Permission errors during `sudo make install`:**
-    * Ensure you are running the command with `sudo`. If installing to a system directory like `/usr/local/`, root privileges are required.
-
-Good luck!
+`manifest_invalid`, `source_tree_mismatch`, `transport_digest_mismatch`, and
+`patch_digest_mismatch` mean the immutable inputs disagree; delete only the
+local build/cache directory and restage from the reviewed manifest. A stable
+override or canary-in-production rejection is intentional. Do not bypass it by
+copying headers/libraries or using a system package.

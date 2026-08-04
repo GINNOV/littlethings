@@ -1,0 +1,78 @@
+.TH ADFLS 1 "Sep 2025"
+.SH NAME
+adfls \- list contents of an ADF volume.
+
+.SH SYNOPSIS
+.B adfls
+.RB [ -b ]
+.RB [ -l ]
+.RB [ -h ]
+.RB [ -v ]
+.RB [ -V ]
+.RB [ -p ] \fIvol\fP
+.I <\fIadf_device\fR>
+.RB [ \fIFILE...\fP ]
+.SH DESCRIPTION
+\fBadfls\fR is a filesystem utility allowing to list contents of ADF volumes,
+optionally showing some more detailed properties like size or permissions.
+It shows either the main directory of the volume or, if specified, the
+contents of another directory or just the specified file (or a link).
+.PP
+When called with the \fB-l\fR option, it shows the following properties (in
+that order): access permissions, size (by default in bytes, in blocks if
+ordered so with \fB-b\fR), date and time, type, name and (for
+soft-links) name of the real entry (which can be a file or
+a directory).
+
+The type can be: F (file), D (directory), LF (hard-link
+to a file), LD (hard-link to a directory), LS (soft-link).
+.
+.SH OPTIONS
+A summary of the options.
+.TP
+.B \-b
+Show sizes in blocks.
+
+Note that sizes in blocks include all blocks used, so
+in case of files those are: file header block, data blocks and (if also used)
+file extension blocks. So the total size in blocks, if expressed in bytes
+(meaning: the block size multiplied by the block size, always 512), is always
+larger than the size of the data stored in the file (listed without the -b
+option).
+.TP
+.B \-l
+Use a long listing format.
+.TP
+.B \-h
+Show help.
+.TP
+.B \-p \fIvol\fP
+Specify volume/partition number (counting from 0), default: 0
+.TP
+.B \-v
+Be more verbose.
+.TP
+.B \-V
+Show version.
+
+.SH EXAMPLES
+\fBadfls mydisk.adf\fR
+.RS
+Show list of entries in the main directory on the volume 0 of mydisk.adf
+.RE
+
+\fBadfls -lb -p 1 mydisk.adf devs libs\fR
+.RS
+Show contents of the directories devs and libs on volume 1 of mydisk.adf
+using the long format and display sizes in blocks.
+.RE
+
+.SH SEE ALSO
+.BR adfinfo (1), unadf (1), adflib (3)
+.SH NOTES
+Detailed info about Commodore Amiga filesystems:
+http://lclevy.free.fr/adflib/adf_info.html
+.SH AUTHOR
+\fBadfls\fR was written by \fBTomasz Wolak\fR <tomas.wolak@gmail.com>,
+as a part of the ADFlib (https://github.com/adflib/ADFlib).
+.PP

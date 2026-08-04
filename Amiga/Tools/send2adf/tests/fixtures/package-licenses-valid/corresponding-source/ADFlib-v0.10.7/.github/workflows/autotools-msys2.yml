@@ -1,0 +1,74 @@
+name: autotools-msys2
+
+on:
+  push:
+    branches: [ "master", "devel",
+      "citest",
+      "citest-autotools",
+      "citest-autotools-msys2" ]
+    tags:
+      - '**'
+  pull_request:
+    branches: [ "master", "devel" ]
+
+jobs:
+  msys2:
+#    if: false
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 '{0}'
+    steps:
+    - uses: actions/checkout@v4
+# https://github.com/msys2/setup-msys2
+    - uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        install: autotools diffutils mingw-w64-x86_64-check mingw-w64-x86_64-toolchain
+    - name: autogen
+      run: ./autogen.sh
+    - name: configure
+      run: ./configure --prefix=/tmp/adflib --enable-native-win32
+    - name: make
+      run: make
+    - name: make check
+      #run: ( make check || grep . examples/*.log examples/tests/*.log )
+      run: make check
+#    - name: make distcheck
+#      run: make distcheck
+    - name: make install
+      run: make install
+    - name: check installation
+      run: find /tmp/adflib -iname '*adf*'
+    - name: test installed command-line utils
+      run: ./tests/examples/test_all_examples.sh /tmp/adflib/bin
+    - name: test installed command-line utils (2)
+      run: |
+        echo "'"$GITHUB_WORKSPACE"'"
+        export WORKSPACE_MSYS2=$(echo $GITHUB_WORKSPACE | sed -e 's/\\/\\\\/g')
+        cat tests/config.sh.in_cmake | \
+          sed -e 's@\${PROJECT_BINARY_DIR}@.@' \
+              -e 's@\${PROJECT_SOURCE_DIR}@.@' \
+          > tests/config.sh
+        cat tests/config.sh
+        ./tests/examples2/run_all_tests.sh /tmp/adflib/bin
+    - name: prepare artifacts
+      run: |
+        mv -v /tmp/adflib .
+        mv -v AUTHORS README* COPYING* BUGS* TODO adflib/
+    - uses: actions/upload-artifact@v4
+      with:
+        name: adflib-windows-msys2
+        path: |
+          adflib/
+    - name: store logs from failed tests
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: msys2_autotools_logs_failed_tests
+        path: |
+          tests/*.log
+          tests/examples/*.log
+          tests/examples2/*.log
+          tests/regr/*.log
+          tests/unit/*.log

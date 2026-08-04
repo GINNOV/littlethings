@@ -1,0 +1,96 @@
+
+To do and/or consider (no particular order):
+
+* Optimize writing files
+
+  Currently writing does a lot of updates of the file header block (with
+  adfFileFlush() - which also writes the block and update allocation map).
+  This has some advantages:
+  - less data (blocks) lost on a powercut (only the last, incompletely
+    saved data block is lost in such case)
+  but also some (important) drawbacks:
+  - lower performace
+  - extensive writing on disks (attention with flash drives!)
+  This was done as a relatively quick and safe first implementation, but can
+  (and probably should) be (carefully) improved.
+
+
+* File / file blocks implementation in general
+
+  This is kind of related with the thing above - the file i/o performance
+  could be improved and file state management (probably) could be easier
+  if some file block cache subsystem was added and separated from file.
+
+
+* Review all subsystems and add tests
+
+  In particular, directory cache. But also bitmap allocation code or utilities
+  like undelete.
+
+
+* Implement more disk utilities
+
+  undelete, checkdisk, defragment and similar.
+  (Some functionality maybe can be in the library, but some probably should go
+  to utility programs - like in case of any repair/recovery tools, where
+  algorithms/methods used can differ).
+
+  - undelete is partially done with adfsalvage (and src/adf_salv.c)
+    the main things left are:
+    - add extracting files (do not change the filesystem on ADF, but just
+      save files outside, on the local filesystem)
+    - adf_salv / adfUndelFile: add reverting of adfCreateEntry() in case
+      adfAddInCache() fails
+    - consider moving undelete/salvage functionality from the library
+      to utilities (not sure if this is necessary in the library...)
+
+* Better test "native" (physical) devices
+
+  This is a tricky one and must be done carefully.
+
+  Tested briefly on Linux and Win32 - seem to work fine, but:
+  - more extensive testing would be good
+  - some automatic testing would be even better
+
+  To see if possible to test automatically in CI (it might be not possible in
+  GH actions, it may require eg. a VM (or some special box, dedicate for such
+  purpose).
+
+* Test dircache
+
+  So far, no "real" ADFs (real devices or dumps of such, so ie. not ones
+  created with the ADFlib) with dircache enabled were encountered (only
+  testffs.adf, one of the test images in ADFlib...). So, seemingly no real need
+  for testing this - but it should be done at some point.
+
+* Review and update the API
+
+  Make consistent prefixing in all modules/subsystems, to separate namespace
+  of the ADFlib and (in the second part) of a (sub)module.
+  
+  (mostly done, leaving this here as a remainder in case of any remnants...)
+
+* Update API documentation
+  ...
+
+* Move salvage/undelete code from the library to the tools (examples)
+
+  Why?
+  1. This kind of code is not at all a core part of the library. It is more
+     application/utility level functionality. This is more special (forensics)
+     utility than generic data access functionality (which is core purpose of
+     the library).
+  2. It is tricky to make it really complete - if it is possible at all...
+     There can be plenty of special cases and many changes may be required
+     on the way.
+  3. The above could enforce changing (unnecessarily) major version of
+     the library (as a sign of a modified API) what implies cascade changes
+     in dependencies of dependent software.
+
+  Why not?
+  1. It might be nice for client software to have such functionality (undelete)
+     ready to use.
+
+  All in all it seems to have little sense to keep it as a part of the library.
+  Moving it to examples (for use as part of adfsalvage) seems to be a better
+  solution.

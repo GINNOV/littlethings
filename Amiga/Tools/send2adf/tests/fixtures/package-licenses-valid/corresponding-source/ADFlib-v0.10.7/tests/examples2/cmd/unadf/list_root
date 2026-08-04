@@ -1,0 +1,7 @@
+cmd(){
+    $unadf -l "${dumpFile}"
+}
+
+comment(){
+    echo "-l (list root directory) option"
+}

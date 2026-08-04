@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ginnov.example/schemas/post-merge-license-receipt-v1.json",
+  "title": "Post-merge license approval receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "repository",
+    "ledger_path",
+    "merge_commit",
+    "ledger_sha256",
+    "approved_entry_digest",
+    "approved_tree_contains_exact_ledger"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "repository": {"const": "GINNOV/littlethings"},
+    "ledger_path": {"const": "Amiga/Tools/build-support/adflib/ADFlibLicenseApprovals.json"},
+    "merge_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "ledger_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "approved_entry_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "approved_tree_contains_exact_ledger": {"const": true}
+  }
+}

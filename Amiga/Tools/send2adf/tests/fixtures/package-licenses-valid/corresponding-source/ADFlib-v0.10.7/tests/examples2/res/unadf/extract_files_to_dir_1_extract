@@ -1,0 +1,5 @@
+Device : 880 KiB floppy. Cylinders = 80, Heads = 2, Sectors = 11. Volumes = 1
+Volume : 880 KiB floppy, "cshell" between sectors [0-1759]. OFS. Filled at 75.2%.
+x - tmp/unadf/extract_files_to_dir/csh
+x - tmp/unadf/extract_files_to_dir/s/startup-sequence
+x - tmp/unadf/extract_files_to_dir/devs/system-configuration

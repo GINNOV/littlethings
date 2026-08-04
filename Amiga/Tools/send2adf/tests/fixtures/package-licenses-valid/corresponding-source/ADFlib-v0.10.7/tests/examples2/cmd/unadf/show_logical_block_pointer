@@ -1,0 +1,7 @@
+cmd(){
+    $unadf -ls "${dumpFile}"
+}
+
+comment(){
+    echo "-s (show logical block pointer) option"
+}

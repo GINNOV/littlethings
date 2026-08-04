@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://littlethings.invalid/send2adf-final-reviewer-v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["approved", "findings", "reviewed_final_sha"],
+  "properties": {
+    "approved": {"type": "boolean"},
+    "findings": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["code", "severity"], "properties": {"code": {"type": "string"}, "severity": {"enum": ["low", "medium", "high", "critical"]}}}},
+    "reviewed_final_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+  }
+}

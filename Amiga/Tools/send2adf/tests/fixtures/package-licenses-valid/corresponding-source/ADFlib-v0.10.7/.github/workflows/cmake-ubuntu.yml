@@ -1,0 +1,108 @@
+name: cmake-ubuntu
+
+on:
+  push:
+    branches: [ "master", "devel", "citest", "citest-cmake" ]
+    tags:
+      - '**'
+  pull_request:
+    branches: [ "master", "devel" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        build_type: [ shared, debug ]
+    steps:
+    - uses: actions/checkout@v4
+    - name: install prereq.
+      run: sudo apt-get update ; sudo apt-get install -y check
+    - name: cmake_${{ matrix.build_type }}_configure
+      run: util/cmake_${{ matrix.build_type }}_configure
+    - name: cmake_${{ matrix.build_type }}_build
+      run: util/cmake_${{ matrix.build_type }}_build
+    - name: cmake_${{ matrix.build_type }}_test
+      run: util/cmake_${{ matrix.build_type }}_test
+    - name: cmake_${{ matrix.build_type }}_install
+      run: sudo bash util/cmake_${{ matrix.build_type }}_install
+    - name: check installation
+      run: find /usr/local -iname '*adf*'
+    - name: update ldconfig
+      run: sudo ldconfig
+#    - name: test command-line utils
+#      run: ./tests/examples/test_all_examples.sh /usr/local/bin
+    - name: prepare artifact
+      run:
+        tar czvf adflib-ubuntu-cmake.tgz
+            /usr/local/bin/*adf*
+            /usr/local/include/adf/
+            /usr/local/lib/*adf*
+            /usr/local/share/man/man1/*adf*
+    - uses: actions/upload-artifact@v4
+      with:
+#        name: adflib-${{ env.ADFLIB_TAG }}-windows
+        name: adflib-ubuntu-cmake-${{ matrix.build_type }}
+        path: |
+          adflib-ubuntu-cmake.tgz
+    - name: archive tests/examples
+      run: |
+        mkdir -v artifact-tests
+        tar cvzf artifact-tests/tests_examples.tgz \
+            tests/config* \
+            tests/examples/ \
+            tests/examples2/ \
+            tests/data
+    - uses: actions/upload-artifact@v4
+      with:
+        name: adflib-cmake-ubuntu-tests-examples-${{ matrix.build_type }}
+        path: |
+          artifact-tests
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        build_type: [ shared, debug ]
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+#      name: adflib-${{ env.ADFLIB_TAG }}-ubuntu
+        name: adflib-ubuntu-cmake-${{ matrix.build_type }}
+        path: .
+    - name: extract file from the artifact
+      run: sudo tar xzv -C / -f adflib-ubuntu-cmake.tgz
+    - name: list files extracted from the artifact
+      run: find /usr/local -name "*adf*"
+    - name: list installed library files
+      run: ls -l /usr/local/lib/*adf*
+    - name: update ldconfig
+      run: sudo ldconfig
+    - name: show properties of binaries (installed)
+      run: ldd /usr/local/bin/unadf
+    - uses: actions/download-artifact@v4
+      with:
+        name: adflib-cmake-ubuntu-tests-examples-${{ matrix.build_type }}
+        path: .
+    - name: extract tests/examples
+      run: tar xzvf tests_examples.tgz
+    - name: test command-line utils
+      run: |
+        tests/examples/test_examples_basic.sh /usr/local/bin/
+        tests/examples/test_all_examples.sh /usr/local/bin/
+    - name: test installed command-line utils (2)
+      run: |
+        cat tests/config.sh.in_cmake | \
+          sed -e 's@\${PROJECT_BINARY_DIR}@'"$GITHUB_WORKSPACE"'@' \
+              -e 's@\${PROJECT_SOURCE_DIR}@'"$GITHUB_WORKSPACE"'@' \
+          > tests/config.sh
+        cat tests/config.sh
+        ./tests/examples2/run_all_tests.sh /usr/local/bin
+    - name: store logs from failed tests
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: cmake_ubuntu_logs_failed_tests-${{ matrix.build_type }}
+        path: |
+          cmake/shared/Testing/

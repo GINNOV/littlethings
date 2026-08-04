@@ -1,0 +1,7 @@
+cmd(){
+    $unadf -h
+}
+
+comment(){
+    echo "check help"
+}

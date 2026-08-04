@@ -1,0 +1,15 @@
+
+Opening image/device:	'tmp/adf_floppy/testflopdd1.adf'
+
+ADF device info:
+  Type:		880 KiB floppy
+  Driver:	dump
+  Geometry:
+    Cylinders	80
+    Heads	2
+    Sectors	11
+
+  Volumes:	1
+   idx  first bl.     last bl.    filesystem    name
+     0          0         1759    ???(???)      ""
+

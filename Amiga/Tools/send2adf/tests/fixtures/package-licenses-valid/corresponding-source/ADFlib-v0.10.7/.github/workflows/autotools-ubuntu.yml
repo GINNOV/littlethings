@@ -1,0 +1,60 @@
+name: autotools-ubuntu
+
+on:
+  push:
+    branches: [ "master", "devel",
+      "citest",
+      "citest-autotools",
+      "citest-autotools-ubuntu" ]
+    tags:
+      - '**'
+  pull_request:
+    branches: [ "master", "devel" ]
+
+jobs:
+  ubuntu:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        conf_options: [ "", --enable-native-generic ]
+    steps:
+    - uses: actions/checkout@v4
+    - name: install prereq.
+      run: sudo apt-get update ; sudo apt-get install -y check
+    - name: autogen
+      run: ./autogen.sh
+    - name: configure
+      run: ./configure ${{ matrix.conf_options }}
+    - name: make
+      run: make
+    - name: make check
+      run: make check
+    - name: make distcheck
+      run: make distcheck
+    - name: make install
+      run: sudo make install
+    - name: check installation
+      run: find /usr/local -iname '*adf*'
+    - name: update ldconfig
+      run: sudo ldconfig
+    - name: test installed command-line utils
+      run: ./tests/examples/test_all_examples.sh /usr/local/bin
+    - name: test installed command-line utils (2)
+      run: |
+        cat tests/config.sh.in_cmake | \
+          sed -e 's@\${PROJECT_BINARY_DIR}@'"$GITHUB_WORKSPACE"'@' \
+              -e 's@\${PROJECT_SOURCE_DIR}@'"$GITHUB_WORKSPACE"'@' \
+          > tests/config.sh
+        cat tests/config.sh
+        ./tests/examples2/run_all_tests.sh /usr/local/bin
+    - name: store logs from failed tests
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ubuntu_autotools_logs_failed_tests-${{ matrix.build_type }}
+        path: |
+          tests/*.log
+          tests/examples/*.log
+          tests/examples2/*.log
+          tests/regr/*.log
+          tests/unit/*.log

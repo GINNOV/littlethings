@@ -1,0 +1,7 @@
+cmd(){
+    ${adfinfo} "$dumpFile" 0 c/
+}
+
+comment(){
+    echo "Directory 'c/' info"
+}

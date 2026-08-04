@@ -1,0 +1,8 @@
+set(ADFLIB_OWNER_REPO "adflib/ADFlib")
+set(ADFLIB_VERSION "0.10.7")
+set(ADFLIB_TAG "v0.10.7")
+set(ADFLIB_COMMIT "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+set(ADFLIB_TREE_SHA "9a10aa1da9aaf924055e153646ab4d845c7a59e2")
+set(ADFLIB_ARCHIVE_URL "https://github.com/adflib/ADFlib/archive/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.tar.gz")
+set(ADFLIB_TREE_MANIFEST_SHA256 "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")
+set(ADFLIB_PATCH_SHA256 "ec05f0e1ba4756b5e428849ae1583a298f62c90b7e844356b6c8779df4886ffa")

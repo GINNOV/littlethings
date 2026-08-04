@@ -1,0 +1,7 @@
+cmd(){
+    ${adfinfo} "$dumpFile" 0 dir1/dir1_1/sl2testfile1samedir
+}
+
+comment(){
+    echo "Soft-link to a file (in the same directory)"
+}

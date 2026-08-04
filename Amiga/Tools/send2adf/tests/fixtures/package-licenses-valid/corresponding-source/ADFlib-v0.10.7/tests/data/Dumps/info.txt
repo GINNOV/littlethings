@@ -1,0 +1,67 @@
+
+Brief info about disk images for testing.
+
+Important note:
+  The disk images should be stored in compressed format to avoid excessive
+  growth of repo size. Only those added already uncompressed are kept that way.
+
+===============================================================================
+
+Floppy disk images
+------------------
+
+Basic ones
+----------
+
+blank.adf
+testffs.adf
+testofs.adf
+  - basic tests images with standard DD (880KiB) floppies with OFS/FFS
+
+testhd.adf
+  - basic test image of an HD (1760 KiB) floppy 
+
+
+For specific tests
+------------------
+
+arccsh.adf
+  - just a typical disk, with couple of tools (like CSH), initially used
+    for testing adfinfo (former adf_show_metadata)
+
+cache_crash.adf
+  - used in regression test for debian bug 862740 (see: 3c5e7d37)
+
+ffdisk0049.adf.gz
+  - Fred Fish disk 49, has 2 things useful for tests:
+    - bootblock with an invalid root block value
+    - bitmap allocation marked invalid (but OK, ie. the same after rebuilding).
+    Added just renamed and compressed. The original file:
+    https://ftp.grandis.nu/turran/FTP/TOSEC/Collections/Commodore%20Amiga%20-%20Collections%20-%20Fred%20Fish/Amiga%20Library%20Disk%20%230049%20(1987)(Fred%20Fish)(PD)%5bWB%5d.zip
+
+g1a30c.adf
+  - for regr. test for a bug, crash on reading bitmap, details:
+    https://github.com/adflib/ADFlib/issues/63
+
+links.adf
+  - misc. types of links (hard and soft, to files and directories)
+
+test_link_chains.adf
+  - another one for testing links (more complex cases, with links to links)
+
+win32-names.adf
+  - with files having names non-valid on Windows (for testing unadf)
+
+
+===============================================================================
+
+Hard disk images
+----------------
+
+a590_WD93028XA_6parts_not_formatted.hdd.gz
+  - an A590-like HDD disk dump, partitioned on an FS-UAE-emulated A1200 (3.1)
+    has 6 partitions without any filesystems (not formatted)
+
+a590_WD93028XA_6parts.hdd.gz
+  - like above, but with volumes formatted to every classic AmigaDOS
+    filesystem combination: OFS and FFS, +/- INTL, +/- DirCache

@@ -1,0 +1,27 @@
+
+Opening image/device:	'tmp/adfinfo_links/test_link_chains.adf'
+Mounted volume:		0
+
+Path:		dir1/dir1_1/sl2testfile1samedir
+
+Link block:
+  0x000  type		0x2		2
+  0x004  headerKey	0x38b		907
+  0x008  r1[ 3 ]
+  0x014  checkSum	0xfae83f23
+     ->  calculated:	0xfae83f23 -> OK
+  0x018  realName[ 64 ]	testfile1.txt
+  0x058  r2[ 83 ]
+  0x1a4  days		0x4017		16407
+  0x1a8  mins		0x39e		926
+  0x1ac  ticks		0xae5		2789
+  0x1b0  nameLen	0x13		19
+  0x1b1  name:		sl2testfile1samedir
+  0x1d0  r3		0x0
+  0x1d4  realEntry	0x0		0
+  0x1d8  nextLink	0x0		0
+  0x1dc  r4[ 5 ]
+  0x1f0  nextSameHash	0x0		0
+  0x1f4  parent		0x378		888
+  0x1f8  r5		0x0		0
+  0x1fc  secType	0x3	3

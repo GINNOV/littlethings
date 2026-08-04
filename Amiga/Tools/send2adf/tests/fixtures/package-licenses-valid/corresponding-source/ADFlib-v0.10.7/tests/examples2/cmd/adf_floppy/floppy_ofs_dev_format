@@ -1,0 +1,7 @@
+cmd(){
+    $adfformat -t 0 -l TestFlopOFS -f -v "$dumpFile"
+}
+
+comment(){
+    echo "adfformat -t 0 -l TestFlopOFS -f -v (enforced format to OFS)"
+}

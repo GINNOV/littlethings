@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "repository": "GINNOV/littlethings",
+  "ledger_path": "Amiga/Tools/build-support/adflib/ADFlibLicenseApprovals.json",
+  "merge_commit": "4444444444444444444444444444444444444444",
+  "ledger_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "approved_entry_digest": "4349834851f72ca81c34eb3dd3c9c766f9909934ff83c26ccbc82f35c5f4fe4a",
+  "approved_tree_contains_exact_ledger": true
+}

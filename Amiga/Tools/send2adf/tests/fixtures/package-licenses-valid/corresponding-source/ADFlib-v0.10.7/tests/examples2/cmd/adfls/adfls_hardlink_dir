@@ -1,0 +1,7 @@
+cmd(){
+    ${adfls} -p 0 -l "$dumpFile" hardlinks_dir/hl2dir1
+}
+
+comment(){
+    echo "List hard-link to a directory"
+}

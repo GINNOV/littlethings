@@ -1,0 +1,7 @@
+cmd(){
+    ${adfbitmap} show "$dumpFile"
+}
+
+comment(){
+    echo "Show bitmap (blocks of deleted file are not freed!)"
+}

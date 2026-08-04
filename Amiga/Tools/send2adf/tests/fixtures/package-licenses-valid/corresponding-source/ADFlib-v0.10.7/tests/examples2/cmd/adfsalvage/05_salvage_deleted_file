@@ -1,0 +1,7 @@
+cmd(){
+    ${adfsalvage} -v "$dumpFile" 1763
+}
+
+comment(){
+    echo "Salvage deleted file, file header block at 1763"
+}

@@ -1,0 +1,245 @@
+15APR2026
+ADFlib 0.10.7
+- prevent inf. loop on invalid directories, #99 (cont.)
+  - detect and override another case of invalid linking between
+    entries of a single directory
+  - preventing OOM in other cases (between directories) by limiting
+    max. depth level when traversing directories
+
+20MAR2026
+ADFlib 0.10.6
+- prevent inf. loop on invalid directories, #99
+- adfls: minor fixes (usage info), add man page.
+- adfVolCreate: fixed (rare) memory leaks (on errors).
+- some internal improvements (ie. refactoring, more tests).
+
+22SEP2025
+ADFlib 0.10.5
+- fixed opening small (smaller than floppies) HDF files.
+- added a new function for getting entry using sector number.
+- adfinfo: allow inspecting entries deeper in the directory tree,
+  added showing info about links.
+- adfls: a new utility for showing volume contents.
+- some internal improvements (ie. refactoring, more tests).
+
+03SEP2025
+ADFlib 0.10.4
+- unadf on Windows: fix extracting binary files with -p (pipe), #96
+- make all operations using too long filenames fail (instead of truncating
+  the name), #97
+- dump device: fail opening if write not possible (instead of silently
+  opening read-only), #98
+- command-line tools: add showing build and runtime versions of the lib.
+- added and updated tests (ie. for the bug and the changes mentioned above).
+
+01SEP2025
+ADFlib 0.10.3
+- unadf on Windows: fix extracting binary files, #96
+
+16MAY2025
+ADFlib 0.10.2
+- unadf: fix extracting tree for read-only directories, #91
+
+29APR2025
+ADFlib 0.10.1
+- fix tests to work also on FreeBSD
+
+27APR2025
+ADFlib 0.10.0
+- api - not many changes (as in previous versions...), but some
+  breaking (like functions renamed)
+- devices
+  - operate on blocks, not bytes
+  - check size limits
+  - various internal changes improving partitioned device support
+- native devices: fixed and tested (briefly)
+  - major bugfix on Linux version (a device could never be opened)
+- added a set of predefined, standard device types (like floppies, A590 HD)
+- write support - one major bugfix:
+  - update dataSize in OFS data block when appending (discovered and patched
+    by Simon Tatham)
+- command-line utilities (examples)
+  - renamed (for better usage) and improved (extended and/or fixed features)
+    - eg. adf_show_metadata renamed to adfinfo, added showing hard disk blocks
+  - unadf
+    - minor changes in options (separate showing help, version and commands)
+    - bugfixes:
+      - fixed setting file permissions when extracting a single file
+      - fixed setting timestamp on directories
+  - enable use of native devices with read-only tools (adfinfo, unadf)
+- testing: added new and improved existing tests, major ones:
+  - testing a hard disk device (partitioned on Amiga)
+  - new "framework" for testing command-line programs (examples)
+  - regr. tests for discovered bugs
+- library repo url changed to: https://github.com/adflib/ADFlib
+
+15MAY2024
+ADFlib 0.9.0
+- license
+  - since this version, the library is on dual license: GPL2 and LGPL 2.1
+- api - many changes(!):
+  - renamed many functions, constants etc., with the goal
+    to provide a separated library namespace
+- write support
+  - added checking validity of bitmap allocation
+  - added possibility to rebuild the bitmap
+- command-line utilities:
+  - added adf_bitmap - to view or enforce reconstruction of the block
+                       allocation bitmap
+  - added adf_salvage - to list and recover deleted files
+- devices:
+  - cleaned-up and unified device interface for all existing device types
+    (dump, native), allowing to easily implement and use new types of devices
+    in a safe and controlled way (enabling/disabling types of devices in code)
+  - added ramdisk device (to allow eg. faster testing)
+- numerous refactorings, improvements and bugfixes, among them:
+  - segfault on reading bitmap (rootblock bmpages beyond expected size)
+    - several memory leaks (mosly in uncommon cases) and many other
+      memory-related issues (thanks to Didier Malenfant!)
+  - improved and better tested block allocation bitmap code
+- tests
+  - many added and/or improved
+
+26MAY2023
+ADFlib 0.8.0
+- files:
+  - complete and tested read/write support (#30)
+- directories:
+  - added a function for counting entries
+- links (#23):
+  - hardlinks: added support (can open a file or enter a dir using a hardlink)
+  - softlinks: added basic support (can get path where it points to)
+- devices:
+  - added functions to open/close a device without mounting (eg. for formatting)
+- native devices:
+  - getting geometry directly from the device (if possible)
+  - added support for Linux native devices (experimental, assume testing only
+    and use with care!)
+- command-line utilities:
+  - added adf_floppy_create/format - create and format devices/images
+  - added adf_show_metadata - show device/volume/file/directory metadata
+  - unadf: added option -w enabling replacement of forbidden characters and
+    filenames on Windows (#39)
+- numerous bugfixes, among them
+  - some memory leaks (adfFreeGenBlock, tests, ...)
+  - a buffer overflow (in adfGetDelEnt())
+  - fixed Debian bug 862740 (buffer overflow in adfGetCacheEntry; #35)
+  - problems when filling up the disk (#9)
+- testing - improved and extended:
+  - added more reg. tests, some improvements and bugfixes in existing ones
+  - added unit tests (using Check framework)
+  - automatic building and testing with GitHub Actions
+- code quality:
+  - some refactoring and tidying up
+- build configuration:
+  - added configuration for CMake (besides existing autotools), so that the lib
+    can be more portable and build easier eg. with Visual Studio on Windows
+- packaging:
+  - added basic Debian support (works also on Ubuntu, should work on other
+    systems with deb packages)
+- many changes in the API (note the version change!):
+  - mainly in adf_file (new/changed functions, function naming)
+  - some changes in data structures and/or data types
+
+20MAR08
+ADFlib 0.7.12
+- use GNU autotools build system
+- fix building on 64bit architectures but needs C99 compliant compliler
+- remove some windows specific stuff maybe one should add it again updating it
+to use the current directory structure
+
+20JAN07
+ADFlib 0.7.11a
+- Minor Makefile fixes. Works under Fedora Core 5, gcc 4.1.0.
+- Inclusing of Bjarke Viksoe C++ wrapper (adfwrapper.h). Windows specific for the moment,
+  but good example of C++ wrapper on top of ADFlib.
+- Inclusion of GPL license and text inside every code source file
+  (requested by Gürkan Sengün to build a Debian package for unadf)
+
+31MAR06
+ADFlib 0.7.11
+Minor Makefile and compilation process changes to work under cygwin and with gcc 3.4.4.
+
+16OCT02
+ADFlib 0.7.9d by Gary Harris
+- changes all occurences of // foo, into /* foo */
+- updated "Copyright Laurent Clevy" message date up to 2002 intead of 1999
+- marked all Bjarke changes by the /* BV */ comment
+
+22JAN01
+ADFlib 0.7.9c by Bjarke Viksoe
+- changes : Win32/nt4_dev.c
+	.return RC_ERROR instead of FALSE
+	.return TRUE when input parameter of NT4CloseDrive is NULL
+- changes : Win32/defendian.h
+	changes printf and putchar into -empty string- for Win32 GUI applications
+- fix : in adf_hd.c, in adfMountDev(), dumpfiledevice was assumed sometimes, but it could be native.
+	"if (dev->isNativeDev)" when needed
+- fix : in adf_hd.c, in adfMountDev(), some memory release was forgotten in case of error
+- change : adf_hd.c, line 36, floppy dump files with 83 sectors are now valid (request by users)
+- change : adf_hd.c , adfReadRDSKBlock(), ignore checksum error. Win98 modifies this sector
+
+10SEP00
+- ADFlib 0.7.9b refixes and Win32 code improvements by Gary Harris
+27FEB00
+- ADFlib 0.7.9a bug with hardfiles fixed some months ago by Dan Sutherland
+05SEP99
+- ADFlib 0.7.9 released. Docs updated.
+15AUG99
+- fix: bug in adfGetHashValue() : must use unsigned char...
+- unadf 1.0 : with multiple files and recursive extraction, pipe redirection
+01AUG99
+- adfGetDelEnt(), adfUndelEntry(), adfCheckEntry()
+??JUN99
+- fix: forgot the secType for the cache entry in adfCreateDir()
+- fix: adfRemoveEntry() with a dir did not remove the related cache blocks
+26MAY99
+- 0.7.8a released.
+- a minor buf was detected in the bootblock checksum checking
+24MAY99
+- 0.7.8 released. the 0.7.9 will have some links support. the next unadf version will have extraction (-x).
+- Win32 dynamic library makefile added
+- test scripts floppy.sh and bigdev.sh added
+- small bug fix in adfGetRDirEnt().
+20MAY99
+- the ENV_DECLARATION is put in the library (adf_env.c), and must be removed from the main() files.
+  Will be consistent will the .dll version.
+- unadf.c started : a unzip like utility for the .ADF files. Extraction not provided yet.
+- adfGetRDirEnt() added, adfFreeDirList() modified : to get recursively the entire directories entries tree.
+13MAY99
+- adfSetEntryAccess() and adfSetEntryComment() added
+- Win32 makefile added for the static library form
+06MAY99
+- adfGetVersionNumber() and adfGetVersionDate() added
+01MAY99
+- many date and time fields filled
+- bug fix in adfCreateDir()
+- adfRenameEntry() already worked with two differents dirs, but it's verified now
+29APR
+- Hardfile support added (requested by Dan Sutherland)
+19APR
+- bug fix in cache routines
+- adfRenameEntry() works in the same directory, only
+6APR99
+- bug fix in adfWriteBootBlock() : disks can really be made bootable
+- bug fix around adfCreateDumpDevice()
+22MAR99
+- removed the fread() bug : fopen(,"rb")
+- removed the LSEG checking
+01FEB99
+- adfFlushFile()
+- dir cache support for files and directories
+- bugfix : adfCloseFile() when filesize==0
+- bugfix : parent field in file header block
+28JAN99
+- safier and proper error handling
+27JAN99
+- bugfix : adfGetFreeBlocks(), physical and logical block numbers confused
+24JAN99
+- adfRemoveEntry() : delete files and empty directories
+- modified Makefile : remplace links for Linux/ and
+  adf_nativ.h with gcc flags -I. -I..
+19JAN99
+- Remove most of signed/unsigned warning from MSVC
+- Error handling : test exe
+- Read only support

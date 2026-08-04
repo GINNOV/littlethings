@@ -1,0 +1,7 @@
+cmd(){
+    ${adfinfo} "$dumpFile" 0 CSH
+}
+
+comment(){
+    echo "File info"
+}

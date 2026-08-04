@@ -1,0 +1,225 @@
+{
+  "relationship": "accompanying-source",
+  "source_root": "corresponding-source",
+  "source_archive": {
+    "name": "send2adf-fixture-source.tar.gz",
+    "sha256": "1ae7f731e9837ec2542ce7b9fc582f2ca8b55680f49dd74d392def9f46f6039a",
+    "archive_root": "corresponding-source",
+    "release_tag": "send2adf-source-v1",
+    "release_url": "https://github.com/megoved/littlethings/releases"
+  },
+  "system_dependencies": [
+    "C99 compiler",
+    "CMake >= 3.24",
+    "Python >= 3.11",
+    "git"
+  ],
+  "non_system_packaging_dependencies": [],
+  "adflib_source": {
+    "path": "ADFlib-v0.10.7",
+    "commit": "73880de78bf472a1cc7d60f07fc217e02d571268",
+    "tree_sha": "04f96eb046afef4dff48070840b36b82d7f4f43f",
+    "tree_manifest_sha256": "9bc3acc858277537ca04fc0933b8471bbe277927cb4923836e53b9fe1285dfd5",
+    "upstream_archive": "upstream/ADFlib-73880de78bf472a1cc7d60f07fc217e02d571268.tar.gz",
+    "upstream_archive_sha256": "f256e479955393c088efe8d9a170dfa43bfea63ead2db7d41001249363ebedd7",
+    "regularization_record": "Tools/build-support/adflib/regularization/reviewed-symlinks.json"
+  },
+  "adflib_patches": [
+    "Tools/build-support/adflib/patches/0001-cmake-disable-examples.patch"
+  ],
+  "build_helpers": [
+    "Tools/build-support/adflib/archive_boundary.py",
+    "Tools/build-support/adflib/check_dependency_literals.py",
+    "Tools/build-support/adflib/stage_adflib.py",
+    "Tools/build-support/adflib/tests/run_network_denied.py",
+    "Tools/build-support/adflib/tests/test_canonical_archive.py",
+    "Tools/send2adf/tests/adf_inspect.c",
+    "Tools/send2adf/tests/characterization_cases.py",
+    "Tools/send2adf/tests/fixtures/multi/alpha.txt",
+    "Tools/send2adf/tests/fixtures/multi/beta.txt",
+    "Tools/send2adf/tests/fixtures/nested/input/assets/data.bin",
+    "Tools/send2adf/tests/fixtures/nested/input/readme.txt",
+    "Tools/send2adf/tests/fixtures/release-actionlint.yaml",
+    "Tools/send2adf/tests/fixtures/single/message.txt",
+    "Tools/send2adf/tests/mutate_adf.py",
+    "Tools/send2adf/tests/run_characterization.py",
+    "Tools/send2adf/tests/test_build_contract.py",
+    "Tools/send2adf/tests/transaction_boundaries.py",
+    "Tools/send2adf/tests/transaction_cases.py",
+    "Tools/send2adf/tests/transaction_hardlinks.py",
+    "Tools/send2adf/tests/transaction_order.py",
+    "Tools/send2adf/tests/transaction_support.py"
+  ],
+  "build_descriptors": [
+    "Tools/build-support/adflib/ADFlibDependency.cmake",
+    "Tools/send2adf/CMakeLists.txt",
+    "Tools/send2adf/CMakePresets.json",
+    "Tools/send2adf/Makefile",
+    "Tools/send2adf/cmake/InstallGuard.cmake.in",
+    "Tools/send2adf/cmake/ResolveADFlib.cmake",
+    "Tools/send2adf/cmake/send2adf_version.h.in",
+    "Tools/send2adf/tests/CMakeLists.txt"
+  ],
+  "source_inventory": [
+    {
+      "kind": "application-source",
+      "path": "Tools/send2adf/send2adf.c"
+    },
+    {
+      "kind": "application-source",
+      "path": "Tools/send2adf/send2adf_runtime.c"
+    },
+    {
+      "kind": "application-source",
+      "path": "Tools/send2adf/send2adf_runtime.h"
+    },
+    {
+      "kind": "adflib-source",
+      "path": "ADFlib-v0.10.7"
+    },
+    {
+      "kind": "adflib-upstream-archive",
+      "path": "upstream/ADFlib-73880de78bf472a1cc7d60f07fc217e02d571268.tar.gz"
+    },
+    {
+      "kind": "adflib-transport-evidence",
+      "path": "ADFlib-04f96eb046afef4dff48070840b36b82d7f4f43f-tree.json"
+    },
+    {
+      "kind": "adflib-transport-evidence",
+      "path": "ADFlib-73880de78bf472a1cc7d60f07fc217e02d571268-commit.json"
+    },
+    {
+      "kind": "adflib-transport-evidence",
+      "path": "ADFlib-73880de78bf472a1cc7d60f07fc217e02d571268-transport.tar.gz"
+    },
+    {
+      "kind": "adflib-transport-evidence",
+      "path": "adflib-transport.json"
+    },
+    {
+      "kind": "adflib-regularization",
+      "path": "Tools/build-support/adflib/regularization/reviewed-symlinks.json"
+    },
+    {
+      "kind": "adflib-patch",
+      "path": "Tools/build-support/adflib/patches/0001-cmake-disable-examples.patch"
+    },
+    {
+      "kind": "build-helper",
+      "path": "Tools/build-support/adflib/archive_boundary.py"
+    },
+    {
+      "kind": "build-helper",
+      "path": "Tools/build-support/adflib/check_dependency_literals.py"
+    },
+    {
+      "kind": "build-helper",
+      "path": "Tools/build-support/adflib/stage_adflib.py"
+    },
+    {
+      "kind": "build-helper",
+      "path": "Tools/build-support/adflib/tests/run_network_denied.py"
+    },
+    {
+      "kind": "build-helper",
+      "path": "Tools/build-support/adflib/tests/test_canonical_archive.py"
+    },
+    {
+      "kind": "build-helper",
+      "path": "Tools/send2adf/tests/adf_inspect.c"
+    },
+    {
+      "kind": "build-helper",
+      "path": "Tools/send2adf/tests/characterization_cases.py"
+    },
+    {
+      "kind": "build-helper",
+      "path": "Tools/send2adf/tests/fixtures/multi/alpha.txt"
+    },
+    {
+      "kind": "build-helper",
+      "path": "Tools/send2adf/tests/fixtures/multi/beta.txt"
+    },
+    {
+      "kind": "build-helper",
+      "path": "Tools/send2adf/tests/fixtures/nested/input/assets/data.bin"
+    },
+    {
+      "kind": "build-helper",
+      "path": "Tools/send2adf/tests/fixtures/nested/input/readme.txt"
+    },
+    {
+      "kind": "build-helper",
+      "path": "Tools/send2adf/tests/fixtures/release-actionlint.yaml"
+    },
+    {
+      "kind": "build-helper",
+      "path": "Tools/send2adf/tests/fixtures/single/message.txt"
+    },
+    {
+      "kind": "build-helper",
+      "path": "Tools/send2adf/tests/mutate_adf.py"
+    },
+    {
+      "kind": "build-helper",
+      "path": "Tools/send2adf/tests/run_characterization.py"
+    },
+    {
+      "kind": "build-helper",
+      "path": "Tools/send2adf/tests/test_build_contract.py"
+    },
+    {
+      "kind": "build-helper",
+      "path": "Tools/send2adf/tests/transaction_boundaries.py"
+    },
+    {
+      "kind": "build-helper",
+      "path": "Tools/send2adf/tests/transaction_cases.py"
+    },
+    {
+      "kind": "build-helper",
+      "path": "Tools/send2adf/tests/transaction_hardlinks.py"
+    },
+    {
+      "kind": "build-helper",
+      "path": "Tools/send2adf/tests/transaction_order.py"
+    },
+    {
+      "kind": "build-helper",
+      "path": "Tools/send2adf/tests/transaction_support.py"
+    },
+    {
+      "kind": "build-system",
+      "path": "Tools/build-support/adflib/ADFlibDependency.cmake"
+    },
+    {
+      "kind": "build-system",
+      "path": "Tools/send2adf/CMakeLists.txt"
+    },
+    {
+      "kind": "build-system",
+      "path": "Tools/send2adf/CMakePresets.json"
+    },
+    {
+      "kind": "build-system",
+      "path": "Tools/send2adf/Makefile"
+    },
+    {
+      "kind": "build-system",
+      "path": "Tools/send2adf/cmake/InstallGuard.cmake.in"
+    },
+    {
+      "kind": "build-system",
+      "path": "Tools/send2adf/cmake/ResolveADFlib.cmake"
+    },
+    {
+      "kind": "build-system",
+      "path": "Tools/send2adf/cmake/send2adf_version.h.in"
+    },
+    {
+      "kind": "build-system",
+      "path": "Tools/send2adf/tests/CMakeLists.txt"
+    }
+  ]
+}

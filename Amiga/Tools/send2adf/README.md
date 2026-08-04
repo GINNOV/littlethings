@@ -1,85 +1,79 @@
-# send2adf - Amiga Disk File (ADF) Creation Tool
-This is part of a suite of tools that I am building for my "back to the amiga dev times". More details [here](https://ginnov.github.io/littlethings/).
+# send2adf
 
-![](docs/demo_usage.gif)
-`send2adf` is a **command-line** utility for creating Amiga Disk File (.adf) images. It allows you to add multiple files and **directories** from your host system into a new ADF image, preserving directory structures. This tool leverages the [ADFlib](https://github.com/lclevy/ADFlib) library for ADF manipulation. It's for macOS Apple Silicon but it's C so if you know what you have to do, it can work everywhere.
+`send2adf` creates 880 KiB OFS Amiga Disk File images from host files and
+directories. Directory input is copied recursively. Supported build hosts are
+macOS arm64, macOS x86_64, and Linux x86_64.
 
-## Features
+## Build and test
 
-* Create new 880KB OFS (Original File System) ADF images.
-* Specify a custom volume name for the ADF.
-* Add multiple individual files to the ADF.
-* Add entire directories recursively, maintaining their structure within the ADF.
-* Verbose output modes for debugging:
-    * `-v`: Standard info output.
-    * `-vv`: Verbose debug output, showing every major stage of the disk packaging.
+CMake 3.24 or newer, Python 3.11 or newer, a C99 compiler, and network access
+for the first verified dependency staging are required. ADFlib is not installed
+globally and is never selected from a user or system prefix. Both consumers use
+`Amiga/Tools/build-support/adflib/ADFlibDependency.cmake`; CMake verifies the
+commit-addressed archive, reviewed Git tree, transport digest, materialized
+tree, patch digest, and immutable configuration before building a private
+static library.
 
-## Dependencies
+From `Amiga/Tools/send2adf`, configure, build, and test with `cmake --preset ci`,
+`cmake --build --preset ci`, and `ctest --preset ci --output-on-failure`.
+Equivalent Make targets are `make build`, `make test`, and `make help`.
+Sanitizer presets are `asan` and `asan-ubsan`. `make install` always rebuilds
+the `production` preset, which rejects test manifest overrides and canary input.
 
-* **ADFlib**: Without their work I would still cheasiling bits and bytes together. So thank you for making the [ADFlib](https://github.com/lclevy/ADFlib) folks.
-* I provided a Makefile can help clone and build ADFlib if it's not already present in a local `./adflib` directory.
-* A C compiler (e.g., GCC or Clang, Xcode will do it).
-* Standard POSIX build tools (`make`, `autoreconf` for ADFlib).
+<!-- documented-command -->
+```bash
+cd Amiga/Tools/send2adf
+make help
+```
 
-## Building
-
-I have provided the [compiled](https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/send2adf.zip) version if you don't want to deal with the building of the code but if you do, all you have to do is to launch make and the makefile will do the rest. Including buildng the ADFLib if you don't already have it installed in your /usr/local/bin/adf. If you are curious about the details of how to compile the library on your own, I documented it [here](docs/build_adflib.md).
+The first staging operation writes only beneath the selected build directory.
+A connected fetch may populate its verified cache; subsequent offline rebuilds
+must name the exact verified source directory with
+`FETCHCONTENT_FULLY_DISCONNECTED=ON` and `FETCHCONTENT_SOURCE_DIR_ADF`.
+See [the dependency guide](docs/build_adflib.md).
 
 ## Usage
 
+Synopsis: `send2adf -o <output.adf> -N <name> [-B <none|1.3|2.0>] [-v|-vv] <file_or_dir> ...`
 
-`send2adf -o <output.adf> -N  [-v | -vv] <file_or_dir1> [file_or_dir2 ...]`
+- `-o, --output <filename>` is required.
+- `-N, --volname <name>` is required.
+- `-B, --bootblock <name>` selects `none`, `1.3`, or `2.0`; the default is
+  `1.3`.
+- `-v, --verbose` enables informational output; `-vv` enables debug output.
+- `-h, --help` prints the authoritative synopsis.
 
+Examples: `./build/ci/send2adf -o work.adf -N Workbench -B 1.3 demo.exe
+assets` and `./build/ci/send2adf -o data.adf -N Data -B none -vv files`.
+Inputs are transactional: validation or copy failure leaves no final output,
+and replacement of an existing destination occurs only after verification.
 
-**Options:**
+## Dependency updates and releases
 
-* `-o, --output <filename>`: **Required.** Specify the output ADF filename (e.g., `mydisk.adf`).
-* `-N, --volname <name>`: **Required.** Specify the volume name for the ADF (e.g., `MyWorkDisk`).
-* `<file_or_dir1> [file_or_dir2 ...]` : One or more host files or directories to add to the ADF. Directories will be added recursively.
-* `-v, --verbose`: Enable verbose informational messages. Use `-vv` for extensive debug output.
-* `-h, --help`: Display the help message.
+Stable updates are opened only by the least-privilege updater application after
+candidate tree, transport, license inventory, complete corresponding source,
+and both consumers' five native validation legs pass. A no-op creates no branch
+or PR. Canary runs use a complete test-only identity, remain read-only, never
+package, and cannot update the stable manifest. A consumer or canary failure
+deletes only updater-owned validation refs and leases.
 
-**Examples:**
+There is currently no supported public binary download. A release may be
+published only by the protected release workflow after the exact merged
+identity has approved license receipts, reproducible archives, source and
+binary verification, protected tag/environment rules, and hosted native jobs.
+Local packaging and validation do not publish anything. See
+[the release contract](docs/releasing.md) and
+[the maintainer runbook](docs/build_adflib.md#maintainer-runbook).
 
-* Create an ADF with a single file:
-```bash
-    ./send2adf -o myDisk1.adf -N Workbench1 MyBootFile.bin
-```
+The repository's MIT license covers original source where applicable. Because
+the program statically links ADFlib, binary distribution follows the
+conservative `GPL-2.0-or-later` policy and includes the required notices,
+license text, provenance, approval receipts, and complete corresponding source.
+Until legal approval is recorded, publication is blocked.
 
-* Create an ADF with multiple files:
-```bash
-    ./send2adf -o myDisk1.adf -N Workbench1 MyBootFile.bin MyPixelImage.iff
-```
+## History
 
-* Create an ADF with multiple files and a directory, using very verbose output:
-    ```bash
-    ./send2adf -o gamedisk.adf -N MyGame -vv game_executable data/level1.dat assets_folder
-    ```
-
-* Display help:
-    ```bash
-    ./send2adf -h
-    ```
-
-## Change log
-1.0 basic implementation. Create a disk with one file in it.
-1.1 you can now add multiple files and pass folders that are added entirely
-1.5 you can now set what type of boot block and file system you want to add to the creating disk
-
-## Notes for Developers
-
-* The directory recursion uses POSIX-standard functions (`dirent.h`, `sys/stat.h`).
-* Error handling for ADFlib operations is included, with more detailed messages available in verbose modes.
-* The tool is designed to create standard 880KB OFS-formatted ADFs.
-* Most important, I don't know what I am doing, so if you find something off share away 😅
-
-## License
-
-The `send2adf` tool is licensed under the **GNU General Public License v3.0 (GPLv3)**. This is in line with its dependency, ADFlib, which is also typically licensed under the GPL. You can find a copy of the GPLv3 license [here](https://www.gnu.org/licenses/gpl-3.0.en.html) or in a `LICENSE` file accompanying this project.
-
-Under the GPL, you are free to use, study, share, and modify the software. This includes commercial use.
-
-**Commercial Support and Custom Licensing:**
-
-While `send2adf` is free to use commercially under the terms of the GPL, if you send me gifts or contribution I will take it 😇
-
+Version 1.5 added filesystem and boot-block selection. The retired standalone
+`genboot.cpp` experiment was never part of the build or runtime; its attribution
+and implementation remain available in repository history. Additional early
+implementation notes are retained in [learned lessons](docs/learned_lesson.md).

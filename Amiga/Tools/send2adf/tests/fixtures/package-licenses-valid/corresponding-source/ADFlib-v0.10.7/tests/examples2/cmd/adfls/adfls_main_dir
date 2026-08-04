@@ -1,0 +1,7 @@
+cmd(){
+    ${adfls} "$dumpFile"
+}
+
+comment(){
+    echo "List main directory (brief)"
+}

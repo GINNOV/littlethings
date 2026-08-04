@@ -1,0 +1,7 @@
+cmd(){
+    ${adfinfo} "$dumpFile" 0 softlinks_dir/sl2dir1_1
+}
+
+comment(){
+    echo "Soft-link to a directory (in a different directory)"
+}

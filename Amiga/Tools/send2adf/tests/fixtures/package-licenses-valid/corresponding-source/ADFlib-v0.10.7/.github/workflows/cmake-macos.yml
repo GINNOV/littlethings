@@ -1,0 +1,113 @@
+name: cmake-macos
+
+on:
+  push:
+    branches: [ "master", "devel", "citest", "citest-cmake", "citest-cmake-macos" ]
+    tags:
+      - '**'
+  pull_request:
+    branches: [ "master", "devel" ]
+
+jobs:
+  macos_shared:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: install prereq.
+      run: |
+        brew install ninja coreutils
+        ninja --version
+        cmake --version
+        gstdbuf --version
+    - name: cmake_shared_configure
+      run: util/cmake_shared_configure
+    - name: cmake_shared_build
+      run: util/cmake_shared_build
+    - name: cmake_shared_test
+      run: util/cmake_shared_test
+    - name: show properties of binaries in the build tree (not installed)
+      run: otool -l build/shared/examples/unadf
+    - name: cmake_shared_install
+      run: sudo bash util/cmake_shared_install
+#    - name: check project directory
+#      run: find .
+    - name: check installation
+      run: find /usr/local -iname '*adf*'
+#    - name: update ldconfig
+#      run: sudo ldconfig
+    - name: prepare artifact
+      run: |
+        mkdir -vp /usr/local/share/doc/adflib
+        cp -vR doc/API doc/FAQ AUTHORS BUGS.md COPYING* ChangeLog NOTES.md \
+            README.md TODO \
+            /usr/local/share/doc/adflib/
+        tar cvzf adflib-macos.tgz \
+            /usr/local/bin/*adf* \
+            /usr/local/include/adf/ \
+            /usr/local/lib/*adf* \
+            /usr/local/share/doc/adflib/ \
+            /usr/local/share/man/man1/*adf*
+    - uses: actions/upload-artifact@v4
+      with:
+#        name: adflib-${{ env.ADFLIB_TAG }}-windows
+        name: adflib-macos
+        path: |
+          adflib-macos.tgz
+    - name: archive tests/examples
+      run: |
+        mkdir -v artifact-tests
+        tar cvzf artifact-tests/tests_examples.tgz \
+            tests/config* \
+            tests/examples/ \
+            tests/examples2/ \
+            tests/data
+    - uses: actions/upload-artifact@v4
+      with:
+        name: adflib-macos-tests-examples
+        path: |
+          artifact-tests
+
+  macos_test:
+    needs: macos_shared
+    runs-on: macos-latest
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+#      name: adflib-${{ env.ADFLIB_TAG }}-macos
+        name: adflib-macos
+        path: .
+    - name: extract file from the artifact
+      run: sudo tar xzv -C / -f adflib-macos.tgz
+    - name: list files extracted from the artifact
+      run: find /usr/local -name "*adf*"
+    - name: list installed library files
+      run: ls -l /usr/local/lib/*adf*
+#    - name: update dyld's shared cache
+#      run: sudo update_dyld_shared_cache -debug
+    - name: show properties of binaries (installed)
+      run: otool -l /usr/local/bin/unadf
+    - uses: actions/download-artifact@v4
+      with:
+        name: adflib-macos-tests-examples
+        path: .
+    - name: extract tests/examples
+      run: tar xzvf tests_examples.tgz
+    - name: test command-line utils
+      run: |
+        tests/examples/test_examples_basic.sh /usr/local/bin/
+        tests/examples/test_all_examples.sh /usr/local/bin/
+    - name: test installed command-line utils (2)
+      run: |
+        cat tests/config.sh.in_cmake | \
+          sed -e 's@\${PROJECT_BINARY_DIR}@'"$GITHUB_WORKSPACE"'@' \
+              -e 's@\${PROJECT_SOURCE_DIR}@'"$GITHUB_WORKSPACE"'@' \
+          > tests/config.sh
+        cat tests/config.sh
+        ./tests/examples2/run_all_tests.sh /usr/local/bin
+    - name: store logs from failed tests
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: cmake_macos_logs_failed_tests
+        path: |
+          cmake/shared/Testing/

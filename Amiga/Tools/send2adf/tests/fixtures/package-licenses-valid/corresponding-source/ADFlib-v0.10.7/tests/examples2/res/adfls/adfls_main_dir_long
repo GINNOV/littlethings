@@ -1,0 +1,7 @@
+----rwed         512  2022/12/03 13:39:24  D  Trashcan
+----rwed         512  2022/12/03 13:46:32  D  dir1
+----rwed         512  2022/12/03 14:41:42  D  softlinks_file
+----rwed         512  2022/12/03 15:24:20  D  softlinks_dir
+----rwed         512  2022/12/03 13:57:22  D  hardlinks_dir
+----rwed         512  2022/12/03 15:32:26  D  hardlinks_file
+----rw-d        1172  2022/12/03 13:39:24  F  Trashcan.info

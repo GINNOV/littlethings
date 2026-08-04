@@ -1,0 +1,18 @@
+cmd(){
+    # check permissions were set on extracted files
+
+    # this test is failing on MSYS2
+    #chmod a-x tmp/${testName}/extract_to_dir/CSH
+    #ls -la tmp/${testName}/extract_to_dir/CSH 1>&2
+    if [ "x${hostType}" = 'xMINGW32' -o \
+         "x${hostType}" = 'xMINGW64' ]
+    then
+        return 0
+    fi
+
+    [ -x tmp/${testName}/extract_to_dir/CSH ]
+}
+
+comment(){
+    echo "check permissions set on CSH"
+}

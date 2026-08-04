@@ -1,0 +1,11 @@
+
+Opening image/device:	'tmp/adfbitmap/ffdisk0049.adf' (read-write)
+
+Mounted volume:		0, 'AmigaLibDisk49'
+
+Volume size in blocks:   
+   total (including boot block)   1760
+   filesystem blocks (in bitmap)  1758
+
+Block allocation bitmap blocks:   1
+Bitmap reconstruction complete.

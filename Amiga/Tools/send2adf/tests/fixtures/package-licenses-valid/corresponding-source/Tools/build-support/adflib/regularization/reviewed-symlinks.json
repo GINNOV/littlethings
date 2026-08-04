@@ -1,0 +1,28 @@
+{
+  "commit": "73880de78bf472a1cc7d60f07fc217e02d571268",
+  "tree_sha": "04f96eb046afef4dff48070840b36b82d7f4f43f",
+  "operation": "replace-symlink-with-target-blob",
+  "entries": [
+    {
+      "path": "INSTALL",
+      "git_mode": "120000",
+      "symlink_blob_sha": "13dc4196d21d2a4eb02a7432c46c31e3b0aa7596",
+      "target": "INSTALL.md",
+      "target_blob_sha": "b812247a4a0477cd613e18dc68d28a41ef952ae7"
+    },
+    {
+      "path": "NEWS",
+      "git_mode": "120000",
+      "symlink_blob_sha": "b0936e8d0009aa3e8532b4a514d1b6d9dda574da",
+      "target": "ChangeLog",
+      "target_blob_sha": "0dd0f0b745b0ce3234539086730ccddd7f5e5ea7"
+    },
+    {
+      "path": "README",
+      "git_mode": "120000",
+      "symlink_blob_sha": "42061c01a1c70097d1e4579f29a5adf40abdec95",
+      "target": "README.md",
+      "target_blob_sha": "c08c7d31d23c58ff4cc7a2493cd3fbd7bea24860"
+    }
+  ]
+}

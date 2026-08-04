@@ -1,0 +1,7 @@
+cmd(){
+    ${adfbitmap} show "$dumpFile"
+}
+
+comment(){
+    echo "Show bitmap (blocks of the salvaged file are marked as used)"
+}

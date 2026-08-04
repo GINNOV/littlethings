@@ -1,0 +1,7 @@
+cmd(){
+    ${adfinfo} "$dumpFile" 3
+}
+
+comment(){
+    echo "Volume 3"
+}

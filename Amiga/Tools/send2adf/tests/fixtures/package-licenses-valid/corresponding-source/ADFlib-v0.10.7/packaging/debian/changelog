@@ -1,0 +1,97 @@
+adflib (0.10.7-1) unstable; urgency=medium
+
+  * prevent inf. loop on invalid directories, #99 (cont.)
+    * detect and override another case of invalid linking between
+      entries of a single directory
+    * preventing OOM in other cases (between directories) by limiting
+      max. depth level when traversing directories
+
+ -- Tomasz Wolak <tomas.wolak@gmail.com>  Wed, 15 Apr 2026 22:31:33 +0100
+
+
+adflib (0.10.6-1) unstable; urgency=medium
+
+  * prevent inf. loop on invalid directories, #99
+  * adfls: minor fixes (usage info), add man page.
+  * adfVolCreate: fixed (rare) memory leaks (on errors).
+  * some internal improvements (ie. refactoring, more tests).
+
+ -- Tomasz Wolak <tomas.wolak@gmail.com>  Fri, 20 Mar 2026 21:35:25 +0100
+
+
+adflib (0.10.5-1) unstable; urgency=medium
+
+  * fixed opening small (smaller than floppies) HDF files.
+  * added a new function for getting entry using sector number.
+  * adfinfo: allow inspecting entries deeper in the directory tree,
+    added showing info about links.
+  * adfls: a new utility for showing volume contents.
+  * some internal improvements (ie. refactoring, more tests).
+
+ -- Tomasz Wolak <tomas.wolak@gmail.com>  Mon, 22 Sep 2025 15:54:44 +0100
+
+
+adflib (0.10.4-1) unstable; urgency=medium
+
+  * unadf on Windows: fix extracting binary files with -p (pipe).
+  * make all operations using too long filenames fail (instead of truncating
+    the name).
+  * dump device: fail opening if write not possible (instead of silently
+    opening read-only).
+  * command-line tools: add showing build and runtime versions of the lib.
+  * added and updated tests (ie. for the bug and the changes mentioned above).
+
+ -- Tomasz Wolak <tomas.wolak@gmail.com>  Wed, 3 Sep 2025 16:47:32 +0100
+
+
+adflib (0.10.3-1) unstable; urgency=medium
+
+  * unadf on Windows: fix extracting binary files.
+
+ -- Tomasz Wolak <tomas.wolak@gmail.com>  Mon, 1 Sep 2025 21:04:28 +0100
+
+
+adflib (0.10.2-1) unstable; urgency=medium
+
+  * unadf: fix extracting tree for read-only directories.
+
+ -- Tomasz Wolak <tomas.wolak@gmail.com>  Wed, 16 May 2025 16:15:10 +0100
+
+
+adflib (0.10.1-1) unstable; urgency=medium
+
+  * fix tests to work also on FreeBSD
+
+ -- Tomasz Wolak <tomas.wolak@gmail.com>  Tue, 29 Apr 2025 12:28:09 +0100
+
+
+adflib (0.10.0-1) unstable; urgency=medium
+
+  * Some changes in the API (refactoring, renaming etc.).
+  * Improved device support (hard disks, size limits, predefined types).
+  * Renamed and improved command-line utilities.
+  * Bugfixes: write support (OFS data block update on appending), Linux
+    native device driver (opening device), unadf (setting file
+    permissions and timestamps on directories).
+  * More details on changes in ChangeLog and git log.
+
+ -- Tomasz Wolak <tomas.wolak@gmail.com>  Sun, 27 Apr 2025 18:18:20 +0100
+
+
+adflib (0.9.0-1) unstable; urgency=medium
+
+  * Library license changed to dual license (GPL2 and LGPL2.1).
+  * Many changes in the API (refactoring, renaming etc.).
+  * Improved support of block allocation bitmap (checking and reconstruction).
+  * Improved device API (added ramdisk and a possibility to implement others).
+  * Improved salvage, added an utility for undeleting files (EXPERIMENTAL!).
+  * Bugfixes: bitmap, memory leaks and others (more in ChangeLog and git log).
+
+ -- Tomasz Wolak <tomas.wolak@gmail.com>  Thu, 16 May 2024 17:19:35 +0100
+
+
+adflib (0.8.0-1) unstable; urgency=medium
+
+  * Initial packaging of version 0.8.0 for Debian.
+
+ -- Tomasz Wolak <tomas.wolak@gmail.com>  Mon, 26 Jun 2023 20:01:05 +0100

@@ -1,0 +1,145 @@
+name: cmake-windows
+
+on:
+  push:
+    branches: [ "master", "devel",
+      "citest",
+      "citest-cmake",
+      "citest-cmake-windows" ]
+    tags:
+      - '**'
+  pull_request:
+    branches: [ "master", "devel" ]
+
+jobs:
+  windows_build:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: install prereq.
+      run: |
+        choco install ninja cmake gzip
+        ninja --version
+        cmake --version
+        gzip --version
+    - name: cmake_shared_configure
+      shell: bash
+      run: util/cmake_shared_configure
+    - name: cmake_shared_build
+      shell: bash
+      run: util/cmake_shared_build --config Release
+    - name: copy binaries to orig. dirs
+      shell: bash
+      run: |
+        cp -v build/shared/tests/regr/Release/*.exe build/shared/tests/regr/
+        cp -v build/shared/tests/unit/Release/*.exe build/shared/tests/unit/
+        cp -v build/shared/examples/Release/*.exe build/shared/examples/
+    - name: copy dll to dirs with test exe
+      shell: bash
+      run: |
+        cp -v build/shared/src/Release/*.dll build/shared/tests/regr/
+        cp -v build/shared/src/Release/*.dll build/shared/tests/unit/
+        cp -v build/shared/src/Release/*.dll build/shared/examples/
+    - name: cmake_shared_test
+      shell: bash
+      run: util/cmake_shared_test
+#    - name: cmake_shared_install
+#      shell: bash
+#      run: util/cmake_shared_install
+    - name: check build files
+      shell: bash
+      run: |
+        pwd
+        find
+    - name: prepare artifacts
+      shell: bash
+      run: |
+        mkdir -p artifacts/bin
+        cp -v build/shared/src/Release/adf* \
+              build/shared/examples/Release/*.exe \
+              artifacts/bin
+        mkdir artifacts/include
+        cp -vR src/*.h artifacts/include
+        cp -vR README.md \
+               COPYING* \
+               AUTHORS \
+               ChangeLog \
+               doc \
+               artifacts/
+    - name: set env
+      shell: bash
+      run: echo "ADFLIB_TAG=${GITHUB_REF#refs/*/}" | tr / _ >> $GITHUB_ENV
+    - name: Test
+      shell: bash
+      run: |
+        echo $ADFLIB_TAG
+        echo ${{ env.ADFLIB_TAG }}
+    - uses: actions/upload-artifact@v4
+      with:
+#        name: adflib-${{ env.ADFLIB_TAG }}-windows
+        name: adflib-windows
+        path: |
+          artifacts/
+    - name: archive tests/examples
+      shell: bash
+      run: |
+        mkdir -v artifact-tests
+        tar cvzf artifact-tests/tests_examples.tgz \
+            tests/config* \
+            tests/examples/ \
+            tests/examples2/ \
+            tests/data
+    - uses: actions/upload-artifact@v4
+      with:
+        name: adflib-windows-tests-examples
+        path: |
+          artifact-tests
+
+  windows_test:
+    runs-on: windows-latest
+    needs: windows_build
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+#        name: adflib-${{ env.ADFLIB_TAG }}-windows
+        name: adflib-windows
+        path: .
+    - name: install prereq.
+      run: |
+        choco install gzip diffutils
+        gzip --version
+        cmp --version
+    - name: list files extracted from the artifact
+      shell: bash
+      run: find .
+    - uses: actions/download-artifact@v4
+      with:
+        name: adflib-windows-tests-examples
+        path: .
+    - name: extract tests/examples
+      shell: bash
+      run: tar xvzf tests_examples.tgz
+    - name: test command-line utils
+      shell: bash
+# these test does not work - output on windows is different (EOL is CR+LF)
+#      run: ./examples/tests/test_all_examples.sh bin
+# for just check if they execute at all instead
+      run: |
+        tests/examples/test_examples_basic.sh bin/
+        tests/examples/test_all_examples.sh bin
+    - name: test installed command-line utils (2)
+      shell: bash
+      run: |
+        cat tests/config.sh.in_cmake | \
+          sed -e 's@\${PROJECT_BINARY_DIR}@'"."'@' \
+              -e 's@\${PROJECT_SOURCE_DIR}@'"."'@' \
+          > tests/config.sh
+        cat tests/config.sh
+        ./tests/examples2/run_all_tests.sh bin
+    - name: store logs from failed tests
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: cmake_windows_logs_failed_tests
+        path: |
+          cmake/shared/Testing/

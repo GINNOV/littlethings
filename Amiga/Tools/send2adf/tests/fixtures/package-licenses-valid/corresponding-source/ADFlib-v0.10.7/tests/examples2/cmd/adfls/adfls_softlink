@@ -1,0 +1,7 @@
+cmd(){
+    ${adfls} -p 0 -l "$dumpFile" dir1/dir1_1/sl2testfile1samedir
+}
+
+comment(){
+    echo "List soft-link"
+}

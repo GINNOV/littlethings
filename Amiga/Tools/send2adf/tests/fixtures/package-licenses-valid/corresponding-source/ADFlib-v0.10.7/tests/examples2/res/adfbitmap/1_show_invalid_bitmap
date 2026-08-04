@@ -1,0 +1,149 @@
+
+Opening image/device:	'tmp/adfbitmap/ffdisk0049.adf' (read-only)
+
+Mounted volume:		0, 'AmigaLibDisk49'
+
+Volume size in blocks:   
+   total (including boot block)   1760
+   filesystem blocks (in bitmap)  1758
+
+Block allocation bitmap blocks:   1
+
+Block allocation bitmap valid:    No!
+
+======================================================================
+Bitmap allocation block - rootblock.bmPages[ 0 ], block 1101
+
+index  block  -> hex       value     bitmap ('.' = free, 'o' = used)
+----------------------------------------------------------------------
+    0      0  0x0000  0x00000000   oooooooo oooooooo oooooooo oooooooo
+    1     32  0x0020  0x00000000   oooooooo oooooooo oooooooo oooooooo
+    2     64  0x0040  0x00000000   oooooooo oooooooo oooooooo oooooooo
+    3     96  0x0060  0x00000000   oooooooo oooooooo oooooooo oooooooo
+    4    128  0x0080  0x00000000   oooooooo oooooooo oooooooo oooooooo
+    5    160  0x00a0  0x00000000   oooooooo oooooooo oooooooo oooooooo
+    6    192  0x00c0  0x00000000   oooooooo oooooooo oooooooo oooooooo
+    7    224  0x00e0  0x00000000   oooooooo oooooooo oooooooo oooooooo
+    8    256  0x0100  0x00000000   oooooooo oooooooo oooooooo oooooooo
+    9    288  0x0120  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   10    320  0x0140  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   11    352  0x0160  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   12    384  0x0180  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   13    416  0x01a0  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   14    448  0x01c0  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   15    480  0x01e0  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   16    512  0x0200  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   17    544  0x0220  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   18    576  0x0240  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   19    608  0x0260  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   20    640  0x0280  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   21    672  0x02a0  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   22    704  0x02c0  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   23    736  0x02e0  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   24    768  0x0300  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   25    800  0x0320  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   26    832  0x0340  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   27    864  0x0360  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   28    896  0x0380  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   29    928  0x03a0  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   30    960  0x03c0  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   31    992  0x03e0  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   32   1024  0x0400  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   33   1056  0x0420  0x08000000   oooooooo oooooooo oooooooo ooo.oooo
+   34   1088  0x0440  0xffff0000   oooooooo oooooooo ........ ........
+   35   1120  0x0460  0x003fffff   ........ ........ ......oo oooooooo
+   36   1152  0x0480  0x00000001   .ooooooo oooooooo oooooooo oooooooo
+   37   1184  0x04a0  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   38   1216  0x04c0  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   39   1248  0x04e0  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   40   1280  0x0500  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   41   1312  0x0520  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   42   1344  0x0540  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   43   1376  0x0560  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   44   1408  0x0580  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   45   1440  0x05a0  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   46   1472  0x05c0  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   47   1504  0x05e0  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   48   1536  0x0600  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   49   1568  0x0620  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   50   1600  0x0640  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   51   1632  0x0660  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   52   1664  0x0680  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   53   1696  0x06a0  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   54   1728  0x06c0  0x00000000   oooooooo oooooooo oooooooo oooooooo
+   55   1760  0x06e0  0x2020696f   ....o..o .oo.o..o ooooo.oo ooooo.oo
+   56   1792  0x0700  0x73697a65   .o.oo..o o.o....o .oo.o..o ..oo...o
+   57   1824  0x0720  0x203d2069   .oo.o..o ooooo.oo .o....oo ooooo.oo
+   58   1856  0x0740  0x6f73697a   o.o....o .oo.o..o ..oo...o ....o..o
+   59   1888  0x0760  0x652f323b   ..o...oo o.oo..oo ....o.oo .o.oo..o
+   60   1920  0x0780  0x0a202020   ooooo.oo ooooo.oo ooooo.oo o.o.oooo
+   61   1952  0x07a0  0x20202020   ooooo.oo ooooo.oo ooooo.oo ooooo.oo
+   62   1984  0x07c0  0x20202020   ooooo.oo ooooo.oo ooooo.oo ooooo.oo
+   63   2016  0x07e0  0x20202020   ooooo.oo ooooo.oo ooooo.oo ooooo.oo
+   64   2048  0x0800  0x207d2077   ...o...o ooooo.oo .o.....o ooooo.oo
+   65   2080  0x0820  0x68696c65   .o.oo..o oo..o..o .oo.o..o ooo.o..o
+   66   2112  0x0840  0x2028636f   ....o..o ..ooo..o ooo.o.oo ooooo.oo
+   67   2144  0x0860  0x70796275   .o.o...o o.ooo..o .oo....o oooo...o
+   68   2176  0x0880  0x66203d3d   .o....oo .o....oo ooooo.oo o..oo..o
+   69   2208  0x08a0  0x20302026   o..oo.oo ooooo.oo oooo..oo ooooo.oo
+   70   2240  0x08c0  0x20696f73   ..oo...o ....o..o .oo.o..o ooooo.oo
+   71   2272  0x08e0  0x697a6520   ooooo.oo .o.oo..o o.o....o .oo.o..o
+   72   2304  0x0900  0x3e203531   .ooo..oo .o.o..oo ooooo.oo o.....oo
+   73   2336  0x0920  0x32293b0a   o.o.oooo ..o...oo .oo.o.oo o.oo..oo
+   74   2368  0x0940  0x0a202020   ooooo.oo ooooo.oo ooooo.oo o.o.oooo
+   75   2400  0x0960  0x20202020   ooooo.oo ooooo.oo ooooo.oo ooooo.oo
+   76   2432  0x0980  0x20202020   ooooo.oo ooooo.oo ooooo.oo ooooo.oo
+   77   2464  0x09a0  0x20202020   ooooo.oo ooooo.oo ooooo.oo ooooo.oo
+   78   2496  0x09c0  0x202f2a20   ooooo.oo o.o.o.oo ....o.oo ooooo.oo
+   79   2528  0x09e0  0x436f7079   .oo....o oooo...o ....o..o ..oooo.o
+   80   2560  0x0a00  0x20746865   .o.oo..o ooo.o..o oo.o...o ooooo.oo
+   81   2592  0x0a20  0x2066696c   oo..o..o .oo.o..o o..oo..o ooooo.oo
+   82   2624  0x0a40  0x65202a2f   ....o.oo o.o.o.oo ooooo.oo .o.oo..o
+   83   2656  0x0a60  0x0a202020   ooooo.oo ooooo.oo ooooo.oo o.o.oooo
+   84   2688  0x0a80  0x20202020   ooooo.oo ooooo.oo ooooo.oo ooooo.oo
+   85   2720  0x0aa0  0x20202020   ooooo.oo ooooo.oo ooooo.oo ooooo.oo
+   86   2752  0x0ac0  0x20202020   ooooo.oo ooooo.oo ooooo.oo ooooo.oo
+   87   2784  0x0ae0  0x20646f20   ooooo.oo ....o..o oo.oo..o ooooo.oo
+   88   2816  0x0b00  0x7b0a2020   ooooo.oo ooooo.oo o.o.oooo ..o....o
+   89   2848  0x0b20  0x20202020   ooooo.oo ooooo.oo ooooo.oo ooooo.oo
+   90   2880  0x0b40  0x20202020   ooooo.oo ooooo.oo ooooo.oo ooooo.oo
+   91   2912  0x0b60  0x20202020   ooooo.oo ooooo.oo ooooo.oo ooooo.oo
+   92   2944  0x0b80  0x20202020   ooooo.oo ooooo.oo ooooo.oo ooooo.oo
+   93   2976  0x0ba0  0x20202020   ooooo.oo ooooo.oo ooooo.oo ooooo.oo
+   94   3008  0x0bc0  0x20206163   ..ooo..o .oooo..o ooooo.oo ooooo.oo
+   95   3040  0x0be0  0x7475616c   oo..o..o .oooo..o .o.o...o oo.o...o
+   96   3072  0x0c00  0x203d2052   o.oo.o.o ooooo.oo .o....oo ooooo.oo
+   97   3104  0x0c20  0x65616428   ooo.o.oo oo.oo..o .oooo..o .o.oo..o
+   98   3136  0x0c40  0x636f7079   .oo....o oooo...o ....o..o ..ooo..o
+   99   3168  0x0c60  0x696e2c20   ooooo.oo oo..o.oo o...o..o .oo.o..o
+  100   3200  0x0c80  0x636f7079   .oo....o oooo...o ....o..o ..ooo..o
+  101   3232  0x0ca0  0x6275662c   oo..o.oo o..oo..o .o.o...o o.ooo..o
+  102   3264  0x0cc0  0x20696f73   ..oo...o ....o..o .oo.o..o ooooo.oo
+  103   3296  0x0ce0  0x697a6529   .oo.o.oo .o.oo..o o.o....o .oo.o..o
+  104   3328  0x0d00  0x3b0a2020   ooooo.oo ooooo.oo o.o.oooo ..o...oo
+  105   3360  0x0d20  0x20202020   ooooo.oo ooooo.oo ooooo.oo ooooo.oo
+  106   3392  0x0d40  0x20202020   ooooo.oo ooooo.oo ooooo.oo ooooo.oo
+  107   3424  0x0d60  0x20202020   ooooo.oo ooooo.oo ooooo.oo ooooo.oo
+  108   3456  0x0d80  0x20202020   ooooo.oo ooooo.oo ooooo.oo ooooo.oo
+  109   3488  0x0da0  0x20202020   ooooo.oo ooooo.oo ooooo.oo ooooo.oo
+  110   3520  0x0dc0  0x20206966   o..oo..o .oo.o..o ooooo.oo ooooo.oo
+  111   3552  0x0de0  0x20285772   o.oo...o ...o.o.o ooo.o.oo ooooo.oo
+  112   3584  0x0e00  0x69746528   ooo.o.oo .o.oo..o oo.o...o .oo.o..o
+  113   3616  0x0e20  0x636f7079   .oo....o oooo...o ....o..o ..ooo..o
+  114   3648  0x0e40  0x6f75742c   oo..o.oo oo.o...o .o.o...o ....o..o
+  115   3680  0x0e60  0x20636f70   oooo...o ....o..o ..ooo..o ooooo.oo
+  116   3712  0x0e80  0x79627566   o..oo..o .o.o...o o.ooo..o .oo....o
+  117   3744  0x0ea0  0x2c206163   ..ooo..o .oooo..o ooooo.oo oo..o.oo
+  118   3776  0x0ec0  0x7475616c   oo..o..o .oooo..o .o.o...o oo.o...o
+  119   3808  0x0ee0  0x2920213d   .o....oo .oooo.oo ooooo.oo .oo.o.oo
+  120   3840  0x0f00  0x20616374   oo.o...o ..ooo..o .oooo..o ooooo.oo
+  121   3872  0x0f20  0x75616c29   .oo.o.oo oo..o..o .oooo..o .o.o...o
+  122   3904  0x0f40  0x0a202020   ooooo.oo ooooo.oo ooooo.oo o.o.oooo
+  123   3936  0x0f60  0x20202020   ooooo.oo ooooo.oo ooooo.oo ooooo.oo
+  124   3968  0x0f80  0x20202020   ooooo.oo ooooo.oo ooooo.oo ooooo.oo
+  125   4000  0x0fa0  0x20202020   ooooo.oo ooooo.oo ooooo.oo ooooo.oo
+  126   4032  0x0fc0  0x20202020   ooooo.oo ooooo.oo ooooo.oo ooooo.oo
+
+Blocks used    1718 (879616 bytes)
+       free      40 (20480 bytes)
+       total   1758 (900096 bytes)

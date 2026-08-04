@@ -1,0 +1,7 @@
+cmd(){
+    $unadf -d tmp/${testName}/mangle_win32_filenames -w "${dumpFile}"
+}
+
+comment(){
+    echo "-w (mangle win32 filenames) option"
+}

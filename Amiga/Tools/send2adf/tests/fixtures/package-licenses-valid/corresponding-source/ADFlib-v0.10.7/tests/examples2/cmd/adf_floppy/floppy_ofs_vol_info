@@ -1,0 +1,9 @@
+cmd(){
+    $adfinfo "$dumpFile" 0 | grep -v \
+      -e Created: -e 'Last access:' -e checkSum: -e calculated -e days: \
+      -e mins: -e ticks: -e coDays: -e coMins -e coTicks
+}
+
+comment(){
+    echo "adfinfo ${dumpFile} 0 (OFS volume)"
+}

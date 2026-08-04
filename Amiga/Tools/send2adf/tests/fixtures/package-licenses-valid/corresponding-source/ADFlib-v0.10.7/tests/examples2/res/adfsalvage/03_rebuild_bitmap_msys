@@ -1,0 +1,11 @@
+
+Opening image/device:	'tmp/adfsalvage/testhd.adf' (read-write)
+
+Mounted volume:		0, 'hd_ffs_intl_dircache'
+
+Volume size in blocks:   
+   total (including boot block)   3520
+   filesystem blocks (in bitmap)  3518
+
+Block allocation bitmap blocks:   1
+Bitmap reconstruction complete.

@@ -1,0 +1,8 @@
+*.log
+*.trs
+/adfbitmap
+/adfimgcreate
+/adfformat
+/adfinfo
+/adfsalvage
+/unadf

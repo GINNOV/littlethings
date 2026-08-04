@@ -1,0 +1,7 @@
+cmd(){
+    $unadf -p "${dumpFile}" s/startup-sequence
+}
+
+comment(){
+    echo "-p (extract to pipe) option"
+}

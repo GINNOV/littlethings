@@ -1,0 +1,7 @@
+cmd(){
+    ${adfsalvage} "$dumpFile"
+}
+
+comment(){
+    echo "Show deleted entries (should be none)"
+}

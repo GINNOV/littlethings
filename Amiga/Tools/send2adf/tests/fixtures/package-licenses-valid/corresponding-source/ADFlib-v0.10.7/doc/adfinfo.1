@@ -1,0 +1,59 @@
+.TH ADFINFO 1 "Mar 2025"
+.SH NAME
+adfinfo \- show low-level information (filesystem metadata) about the Amiga
+Disk File (ADF) devices and about the volumes, the directories and the files
+stored inside.
+
+.SH SYNOPSIS
+.B adfinfo <\fIimage_adf\fR> [\fIvol\fR] [\fIpath\fR]
+.SH DESCRIPTION
+\fBadfinfo\fR is a simple utility allowing to display metadata of ADF
+images. This includes low-level information about:
+.TP
+devices
+.BR
+type, geometry, volume list
+.TP
+volumes
+.BR
+type, Amiga filesystem type (OFS/FFS), free blocks, block information (boot block,
+root block)
+.TP
+directories
+.BR
+directory block, hashtable
+.TP
+files
+.BR
+file header block, extension blocks, data blocks
+.PP
+It can be useful for exploring or debugging low-level device structure and
+filesystem information within ADFs.
+
+Also, anyone interested in a low-level structure of filesystems or retro-
+computing can explore a bit solutions made for Commodore Amiga computers
+a few decades ago. Enjoy!
+.
+.SH EXAMPLES
+\fBadfinfo mydisk.adf\fR
+.RS
+shows metadata of the device (ADF image mydisk.adf) and its volumes
+.RE
+
+\fBadfinfo mydisk.adf s\fR
+.RS
+shows metadata of the directory s (on volume 0 of mydisk.adf)
+
+.RE
+\fBadfinfo mydisk.adf s/startup-sequence\fR
+.RS
+shows metadata of the file s/startup-sequence (on volume 0 of mydisk.adf)
+.RE
+.SH SEE ALSO
+.BR adfimgcreate (1), adfformat (1), unadf (1), adflib (3)
+.SH NOTES
+Detailed info about Commodore Amiga filesystems: http://lclevy.free.fr/adflib/adf_info.html
+.SH AUTHOR
+\fBadfinfo\fR was written by \fBTomasz Wolak\fR <tomas.wolak@gmail.com>,
+as a part of the ADFlib (https://github.com/adflib/ADFlib).
+.PP

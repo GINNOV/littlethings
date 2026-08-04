@@ -1,0 +1,7 @@
+cmd(){
+    $unadf -d tmp/${testName}/extract_to_dir "${dumpFile}"
+}
+
+comment(){
+    echo "-d (extract to dir)"
+}

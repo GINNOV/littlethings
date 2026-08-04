@@ -1,0 +1,1 @@
+Synthetic fixture for the complete GPL-2.0 text.

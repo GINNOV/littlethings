@@ -1,0 +1,75 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {"major": 3, "minor": 24, "patch": 0},
+  "configurePresets": [
+    {
+      "name": "ci",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build/ci",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "BUILD_TESTING": "ON",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "production",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build/production",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "BUILD_TESTING": "OFF",
+        "SEND2ADF_PRODUCTION_BUILD": "ON",
+        "SEND2ADF_TESTING": "OFF",
+        "ADFLIB_CANARY": "OFF"
+      }
+    },
+    {
+      "name": "asan",
+      "inherits": "ci",
+      "binaryDir": "${sourceDir}/build/asan",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "SEND2ADF_SANITIZERS": "address"
+      }
+    },
+    {
+      "name": "asan-ubsan",
+      "inherits": "ci",
+      "binaryDir": "${sourceDir}/build/asan-ubsan",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "SEND2ADF_SANITIZERS": "address,undefined"
+      }
+    },
+    {
+      "name": "release",
+      "inherits": "production",
+      "binaryDir": "${sourceDir}/build/release"
+    }
+  ],
+  "buildPresets": [
+    {"name": "ci", "configurePreset": "ci"},
+    {"name": "asan", "configurePreset": "asan"},
+    {"name": "asan-ubsan", "configurePreset": "asan-ubsan"},
+    {"name": "production", "configurePreset": "production"},
+    {"name": "release", "configurePreset": "release"}
+  ],
+  "testPresets": [
+    {
+      "name": "ci",
+      "configurePreset": "ci",
+      "output": {"outputOnFailure": true}
+    },
+    {
+      "name": "asan",
+      "configurePreset": "asan",
+      "output": {"outputOnFailure": true}
+    },
+    {
+      "name": "asan-ubsan",
+      "configurePreset": "asan-ubsan",
+      "output": {"outputOnFailure": true}
+    }
+  ]
+}

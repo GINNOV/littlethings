@@ -1,0 +1,7 @@
+cmd(){
+    $unadf -r "${dumpFile}"
+}
+
+comment(){
+    echo "-r (list entire disk) option"
+}

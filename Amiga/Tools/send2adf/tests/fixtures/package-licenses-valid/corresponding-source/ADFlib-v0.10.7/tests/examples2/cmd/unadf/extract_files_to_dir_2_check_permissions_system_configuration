@@ -1,0 +1,10 @@
+cmd(){
+    # check permissions were set on extracted files
+
+    # 'x' not set
+    [ ! -x tmp/${testName}/extract_files_to_dir/devs/system-configuration ]
+}
+
+comment(){
+    echo "check permissions set on devs/system-configuration"
+}

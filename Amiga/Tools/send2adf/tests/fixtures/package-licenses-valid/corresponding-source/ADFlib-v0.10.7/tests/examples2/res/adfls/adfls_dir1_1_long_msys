@@ -1,0 +1,4 @@
+                 512  2022/12/03 15:26:55  LS sl2testfile1samedir -> testfile1.txt
+                 512  2022/12/03 15:27:19  LS sl2sl2sl2testfile1samedir -> sl2sl2testfile1samedir
+                 512  2022/12/03 15:27:06  LS sl2sl2testfile1samedir -> sl2testfile1samedir
+----rwed          66  2022/12/03 15:32:32  F  testfile1.txt

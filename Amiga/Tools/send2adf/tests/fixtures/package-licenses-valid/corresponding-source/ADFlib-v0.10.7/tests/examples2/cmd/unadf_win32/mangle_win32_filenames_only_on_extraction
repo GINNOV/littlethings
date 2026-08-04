@@ -1,0 +1,7 @@
+cmd(){
+    $unadf -r -w "${dumpFile}"
+}
+
+comment(){
+    echo "confirm the mangling (-w) only occurs on extraction"
+}

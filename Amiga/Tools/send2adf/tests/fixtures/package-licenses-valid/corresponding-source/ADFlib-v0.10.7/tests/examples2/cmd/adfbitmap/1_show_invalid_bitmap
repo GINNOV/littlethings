@@ -1,0 +1,8 @@
+cmd(){
+    ${adfbitmap} show "$dumpFile"
+}
+
+comment(){
+    # bitmap is only marked as invalid - must be the same after reconstruction
+    echo "Show bitmap info (bitmap valid, but marked invalid)"
+}

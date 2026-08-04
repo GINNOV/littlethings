@@ -1,0 +1,63 @@
+.TH ADFSALVAGE 1 "Mar 2025"
+.SH NAME
+adfsalvage \- show or recover (in the future - extract) deleted files from an ADF device.
+
+.SH SYNOPSIS
+.B adfsalvage
+.RB [ -h ]
+.RB [ -v ]
+.RB [ -V ]
+.RB [ -p ] \fIvol\fP
+.I <\fIadf_device\fR>
+.RB [ \fIsector...\fP ]
+.SH DESCRIPTION
+\fBadfsalvage\fR is a filesystem utility allowing to display or to recover
+(possibly, in the future, also to extract) deleted files from an OFS/FFS volume of
+an ADF device.
+.PP
+When called with just the name of an ADF device, it shows the list of deleted files,
+along with the position (as sector/block number) of their file header blocks.
+The undelete can be performed by adding the list of positions of the file header
+blocks of the deleted files to the command.
+.SH WARNING
+PLEASE NOTE THAT THIS IS AN EXPERIMENTAL UTILITY, USE IT ON A COPY, NOT ON
+THE ORIGINAL FILE/DEVICE! (ESPECIALLY IF THE FILESYSTEM USES DIRCACHE!).
+.
+.SH OPTIONS
+A summary of the options.
+.TP
+.B \-h
+Show help.
+.TP
+.B \-v
+Be more verbose.
+.TP
+.B \-V
+Show version.
+.TP
+.B \-p \fIvol\fP
+Specify volume/partition number (counting from 0), default: 0
+
+.SH EXAMPLES
+\fBadfsalvage mydisk.adf\fR
+.RS
+Shows list of deleted entries (files, directories) on the volume 0 of mydisk.adf
+.RE
+
+\fBadfsalvage -p 1 mydisk.adf 884 1000\fR
+.RS
+Undeletes the files which file header blocks are at the specified sectors
+(884 and 1000) of the second volume/partition (the first is 0). The sector numbers
+should be taken from the list of deleted entries (by running this utility without
+providing any sector numbers).
+.RE
+
+.SH SEE ALSO
+.BR adfinfo (1), unadf (1), adflib (3)
+.SH NOTES
+Detailed info about Commodore Amiga filesystems:
+http://lclevy.free.fr/adflib/adf_info.html
+.SH AUTHOR
+\fBadfsalvage\fR was written by \fBTomasz Wolak\fR <tomas.wolak@gmail.com>,
+as a part of the ADFlib (https://github.com/adflib/ADFlib).
+.PP

@@ -1,0 +1,95 @@
+
+Opening image/device:	'tmp/adfinfo_hd/a590_WD93028XA_6parts.hdd'
+Mounted volume:		2
+
+ADF volume info:
+  Name:		OFS DirCache                  
+  Type:		Hard disk partition
+  Filesystem:	OFS  DIRCACHE 
+  Size:		6156 blocks (3.01 MiB)
+  Free space:	6143 blocks (3.00 MiB)
+  R/W:		Read only
+  Created:	25/03/2025 17:33:36
+  Last access:	25/03/2025 17:33:37
+		25/03/2025 17:33:36
+
+Bootblock:
+  dosType:	DOS. (0x4)
+  checkSum:	0x0
+  - calculated:	0xbbb0acfb  -> different(!)
+  rootBlock:	0x0 (0)
+
+Root block sector:	3078
+
+Rootblock:
+  0x000  type:		0x2		2
+  0x004  headerKey:	0x0		0
+  0x008  highSeq:	0x0		0
+  0x00c  hashTableSize:	0x48		72
+  0x010  firstData:	0x0		0
+  0x014  checkSum:	0xd5876c7a
+     ->  calculated:	0xd5876c7a -> OK
+  0x018  hashTable [ 72 ]:	(see below)
+  0x138  bmFlag:	0xffffffff
+  0x13c  bmPages[ 25 ]:		(see below)
+  0x1a0  bmExt:		0x0
+  0x1a4  cDays:		0x4362		17250
+  0x1a8  cMins:		0x41d		1053
+  0x1ac  cTicks:	0x724		1828
+  0x1b0  nameLen:	0xe		14
+  0x1b1  diskName:	VolOFSDirCache
+  0x1d0  r2[8]:			(see below)
+  0x1d8  days:		0x4362		17250
+  0x1dc  mins:		0x41d		1053
+  0x1e0  ticks:		0x747		1863
+  0x1e4  coDays:	0x4362		17250
+  0x1e8  coMins:	0x41d		1053
+  0x1ec  coTicks:	0x714		1812
+  0x1f0  nextSameHash:	0x0		0
+  0x1f4  parent:	0x0		0
+  0x1f8  extension:	0xc07		3079
+  0x1fc  secType:	0x1		1
+
+Hashtable (non-zero):
+  hashtable [  4 ]:		0xc0a		3082
+  hashtable [ 67 ]:		0xc0d		3085
+
+Bitmap block pointers (bmPages) (non-zero):
+  bmpages [  0 ]:		0xc08		3080
+  bmpages [  1 ]:		0xc09		3081
+
+DirCache block 0, block 3079 (0x00000c07):
+  0x000  type:		0x21		33
+  0x004  headerKey:	0xc07		3079
+  0x008  parent:	0xc06		3078
+  0x00c  recordsNb:	0x2		2
+  0x010  nextDirC:	0x0		0
+  0x014  checkSum:	0xb58e6dfa
+     ->  calculated:	0xb58e6dfa -> OK
+  0x018  records[]: (remaining 488 bytes, entries list below)
+
+DirCache record 0:
+  header:	0x00000c0a	3082
+  size:		0x00000000	0
+  protect:	0x00000000	0
+  days:		0x4362		17250
+  mins:		0x041d		1053
+  tics:		0x0724		1828
+  type:		0x02		2
+  nlen:		0x08		8
+  clen:		0x00		0
+  name:		'Trashcan'
+  comm:		''
+
+DirCache record 1:
+  header:	0x00000c0d	3085
+  size:		0x00000494	1172
+  protect:	0x00000002	2
+  days:		0x4362		17250
+  mins:		0x041d		1053
+  tics:		0x0726		1830
+  type:		0xfd		-3
+  nlen:		0x0d		13
+  clen:		0x00		0
+  name:		'Trashcan.info'
+  comm:		''

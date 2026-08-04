@@ -1,0 +1,59 @@
+
+Opening image/device:	'tmp/adfinfo_hd/a590_WD93028XA_6parts.hdd'
+Mounted volume:		0
+
+ADF volume info:
+  Name:		OFS                           
+  Type:		Hard disk partition
+  Filesystem:	OFS  
+  Size:		6156 blocks (3.01 MiB)
+  Free space:	6146 blocks (3.00 MiB)
+  R/W:		Read only
+  Created:	25/03/2025 17:32:18
+  Last access:	25/03/2025 17:32:19
+		25/03/2025 17:32:19
+
+Bootblock:
+  dosType:	DOS. (0x0)
+  checkSum:	0x0
+  - calculated:	0xbbb0acff  -> different(!)
+  rootBlock:	0x0 (0)
+
+Root block sector:	3078
+
+Rootblock:
+  0x000  type:		0x2		2
+  0x004  headerKey:	0x0		0
+  0x008  highSeq:	0x0		0
+  0x00c  hashTableSize:	0x48		72
+  0x010  firstData:	0x0		0
+  0x014  checkSum:	0xaa621f5e
+     ->  calculated:	0xaa621f5e -> OK
+  0x018  hashTable [ 72 ]:	(see below)
+  0x138  bmFlag:	0xffffffff
+  0x13c  bmPages[ 25 ]:		(see below)
+  0x1a0  bmExt:		0x0
+  0x1a4  cDays:		0x4362		17250
+  0x1a8  cMins:		0x41c		1052
+  0x1ac  cTicks:	0x3bd		957
+  0x1b0  nameLen:	0x6		6
+  0x1b1  diskName:	VolOFS
+  0x1d0  r2[8]:			(see below)
+  0x1d8  days:		0x4362		17250
+  0x1dc  mins:		0x41c		1052
+  0x1e0  ticks:		0x3e0		992
+  0x1e4  coDays:	0x4362		17250
+  0x1e8  coMins:	0x41c		1052
+  0x1ec  coTicks:	0x3ac		940
+  0x1f0  nextSameHash:	0x0		0
+  0x1f4  parent:	0x0		0
+  0x1f8  extension:	0xc07		3079
+  0x1fc  secType:	0x1		1
+
+Hashtable (non-zero):
+  hashtable [  4 ]:		0xc09		3081
+  hashtable [ 67 ]:		0xc0a		3082
+
+Bitmap block pointers (bmPages) (non-zero):
+  bmpages [  0 ]:		0xc07		3079
+  bmpages [  1 ]:		0xc08		3080

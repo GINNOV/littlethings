@@ -1,0 +1,7 @@
+cmd(){
+    ${adfinfo} "$dumpFile" 0 blue2c.gif
+}
+
+comment(){
+    echo "Show metadata of the salvaged file"
+}

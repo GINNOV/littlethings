@@ -1,0 +1,8 @@
+cmd(){
+    $unadf -d tmp/${testName}/extract_files_to_dir "${dumpFile}" \
+        csh s/startup-sequence devs/system-configuration
+}
+
+comment(){
+    echo "-d (extract to dir) with specific files, not all their original case"
+}

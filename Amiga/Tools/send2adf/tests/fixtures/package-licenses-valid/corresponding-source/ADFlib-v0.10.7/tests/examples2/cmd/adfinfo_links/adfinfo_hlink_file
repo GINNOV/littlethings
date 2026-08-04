@@ -1,0 +1,7 @@
+cmd(){
+    ${adfinfo} "$dumpFile" 0 hardlinks_file/hl2testfile1
+}
+
+comment(){
+    echo "Hard-link to file (in a different directory)"
+}

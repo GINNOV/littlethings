@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "policy": {
+    "combined_binary": "GPL-2.0-or-later",
+    "original_repository_source": "MIT",
+    "adflib_copying": "GNU Lesser General Public License, version 2.1",
+    "source_notices": "GPL-2.0-or-later"
+  },
+  "baseline": {
+    "commit": "73880de78bf472a1cc7d60f07fc217e02d571268",
+    "status": "pending_legal_review"
+  },
+  "approvals": [
+    {
+      "schema_version": 1,
+      "approval_pr": 1,
+      "reviewer_login": "synthetic-fixture-reviewer",
+      "reviewer_user_id": 1,
+      "approved_at": "2026-01-01T00:00:00Z",
+      "candidate_commit": "73880de78bf472a1cc7d60f07fc217e02d571268",
+      "license_inventory_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+      "bootblock_inventory_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+      "policy_decision": "approved",
+      "entry_digest": "4349834851f72ca81c34eb3dd3c9c766f9909934ff83c26ccbc82f35c5f4fe4a"
+    }
+  ],
+  "bootblocks": [
+    {
+      "consumer": "send2adf",
+      "name": "kickstart-1.3",
+      "sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+      "origin": "synthetic fixture",
+      "redistribution_terms": "synthetic fixture",
+      "legal_decision": "approved"
+    }
+  ]
+}

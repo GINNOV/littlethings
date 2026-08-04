@@ -1,0 +1,139 @@
+﻿{
+  "configurations": [
+    {
+      "name": "x64-Debug-Static",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": "",
+      "variables": [
+        {
+          "name": "ADFLIB_ENABLE_NATIVE_DEV",
+          "value": "true",
+          "type": "BOOL"
+        },
+        {
+          "name": "ADFLIB_BUILD_DLL",
+          "value": "false",
+          "type": "BOOL"
+        },
+        {
+          "name": "ADFLIB_ENABLE_ADDRESS_SANITIZER",
+          "value": "true",
+          "type": "BOOL"
+        }
+      ]
+    },
+    {
+      "name": "x64-Debug-Shared",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "-DBUILD_SHARED_LIBS:BOOL=ON",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "variables": [
+        {
+          "name": "ADFLIB_ENABLE_NATIVE_DEV",
+          "value": "true",
+          "type": "BOOL"
+        },
+        {
+          "name": "ADFLIB_ENABLE_ADDRESS_SANITIZER",
+          "value": "true",
+          "type": "BOOL"
+        }
+      ]
+    },
+    {
+      "name": "x64-Release-Static",
+      "generator": "Ninja",
+      "configurationType": "Release",
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "variables": [
+        {
+          "name": "ADFLIB_ENABLE_NATIVE_DEV",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "ADFLIB_BUILD_DLL",
+          "value": "false",
+          "type": "BOOL"
+        },
+        {
+          "name": "ADFLIB_ENABLE_ADDRESS_SANITIZER",
+          "value": "false",
+          "type": "BOOL"
+        }
+      ]
+    },
+    {
+      "name": "x64-Release-Shared",
+      "generator": "Ninja",
+      "configurationType": "Release",
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "-DBUILD_SHARED_LIBS:BOOL=ON",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "variables": [
+        {
+          "name": "ADFLIB_ENABLE_ADDRESS_SANITIZER",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "ADFLIB_ENABLE_NATIVE_DEV",
+          "value": "true",
+          "type": "BOOL"
+        },
+        {
+          "name": "ADFLIB_BUILD_DLL",
+          "value": "true",
+          "type": "BOOL"
+        }
+      ]
+    },
+    {
+      "name": "x64-Release-Shared-clang",
+      "generator": "Ninja",
+      "configurationType": "Release",
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "-DBUILD_SHARED_LIBS:BOOL=ON",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "clang_cl_x64" ],
+      "variables": [
+        {
+          "name": "ADFLIB_ENABLE_ADDRESS_SANITIZER",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "ADFLIB_ENABLE_NATIVE_DEV",
+          "value": "true",
+          "type": "BOOL"
+        },
+        {
+          "name": "ADFLIB_BUILD_DLL",
+          "value": "true",
+          "type": "BOOL"
+        }
+      ]
+    }
+  ]
+}

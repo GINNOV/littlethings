@@ -1,0 +1,13 @@
+cmd(){
+    # the command return status 1 (error), must ignore it and return 0
+    # for the test to pass (the test needs output)
+    #$( $unadf 2>&1 || exit 0; )
+    set +e
+    $unadf -v 2>&1
+    set -e
+#    return 0
+}
+
+comment(){
+    echo "check invalid arg for -v"
+}

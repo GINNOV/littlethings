@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ginnov.example/schemas/adflib-license-approval-entry-v1.json",
+  "title": "ADFlib legal approval ledger entry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "approval_pr",
+    "reviewer_login",
+    "reviewer_user_id",
+    "approved_at",
+    "candidate_commit",
+    "license_inventory_sha256",
+    "bootblock_inventory_sha256",
+    "policy_decision",
+    "entry_digest"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "approval_pr": {"type": "integer", "minimum": 1},
+    "reviewer_login": {"type": "string", "minLength": 1},
+    "reviewer_user_id": {"type": "integer", "minimum": 1},
+    "approved_at": {"type": "string", "format": "date-time"},
+    "candidate_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "license_inventory_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "bootblock_inventory_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "policy_decision": {"const": "approved"},
+    "entry_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

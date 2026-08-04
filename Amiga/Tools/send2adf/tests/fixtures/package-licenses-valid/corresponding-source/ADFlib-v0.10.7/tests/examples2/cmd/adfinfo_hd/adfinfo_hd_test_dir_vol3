@@ -1,0 +1,7 @@
+cmd(){
+    ${adfinfo} "$dumpFile" 3 Trashcan
+}
+
+comment(){
+    echo "File on volume 3"
+}

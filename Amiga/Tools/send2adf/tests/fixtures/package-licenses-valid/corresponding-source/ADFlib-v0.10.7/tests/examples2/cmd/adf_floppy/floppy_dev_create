@@ -1,0 +1,7 @@
+cmd(){
+    $adfimgcreate -t dd "$dumpFile"
+}
+
+comment(){
+    echo "adfimgcreate -t dd"
+}

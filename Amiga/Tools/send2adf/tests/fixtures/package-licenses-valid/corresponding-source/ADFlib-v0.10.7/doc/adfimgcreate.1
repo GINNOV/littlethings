@@ -1,0 +1,36 @@
+.TH ADFIMGCREATE 1 "Mar 2025"
+.SH NAME
+adfimgcreate \- create empty (not formatted!) ADF/HDF image files.
+.SH SYNOPSIS
+.B adfimgcreate
+[\fBoptions\fR] \fIimgfile\fR
+.SH DESCRIPTION
+\fBadfimgcreate\fR is a simple utility allowing to create ADF or HDF files,
+file images of Amiga floppy disks or hard disks.
+.PP
+The properties of the image to create can be specified by providing either
+its type (\fB-t\fR), its size (in Kib with \fB-k\fR or in MiB with \fB-m\fR)
+or its geometry (tracks / heads / sectors, assuming sectors of 512 bytes).
+.
+.SH OPTIONS
+.TP
+\fB-k sizeKiB\fR
+size in KiB
+.TP
+\fB-m sizeMiB\fR
+size in Mib
+.TP
+\fB-g tracks heads sectors\fR
+geometry
+.TP
+\fB-t type\fR
+type of the image file (use -h to see available types)
+.TP
+\fB-h\fR
+show help
+.SH SEE ALSO
+\fBadfformat\fR(1)
+.SH AUTHOR
+\fBadfimgcreate\fR was written by \fBTomasz Wolak\fR <tomas.wolak@gmail.com>,
+as part of the ADFlib (https://github.com/adflib/ADFlib).
+.PP

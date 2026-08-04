@@ -1,0 +1,263 @@
+
+Opening image/device:	'tmp/adfinfo_hd/a590_WD93028XA_6parts.hdd'
+
+ADF device info:
+  Type:		Western Digital WD9302x (A590)
+  Driver:	dump
+  Geometry:
+    Cylinders	782
+    Heads	2
+    Sectors	27
+
+  Volumes:	6
+   idx  first bl.     last bl.    filesystem    name
+     0        108         6263    DOS(OFS)      "OFS"
+     1       6264        12419    ???(OFS)      "OFS INTL"
+     2      12420        18575    ???(OFS)      "OFS DirCache"
+     3      18576        24731    DOS(FFS)      "FFS"
+     4      24732        30887    DOS(FFS)      "FFS INTL"
+     5      30888        42227    DOS(FFS)      "FFS DirCache"
+
+
+Rigid Disk Block (RDSK / RDB):
+  0x000  type:                0x5244534b        	'RDSK'
+  0x004  size:                0x40              	64
+  0x008  checkSum:            0x1867709c
+     ->  calculated:          0x1867709c -> OK
+  0x00c  hostID:              0x7               	7
+  0x010  blockSize:           0x200             	512
+  0x014  flags:               0x17
+  0x018  badBlockList:        0xffffffff        	-1
+  0x01c  partitionList:       0x1               	1
+  0x020  fileSysHdrList:      0xffffffff        	-1
+  0x024  driveInit:           0xffffffff        	-1
+  0x028  r1[ 6 ]:             reserved (int32_t)
+  0x040  cylinders:           0x30e             	782
+  0x044  sectors:             0x1b              	27
+  0x048  heads:               0x2               	2
+  0x04c  interleave:          0x1               	1
+  0x050  parkingZone:         0x26d             	621
+  0x054  r2[ 3 ]:             reserved (int32_t)
+  0x060  writePreComp:        0x30e             	782
+  0x064  reducedWrite:        0x30e             	782
+  0x068  stepRate:            0x3               	3
+  0x06c  r3[ 5 ]:             reserved (int32_t)
+  0x080  rdbBlockLo:          0x0               	0
+  0x084  rdbBlockHi:          0x6b              	107
+  0x088  loCylinder:          0x2               	2
+  0x08c  hiCylinder:          0x30d             	781
+  0x090  cylBlocks:           0x36              	54
+  0x094  autoParkSeconds:     0x0               	0
+  0x098  highRDSKBlock:       0x6               	6
+  0x09c  r4:                  0x0               	0
+  0x0a0  diskVendor:          WD(A590)
+  0x0a8  diskProduct:         WD93028XA       
+  0x0b8  diskRevision:            
+  0x0bc  controllerVendor:    
+  0x0c4  controllerProduct:   
+  0x0d4  controllerRevision:  
+  0x0d8  r5[ 10 ]:            reserved (int32_t)
+
+
+PART block at 1:
+  0x000  type:                0x50415254        	'PART'
+  0x004  size:                0x40              	64
+  0x008  checkSum:            0xa1dab382
+     ->  calculated:          0xa1dab382 -> OK
+  0x00c  hostID:              0x7               	7
+  0x010  next:                0x2               	2
+  0x014  flags:               0x1
+  0x018  r1[ 2 ](reserved):   0x0               
+                              0x0               
+  0x020  devFlags:            0x0               	0
+  0x024  nameLen:             0x3               	3
+  0x025  name:                'OFS'
+  0x044  r2[ 15 ]:            reserved (int32_t)
+  0x080  vectorSize:          0x10              	16
+  0x084  blockSize:           0x80              	128
+  0x088  secOrg:              0x0               	0
+  0x08c  surfaces:            0x2               	2
+  0x090  sectorsPerBlock:     0x1               	1
+  0x094  blocksPerTrack:      0x1b              	27
+  0x098  dosReserved:         0x2               	2
+  0x09c  dosPreAlloc:         0x0               	0
+  0x0a0  interleave:          0x0               	0
+  0x0a4  lowCyl:              0x2               	2
+  0x0a8  highCyl:             0x73              	115
+  0x0ac  numBuffer:           0x1e              	30
+  0x0b0  bufMemType:          0x0               	0
+  0x0b4  maxTransfer:         0xffffff          	16777215
+  0x0b8  mask:                0x7ffffffe        	2147483646
+  0x0bc  bootPri:             0x0               	0
+  0x0c0  dosType[ 4 ]:        0x444f5300		'DOS.'
+  0x0c4  r3[ 15 ]:            reserved (int32_t)
+
+
+PART block at 2:
+  0x000  type:                0x50415254        	'PART'
+  0x004  size:                0x40              	64
+  0x008  checkSum:            0x75d6c395
+     ->  calculated:          0x75d6c395 -> OK
+  0x00c  hostID:              0x7               	7
+  0x010  next:                0x3               	3
+  0x014  flags:               0x0
+  0x018  r1[ 2 ](reserved):   0x0               
+                              0x0               
+  0x020  devFlags:            0x0               	0
+  0x024  nameLen:             0x8               	8
+  0x025  name:                'OFS INTL'
+  0x044  r2[ 15 ]:            reserved (int32_t)
+  0x080  vectorSize:          0x10              	16
+  0x084  blockSize:           0x80              	128
+  0x088  secOrg:              0x0               	0
+  0x08c  surfaces:            0x2               	2
+  0x090  sectorsPerBlock:     0x1               	1
+  0x094  blocksPerTrack:      0x1b              	27
+  0x098  dosReserved:         0x2               	2
+  0x09c  dosPreAlloc:         0x0               	0
+  0x0a0  interleave:          0x0               	0
+  0x0a4  lowCyl:              0x74              	116
+  0x0a8  highCyl:             0xe5              	229
+  0x0ac  numBuffer:           0x1e              	30
+  0x0b0  bufMemType:          0x0               	0
+  0x0b4  maxTransfer:         0xffffff          	16777215
+  0x0b8  mask:                0x7ffffffe        	2147483646
+  0x0bc  bootPri:             0x0               	0
+  0x0c0  dosType[ 4 ]:        0x444f5302		'DOS.'
+  0x0c4  r3[ 15 ]:            reserved (int32_t)
+
+
+PART block at 3:
+  0x000  type:                0x50415254        	'PART'
+  0x004  size:                0x40              	64
+  0x008  checkSum:            0x157a4428
+     ->  calculated:          0x157a4428 -> OK
+  0x00c  hostID:              0x7               	7
+  0x010  next:                0x4               	4
+  0x014  flags:               0x0
+  0x018  r1[ 2 ](reserved):   0x0               
+                              0x0               
+  0x020  devFlags:            0x0               	0
+  0x024  nameLen:             0xc               	12
+  0x025  name:                'OFS DirCache'
+  0x044  r2[ 15 ]:            reserved (int32_t)
+  0x080  vectorSize:          0x10              	16
+  0x084  blockSize:           0x80              	128
+  0x088  secOrg:              0x0               	0
+  0x08c  surfaces:            0x2               	2
+  0x090  sectorsPerBlock:     0x1               	1
+  0x094  blocksPerTrack:      0x1b              	27
+  0x098  dosReserved:         0x2               	2
+  0x09c  dosPreAlloc:         0x0               	0
+  0x0a0  interleave:          0x0               	0
+  0x0a4  lowCyl:              0xe6              	230
+  0x0a8  highCyl:             0x157             	343
+  0x0ac  numBuffer:           0x1e              	30
+  0x0b0  bufMemType:          0x0               	0
+  0x0b4  maxTransfer:         0xffffff          	16777215
+  0x0b8  mask:                0x7ffffffe        	2147483646
+  0x0bc  bootPri:             0x0               	0
+  0x0c0  dosType[ 4 ]:        0x444f5304		'DOS.'
+  0x0c4  r3[ 15 ]:            reserved (int32_t)
+
+
+PART block at 4:
+  0x000  type:                0x50415254        	'PART'
+  0x004  size:                0x40              	64
+  0x008  checkSum:            0x5ae3b0d3
+     ->  calculated:          0x5ae3b0d3 -> OK
+  0x00c  hostID:              0x7               	7
+  0x010  next:                0x5               	5
+  0x014  flags:               0x0
+  0x018  r1[ 2 ](reserved):   0x0               
+                              0x0               
+  0x020  devFlags:            0x0               	0
+  0x024  nameLen:             0x3               	3
+  0x025  name:                'FFS'
+  0x044  r2[ 15 ]:            reserved (int32_t)
+  0x080  vectorSize:          0x10              	16
+  0x084  blockSize:           0x80              	128
+  0x088  secOrg:              0x0               	0
+  0x08c  surfaces:            0x2               	2
+  0x090  sectorsPerBlock:     0x1               	1
+  0x094  blocksPerTrack:      0x1b              	27
+  0x098  dosReserved:         0x2               	2
+  0x09c  dosPreAlloc:         0x0               	0
+  0x0a0  interleave:          0x0               	0
+  0x0a4  lowCyl:              0x158             	344
+  0x0a8  highCyl:             0x1c9             	457
+  0x0ac  numBuffer:           0x1e              	30
+  0x0b0  bufMemType:          0x0               	0
+  0x0b4  maxTransfer:         0xffffff          	16777215
+  0x0b8  mask:                0x7ffffffe        	2147483646
+  0x0bc  bootPri:             0x0               	0
+  0x0c0  dosType[ 4 ]:        0x444f5301		'DOS.'
+  0x0c4  r3[ 15 ]:            reserved (int32_t)
+
+
+PART block at 5:
+  0x000  type:                0x50415254        	'PART'
+  0x004  size:                0x40              	64
+  0x008  checkSum:            0x75dfc0e5
+     ->  calculated:          0x75dfc0e5 -> OK
+  0x00c  hostID:              0x7               	7
+  0x010  next:                0x6               	6
+  0x014  flags:               0x0
+  0x018  r1[ 2 ](reserved):   0x0               
+                              0x0               
+  0x020  devFlags:            0x0               	0
+  0x024  nameLen:             0x8               	8
+  0x025  name:                'FFS INTL'
+  0x044  r2[ 15 ]:            reserved (int32_t)
+  0x080  vectorSize:          0x10              	16
+  0x084  blockSize:           0x80              	128
+  0x088  secOrg:              0x0               	0
+  0x08c  surfaces:            0x2               	2
+  0x090  sectorsPerBlock:     0x1               	1
+  0x094  blocksPerTrack:      0x1b              	27
+  0x098  dosReserved:         0x2               	2
+  0x09c  dosPreAlloc:         0x0               	0
+  0x0a0  interleave:          0x0               	0
+  0x0a4  lowCyl:              0x1ca             	458
+  0x0a8  highCyl:             0x23b             	571
+  0x0ac  numBuffer:           0x1e              	30
+  0x0b0  bufMemType:          0x0               	0
+  0x0b4  maxTransfer:         0xffffff          	16777215
+  0x0b8  mask:                0x7ffffffe        	2147483646
+  0x0bc  bootPri:             0x0               	0
+  0x0c0  dosType[ 4 ]:        0x444f5303		'DOS.'
+  0x0c4  r3[ 15 ]:            reserved (int32_t)
+
+
+PART block at 6:
+  0x000  type:                0x50415254        	'PART'
+  0x004  size:                0x40              	64
+  0x008  checkSum:            0x15834120
+     ->  calculated:          0x15834120 -> OK
+  0x00c  hostID:              0x7               	7
+  0x010  next:                0xffffffff        	4294967295
+  0x014  flags:               0x0
+  0x018  r1[ 2 ](reserved):   0x0               
+                              0x0               
+  0x020  devFlags:            0x0               	0
+  0x024  nameLen:             0xc               	12
+  0x025  name:                'FFS DirCache'
+  0x044  r2[ 15 ]:            reserved (int32_t)
+  0x080  vectorSize:          0x10              	16
+  0x084  blockSize:           0x80              	128
+  0x088  secOrg:              0x0               	0
+  0x08c  surfaces:            0x2               	2
+  0x090  sectorsPerBlock:     0x1               	1
+  0x094  blocksPerTrack:      0x1b              	27
+  0x098  dosReserved:         0x2               	2
+  0x09c  dosPreAlloc:         0x0               	0
+  0x0a0  interleave:          0x0               	0
+  0x0a4  lowCyl:              0x23c             	572
+  0x0a8  highCyl:             0x30d             	781
+  0x0ac  numBuffer:           0x1e              	30
+  0x0b0  bufMemType:          0x0               	0
+  0x0b4  maxTransfer:         0xffffff          	16777215
+  0x0b8  mask:                0x7ffffffe        	2147483646
+  0x0bc  bootPri:             0x0               	0
+  0x0c0  dosType[ 4 ]:        0x444f5305		'DOS.'
+  0x0c4  r3[ 15 ]:            reserved (int32_t)

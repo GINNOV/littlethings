@@ -1,0 +1,97 @@
+name: deb packaging Debian
+
+on:
+  push:
+    branches: [ "master", "devel", "citest", "citest-deb" ]
+    tags:
+      - '**'
+  pull_request:
+    branches: [ "master", "devel" ]
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        image: [12, stable]
+    container:
+      image: debian:${{ matrix.image }}
+    steps:
+    - uses: actions/checkout@v4
+    - name: install prereq.
+      run:
+        apt-get update &&
+        apt-get install -y check devscripts debhelper pkg-config
+    - name: debuild
+      run: util/deb_build.sh
+    - name: list packages
+      run: ls ..
+    # https://docs.github.com/en/actions/using-workflows/storing-workflow-data-as-artifacts
+    - name: copy artifacts
+      run: |
+        mkdir -v artifacts
+        mv -v ../*.deb ../*.gz ../*.xz artifacts/
+    # https://stackoverflow.com/questions/58177786/get-the-current-pushed-tag-in-github-actions
+    #- name: set env
+    #  run: echo "ADFLIB_TAG=${GITHUB_REF#refs/*/}" | tr / _  >> $GITHUB_ENV
+    #- name: Test
+    #  run: |
+    #    echo $ADFLIB_TAG
+    #    echo ${{ env.ADFLIB_TAG }}
+    - uses: actions/upload-artifact@v4
+      with:
+#        name: adflib-${{ env.ADFLIB_TAG }}-deb-debian
+        name: adflib-debian-${{ matrix.image }}
+        path: |
+          artifacts/
+    - name: archive tests/examples
+      run: |
+        mkdir -v artifact-tests
+        tar cvzf artifact-tests/tests_examples.tgz tests/examples tests/data
+    - uses: actions/upload-artifact@v4
+      with:
+        name: adflib-tests-examples-${{ matrix.image }}
+        path: |
+          artifact-tests
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        image: [12, stable]
+    container:
+      image: debian:${{ matrix.image }}
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+#        name: adflib-${{ env.ADFLIB_TAG }}-deb-debian
+        name: adflib-debian-${{ matrix.image }}
+        path: .
+    - name: list packages extracted from the artifact
+      run: ls -l
+    - name: install packages
+      run:
+        apt-get update &&
+        for DEB in `ls *.deb` ;
+        do
+            echo ${PWD}/$DEB ;
+        done |
+        xargs apt-get install -y
+    - name: check installation
+      run:
+        dpkg -l 'libadf*' ;
+        dpkg -l 'libadf*' | grep "libadf" |
+        cut -d' ' -f 3 | cut -d':' -f 1 | xargs dpkg -L
+    - uses: actions/download-artifact@v4
+      with:
+#        name: adflib-${{ env.ADFLIB_TAG }}-deb-debian
+        name: adflib-tests-examples-${{ matrix.image }}
+        path: .
+    - name: extract tests/examples
+      run: tar xvzf tests_examples.tgz
+    - name: test installed command-line utils
+      run: |
+        ./tests/examples/test_examples_basic.sh /usr/bin
+        ./tests/examples/test_all_examples.sh /usr/bin

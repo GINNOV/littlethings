@@ -1,0 +1,55 @@
+name: autotools-macos
+
+on:
+  push:
+    branches: [ "master", "devel",
+      "citest",
+      "citest-autotools",
+      "citest-autotools-macos" ]
+    tags:
+      - '**'
+  pull_request:
+    branches: [ "master", "devel" ]
+
+jobs:
+  macos:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: install prereq.
+      run: brew install automake check libtool
+    - name: autogen
+      run: ./autogen.sh
+    - name: configure
+      run: ./configure
+    - name: make
+      run: make
+    - name: make check
+      run: ( make check || grep .  regtests/Test/*.log )
+    - name: make distcheck
+      run: make distcheck
+    - name: make install
+      run: sudo make install
+    - name: check installation
+      run: find /usr/local/ -iname '*adf*'
+    - name: test installed command-line utils
+      run: ./tests/examples/test_all_examples.sh /usr/local/bin
+    - name: test installed command-line utils (2)
+      run: |
+        cat tests/config.sh.in_cmake | \
+          sed -e 's@\${PROJECT_BINARY_DIR}@'"$GITHUB_WORKSPACE"'@' \
+              -e 's@\${PROJECT_SOURCE_DIR}@'"$GITHUB_WORKSPACE"'@' \
+          > tests/config.sh
+        cat tests/config.sh
+        ./tests/examples2/run_all_tests.sh /usr/local/bin
+    - name: store logs from failed tests
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: macos_autotools_native_logs_failed_tests
+        path: |
+          tests/*.log
+          tests/examples/*.log
+          tests/examples2/*.log
+          tests/regr/*.log
+          tests/unit/*.log

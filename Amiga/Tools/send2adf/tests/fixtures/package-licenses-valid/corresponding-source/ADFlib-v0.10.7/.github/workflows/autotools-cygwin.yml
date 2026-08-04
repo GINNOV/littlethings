@@ -1,0 +1,78 @@
+name: autotools-cygwin
+
+on:
+  push:
+    branches: [ "master", "devel",
+      "citest",
+      "citest-autotools",
+      "citest-autotools-cygwin" ]
+    tags:
+      - '**'
+  pull_request:
+    branches: [ "master", "devel" ]
+
+jobs:
+  cygwin:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: C:\cygwin\bin\bash.exe '{0}'
+#    env:
+#      SHELLOPTS: igncr
+    steps:
+    - name: setup git (eol)
+#      shell: powershell
+      shell: cmd
+      run: |
+        git config --global core.autocrlf false
+#        git config --global core.eol lf
+    - uses: actions/checkout@v4
+    - uses: cygwin/cygwin-install-action@v4
+      with:
+        site: https://sunsite.icm.edu.pl/pub/cygnus/cygwin/
+        packages: autoconf automake check diffutils findutils gcc-core grep gzip libtool make sed tar
+    - name: autogen
+      run: ./autogen.sh
+    - name: configure
+      run: ./configure --prefix=/tmp/adflib
+    - name: make
+      run: make
+    - name: make check
+      run: make check
+#    - name: make distcheck
+#      run: make distcheck
+    - name: make install
+      run: make install
+    - name: check installation
+      run: find /tmp/adflib -iname '*adf*'
+    - name: test installed command-line utils
+      run: ./tests/examples/test_all_examples.sh /tmp/adflib/bin
+#   - name: debug info
+#      env:
+#        SHELLOPTS: igncr
+#      run: |
+#        pwd 
+#        set 
+#        echo "**** find start"
+#        find 
+#        echo "**** find end"
+    - name: test installed command-line utils (2)
+      env:
+        SHELLOPTS: igncr
+      run: |
+        export WORKSPACE_CYGWIN=$(cygpath -u "$GITHUB_WORKSPACE")
+        cat tests/config.sh.in_cmake | sed -e 's@\${PROJECT_BINARY_DIR}@'"$WORKSPACE_CYGWIN"'@' -e 's@\${PROJECT_SOURCE_DIR}@'"$WORKSPACE_CYGWIN"'@' > tests/config.sh
+        cat tests/config.sh
+        ${WORKSPACE_CYGWIN}/tests/examples2/run_all_tests.sh /tmp/adflib/bin
+    - name: store logs from failed tests
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: cygwin_autotools_native_logs_failed_tests
+        path: |
+          tests/*.log
+          tests/examples/*.log
+          tests/examples2/*.log
+          tests/regr/*.log
+          tests/unit/*.log
+#          C:\cygwin\var\log\setup.log.full

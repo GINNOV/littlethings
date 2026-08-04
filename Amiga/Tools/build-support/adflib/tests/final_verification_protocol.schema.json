@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://littlethings.invalid/send2adf-final-verification-v1.schema.json",
+  "title": "send2adf-final-verification/v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["attempt_id", "counter", "launcher_pid", "orchestrator_pid", "protocol", "state_digest", "supervisor_pid"],
+  "properties": {
+    "attempt_id": {"type": "string", "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"},
+    "counter": {"type": "integer", "minimum": 1, "maximum": 9223372036854775807},
+    "launcher_pid": {"type": "integer", "minimum": 2},
+    "orchestrator_pid": {"type": "integer", "minimum": 2},
+    "protocol": {"const": "send2adf-final-verification/v1"},
+    "state_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "supervisor_pid": {"type": "integer", "minimum": 2}
+  }
+}

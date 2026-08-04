@@ -1,0 +1,27 @@
+
+Opening image/device:	'tmp/adfinfo_links/test_link_chains.adf'
+Mounted volume:		0
+
+Path:		hardlinks_file/hl2testfile1
+
+Link block:
+  0x000  type		0x2		2
+  0x004  headerKey	0x380		896
+  0x008  r1[ 3 ]
+  0x014  checkSum	0xe7c86451
+     ->  calculated:	0xe7c86451 -> OK
+  0x018  realName[ 64 ]	
+  0x058  r2[ 83 ]
+  0x1a4  days		0x4017		16407
+  0x1a8  mins		0x369		873
+  0x1ac  ticks		0x1ae		430
+  0x1b0  nameLen	0xc		12
+  0x1b1  name:		hl2testfile1
+  0x1d0  r3		0x0
+  0x1d4  realEntry	0x379		889
+  0x1d8  nextLink	0x0		0
+  0x1dc  r4[ 5 ]
+  0x1f0  nextSameHash	0x0		0
+  0x1f4  parent		0x37f		895
+  0x1f8  r5		0x0		0
+  0x1fc  secType	0xfffffffc	-4

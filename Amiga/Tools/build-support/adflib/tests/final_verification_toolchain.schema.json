@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://littlethings.invalid/send2adf-final-toolchain-v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["protocol", "tools"],
+  "properties": {
+    "protocol": {"const": "send2adf-final-verification/v1"},
+    "tools": {"type": "array", "minItems": 8, "items": {"type": "object", "additionalProperties": false, "required": ["mode", "owner", "path", "sha256", "version"], "properties": {"mode": {"type": "integer", "minimum": 0, "maximum": 4095}, "owner": {"const": 0}, "path": {"type": "string", "pattern": "^/"}, "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}, "version": {"type": "string", "minLength": 1}}}}
+  }
+}

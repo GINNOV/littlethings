@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "relationship": "accompanying-source",
+  "source_root": "corresponding-source",
+  "source_archive": {
+    "name": "send2adf-fixture-source.tar.gz",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "release_tag": "send2adf-v1.0.0",
+    "release_url": "https://example.invalid/releases/send2adf-v1.0.0"
+  },
+  "system_dependencies": ["C99 compiler", "CMake >= 3.24", "Python >= 3.11", "git"],
+  "non_system_packaging_dependencies": [
+    {
+      "name": "archive-helper",
+      "path": "vendor/archive-helper/source.txt"
+    }
+  ],
+  "source_inventory": [
+    {"kind": "application-source", "path": "send2adf/send2adf.c"},
+    {"kind": "adflib-source", "path": "ADFlib-pristine"},
+    {"kind": "build-helper", "path": "scripts/package_release.sh"},
+    {"kind": "packaging-dependency", "path": "vendor/archive-helper/source.txt"}
+  ]
+}

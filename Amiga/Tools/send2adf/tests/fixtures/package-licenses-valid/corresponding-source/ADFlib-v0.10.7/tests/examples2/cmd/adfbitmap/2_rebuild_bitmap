@@ -1,0 +1,7 @@
+cmd(){
+    ${adfbitmap} rebuild "$dumpFile"
+}
+
+comment(){
+    echo "Rebuild volume's block allocation bitmap"
+}

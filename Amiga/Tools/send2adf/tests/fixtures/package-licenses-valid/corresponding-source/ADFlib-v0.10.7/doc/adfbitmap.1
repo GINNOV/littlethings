@@ -1,0 +1,32 @@
+.TH ADFBITMAP 1 "Mar 2025"
+.SH NAME
+adfbitmap \- show or enforce rebuilding block allocation bitmap.
+
+.SH SYNOPSIS
+.B adfbitmap <\fIcommand\fR> [\fIadf_device\fR]
+.SH DESCRIPTION
+\fBadfbitmap\fR is a low-level filesystem utility allowing to display
+or to enforce rebuilding the block allocation bitmap of an Amiga volume.
+
+Commands available:
+.TP
+.B show
+display block allocation bitmap of a volume
+
+Note that the information stored in the bitmap is about all blocks counting
+from the 3rd block of a volume(!), omitting 2 blocks always considered allocated
+for the volume's bootblock.
+.TP
+.B rebuild
+enforce rebuilding block allocation bitmap of a volume (even if it is
+marked as 'valid')
+.
+.SH SEE ALSO
+\fBadfinfo\fR(1), \fBadfimgcreate\fR(1), \fBadfformat\fR(1),
+\fBunadf\fR(1), \fBadflib\fR(3)
+.SH NOTES
+Detailed info about Commodore Amiga filesystems: http://lclevy.free.fr/adflib/adf_info.html
+.SH AUTHOR
+\fBadfbitmap\fR was written by \fBTomasz Wolak\fR <tomas.wolak@gmail.com>,
+as a part of the ADFlib (https://github.com/adflib/ADFlib).
+.PP

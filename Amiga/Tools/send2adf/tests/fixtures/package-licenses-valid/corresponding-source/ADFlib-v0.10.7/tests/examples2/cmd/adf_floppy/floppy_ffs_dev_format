@@ -1,0 +1,7 @@
+cmd(){
+    $adfformat -t 1 -l TestFlopFFS -v "$dumpFile"
+}
+
+comment(){
+    echo "adfformat -t 1 -l TestFlopFFS  (format to FFS)"
+}

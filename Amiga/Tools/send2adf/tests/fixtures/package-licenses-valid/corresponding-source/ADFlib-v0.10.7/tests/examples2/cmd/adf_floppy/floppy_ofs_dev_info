@@ -1,0 +1,7 @@
+cmd(){
+    $adfinfo "$dumpFile"
+}
+
+comment(){
+    echo "adfinfo ${dumpFile} (device with an OFS volume)"
+}

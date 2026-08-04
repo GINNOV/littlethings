@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "policy": {
+    "combined_binary": "GPL-2.0-or-later",
+    "original_repository_source": "MIT",
+    "adflib_copying": "GNU Lesser General Public License, version 2.1",
+    "source_notices": "GPL-2.0-or-later",
+    "source_offer": "accompanying-source-required"
+  },
+  "baseline": {
+    "version": "0.10.7",
+    "tag": "v0.10.7",
+    "commit": "73880de78bf472a1cc7d60f07fc217e02d571268",
+    "tree_sha": "04f96eb046afef4dff48070840b36b82d7f4f43f",
+    "tree_manifest_sha256": "9bc3acc858277537ca04fc0933b8471bbe277927cb4923836e53b9fe1285dfd5",
+    "copying_sha256": "20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95",
+    "license_inventory_sha256": null,
+    "status": "pending_legal_review",
+    "blocking_reason": "A human/legal reviewer must approve the complete v0.10.7 notice inventory and every embedded bootblock before release."
+  },
+  "bootblocks": [
+    {
+      "consumer": "send2adf",
+      "name": "kickstart-1.3",
+      "source_path": "Amiga/Tools/send2adf/send2adf.c",
+      "source_bytes": 50,
+      "source_sha256": "105ab5202e949308f485b305177e5f004697f49d3db53589c98b7ce7b2a8ccca",
+      "materialized_bytes": 1024,
+      "materialized_sha256": "44f7d1cfb0a259dd787af84f8c25dbf80288ed7844406b44016bc99d933bf4a7",
+      "repository_origin": "Copied from ADFinder in commit 08a9b46546091aceb2f135892f0b510232d19f90.",
+      "upstream_origin": null,
+      "redistribution_terms": null,
+      "legal_decision": "pending_legal_review"
+    },
+    {
+      "consumer": "send2adf",
+      "name": "kickstart-2.0",
+      "source_path": "Amiga/Tools/send2adf/send2adf.c",
+      "source_bytes": 50,
+      "source_sha256": "a6f7452b36285faeef75f0faf9badb66b773451d07caf2173a0e5b2e5dc9a7a9",
+      "materialized_bytes": 1024,
+      "materialized_sha256": "16b3dbdf0f25e85063688cd8c921648c8f05cd1f87792886b57bc37146bb309a",
+      "repository_origin": "Copied from ADFinder in commit 08a9b46546091aceb2f135892f0b510232d19f90.",
+      "upstream_origin": null,
+      "redistribution_terms": null,
+      "legal_decision": "pending_legal_review"
+    },
+    {
+      "consumer": "ADFinder",
+      "name": "kickstart-1.3",
+      "source_path": "Amiga/Tools/ADFinder/ADFinder/ADFLibrary/ADFService.swift",
+      "source_bytes": 50,
+      "source_sha256": "105ab5202e949308f485b305177e5f004697f49d3db53589c98b7ce7b2a8ccca",
+      "materialized_bytes": 1034,
+      "materialized_sha256": "d7de021320439940e6c02cb521460fe620c07d0a73e9a6109b5af81a00530fa1",
+      "repository_origin": "Introduced in commit d957349d722bde104aa0fbb54484db8f65ab682b without external provenance.",
+      "upstream_origin": null,
+      "redistribution_terms": null,
+      "legal_decision": "pending_legal_review"
+    },
+    {
+      "consumer": "ADFinder",
+      "name": "kickstart-2.0",
+      "source_path": "Amiga/Tools/ADFinder/ADFinder/ADFLibrary/ADFService.swift",
+      "source_bytes": 50,
+      "source_sha256": "a6f7452b36285faeef75f0faf9badb66b773451d07caf2173a0e5b2e5dc9a7a9",
+      "materialized_bytes": 1034,
+      "materialized_sha256": "fcbe3abedc4e81495373baaa6be2fd4bd8e7a3cb94c35fc72bf171f748958215",
+      "repository_origin": "Introduced in commit d957349d722bde104aa0fbb54484db8f65ab682b without external provenance.",
+      "upstream_origin": null,
+      "redistribution_terms": null,
+      "legal_decision": "pending_legal_review"
+    },
+    {
+      "consumer": "ADFinder",
+      "name": "sca-virus-killer",
+      "source_path": "Amiga/Tools/ADFinder/ADFinder/ADFLibrary/ADFService.swift",
+      "source_bytes": 50,
+      "source_sha256": "26d3b07676b3fc7f4d384d414aec323a1f022048781cdade2ab57936364c03dc",
+      "materialized_bytes": 1034,
+      "materialized_sha256": "48ac0cabdbdfa9daac8fb41f13a8ee5c7aae7488d5760e7eff0e5b38352fae76",
+      "repository_origin": "Introduced in commit 666bc7b3e7908108e01319b5d5943584c8a487de without external provenance.",
+      "upstream_origin": null,
+      "redistribution_terms": null,
+      "legal_decision": "pending_legal_review"
+    },
+    {
+      "consumer": "ADFinder",
+      "name": "bandit-virus-killer",
+      "source_path": "Amiga/Tools/ADFinder/ADFinder/ADFLibrary/ADFService.swift",
+      "source_bytes": 50,
+      "source_sha256": "2913837603c6f6e69290e09a6af07886f81680d58e2e680b60066e9a8d164963",
+      "materialized_bytes": 1034,
+      "materialized_sha256": "8e8fd976c4d375b335575ccc06b2409de820ba25a7adae3bb3aedc781799dd97",
+      "repository_origin": "Introduced in commit 666bc7b3e7908108e01319b5d5943584c8a487de without external provenance.",
+      "upstream_origin": null,
+      "redistribution_terms": null,
+      "legal_decision": "pending_legal_review"
+    }
+  ],
+  "approvals": []
+}

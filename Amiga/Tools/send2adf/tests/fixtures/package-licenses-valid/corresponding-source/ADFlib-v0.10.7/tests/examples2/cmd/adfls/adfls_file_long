@@ -1,0 +1,7 @@
+cmd(){
+    ${adfls} -p 0 -l "$dumpFile" dir1/dir1_1/testfile1.txt
+}
+
+comment(){
+    echo "List file (long)"
+}
