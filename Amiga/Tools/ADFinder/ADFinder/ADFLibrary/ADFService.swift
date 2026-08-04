@@ -20,10 +20,11 @@ func swift_log_bridge(msg: UnsafePointer<CChar>?) {
 
 
 @Observable
+@MainActor
 class ADFService {
     internal var adfDevice: UnsafeMutablePointer<AdfDevice>?
     internal var adfVolume: UnsafeMutablePointer<AdfVolume>?
-    private var adflibInitialized = false
+    private(set) var isADFlibAvailable = false
     
     var currentVolumeName: String?
     var currentPath: [String] = []
@@ -72,51 +73,27 @@ class ADFService {
     
     
     init() {
-        if adfLibInit() == ADF_RC_OK {
-            adflibInitialized = true
-            log("ADFService: ADFLib Initialized OK.")
-            
-            setup_logging()
-            log("ADFService: ADFLib logging redirected to Swift console via C shim.")
-            
-            adfEnvSetProperty(ADF_PR_IGNORE_CHECKSUM_ERRORS, 1)
-            
-            if register_dump_driver_helper() != ADF_RC_OK {
-                log("ADFService: Warning - Failed to add dump device driver via helper.")
-            }
+        if adf_runtime_acquire() == ADF_RC_OK {
+            isADFlibAvailable = true
+            log("ADFService: process-wide ADFlib runtime is available.")
         } else {
-            log("ADFService: Error - Failed to initialize ADFLib.")
+            log("ADFService: Error - Failed to acquire process-wide ADFlib runtime.")
         }
     }
     
     deinit {
-        closeADF()
-        if adflibInitialized {
-            adfLibCleanUp()
+        if let vol = adfVolume {
+            adfVolUnMount(vol)
+        }
+        if let dev = adfDevice {
+            adfDevUnMount(dev)
+            adfDevClose(dev)
         }
     }
     
     internal func log(_ message: String) {
         Task {
             await LogStore.shared.add(message: message)
-        }
-    }
-    
-    // This function was the source of a previous bug and is kept for recovery.
-    private func reinitializeAdfLib() {
-        log("ADFService: Re-initializing ADFLib due to previous error...")
-        adfLibCleanUp()
-        if adfLibInit() == ADF_RC_OK {
-            adflibInitialized = true
-            log("ADFService: ADFLib Re-initialized OK.")
-            setup_logging()
-            adfEnvSetProperty(ADF_PR_IGNORE_CHECKSUM_ERRORS, 1)
-            if register_dump_driver_helper() != ADF_RC_OK {
-                log("ADFService: Warning - Failed to re-add dump device driver.")
-            }
-        } else {
-            adflibInitialized = false
-            log("ADFService: CRITICAL - Failed to re-initialize ADFLib.")
         }
     }
     
@@ -145,7 +122,7 @@ class ADFService {
         currentImageKind = fileURL.pathExtension.lowercased() == "hdf" ? .hdf : .adf
         closeADF()
         
-        guard adflibInitialized else {
+        guard isADFlibAvailable else {
             log("ADFService.openADF: ABORT - ADFLib is not initialized.")
             return false
         }
@@ -155,13 +132,8 @@ class ADFService {
         self.adfDevice = adfDevOpenWithDriver("dump", fileURL.path, AdfAccessMode(rawValue: UInt32(ACCESS_MODE_READWRITE_SWIFT)))
         
         if self.adfDevice == nil {
-            log("ADFService.openADF: adfDevOpenWithDriver FAILED. Attempting to recover by re-initializing library.")
-            reinitializeAdfLib() // As a last resort, try to recover the library state.
-            self.adfDevice = adfDevOpenWithDriver("dump", fileURL.path, AdfAccessMode(rawValue: UInt32(ACCESS_MODE_READWRITE_SWIFT)))
-            if self.adfDevice == nil {
-                log("ADFService.openADF: Second attempt to open device failed. Aborting.")
-                return false
-            }
+            log("ADFService.openADF: adfDevOpenWithDriver FAILED. Aborting without resetting shared runtime state.")
+            return false
         }
         
         if adfDevMount(self.adfDevice) != ADF_RC_OK {

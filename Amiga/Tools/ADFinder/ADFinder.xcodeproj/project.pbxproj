@@ -109,6 +109,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = AC779D4C2DE101C400210E27 /* Build configuration list for PBXNativeTarget "ADFinder" */;
 			buildPhases = (
+				B30000012F00000000000001 /* Build verified ADFlib */,
 				AC779D3C2DE101C300210E27 /* Sources */,
 				AC779D3D2DE101C300210E27 /* Frameworks */,
 				AC779D3E2DE101C300210E27 /* Resources */,
@@ -210,6 +211,46 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		B30000012F00000000000001 /* Build verified ADFlib */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 0;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/../build-support/adflib/build-for-xcode.sh",
+				"$(SRCROOT)/../build-support/adflib/ADFlibDependency.cmake",
+				"$(SRCROOT)/../build-support/adflib/stage_adflib.py",
+				"$(SRCROOT)/../build-support/adflib/patches/0001-cmake-disable-examples.patch",
+				"$(ADFLIB_VERIFIED_SOURCE_ROOT)",
+				"$(SRCROOT)/../../../LICENSE",
+				"$(SRCROOT)/THIRD_PARTY_NOTICES.md",
+			);
+			name = "Build verified ADFlib";
+			outputPaths = (
+				"$(ADFLIB_BUILD_ROOT)/include/adflib.h",
+				"$(ADFLIB_BUILD_ROOT)/include/adf_version.h",
+				"$(ADFLIB_BUILD_ROOT)/libadf.a",
+				"$(ADFLIB_BUILD_ROOT)/adflib-identity.json",
+				"$(ADFLIB_BUILD_ROOT)/adflib-transport.json",
+				"$(ADFLIB_BUILD_ROOT)/adflib-provenance.json",
+				"$(ADFLIB_BUILD_ROOT)/adflib-build.stamp",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/adflib-provenance.json",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/LICENSE-MIT.txt",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/GPL-2.0.txt",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/ADFlib-COPYING",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/THIRD_PARTY_NOTICES.md",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/ADFlib-source-notices/adflib.c",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/ADFlib-source-notices/adf_version.h",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/ADFlib-source-notices/adf_limits.h",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/bash;
+			shellScript = "\"$SRCROOT/../build-support/adflib/build-for-xcode.sh\" \"$ADFLIB_VERIFIED_SOURCE_ROOT\" \"$DERIVED_FILE_DIR\" \"$CONFIGURATION\" \"$CURRENT_ARCH\"\nresources=\"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"\nmkdir -p \"$resources/ADFlib-source-notices\"\ncp \"$ADFLIB_BUILD_ROOT/adflib-provenance.json\" \"$resources/adflib-provenance.json\"\ncp \"$SRCROOT/../../../LICENSE\" \"$resources/LICENSE-MIT.txt\"\ncp \"$ADFLIB_VERIFIED_SOURCE_ROOT/COPYING-GPL2\" \"$resources/GPL-2.0.txt\"\ncp \"$ADFLIB_VERIFIED_SOURCE_ROOT/COPYING\" \"$resources/ADFlib-COPYING\"\ncp \"$SRCROOT/THIRD_PARTY_NOTICES.md\" \"$resources/THIRD_PARTY_NOTICES.md\"\ncp \"$ADFLIB_VERIFIED_SOURCE_ROOT/src/adflib.c\" \"$ADFLIB_VERIFIED_SOURCE_ROOT/src/adf_version.h\" \"$ADFLIB_VERIFIED_SOURCE_ROOT/src/adf_limits.h\" \"$resources/ADFlib-source-notices/\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		AC779D3C2DE101C300210E27 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -277,7 +318,7 @@
 				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -292,8 +333,8 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = "$(SRCROOT)/ADFinder/ADFHeaders";
-				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/ADFinder/ADFLibrary";
+				HEADER_SEARCH_PATHS = "$(ADFLIB_BUILD_ROOT)/include";
+				LIBRARY_SEARCH_PATHS = "$(ADFLIB_BUILD_ROOT)";
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -347,7 +388,7 @@
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -356,8 +397,8 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = "$(SRCROOT)/ADFinder/ADFHeaders";
-				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/ADFinder/ADFLibrary";
+				HEADER_SEARCH_PATHS = "$(ADFLIB_BUILD_ROOT)/include";
+				LIBRARY_SEARCH_PATHS = "$(ADFLIB_BUILD_ROOT)";
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -371,7 +412,7 @@
 		AC779D4D2DE101C400210E27 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = arm64;
+				ADFLIB_BUILD_ROOT = "$(DERIVED_FILE_DIR)/adflib/$(CONFIGURATION)/$(CURRENT_ARCH)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
@@ -387,7 +428,8 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				HEADER_SEARCH_PATHS = "$(SRCROOT)/ADFinder/ADFHeaders";
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				HEADER_SEARCH_PATHS = "$(ADFLIB_BUILD_ROOT)/include";
 				INFOPLIST_FILE = "$(SRCROOT)/ADFinder/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
@@ -398,11 +440,11 @@
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/ADFinder/ADFLibrary",
+					"$(ADFLIB_BUILD_ROOT)",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.2.5;
-				OTHER_LDFLAGS = "";
+				OTHER_LDFLAGS = "-ladf";
 				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.ADFinder;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -416,7 +458,7 @@
 		AC779D4E2DE101C400210E27 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = arm64;
+				ADFLIB_BUILD_ROOT = "$(DERIVED_FILE_DIR)/adflib/$(CONFIGURATION)/$(CURRENT_ARCH)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
@@ -432,7 +474,8 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				HEADER_SEARCH_PATHS = "$(SRCROOT)/ADFinder/ADFHeaders";
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				HEADER_SEARCH_PATHS = "$(ADFLIB_BUILD_ROOT)/include";
 				INFOPLIST_FILE = "$(SRCROOT)/ADFinder/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
@@ -443,12 +486,11 @@
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/ADFinder/ADFLibrary",
+					"$(ADFLIB_BUILD_ROOT)",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.2.5;
-				ONLY_ACTIVE_ARCH = NO;
-				OTHER_LDFLAGS = "";
+				OTHER_LDFLAGS = "-ladf";
 				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.ADFinder;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -464,6 +506,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = QQ9PTQU945;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.ADFinderTests;
@@ -479,6 +522,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = QQ9PTQU945;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.ADFinderTests;

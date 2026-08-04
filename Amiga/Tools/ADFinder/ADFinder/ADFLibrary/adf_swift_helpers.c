@@ -6,6 +6,7 @@
 //
 
 #include "adf_swift_helpers.h"
+#include "adflib.h"
 #include "adf_env.h"
 #include "adf_dev_flop.h"
 #include "adf_dev_hdfile.h"
@@ -14,6 +15,7 @@
 #include "adf_file.h"
 #include "adf_raw.h"
 #include <stddef.h>
+#include <pthread.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
@@ -174,6 +176,55 @@ uint32_t get_AdfEntry_header_block(const struct AdfEntry* entry) {
 ADF_RETCODE register_dump_driver_helper(void) {
     return adfAddDeviceDriver(&adfDeviceDriverDump);
 }
+
+static pthread_once_t adf_runtime_once = PTHREAD_ONCE_INIT;
+static ADF_RETCODE adf_runtime_result = ADF_RC_ERROR;
+static uint32_t adf_runtime_init_calls = 0;
+static uint32_t adf_runtime_dump_registrations = 0;
+static uint32_t adf_runtime_cleanups = 0;
+
+static void adf_runtime_cleanup(void) {
+    if (adf_runtime_result == ADF_RC_OK) {
+        adfLibCleanUp();
+        adf_runtime_cleanups++;
+    }
+}
+
+static void adf_runtime_initialize(void) {
+    adf_runtime_init_calls++;
+    adf_runtime_result = adfLibInit();
+    if (adf_runtime_result != ADF_RC_OK) {
+        return;
+    }
+
+    setup_logging();
+    adfEnvSetProperty(ADF_PR_IGNORE_CHECKSUM_ERRORS, 1);
+    adf_runtime_result = register_dump_driver_helper();
+    if (adf_runtime_result != ADF_RC_OK) {
+        adfLibCleanUp();
+        adf_runtime_cleanups++;
+        return;
+    }
+
+    adf_runtime_dump_registrations++;
+    if (atexit(adf_runtime_cleanup) != 0) {
+        adfLibCleanUp();
+        adf_runtime_cleanups++;
+        adf_runtime_result = ADF_RC_ERROR;
+    }
+}
+
+ADF_RETCODE adf_runtime_acquire(void) {
+    if (pthread_once(&adf_runtime_once, adf_runtime_initialize) != 0) {
+        return ADF_RC_ERROR;
+    }
+    return adf_runtime_result;
+}
+
+uint32_t adf_runtime_init_count(void) { return adf_runtime_init_calls; }
+uint32_t adf_runtime_dump_registration_count(void) { return adf_runtime_dump_registrations; }
+uint32_t adf_runtime_cleanup_count(void) { return adf_runtime_cleanups; }
+const char* adf_compiled_version(void) { return ADFLIB_VERSION; }
 
 
 ADF_RETCODE parse_boot_block(const uint8_t* data, struct AdfBootBlock* boot) {

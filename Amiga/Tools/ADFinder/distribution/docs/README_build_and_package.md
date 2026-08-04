@@ -1,2 +1,41 @@
-# macOS App Build and DMG Packaging
-I found myself to this part of the process manually too many times so I figure "to the automation lab!" with Batman music of the 80s 😅## Overview`build_and_package.sh` automates building the `ADFinder` macOS app from an Xcode project and packaging it into a DMG using `gendmg.sh`. It builds, archives, and exports an unsigned app bundle (mimicking Xcode’s Custom/Direct Distribution export) and generates a versioned DMG (e.g., `ADFinder-1.0_387.dmg`) without opening Xcode.## Features- Builds and archives the Xcode project using `xcodebuild`.- Exports an unsigned app bundle for local or internal use.- Integrates with `gendmg.sh` to create a DMG with a custom layout.- Validates inputs and ensures 1GB minimum disk space.- Supports automation and CI/CD pipelines.## Requirements- macOS with Xcode command-line tools (`xcode-select --install`).- Xcode project (`ADFinder.xcodeproj` or `.xcworkspace`) with a valid scheme.- `gendmg.sh` in `distribution/` directory.- `exportOptions.plist` for unsigned export settings.- Input files: `README.md`, `dmg_assets/dmg-background.png`, `dmg_assets/dmg-icon.icns`.- Homebrew and `create-dmg` (installed by `gendmg.sh`).## Installation1. Save `build_and_package.sh` in the project root.2. Make it executable:   ```bash   chmod +x build_and_package.sh   ```3. Ensure `gendmg.sh` is in `distribution/` and executable.4. Create `exportOptions.plist` for unsigned export:   ```xml   <?xml version="1.0" encoding="UTF-8"?>   <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">   <plist version="1.0">   <dict>       <key>method</key>       <string>development</string>       <key>signingStyle</key>       <string>manual</string>       <key>compileBitcode</key>       <false/>       <key>stripSwiftSymbols</key>       <true/>   </dict>   </plist>   ```## UsageRun from the project root:```bash./build_and_package.sh [--project <project_path>] [--scheme <scheme>] [--configuration <config>]```### Example```bash./build_and_package.sh --project ADFinder.xcodeproj --scheme ADFinder --configuration Release```This builds an unsigned `ADFinder.app` and creates `releases/ADFinder-1.0_387.dmg`.## Notes- The script exports an unsigned app, matching Xcode’s Custom/Direct Distribution with no signing.- Ensure `Info.plist` has `CFBundleShortVersionString` and `CFBundleVersion` for DMG naming.- For public distribution, add signing and notarization (contact maintainer for details).- See `distribution/gendmg.md` for `gendmg.sh` details.## LicenseProvided as-is, free to use and modify.
+# ADFinder build and package runbook
+
+`build_and_package.sh` archives an unsigned local app from preverified ADFlib
+source and an offline pinned SwiftPM closure, copies the app, embeds and checks
+ADFlib provenance, optionally embeds complete corresponding source, then
+creates versioned ZIP and DMG candidates in the requested ignored output
+directory.
+
+Required host inputs are macOS, a supported Xcode, CMake, Python 3.11 or newer,
+the verified ADFlib source root, the lockfile-bound Sparkle closure, and the DMG
+assets. Set `ADFLIB_VERIFIED_SOURCE_ROOT` and either set
+`ADFLIB_SWIFTPM_SOURCE_PACKAGES` or place the closure at the script's derived
+lock-digest path. Automatic package resolution and code signing are disabled
+for this local builder.
+
+Options are `--project <path>`, `--scheme <name>`,
+`--configuration Debug|Release`, `--output <directory>`, `--unsigned`, and
+`--include-source`. Use `--include-source` for a distribution candidate; it
+adds ADFinder source, the exact verified ADFlib tree, shared manifest, offline
+SwiftPM closure, and lockfile to the app bundle. The public release verifier
+must still prove inventory completeness, legal approval, and reproducibility.
+
+Generated app, archive, ZIP, DMG, source bundle, and derived data are local
+candidates only. Do not copy them into the tracked release directory or add an
+appcast enclosure. Public release additionally requires hosted arm64 and x86_64
+native tests and Release builds, signing/notarization policy, a valid Sparkle
+signature over the exact ZIP, approved license and post-merge receipts,
+corresponding-source verification, protected environment approval, and an
+atomic publish transaction.
+
+On failure, remove only the ignored output directory. A missing provenance file,
+source root, offline closure, supported architecture, or package output is a
+hard stop. A post-merge final-gate failure revokes the dispatch token, preserves
+the failed evidence, opens a reviewed manifest-only revert or forward-fix PR,
+and starts a fresh UUID/evidence directory after the same two-parent/tree proof.
+Receipts and evidence are never reused.
+
+The installed final-verification supervisor is a separate authority. If it is
+missing or its launcher/toolchain digest differs from the independently
+approved receipt, stop before credential retrieval or dispatch. Repository
+fixtures do not satisfy that installed-host requirement.

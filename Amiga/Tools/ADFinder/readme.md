@@ -1,91 +1,73 @@
 # ADFinder
 
 ADFinder is a native macOS manager for Amiga ADF and HDF disk images. It uses
-[ADFlib](https://github.com/adflib/ADFlib) for Amiga filesystem access and
-provides a Finder-like interface for inspecting and modifying disk images.
+ADFlib for filesystem access and provides a Finder-like interface for creating,
+inspecting, modifying, comparing, and reporting disk images.
 
-## Download and requirements
+## Availability and requirements
 
-- Current release: [ADFinder 1.2.5, build 1239](https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/ADFinder-1.2.5_1239.dmg)
-- Requires macOS 15 or later.
-- The current build supports Apple silicon Macs.
-- The application is free and currently distributed without Apple notarization.
+ADFinder requires macOS 15 or later. Supported release architectures are Apple
+silicon and Intel, but both must pass their hosted native Xcode jobs for the
+exact candidate. Public downloads and the Sparkle enclosure are currently
+disabled: the older tracked package did not contain the notices, provenance,
+approved license receipt, pinned build inputs, and complete corresponding
+source now required by the distribution contract. No replacement URL or
+version is claimed until compliant bytes exist.
 
-macOS may quarantine the downloaded application. For a free graphical
-first-install option, drag ADFinder onto
-[Sentinel](https://github.com/alienator88/Sentinel), then choose
-**Unquarantine**. Do not use Sentinel's self-sign action. Alternatively, after
-copying ADFinder to Applications, run:
+## Dependency and local build
 
+ADFinder and send2adf consume the same immutable manifest at
+`Amiga/Tools/build-support/adflib/ADFlibDependency.cmake`. ADFinder's build phase
+derives an architecture-qualified private static library from the verified
+source root and embeds byte-for-byte identity, transport, and provenance
+records. The project contains no vendored headers, archive, system-prefix
+fallback, or second ADFlib version.
+
+Before Xcode, stage the manifest identity with
+`stage_adflib.py --connected --artifacts <absolute-cache> --print-source-root`
+and resolve the pinned Sparkle closure with
+`distribution/resolve_swift_packages.py --project ADFinder.xcodeproj
+--artifacts <absolute-cache> --print-source-packages-path`. Pass those returned
+paths as `ADFLIB_VERIFIED_SOURCE_ROOT` and
+`-clonedSourcePackagesDirPath`, add `-disableAutomaticPackageResolution`, and
+build only on a supported architecture.
+
+This machine's real app build is blocked by the installed Xcode 26.6 host. A
+standalone derived ADFlib/lifecycle/package fixture may be used for local
+contract verification, but it is not an ADFinder app-build result. Hosted
+macOS arm64 and x86_64 Xcode test and Release-build legs remain required.
+See [the shared dependency guide](distribution/docs/build_adflib.md).
+
+<!-- documented-command -->
 ```bash
-xattr -rc "/Applications/ADFinder.app"
+python3 Amiga/Tools/ADFinder/distribution/resolve_swift_packages.py --help
 ```
 
-Once installed, ADFinder checks for signed updates through Sparkle. You can also
-select **ADFinder → Check for Updates…**.
+## Distribution
 
-## Features
+`distribution/build_and_package.sh` accepts `--project`, `--scheme`,
+`--configuration Debug|Release`, `--output`, and `--include-source`. It requires
+the verified ADFlib source and offline SwiftPM closure. Generated apps,
+archives, DMGs, ZIPs, derived data, and source bundles belong in `.artifacts`
+or another ignored output directory, never in `ADFinder/build` or the source
+tree.
 
-- Open, create, and save ADF and HDF images.
-- Navigate Amiga directories and inspect file metadata.
-- Add, export, rename, and delete files and directories.
-- Import nested macOS folder structures.
-- Respect or explicitly override Amiga protection flags.
-- Rename volumes and create OFS or FFS images.
-- Inspect disk usage, boot blocks, sectors, and file contents.
-- Edit text files and generate directory or hexadecimal reports.
-- Compare two disk images sector by sector.
-- Preview supported files with Quick Look.
-- Open recent images and use supported actions from Shortcuts.
+Local output is unsigned and is never publishable by itself. A public release
+requires the exact hosted builds, signing and notarization policy, Sparkle
+signature, package license inventory, approved legal receipt, complete
+corresponding source including the offline package closure, reproducible
+provenance, appcast validation, and protected publication approval. Packaging
+must finish before any appcast item or download link is added. See the
+[distribution runbook](distribution/docs/README_build_and_package.md).
 
-## Build
-
-The checked-in ADFlib archive is currently arm64-only, so build on an Apple
-silicon Mac with Xcode:
-
-```bash
-cd Amiga/Tools/ADFinder
-xcodebuild \
-  -project ADFinder.xcodeproj \
-  -scheme ADFinder \
-  -configuration Debug \
-  CODE_SIGNING_ALLOWED=NO \
-  build
-```
-
-To run the automated tests:
-
-```bash
-xcodebuild \
-  test \
-  -project ADFinder.xcodeproj \
-  -scheme ADFinder \
-  CODE_SIGNING_ALLOWED=NO
-```
-
-ADFlib build notes are in
-[distribution/docs/build_adflib.md](distribution/docs/build_adflib.md).
-
-## Releases
-
-The release workflow creates a DMG for first-time installation and a signed ZIP
-used by Sparkle for automatic updates.
-
-Release signing expects the Sparkle private key in the macOS Keychain. The
-matching public key is stored in `ADFinder/Info.plist`; packaging stops if the
-keys do not match. Release artifacts are staged and published together only
-after signing and appcast validation succeed.
-
-The dedicated ADFinder key is stored in the `GI Business` 1Password vault under
-**ADFinder Sparkle Update Keys**, tagged `development`, `Projects`, and
-`Sparkle`. Import its private-key field into the `ADFinder` Sparkle Keychain
-account before packaging. Version 1.2.5 is a one-time manual upgrade after the
-legacy 1.2.4 key was lost; automatic updates resume after 1.2.5.
-
-See [CHANGELOG.md](CHANGELOG.md) for release history.
+The ADFinder source is MIT-licensed where applicable. Its statically linked
+ADFlib distribution follows the repository's conservative
+`GPL-2.0-or-later` packaging policy. Publication fails closed when approval or
+source material is incomplete.
 
 ## Project links
 
+- [Release history](CHANGELOG.md)
 - [Product page](https://ginnov.github.io/littlethings/amiga/index.html)
 - [Screenshots](https://ginnov.github.io/littlethings/amiga/adfinder_learnmore.html)
 - [Source repository](https://github.com/GINNOV/littlethings/tree/master/Amiga/Tools/ADFinder)

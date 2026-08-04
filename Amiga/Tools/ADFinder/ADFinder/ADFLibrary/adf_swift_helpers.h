@@ -39,6 +39,11 @@ void adf_set_vol_name(struct AdfVolume* vol, const char* newName);
 
 // accepts a filesystem type parameter (OFS or FFS).
 ADF_RETCODE register_dump_driver_helper(void);
+ADF_RETCODE adf_runtime_acquire(void);
+uint32_t adf_runtime_init_count(void);
+uint32_t adf_runtime_dump_registration_count(void);
+uint32_t adf_runtime_cleanup_count(void);
+const char* adf_compiled_version(void);
 ADF_RETCODE create_blank_adf_c(const char* path, const char* volName, uint8_t fsType);
 ADF_RETCODE create_blank_hdf_c(const char* path, const char* volName, uint32_t sizeInMB, uint8_t fsType);
 ADF_RETCODE install_bootblock_c(struct AdfVolume* vol, const uint8_t* code);
