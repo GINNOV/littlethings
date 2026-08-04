@@ -97,6 +97,10 @@ and re-hashed.
 
 ## External authority gates
 
+Use the [release-readiness handoff](release-readiness.md) to configure and
+verify these owner-controlled prerequisites before enabling update or release
+automation.
+
 Repository owners must configure the active `send2adf-release-tags` and
 `send2adf-release-leases` rulesets, the `send2adf-release` environment with the
 configured maintainer team as reviewer and protected-branch-only deployment,
