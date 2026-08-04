@@ -77,3 +77,4 @@ Version 1.5 added filesystem and boot-block selection. The retired standalone
 `genboot.cpp` experiment was never part of the build or runtime; its attribution
 and implementation remain available in repository history. Additional early
 implementation notes are retained in [learned lessons](docs/learned_lesson.md).
+See the [changelog](CHANGELOG.md) for the complete release summary.
