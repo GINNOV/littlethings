@@ -2,23 +2,7 @@
 <rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
   <channel>
     <title>ADFinder Changelog</title>
-    <item>
-      <title>Version 1.2.4</title>
-      <description><![CDATA[
-        <ul>
-          <li>You can now drop complete file structures into disk images.</li>
-          <li>Recently opened images are available from the Open menu.</li>
-          <li>Added automatic update support through Sparkle.</li>
-        </ul>
-      ]]></description>
-      <pubDate>Sat, 16 Aug 2025 18:50:25 +0200</pubDate>
-      <enclosure
-        url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/ADFinder-1.2.4_1238.dmg"
-        sparkle:version="1238"
-        sparkle:shortVersionString="1.2.4"
-        length="7917850"
-        type="application/octet-stream"
-        sparkle:edSignature="+ca34K5NzuGoEDH7/c3aF/rq1I6LRfSzlq8l98d72yJWvhrZYwhZ2v65KWL8cSQF1DB0qDFOyj2atR6uyhXTBw==" />
-    </item>
+    <!-- No enclosure is published until exact package bytes pass the release,
+         license, corresponding-source, signature, and hosted-platform gates. -->
   </channel>
 </rss>

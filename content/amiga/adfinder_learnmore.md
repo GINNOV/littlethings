@@ -9,14 +9,13 @@ slideshow: true
   developing this tool, and I hope it will be useful for you. And so the people that enabled me with the <a href="https://github.com/adflib/ADFlib" target="_blank" rel="noopener noreferrer">ADFlib library</a>, which is a key asset behind this tool.
 </p>
 
-ADFinder 1.2.5 requires macOS 15 or later and currently supports Apple silicon
-Macs. Download the
-[current DMG](https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/ADFinder-1.2.5_1239.dmg),
-or review the [release history](https://github.com/GINNOV/littlethings/blob/master/Amiga/Tools/ADFinder/CHANGELOG.md).
-
-This version is a one-time manual update because ADFinder moved to a dedicated
-Sparkle signing key. After installing 1.2.5, ADFinder can install subsequent
-signed updates through **ADFinder → Check for Updates…**.
+ADFinder requires macOS 15 or later. Public downloads and automatic updates are
+temporarily paused while new packages are rebuilt with verified dependency
+provenance, approved notices, and complete corresponding source. No release
+version or download URL is announced until those exact bytes pass the hosted
+arm64 and x86_64 release gates. The
+[release history](https://github.com/GINNOV/littlethings/blob/master/Amiga/Tools/ADFinder/CHANGELOG.md)
+remains available.
 
 <div class="slideshow-container" data-source="../images/slideshow/adfinder">
   <div class="slide">

@@ -1,4 +1,8 @@
 # Xcode
+/.artifacts/
+/Amiga/.artifacts/
+/Amiga/.omo/
+/Amiga/Tools/ADFinder/build/
 **/DerivedData/
 **/build/
 **/*.app/
