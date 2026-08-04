@@ -22,8 +22,8 @@ func swift_log_bridge(msg: UnsafePointer<CChar>?) {
 @Observable
 @MainActor
 class ADFService {
-    internal var adfDevice: UnsafeMutablePointer<AdfDevice>?
-    internal var adfVolume: UnsafeMutablePointer<AdfVolume>?
+    nonisolated(unsafe) internal var adfDevice: UnsafeMutablePointer<AdfDevice>?
+    nonisolated(unsafe) internal var adfVolume: UnsafeMutablePointer<AdfVolume>?
     private(set) var isADFlibAvailable = false
     
     var currentVolumeName: String?
