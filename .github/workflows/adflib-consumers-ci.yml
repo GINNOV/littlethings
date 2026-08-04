@@ -449,6 +449,7 @@ jobs:
           EXPECTED_TRANSPORT_SHA256: ${{ needs.resolve-identity.outputs.transport_sha256 }}
         run: |
           set -euo pipefail
+          ADFLIB_PYTHON="$(command -v python3)"
           mkdir -p "$RUNNER_TEMP/provision-home"
           mkdir -p "$RUNNER_TEMP/readonly-cache"
           case "$EXPECTED_CHANNEL" in
@@ -462,6 +463,7 @@ jobs:
           ADFLIB_SOURCE_ROOT="$(env -i HOME="$RUNNER_TEMP/provision-home" PATH="$PATH" python3 trusted-controls/Amiga/Tools/build-support/adflib/stage_adflib.py --manifest "$effective_manifest" --connected --artifacts "$RUNNER_TEMP/readonly-cache/adflib" --print-source-root)"
           SPM_ROOT="$(env -i HOME="$RUNNER_TEMP/provision-home" PATH="$PATH" python3 trusted-controls/Amiga/Tools/ADFinder/distribution/resolve_swift_packages.py --project candidate/Amiga/Tools/ADFinder/ADFinder.xcodeproj --artifacts "$RUNNER_TEMP/readonly-cache/swiftpm" --print-source-packages-path)"
           echo "ADFLIB_SOURCE_ROOT=$ADFLIB_SOURCE_ROOT" >> "$GITHUB_ENV"
+          echo "ADFLIB_PYTHON=$ADFLIB_PYTHON" >> "$GITHUB_ENV"
           echo "SPM_ROOT=$SPM_ROOT" >> "$GITHUB_ENV"
           echo "ADFLIB_EFFECTIVE_MANIFEST=$effective_manifest" >> "$GITHUB_ENV"
       - name: Xcode owns dependency build and native tests
@@ -481,7 +483,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/consumer-home"
           mkdir -p "$RUNNER_TEMP/adfinder-derived"
           broker=(sudo -n python3 "$GITHUB_WORKSPACE/trusted-controls/Amiga/Tools/build-support/adflib/tests/consumer_sandbox.py" --trusted-root "$GITHUB_WORKSPACE/trusted-controls" --source-root "$GITHUB_WORKSPACE/candidate" --cache-root "$RUNNER_TEMP/readonly-cache" --build-root "$RUNNER_TEMP/adfinder-derived" --home-root "$RUNNER_TEMP/consumer-home" --working-directory "$GITHUB_WORKSPACE/candidate")
-          common=(-project Amiga/Tools/ADFinder/ADFinder.xcodeproj -scheme ADFinder -destination platform=macOS -derivedDataPath "$RUNNER_TEMP/adfinder-derived" ARCHS="$EXPECTED_ARCH" ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO ADFLIB_VERIFIED_SOURCE_ROOT="$ADFLIB_SOURCE_ROOT" -clonedSourcePackagesDirPath "$SPM_ROOT" -disableAutomaticPackageResolution)
+          common=(-project Amiga/Tools/ADFinder/ADFinder.xcodeproj -scheme ADFinder -destination platform=macOS -derivedDataPath "$RUNNER_TEMP/adfinder-derived" ARCHS="$EXPECTED_ARCH" ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO ADFLIB_PYTHON="$ADFLIB_PYTHON" ADFLIB_VERIFIED_SOURCE_ROOT="$ADFLIB_SOURCE_ROOT" -clonedSourcePackagesDirPath "$SPM_ROOT" -disableAutomaticPackageResolution)
           case "$EXPECTED_CHANNEL" in
             stable) canary_args=() ;;
             canary) canary_args=(ADFLIB_CANARY=ON ADFLIB_CANARY_CI=1 ADFLIB_TEST_MANIFEST_OVERRIDE="$ADFLIB_EFFECTIVE_MANIFEST" ADFLIB_TEST_IDENTITY_OVERRIDE="$RUNNER_TEMP/readonly-cache/adflib/adflib-identity.json") ;;

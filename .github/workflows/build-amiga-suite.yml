@@ -23,9 +23,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          ADFLIB_PYTHON="$(command -v python3)"
           ADFLIB_SOURCE_ROOT="$(python3 Amiga/Tools/build-support/adflib/stage_adflib.py --connected --artifacts "$PWD/.artifacts/adflib" --print-source-root)"
           SPM_ROOT="$(python3 Amiga/Tools/ADFinder/distribution/resolve_swift_packages.py --project Amiga/Tools/ADFinder/ADFinder.xcodeproj --artifacts "$PWD/.artifacts/swiftpm" --print-source-packages-path)"
           echo "ADFLIB_SOURCE_ROOT=$ADFLIB_SOURCE_ROOT" >> "$GITHUB_ENV"
+          echo "ADFLIB_PYTHON=$ADFLIB_PYTHON" >> "$GITHUB_ENV"
           echo "SPM_ROOT=$SPM_ROOT" >> "$GITHUB_ENV"
       - name: Test and package without network
         shell: bash
@@ -39,7 +41,7 @@ jobs:
         run: |
           set -euo pipefail
           arch="$(uname -m)"
-          xcodebuild test -project Amiga/Tools/ADFinder/ADFinder.xcodeproj -scheme ADFinder -configuration Debug -destination 'platform=macOS' -derivedDataPath "$PWD/.artifacts/adfinder-derived" ARCHS="$arch" ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO ADFLIB_VERIFIED_SOURCE_ROOT="$ADFLIB_SOURCE_ROOT" -clonedSourcePackagesDirPath "$SPM_ROOT" -disableAutomaticPackageResolution
+          xcodebuild test -project Amiga/Tools/ADFinder/ADFinder.xcodeproj -scheme ADFinder -configuration Debug -destination 'platform=macOS' -derivedDataPath "$PWD/.artifacts/adfinder-derived" ARCHS="$arch" ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO ADFLIB_PYTHON="$ADFLIB_PYTHON" ADFLIB_VERIFIED_SOURCE_ROOT="$ADFLIB_SOURCE_ROOT" -clonedSourcePackagesDirPath "$SPM_ROOT" -disableAutomaticPackageResolution
           ADFLIB_VERIFIED_SOURCE_ROOT="$ADFLIB_SOURCE_ROOT" ADFLIB_SWIFTPM_SOURCE_PACKAGES="$SPM_ROOT" bash Amiga/Tools/ADFinder/distribution/build_and_package.sh --unsigned --output "$PWD/.artifacts/adfinder-packages" --include-source
       - uses: actions/upload-artifact@v4
         with:

@@ -13,6 +13,7 @@ ARCHITECTURE="$4"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd -P)"
 MANIFEST="$SCRIPT_DIR/ADFlibDependency.cmake"
 STAGER="$SCRIPT_DIR/stage_adflib.py"
+PYTHON="${ADFLIB_PYTHON:?adflib_python_required}"
 
 case "${ADFLIB_CANARY:-OFF}" in
     OFF)
@@ -49,7 +50,7 @@ case "$CONFIGURATION" in
     *) echo "adflib_configuration_rejected: $CONFIGURATION" >&2; exit 2 ;;
 esac
 
-EXPECTED_ROOT="$(python3 "$STAGER" --manifest "$MANIFEST" --source-root "$SOURCE_ROOT" --print-source-root)"
+EXPECTED_ROOT="$("$PYTHON" "$STAGER" --manifest "$MANIFEST" --source-root "$SOURCE_ROOT" --print-source-root)"
 if [[ "$EXPECTED_ROOT" != "$(cd "$SOURCE_ROOT" && pwd -P)" ]]; then
     echo "adflib_source_root_mismatch" >&2
     exit 2
@@ -115,7 +116,7 @@ STAGED_SOURCE="$WORK_ROOT/source"
 BUILD_ROOT="$WORK_ROOT/build"
 rm -rf "$QUALIFIED_ROOT"
 mkdir -p "$WORK_ROOT" "$QUALIFIED_ROOT/include"
-python3 "$STAGER" --manifest "$MANIFEST" --source-root "$SOURCE_ROOT" --stage "$STAGED_SOURCE"
+"$PYTHON" "$STAGER" --manifest "$MANIFEST" --source-root "$SOURCE_ROOT" --stage "$STAGED_SOURCE"
 
 cmake -S "$STAGED_SOURCE" -B "$BUILD_ROOT" \
     -DCMAKE_BUILD_TYPE="$CONFIGURATION" \
