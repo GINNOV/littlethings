@@ -492,6 +492,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.2.5;
+				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "-ladf";
 				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.ADFinder;
 				PRODUCT_NAME = "$(TARGET_NAME)";

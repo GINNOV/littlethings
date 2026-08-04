@@ -2,9 +2,73 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>SUFeedURL</key>
-	<string>https://raw.githubusercontent.com/GINNOV/littlethings/master/Amiga/Tools/releases/appcast-audeluxe.xml</string>
-	<key>SUPublicEDKey</key>
-	<string>Oq4b/BX26tC2nXfh+dmMFoHFP9RN8lyqxcgrZPY+Pd8=</string>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Tracker Module</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.theblifemovement.audeluxe.module</string>
+				<string>com.firecore.fileformat.mod</string>
+				<string>org.videolan.s3m</string>
+				<string>org.videolan.xm</string>
+				<string>org.videolan.it</string>
+			</array>
+		</dict>
+	</array>
+		<key>SUFeedURL</key>
+		<string>https://raw.githubusercontent.com/GINNOV/littlethings/master/Amiga/Tools/releases/appcast-audeluxe.xml</string>
+		<key>SUEnableInstallerLauncherService</key>
+		<true/>
+		<key>SUPublicEDKey</key>
+		<string>7/gJsLw/VpKZOw9US3FRxwT24JNPdgwxd1ioEcisj+g=</string>
+	<key>UTExportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Tracker Module</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.theblifemovement.audeluxe.module</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>mod</string>
+					<string>s3m</string>
+					<string>xm</string>
+					<string>it</string>
+					<string>med</string>
+					<string>okt</string>
+					<string>mtm</string>
+					<string>669</string>
+					<string>dsm</string>
+					<string>far</string>
+					<string>ptm</string>
+					<string>ult</string>
+					<string>amf</string>
+					<string>ams</string>
+					<string>dbm</string>
+					<string>dmf</string>
+					<string>imf</string>
+					<string>j2b</string>
+					<string>mdl</string>
+					<string>mo3</string>
+					<string>psm</string>
+					<string>stm</string>
+					<string>stx</string>
+					<string>umx</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
 </dict>
 </plist>

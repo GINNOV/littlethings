@@ -130,23 +130,17 @@ fi
 
 # Check disk space
 DMG_DIR=$(dirname "$DMG_PATH")
-AVAILABLE_SPACE=$(df -P "$DMG_DIR" | tail -1 | awk '{print $4}' | awk '{print $1 / 1024}') # MB
-if (( $(echo "$AVAILABLE_SPACE < $MIN_SPACE_MB" | bc -l) )); then
+AVAILABLE_SPACE=$(df -Pm "$DMG_DIR" | awk 'END { print $4 }')
+if (( AVAILABLE_SPACE < MIN_SPACE_MB )); then
     echo "Error: Insufficient disk space. At least $MIN_SPACE_MB MB is required, but only ${AVAILABLE_SPACE} MB is available."
     exit 1
 fi
 
 # Verify create-dmg is installed
 if ! command -v create-dmg &> /dev/null; then
-    echo "Error: create-dmg not found. Installing via Homebrew..."
-    brew install create-dmg || { echo "Failed to install create-dmg"; exit 1; }
+    echo "Error: create-dmg is required to package the release."
+    exit 1
 fi
-
-# Self-sign the app
-echo "Self-signing the app..."
-codesign --sign - --force --deep "$APP_PATH" || {
-    echo "Warning: Code signing failed. Continuing without signature."
-}
 
 # Create temporary source folder
 TEMP_DIR=$(mktemp -d)

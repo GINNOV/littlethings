@@ -135,40 +135,29 @@ struct ContentView: View {
             }
         }
         .animation(.spring(), value: isShowingDeleteAlert || isShowingRenameAlert)
+        .alert(item: $engine.presentedError) { error in
+            Alert(
+                title: Text("AuDeluxe Couldn’t Complete the Operation"),
+                message: Text(error.localizedDescription),
+                dismissButton: .default(Text("OK"))
+            )
+        }
     }
 
     // MARK: - Logic
     private func scanMusicFolder() {
-        guard let url = settings.musicFolderURL else {
-            engine.clearAllSongs()
-            return
-        }
-        Task { await engine.scanMusicFolder(for: url) }
+        engine.requestMusicFolderScan(for: settings.musicFolderURL)
     }
     
     private func deleteFile(item: PlaylistItem) {
         guard let musicFolderURL = settings.musicFolderURL else {
-            print("Error deleting file: Music folder URL is not available.")
             return
         }
-        
-        guard musicFolderURL.startAccessingSecurityScopedResource() else {
-            print("Error deleting file: Could not gain access to the music folder for deletion.")
-            return
-        }
-        defer { musicFolderURL.stopAccessingSecurityScopedResource() }
-
-        do {
-            try FileManager.default.trashItem(at: item.fileURL, resultingItemURL: nil)
-            scanMusicFolder()
-        } catch {
-            print("Error deleting file: \(error)")
-        }
+        _ = engine.trashFile(item, musicFolderURL: musicFolderURL)
     }
     
     private func updateFile(item: PlaylistItem, newTitle: String, newArtist: String, newFilename: String) async {
         guard let musicFolderURL = settings.musicFolderURL else {
-            print("Error updating file: Music folder URL is not available.")
             return
         }
 
@@ -179,7 +168,7 @@ struct ContentView: View {
 
         let success = await engine.updateFile(from: item.fileURL, to: newURL, newTitle: newTitle, newArtist: newArtist, musicFolderURL: musicFolderURL)
         if success {
-            await engine.scanMusicFolder(for: musicFolderURL)
+            engine.requestMusicFolderScan(for: musicFolderURL)
         }
     }
 }

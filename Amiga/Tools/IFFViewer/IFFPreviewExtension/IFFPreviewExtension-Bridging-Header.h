@@ -5,3 +5,4 @@
 
 // Now, we import our custom C header.
 #import "iff.h"
+#import "safe_iff.h"
