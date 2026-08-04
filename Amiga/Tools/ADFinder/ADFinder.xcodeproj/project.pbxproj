@@ -247,7 +247,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
-			shellScript = "set -euo pipefail\narch=\"$ARCHS\"\n\"$SRCROOT/../build-support/adflib/build-for-xcode.sh\" \"$ADFLIB_VERIFIED_SOURCE_ROOT\" \"$DERIVED_FILE_DIR\" \"$CONFIGURATION\" \"$arch\"\nresources=\"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"\nmkdir -p \"$resources/ADFlib-source-notices\"\ncp \"$ADFLIB_BUILD_ROOT/adflib-provenance.json\" \"$resources/adflib-provenance.json\"\ncp \"$SRCROOT/../../../LICENSE\" \"$resources/LICENSE-MIT.txt\"\ncp \"$ADFLIB_VERIFIED_SOURCE_ROOT/COPYING-GPL2\" \"$resources/GPL-2.0.txt\"\ncp \"$ADFLIB_VERIFIED_SOURCE_ROOT/COPYING\" \"$resources/ADFlib-COPYING\"\ncp \"$SRCROOT/THIRD_PARTY_NOTICES.md\" \"$resources/THIRD_PARTY_NOTICES.md\"\ncp \"$ADFLIB_VERIFIED_SOURCE_ROOT/src/adflib.c\" \"$ADFLIB_VERIFIED_SOURCE_ROOT/src/adf_version.h\" \"$ADFLIB_VERIFIED_SOURCE_ROOT/src/adf_limits.h\" \"$resources/ADFlib-source-notices/\"\n";
+			shellScript = "set -euo pipefail\narch=\"$ARCHS\"\n\"$SRCROOT/../build-support/adflib/build-for-xcode.sh\" \"$ADFLIB_VERIFIED_SOURCE_ROOT\" \"$BUILD_DIR\" \"$CONFIGURATION\" \"$arch\"\nresources=\"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"\nmkdir -p \"$resources/ADFlib-source-notices\"\ncp \"$ADFLIB_BUILD_ROOT/adflib-provenance.json\" \"$resources/adflib-provenance.json\"\ncp \"$SRCROOT/../../../LICENSE\" \"$resources/LICENSE-MIT.txt\"\ncp \"$ADFLIB_VERIFIED_SOURCE_ROOT/COPYING-GPL2\" \"$resources/GPL-2.0.txt\"\ncp \"$ADFLIB_VERIFIED_SOURCE_ROOT/COPYING\" \"$resources/ADFlib-COPYING\"\ncp \"$SRCROOT/THIRD_PARTY_NOTICES.md\" \"$resources/THIRD_PARTY_NOTICES.md\"\ncp \"$ADFLIB_VERIFIED_SOURCE_ROOT/src/adflib.c\" \"$ADFLIB_VERIFIED_SOURCE_ROOT/src/adf_version.h\" \"$ADFLIB_VERIFIED_SOURCE_ROOT/src/adf_limits.h\" \"$resources/ADFlib-source-notices/\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -280,7 +280,7 @@
 		AC779D4A2DE101C400210E27 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ADFLIB_BUILD_ROOT = "$(DERIVED_FILE_DIR)/adflib/$(CONFIGURATION)/$(ARCHS)";
+				ADFLIB_BUILD_ROOT = "$(BUILD_DIR)/adflib/$(CONFIGURATION)/$(ARCHS)";
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -351,7 +351,7 @@
 		AC779D4B2DE101C400210E27 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ADFLIB_BUILD_ROOT = "$(DERIVED_FILE_DIR)/adflib/$(CONFIGURATION)/$(ARCHS)";
+				ADFLIB_BUILD_ROOT = "$(BUILD_DIR)/adflib/$(CONFIGURATION)/$(ARCHS)";
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -414,7 +414,7 @@
 		AC779D4D2DE101C400210E27 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ADFLIB_BUILD_ROOT = "$(DERIVED_FILE_DIR)/adflib/$(CONFIGURATION)/$(ARCHS)";
+				ADFLIB_BUILD_ROOT = "$(BUILD_DIR)/adflib/$(CONFIGURATION)/$(ARCHS)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
@@ -460,7 +460,7 @@
 		AC779D4E2DE101C400210E27 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ADFLIB_BUILD_ROOT = "$(DERIVED_FILE_DIR)/adflib/$(CONFIGURATION)/$(ARCHS)";
+				ADFLIB_BUILD_ROOT = "$(BUILD_DIR)/adflib/$(CONFIGURATION)/$(ARCHS)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;

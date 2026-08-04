@@ -18,9 +18,10 @@ class ADFinderXcodeContractTests(unittest.TestCase):
 
         self.assertNotIn("$(CURRENT_ARCH)", project)
         self.assertEqual(
-            project.count('ADFLIB_BUILD_ROOT = "$(DERIVED_FILE_DIR)/adflib/$(CONFIGURATION)/$(ARCHS)";'),
+            project.count('ADFLIB_BUILD_ROOT = "$(BUILD_DIR)/adflib/$(CONFIGURATION)/$(ARCHS)";'),
             4,
         )
+        self.assertIn(r'\"$ADFLIB_VERIFIED_SOURCE_ROOT\" \"$BUILD_DIR\"', project)
         self.assertIn(r'set -euo pipefail\narch=\"$ARCHS\"', project)
         self.assertIn(r'\"$CONFIGURATION\" \"$arch\"', project)
 
