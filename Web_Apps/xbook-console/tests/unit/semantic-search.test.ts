@@ -29,13 +29,14 @@ describe("semantic search lib", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(getSettings).mockResolvedValue({
-      llmModel: "text-embedding-3-small",
+      llmModel: "chat-model",
+      llmEmbeddingModel: "text-embedding-3-small",
       llmBaseUrl: "http://localhost:1234/v1",
       llmApiKey: "test-key",
     } as any);
   });
 
-  it("should call OpenAI with correct parameters and return embedding", async () => {
+  it("should call OpenAI with embedding model (not chat model) and return embedding", async () => {
     mockCreateEmbedding.mockResolvedValue({
       data: [{ embedding: [0.1, 0.2, 0.3] }],
     });
@@ -47,6 +48,29 @@ describe("semantic search lib", () => {
       expect.objectContaining({
         model: "text-embedding-3-small",
         input: "Hello world",
+      }),
+      expect.objectContaining({ timeout: 15000 })
+    );
+  });
+
+  it("should use dedicated embedding base URL when configured", async () => {
+    vi.mocked(getSettings).mockResolvedValue({
+      llmModel: "gemma-4-26b",
+      llmBaseUrl: "http://192.168.0.69:8000/v1",
+      llmEmbeddingModel: "nomic-embed-text",
+      llmEmbeddingBaseUrl: "http://127.0.0.1:11434/v1",
+      llmApiKey: "test-key",
+    } as any);
+    mockCreateEmbedding.mockResolvedValue({
+      data: [{ embedding: [0.5] }],
+    });
+
+    await generateEmbedding("split setup");
+
+    expect(mockCreateEmbedding).toHaveBeenCalledWith(
+      expect.objectContaining({
+        model: "nomic-embed-text",
+        input: "split setup",
       }),
       expect.objectContaining({ timeout: 15000 })
     );

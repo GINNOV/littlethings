@@ -22,9 +22,56 @@ export async function searchBookmarksSemantically(query: string) {
   return results.map(r => { const f = full.find(fb => fb.id === r.id); return f ? { ...f, similarity: r.similarity } : null; }).filter((b): b is NonNullable<typeof b> => !!b);
 }
 
+/** Pending = no usable enrichment yet (empty summary AND empty category). */
+export function pendingEnrichmentWhere() {
+  return {
+    AND: [
+      { OR: [{ summary: null }, { summary: "" }] },
+      { OR: [{ category: null }, { category: "" }] },
+    ],
+  };
+}
+
+/** Summarized = has a non-empty summary or category (complement of pending). */
+export function summarizedEnrichmentWhere() {
+  return {
+    OR: [{ summary: { not: "" } }, { category: { not: "" } }],
+  };
+}
+
+/** Current enrichment failures: last attempt left a non-empty error on the bookmark. */
+export function failedEnrichmentWhere() {
+  return {
+    AND: [{ enrichmentError: { not: null } }, { NOT: { enrichmentError: "" } }],
+  };
+}
+
+/**
+ * Blocked from automatic enrich: still pending and has exhausted the default retry budget
+ * (see enrich route: enrichmentFailures < 3 unless full/reprocess).
+ */
+export function blockedEnrichmentWhere() {
+  return {
+    ...pendingEnrichmentWhere(),
+    enrichmentFailures: { gte: 3 },
+  };
+}
+
+/**
+ * Bookmarks that can be (re)indexed: non-empty summary and no embedding yet.
+ * Dashboard "missing" and POST /api/bookmarks/embeddings/sync must use the same predicate.
+ */
+export function needsEmbeddingWhere(source?: "x" | "yt" | string | null) {
+  return {
+    ...(source ? { source } : {}),
+    embedding: null,
+    AND: [{ summary: { not: null } }, { NOT: { summary: "" } }],
+  };
+}
+
 function buildStatusFilter(status?: string) {
-  if (status === "pending") return { AND: [{ OR: [{ summary: null }, { summary: "" }] }, { OR: [{ category: null }, { category: "" }] }] };
-  if (status === "summarized") return { OR: [{ summary: { not: "" } }, { category: { not: "" } }] };
+  if (status === "pending") return pendingEnrichmentWhere();
+  if (status === "summarized") return summarizedEnrichmentWhere();
   return {};
 }
 
@@ -53,7 +100,8 @@ const mapB = (b: any) => ({
   ...b, folderName: b.folder?.name ?? null, importedAt: b.importedAt?.toISOString() ?? null,
   createdAt: b.createdAt?.toISOString() ?? null, summarizedAt: b.summarizedAt?.toISOString() ?? null,
   editedAt: b.editedAt?.toISOString() ?? null, readAt: b.readAt?.toISOString() ?? null,
-  error: b.processingEvents?.[0]?.message ?? null,
+  // Prefer durable bookmark field; fall back to latest failed processing event.
+  error: b.enrichmentError || b.processingEvents?.[0]?.message || null,
 });
 
 export async function getBookmarks(p: any) {

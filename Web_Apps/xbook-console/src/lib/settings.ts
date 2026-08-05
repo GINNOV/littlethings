@@ -5,7 +5,9 @@ export type AppSettings = {
   xBearerToken?: string | null; xUserId?: string | null; xApiBase?: string | null; xClientId?: string | null; xClientSecret?: string | null; xRedirectUri?: string | null;
   xAccessToken?: string | null; xRefreshToken?: string | null; xTokenExpiresAt?: Date | null; xScope?: string | null; xTokenType?: string | null;
   ytClientId?: string | null; ytClientSecret?: string | null; ytRedirectUri?: string | null; ytAccessToken?: string | null; ytRefreshToken?: string | null; ytTokenExpiresAt?: Date | null; ytScope?: string | null; ytTokenType?: string | null;
-  llmBaseUrl?: string | null; llmApiKey?: string | null; llmModel?: string | null; llmSystemPrompt?: string | null; llmPrompt?: string | null; llmConcurrency?: number | null; llmMaxTokens?: number | null;
+  llmBaseUrl?: string | null; llmApiKey?: string | null; llmModel?: string | null;
+  llmEmbeddingModel?: string | null; llmEmbeddingBaseUrl?: string | null;
+  llmSystemPrompt?: string | null; llmPrompt?: string | null; llmConcurrency?: number | null; llmMaxTokens?: number | null;
   llmContextWindow?: number | null; llmResponseLimit?: number | null; llmThinkingEnabled?: boolean | null;
   monthlyCap?: number | null; ytMonthlyCap?: number | null; enrichBatchSize?: number | null; logLlmPayloads?: boolean | null; targetLanguage?: string | null;
   soundOnComplete?: boolean | null; soundOnError?: boolean | null; lastBookmarkId?: string | null; lastSyncedAt?: Date | null;

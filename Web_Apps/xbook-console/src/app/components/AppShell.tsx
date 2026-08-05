@@ -35,7 +35,7 @@ const navItems = [
     match: (pathname: string) => pathname === "/processing",
   },
   { href: "/settings", label: "Settings", match: (pathname: string) => pathname === "/settings" },
-  { href: "/docs", label: "Manual", match: (pathname: string) => pathname === "/docs" },
+  { href: "/docs", label: "Docs", match: (pathname: string) => pathname === "/docs" || pathname.startsWith("/docs/") },
 ];
 
 export default function AppShell({ children }: { children: React.ReactNode }) {

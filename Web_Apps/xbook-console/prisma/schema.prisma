@@ -79,6 +79,8 @@ model Settings {
   llmBaseUrl       String?
   llmApiKey        String?
   llmModel         String?
+  llmEmbeddingModel String?
+  llmEmbeddingBaseUrl String?
   llmSystemPrompt  String?
   llmPrompt        String?
   monthlyCap       Int       @default(100)

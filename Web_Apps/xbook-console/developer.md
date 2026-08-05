@@ -171,9 +171,11 @@ This will compile the Next.js production build, copy all backend assets (includi
 ## Versioning and Releases
 
 XBook Console versions are defined in:
-1. `package.json` (`"version": "0.1.0"`)
-2. `src-tauri/tauri.conf.json` (`"version": "0.1.0"`)
-3. `src-tauri/Cargo.toml` (`version = "0.1.0"`)
+1. `package.json` (`"version": "0.3.0"`)
+2. `src-tauri/tauri.conf.json` (`"version": "0.3.0"`)
+3. `src-tauri/Cargo.toml` (`version = "0.3.0"`)
+
+User-facing history lives in [CHANGELOG.md](CHANGELOG.md) ([Keep a Changelog](https://keepachangelog.com/) style). Update the **Unreleased** section as you land work; fold it into a dated version heading when you cut a release.
 
 Tauri does not auto-increment these versions during compilation. To manage versioning and updates:
 

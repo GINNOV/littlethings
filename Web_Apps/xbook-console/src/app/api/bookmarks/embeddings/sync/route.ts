@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { needsEmbeddingWhere } from "@/lib/bookmarks";
 import { generateEmbedding } from "@/lib/llm";
 import {
   createOperationRun,
@@ -14,29 +15,35 @@ export const maxDuration = 300;
 export async function POST(request: Request) {
   const url = new URL(request.url);
   const limitParam = url.searchParams.get("limit");
-  const limit = limitParam ? Math.max(1, Number(limitParam)) : 100;
+  const limit = limitParam ? Math.max(1, Math.min(200, Number(limitParam) || 100)) : 100;
+  const sourceParam = url.searchParams.get("source");
+  const source =
+    sourceParam === "x" || sourceParam === "yt" ? sourceParam : null;
+
+  const where = needsEmbeddingWhere(source);
 
   const pending = await prisma.bookmark.findMany({
-    where: { 
-      embedding: null,
-      OR: [
-        { summary: { not: null } },
-        { summary: { not: "" } }
-      ]
-    },
+    where,
     take: limit,
     orderBy: { importedAt: "desc" },
   });
 
   if (pending.length === 0) {
-    return NextResponse.json({ ok: true, message: "No bookmarks need embedding sync." });
+    return NextResponse.json({
+      ok: true,
+      updated: 0,
+      failed: 0,
+      remaining: 0,
+      source: source ?? "all",
+      message: "No bookmarks need embedding sync.",
+    });
   }
 
   const run = await createOperationRun({
     type: "embedding_sync",
-    source: "system",
+    source: source ?? "system",
     total: pending.length,
-    notes: `Syncing embeddings for ${pending.length} bookmarks.`,
+    notes: `Syncing embeddings for ${pending.length} bookmarks${source ? ` (${source})` : ""}.`,
   });
 
   let updated = 0;
@@ -46,7 +53,7 @@ export async function POST(request: Request) {
     try {
       const text = `${bookmark.summary}\n${bookmark.category}\n${bookmark.tags ?? ""}`;
       const embedding = await generateEmbedding(text);
-      
+
       await prisma.bookmark.update({
         where: { id: bookmark.id },
         data: {
@@ -77,10 +84,19 @@ export async function POST(request: Request) {
     }
   }
 
+  const remaining = await prisma.bookmark.count({ where });
+
   await updateOperationRun(run.id, {
     status: "completed",
     finish: true,
   });
 
-  return NextResponse.json({ ok: true, updated, failed, runId: run.id });
+  return NextResponse.json({
+    ok: true,
+    updated,
+    failed,
+    remaining,
+    source: source ?? "all",
+    runId: run.id,
+  });
 }

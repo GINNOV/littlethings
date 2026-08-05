@@ -30,7 +30,7 @@ export default function NavBar() {
           <Link href="/" className={linkClass("/")}>Dashboard</Link>
           <Link href="/bookmarks" className={linkClass("/bookmarks")}>Library</Link>
           <Link href="/settings" className={linkClass("/settings")}>Settings</Link>
-          <Link href="/docs" className={linkClass("/docs")}>Manual</Link>
+          <Link href="/docs" className={linkClass("/docs")}>Docs</Link>
         </div>
       </div>
     </nav>

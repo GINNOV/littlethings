@@ -21,6 +21,8 @@ export type Settings = {
   llmBaseUrl?: string | null;
   llmApiKey?: string | null;
   llmModel?: string | null;
+  llmEmbeddingModel?: string | null;
+  llmEmbeddingBaseUrl?: string | null;
   llmSystemPrompt?: string | null;
   llmPrompt?: string | null;
   llmConcurrency?: number | null;

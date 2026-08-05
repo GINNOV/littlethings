@@ -6,6 +6,10 @@
 
 It offloads your memory by automatically enriching bookmarks with AI-generated summaries, semantic tags, categorizations, and vector embeddings—allowing you to perform conceptual semantic searches over everything you've saved.
 
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for release history and unreleased work.
+
 ## Workflow
 My need is the same as many others that scan the web for knowledge but want a local, private, and searchable solution for follow ups and further exploration. A common workflow I have developed is to: add to my bookmarks, run XBook Console to import and enrich what I bookmarked, when I need something on a subject I know I've bookmarked, I can ask Hermes to use the XBook apis to generate content in Obsidian.
 

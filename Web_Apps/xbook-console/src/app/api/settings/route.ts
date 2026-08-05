@@ -25,6 +25,8 @@ const schema = z.object({
   llmBaseUrl: z.string().optional().nullable(),
   llmApiKey: z.string().optional().nullable(),
   llmModel: z.string().optional().nullable(),
+  llmEmbeddingModel: z.string().optional().nullable(),
+  llmEmbeddingBaseUrl: z.string().optional().nullable(),
   llmSystemPrompt: z.string().optional().nullable(),
   llmPrompt: z.string().optional().nullable(),
   llmConcurrency: z.coerce.number().int().min(1).max(6).optional(),

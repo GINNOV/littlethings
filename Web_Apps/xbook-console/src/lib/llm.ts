@@ -145,6 +145,33 @@ async function getLlmConfig() {
   return { client, model, baseUrl, maxTokens, contextWindow, responseLimit, logLlmPayloads, customPrompt: settings.llmPrompt, systemPrompt };
 }
 
+/** Separate OpenAI-compatible client for embeddings (often a different host/model than chat). */
+async function getEmbeddingConfig() {
+  const env = envSchema.parse({
+    OPENAI_BASE_URL: cleanEnv(process.env.OPENAI_BASE_URL),
+    OPENAI_API_KEY: cleanEnv(process.env.OPENAI_API_KEY),
+    OPENAI_MODEL: cleanEnv(process.env.OPENAI_MODEL),
+  });
+  const settings = await getSettings();
+  const chatBaseUrl = settings.llmBaseUrl ?? env.OPENAI_BASE_URL ?? "http://localhost:1234/v1";
+  const baseUrl =
+    cleanEnv(settings.llmEmbeddingBaseUrl ?? undefined) ??
+    chatBaseUrl;
+  const apiKey = settings.llmApiKey ?? env.OPENAI_API_KEY ?? "lm-studio";
+  // Prefer dedicated embedding model; never fall back to a chat model id (usually unsupported).
+  const model =
+    cleanEnv(settings.llmEmbeddingModel ?? undefined) ??
+    cleanEnv(process.env.OPENAI_EMBEDDING_MODEL) ??
+    "text-embedding-3-small";
+
+  const client = new OpenAI({
+    apiKey,
+    baseURL: baseUrl,
+    timeout: 60000,
+  });
+  return { client, model, baseUrl };
+}
+
 export async function validateModelAvailability(signal?: AbortSignal) {
   const config = await getLlmConfig();
   try {
@@ -411,12 +438,34 @@ export async function translateText(input: {
 }
 
 export async function generateEmbedding(text: string, signal?: AbortSignal) {
-  const config = await getLlmConfig();
-  const response = await config.client.embeddings.create({
-    model: config.model || "text-embedding-3-small",
-    input: text.slice(0, 8000),
-  }, { signal, timeout: 15000 }); // 15s timeout for embeddings
-  return response.data[0].embedding;
+  const config = await getEmbeddingConfig();
+  try {
+    const response = await config.client.embeddings.create({
+      model: config.model,
+      input: text.slice(0, 8000),
+    }, { signal, timeout: 15000 }); // 15s timeout for embeddings
+    const embedding = response.data?.[0]?.embedding;
+    if (!embedding?.length) {
+      throw new Error("Embedding API returned an empty vector.");
+    }
+    return embedding;
+  } catch (error) {
+    const status =
+      error && typeof error === "object" && "status" in error
+        ? Number((error as { status?: number }).status)
+        : undefined;
+    const rawMessage = error instanceof Error ? error.message : String(error);
+    if (status === 404 || /404/.test(rawMessage)) {
+      throw new Error(
+        `Embeddings endpoint not found at ${config.baseUrl} (model "${config.model}"). ` +
+          `Set Settings → Embedding base URL to an OpenAI-compatible embeddings server ` +
+          `(e.g. Ollama at http://127.0.0.1:11434/v1) and Embedding model (e.g. nomic-embed-text).`
+      );
+    }
+    throw new Error(
+      `Embedding failed via ${config.baseUrl} model "${config.model}": ${rawMessage}`
+    );
+  }
 }
 
 // --- Internal Helpers ---

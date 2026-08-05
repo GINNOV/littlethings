@@ -68,6 +68,8 @@ export function useLLMSettings() {
         llmBaseUrl: "http://127.0.0.1:11434/v1",
         llmApiKey: "ollama",
         llmConcurrency: 1,
+        llmEmbeddingBaseUrl: "http://127.0.0.1:11434/v1",
+        llmEmbeddingModel: prev.llmEmbeddingModel || "nomic-embed-text",
       }));
       return;
     }
@@ -88,6 +90,9 @@ export function useLLMSettings() {
         llmBaseUrl: "http://127.0.0.1:8000/v1",
         llmApiKey: "vllm",
         llmConcurrency: 1,
+        // vLLM chat servers often lack /v1/embeddings — default embeddings to local Ollama.
+        llmEmbeddingBaseUrl: prev.llmEmbeddingBaseUrl || "http://127.0.0.1:11434/v1",
+        llmEmbeddingModel: prev.llmEmbeddingModel || "nomic-embed-text",
       }));
       return;
     }

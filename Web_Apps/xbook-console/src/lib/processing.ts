@@ -265,11 +265,11 @@ export async function getProcessingSummary(source?: string | null) {
       }),
       prisma.bookmark.count({
         where: {
+          ...filter,
           AND: [
             { OR: [{ summary: null }, { summary: "" }] },
-            { OR: [{ category: null }, { category: "" }] }
+            { OR: [{ category: null }, { category: "" }] },
           ],
-          ...filter
         },
       }),
       prisma.llmRequestLog.findFirst({

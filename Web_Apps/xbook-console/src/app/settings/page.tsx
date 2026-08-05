@@ -18,9 +18,11 @@ export default async function SettingsPage() {
     <main className="flex min-h-screen flex-col gap-8 bg-surface px-5 py-6 text-on-surface md:px-8">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold uppercase text-primary">Connections</p>
+          <p className="text-sm font-semibold uppercase text-primary">Configuration</p>
           <h1 className="mt-2 font-headline text-4xl font-semibold">Settings</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-on-surface-variant">Store credentials, tune limits, and choose how much processing detail is retained.</p>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-on-surface-variant">
+            Connect accounts, set chat and embedding models, then tune limits and data. Use the tabs to focus on one area at a time.
+          </p>
         </div>
       </header>
       <section className="rounded-lg bg-surface-container-low p-4 md:p-6">

@@ -17,10 +17,25 @@ export default async function Home({ searchParams }: { searchParams?: Promise<Re
     <main className="min-h-screen bg-surface-container-low px-4 py-6 lg:px-8 lg:py-8">
       <div className="mx-auto flex max-w-[1500px] flex-col gap-8">
         <DashboardHeader tab={tab} />
-        <StatsGrid tab={tab} total={stats.total} summarized={stats.summarized} pending={stats.pending} 
-          usedCount={live.usedCount} cap={live.cap} balance={live.balance} liveXUsage={live.liveXUsage} 
-          costPerCall={live.costPerCall} enrichBatchSize={stats.settings?.enrichBatchSize ?? 50} 
-          lastSync={lastSync} failedRunsCount={stats.failedItemsCount} skippedItemsCount={stats.skippedItemsCount} settings={stats.settings} />
+        <StatsGrid
+          tab={tab}
+          total={stats.total}
+          summarized={stats.summarized}
+          pending={stats.pending}
+          usedCount={live.usedCount}
+          cap={live.cap}
+          balance={live.balance}
+          liveXUsage={live.liveXUsage}
+          costPerCall={live.costPerCall}
+          usageSource={live.usageSource}
+          enrichBatchSize={stats.settings?.enrichBatchSize ?? 50}
+          lastSync={lastSync}
+          failedCount={stats.failedItemsCount}
+          blockedCount={stats.skippedItemsCount}
+          indexedCount={stats.indexHealth?.withEmbedding ?? 0}
+          unindexedCount={stats.indexHealth?.unindexed ?? 0}
+          settings={stats.settings}
+        />
         <RecentActivity operationRuns={stats.operationRuns} />
         <RecentImports tab={tab} recent={stats.recent} getYouTubeTitle={getYouTubeTitle} 
           getYouTubeFolder={getYouTubeFolder} formatDateShort={formatDateShort} />
