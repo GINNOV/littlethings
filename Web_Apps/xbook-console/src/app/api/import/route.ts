@@ -69,82 +69,130 @@ export async function POST(request: Request) {
     }
 
     let bookmarks: any[] = [];
+    /** Global-only feed items (newest-first). Used solely to advance lastBookmarkId. */
+    let globalNewBookmarks: any[] = [];
+    let knownSkipped = 0;
+
     if (source === "yt") {
       bookmarks = await fetchYouTubeBookmarks({ maxTotal: undefined });
     } else {
-      // Deep Folder Sync for X
-      
-      // Fetch fresh folders from X to discovery new ones
-      try {
-        const xFolders = await fetchBookmarkFolders();
-        for (const xf of xFolders) {
-          await prisma.bookmarkFolder.upsert({
-            where: { id: xf.id },
-            update: { name: xf.name ?? null },
-            create: { id: xf.id, name: xf.name ?? null }
-          });
-          
+      // IDs already in the library — never re-hydrate these (X charges per tweet read).
+      const existingXIds = new Set(
+        (
+          await prisma.bookmark.findMany({
+            where: { source: "x" },
+            select: { id: true },
+          })
+        ).map((b) => b.id)
+      );
+      knownSkipped = existingXIds.size;
+
+      // Deep folder scan is expensive (paginated list + tweet lookups). On a normal delta
+      // sync with a baseline, new bookmarks always appear on the global list first — so we
+      // skip folders unless this is the first sync or the client asked for ?deep=1.
+      const deepFolders =
+        url.searchParams.get("deep") === "1" || !settings.lastBookmarkId;
+
+      if (deepFolders) {
+        try {
+          const xFolders = await fetchBookmarkFolders();
+          for (const xf of xFolders) {
+            await prisma.bookmarkFolder.upsert({
+              where: { id: xf.id },
+              update: { name: xf.name ?? null },
+              create: { id: xf.id, name: xf.name ?? null },
+            });
+
+            await logProcessingEvent({
+              runId: operation.id,
+              type: "import",
+              status: "fetching",
+              message: `Scanning X folder for new items: ${xf.name || xf.id}…`,
+            });
+
+            const folderBookmarks = await fetchBookmarks({
+              folderId: xf.id,
+              folderName: xf.name,
+              maxTotal: remaining ?? undefined,
+              stopBeforeIds: existingXIds,
+              skipExisting: true,
+            });
+
+            for (const b of folderBookmarks) existingXIds.add(b.id);
+
+            await logProcessingEvent({
+              runId: operation.id,
+              type: "import",
+              status: "completed",
+              message: `Folder ${xf.name || xf.id}: ${folderBookmarks.length} new to import.`,
+            });
+
+            bookmarks.push(...folderBookmarks);
+          }
+        } catch (e: unknown) {
+          console.warn("Failed to fetch X folders, continuing with global sync:", e);
           await logProcessingEvent({
             runId: operation.id,
             type: "import",
-            status: "fetching",
-            message: `Syncing X folder: ${xf.name || xf.id}...`,
+            status: "failed",
+            message: `Folder discovery failed: ${e instanceof Error ? e.message : String(e)}. Falling back to global sync.`,
           });
-
-          const folderBookmarks = await fetchBookmarks({
-            folderId: xf.id,
-            folderName: xf.name,
-            maxTotal: remaining ?? undefined,
-          });
-          
-          await logProcessingEvent({
-            runId: operation.id,
-            type: "import",
-            status: "completed",
-            message: `Fetched ${folderBookmarks.length} bookmarks from X folder: ${xf.name || xf.id}.`,
-          });
-
-          bookmarks.push(...folderBookmarks);
         }
-      } catch (e: unknown) {
-        console.warn("Failed to fetch X folders, continuing with global sync:", e);
+      } else {
         await logProcessingEvent({
           runId: operation.id,
           type: "import",
-          status: "failed",
-          message: `Folder discovery failed: ${e instanceof Error ? e.message : String(e)}. Falling back to global sync.`,
+          status: "completed",
+          message:
+            "Delta mode: skipped full folder re-scan (use folder import or ?deep=1 to re-walk folders).",
         });
       }
 
-      // Finally, fetch global bookmarks to catch anything not in a folder
+      // Global bookmarks: delta only.
+      // With a baseline, walk newest→oldest and stop at lastBookmarkId (bookmark order).
+      // Without a baseline, scan the full list but still skip IDs already in the library.
       await logProcessingEvent({
         runId: operation.id,
         type: "import",
         status: "fetching",
-        message: `Syncing global X bookmarks (catch-all)...`,
+        message: settings.lastBookmarkId
+          ? `Delta sync of global X bookmarks (stop at baseline ${settings.lastBookmarkId})…`
+          : "Global X bookmark sync (no baseline yet; skipping IDs already in library)…",
       });
 
-      const globalBookmarks = await fetchBookmarks({
-        maxTotal: remaining ?? undefined,
-        stopBeforeIds: settings.lastBookmarkId ? new Set([settings.lastBookmarkId]) : undefined,
-      });
-      bookmarks.push(...globalBookmarks);
+      if (settings.lastBookmarkId) {
+        globalNewBookmarks = await fetchBookmarks({
+          maxTotal: remaining ?? undefined,
+          stopBeforeIds: new Set([settings.lastBookmarkId]),
+          skipExisting: false,
+        });
+        // Defensive: never re-store tweets we already paid to import.
+        globalNewBookmarks = globalNewBookmarks.filter((b) => !existingXIds.has(b.id));
+      } else {
+        globalNewBookmarks = await fetchBookmarks({
+          maxTotal: remaining ?? undefined,
+          stopBeforeIds: existingXIds.size ? existingXIds : undefined,
+          skipExisting: existingXIds.size > 0,
+        });
+      }
 
-      // Deduplicate by ID - folder specific entries win (they have folderId)
-      const bookmarkMap = new Map<string, typeof bookmarks[0]>();
+      for (const b of globalNewBookmarks) existingXIds.add(b.id);
+      bookmarks.push(...globalNewBookmarks);
+
+      // Deduplicate by ID — folder-specific entries win (they have folderId).
+      const bookmarkMap = new Map<string, (typeof bookmarks)[0]>();
       for (const b of bookmarks) {
-        // Only overwrite if we don't have it yet, OR if this new one has a folderId and the existing one doesn't
-        if (!bookmarkMap.has(b.id) || (b.folderId && !bookmarkMap.get(b.id).folderId)) {
+        if (!bookmarkMap.has(b.id) || (b.folderId && !bookmarkMap.get(b.id)?.folderId)) {
           bookmarkMap.set(b.id, b);
         }
       }
       bookmarks = Array.from(bookmarkMap.values());
-      
+
       await logProcessingEvent({
         runId: operation.id,
         type: "import",
         status: "completed",
-        message: `Total deduplicated X bookmarks: ${bookmarks.length}.`,
+        message: `X delta: ${bookmarks.length} new candidate(s) to store (${knownSkipped} already in library, not re-fetched).`,
       });
     }
 
@@ -162,11 +210,7 @@ export async function POST(request: Request) {
     let refreshed = 0;
 
     for (const bookmark of bookmarks) {
-      if (existingIds.has(bookmark.id)) {
-        refreshed += 1;
-      } else {
-        created += 1;
-      }
+      const alreadyHave = existingIds.has(bookmark.id);
 
       if (bookmark.folderId) {
         await prisma.bookmarkFolder.upsert({
@@ -178,6 +222,30 @@ export async function POST(request: Request) {
           },
         });
       }
+
+      // X: never re-write known tweets (payload is immutable enough; re-fetch already avoided).
+      // YT: still upsert so playlist metadata can refresh.
+      if (alreadyHave && source === "x") {
+        refreshed += 1;
+        if (bookmark.folderId) {
+          await prisma.bookmark.update({
+            where: { id: bookmark.id },
+            data: { folder: { connect: { id: bookmark.folderId } } },
+          });
+        }
+        await logProcessingEvent({
+          runId: operation.id,
+          bookmarkId: bookmark.id,
+          type: "import",
+          status: "skipped",
+          message: "Already in library — skipped re-import.",
+          metadata: { source, folderId: bookmark.folderId ?? null },
+        });
+        continue;
+      }
+
+      if (alreadyHave) refreshed += 1;
+      else created += 1;
 
       await prisma.bookmark.upsert({
         where: { id: bookmark.id },
@@ -227,10 +295,8 @@ export async function POST(request: Request) {
         runId: operation.id,
         bookmarkId: bookmark.id,
         type: "import",
-        status: existingIds.has(bookmark.id) ? "skipped" : "completed",
-        message: existingIds.has(bookmark.id)
-          ? "Existing bookmark refreshed."
-          : "New bookmark imported.",
+        status: alreadyHave ? "skipped" : "completed",
+        message: alreadyHave ? "Existing bookmark refreshed." : "New bookmark imported.",
         metadata: { source, folderId: bookmark.folderId ?? null },
       });
     }
@@ -239,14 +305,18 @@ export async function POST(request: Request) {
       await incrementUsage(created, "x");
     }
 
-    if (bookmarks.length > 0 && source === "x") {
-      // Find the most recent bookmark from the global sync if possible
-      // to keep the baseline correct. 
-      const latestGlobal = bookmarks.find(b => !b.folderId) || bookmarks[0];
-      await updateSettings({
-        lastBookmarkId: latestGlobal.id,
-        lastSyncedAt: new Date(),
-      });
+    if (source === "x") {
+      // Advance baseline only from the global feed's newest returned item.
+      // Never set lastBookmarkId from a random folder tweet — that corrupts delta sync
+      // and can hide newer bookmarks while still burning API credits on full folder scans.
+      if (globalNewBookmarks.length > 0) {
+        await updateSettings({
+          lastBookmarkId: globalNewBookmarks[0].id,
+          lastSyncedAt: new Date(),
+        });
+      } else {
+        await updateSettings({ lastSyncedAt: new Date() });
+      }
     }
 
     await prisma.importRun.update({
@@ -262,9 +332,21 @@ export async function POST(request: Request) {
       processed: bookmarks.length,
       updated: created,
       skipped: refreshed,
-      notes: `Imported ${created} new. Refreshed ${refreshed} existing.`,
+      notes:
+        source === "x"
+          ? `Imported ${created} new. Skipped re-fetch of known library tweets.`
+          : `Imported ${created} new. Refreshed ${refreshed} existing.`,
       finish: true,
     });
+
+    const xMessage =
+      source !== "x"
+        ? undefined
+        : created > 0
+          ? `Imported ${created} new X bookmark${created === 1 ? "" : "s"}. Already-known tweets were not re-fetched.`
+          : settings.lastBookmarkId
+            ? "No new X bookmarks since your last sync. Already-known tweets were not re-fetched (saves X API spend). If you are missing older items, reset the sync baseline in Settings."
+            : "No X bookmarks returned.";
 
     return NextResponse.json({
       ok: true,
@@ -274,9 +356,7 @@ export async function POST(request: Request) {
       fetched: bookmarks.length,
       runId: run.id,
       remaining: source === "x" && remaining !== null ? remaining - created : null,
-      message: created === 0 && settings.lastBookmarkId && source === "x"
-        ? "No new bookmarks found since your last sync baseline. Use Settings to reset the baseline if you are missing older bookmarks."
-        : undefined,
+      message: xMessage,
     });
   } catch (error) {
     const status =

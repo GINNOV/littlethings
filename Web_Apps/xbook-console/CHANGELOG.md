@@ -22,6 +22,7 @@ and this project aims to follow [Semantic Versioning](https://semver.org/).
 - Clearer embedding error messages when the embeddings endpoint or model is misconfigured.
 - Embedding sync query only selects bookmarks with a non-empty summary.
 - Index health **missing** count no longer disagreed with sync progress: both use the same “needs embedding” rule, dashboard sync is **tab-scoped**, and progress shows `N of T · remaining` while live missing/indexed counters update during the run.
+- **X sync burned API spend re-fetching immutable tweets**: delta sync no longer re-hydrates the whole library (was “0 new, refreshed 368”). With a baseline it only walks new global bookmarks, skips full folder re-scans, and only advances `lastBookmarkId` from the global feed (folder tweets no longer corrupt the baseline).
 
 ### Changed
 

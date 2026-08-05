@@ -52,7 +52,13 @@ export function useActions(source: "x" | "yt", enrichBatchSize: number, soundOnC
       const json = await res.json();
       if (res.status === 409) throw new Error(json.error || "A sync is already in progress.");
       if (!res.ok) throw new Error(json.error || "Import failed");
-      setMessage(json.message || `Imported ${json.imported} new items.`);
+      setMessage(
+        json.message ||
+          (json.imported
+            ? `Imported ${json.imported} new item${json.imported === 1 ? "" : "s"}.`
+            : "No new items.")
+      );
+      if (soundOnComplete && (json.imported ?? 0) > 0) playSuccessSound();
       router.refresh();
       return json;
     } catch (e) {
