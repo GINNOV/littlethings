@@ -132,9 +132,14 @@ export default function DocsScenariosPage() {
         </section>
 
         <footer className="pt-8 border-t border-outline-ghost flex flex-col sm:flex-row items-center justify-between gap-4">
-          <Link href="/docs" className="text-sm font-semibold text-primary hover:underline">
-            ← Back to Docs
-          </Link>
+          <div className="flex flex-wrap items-center gap-4">
+            <Link href="/docs" className="text-sm font-semibold text-primary hover:underline">
+              ← Back to Docs
+            </Link>
+            <Link href="/docs/library" className="text-sm font-semibold text-on-surface-variant hover:text-primary">
+              Library reference
+            </Link>
+          </div>
           <Link
             href="/"
             className="rounded-full bg-black px-8 py-3 text-sm font-bold text-white shadow-xl transition hover:scale-105 active:scale-95"
