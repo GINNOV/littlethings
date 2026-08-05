@@ -10,6 +10,24 @@ export interface Folder {
   total?: number;
 }
 
+async function readJson(res: Response): Promise<any> {
+  const text = await res.text();
+  if (!text.trim()) {
+    throw new Error(
+      res.ok
+        ? `Empty response from server (${res.status}). The request may have timed out — try again.`
+        : `Server error ${res.status} ${res.statusText || ""}`.trim()
+    );
+  }
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error(
+      `Invalid JSON from server (${res.status}): ${text.slice(0, 160).replace(/\s+/g, " ")}`
+    );
+  }
+}
+
 export function useFoldersPanel(folders: Folder[], soundOnComplete?: boolean, soundOnError?: boolean) {
   const router = useRouter();
   const [msg, setMsg] = useState<{ text: string; isError: boolean } | null>(null);
@@ -22,7 +40,7 @@ export function useFoldersPanel(folders: Folder[], soundOnComplete?: boolean, so
     setLoad("syncing", true); log("");
     try {
       const res = await fetch("/api/folders/sync", { method: "POST" });
-      const json = await res.json();
+      const json = await readJson(res);
       if (!res.ok) throw new Error(json.error || "Sync failed");
       log(`Synced ${json.total} folders. Reloading...`);
       window.location.reload();
@@ -37,7 +55,7 @@ export function useFoldersPanel(folders: Folder[], soundOnComplete?: boolean, so
     setLoad("importing", fid); log("");
     try {
       const res = await fetch(`/api/folders/import?folderId=${fid}`, { method: "POST" });
-      const json = await res.json();
+      const json = await readJson(res);
       if (res.status === 409) throw new Error(json.error || "A sync is already in progress.");
       if (!res.ok) throw new Error(json.error || "Import failed");
       log(`Imported ${json.imported}. Refreshed ${json.refreshed}. X calls: ${json.pagesFetched}.`);
@@ -57,7 +75,7 @@ export function useFoldersPanel(folders: Folder[], soundOnComplete?: boolean, so
       for (const f of folders) {
         log(`Importing ${f.name || f.id}...`);
         const res = await fetch(`/api/folders/import?folderId=${encodeURIComponent(f.id)}`, { method: "POST" });
-        const json = await res.json();
+        const json = await readJson(res);
         if (res.status === 409) throw new Error(json.error || "A sync is already in progress.");
         if (!res.ok) throw new Error(`${f.name || f.id}: ${json.error}`);
         imp += Number(json.imported || 0); ref += Number(json.refreshed || 0); pgs += Number(json.pagesFetched || 0);
@@ -78,14 +96,16 @@ export function useFoldersPanel(folders: Folder[], soundOnComplete?: boolean, so
       while (batches < 50) {
         const fetchUrl: string = `/api/enrich?source=x&folderId=${encodeURIComponent(fid)}${rid ? `&runId=${rid}` : ""}`;
         const res = await fetch(fetchUrl, { method: "POST" });
-        const json = await res.json();
+        const json = await readJson(res);
+        if (json?.stopped || (res.status === 409 && json?.stopped)) break;
         if (res.status === 409) throw new Error(json.error || "Enrichment is already in progress.");
         if (!res.ok) { if (soundOnError) playErrorSound(); throw new Error(json.error || "Process failed"); }
         if (!rid) rid = json.runId;
         const p = Number(json.processed || 0), u = Number(json.updated || 0), e = Array.isArray(json.errors) ? json.errors.length : 0;
+        const rem = Number(json.remaining);
         proc += p; upd += u; errs += e; batches += 1;
         if (e > 0 && soundOnError) playErrorSound();
-        if (p === 0) break;
+        if (json.finished || p === 0 || (Number.isFinite(rem) && rem === 0)) break;
         if (e > 0 && e === p) { halted = true; break; }
       }
       if (soundOnComplete && !halted) playSuccessSound();

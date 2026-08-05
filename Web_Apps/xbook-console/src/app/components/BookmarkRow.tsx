@@ -14,7 +14,9 @@ type Props = {
 export function BookmarkRow({ bookmark: b, isSelected, onSelect, onToggleRead, onEdit, isBusy, getYouTubeTitle, getYouTubeFolder }: Props) {
   const title = getYouTubeTitle(b) || b.summary || b.text || "Untitled";
   const author = b.authorUsername ? (b.source === "x" ? `@${b.authorUsername}` : b.authorUsername) : "Unknown";
-  const status = b.summary || b.category ? "Summarized" : "Pending";
+  // Match library status filters / dashboard: pending = empty summary only.
+  // Category alone (e.g. stub "Other") is still pending enrichment.
+  const status = b.summary?.trim() ? "Summarized" : "Pending";
   const fmt = (d?: Date | string | null) => d ? new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : "-";
 
   return (

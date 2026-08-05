@@ -216,9 +216,9 @@ function filterNewItems<T extends { id: string }>(items: T[], stopBeforeIds: Set
 async function processFolderPage(apiBase: string, token: string, json: BookmarkResponse, folderId: string, folderName: string | undefined, options: any, remaining: number) {
   const rawIds = (json.data ?? []).map(i => i.id).filter(Boolean) as string[];
   const { result: newIds, stopped } = filterNewItems(rawIds.map(id => ({ id })), options.stopBeforeIds, options.skipExisting, remaining);
-  if (newIds.length === 0) return { items: [], stopped, pages: 1 };
+  if (newIds.length === 0) return { items: [], stopped, pages: 1, pageIds: rawIds };
   const hydrated = await lookupTweetsByIds({ apiBase, token, ids: newIds.map(i => i.id), folderId, folderName });
-  return { items: hydrated, stopped, pages: 2 };
+  return { items: hydrated, stopped, pages: 2, pageIds: rawIds };
 }
 
 async function processStandardPage(json: BookmarkResponse, folderId: string | undefined, folderName: string | undefined, options: any, remaining: number) {
@@ -231,6 +231,7 @@ export async function fetchBookmarksWithMeta(options: FetchOptions = {}) {
   const { token, userId, apiBase } = await getAuthContext();
   const { maxPages = 50, maxTotal, folderId, folderName } = options;
   const allItems: BookmarkItem[] = [];
+  const membershipIds: string[] = [];
   let nextToken: string | undefined;
   let remaining = maxTotal ?? Number.POSITIVE_INFINITY;
   let pagesFetched = 0;
@@ -251,22 +252,79 @@ export async function fetchBookmarksWithMeta(options: FetchOptions = {}) {
     if (nextToken) url.searchParams.set("pagination_token", nextToken);
 
     const json = await fetchPage(url.toString(), token);
-    const { items, stopped, pages } = folderId 
+    const pageResult = folderId 
       ? await processFolderPage(apiBase, token, json, folderId, folderName, options, remaining)
       : await processStandardPage(json, folderId, folderName, options, remaining);
     
-    allItems.push(...items);
-    remaining -= items.length;
-    pagesFetched += pages;
-    stoppedAtExisting = stopped;
+    if (folderId && "pageIds" in pageResult && pageResult.pageIds) {
+      membershipIds.push(...pageResult.pageIds);
+    }
+
+    allItems.push(...pageResult.items);
+    remaining -= pageResult.items.length;
+    pagesFetched += pageResult.pages;
+    stoppedAtExisting = pageResult.stopped;
     nextToken = json.meta?.next_token;
     if (!nextToken) break;
   }
-  return { items: allItems, pagesFetched, stoppedAtExisting };
+  return { items: allItems, pagesFetched, stoppedAtExisting, membershipIds };
 }
 
 export async function fetchBookmarks(options: FetchOptions = {}) {
   return (await fetchBookmarksWithMeta(options)).items;
+}
+
+/**
+ * Walk an X bookmark folder: list all member IDs (cheap), and only hydrate tweets that are
+ * not yet in `knownIds`. Callers can UPDATE folderId for known IDs without tweet re-reads.
+ */
+export async function fetchFolderDelta(options: {
+  folderId: string;
+  folderName?: string;
+  knownIds: Set<string>;
+  /** Cap on newly hydrated tweets only; membership IDs are always fully listed. */
+  maxNew?: number;
+  maxPages?: number;
+}) {
+  const { token, userId, apiBase } = await getAuthContext();
+  const maxPages = options.maxPages ?? 50;
+  let hydrateBudget = options.maxNew ?? Number.POSITIVE_INFINITY;
+  const membershipIds: string[] = [];
+  const newItems: BookmarkItem[] = [];
+  let nextToken: string | undefined;
+  let pagesFetched = 0;
+
+  for (let page = 0; page < maxPages; page++) {
+    const url = buildBookmarkUrl(apiBase, userId, options.folderId);
+    if (nextToken) url.searchParams.set("pagination_token", nextToken);
+
+    const json = await fetchPage(url.toString(), token);
+    pagesFetched += 1;
+    const rawIds = (json.data ?? []).map((i) => i.id).filter(Boolean) as string[];
+    membershipIds.push(...rawIds);
+
+    const unknownIds = rawIds.filter((id) => !options.knownIds.has(id));
+    if (unknownIds.length > 0 && hydrateBudget > 0) {
+      const batch = unknownIds.slice(0, Math.min(unknownIds.length, hydrateBudget, 100));
+      if (batch.length > 0) {
+        const hydrated = await lookupTweetsByIds({
+          apiBase,
+          token,
+          ids: batch,
+          folderId: options.folderId,
+          folderName: options.folderName,
+        });
+        newItems.push(...hydrated);
+        hydrateBudget -= batch.length;
+        pagesFetched += 1;
+      }
+    }
+
+    nextToken = json.meta?.next_token;
+    if (!nextToken) break;
+  }
+
+  return { newItems, membershipIds, pagesFetched };
 }
 
 export async function fetchBookmarkFolders() {

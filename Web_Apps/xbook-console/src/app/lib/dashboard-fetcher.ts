@@ -37,7 +37,19 @@ export async function getDashboardStats(tab: "x" | "yt") {
     getUsageMonth(new Date(), tab),
     prisma.settings.findUnique({ where: { id: "default" } }),
     prisma.importRun.findFirst({ orderBy: { startedAt: "desc" } }),
-    prisma.operationRun.findMany({ where: { source: tab }, orderBy: { startedAt: "desc" }, take: 5 }),
+    prisma.operationRun.findMany({
+      where: { source: tab },
+      orderBy: { startedAt: "desc" },
+      take: 5,
+      // First LLM row fills model/host for older runs that lack configJson.
+      include: {
+        llmRequests: {
+          take: 1,
+          orderBy: { createdAt: "asc" },
+          select: { model: true, baseUrl: true },
+        },
+      },
+    }),
     // Indexed = has an embedding vector (searchable for this tab).
     prisma.bookmark.count({
       where: { source: tab, embedding: { not: null } },

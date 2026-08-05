@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getSettings, updateSettings } from "@/lib/settings";
+import { MAX_LLM_CONCURRENCY } from "@/lib/llm-limits";
 
 const schema = z.object({
   xBearerToken: z.string().optional().nullable(),
@@ -29,7 +30,7 @@ const schema = z.object({
   llmEmbeddingBaseUrl: z.string().optional().nullable(),
   llmSystemPrompt: z.string().optional().nullable(),
   llmPrompt: z.string().optional().nullable(),
-  llmConcurrency: z.coerce.number().int().min(1).max(6).optional(),
+  llmConcurrency: z.coerce.number().int().min(1).max(MAX_LLM_CONCURRENCY).optional(),
   llmMaxTokens: z.coerce.number().int().min(1).max(512000).optional(),
   llmContextWindow: z.coerce.number().int().min(1).max(1000000).optional(),
   llmResponseLimit: z.coerce.number().int().min(0).max(128000).optional(),

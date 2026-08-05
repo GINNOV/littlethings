@@ -2,22 +2,30 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { useFoldersPanel } from "@/app/hooks/useFoldersPanel";
 
+function mockJsonResponse(body: unknown, init: { ok?: boolean; status?: number } = {}) {
+  const text = JSON.stringify(body);
+  return {
+    ok: init.ok ?? true,
+    status: init.status ?? (init.ok === false ? 500 : 200),
+    statusText: init.ok === false ? "Error" : "OK",
+    text: async () => text,
+    json: async () => body,
+  } as any;
+}
+
 describe("useFoldersPanel", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     global.fetch = vi.fn();
     // Mock window.location.reload
-    Object.defineProperty(window, 'location', {
+    Object.defineProperty(window, "location", {
       configurable: true,
       value: { reload: vi.fn() },
     });
   });
 
   it("should sync folders", async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ ok: true, total: 5 }),
-    } as any);
+    vi.mocked(fetch).mockResolvedValueOnce(mockJsonResponse({ ok: true, total: 5 }));
 
     const { result } = renderHook(() => useFoldersPanel([]));
 
@@ -30,10 +38,9 @@ describe("useFoldersPanel", () => {
   });
 
   it("should import a folder", async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ ok: true, imported: 10, refreshed: 2, pagesFetched: 1 }),
-    } as any);
+    vi.mocked(fetch).mockResolvedValueOnce(
+      mockJsonResponse({ ok: true, imported: 10, refreshed: 2, pagesFetched: 1 })
+    );
 
     const { result } = renderHook(() => useFoldersPanel([]));
 
@@ -46,10 +53,9 @@ describe("useFoldersPanel", () => {
   });
 
   it("should process a folder", async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ ok: true, processed: 0, updated: 0, errors: [] }),
-    } as any);
+    vi.mocked(fetch).mockResolvedValueOnce(
+      mockJsonResponse({ ok: true, processed: 0, updated: 0, errors: [], remaining: 0, finished: true })
+    );
 
     const { result } = renderHook(() => useFoldersPanel([]));
 
@@ -61,10 +67,9 @@ describe("useFoldersPanel", () => {
   });
 
   it("should handle sync failure", async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: false,
-      json: async () => ({ error: "Sync failed" }),
-    } as any);
+    vi.mocked(fetch).mockResolvedValueOnce(
+      mockJsonResponse({ error: "Sync failed" }, { ok: false, status: 500 })
+    );
 
     const { result } = renderHook(() => useFoldersPanel([]));
 
@@ -77,10 +82,9 @@ describe("useFoldersPanel", () => {
   });
 
   it("should handle import failure", async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: false,
-      json: async () => ({ error: "Import failed" }),
-    } as any);
+    vi.mocked(fetch).mockResolvedValueOnce(
+      mockJsonResponse({ error: "Import failed" }, { ok: false, status: 500 })
+    );
 
     const { result } = renderHook(() => useFoldersPanel([]));
 
@@ -93,12 +97,16 @@ describe("useFoldersPanel", () => {
   });
 
   it("should import all folders", async () => {
-    vi.mocked(fetch).mockResolvedValue({
-      ok: true,
-      json: async () => ({ ok: true, imported: 5 }),
-    } as any);
+    vi.mocked(fetch).mockResolvedValue(
+      mockJsonResponse({ ok: true, imported: 5 })
+    );
 
-    const { result } = renderHook(() => useFoldersPanel([{ id: "f1" }, { id: "f2" }]));
+    const { result } = renderHook(() =>
+      useFoldersPanel([
+        { id: "f1", name: "One" },
+        { id: "f2", name: "Two" },
+      ])
+    );
 
     await act(async () => {
       await result.current.importAllFolders();

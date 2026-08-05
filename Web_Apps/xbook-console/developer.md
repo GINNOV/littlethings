@@ -102,11 +102,14 @@ http://localhost:3000/api/oauth/youtube/callback
 
 ## Local LLMs
 
-The app uses the OpenAI SDK against an OpenAI-compatible endpoint. Typical local defaults:
+The app uses the OpenAI SDK against an OpenAI-compatible endpoint. Typical defaults (also available as Settings → AI presets):
 
-- LM Studio: `http://localhost:1234/v1`
-- Ollama: `http://localhost:11434/v1`
-- vLLM: `http://localhost:8000/v1`
+- LM Studio: `http://localhost:1234/v1` (concurrency 1)
+- Ollama: `http://localhost:11434/v1` (concurrency 1)
+- vLLM (localhost): `http://localhost:8000/v1` (concurrency 4; embeddings often on Ollama)
+- REMOTE (high-concurrency LAN/remote vLLM example): `http://192.168.0.69:8000/v1`, model `gemma-4-26b`, concurrency up to **32**
+
+Max parallel enrichment is `MAX_LLM_CONCURRENCY` (32) in `src/lib/llm-limits.ts`.
 
 The configured model must be available at the selected endpoint before enrichment starts. The enrichment API runs a model availability check first and fails early if the model is not loaded.
 

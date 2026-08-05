@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { OperationRun } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { pendingEnrichmentWhere } from "@/lib/bookmarks";
 import { summarizeBookmark, validateModelAvailability } from "@/lib/llm";
 import { fetchYouTubeTranscriptFromUrl } from "@/lib/youtubeTranscript";
 import { enrichmentSignals } from "@/lib/signals";
@@ -11,10 +12,11 @@ import {
   incrementOperationRun,
   getActiveRun,
 } from "@/lib/processing";
+import { MAX_LLM_CONCURRENCY } from "@/lib/llm-limits";
+import { buildEnrichmentRunConfig } from "@/lib/run-config";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
-const MAX_ENRICH_CONCURRENCY = 6;
 const SAFETY_MARGIN_MS = 20000; // Stop 20s before timeout
 
 function parseExternalUrls(input: string | null) {
@@ -99,18 +101,20 @@ export async function POST(request: Request) {
 
   const settings = await prisma.settings.findUnique({ where: { id: "default" } });
   const batchLimit = limitParam ? Math.max(1, Number(limitParam)) : (source === "yt" ? 100 : (settings?.enrichBatchSize ?? 50));
-  const concurrency = concurrencyParam ? Math.min(MAX_ENRICH_CONCURRENCY, Math.max(1, Number(concurrencyParam))) : settings?.llmConcurrency ?? 1;
+  const requestedConcurrency = concurrencyParam
+    ? Number(concurrencyParam)
+    : (settings?.llmConcurrency ?? 1);
+  const concurrency = Math.min(
+    MAX_LLM_CONCURRENCY,
+    Math.max(1, Number.isFinite(requestedConcurrency) ? requestedConcurrency : 1)
+  );
 
-  const pendingWhere = { 
-    ...(!reprocessParam ? {
-      AND: [
-        { OR: [{ summary: null }, { summary: "" }] },
-        { OR: [{ category: null }, { category: "" }] }
-      ]
-    } : {}),
+  // Same "pending" definition as the dashboard (empty summary). Force reprocess = whole source.
+  const pendingWhere = {
+    ...(!reprocessParam ? pendingEnrichmentWhere() : {}),
     ...(!fullParam && !reprocessParam ? { enrichmentFailures: { lt: 3 } } : {}),
-    ...(source ? { source } : {}), 
-    ...(folderId ? { folderId } : {}) 
+    ...(source ? { source } : {}),
+    ...(folderId ? { folderId } : {}),
   };
 
   const attemptedIds = new Set<string>();
@@ -118,21 +122,80 @@ export async function POST(request: Request) {
   let run: OperationRun | null = null;
   if (runIdParam) {
     run = await prisma.operationRun.findUnique({ where: { id: runIdParam } });
-    if (run) {
-      await prisma.operationRun.update({ where: { id: run.id }, data: { status: "running" } });
-      const pastEvents = await prisma.processingEvent.findMany({
-        where: { runId: run.id, bookmarkId: { not: null } },
-        select: { bookmarkId: true }
-      });
-      for (const ev of pastEvents) {
-        if (ev.bookmarkId) attemptedIds.add(ev.bookmarkId);
-      }
+    if (!run) {
+      return NextResponse.json(
+        { ok: false, error: "Operation run not found.", stopped: true },
+        { status: 404 }
+      );
+    }
+    // Do not revive a run the user already stopped/failed — client multi-batch
+    // loops used to re-POST with the same runId and flip status back to running.
+    if (run.status === "stopped" || run.status === "failed") {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: `This operation was ${run.status}.`,
+          stopped: true,
+          runId: run.id,
+          remaining: 0,
+        },
+        { status: 409 }
+      );
+    }
+    await prisma.operationRun.update({ where: { id: run.id }, data: { status: "running" } });
+    const pastEvents = await prisma.processingEvent.findMany({
+      where: { runId: run.id, bookmarkId: { not: null } },
+      select: { bookmarkId: true }
+    });
+    for (const ev of pastEvents) {
+      if (ev.bookmarkId) attemptedIds.add(ev.bookmarkId);
     }
   }
-  
+
+  const sourceLabel = (source ?? "all").toUpperCase();
+  let totalInScope = 0;
+  let totalBatches = 1;
+  let batchIndex = Math.ceil(attemptedIds.size / batchLimit); // 0 when starting fresh
+
   if (!run) {
-    const totalPending = await prisma.bookmark.count({ where: pendingWhere });
-    run = await createOperationRun({ type: folderId ? "folder_enrichment" : "enrichment_batch", source, total: totalPending, notes: `${folderId ? `folder:${folderId}` : `batch:${batchLimit}`}. concurrency:${concurrency}${reprocessParam ? " reprocess" : ""}` });
+    totalInScope = await prisma.bookmark.count({ where: pendingWhere });
+    totalBatches = Math.max(1, Math.ceil(totalInScope / batchLimit));
+    // "full" means process the whole queue; batchLimit is page size (batch K of N).
+    let runType = "enrichment_batch";
+    let notes: string;
+    if (folderId) {
+      runType = "folder_enrichment";
+      notes = `${sourceLabel} folder · ${totalInScope} items · batch 0 of ${totalBatches} · concurrency ${concurrency}${reprocessParam ? " · force reprocess" : ""}`;
+    } else if (fullParam) {
+      runType = reprocessParam ? "enrichment_full_reprocess" : "enrichment_full";
+      notes = `${sourceLabel} ${reprocessParam ? "force reprocess all" : "enrich all"} · ${totalInScope} items · batch 0 of ${totalBatches} · concurrency ${concurrency}`;
+    } else {
+      totalBatches = 1;
+      notes = `${sourceLabel} single batch · up to ${batchLimit} of ${totalInScope} pending · concurrency ${concurrency}${reprocessParam ? " · force reprocess" : ""}`;
+    }
+    run = await createOperationRun({
+      type: runType,
+      source,
+      total: totalInScope,
+      notes,
+      config: buildEnrichmentRunConfig(settings, {
+        concurrency,
+        batchSize: batchLimit,
+        batchIndex: 0,
+        totalBatches,
+      }),
+    });
+  } else {
+    totalInScope = run.total || (await prisma.bookmark.count({ where: pendingWhere }));
+    totalBatches = Math.max(1, Math.ceil(totalInScope / batchLimit));
+    // Refresh batch plan when resuming a multi-request run.
+    await updateOperationRun(run.id, {
+      configPatch: {
+        batchSize: batchLimit,
+        totalBatches,
+        concurrency,
+      },
+    });
   }
 
   if (!run) return NextResponse.json({ ok: false, error: "Failed to initialize operation run" }, { status: 500 });
@@ -151,7 +214,15 @@ export async function POST(request: Request) {
   let controller = enrichmentSignals.get(activeRun.id);
   if (!controller) { controller = new AbortController(); enrichmentSignals.set(activeRun.id, controller); }
   const signal = controller.signal;
-  
+
+  const modeLabel = folderId
+    ? "folder enrich"
+    : fullParam
+      ? reprocessParam
+        ? "force reprocess all"
+        : "enrich all"
+      : "single batch";
+
   try {
     while (true) {
       if (Date.now() - startTime > (maxDuration * 1000) - SAFETY_MARGIN_MS) {
@@ -163,6 +234,24 @@ export async function POST(request: Request) {
       const pendingBatch = await prisma.bookmark.findMany({ where: { ...pendingWhere, id: { notIn: Array.from(attemptedIds) } }, take: batchLimit, orderBy: { importedAt: "desc" }, include: { folder: true } });
       if (pendingBatch.length === 0) break;
       for (const b of pendingBatch) attemptedIds.add(b.id);
+
+      batchIndex += 1;
+      await updateOperationRun(activeRun.id, {
+        status: "running",
+        notes: `${sourceLabel} ${modeLabel} · batch ${batchIndex} of ${totalBatches} · concurrency ${concurrency}`,
+        configPatch: {
+          batchIndex,
+          totalBatches,
+          batchSize: batchLimit,
+          concurrency,
+        },
+      });
+      await logProcessingEvent({
+        runId: activeRun.id,
+        type: "system",
+        status: "fetching",
+        message: `Starting batch ${batchIndex} of ${totalBatches} (${pendingBatch.length} items).`,
+      });
 
       let batchNextIndex = 0, batchUpdated = 0;
       const batchErrors: Array<{ id: string; error: string }> = [];
@@ -231,14 +320,56 @@ export async function POST(request: Request) {
       if (!fullParam) break;
     }
   } finally {
-    const rem = await prisma.bookmark.count({ where: pendingWhere });
+    // Force reprocess matches every row in scope forever — remaining is "not yet
+    // attempted in this run", not "still matches pendingWhere".
+    const rem = reprocessParam
+      ? Math.max(0, totalInScope - attemptedIds.size)
+      : await prisma.bookmark.count({ where: pendingWhere });
     const isTotalFailure = totalErrors.length === totalProcessed && totalProcessed > 0;
     const finalStatus = signal.aborted ? "stopped" : (rem === 0 ? "completed" : (isTotalFailure ? "failed" : "completed"));
+    const progressNote =
+      batchIndex > 0
+        ? `${sourceLabel} ${modeLabel} · batch ${batchIndex} of ${totalBatches}`
+        : `${sourceLabel} ${modeLabel} · nothing to process`;
+    const errNote = totalErrors.length > 0 ? ` · ${totalErrors.length} errors` : "";
+    const doneNote = signal.aborted ? " · stopped" : rem === 0 ? " · completed" : " · paused (more remaining)";
 
-    await updateOperationRun(activeRun.id, { status: finalStatus, notes: totalErrors.length > 0 ? `Finished with ${totalErrors.length} errors.` : `Completed.`, finish: true });
+    await updateOperationRun(activeRun.id, {
+      status: finalStatus,
+      notes: `${progressNote}${errNote}${doneNote}`,
+      configPatch: {
+        batchIndex,
+        totalBatches,
+        batchSize: batchLimit,
+        concurrency,
+      },
+      finish: true,
+    });
     enrichmentSignals.delete(activeRun.id);
   }
 
-  const remFinal = await prisma.bookmark.count({ where: pendingWhere });
-  return NextResponse.json({ ok: true, runId: activeRun.id, processed: totalProcessed, updated: totalUpdated, remaining: remFinal, errors: totalErrors, finished: remFinal === 0 });
+  const remFinal = reprocessParam
+    ? Math.max(0, totalInScope - attemptedIds.size)
+    : await prisma.bookmark.count({ where: pendingWhere });
+  const wasStopped = signal.aborted;
+  // Client multi-batch loops must keep going while remaining > 0 and this
+  // request did real work. "finished" means do not start another request.
+  const noMoreWork =
+    wasStopped ||
+    remFinal === 0 ||
+    totalProcessed === 0 ||
+    !fullParam;
+  return NextResponse.json({
+    ok: true,
+    runId: activeRun.id,
+    processed: totalProcessed,
+    updated: totalUpdated,
+    remaining: remFinal,
+    errors: totalErrors,
+    finished: noMoreWork,
+    stopped: wasStopped,
+    batch: batchIndex,
+    batches: totalBatches,
+    pageSize: batchLimit,
+  });
 }

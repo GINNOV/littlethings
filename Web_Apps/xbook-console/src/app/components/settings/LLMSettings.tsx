@@ -4,6 +4,10 @@ import { useState } from "react";
 import { HelpTooltip, SecretField, SettingsSection, secondaryButtonClass } from "./SharedFields";
 import { useLLMSettings } from "../../hooks/settings/useLLMSettings";
 import { useSettingsContext } from "../../hooks/settings/useSettingsContext";
+import { MAX_LLM_CONCURRENCY } from "@/lib/llm-limits";
+
+const presetButtonClass =
+  "rounded-md border border-black/10 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-emerald-800";
 
 export function LLMSettings() {
   const { form, setForm, updateField, updateNumberField, updateBooleanField, defaultPrompt, isDirty } =
@@ -34,35 +38,19 @@ export function LLMSettings() {
       defaultOpen
     >
       <div>
-        <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-slate-500">
-          <span className="font-semibold text-slate-700">Presets:</span>
-          <button
-            type="button"
-            onClick={() => applyLlmPreset("lmstudio")}
-            className="rounded-md border border-black/10 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-emerald-800"
-          >
-            LM Studio defaults
+        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+          <span className="mr-1 font-semibold text-slate-700">Presets:</span>
+          <button type="button" onClick={() => applyLlmPreset("remote")} className={presetButtonClass}>
+            REMOTE
           </button>
-          <button
-            type="button"
-            onClick={() => applyLlmPreset("ollama")}
-            className="rounded-md border border-black/10 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-emerald-800"
-          >
-            Ollama defaults
+          <button type="button" onClick={() => applyLlmPreset("lmstudio")} className={presetButtonClass}>
+            LM Studio
           </button>
-          <button
-            type="button"
-            onClick={() => applyLlmPreset("mlx")}
-            className="rounded-md border border-black/10 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-emerald-800"
-          >
-            MLX (Qwen2.5-Coder-14B-Instruct-MLX-4bit)
+          <button type="button" onClick={() => applyLlmPreset("ollama")} className={presetButtonClass}>
+            Ollama
           </button>
-          <button
-            type="button"
-            onClick={() => applyLlmPreset("vllm")}
-            className="rounded-md border border-black/10 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-emerald-800"
-          >
-            vLLM (Port 8000)
+          <button type="button" onClick={() => applyLlmPreset("vllm")} className={presetButtonClass}>
+            vLLM (localhost)
           </button>
         </div>
 
@@ -164,7 +152,7 @@ export function LLMSettings() {
           <div className="space-y-2 md:col-span-2">
             <label className="text-sm font-semibold">
               Embedding base URL{" "}
-              <HelpTooltip text="Optional. OpenAI-compatible embeddings endpoint. Leave blank to reuse the LLM base URL. Use a separate host when chat is vLLM/MLX and embeddings run on Ollama/LM Studio." />
+              <HelpTooltip text="Optional. OpenAI-compatible embeddings endpoint. Leave blank to reuse the LLM base URL. Use a separate host when chat is vLLM and embeddings run on Ollama/LM Studio." />
             </label>
             <input
               type="text"
@@ -208,12 +196,12 @@ export function LLMSettings() {
               <div className="space-y-2 md:col-span-2">
                 <label className="text-sm font-semibold">
                   LLM concurrency{" "}
-                  <HelpTooltip text="Number of parallel enrichment requests. Local models perform best with 1." />
+                  <HelpTooltip text={`Parallel enrichment requests (1–${MAX_LLM_CONCURRENCY}). Use 1 for most local models; high-concurrency remote vLLM can use up to ${MAX_LLM_CONCURRENCY}.`} />
                 </label>
                 <input
                   type="number"
                   min={1}
-                  max={6}
+                  max={MAX_LLM_CONCURRENCY}
                   value={form.llmConcurrency ?? ""}
                   onChange={updateNumberField("llmConcurrency")}
                   placeholder="1"

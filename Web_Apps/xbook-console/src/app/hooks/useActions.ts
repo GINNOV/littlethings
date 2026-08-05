@@ -6,6 +6,62 @@ import { playSuccessSound, playErrorSound } from "@/lib/audio";
 
 const TOAST_KEY = "xbook:actions-toast";
 
+function isAbortError(e: unknown) {
+  return e instanceof DOMException
+    ? e.name === "AbortError"
+    : e instanceof Error && e.name === "AbortError";
+}
+
+/** Parse JSON without throwing the opaque "Unexpected end of JSON input" on empty bodies. */
+async function readJson(res: Response): Promise<any> {
+  const text = await res.text();
+  if (!text.trim()) {
+    throw new Error(
+      res.ok
+        ? `Empty response from server (${res.status}). The request may have timed out — try again.`
+        : `Server error ${res.status} ${res.statusText || ""}`.trim()
+    );
+  }
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error(
+      `Invalid JSON from server (${res.status}): ${text.slice(0, 160).replace(/\s+/g, " ")}`
+    );
+  }
+}
+
+type FetchJsonOptions = {
+  method?: string;
+  signal?: AbortSignal;
+  /** Transient empty/timeout bodies are retried this many extra times. */
+  retries?: number;
+};
+
+async function fetchJson(url: string, options: FetchJsonOptions = {}): Promise<{ res: Response; json: any }> {
+  const retries = options.retries ?? 0;
+  let lastError: Error | null = null;
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    if (options.signal?.aborted) throw new DOMException("Aborted", "AbortError");
+    try {
+      const res = await fetch(url, { method: options.method ?? "GET", signal: options.signal });
+      const json = await readJson(res);
+      return { res, json };
+    } catch (e) {
+      if (isAbortError(e)) throw e;
+      lastError = e instanceof Error ? e : new Error(String(e));
+      const retriable =
+        /Empty response|timed out|Failed to fetch|NetworkError|network/i.test(lastError.message) ||
+        /Invalid JSON/i.test(lastError.message);
+      if (!retriable || attempt === retries) throw lastError;
+      // Brief backoff before retrying a flaky long request.
+      await new Promise((r) => setTimeout(r, 500 * (attempt + 1)));
+    }
+  }
+  throw lastError ?? new Error("Request failed");
+}
+
 export function useActions(source: "x" | "yt", enrichBatchSize: number, soundOnComplete?: boolean, soundOnError?: boolean) {
   const router = useRouter();
   const [loading, setLoading] = useState({
@@ -19,7 +75,12 @@ export function useActions(source: "x" | "yt", enrichBatchSize: number, soundOnC
   });
   const [message, setMessage] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [cancelling, setCancelling] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** Client-side multi-batch loop cancel (stops further POSTs). */
+  const abortRef = useRef<AbortController | null>(null);
+  /** Server operation run to stop when the user cancels. */
+  const activeRunIdRef = useRef<string | null>(null);
 
   const showToast = useCallback((msg: string) => {
     setToast(msg);
@@ -44,14 +105,62 @@ export function useActions(source: "x" | "yt", enrichBatchSize: number, soundOnC
 
   const setLoad = (key: keyof typeof loading, val: boolean) => setLoading((prev) => ({ ...prev, [key]: val }));
 
+  const beginClientOp = () => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+    activeRunIdRef.current = null;
+    return controller;
+  };
+
+  const endClientOp = (controller: AbortController) => {
+    if (abortRef.current === controller) {
+      abortRef.current = null;
+      activeRunIdRef.current = null;
+    }
+  };
+
+  const trackRunId = (runId?: string | null) => {
+    if (runId) activeRunIdRef.current = runId;
+  };
+
+  /**
+   * Stop the in-flight inbox/enrich/sync work so another operation can start.
+   * Stops the server run first (so multi-batch will not revive it), then aborts
+   * the client loop that would otherwise keep POSTing the next batch.
+   */
+  const cancelOperation = async () => {
+    setCancelling(true);
+    setMessage("Stopping…");
+    const runId = activeRunIdRef.current;
+    try {
+      if (runId) {
+        await fetch(`/api/processing/runs/${runId}`, { method: "POST" });
+      } else {
+        // Sync / early inbox phase may not have a run id yet — clear any active ops.
+        await fetch("/api/processing/runs/stop-all", { method: "POST" });
+      }
+    } catch {
+      // Best-effort; client abort still unblocks the UI.
+    } finally {
+      abortRef.current?.abort();
+      setCancelling(false);
+    }
+  };
+
   const runImport = async () => {
+    const controller = beginClientOp();
     setLoad(source, true);
     setMessage(null);
     try {
-      const res = await fetch(`/api/import?source=${source}`, { method: "POST" });
-      const json = await res.json();
+      const { res, json } = await fetchJson(`/api/import?source=${source}`, {
+        method: "POST",
+        signal: controller.signal,
+        retries: 1,
+      });
       if (res.status === 409) throw new Error(json.error || "A sync is already in progress.");
       if (!res.ok) throw new Error(json.error || "Import failed");
+      if (json.operationId || json.runId) trackRunId(json.operationId ?? json.runId);
       setMessage(
         json.message ||
           (json.imported
@@ -62,15 +171,23 @@ export function useActions(source: "x" | "yt", enrichBatchSize: number, soundOnC
       router.refresh();
       return json;
     } catch (e) {
+      if (isAbortError(e)) {
+        setMessage("Stopped.");
+        showToast("Operation stopped.");
+        router.refresh();
+        return null;
+      }
       setMessage(e instanceof Error ? e.message : String(e));
       return null;
     } finally {
       setLoad(source, false);
+      endClientOp(controller);
     }
   };
 
   const runEnrich = async (full = false, reprocess = false) => {
     const key = source === "x" ? "enrichX" : "enrichYt";
+    const controller = beginClientOp();
     setLoad(key, true);
     setMessage("Starting...");
     try {
@@ -79,109 +196,197 @@ export function useActions(source: "x" | "yt", enrichBatchSize: number, soundOnC
       let totalProcessed = 0;
       let remaining = 0;
       let errorsCount = 0;
+      let stopped = false;
 
-      while (true) {
+      while (!controller.signal.aborted) {
         const limit = full ? 500 : source === "yt" ? 200 : enrichBatchSize;
         let url = `/api/enrich?source=${source}&limit=${limit}`;
         if (full) url += "&full=true";
         if (reprocess) url += "&reprocess=true";
         if (runId) url += `&runId=${runId}`;
 
-        const res = await fetch(url, { method: "POST" });
+        const { res, json } = await fetchJson(url, {
+          method: "POST",
+          signal: controller.signal,
+          retries: 2,
+        });
 
-        if (!res.ok) {
-          if (soundOnError) playErrorSound();
-          let errorMsg = "Enrich failed";
-          try {
-            const errorJson = await res.json();
-            errorMsg = errorJson.error || errorMsg;
-          } catch {
-            errorMsg = `${res.status} ${res.statusText}`;
-          }
-          throw new Error(errorMsg);
-        }
-
-        const json = await res.json();
-        if (res.status === 409) throw new Error(json.error || "Enrichment is already in progress.");
-
-        if (!runId) runId = json.runId;
-        totalUpdated += json.updated || 0;
-        totalProcessed += json.processed || 0;
-        remaining = json.remaining || 0;
-        errorsCount += json.errors?.length || 0;
-
-        if (json.errors?.length > 0 && soundOnError) playErrorSound();
-
-        if (!full || json.processed === 0 || remaining === 0) {
-          if (full && soundOnComplete && totalProcessed > 0) playSuccessSound();
-          const sum = `Enriched ${totalUpdated}/${totalProcessed}. Remaining: ${remaining}. Errors: ${errorsCount}.`;
-          setMessage(sum);
-          showToast("Processing finished.");
+        if (json?.stopped || (typeof json?.error === "string" && json.error.includes("stopped"))) {
+          stopped = true;
+          trackRunId(json.runId);
           break;
         }
 
-        setMessage(`Enriched ${totalUpdated} so far... ${remaining} remaining.`);
+        if (!res.ok) {
+          if (res.status === 409 && json?.stopped) {
+            stopped = true;
+            break;
+          }
+          if (soundOnError) playErrorSound();
+          throw new Error(json?.error || `Enrich failed (${res.status})`);
+        }
+
+        if (!runId) runId = json.runId;
+        trackRunId(runId);
+        const batchProcessed = Number(json.processed) || 0;
+        const batchUpdated = Number(json.updated) || 0;
+        const batchRemaining = Number(json.remaining);
+        totalUpdated += batchUpdated;
+        totalProcessed += batchProcessed;
+        // Prefer explicit remaining; only fall back to 0 when the server said finished.
+        remaining = Number.isFinite(batchRemaining)
+          ? batchRemaining
+          : json.finished
+            ? 0
+            : remaining;
+        errorsCount += Array.isArray(json.errors) ? json.errors.length : 0;
+
+        if (json.errors?.length > 0 && soundOnError) playErrorSound();
+
+        const batchLabel =
+          json.batch && json.batches
+            ? `Batch ${json.batch} of ${json.batches}`
+            : null;
+
+        // Single-batch mode always stops after one request.
+        // Full mode continues while the server reports more remaining work.
+        const moreWork = full && !json.stopped && !json.finished && remaining > 0 && batchProcessed > 0;
+        if (!moreWork) {
+          if (json.stopped) {
+            stopped = true;
+            break;
+          }
+          if (full && soundOnComplete && totalProcessed > 0 && remaining === 0) playSuccessSound();
+          const sum =
+            (batchLabel ? `${batchLabel} · ` : "") +
+            `Enriched ${totalUpdated}/${totalProcessed}. Remaining: ${remaining}. Errors: ${errorsCount}.`;
+          setMessage(sum);
+          showToast(remaining > 0 ? "Enrichment paused with items still pending." : "Processing finished.");
+          break;
+        }
+
+        setMessage(
+          (batchLabel ? `${batchLabel} · ` : "") +
+            `${totalUpdated} updated so far · ${remaining} remaining…`
+        );
+      }
+
+      if (controller.signal.aborted || stopped) {
+        setMessage(
+          `Stopped. Enriched ${totalUpdated}/${totalProcessed} before cancel.` +
+            (errorsCount ? ` Errors: ${errorsCount}.` : "")
+        );
+        showToast("Operation stopped.");
       }
       router.refresh();
-      return { totalUpdated, totalProcessed, remaining, errorsCount };
+      return { totalUpdated, totalProcessed, remaining, errorsCount, stopped };
     } catch (e) {
+      if (isAbortError(e)) {
+        setMessage("Stopped.");
+        showToast("Operation stopped.");
+        router.refresh();
+        return null;
+      }
       setMessage(e instanceof Error ? e.message : String(e));
       return null;
     } finally {
       setLoad(key, false);
+      endClientOp(controller);
     }
   };
 
   /** Delta import then enrich all pending for this source, then best-effort embeddings. */
   const runProcessInbox = async () => {
     const key = source === "x" ? "inboxX" : "inboxYt";
+    const controller = beginClientOp();
     setLoad(key, true);
     setMessage("Processing inbox: syncing…");
     try {
-      const importJson = await (async () => {
-        const res = await fetch(`/api/import?source=${source}`, { method: "POST" });
-        const json = await res.json();
+      let imported = 0;
+      let importWarning: string | null = null;
+
+      try {
+        const { res, json } = await fetchJson(`/api/import?source=${source}`, {
+          method: "POST",
+          signal: controller.signal,
+          retries: 1,
+        });
         if (res.status === 409) throw new Error(json.error || "A sync is already in progress.");
         if (!res.ok) throw new Error(json.error || "Import failed");
-        return json;
-      })();
+        if (json.operationId || json.runId) trackRunId(json.operationId ?? json.runId);
+        imported = json.imported ?? json.created ?? 0;
+      } catch (e) {
+        if (isAbortError(e)) throw e;
+        // Keep going into enrich so existing pending items still get processed
+        // when sync returns an empty/timeout body (common on long X imports).
+        importWarning = e instanceof Error ? e.message : String(e);
+        setMessage(`Sync issue (${importWarning}). Continuing with enrichment of existing pending…`);
+      }
 
-      const imported = importJson.imported ?? importJson.created ?? 0;
-      setMessage(`Sync done (${imported} new). Enriching pending…`);
+      if (controller.signal.aborted) throw new DOMException("Aborted", "AbortError");
+
+      if (!importWarning) {
+        setMessage(`Sync done (${imported} new). Enriching pending…`);
+      }
 
       let runId: string | undefined;
       let totalUpdated = 0;
       let totalProcessed = 0;
       let remaining = 0;
       let errorsCount = 0;
+      let stopped = false;
 
-      while (true) {
+      while (!controller.signal.aborted) {
         const limit = source === "yt" ? 200 : Math.max(enrichBatchSize, 50);
         let url = `/api/enrich?source=${source}&limit=${limit}&full=true`;
         if (runId) url += `&runId=${runId}`;
 
-        const res = await fetch(url, { method: "POST" });
-        if (!res.ok) {
-          if (soundOnError) playErrorSound();
-          let errorMsg = "Enrich failed";
-          try {
-            const errorJson = await res.json();
-            errorMsg = errorJson.error || errorMsg;
-          } catch {
-            errorMsg = `${res.status} ${res.statusText}`;
-          }
-          throw new Error(errorMsg);
+        const { res, json } = await fetchJson(url, {
+          method: "POST",
+          signal: controller.signal,
+          retries: 2,
+        });
+
+        if (json?.stopped || (res.status === 409 && json?.stopped)) {
+          stopped = true;
+          trackRunId(json?.runId);
+          break;
         }
 
-        const json = await res.json();
-        if (!runId) runId = json.runId;
-        totalUpdated += json.updated || 0;
-        totalProcessed += json.processed || 0;
-        remaining = json.remaining || 0;
-        errorsCount += json.errors?.length || 0;
+        if (!res.ok) {
+          if (soundOnError) playErrorSound();
+          throw new Error(json?.error || `Enrich failed (${res.status})`);
+        }
 
-        if (json.processed === 0 || remaining === 0) break;
+        if (!runId) runId = json.runId;
+        trackRunId(runId);
+        const batchProcessed = Number(json.processed) || 0;
+        const batchUpdated = Number(json.updated) || 0;
+        const batchRemaining = Number(json.remaining);
+        totalUpdated += batchUpdated;
+        totalProcessed += batchProcessed;
+        remaining = Number.isFinite(batchRemaining)
+          ? batchRemaining
+          : json.finished
+            ? 0
+            : remaining;
+        errorsCount += Array.isArray(json.errors) ? json.errors.length : 0;
+
+        const moreWork = !json.stopped && !json.finished && remaining > 0 && batchProcessed > 0;
+        if (!moreWork) {
+          if (json.stopped) stopped = true;
+          break;
+        }
         setMessage(`Inbox enriching… ${totalUpdated} done, ${remaining} remaining.`);
+      }
+
+      if (controller.signal.aborted || stopped) {
+        setMessage(
+          `Stopped after inbox sync (${imported} new). Enriched ${totalUpdated}/${totalProcessed} before cancel.`
+        );
+        showToast("Operation stopped.");
+        router.refresh();
+        return;
       }
 
       let embedMsg = "";
@@ -189,13 +394,13 @@ export function useActions(source: "x" | "yt", enrichBatchSize: number, soundOnC
         let embUpdated = 0;
         let embFailed = 0;
         let embRemaining = 0;
-        for (let round = 0; round < 100; round++) {
-          const embRes = await fetch(
+        for (let round = 0; round < 100 && !controller.signal.aborted; round++) {
+          const { res: embRes, json: embJson } = await fetchJson(
             `/api/bookmarks/embeddings/sync?limit=100&source=${source}`,
-            { method: "POST" }
+            { method: "POST", signal: controller.signal, retries: 1 }
           );
-          const embJson = await embRes.json();
           if (!embRes.ok) break;
+          if (embJson.runId) trackRunId(embJson.runId);
           embUpdated += embJson.updated ?? 0;
           embFailed += embJson.failed ?? 0;
           embRemaining = embJson.remaining ?? 0;
@@ -213,20 +418,35 @@ export function useActions(source: "x" | "yt", enrichBatchSize: number, soundOnC
             (embRemaining > 0 ? `, ${embRemaining.toLocaleString()} still missing` : "") +
             ".";
         }
-      } catch {
+      } catch (e) {
+        if (isAbortError(e)) throw e;
         // Non-fatal — enrichment already completed.
       }
 
+      if (controller.signal.aborted) throw new DOMException("Aborted", "AbortError");
+
       if (soundOnComplete && (totalProcessed > 0 || imported > 0)) playSuccessSound();
-      const sum = `Inbox: ${imported} new · enriched ${totalUpdated}/${totalProcessed} · remaining ${remaining} · errors ${errorsCount}.${embedMsg}`;
+      const warn = importWarning ? ` Sync warning: ${importWarning}.` : "";
+      const sum = `Inbox: ${imported} new · enriched ${totalUpdated}/${totalProcessed} · remaining ${remaining} · errors ${errorsCount}.${embedMsg}${warn}`;
       setMessage(sum);
-      showToast("Inbox processing finished.");
+      showToast(
+        remaining > 0
+          ? "Inbox finished with items still pending."
+          : "Inbox processing finished."
+      );
       router.refresh();
     } catch (e) {
+      if (isAbortError(e)) {
+        setMessage("Stopped.");
+        showToast("Operation stopped.");
+        router.refresh();
+        return;
+      }
       if (soundOnError) playErrorSound();
       setMessage(e instanceof Error ? e.message : String(e));
     } finally {
       setLoad(key, false);
+      endClientOp(controller);
     }
   };
 
@@ -244,6 +464,7 @@ export function useActions(source: "x" | "yt", enrichBatchSize: number, soundOnC
       target: number;
     }) => void;
   }) => {
+    const controller = beginClientOp();
     setLoad("embeddings", true);
     setMessage("Syncing embeddings…");
     try {
@@ -255,11 +476,12 @@ export function useActions(source: "x" | "yt", enrichBatchSize: number, soundOnC
       const scope = options?.source ? `&source=${options.source}` : "";
 
       for (let round = 0; round < maxRounds; round++) {
-        const res = await fetch(`/api/bookmarks/embeddings/sync?limit=100${scope}`, {
-          method: "POST",
-        });
-        const json = await res.json();
+        const { res, json } = await fetchJson(
+          `/api/bookmarks/embeddings/sync?limit=100${scope}`,
+          { method: "POST", signal: controller.signal, retries: 1 }
+        );
         if (!res.ok) throw new Error(json.error || json.message || "Embedding sync failed");
+        if (json.runId) trackRunId(json.runId);
 
         const updated = json.updated ?? 0;
         const failed = json.failed ?? 0;
@@ -310,13 +532,30 @@ export function useActions(source: "x" | "yt", enrichBatchSize: number, soundOnC
       router.refresh();
       return { totalUpdated, totalFailed, remaining, target };
     } catch (e) {
+      if (isAbortError(e)) {
+        setMessage("Stopped.");
+        showToast("Operation stopped.");
+        router.refresh();
+        return null;
+      }
       if (soundOnError) playErrorSound();
       setMessage(e instanceof Error ? e.message : String(e));
       return null;
     } finally {
       setLoad("embeddings", false);
+      endClientOp(controller);
     }
   };
 
-  return { loading, message, toast, runImport, runEnrich, runProcessInbox, runSyncEmbeddings };
+  return {
+    loading,
+    message,
+    toast,
+    cancelling,
+    runImport,
+    runEnrich,
+    runProcessInbox,
+    runSyncEmbeddings,
+    cancelOperation,
+  };
 }

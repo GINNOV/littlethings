@@ -13,6 +13,7 @@ vi.mock("@/lib/db", () => ({
       upsert: vi.fn(),
       create: vi.fn().mockResolvedValue({}),
       update: vi.fn().mockResolvedValue({}),
+      updateMany: vi.fn().mockResolvedValue({ count: 0 }),
     },
     settings: { findUnique: vi.fn() },
     usageMonth: { findUnique: vi.fn().mockResolvedValue({ usedBookmarks: 0 }) },
@@ -106,7 +107,7 @@ describe("X Deep Folder Sync Integration", () => {
     expect(globalSyncCall.searchParams.has("max_results")).toBe(true);
   });
 
-  it("delta sync with baseline skips folder re-scan and does not re-hydrate known tweets", async () => {
+  it("delta sync links folder membership for known tweets without re-hydrating them", async () => {
     const mockSettings = {
       monthlyCap: 1000,
       xAccessToken: "valid-token",
@@ -117,12 +118,23 @@ describe("X Deep Folder Sync Integration", () => {
     (prisma.settings.findUnique as any).mockResolvedValue(mockSettings);
     (vi.mocked(getSettings) as any).mockResolvedValue(mockSettings);
 
-    // Library already has the baseline tweet
     (prisma.bookmark.findMany as any)
-      .mockResolvedValueOnce([{ id: "baseline-tweet" }]) // existing X ids
-      .mockResolvedValueOnce([]); // existing among candidates
+      .mockResolvedValueOnce([{ id: "known-in-library" }, { id: "baseline-tweet" }])
+      .mockResolvedValueOnce([]); // existing among import candidates
 
-    // Only global bookmarks call (no folder discovery)
+    vi.mocked(prisma.bookmark.updateMany).mockResolvedValue({ count: 1 } as any);
+
+    // 1) Folder discovery
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ data: [{ id: "f1", name: "Tech" }] }),
+    } as any);
+    // 2) Folder ID list (known tweet only — no /tweets hydration)
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ data: [{ id: "known-in-library" }], meta: {} }),
+    } as any);
+    // 3) Global delta
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
       json: async () => ({
@@ -140,13 +152,16 @@ describe("X Deep Folder Sync Integration", () => {
 
     if (!json.ok) throw new Error(`import failed: ${JSON.stringify(json)}`);
     expect(json.imported).toBe(1);
-    expect(json.fetched).toBe(1);
 
-    // Single X API call = global bookmarks only (no folders, no /tweets hydration of known ids)
-    expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1);
-    const globalCall = new URL(vi.mocked(fetch).mock.calls[0][0] as string);
-    expect(globalCall.pathname).toContain("/user-123/bookmarks");
-    expect(prisma.bookmark.upsert).toHaveBeenCalledTimes(1);
+    // No /2/tweets hydration for known-in-library
+    const paths = vi.mocked(fetch).mock.calls.map((c) => new URL(c[0] as string).pathname);
+    expect(paths.some((p) => p.includes("/2/tweets"))).toBe(false);
+    expect(prisma.bookmark.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ id: { in: ["known-in-library"] } }),
+        data: { folderId: "f1" },
+      })
+    );
     expect(prisma.bookmark.upsert).toHaveBeenCalledWith(
       expect.objectContaining({ where: { id: "new-tweet" } })
     );

@@ -274,12 +274,15 @@ export function useSettingsForm(initial: Settings, defaultPrompt: string) {
     }
   };
 
-  const applyLlmPreset = (preset: "lmstudio" | "mlx" | "vllm" | "ollama") => {
+  const applyLlmPreset = (preset: "lmstudio" | "vllm" | "ollama" | "remote") => {
     if (preset === "ollama") {
       setForm((prev) => ({
         ...prev,
         llmBaseUrl: "http://127.0.0.1:11434/v1",
         llmApiKey: "ollama",
+        llmConcurrency: 1,
+        llmEmbeddingBaseUrl: "http://127.0.0.1:11434/v1",
+        llmEmbeddingModel: prev.llmEmbeddingModel || "nomic-embed-text",
       }));
       return;
     }
@@ -289,6 +292,7 @@ export function useSettingsForm(initial: Settings, defaultPrompt: string) {
         ...prev,
         llmBaseUrl: "http://127.0.0.1:1234/v1",
         llmApiKey: "lm-studio",
+        llmConcurrency: 1,
       }));
       return;
     }
@@ -297,14 +301,23 @@ export function useSettingsForm(initial: Settings, defaultPrompt: string) {
       setForm((prev) => ({
         ...prev,
         llmBaseUrl: "http://127.0.0.1:8000/v1",
-        llmApiKey: "vllm",
+        llmApiKey: "EMPTY",
+        llmConcurrency: 4,
+        llmEmbeddingBaseUrl: prev.llmEmbeddingBaseUrl || "http://127.0.0.1:11434/v1",
+        llmEmbeddingModel: prev.llmEmbeddingModel || "nomic-embed-text",
       }));
       return;
     }
 
     setForm((prev) => ({
       ...prev,
-      llmModel: "qwen/qwen2.5-coder-14b",
+      llmBaseUrl: "http://192.168.0.69:8000/v1",
+      llmApiKey: "EMPTY",
+      llmModel: "gemma-4-26b",
+      llmConcurrency: 32,
+      llmContextWindow: 32768,
+      llmEmbeddingBaseUrl: prev.llmEmbeddingBaseUrl || "http://127.0.0.1:11434/v1",
+      llmEmbeddingModel: prev.llmEmbeddingModel || "nomic-embed-text",
     }));
   };
 

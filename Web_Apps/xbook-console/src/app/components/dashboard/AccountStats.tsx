@@ -101,7 +101,9 @@ export function AccountStats({
             <p className="font-semibold tabular-nums">{sum.toLocaleString()}</p>
           </div>
           <div>
-            <p className="text-xs uppercase text-on-surface-variant">Pending</p>
+            <p className="text-xs uppercase text-on-surface-variant" title="Items with no summary yet">
+              Pending
+            </p>
             <p className={`font-semibold tabular-nums ${pend > 0 ? "text-secondary" : ""}`}>
               {pend.toLocaleString()}
             </p>

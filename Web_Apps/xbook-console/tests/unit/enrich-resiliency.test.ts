@@ -104,4 +104,23 @@ describe("Enrich API Route Resiliency", () => {
       })
     }));
   });
+
+  it("should not revive a stopped run when client multi-batch reuses runId", async () => {
+    (prisma.operationRun.findUnique as any).mockResolvedValue({
+      id: "run-stopped",
+      status: "stopped",
+      total: 10,
+    });
+
+    const req = new Request(
+      "http://localhost/api/enrich?source=x&full=true&runId=run-stopped"
+    );
+    const res = await POST(req);
+    const json = await res.json();
+
+    expect(res.status).toBe(409);
+    expect(json.stopped).toBe(true);
+    expect(json.ok).toBe(false);
+    expect(prisma.operationRun.update).not.toHaveBeenCalled();
+  });
 });

@@ -76,5 +76,39 @@ describe("useLLMSettings", () => {
     const newState = updater({ other: "data" });
     expect(newState.llmBaseUrl).toBe("http://127.0.0.1:11434/v1");
     expect(newState.llmApiKey).toBe("ollama");
+    expect(newState.llmConcurrency).toBe(1);
+  });
+
+  it("should apply REMOTE preset with high concurrency and split embeddings", () => {
+    const { result } = renderHook(() => useLLMSettings());
+
+    act(() => {
+      result.current.applyLlmPreset("remote");
+    });
+
+    const updater = mockSetForm.mock.calls[0][0];
+    const newState = updater({ other: "data" });
+    expect(newState.llmBaseUrl).toBe("http://192.168.0.69:8000/v1");
+    expect(newState.llmApiKey).toBe("EMPTY");
+    expect(newState.llmModel).toBe("gemma-4-26b");
+    expect(newState.llmConcurrency).toBe(32);
+    expect(newState.llmContextWindow).toBe(32768);
+    expect(newState.llmEmbeddingBaseUrl).toBe("http://127.0.0.1:11434/v1");
+    expect(newState.llmEmbeddingModel).toBe("nomic-embed-text");
+  });
+
+  it("should apply vLLM localhost preset with moderate concurrency", () => {
+    const { result } = renderHook(() => useLLMSettings());
+
+    act(() => {
+      result.current.applyLlmPreset("vllm");
+    });
+
+    const updater = mockSetForm.mock.calls[0][0];
+    const newState = updater({ other: "data" });
+    expect(newState.llmBaseUrl).toBe("http://127.0.0.1:8000/v1");
+    expect(newState.llmApiKey).toBe("EMPTY");
+    expect(newState.llmConcurrency).toBe(4);
+    expect(newState.llmEmbeddingBaseUrl).toBe("http://127.0.0.1:11434/v1");
   });
 });

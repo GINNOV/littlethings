@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { fetchBookmarks, fetchBookmarkFolders } from "@/lib/x";
+import { fetchBookmarks, fetchBookmarkFolders, fetchFolderDelta } from "@/lib/x";
 import { fetchYouTubeBookmarks } from "@/lib/youtube";
 import { getSettings, getUsageMonth, incrementUsage, updateSettings } from "@/lib/settings";
 import {
@@ -86,65 +86,76 @@ export async function POST(request: Request) {
         ).map((b) => b.id)
       );
       knownSkipped = existingXIds.size;
+      let foldersLinked = 0;
 
-      // Deep folder scan is expensive (paginated list + tweet lookups). On a normal delta
-      // sync with a baseline, new bookmarks always appear on the global list first — so we
-      // skip folders unless this is the first sync or the client asked for ?deep=1.
-      const deepFolders =
-        url.searchParams.get("deep") === "1" || !settings.lastBookmarkId;
+      // Folder lists return IDs only (cheap). We:
+      //  1) assign folderId on rows already in the library (no tweet re-read)
+      //  2) hydrate only tweets not yet stored
+      try {
+        const xFolders = await fetchBookmarkFolders();
+        for (const xf of xFolders) {
+          await prisma.bookmarkFolder.upsert({
+            where: { id: xf.id },
+            update: { name: xf.name ?? null },
+            create: { id: xf.id, name: xf.name ?? null },
+          });
 
-      if (deepFolders) {
-        try {
-          const xFolders = await fetchBookmarkFolders();
-          for (const xf of xFolders) {
-            await prisma.bookmarkFolder.upsert({
-              where: { id: xf.id },
-              update: { name: xf.name ?? null },
-              create: { id: xf.id, name: xf.name ?? null },
-            });
-
-            await logProcessingEvent({
-              runId: operation.id,
-              type: "import",
-              status: "fetching",
-              message: `Scanning X folder for new items: ${xf.name || xf.id}…`,
-            });
-
-            const folderBookmarks = await fetchBookmarks({
-              folderId: xf.id,
-              folderName: xf.name,
-              maxTotal: remaining ?? undefined,
-              stopBeforeIds: existingXIds,
-              skipExisting: true,
-            });
-
-            for (const b of folderBookmarks) existingXIds.add(b.id);
-
-            await logProcessingEvent({
-              runId: operation.id,
-              type: "import",
-              status: "completed",
-              message: `Folder ${xf.name || xf.id}: ${folderBookmarks.length} new to import.`,
-            });
-
-            bookmarks.push(...folderBookmarks);
-          }
-        } catch (e: unknown) {
-          console.warn("Failed to fetch X folders, continuing with global sync:", e);
           await logProcessingEvent({
             runId: operation.id,
             type: "import",
-            status: "failed",
-            message: `Folder discovery failed: ${e instanceof Error ? e.message : String(e)}. Falling back to global sync.`,
+            status: "fetching",
+            message: `Syncing folder membership: ${xf.name || xf.id}…`,
+          });
+
+          const folderDelta = await fetchFolderDelta({
+            folderId: xf.id,
+            folderName: xf.name ?? undefined,
+            knownIds: existingXIds,
+            maxNew: remaining ?? undefined,
+          });
+          if (remaining !== null) {
+            remaining = Math.max(0, remaining - folderDelta.newItems.length);
+          }
+
+          // Link known tweets to this folder without re-fetching bodies.
+          if (folderDelta.membershipIds.length > 0) {
+            const linkResult = await prisma.bookmark.updateMany({
+              where: {
+                source: "x",
+                id: { in: folderDelta.membershipIds },
+                OR: [{ folderId: null }, { folderId: { not: xf.id } }],
+              },
+              data: { folderId: xf.id },
+            });
+            foldersLinked += linkResult.count;
+          }
+
+          for (const b of folderDelta.newItems) existingXIds.add(b.id);
+          bookmarks.push(...folderDelta.newItems);
+
+          await logProcessingEvent({
+            runId: operation.id,
+            type: "import",
+            status: "completed",
+            message: `Folder ${xf.name || xf.id}: ${folderDelta.newItems.length} new, ${folderDelta.membershipIds.length} ids scanned for membership.`,
           });
         }
-      } else {
+
+        if (foldersLinked > 0) {
+          await logProcessingEvent({
+            runId: operation.id,
+            type: "import",
+            status: "completed",
+            message: `Assigned folder on ${foldersLinked} existing bookmark(s) without re-fetching tweets.`,
+          });
+        }
+      } catch (e: unknown) {
+        console.warn("Failed to fetch X folders, continuing with global sync:", e);
         await logProcessingEvent({
           runId: operation.id,
           type: "import",
-          status: "completed",
-          message:
-            "Delta mode: skipped full folder re-scan (use folder import or ?deep=1 to re-walk folders).",
+          status: "failed",
+          message: `Folder discovery failed: ${e instanceof Error ? e.message : String(e)}. Falling back to global sync.`,
         });
       }
 
@@ -343,9 +354,9 @@ export async function POST(request: Request) {
       source !== "x"
         ? undefined
         : created > 0
-          ? `Imported ${created} new X bookmark${created === 1 ? "" : "s"}. Already-known tweets were not re-fetched.`
+          ? `Imported ${created} new X bookmark${created === 1 ? "" : "s"}. Folder membership updated; known tweets were not re-fetched.`
           : settings.lastBookmarkId
-            ? "No new X bookmarks since your last sync. Already-known tweets were not re-fetched (saves X API spend). If you are missing older items, reset the sync baseline in Settings."
+            ? "No new X bookmarks since your last sync. Folder membership was refreshed from folder ID lists (tweet bodies not re-fetched). If you are missing older items, reset the sync baseline in Settings."
             : "No X bookmarks returned.";
 
     return NextResponse.json({
@@ -355,6 +366,7 @@ export async function POST(request: Request) {
       refreshed,
       fetched: bookmarks.length,
       runId: run.id,
+      operationId: operation.id,
       remaining: source === "x" && remaining !== null ? remaining - created : null,
       message: xMessage,
     });

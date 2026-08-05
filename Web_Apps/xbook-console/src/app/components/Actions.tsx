@@ -23,12 +23,16 @@ export default function Actions({
 }: Props) {
   const [reprocessAll, setReprocessAll] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const { loading, message, toast, runImport, runEnrich, runProcessInbox } = useActions(
-    source,
-    enrichBatchSize,
-    soundOnComplete,
-    soundOnError
-  );
+  const {
+    loading,
+    message,
+    toast,
+    cancelling,
+    runImport,
+    runEnrich,
+    runProcessInbox,
+    cancelOperation,
+  } = useActions(source, enrichBatchSize, soundOnComplete, soundOnError);
   const isEnriching = source === "x" ? loading.enrichX : loading.enrichYt;
   const isSyncing = source === "x" ? loading.x : loading.yt;
   const isInbox = source === "x" ? loading.inboxX : loading.inboxYt;
@@ -39,6 +43,14 @@ export default function Actions({
     source === "x"
       ? "bg-black text-white hover:bg-black/90"
       : "bg-red-700 text-white hover:bg-red-800";
+
+  const busyLabel = isInbox
+    ? "Processing…"
+    : isEnriching
+      ? "Enriching…"
+      : isSyncing
+        ? "Syncing…"
+        : null;
 
   return (
     <div className="flex flex-col gap-3">
@@ -51,8 +63,24 @@ export default function Actions({
         >
           {isInbox ? "Processing…" : "Process inbox"}
         </button>
-        <HelpTooltip text="Import new bookmarks, enrich items that still need a summary, then index missing embeddings for search. The day-to-day path." />
+        {busy && (
+          <button
+            type="button"
+            onClick={() => void cancelOperation()}
+            disabled={cancelling}
+            className="rounded-full border border-error px-4 py-2 text-sm font-semibold text-error transition hover:bg-error hover:text-white disabled:opacity-60"
+            title="Stop the current operation so you can start another"
+          >
+            {cancelling ? "Stopping…" : "Stop"}
+          </button>
+        )}
+        <HelpTooltip text="Import new bookmarks, enrich items that still need a summary, then index missing embeddings for search. The day-to-day path. Use Stop if you need to switch to another operation mid-run." />
       </div>
+      {busy && busyLabel && (
+        <p className="text-xs font-medium text-on-surface-variant">
+          {busyLabel} Stop to free the queue and start a different operation.
+        </p>
+      )}
 
       <div>
         <button

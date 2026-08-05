@@ -437,6 +437,100 @@ export async function translateText(input: {
   return translatedText;
 }
 
+export type LibraryAskCandidate = {
+  id: string;
+  source: string;
+  tweetUrl: string;
+  summary: string | null;
+  text: string | null;
+  category: string | null;
+  authorUsername: string | null;
+  similarity?: number;
+};
+
+export type LibraryAskResult = {
+  answer: string;
+  citations: { id: string; reason: string }[];
+};
+
+/** Natural-language Q&A over retrieved library candidates (chat find path). */
+export async function answerLibraryQuestion(input: {
+  question: string;
+  candidates: LibraryAskCandidate[];
+  signal?: AbortSignal;
+}): Promise<LibraryAskResult> {
+  const catalog = input.candidates
+    .map((c, i) => {
+      const body = (c.summary || c.text || "").replace(/\s+/g, " ").trim().slice(0, 500);
+      return [
+        `[${i + 1}] id=${c.id}`,
+        `source=${c.source}`,
+        c.authorUsername ? `author=${c.authorUsername}` : null,
+        c.category ? `category=${c.category}` : null,
+        c.tweetUrl ? `url=${c.tweetUrl}` : null,
+        `content=${body || "(empty)"}`,
+      ]
+        .filter(Boolean)
+        .join(" | ");
+    })
+    .join("\n");
+
+  const prompt = [
+    "You are a librarian for a personal bookmark library (X posts + YouTube saves).",
+    "Answer the user's question using ONLY the candidate bookmarks below.",
+    "If nothing relevant is present, say so clearly and suggest a better query.",
+    "Prefer concise, practical answers. Cite bookmarks by id in citations.",
+    "",
+    "Return ONLY valid JSON (no markdown fences):",
+    '{ "answer": "string", "citations": [ { "id": "bookmark-id", "reason": "why this item helps" } ] }',
+    "Include at most 8 citations. Use only ids from the list.",
+    "",
+    `QUESTION:\n${input.question}`,
+    "",
+    `CANDIDATES:\n${catalog || "(none)"}`,
+  ].join("\n");
+
+  const result = await callLlm({
+    prompt,
+    temperature: 0.2,
+    signal: input.signal,
+    type: "library_ask",
+  });
+
+  let parsed: LibraryAskResult = { answer: result.content.trim(), citations: [] };
+  try {
+    const raw = extractJson(result.content) as {
+      answer?: string;
+      citations?: { id?: string; reason?: string }[];
+    };
+    const allowed = new Set(input.candidates.map((c) => c.id));
+    parsed = {
+      answer: (raw.answer ?? result.content).trim(),
+      citations: Array.isArray(raw.citations)
+        ? raw.citations
+            .filter((c) => c?.id && allowed.has(c.id))
+            .map((c) => ({ id: c.id!, reason: (c.reason ?? "").trim() || "Relevant match" }))
+            .slice(0, 8)
+        : [],
+    };
+  } catch {
+    // Fall back to prose answer if the model ignored JSON.
+  }
+
+  await logLlmRequest({
+    model: result.config.model,
+    baseUrl: result.config.baseUrl,
+    prompt: result.prompt,
+    response: result.content,
+    parsed,
+    durationMs: result.durationMs,
+    tokenUsage: result.usage,
+    includePayloads: result.config.logLlmPayloads,
+  });
+
+  return parsed;
+}
+
 export async function generateEmbedding(text: string, signal?: AbortSignal) {
   const config = await getEmbeddingConfig();
   try {

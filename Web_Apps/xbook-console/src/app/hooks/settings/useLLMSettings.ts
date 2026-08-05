@@ -61,7 +61,7 @@ export function useLLMSettings() {
     }
   };
 
-  const applyLlmPreset = (preset: "lmstudio" | "mlx" | "vllm" | "ollama") => {
+  const applyLlmPreset = (preset: "lmstudio" | "vllm" | "ollama" | "remote") => {
     if (preset === "ollama") {
       setForm((prev) => ({
         ...prev,
@@ -88,8 +88,8 @@ export function useLLMSettings() {
       setForm((prev) => ({
         ...prev,
         llmBaseUrl: "http://127.0.0.1:8000/v1",
-        llmApiKey: "vllm",
-        llmConcurrency: 1,
+        llmApiKey: "EMPTY",
+        llmConcurrency: 4,
         // vLLM chat servers often lack /v1/embeddings — default embeddings to local Ollama.
         llmEmbeddingBaseUrl: prev.llmEmbeddingBaseUrl || "http://127.0.0.1:11434/v1",
         llmEmbeddingModel: prev.llmEmbeddingModel || "nomic-embed-text",
@@ -97,10 +97,16 @@ export function useLLMSettings() {
       return;
     }
 
+    // High-concurrency LAN/remote OpenAI-compatible vLLM (edit host/model as needed).
     setForm((prev) => ({
       ...prev,
-      llmModel: "qwen/qwen2.5-coder-14b",
-      llmConcurrency: 1,
+      llmBaseUrl: "http://192.168.0.69:8000/v1",
+      llmApiKey: "EMPTY",
+      llmModel: "gemma-4-26b",
+      llmConcurrency: 32,
+      llmContextWindow: 32768,
+      llmEmbeddingBaseUrl: prev.llmEmbeddingBaseUrl || "http://127.0.0.1:11434/v1",
+      llmEmbeddingModel: prev.llmEmbeddingModel || "nomic-embed-text",
     }));
   };
 

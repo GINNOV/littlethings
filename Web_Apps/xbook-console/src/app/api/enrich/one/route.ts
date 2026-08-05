@@ -7,6 +7,8 @@ import {
   logProcessingEvent,
   updateOperationRun,
 } from "@/lib/processing";
+import { getSettings } from "@/lib/settings";
+import { buildEnrichmentRunConfig } from "@/lib/run-config";
 
 function parseExternalUrls(input: string | null) {
   if (!input) return undefined;
@@ -88,11 +90,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: "Bookmark not found" }, { status: 404 });
   }
 
+  const settings = await getSettings();
   const run = await createOperationRun({
     type: "single_reprocess",
     source: bookmark.source,
     total: 1,
     notes: `bookmark:${bookmark.id}`,
+    config: buildEnrichmentRunConfig(settings, {
+      concurrency: 1,
+      batchSize: 1,
+      batchIndex: 1,
+      totalBatches: 1,
+    }),
   });
 
   try {

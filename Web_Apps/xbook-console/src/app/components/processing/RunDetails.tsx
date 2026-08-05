@@ -7,6 +7,7 @@ import StopRunButton from "../StopRunButton";
 import { ProcessingEvents } from "./ProcessingEvents";
 import { statusClass } from "@/app/lib/formatters";
 import { getFilterUrl } from "@/app/lib/processing-utils";
+import { formatRunConfig, resolveRunConfig } from "@/lib/run-config";
 
 type Props = {
   selectedRun: any;
@@ -16,6 +17,15 @@ type Props = {
 export function RunDetails({ selectedRun, currentParams }: Props) {
   const [search, setSearch] = useState("");
   if (!selectedRun) return <p className="text-sm text-on-surface-variant">Select a run to inspect events.</p>;
+
+  const configLine = formatRunConfig(
+    resolveRunConfig({
+      configJson: selectedRun.configJson,
+      llmModel: selectedRun.llmRequests?.[0]?.model,
+      llmBaseUrl: selectedRun.llmRequests?.[0]?.baseUrl,
+      notes: selectedRun.notes,
+    })
+  );
 
   return (
     <div className="flex flex-col gap-8">
@@ -30,11 +40,14 @@ export function RunDetails({ selectedRun, currentParams }: Props) {
               <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider ${statusClass(selectedRun.status)} bg-opacity-10 border border-current`}>
                 {selectedRun.status}
               </span>
-              {selectedRun.llmRequests?.[0]?.model && (
-                <span className="rounded bg-surface-container-high px-2 py-0.5 text-[10px] font-bold text-on-surface-variant uppercase tracking-tight">
-                  {selectedRun.llmRequests[0].model}
+              {configLine ? (
+                <span
+                  className="rounded bg-surface-container-high px-2 py-0.5 text-[10px] font-medium text-on-surface-variant tracking-tight font-mono max-w-[min(42rem,50vw)] truncate"
+                  title={configLine}
+                >
+                  {configLine}
                 </span>
-              )}
+              ) : null}
             </div>
           </div>
           <p className="text-sm text-on-surface-variant ml-11">{selectedRun.notes || "Processing batch details and event history."}</p>

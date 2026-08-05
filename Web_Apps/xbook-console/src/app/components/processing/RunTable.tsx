@@ -2,7 +2,7 @@
 
 import { XLogo, YouTubeLogo } from "../Icons";
 import Link from "next/link";
-import { statusClass, formatDate } from "@/app/lib/formatters";
+import { statusClass, formatDate, formatRunOutcome, formatRunTitle } from "@/app/lib/formatters";
 import { getFilterUrl } from "@/app/lib/processing-utils";
 
 type Props = {
@@ -21,8 +21,8 @@ export function RunTable({ runs, selectedId, currentParams }: Props) {
         {runs.map((run) => (
           <Link key={run.id} href={getFilterUrl(currentParams, { runId: run.id })} className={`grid grid-cols-[1fr_0.4fr_0.6fr_0.6fr] px-4 py-3 text-sm transition hover:bg-surface-container-low ${selectedId === run.id ? "bg-surface-container-low shadow-[inset_4px_0_0_var(--primary)]" : ""}`}>
             <div className="flex flex-col">
-              <span className="font-semibold capitalize">{run.type.replaceAll("_", " ")}</span>
-              <span className="text-[10px] text-on-surface-variant truncate">{run.notes ?? "No details"}</span>
+              <span className="font-semibold">{formatRunTitle(run.type, run.source)}</span>
+              <span className="text-[10px] text-on-surface-variant truncate">{formatRunOutcome(run)}</span>
             </div>
             <span className="flex items-center">
               <span className={`flex items-center justify-center rounded px-2 py-0.5 ${run.source === "yt" ? "bg-error/10 text-error" : run.source === "x" ? "bg-on-surface/10 text-on-surface" : "bg-surface-container-high text-on-surface-variant"}`} title={run.source === "yt" ? "YouTube" : run.source === "x" ? "X" : "Mixed"}>

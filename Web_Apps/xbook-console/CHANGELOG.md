@@ -22,10 +22,14 @@ and this project aims to follow [Semantic Versioning](https://semver.org/).
 - Clearer embedding error messages when the embeddings endpoint or model is misconfigured.
 - Embedding sync query only selects bookmarks with a non-empty summary.
 - Index health **missing** count no longer disagreed with sync progress: both use the same “needs embedding” rule, dashboard sync is **tab-scoped**, and progress shows `N of T · remaining` while live missing/indexed counters update during the run.
-- **X sync burned API spend re-fetching immutable tweets**: delta sync no longer re-hydrates the whole library (was “0 new, refreshed 368”). With a baseline it only walks new global bookmarks, skips full folder re-scans, and only advances `lastBookmarkId` from the global feed (folder tweets no longer corrupt the baseline).
+- **X sync burned API spend re-fetching immutable tweets**: delta sync no longer re-hydrates the whole library (was “0 new, refreshed 368”). With a baseline it only walks new global bookmarks and only advances `lastBookmarkId` from the global feed (folder tweets no longer corrupt the baseline).
+- **X folder column empty / “No folder”**: folder membership is restored by walking folder **ID lists** (cheap) and `UPDATE`ing `folderId` on known tweets without re-fetching tweet bodies; only unknown tweets are hydrated.
 
 ### Changed
 
+- Docs → Configure your AI: added **Advanced: prompts & thinking** (system vs enrichment prompt, thinking off for batches, chat/embedding split, recommended defaults).
+- LLM enrichment concurrency ceiling raised from **6 → 32** (settings, UI, and enrich route share `MAX_LLM_CONCURRENCY`).
+- AI presets refreshed: **REMOTE** (example LAN vLLM host, `gemma-4-26b`, concurrency 32, split Ollama embeddings); local vLLM uses concurrency 4 and `EMPTY` API key; shorter preset labels. Removed redundant MLX preset (same shape as other OpenAI-compatible endpoints).
 - Ollama and vLLM presets seed sensible embedding defaults (Ollama-compatible embeddings host + `nomic-embed-text` when unset).
 - Embedding generation no longer falls back to the chat model id (chat models are usually unsupported by embeddings APIs).
 - Settings → **Sync all missing embeddings** remains global; the dashboard button only indexes the active tab (X or YouTube).

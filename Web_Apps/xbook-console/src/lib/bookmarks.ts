@@ -22,20 +22,21 @@ export async function searchBookmarksSemantically(query: string) {
   return results.map(r => { const f = full.find(fb => fb.id === r.id); return f ? { ...f, similarity: r.similarity } : null; }).filter((b): b is NonNullable<typeof b> => !!b);
 }
 
-/** Pending = no usable enrichment yet (empty summary AND empty category). */
+/**
+ * Pending = still needs a real summary.
+ * Category alone (e.g. stub "Other" with empty summary) does NOT count as done —
+ * those used to zero-out the dashboard Pending tile while Enrich skipped them.
+ */
 export function pendingEnrichmentWhere() {
   return {
-    AND: [
-      { OR: [{ summary: null }, { summary: "" }] },
-      { OR: [{ category: null }, { category: "" }] },
-    ],
+    OR: [{ summary: null }, { summary: "" }],
   };
 }
 
-/** Summarized = has a non-empty summary or category (complement of pending). */
+/** Summarized = non-empty summary (strict complement of pending). */
 export function summarizedEnrichmentWhere() {
   return {
-    OR: [{ summary: { not: "" } }, { category: { not: "" } }],
+    AND: [{ summary: { not: null } }, { NOT: { summary: "" } }],
   };
 }
 
@@ -77,23 +78,34 @@ function buildStatusFilter(status?: string) {
 
 function buildWhereClause(p: any) {
   const videoUrls = ["/video/", "youtube.com", "youtu.be", "vimeo.com"];
-  return {
-    ...(p.query ? { 
+  // Compose with AND so multiple OR groups (query, status=pending, video) never
+  // overwrite each other via object-spread key collision.
+  const clauses: Record<string, unknown>[] = [];
+  if (p.query) {
+    clauses.push({
       OR: [
-        { text: { contains: p.query } }, 
-        { summary: { contains: p.query } }, 
-        { category: { contains: p.query } }, 
+        { text: { contains: p.query } },
+        { summary: { contains: p.query } },
+        { category: { contains: p.query } },
         { authorUsername: { contains: p.query } },
         { authorName: { contains: p.query } },
-        { tags: { contains: p.query } }
-      ] 
-    } : {}),
-    ...(p.category ? { category: p.category } : {}),
-    ...(p.folderId ? { folderId: p.folderId } : {}),
-    ...(p.source ? { source: p.source } : {}),
-    ...buildStatusFilter(p.status),
-    ...(p.video ? { OR: [{ source: "yt" }, ...videoUrls.map(u => ({ externalUrls: { contains: u } }))] } : {}),
-  };
+        { tags: { contains: p.query } },
+      ],
+    });
+  }
+  if (p.category) clauses.push({ category: p.category });
+  if (p.folderId) clauses.push({ folderId: p.folderId });
+  if (p.source) clauses.push({ source: p.source });
+  const statusFilter = buildStatusFilter(p.status);
+  if (Object.keys(statusFilter).length > 0) clauses.push(statusFilter);
+  if (p.video) {
+    clauses.push({
+      OR: [{ source: "yt" }, ...videoUrls.map((u) => ({ externalUrls: { contains: u } }))],
+    });
+  }
+  if (clauses.length === 0) return {};
+  if (clauses.length === 1) return clauses[0];
+  return { AND: clauses };
 }
 
 const mapB = (b: any) => ({
@@ -121,11 +133,92 @@ async function performSemanticSearch(query: string, page: number, pageSize: numb
   return { bookmarks: all.slice(skip, skip + pageSize).map(mapB), total: all.length };
 }
 
+export type FilterCategory = { name: string; count: number };
+export type FilterFolder = { id: string; name: string | null; count: number };
+export type FilterCounts = {
+  total: number;
+  pending: number;
+  summarized: number;
+  uncategorized: number;
+  noFolder: number;
+  videos: number;
+};
+
+/** Facet options + counts for the library, scoped to optional source (x | yt). */
 export async function getFilterOptions(source?: string) {
-  const [cr, fs] = await Promise.all([
-    prisma.bookmark.findMany({ select: { category: true }, where: { category: { not: null } } }),
-    prisma.bookmarkFolder.findMany({ where: { bookmarks: { some: source ? { source } : {} } }, select: { id: true, name: true }, orderBy: [{ name: "asc" }, { id: "asc" }] })
+  const sourceWhere = source ? { source } : {};
+  const videoUrls = ["/video/", "youtube.com", "youtu.be", "vimeo.com"];
+
+  const [
+    total,
+    pending,
+    summarized,
+    uncategorized,
+    noFolder,
+    videos,
+    categoryGroups,
+    folderGroups,
+    folders,
+  ] = await Promise.all([
+    prisma.bookmark.count({ where: sourceWhere }),
+    prisma.bookmark.count({ where: { ...sourceWhere, ...pendingEnrichmentWhere() } }),
+    prisma.bookmark.count({ where: { ...sourceWhere, ...summarizedEnrichmentWhere() } }),
+    prisma.bookmark.count({
+      where: {
+        ...sourceWhere,
+        OR: [{ category: null }, { category: "" }],
+      },
+    }),
+    prisma.bookmark.count({ where: { ...sourceWhere, folderId: null } }),
+    prisma.bookmark.count({
+      where: {
+        ...sourceWhere,
+        OR: [{ source: "yt" }, ...videoUrls.map((u) => ({ externalUrls: { contains: u } }))],
+      },
+    }),
+    prisma.bookmark.groupBy({
+      by: ["category"],
+      where: {
+        ...sourceWhere,
+        AND: [{ category: { not: null } }, { NOT: { category: "" } }],
+      },
+      _count: { _all: true },
+      orderBy: { category: "asc" },
+    }),
+    prisma.bookmark.groupBy({
+      by: ["folderId"],
+      where: { ...sourceWhere, folderId: { not: null } },
+      _count: { _all: true },
+    }),
+    prisma.bookmarkFolder.findMany({
+      where: { bookmarks: { some: sourceWhere } },
+      select: { id: true, name: true },
+      orderBy: [{ name: "asc" }, { id: "asc" }],
+    }),
   ]);
-  const categories = Array.from(new Set(cr.map(i => i.category).filter(Boolean))).sort((a, b) => a!.localeCompare(b!));
-  return { categories, folders: fs };
+
+  const countByFolder = new Map(
+    folderGroups.map((g) => [g.folderId as string, g._count._all])
+  );
+
+  const categories: FilterCategory[] = categoryGroups
+    .filter((g): g is typeof g & { category: string } => !!g.category)
+    .map((g) => ({ name: g.category, count: g._count._all }));
+
+  const folderList: FilterFolder[] = folders.map((f) => ({
+    id: f.id,
+    name: f.name,
+    count: countByFolder.get(f.id) ?? 0,
+  }));
+
+  const counts: FilterCounts = {
+    total,
+    pending,
+    summarized,
+    uncategorized,
+    noFolder,
+    videos,
+  };
+
+  return { categories, folders: folderList, counts };
 }

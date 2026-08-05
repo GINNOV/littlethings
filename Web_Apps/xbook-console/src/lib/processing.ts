@@ -1,3 +1,4 @@
+import { pendingEnrichmentWhere } from "@/lib/bookmarks";
 import { prisma } from "@/lib/db";
 import { processingEvents } from "@/lib/signals";
 
@@ -39,7 +40,20 @@ export async function createOperationRun(input: {
   status?: RunStatus;
   total?: number;
   notes?: string | null;
+  /** JSON string or object snapshot of model / endpoint / knobs. */
+  config?: string | Record<string, unknown> | null;
 }) {
+  let configJson: string | null = null;
+  if (typeof input.config === "string") {
+    configJson = input.config;
+  } else if (input.config && typeof input.config === "object") {
+    try {
+      configJson = JSON.stringify(input.config);
+    } catch {
+      configJson = null;
+    }
+  }
+
   const run = await prisma.operationRun.create({
     data: {
       type: input.type,
@@ -47,6 +61,7 @@ export async function createOperationRun(input: {
       status: input.status ?? "running",
       total: input.total ?? 0,
       notes: input.notes ?? null,
+      configJson,
     },
   });
   processingEvents.emit("run_created", run);
@@ -64,9 +79,29 @@ export async function updateOperationRun(
     skipped?: number;
     notes?: string | null;
     finish?: boolean;
+    /** Shallow-merged into existing configJson (batch progress, etc.). */
+    configPatch?: Record<string, unknown> | null;
   }
 ) {
   if (!runId) return null;
+
+  let configJson: string | undefined;
+  if (input.configPatch && typeof input.configPatch === "object") {
+    const existing = await prisma.operationRun.findUnique({
+      where: { id: runId },
+      select: { configJson: true },
+    });
+    let base: Record<string, unknown> = {};
+    if (existing?.configJson) {
+      try {
+        base = JSON.parse(existing.configJson) as Record<string, unknown>;
+      } catch {
+        base = {};
+      }
+    }
+    configJson = JSON.stringify({ ...base, ...input.configPatch });
+  }
+
   const run = await prisma.operationRun.update({
     where: { id: runId },
     data: {
@@ -77,6 +112,7 @@ export async function updateOperationRun(
       ...(input.failed !== undefined ? { failed: input.failed } : {}),
       ...(input.skipped !== undefined ? { skipped: input.skipped } : {}),
       ...(input.notes !== undefined ? { notes: input.notes } : {}),
+      ...(configJson !== undefined ? { configJson } : {}),
       ...(input.finish ? { finishedAt: new Date() } : {}),
     },
   });
@@ -266,10 +302,7 @@ export async function getProcessingSummary(source?: string | null) {
       prisma.bookmark.count({
         where: {
           ...filter,
-          AND: [
-            { OR: [{ summary: null }, { summary: "" }] },
-            { OR: [{ category: null }, { category: "" }] },
-          ],
+          ...pendingEnrichmentWhere(),
         },
       }),
       prisma.llmRequestLog.findFirst({

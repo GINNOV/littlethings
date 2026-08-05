@@ -126,6 +126,8 @@ model OperationRun {
   failed      Int               @default(0)
   skipped     Int               @default(0)
   notes       String?
+  /// Snapshot of model / endpoint / knobs used for this run (JSON).
+  configJson  String?
   startedAt   DateTime          @default(now())
   finishedAt  DateTime?
   llmRequests LlmRequestLog[]

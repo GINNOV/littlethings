@@ -8,6 +8,8 @@ import {
   updateOperationRun,
   incrementOperationRun,
 } from "@/lib/processing";
+import { getSettings } from "@/lib/settings";
+import { buildEmbeddingRunConfig } from "@/lib/run-config";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -39,11 +41,13 @@ export async function POST(request: Request) {
     });
   }
 
+  const settings = await getSettings();
   const run = await createOperationRun({
     type: "embedding_sync",
     source: source ?? "system",
     total: pending.length,
     notes: `Syncing embeddings for ${pending.length} bookmarks${source ? ` (${source})` : ""}.`,
+    config: buildEmbeddingRunConfig(settings),
   });
 
   let updated = 0;
