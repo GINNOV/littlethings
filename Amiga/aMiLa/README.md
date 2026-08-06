@@ -69,6 +69,22 @@ graph TD
     J -->|Run / Test| K[Emulator / Physical Amiga]
 ```
 
+### Agent / parallel worktrees
+
+Keep the monorepo primary checkout clean for integration. For multi-step agent work:
+
+```bash
+# from littlethings root on master
+git worktree add -b feat-amila-task ../littlethings-feat-amila-task master
+cd ../littlethings-feat-amila-task
+bash Amiga/aMiLa/scripts/setup-worktree.sh
+# optional large assets:
+#   COPY_RUNTIME=1 bash Amiga/aMiLa/scripts/setup-worktree.sh
+#   DOWNLOAD_MODEL=1 bash Amiga/aMiLa/scripts/setup-worktree.sh
+```
+
+See `AGENTS.md` and `scripts/setup-worktree.sh`. Only one process should bind MLX/LM port **1234** across worktrees.
+
 ### Repository Layout
 * **`AmigaPlayground/`**: High-performance, native macOS SwiftUI desktop workspace.
   * `AmigaPlaygroundApp.swift`: Application entry point.
