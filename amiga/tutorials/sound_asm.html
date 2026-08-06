@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Interactive Sound in Assembly: The Real Deal - Back to Amiga Dev Hub</title>
+    <link rel="stylesheet" href="/littlethings/common/style.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    
+    <script>
+      (function() {
+        const savedTheme = localStorage.getItem('theme') || 
+                           (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        if (savedTheme === 'dark') {
+          document.documentElement.classList.add('dark-theme');
+          document.body?.classList.add('dark-theme');
+        } else {
+          document.documentElement.classList.remove('dark-theme');
+          document.body?.classList.remove('dark-theme');
+        }
+      })();
+    </script>
+  </head>
+  <body class="dark-theme ">
+    
+    
+      
+        <header>
+    <div class="header-content">
+        <a href="/littlethings/amiga/index.html">
+            <img src="/littlethings/images/back_to_the_amiga.png" alt="Back to Amiga Dev Hub Logo" class="header-logo" onerror="this.onerror=null;this.src='https://placehold.co/180x50/003366/FF8800?text=Amiga+Dev+Hub&font=press-start-2p';this.alt='Amiga Dev Hub';">
+        </a>
+        <button class="menu-toggle" id="menu-toggle-btn">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+    <nav class="sidebar" id="header-nav">
+        <ul style="font-family: 'Press Start 2P', cursive; font-size: 0.8rem;">
+            <li><a href="/littlethings/amiga/index.html" id="nav-projects" class="">PROJECTS</a></li>
+            <li><a href="/littlethings/amiga/walkthroughs.html" id="nav-tutorials" class="active">TUTORIALS</a></li>
+            <li><a href="/littlethings/amiga/resources.html" id="nav-resources" class="">RESOURCES</a></li>
+            <li><a href="/littlethings/amiga/about.html" id="nav-about" class="">ABOUT</a></li>
+        </ul>
+    </nav>
+</header>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      const menuToggle = document.getElementById('menu-toggle-btn');
+      const sidebar = document.querySelector('#header-nav ul');
+      if (menuToggle && sidebar) {
+          if (window.innerWidth < 768) sidebar.classList.add('hidden');
+          menuToggle.addEventListener('click', () => sidebar.classList.toggle('hidden'));
+          window.addEventListener('resize', () => {
+              if (window.innerWidth >= 768) {
+                  sidebar.classList.remove('hidden');
+              } else {
+                  sidebar.classList.add('hidden');
+              }
+          });
+      }
+  });
+</script>
+
+      
+    
+
+    <main class="content-page">
+      
+<section>
+  <h2>Interactive Sound in Assembly: The Real Deal</h2>
+  <p>So far, we&rsquo;ve made things move on screen. Now, let&rsquo;s make some noise! The Amiga&rsquo;s four 8-bit sound channels, collectively managed by the custom chip <strong>Paula</strong>, gave it audio capabilities that were light-years ahead of its time. In this tutorial, we&rsquo;ll write an OS-friendly 68k assembly application that opens an Intuition window, renders an interactive button, and plays 8-bit PCM audio samples directly via hardware DMA.</p>
+<h2 id="the-amiga-paula-audio-hardware">The Amiga &ldquo;Paula&rdquo; Audio Hardware</h2>
+<p>The Paula custom chip features four independent 8-bit PCM sound channels (two mixed to the left audio output, two to the right). Each channel uses hardware DMA to fetch audio samples directly from <strong>Chip RAM</strong> without consuming CPU cycles.</p>
+<a href="images/sound_asm_diagram.jpg" target="_blank" class="block group cursor-pointer text-center my-8">
+    <img src="images/sound_asm_diagram.jpg" alt="Amiga Paula Audio Chip Architecture Diagram" class="w-full max-w-xl mx-auto rounded-lg shadow-lg border-2 border-gray-600 transition-transform duration-200 group-hover:scale-[1.02]" />
+    <span class="block text-sm text-amber-500 mt-2 font-medium group-hover:underline"><i class="fas fa-search-plus mr-1"></i> Click diagram to expand / view full size</span>
+</a>
+<h2 id="synthetic-audio-vs-custom-audio-files">Synthetic Audio vs. Custom Audio Files</h2>
+<p>When playing sound on the Amiga, you can choose between two approach types:</p>
+<ol>
+<li><strong>Synthetic Audio Data (Self-Contained):</strong> Embed waveform bytes (square, sine, or pulse data) directly in your assembly code. This requires no external files and runs instantly in web-based environments like <a href="../index.html#amiga-playground">Amiga Playground</a>.</li>
+<li><strong>Custom Audio Files (<code>incbin</code>):</strong> Convert any external audio recording (like a <code>.wav</code> file) into raw 8-bit PCM data (<code>sound.raw</code>) and include it in your assembly source using the <code>incbin</code> directive.</li>
+</ol>
+<hr>
+<h2 id="example-1-self-contained-synthetic-audio">Example 1: Self-Contained Synthetic Audio</h2>
+<p>In this example, the sound sample is embedded as a raw byte array directly in Chip RAM. This makes the code 100% self-contained so you can copy, paste, and run it anywhere without needing external files.</p>
+<h3 id="the-complete-code">The Complete Code:</h3>
+<pre tabindex="0"><code class="language-assembly" data-lang="assembly">;-----------------------------------------------------
+; asm_sound_button.asm
+; Interactive Sound Button with Embedded Waveform
+; - Opens an OS-friendly window on Workbench
+; - Draws an interactive UI button
+; - Plays embedded 8-bit PCM audio via Paula DMA
+;-----------------------------------------------------
+CUSTOM          equ     $DFF000
+INTENA          equ     $09A
+DMACON          equ     $096
+AUD0PTH         equ     $0A0
+AUD0LEN         equ     $0A4
+AUD0PER         equ     $0A8
+AUD0VOL         equ     $0A6
+
+_LVOOpenLibrary  equ    -552
+_LVOCloseLibrary equ    -414
+_LVOOpenWindow   equ    -222
+_LVOCloseWindow  equ    -72
+_LVOWait         equ    -468
+_LVOGetMsg       equ    -372
+_LVOReplyMsg     equ    -378
+_LVOSetAPen      equ    -330
+_LVOMove         equ    -294
+_LVOText         equ    -342
+_LVORectFill     equ    -318
+
+    SECTION code,CODE
+
+start:
+;--- Open Libraries ---
+    move.l  $4.w,a6
+    lea     IntuitionName,a1
+    moveq   #0,d0
+    jsr     _LVOOpenLibrary(a6)
+    move.l  d0,IntuitionBase
+    beq     cleanup_all
+
+    move.l  $4.w,a6
+    lea     GfxName,a1
+    moveq   #0,d0
+    jsr     _LVOOpenLibrary(a6)
+    move.l  d0,GfxBase
+    beq     fail_intuition
+
+;--- Open Window ---
+    lea     NewWindow,a0
+    move.l  IntuitionBase,a6
+    jsr     _LVOOpenWindow(a6)
+    move.l  d0,Window
+    beq     fail_gfx
+
+    move.l  Window,a0
+    move.l  116(a0),a1          ; RastPort pointer
+    move.l  a1,RastPort
+
+;--- Draw Button ---
+    bsr     draw_button_up
+
+;--- Event Loop ---
+event_loop:
+    move.l  Window,a0
+    move.l  108(a0),d0          ; Signal mask
+    move.l  $4.w,a6
+    jsr     _LVOWait(a6)
+
+    move.l  Window,a0
+    move.l  104(a0),a1          ; UserPort
+    move.l  $4.w,a6
+    jsr     _LVOGetMsg(a6)
+    move.l  d0,Message
+    beq     event_loop
+
+    move.l  Message,a0
+    move.w  20(a0),d0           ; Message Class
+    cmp.w   #$0200,d0           ; IDCMP_CLOSEWINDOW ($0200)
+    beq     quit
+
+    cmp.w   #$0008,d0           ; IDCMP_MOUSEBUTTONS ($0008)
+    bne     reply_msg
+
+    move.l  Message,a0
+    move.w  22(a0),d0           ; Code
+    cmp.w   #$68,d0             ; SELECTDOWN
+    beq     mouse_down
+    cmp.w   #$69,d0             ; SELECTUP
+    beq     mouse_up
+
+reply_msg:
+    move.l  Message,a1
+    move.l  $4.w,a6
+    jsr     _LVOReplyMsg(a6)
+    bra     event_loop
+
+mouse_down:
+    bsr     draw_button_down
+    bsr     play_sound
+    bra     reply_msg
+
+mouse_up:
+    bsr     draw_button_up
+    bra     reply_msg
+
+quit:
+    move.l  Message,a1
+    move.l  $4.w,a6
+    jsr     _LVOReplyMsg(a6)
+
+;--- Cleanup ---
+fail_window:
+    move.l  Window,a0
+    move.l  IntuitionBase,a6
+    jsr     _LVOCloseWindow(a6)
+fail_gfx:
+    move.l  GfxBase,a1
+    move.l  $4.w,a6
+    jsr     _LVOCloseLibrary(a6)
+fail_intuition:
+    move.l  IntuitionBase,a1
+    move.l  $4.w,a6
+    jsr     _LVOCloseLibrary(a6)
+cleanup_all:
+    moveq   #0,d0
+    rts
+
+;--- Subroutine: Draw Button Up ---
+draw_button_up:
+    movem.l d1-d3/a1,-(sp)
+    move.l  RastPort,a1
+    move.l  GfxBase,a6
+    move.w  #1,d0               ; Color pen 1
+    jsr     _LVOSetAPen(a6)
+    move.w  #50,d0
+    move.w  #30,d1
+    move.w  #270,d2
+    move.w  #70,d3
+    jsr     _LVORectFill(a6)
+    move.w  #2,d0               ; Color pen 2
+    jsr     _LVOSetAPen(a6)
+    move.w  #110,d0
+    move.w  #52,d1
+    jsr     _LVOMove(a6)
+    lea     button_text,a0
+    move.w  #10,d0
+    jsr     _LVOText(a6)
+    movem.l (sp)+,d1-d3/a1
+    rts
+
+;--- Subroutine: Draw Button Down ---
+draw_button_down:
+    movem.l d1-d3/a1,-(sp)
+    move.l  RastPort,a1
+    move.l  GfxBase,a6
+    move.w  #2,d0               ; Color pen 2
+    jsr     _LVOSetAPen(a6)
+    move.w  #50,d0
+    move.w  #30,d1
+    move.w  #270,d2
+    move.w  #70,d3
+    jsr     _LVORectFill(a6)
+    move.w  #1,d0               ; Color pen 1
+    jsr     _LVOSetAPen(a6)
+    move.w  #110,d0
+    move.w  #52,d1
+    jsr     _LVOMove(a6)
+    lea     button_text,a0
+    move.w  #10,d0
+    jsr     _LVOText(a6)
+    movem.l (sp)+,d1-d3/a1
+    rts
+
+;--- Subroutine: Play Sound ---
+play_sound:
+    lea     CUSTOM,a5
+    lea     sound_data,a0
+    move.l  a0,AUD0PTH(a5)      ; Set channel 0 sample pointer
+    move.w  #sound_len,AUD0LEN(a5) ; Set sample length in words
+    move.w  #424,AUD0PER(a5)    ; Period for ~8363 Hz playback
+    move.w  #64,AUD0VOL(a5)     ; Volume (0..64)
+    move.w  #$8201,DMACON(a5)   ; Enable Audio Channel 0 DMA (Bit 15 SET, Bit 9 DMAEN, Bit 0 AUD0EN)
+    rts
+
+;--- Data Section ---
+    SECTION data,DATA
+
+IntuitionName: dc.b &#39;intuition.library&#39;,0
+GfxName:       dc.b &#39;graphics.library&#39;,0
+button_text:   dc.b &#39;Play Sound&#39;,0
+    EVEN
+
+IntuitionBase: dc.l 0
+GfxBase:       dc.l 0
+Window:        dc.l 0
+RastPort:      dc.l 0
+Message:       dc.l 0
+
+NewWindow:
+    dc.w 0,0,320,100            ; Left, Top, Width, Height
+    dc.w 1,2                    ; DetailPen, BlockPen
+    dc.l $0208                  ; IDCMP Flags (IDCMP_CLOSEWINDOW | IDCMP_MOUSEBUTTONS)
+    dc.l $000F                  ; Flags (WFLG_DRAGBAR | WFLG_DEPTHGADGET | WFLG_CLOSEGADGET | WFLG_ACTIVATE)
+    dc.l 0,0                    ; FirstGadget, CheckMark
+    dc.l window_title,0,0,0,0   ; Title, Screen, BitMap, Min/Max size
+    dc.w 1                      ; Type (WBENCHSCREEN)
+window_title: dc.b &#39;Amiga Audio Player&#39;,0
+    EVEN
+
+;--- Audio Sample Data in Chip RAM ---
+    SECTION sound_chip,DATA_C
+
+sound_data:
+    ; Synthetic 8-bit PCM square wave burst
+    dc.b 127,127,127,127,127,127,127,127,-128,-128,-128,-128,-128,-128,-128,-128
+    dc.b 127,127,127,127,127,127,127,127,-128,-128,-128,-128,-128,-128,-128,-128
+    dc.b 100,100,100,100,100,100,100,100,-100,-100,-100,-100,-100,-100,-100,-100
+    dc.b  80, 80, 80, 80, 80, 80, 80, 80, -80, -80, -80, -80, -80, -80, -80, -80
+    dc.b  60, 60, 60, 60, 60, 60, 60, 60, -60, -60, -60, -60, -60, -60, -60, -60
+    dc.b  40, 40, 40, 40, 40, 40, 40, 40, -40, -40, -40, -40, -40, -40, -40, -40
+    dc.b  20, 20, 20, 20, 20, 20, 20, 20, -20, -20, -20, -20, -20, -20, -20, -20
+    dc.b   0,  0,  0,  0,  0,  0,  0,  0,   0,   0,   0,   0,   0,   0,   0,   0
+sound_end:
+sound_len equ (sound_end-sound_data)/2
+</code></pre><hr>
+<h2 id="example-2-using-custom-audio-files-incbin">Example 2: Using Custom Audio Files (<code>incbin</code>)</h2>
+<p>To use your own recorded sound effect or music sample in assembly:</p>
+<h3 id="step-1-exporting-raw-pcm-in-audacity">Step 1: Exporting Raw PCM in Audacity</h3>
+<ol>
+<li>Open your audio sample (<code>.wav</code> or <code>.mp3</code>) in <a href="https://www.audacityteam.org/">Audacity</a>.</li>
+<li>Change the Project Rate (bottom left) to <strong>8363 Hz</strong> (standard Amiga C-3 pitch) or <strong>11025 Hz</strong>.</li>
+<li>Click <code>File &gt; Export &gt; Export Audio</code>.</li>
+<li>Choose <strong>Other uncompressed files</strong> as format.</li>
+<li>Set Header to <strong>RAW (header-less)</strong> and Encoding to <strong>Signed 8-bit PCM</strong>.</li>
+<li>Save the file as <code>sound.raw</code> in your assembly source directory.</li>
+</ol>
+<h3 id="step-2-binary-inclusion-with-incbin">Step 2: Binary Inclusion with <code>incbin</code></h3>
+<p>In your assembly source code, replace the synthetic <code>dc.b</code> array in the Chip RAM section with the <code>incbin</code> directive:</p>
+<pre tabindex="0"><code class="language-assembly" data-lang="assembly">;-----------------------------------------------------
+; Custom Audio File Inclusion Example
+;-----------------------------------------------------
+    SECTION sound_chip,DATA_C
+
+sound_data:
+    incbin  &#34;sound.raw&#34;         ; Include external 8-bit raw PCM file
+sound_end:
+sound_len equ (sound_end-sound_data)/2 ; Length in words
+</code></pre><p>When compiled with <code>vasm</code>, the assembler inserts the contents of <code>sound.raw</code> directly into the executable binary in Chip RAM.</p>
+<hr>
+<h3 id="how-to-run-in-amiga-playground">How to Run in Amiga Playground</h3>
+<ol>
+<li><strong>Copy the Code:</strong> Click the <strong>Copy</strong> button on <strong>Example 1</strong> above.</li>
+<li><strong>Open Amiga Playground:</strong> Launch <a href="../index.html#amiga-playground">Amiga Playground</a> on your Mac and create or open a 68k Assembly document.</li>
+<li><strong>Paste &amp; Run:</strong> Paste the code into the source editor and press <strong>Cmd + R</strong> (or click <strong>Build &amp; Run</strong>).</li>
+<li><strong>See the Result:</strong> <a href="../index.html#amiga-playground">Amiga Playground</a> assembles the self-contained code with <code>vasm</code> and runs it. Click the button to trigger audio playback!</li>
+</ol>
+<h3 id="how-to-compile-and-run-with-vasm">How to Compile and Run with vasm</h3>
+<ol>
+<li><strong>Save the Code:</strong> Save Example 1 or Example 2 (with <code>sound.raw</code> in the same directory) as <code>asm_sound_button.asm</code>.</li>
+<li><strong>Assemble:</strong> Open Terminal, navigate to your source folder, and run: <code>vasmm68k_mot -Fhunk -o asm_sound_button asm_sound_button.asm</code></li>
+<li><strong>Set up Emulator:</strong> Mount the folder containing <code>asm_sound_button</code> as a hard drive (e.g. <code>DH0:</code> / <code>Work</code>) in FS-UAE or vAmiga.</li>
+<li><strong>Run in Emulator:</strong> Boot Workbench, open Shell/CLI, type <code>Work:asm_sound_button</code>, and press Enter.</li>
+</ol>
+
+</section>
+
+
+
+    </main>
+
+    
+      
+        <footer>
+    <p>🍕 <a href="https://about.me/marioesposito" class="link" style="text-decoration: underline;">windrago</a> was here.</p>
+    <div class="footer-buttons">
+        <a href="https://ginnov.github.io/" class="footer-btn"><i class="fas fa-th"></i> Main Projects Page</a>
+        <button id="theme-toggle" class="footer-btn">Toggle Theme</button>
+    </div>
+</footer>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      const themeToggle = document.getElementById('theme-toggle');
+      if (themeToggle) {
+          const applyTheme = (theme) => {
+              if (theme === 'dark') {
+                  document.documentElement.classList.add('dark-theme');
+                  document.body.classList.add('dark-theme');
+                  themeToggle.textContent = 'Light Mode';
+              } else {
+                  document.documentElement.classList.remove('dark-theme');
+                  document.body.classList.remove('dark-theme');
+                  themeToggle.textContent = 'Dark Mode';
+              }
+          };
+          
+          const savedTheme = localStorage.getItem('theme') || 
+                             (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          applyTheme(savedTheme);
+          
+          themeToggle.addEventListener('click', () => {
+              const newTheme = document.body.classList.contains('dark-theme') ? 'light' : 'dark';
+              localStorage.setItem('theme', newTheme);
+              applyTheme(newTheme);
+          });
+      }
+  });
+</script>
+
+      
+    
+
+    
+    <script src="/littlethings/common/js/copy-code.js"></script>
+  </body>
+</html>

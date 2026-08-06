@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Magic of the Amiga Copper - Back to Amiga Dev Hub</title>
+    <link rel="stylesheet" href="/littlethings/common/style.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    
+    <script>
+      (function() {
+        const savedTheme = localStorage.getItem('theme') || 
+                           (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        if (savedTheme === 'dark') {
+          document.documentElement.classList.add('dark-theme');
+          document.body?.classList.add('dark-theme');
+        } else {
+          document.documentElement.classList.remove('dark-theme');
+          document.body?.classList.remove('dark-theme');
+        }
+      })();
+    </script>
+  </head>
+  <body class="dark-theme ">
+    
+    
+      
+        <header>
+    <div class="header-content">
+        <a href="/littlethings/amiga/index.html">
+            <img src="/littlethings/images/back_to_the_amiga.png" alt="Back to Amiga Dev Hub Logo" class="header-logo" onerror="this.onerror=null;this.src='https://placehold.co/180x50/003366/FF8800?text=Amiga+Dev+Hub&font=press-start-2p';this.alt='Amiga Dev Hub';">
+        </a>
+        <button class="menu-toggle" id="menu-toggle-btn">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+    <nav class="sidebar" id="header-nav">
+        <ul style="font-family: 'Press Start 2P', cursive; font-size: 0.8rem;">
+            <li><a href="/littlethings/amiga/index.html" id="nav-projects" class="">PROJECTS</a></li>
+            <li><a href="/littlethings/amiga/walkthroughs.html" id="nav-tutorials" class="active">TUTORIALS</a></li>
+            <li><a href="/littlethings/amiga/resources.html" id="nav-resources" class="">RESOURCES</a></li>
+            <li><a href="/littlethings/amiga/about.html" id="nav-about" class="">ABOUT</a></li>
+        </ul>
+    </nav>
+</header>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      const menuToggle = document.getElementById('menu-toggle-btn');
+      const sidebar = document.querySelector('#header-nav ul');
+      if (menuToggle && sidebar) {
+          if (window.innerWidth < 768) sidebar.classList.add('hidden');
+          menuToggle.addEventListener('click', () => sidebar.classList.toggle('hidden'));
+          window.addEventListener('resize', () => {
+              if (window.innerWidth >= 768) {
+                  sidebar.classList.remove('hidden');
+              } else {
+                  sidebar.classList.add('hidden');
+              }
+          });
+      }
+  });
+</script>
+
+      
+    
+
+    <main class="content-page">
+      
+<section>
+  <h2>The Magic of the Amiga Copper</h2>
+  <p>Hey Amiga fans! Ever looked at a stunning Amiga demo or game and wondered how they pulled off those amazing color effects? You know the ones – the vibrant, multi-colored skies that seem to defy the Amiga&rsquo;s color limits, or a screen that&rsquo;s split into different color palettes? The secret, my friends, often lies in one of the Amiga&rsquo;s most unique and powerful hardware features: the <strong>Copper</strong>.</p>
+<h2 id="what-is-the-copper">What is the Copper?</h2>
+<p>In the heart of the Amiga&rsquo;s custom chipset lies a special co-processor called the Copper. Think of it as a tiny, dedicated graphics programmer that works alongside the main CPU. While the CPU is busy running the game&rsquo;s logic or your Workbench applications, the Copper is tirelessly manipulating the display hardware.</p>
+<p>The Copper&rsquo;s job is simple but powerful: it can change the contents of the Amiga&rsquo;s hardware registers at very specific moments in time. This is key. It&rsquo;s all about timing. The Amiga generates its display by drawing the screen line by line, from top to bottom. The Copper can be programmed to &ldquo;watch&rdquo; for a specific screen line and, at the precise moment the video beam reaches that line, it can zap a new value into a hardware register.</p>
+<h2 id="how-copper-lists-work">How Copper Lists Work</h2>
+<p>So, how do you tell the Copper what to do? You create a <strong>Copper list</strong>, which is just a simple program for the Copper to follow. This list is a series of instructions that the Copper executes in sync with the screen drawing.</p>
+<p>A Copper list is made up of just three basic instructions:</p>
+<ul>
+<li><strong>WAIT:</strong> Pause until the video beam reaches a specific horizontal and vertical position on the screen.</li>
+<li><strong>MOVE:</strong> Write a value to a specified hardware register.</li>
+<li><strong>SKIP:</strong> Skip the next instruction if the video beam has already passed a certain position.</li>
+</ul>
+<p>By combining these simple instructions, you can create some truly amazing effects.</p>
+<!-- Generated Image Inserted Here -->
+<img src="images/agnus_copper_chip.jpg" alt="A photorealistic image of the Amiga's Agnus custom chip, which contains the Copper co-processor, sitting on a circuit board." class="w-full max-w-xl mx-auto my-8 rounded-lg shadow-lg border-2 border-gray-600" />
+<h2 id="split-screen-color-gradient-in-assembly">Split-Screen Color Gradient in Assembly</h2>
+<p>This assembly program will create a screen that is white on the top half and blue on the bottom half. It&rsquo;s a fundamental technique that demonstrates the core Copper list concept.</p>
+<h3 id="the-complete-code">The Complete Code:</h3>
+<pre tabindex="0"><code class="language-assembly" data-lang="assembly">;-----------------------------------------------------
+; split_screen.asm
+; A simple Copper List example in 68k Assembly
+; Splits the screen into two colors.
+;-----------------------------------------------------
+
+    SECTION Code,CODE_C  ; Place code and copper list in Chip RAM
+
+CUSTOM          equ     $DFF000     ; Base address of custom chips
+
+;--- Custom Chip Register Offsets
+INTENA          equ     $09A
+DMACON          equ     $096
+COPLOC          equ     $080  ; Copper list pointer (32-bit access: COP1LCH/COP1LCL)
+COLOR00         equ     $180  ; Background color offset
+
+;--- Program Start
+start:
+    lea     CUSTOM,a5
+    ; --- Wait for vertical blank to safely take over ---
+.waitvb
+    move.l  $4,a6             ; Execbase in a6
+    move.w  $4(a5),d0         ; VPOSR
+    and.w   #$7F00,d0
+    cmp.w   #$2C00,d0         ; Wait until end of display
+    bne.s   .waitvb
+
+    ; --- Kill the OS ---
+    move.w  #$4000,INTENA(a5)   ; Disable interrupts
+    move.w  #$7FFF,DMACON(a5)   ; Disable all DMA
+
+    ; --- Set up our copper list ---
+    lea     my_copper_list(pc),a0 ; Get address of our list
+    move.l  a0,COPLOC(a5)       ; Point the hardware to our copper list
+    move.w  #$8200,DMACON(a5)   ; Enable DMA for Copper only
+
+    ; --- Infinite loop ---
+forever:
+    bra.s   forever
+
+;--- Our Copper List ---
+; Must reside in Chip RAM for the Copper hardware to read it.
+my_copper_list:
+    ; Top half of the screen
+    dc.w    COLOR00, $0FFF      ; MOVE white into background color register
+
+    ; Wait until scanline 100 ($64)
+    dc.w    $6401, $FFFE        ; WAIT for vertical position 100
+
+    ; Bottom half of the screen
+    dc.w    COLOR00, $000F      ; MOVE blue into background color register
+
+    ; End of list
+    dc.w    $FFFF, $FFFE        ; Wait for an impossible position to end
+</code></pre><h3 id="how-to-run-in-amiga-playground">How to Run in Amiga Playground</h3>
+<ol>
+<li><strong>Copy the Code:</strong> Click the <strong>Copy</strong> button on the code block above to copy the assembly code to your clipboard.</li>
+<li><strong>Open Amiga Playground:</strong> Launch <a href="../index.html#amiga-playground">Amiga Playground</a> on your Mac and create or open a 68k Assembly document.</li>
+<li><strong>Paste &amp; Run:</strong> Paste the code into the source editor and press <strong>Cmd + R</strong> (or click <strong>Build &amp; Run</strong>).</li>
+<li><strong>See the Result:</strong> <a href="../index.html#amiga-playground">Amiga Playground</a> will compile the source code with <code>vasm</code> and run the emulator automatically. You should see the top half of the screen in white and the bottom half in blue!</li>
+</ol>
+<h3 id="how-to-compile-and-run-with-vasm">How to Compile and Run with vasm</h3>
+<ol>
+<li><strong>Save the Code:</strong> Save the complete code above into a file named <code>split_screen.asm</code>.</li>
+<li><strong>Assemble:</strong> Open Terminal, navigate to where you saved the file, and run: <code>vasmm68k_mot -Fhunk -o split_screen split_screen.asm</code></li>
+<li><strong>Set up Emulator:</strong> Open FS-UAE or vAmiga and mount the folder containing your executable as a hard drive (e.g., <code>DH0:</code> / <code>Work</code>).</li>
+<li><strong>Run in Emulator:</strong> Boot Workbench, open the Shell/CLI, type <code>Work:split_screen</code>, and press Enter.</li>
+</ol>
+<h2 id="classic-examples-in-amiga-games--demos">Classic Examples in Amiga Games &amp; Demos</h2>
+<p>To see the Copper pushed to its limits, check out these classic titles:</p>
+<ul>
+<li><strong>Shadow of the Beast:</strong> Iconic multi-colored gradient skies.</li>
+<li><strong>Turrican II:</strong> Rich color palettes and smooth parallax scrolling.</li>
+<li><strong>Agony:</strong> Ethereal background gradients.</li>
+<li><strong>Demoscene Productions:</strong> Classic demogroup releases from <em>Phenomena</em>, <em>Sanity</em>, and <em>Spaceballs</em>.</li>
+</ul>
+
+</section>
+
+
+
+    </main>
+
+    
+      
+        <footer>
+    <p>🍕 <a href="https://about.me/marioesposito" class="link" style="text-decoration: underline;">windrago</a> was here.</p>
+    <div class="footer-buttons">
+        <a href="https://ginnov.github.io/" class="footer-btn"><i class="fas fa-th"></i> Main Projects Page</a>
+        <button id="theme-toggle" class="footer-btn">Toggle Theme</button>
+    </div>
+</footer>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      const themeToggle = document.getElementById('theme-toggle');
+      if (themeToggle) {
+          const applyTheme = (theme) => {
+              if (theme === 'dark') {
+                  document.documentElement.classList.add('dark-theme');
+                  document.body.classList.add('dark-theme');
+                  themeToggle.textContent = 'Light Mode';
+              } else {
+                  document.documentElement.classList.remove('dark-theme');
+                  document.body.classList.remove('dark-theme');
+                  themeToggle.textContent = 'Dark Mode';
+              }
+          };
+          
+          const savedTheme = localStorage.getItem('theme') || 
+                             (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          applyTheme(savedTheme);
+          
+          themeToggle.addEventListener('click', () => {
+              const newTheme = document.body.classList.contains('dark-theme') ? 'light' : 'dark';
+              localStorage.setItem('theme', newTheme);
+              applyTheme(newTheme);
+          });
+      }
+  });
+</script>
+
+      
+    
+
+    
+    <script src="/littlethings/common/js/copy-code.js"></script>
+  </body>
+</html>

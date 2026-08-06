@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>A little story - Back to Amiga Dev Hub</title>
+    <link rel="stylesheet" href="/littlethings/common/style.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    
+    <script>
+      (function() {
+        const savedTheme = localStorage.getItem('theme') || 
+                           (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        if (savedTheme === 'dark') {
+          document.documentElement.classList.add('dark-theme');
+          document.body?.classList.add('dark-theme');
+        } else {
+          document.documentElement.classList.remove('dark-theme');
+          document.body?.classList.remove('dark-theme');
+        }
+      })();
+    </script>
+  </head>
+  <body class="dark-theme ">
+    
+    
+      
+        <header>
+    <div class="header-content">
+        <a href="/littlethings/amiga/index.html">
+            <img src="/littlethings/images/back_to_the_amiga.png" alt="Back to Amiga Dev Hub Logo" class="header-logo" onerror="this.onerror=null;this.src='https://placehold.co/180x50/003366/FF8800?text=Amiga+Dev+Hub&font=press-start-2p';this.alt='Amiga Dev Hub';">
+        </a>
+        <button class="menu-toggle" id="menu-toggle-btn">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+    <nav class="sidebar" id="header-nav">
+        <ul style="font-family: 'Press Start 2P', cursive; font-size: 0.8rem;">
+            <li><a href="/littlethings/amiga/index.html" id="nav-projects" class="">PROJECTS</a></li>
+            <li><a href="/littlethings/amiga/walkthroughs.html" id="nav-tutorials" class="">TUTORIALS</a></li>
+            <li><a href="/littlethings/amiga/resources.html" id="nav-resources" class="">RESOURCES</a></li>
+            <li><a href="/littlethings/amiga/about.html" id="nav-about" class="active">ABOUT</a></li>
+        </ul>
+    </nav>
+</header>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      const menuToggle = document.getElementById('menu-toggle-btn');
+      const sidebar = document.querySelector('#header-nav ul');
+      if (menuToggle && sidebar) {
+          if (window.innerWidth < 768) sidebar.classList.add('hidden');
+          menuToggle.addEventListener('click', () => sidebar.classList.toggle('hidden'));
+          window.addEventListener('resize', () => {
+              if (window.innerWidth >= 768) {
+                  sidebar.classList.remove('hidden');
+              } else {
+                  sidebar.classList.add('hidden');
+              }
+          });
+      }
+  });
+</script>
+
+      
+    
+
+    <main class="content-page">
+      
+<section>
+  <h2>A little story</h2>
+  <p>
+  The Commodore Amiga is a legendary platform that revolutionized
+  computing with its advanced graphics, sound, and multitasking. This
+  site is dedicated to “almost” developers who share a passion for
+  coding on the Amiga, whether in 68k assembly, C, or modern AmigaOS with
+  macOS in mind.</p>
+<p class="mt-4">
+  By “almost” I mean you know your way around coding tools, but you can't
+  split the byte just yet like a digital lumberjack.
+</p>
+<p class="mt-4">
+  My fascination with the Amiga began in the 1980s, drawn to its
+  groundbreaking hardware and vibrant developer community. From coding
+  demos in AMOS to exploring AmigaOS, the Amiga shaped my love for
+  programming. 
+  </p>
+  <p class="mt-4">
+  Back then I only spoke my native language and there was
+  no Internet. Even BBS were out of my reach. 40 years later and a
+  successful career that would have not been possible if it wasn’t for
+  the Amiga in my life, I have a hitch on "what I could have learned if I
+  didn’t have the knowledge gap?"
+  </p>
+  <p class="mt-4">
+  So... let’s find out together. I will share
+  what I learn and if you know better share away.
+</p>
+<p class="mt-4">
+  There are many resources out there, consider this my open learning
+  diary back to when I was 15 with some additional powers 😅. <br>Aloha 🌴.
+</p>
+
+</section>
+
+
+
+    </main>
+
+    
+      
+        <footer>
+    <p>🍕 <a href="https://about.me/marioesposito" class="link" style="text-decoration: underline;">windrago</a> was here.</p>
+    <div class="footer-buttons">
+        <a href="https://ginnov.github.io/" class="footer-btn"><i class="fas fa-th"></i> Main Projects Page</a>
+        <button id="theme-toggle" class="footer-btn">Toggle Theme</button>
+    </div>
+</footer>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      const themeToggle = document.getElementById('theme-toggle');
+      if (themeToggle) {
+          const applyTheme = (theme) => {
+              if (theme === 'dark') {
+                  document.documentElement.classList.add('dark-theme');
+                  document.body.classList.add('dark-theme');
+                  themeToggle.textContent = 'Light Mode';
+              } else {
+                  document.documentElement.classList.remove('dark-theme');
+                  document.body.classList.remove('dark-theme');
+                  themeToggle.textContent = 'Dark Mode';
+              }
+          };
+          
+          const savedTheme = localStorage.getItem('theme') || 
+                             (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          applyTheme(savedTheme);
+          
+          themeToggle.addEventListener('click', () => {
+              const newTheme = document.body.classList.contains('dark-theme') ? 'light' : 'dark';
+              localStorage.setItem('theme', newTheme);
+              applyTheme(newTheme);
+          });
+      }
+  });
+</script>
+
+      
+    
+
+    
+    <script src="/littlethings/common/js/copy-code.js"></script>
+  </body>
+</html>
