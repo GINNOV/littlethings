@@ -235,23 +235,38 @@ footer p {
     font-size: 0.875rem; 
 }
 
-/* Theme Toggle Button */
-#theme-toggle {
+/* Footer Buttons */
+.footer-buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.footer-btn, #theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
     background-color: #ff8800; 
     border: none;
     padding: 0.5rem 1rem;
-    color: #fff; 
+    color: #fff !important; 
     cursor: pointer;
     border-radius: 0.375rem; 
     font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
     font-weight: 600; 
-    margin-top: 1rem; 
     transition: background-color 0.3s ease;
-    text-decoration: none; 
+    text-decoration: none !important; 
+    margin-top: 0;
 }
-#theme-toggle:hover {
+.footer-btn:hover, #theme-toggle:hover {
     background-color: #e67700; 
+    color: #fff !important;
 }
+
 
 
 /* === Projects Page Specific Styles === */
