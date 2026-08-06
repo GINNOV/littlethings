@@ -105,7 +105,7 @@ CopperList:
         .ankey
         +------------------------------------------------------------(0)
         .copper
-        * Connection Error: model 'antigravity-amiga-68k' not found
+        * Connection Error: model 'amiga-playground-asm' not found
         * Ensure your LLM server (Ollama/LM Studio) is running on the specified port.
         """
 
@@ -652,8 +652,8 @@ CopperList:
 
         // Mock a standard Ollama JSON chunk
         let sampleNDJSON = """
-        {"model":"antigravity-amiga-68k","message":{"role":"assistant","content":"Hello "},"done":false}
-        {"model":"antigravity-amiga-68k","message":{"role":"assistant","content":"Amiga!"},"done":true}
+        {"model":"amiga-playground-asm","message":{"role":"assistant","content":"Hello "},"done":false}
+        {"model":"amiga-playground-asm","message":{"role":"assistant","content":"Amiga!"},"done":true}
         """
 
         guard let data = sampleNDJSON.data(using: .utf8) else {
@@ -889,7 +889,7 @@ CopperList:
 
         XCTAssertEqual(service.provider, .lmStudio)
         XCTAssertEqual(service.apiUrl, "http://localhost:1234")
-        XCTAssertEqual(service.requestModelName, "default_model")
+        XCTAssertEqual(service.requestModelName, "amiga-playground-asm")
         XCTAssertEqual(service.connectionStatusLabel, "LM Studio Not Checked")
     }
 
@@ -921,31 +921,78 @@ CopperList:
         service.modelName = originalModelName
     }
 
-    func testOllamaServiceRequestModelNameUsesMLXDefaultModel() {
+    func testOllamaServiceRequestModelNameUsesPlaygroundAsmId() {
         let service = OllamaService.shared
 
         let originalProvider = service.provider
         let originalModelName = service.modelName
 
         service.provider = .lmStudio
-        service.modelName = "antigravity-amiga-68k"
-        XCTAssertEqual(service.requestModelName, "default_model")
+        service.modelName = "amiga-playground-asm"
+        XCTAssertEqual(service.requestModelName, "amiga-playground-asm")
 
         service.modelName = ""
-        XCTAssertEqual(service.requestModelName, "default_model")
+        XCTAssertEqual(service.requestModelName, "amiga-playground-asm")
 
         service.modelName = "custom-local-model"
         XCTAssertEqual(service.requestModelName, "custom-local-model")
 
+        // Retired ids must never leave the machine as the request model.
+        service.modelName = "default_model"
+        XCTAssertEqual(service.requestModelName, "amiga-playground-asm")
+        service.modelName = "antigravity-amiga-68k"
+        XCTAssertEqual(service.requestModelName, "amiga-playground-asm")
+
         service.provider = originalProvider
         service.modelName = originalModelName
+    }
+
+    func testOllamaServiceMigratesLegacyStoredModelName() {
+        let suiteName = "OllamaService.migrate.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defaults.set("default_model", forKey: OllamaService.PreferenceKey.modelName)
+
+        let service = OllamaService(userDefaults: defaults)
+        XCTAssertEqual(service.modelName, "amiga-playground-asm")
+        XCTAssertEqual(service.requestModelName, "amiga-playground-asm")
+        XCTAssertEqual(defaults.string(forKey: OllamaService.PreferenceKey.modelName), "amiga-playground-asm")
+    }
+
+    func testOllamaServiceApplyPlaygroundConnectionDefaults() {
+        let suiteName = "OllamaService.playgroundDefaults.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        let service = OllamaService(userDefaults: defaults)
+
+        service.provider = .ollama
+        service.customUrl = "http://somewhere:9"
+        service.modelName = "default_model"
+
+        service.applyPlaygroundConnectionDefaults()
+
+        XCTAssertEqual(service.provider, .lmStudio)
+        XCTAssertEqual(service.customUrl, "")
+        XCTAssertEqual(service.modelName, "amiga-playground-asm")
+        XCTAssertEqual(service.requestModelName, "amiga-playground-asm")
+        XCTAssertTrue(service.isUsingPlaygroundModel)
+    }
+
+    func testOllamaServiceMigrateLegacyModelNameIfNeededRewritesUIField() {
+        let suiteName = "OllamaService.migrateUI.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        let service = OllamaService(userDefaults: defaults)
+        service.modelName = "default_model"
+
+        // requestModelName already rewrites, but the UI field should also be cleaned up.
+        XCTAssertTrue(service.migrateLegacyModelNameIfNeeded())
+        XCTAssertEqual(service.modelName, "amiga-playground-asm")
+        XCTAssertFalse(service.migrateLegacyModelNameIfNeeded())
     }
 
     func testOllamaServiceMarksLMStudioConnectedOnlyAfterHealthCheckSucceeds() {
         let service = OllamaService()
         service.provider = .lmStudio
         service.customUrl = "http://local-mlx.test"
-        service.modelName = "mlx-community/antigravity"
+        service.modelName = "amiga-playground-asm"
 
         let configuration = URLSessionConfiguration.ephemeral
         configuration.protocolClasses = [MockLLMURLProtocol.self]
@@ -961,7 +1008,7 @@ CopperList:
                 httpVersion: nil,
                 headerFields: ["Content-Type": "application/json"]
             ))
-            return (response, Data(#"{"data":[{"id":"mlx-community/antigravity"}]}"#.utf8))
+            return (response, Data(#"{"data":[{"id":"amiga-playground-asm"}]}"#.utf8))
         }
 
         service.refreshConnectionStatus()
@@ -1073,7 +1120,7 @@ CopperList:
 
             let bodyData = try XCTUnwrap(request.testHTTPBodyData)
             let body = try XCTUnwrap(JSONSerialization.jsonObject(with: bodyData) as? [String: Any])
-            XCTAssertEqual(body["model"] as? String, "default_model")
+            XCTAssertEqual(body["model"] as? String, "amiga-playground-asm")
             XCTAssertEqual(body["stream"] as? Bool, true)
             XCTAssertEqual(body["max_tokens"] as? Int, 4096)
 
@@ -1127,7 +1174,7 @@ CopperList:
         let service = OllamaService(userDefaults: defaults)
         service.provider = .lmStudio
         service.customUrl = "http://local-mlx.test"
-        service.modelName = "mlx-community/antigravity"
+        service.modelName = "amiga-playground-asm"
         service.contextWindow = 8192
         service.systemPrompt = "  Keep answers focused on Amiga 68k assembly.  "
 
@@ -1179,7 +1226,7 @@ CopperList:
         let service = OllamaService(userDefaults: defaults)
         service.provider = .ollama
         service.customUrl = "http://local-ollama.test"
-        service.modelName = "antigravity-amiga-68k"
+        service.modelName = "amiga-playground-asm"
         service.contextWindow = 2048
         service.systemPrompt = "Prefer concise code."
 
@@ -1231,14 +1278,15 @@ CopperList:
     func testMLXServerBuildsExpectedLaunchInvocation() throws {
         let tempDirectory = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString, isDirectory: true)
-        let modelDirectory = tempDirectory.appendingPathComponent("default_model", isDirectory: true)
+        let modelDirectory = tempDirectory.appendingPathComponent("runtime/base", isDirectory: true)
         try FileManager.default.createDirectory(at: modelDirectory, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: tempDirectory) }
 
         let config = MLXServerController.Configuration(
             workingDirectory: tempDirectory,
-            modelDirectoryName: "default_model",
-            adapterDirectoryName: "adapters_b6",
+            modelDirectoryName: "runtime/base",
+            adapterDirectoryName: "runtime/adapter",
+            modelId: "amiga-playground-asm",
             port: 1234,
             logFileName: "server.log"
         )
@@ -1248,7 +1296,7 @@ CopperList:
         XCTAssertEqual(invocation.executableURL.path, "/bin/zsh")
         XCTAssertEqual(invocation.arguments, [
             "-lc",
-            "cd '\(tempDirectory.path)' && exec uv run python -m mlx_lm.server --model 'default_model' --port '1234' --adapter-path 'adapters_b6'"
+            "cd '\(tempDirectory.path)' && exec uv run python serve_playground.py --model 'runtime/base' --adapter-path 'runtime/adapter' --port '1234'"
         ])
         XCTAssertEqual(invocation.workingDirectory, tempDirectory)
         XCTAssertEqual(invocation.logFile, tempDirectory.appendingPathComponent("server.log"))
@@ -1263,8 +1311,9 @@ CopperList:
         let controller = MLXServerController(
             configuration: MLXServerController.Configuration(
                 workingDirectory: tempDirectory,
-                modelDirectoryName: "default_model",
-                adapterDirectoryName: "adapters_b6",
+                modelDirectoryName: "runtime/base",
+                adapterDirectoryName: "runtime/adapter",
+                modelId: "amiga-playground-asm",
                 port: 1234,
                 logFileName: "server.log"
             )
@@ -1277,7 +1326,7 @@ CopperList:
             return
         }
 
-        XCTAssertTrue(message.contains("default_model"))
+        XCTAssertTrue(message.contains("runtime/base"))
     }
 }
 

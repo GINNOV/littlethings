@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+server.log
+runtime/base/
+# keep adapter out of git too if large; adapter is 25MB - still ignore, download via script
+runtime/adapter/

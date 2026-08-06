@@ -7,10 +7,24 @@ class OllamaService: ObservableObject {
     enum PreferenceKey {
         static let contextWindow = "assistantContextWindow"
         static let systemPrompt = "assistantSystemPrompt"
+        static let provider = "assistantProvider"
+        static let customUrl = "assistantCustomUrl"
+        static let modelName = "assistantModelName"
     }
 
+    /// Canonical OpenAI/Ollama model id for the bundled MLX Playground runtime.
+    static let playgroundModelId = "amiga-playground-asm"
+
+    /// Retired ids that must never ship in the UI or leave the machine as request models.
+    static let legacyModelIds: Set<String> = [
+        "default_model",
+        "antigravity-amiga-68k",
+        "mlx-community/antigravity",
+        "amiga-rc-cappella-asm-qwen25"
+    ]
+
     static let defaultSystemPrompt = """
-You are AntigravityAmiga, an elite Amiga 68000 Motorola assembly programmer. Write highly optimized, clean, and 100% compilable Motorola 68k assembly code.
+You are the Amiga Playground ASM assistant: an elite Amiga 68000 Motorola assembly programmer. Write highly optimized, clean, and 100% compilable Motorola 68k assembly code.
 
 CRITICAL DIRECTIVES:
 - DO NOT leak C-style preprocessor directives (#define, #include, #ifdef) into assembly code.
@@ -33,10 +47,7 @@ CRITICAL DIRECTIVES:
         }
 
         var defaultModelName: String {
-            switch self {
-            case .ollama: return "antigravity-amiga-68k"
-            case .lmStudio: return "default_model"
-            }
+            OllamaService.playgroundModelId
         }
 
         var displayName: String {
@@ -74,9 +85,21 @@ CRITICAL DIRECTIVES:
         }
     }
     
-    @Published var provider: Provider = .lmStudio
-    @Published var customUrl: String = ""
-    @Published var modelName: String = Provider.lmStudio.defaultModelName
+    @Published var provider: Provider {
+        didSet {
+            userDefaults.set(provider.rawValue, forKey: PreferenceKey.provider)
+        }
+    }
+    @Published var customUrl: String {
+        didSet {
+            userDefaults.set(customUrl, forKey: PreferenceKey.customUrl)
+        }
+    }
+    @Published var modelName: String {
+        didSet {
+            userDefaults.set(modelName, forKey: PreferenceKey.modelName)
+        }
+    }
     @Published var contextWindow: Int {
         didSet {
             if contextWindow < 1 {
@@ -101,6 +124,23 @@ CRITICAL DIRECTIVES:
         let storedContextWindow = userDefaults.object(forKey: PreferenceKey.contextWindow) as? Int ?? 4096
         self.contextWindow = max(1, storedContextWindow)
         self.systemPrompt = userDefaults.string(forKey: PreferenceKey.systemPrompt) ?? Self.defaultSystemPrompt
+
+        if let rawProvider = userDefaults.string(forKey: PreferenceKey.provider),
+           let storedProvider = Provider(rawValue: rawProvider) {
+            self.provider = storedProvider
+        } else {
+            self.provider = .lmStudio
+        }
+
+        self.customUrl = userDefaults.string(forKey: PreferenceKey.customUrl) ?? ""
+
+        let storedModel = userDefaults.string(forKey: PreferenceKey.modelName) ?? Self.playgroundModelId
+        self.modelName = Self.resolvedModelName(storedModel, fallback: Self.playgroundModelId)
+
+        // Persist the migrated value so the next launch never reloads a dead id.
+        if storedModel != modelName {
+            userDefaults.set(modelName, forKey: PreferenceKey.modelName)
+        }
     }
     
     var apiUrl: String {
@@ -109,16 +149,13 @@ CRITICAL DIRECTIVES:
     }
 
     var requestModelName: String {
-        let trimmedName = modelName.trimmingCharacters(in: .whitespacesAndNewlines)
-        if trimmedName.isEmpty {
-            return provider.defaultModelName
-        }
+        Self.resolvedModelName(modelName, fallback: provider.defaultModelName)
+    }
 
-        if provider == .lmStudio && trimmedName == Provider.ollama.defaultModelName {
-            return provider.defaultModelName
-        }
-
-        return trimmedName
+    /// True when the UI field is already the product model (or empty → product).
+    var isUsingPlaygroundModel: Bool {
+        let trimmed = modelName.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty || trimmed == Self.playgroundModelId
     }
 
     var connectionStatusLabel: String {
@@ -127,6 +164,31 @@ CRITICAL DIRECTIVES:
 
     var sanitizedContextWindow: Int {
         max(1, contextWindow)
+    }
+
+    /// Wire the app to the bundled MLX server: LM Studio port 1234 + product model id.
+    func applyPlaygroundConnectionDefaults() {
+        provider = .lmStudio
+        customUrl = ""
+        modelName = Self.playgroundModelId
+    }
+
+    /// Rewrite retired model ids in the UI field (call when Settings appears).
+    @discardableResult
+    func migrateLegacyModelNameIfNeeded() -> Bool {
+        let trimmed = modelName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let resolved = Self.resolvedModelName(trimmed, fallback: Self.playgroundModelId)
+        guard resolved != modelName else { return false }
+        modelName = resolved
+        return true
+    }
+
+    static func resolvedModelName(_ raw: String, fallback: String = playgroundModelId) -> String {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty || legacyModelIds.contains(trimmed) {
+            return fallback
+        }
+        return trimmed
     }
 
     func refreshConnectionStatus() {

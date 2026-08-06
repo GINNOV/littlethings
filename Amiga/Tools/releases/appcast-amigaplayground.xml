@@ -3,6 +3,19 @@
   <channel>
     <title>Amiga Playground Changelog</title>
     <item>
+      <title>Version 1.0.0 (Build 41)</title>
+      <description><![CDATA[
+<h4>Playground ASM model UX</h4>
+<ul>
+    <li>Default model id is now <code>amiga-playground-asm</code>; retired names like <code>default_model</code> are rewritten automatically.</li>
+    <li>AI Settings lead with Local MLX Server and a one-click <strong>Use Playground model</strong> path so users do not need to type model ids.</li>
+    <li>Start MLX Server configures provider, endpoint, and product model for the bundled runtime.</li>
+</ul>
+]]></description>
+      <pubDate>Thu, 06 Aug 2026 14:27:47 +0200</pubDate>
+      <enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/AmigaPlayground-1.0.0_41.zip" sparkle:version="41" sparkle:shortVersionString="1.0.0" length="2707250" type="application/octet-stream" sparkle:edSignature="i4GTGK+L3aDXKYRBJaAbAYlWqgvM7j2BSZu4sd3CoM/5K9+lF/1CuIWceYtPm59hptDYDUrZbcAIqOkv3diLDA==" />
+    </item>
+    <item>
       <title>Version 1.0.0 (Build 40)</title>
       <description><![CDATA[
 <h4>Emulator presets</h4>

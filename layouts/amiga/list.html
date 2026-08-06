@@ -270,7 +270,7 @@
       <!-- AuDeluxe END -->
 
       <!-- Amiga Playground START -->
-      <article class="project-card">
+      <article class="project-card" id="amiga-playground">
         <div class="md-img-container">
           <img
             src="{{ "images/tools/amiga-playground.png" | relURL }}"
@@ -288,20 +288,21 @@
             emulator launch paths into one place.
           </p>
           <p>
-            The assistant can generate Motorola 68000 assembly, help repair
-            assembler errors, and work with a local MLX model published as
-            Antigravity Amiga 68k. It is built for quick experiments: ask for a
-            copper list, assemble it, export a disk, and run it in FS-UAE,
-            vAmiga, or the embedded web emulator.
+            The assistant generates Motorola 68000 assembly with a local
+            <strong>Apple Silicon MLX</strong> model —
+            <a href="https://huggingface.co/bmove/amiga-playground-asm">Amiga Playground ASM</a>
+            (140/140 first-shot compile on the sealed harness). Ask for a copper list,
+            assemble it, export a disk, and run it in FS-UAE, vAmiga, or the embedded web emulator.
           </p>
           <p>
-            Version 1.0.0 build 38 adds signed Sparkle updates. Install this
-            release once, then use <strong>Check for Updates</strong> from the
-            Amiga Playground menu for future releases.
+            Version 1.0.0 build 41: product model <code>amiga-playground-asm</code>,
+            Local MLX one-click setup, and automatic migration away from <code>default_model</code>.
+            Install the app, run <code>aMiLa/fine_tuning/download_model.sh</code> once, then
+            use <strong>Check for Updates</strong> for future app releases.
           </p>
           <div class="project-button-container">
             <a
-              href="https://github.com/GINNOV/littlethings/blob/master/Amiga/Tools/releases/AmigaPlayground-1.0.0_38.dmg?raw=1"
+              href="https://github.com/GINNOV/littlethings/blob/master/Amiga/Tools/releases/AmigaPlayground-1.0.0_41.dmg?raw=1"
               target="_blank"
               class="download-button project-button"
             >
@@ -315,7 +316,7 @@
               <i class="fab fa-github"></i>Source Code
             </a>
             <a
-              href="https://huggingface.co/bmove/antigravity-amiga-68k"
+              href="https://huggingface.co/bmove/amiga-playground-asm"
               target="_blank"
               class="learn-button project-button"
             >

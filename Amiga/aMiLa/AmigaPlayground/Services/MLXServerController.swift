@@ -6,20 +6,21 @@ final class MLXServerController: ObservableObject {
 
     struct Configuration: Equatable {
         var workingDirectory: URL
-        /// Base MLX model directory. Named `default_model` so mlx_lm.server maps
-        /// the OpenAI model id `default_model` (Amiga Playground default) onto
-        /// this path *with* the adapter — see mlx_lm adapter_map behavior.
+        /// Base weights under fine_tuning/runtime/base
         var modelDirectoryName: String
-        /// LoRA adapter directory (Qwen2.5-Coder Amiga ASM b6 POR). Empty disables.
+        /// LoRA under fine_tuning/runtime/adapter
         var adapterDirectoryName: String
+        /// OpenAI model id clients should request
+        var modelId: String
         var port: Int
         var logFileName: String
 
         static var `default`: Configuration {
             Configuration(
                 workingDirectory: defaultFineTuningDirectory(),
-                modelDirectoryName: "default_model",
-                adapterDirectoryName: "adapters_b6",
+                modelDirectoryName: "runtime/base",
+                adapterDirectoryName: "runtime/adapter",
+                modelId: "amiga-playground-asm",
                 port: 1234,
                 logFileName: "server.log"
             )
@@ -96,17 +97,14 @@ final class MLXServerController: ObservableObject {
     }
 
     static func buildInvocation(configuration: Configuration) -> Invocation {
-        var parts = [
+        // serve_playground.py loads runtime/base + runtime/adapter.
+        let command = [
             "cd", shellQuoted(configuration.workingDirectory.path), "&&",
-            "exec", "uv", "run", "python", "-m", "mlx_lm.server",
+            "exec", "uv", "run", "python", "serve_playground.py",
             "--model", shellQuoted(configuration.modelDirectoryName),
+            "--adapter-path", shellQuoted(configuration.adapterDirectoryName),
             "--port", shellQuoted("\(configuration.port)")
-        ]
-        let adapter = configuration.adapterDirectoryName.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !adapter.isEmpty {
-            parts += ["--adapter-path", shellQuoted(adapter)]
-        }
-        let command = parts.joined(separator: " ")
+        ].joined(separator: " ")
 
         return Invocation(
             executableURL: URL(fileURLWithPath: "/bin/zsh"),
@@ -167,20 +165,17 @@ final class MLXServerController: ObservableObject {
         let modelDirectory = configuration.workingDirectory.appendingPathComponent(configuration.modelDirectoryName, isDirectory: true)
         guard FileManager.default.fileExists(atPath: modelDirectory.path) else {
             status = .failed(
-                "Model directory not found: \(modelDirectory.path). Run `./download_model.sh` in aMiLa/fine_tuning to fetch the Qwen2.5-Coder base + Amiga ASM LoRA (b6)."
+                "Model directory not found: \(modelDirectory.path). Run `./download_model.sh` in aMiLa/fine_tuning."
             )
             return
         }
-        let adapterName = configuration.adapterDirectoryName.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !adapterName.isEmpty {
-            let adapterDirectory = configuration.workingDirectory.appendingPathComponent(adapterName, isDirectory: true)
-            let adapterWeights = adapterDirectory.appendingPathComponent("adapters.safetensors")
-            guard FileManager.default.fileExists(atPath: adapterWeights.path) else {
-                status = .failed(
-                    "Adapter not found: \(adapterWeights.path). Run `./download_model.sh` in aMiLa/fine_tuning (needs adapters_b6 from bmove/amiga-rc-cappella-asm-qwen25)."
-                )
-                return
-            }
+        let adapterDirectory = configuration.workingDirectory.appendingPathComponent(configuration.adapterDirectoryName, isDirectory: true)
+        let adapterWeights = adapterDirectory.appendingPathComponent("adapters.safetensors")
+        guard FileManager.default.fileExists(atPath: adapterWeights.path) else {
+            status = .failed(
+                "Adapter not found: \(adapterWeights.path). Run `./download_model.sh` in aMiLa/fine_tuning."
+            )
+            return
         }
 
         status = .starting

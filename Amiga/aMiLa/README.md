@@ -136,24 +136,21 @@ If you want to re-run the LoRA adapter fine-tuning sequence on your custom ASM/C
    uv run python split_dataset.py
    ```
    This writes the `data/train.jsonl` and `data/valid.jsonl` files used by MLX-LM.
-4. **Execute LoRA GPU Training**:
-   Run the MLX-LM LoRA training loop:
+4. **Download the Amiga Playground ASM model** (Apple Silicon MLX):
    ```bash
-   ./finetune.sh
+   cd fine_tuning
+   ./download_model.sh   # runtime/base + runtime/adapter
+   ./deploy.sh           # OpenAI-compatible server on :1234
    ```
-   MLX-LM utilizes Apple Silicon unified memory GPUs to perform LoRA training.
-    * **Base Model**: `mlx-community/gemma-4-e4b-it-4bit`
-    * **Final Fused Weights**: Saved inside `fine_tuning/fused_model/`.
-   * **Model Card**: [`fine_tuning/fused_model/README.md`](fine_tuning/fused_model/README.md)
+   * **Product / model id**: `amiga-playground-asm`
+   * **HF**: https://huggingface.co/bmove/amiga-playground-asm
+   * **Details**: [`fine_tuning/README.md`](fine_tuning/README.md)
 
-#### 3. Host the Fused Model Locally
-To prompt the model via the playground, host the MLX server:
+#### 3. Host the model locally
 ```bash
-uv run mlx_lm.server --model fused_model/ --port 1234
+cd fine_tuning && uv run python serve_playground.py --port 1234
 ```
-This starts an OpenAI-compatible endpoint at `http://localhost:1234/v1/chat/completions`.
-
-The fused MLX model lives at `fine_tuning/fused_model/`. For LM Studio or Ollama-style local loading, use the optional GGUF export at `fine_tuning/antigravity-amiga-68k.gguf` if `./finetune.sh` produced it. See [`fine_tuning/README.md`](fine_tuning/README.md) for the exact model paths and loading notes.
+Endpoint: `http://localhost:1234/v1/chat/completions` — model id **`amiga-playground-asm`**.
 
 ---
 

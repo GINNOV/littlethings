@@ -1791,30 +1791,12 @@ struct SettingsView: View {
 
     private var aiSettings: some View {
         Form {
-            Section("Connection") {
-                Picker("Provider", selection: $llm.provider) {
-                    ForEach(OllamaService.Provider.allCases) { provider in
-                        Text(provider.rawValue).tag(provider)
-                    }
-                }
-
-                TextField("Model name", text: $llm.modelName)
-                    .textFieldStyle(.roundedBorder)
-
-                TextField("Custom API URL", text: $llm.customUrl)
-                    .textFieldStyle(.roundedBorder)
-
-                Text("Active endpoint: \(llm.apiUrl)")
-                    .font(.caption.monospaced())
+            Section {
+                Text("Recommended: start the local MLX server. It configures the endpoint and model for you — no typing required.")
+                    .font(.caption)
                     .foregroundStyle(.secondary)
-                    .accessibilityIdentifier("activeEndpointLabel")
+                    .fixedSize(horizontal: false, vertical: true)
 
-                Text("Request model: \(llm.requestModelName)")
-                    .font(.caption.monospaced())
-                    .foregroundStyle(.secondary)
-            }
-
-            Section("Local MLX Server") {
                 HStack(spacing: 8) {
                     Circle()
                         .fill(mlxServerStatusColor)
@@ -1835,9 +1817,7 @@ struct SettingsView: View {
 
                 HStack {
                     Button {
-                        llm.provider = .lmStudio
-                        llm.customUrl = ""
-                        llm.modelName = OllamaService.Provider.lmStudio.defaultModelName
+                        llm.applyPlaygroundConnectionDefaults()
                         mlxServer.start()
                     } label: {
                         Label("Start MLX Server", systemImage: "play.fill")
@@ -1874,11 +1854,72 @@ struct SettingsView: View {
                     .font(.caption.monospaced())
                     .foregroundStyle(.secondary)
 
+                Text("Model: \(OllamaService.playgroundModelId)")
+                    .font(.caption.monospaced())
+                    .foregroundStyle(.secondary)
+                    .accessibilityIdentifier("mlxServerModelLabel")
+
                 Text("Log: \(mlxServer.logFilePath)")
                     .font(.caption.monospaced())
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
                     .truncationMode(.middle)
+            } header: {
+                Text("Local MLX Server")
+            }
+
+            Section {
+                Picker("Provider", selection: $llm.provider) {
+                    ForEach(OllamaService.Provider.allCases) { provider in
+                        Text(provider.rawValue).tag(provider)
+                    }
+                }
+
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Model name")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        TextField("amiga-playground-asm", text: $llm.modelName)
+                            .textFieldStyle(.roundedBorder)
+                            .accessibilityIdentifier("assistantModelNameField")
+                            .help("OpenAI-compatible model id sent with each request.")
+                    }
+
+                    Button("Use Playground model") {
+                        llm.applyPlaygroundConnectionDefaults()
+                    }
+                    .help("Set provider, endpoint, and model to the bundled Amiga Playground ASM runtime.")
+                    .accessibilityIdentifier("usePlaygroundModelButton")
+                }
+
+                if llm.isUsingPlaygroundModel {
+                    Text("Using the Amiga Playground ASM model (`\(OllamaService.playgroundModelId)`).")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text("Custom model id. Retired names like `default_model` are rewritten automatically.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                TextField("Custom API URL", text: $llm.customUrl)
+                    .textFieldStyle(.roundedBorder)
+                    .help("Leave empty to use the selected provider’s default URL.")
+
+                Text("Active endpoint: \(llm.apiUrl)")
+                    .font(.caption.monospaced())
+                    .foregroundStyle(.secondary)
+                    .accessibilityIdentifier("activeEndpointLabel")
+
+                Text("Request model: \(llm.requestModelName)")
+                    .font(.caption.monospaced())
+                    .foregroundStyle(.secondary)
+                    .accessibilityIdentifier("requestModelLabel")
+            } header: {
+                Text("Connection")
+            } footer: {
+                Text("Most people only need Local MLX Server above. Use this section for Ollama or another OpenAI-compatible host.")
             }
 
             Section("Instruction") {
@@ -1912,7 +1953,9 @@ struct SettingsView: View {
         .padding()
         .accessibilityIdentifier("aiSettingsPane")
         .onAppear {
+            llm.migrateLegacyModelNameIfNeeded()
             mlxServer.refreshStatus()
+            llm.refreshConnectionStatus()
         }
     }
 

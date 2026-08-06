@@ -267,7 +267,7 @@ func preflight(configuration: HelperConfiguration) -> HelperConfiguration {
         fail(
             "MLX model directory was not found: \(configuration.modelPath)",
             code: "missing_model",
-            action: "Run aMiLa/fine_tuning/download_model.sh to fetch the Qwen2.5-Coder base into default_model/, then start the server again."
+            action: "Run aMiLa/fine_tuning/download_model.sh to fetch the Qwen2.5-Coder base into runtime/base/, then start the server again."
         )
     }
 
@@ -277,7 +277,7 @@ func preflight(configuration: HelperConfiguration) -> HelperConfiguration {
             fail(
                 "MLX adapter was not found: \(weights)",
                 code: "missing_adapter",
-                action: "Run aMiLa/fine_tuning/download_model.sh to fetch adapters_b6 from bmove/amiga-rc-cappella-asm-qwen25."
+                action: "Run aMiLa/fine_tuning/download_model.sh to fetch runtime/adapter from bmove/amiga-playground-asm."
             )
         }
     }
