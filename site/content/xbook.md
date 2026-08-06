@@ -1,5 +1,6 @@
 ---
 title: "XBook Console"
 layout: "xbook"
-description: "Local-first bookmark knowledge base for X and YouTube—AI enrichment, semantic search, Agent API."
+description: "Turn X bookmarks and YouTube saves into searchable narratives, articles, and tutorials you can actually use."
+lastmod: 2026-08-06
 ---
