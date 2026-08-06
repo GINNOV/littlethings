@@ -520,23 +520,6 @@ SineWave:
                         .accessibilityIdentifier("exportADFButton")
                         .help("Export a bootable ADF")
 
-                        Menu {
-                            ForEach(Array(examples.keys).sorted(), id: \.self) { key in
-                                Button(key) {
-                                    loadExample(named: key)
-                                }
-                            }
-                        } label: {
-                            HStack(spacing: 8) {
-                                Image(systemName: "books.vertical")
-                                Text("Examples")
-                            }
-                        }
-                        .menuStyle(.button)
-                        .buttonStyle(.bordered)
-                        .accessibilityIdentifier("goldExamplesMenu")
-                        .help("Load an example assembly program")
-
                         Picker(selection: $selectedTutorialID) {
                             Text("Tutorials").tag("")
                             if tutorialCatalog.isLoading && tutorialCatalog.tutorials.isEmpty {
@@ -547,16 +530,16 @@ SineWave:
                             }
                         } label: {
                             HStack(spacing: 8) {
-                                Image(systemName: "graduationcap")
+                                Image(systemName: "books.vertical")
                                 Text("Tutorials")
                             }
                         }
                         .pickerStyle(.menu)
                         .labelsHidden()
-                        .frame(minWidth: 140)
+                        .frame(minWidth: 160)
                         .disabled(isLoadingTutorial || (tutorialCatalog.isLoading && tutorialCatalog.tutorials.isEmpty))
                         .accessibilityIdentifier("tutorialsPicker")
-                        .help("Load a tutorial from littlethings/amiga walkthroughs")
+                        .help("Load a playground-ready tutorial (cached from the GitHub tutorials folder)")
                         .onChange(of: selectedTutorialID) { _, newValue in
                             guard !newValue.isEmpty, newValue != "__loading__" else { return }
                             loadTutorial(id: newValue)
@@ -1011,14 +994,20 @@ SineWave:
     private func loadTutorial(id: String) {
         guard let tutorial = tutorialCatalog.tutorials.first(where: { $0.id == id }) else { return }
         isLoadingTutorial = true
-        outputConsole = "Loading tutorial '\(tutorial.title)'..."
+        let summary = tutorial.summary.isEmpty ? "" : "\n\(tutorial.summary)"
+        outputConsole = "Loading tutorial '\(tutorial.title)'...\(summary)"
 
         tutorialCatalog.fetchSource(for: tutorial) { result in
             self.isLoadingTutorial = false
             switch result {
             case .success(let source):
                 self.codeText = source.code
-                self.outputConsole = "Loaded tutorial '\(tutorial.title)' (\(source.language))."
+                var message = "Loaded tutorial '\(source.title)'."
+                if !tutorial.summary.isEmpty {
+                    message += "\n\(tutorial.summary)"
+                }
+                message += "\nSource: \(tutorial.file)"
+                self.outputConsole = message
             case .failure(let error):
                 self.selectedTutorialID = ""
                 self.outputConsole = "Failed to load tutorial '\(tutorial.title)':\n\(error.localizedDescription)"

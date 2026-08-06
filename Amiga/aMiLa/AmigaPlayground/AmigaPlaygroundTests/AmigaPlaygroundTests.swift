@@ -1334,41 +1334,69 @@ CopperList:
 
     // MARK: - Tutorial Catalog
 
-    func testTutorialCatalogParsesWalkthroughs() {
-        let html = """
-        <article class="project-card">
-            <h3 class="!text-2xl">Getting Started with Amiga Assembly</h3>
-            <a href="tutorials/setup-asm.html" class="learn-button">Read</a>
-        </article>
-        <article class="project-card">
-            <h3 class="!text-2xl">Basics of Joystick Control</h3>
-            <a href="tutorials/joystick.html" class="learn-button">Read</a>
-        </article>
-        """
-        let entries = TutorialCatalogService.parseCatalogHTML(
-            html,
-            baseURLString: TutorialCatalogService.catalogBaseURLString
-        )
+    func testTutorialCatalogParsesIndexJSON() throws {
+        let json = """
+        {
+          "version": 1,
+          "tutorials": [
+            {
+              "id": "copper-rainbow-bars",
+              "title": "Copper Rainbow Bars",
+              "summary": "Color bands",
+              "file": "copper-rainbow-bars.s",
+              "language": "assembly",
+              "order": 1
+            },
+            {
+              "id": "read-the-joystick",
+              "title": "Read the Joystick",
+              "file": "joystick-reader.s",
+              "order": 2
+            }
+          ]
+        }
+        """.data(using: .utf8)!
+
+        let entries = try TutorialCatalogService.parseIndexJSON(json)
         XCTAssertEqual(entries.count, 2)
-        XCTAssertEqual(entries[0].title, "Getting Started with Amiga Assembly")
-        XCTAssertEqual(entries[0].relativePath, "tutorials/setup-asm.html")
-        XCTAssertEqual(
-            entries[0].absoluteURLString,
-            "https://ginnov.github.io/littlethings/amiga/tutorials/setup-asm.html"
-        )
-        XCTAssertEqual(entries[1].title, "Basics of Joystick Control")
+        XCTAssertEqual(entries[0].title, "Copper Rainbow Bars")
+        XCTAssertEqual(entries[0].file, "copper-rainbow-bars.s")
+        XCTAssertEqual(entries[0].language, "assembly")
+        XCTAssertEqual(entries[1].title, "Read the Joystick")
+        XCTAssertEqual(entries[1].language, "assembly")
     }
 
-    func testTutorialSourceExtractionDecodesEntities() {
-        let html = """
-        <pre><code class="language-assembly" data-lang="assembly">; hello&#34;world&#34;
-            moveq #0,d0
-        </code></pre>
-        """
-        let source = TutorialCatalogService.extractSource(from: html)
-        XCTAssertEqual(source?.language, "assembly")
-        XCTAssertTrue(source?.code.contains("; hello\"world\"") == true)
-        XCTAssertTrue(source?.code.contains("moveq #0,d0") == true)
+    func testTutorialHumanTitleFromFileName() {
+        XCTAssertEqual(
+            TutorialCatalogService.humanTitle(forFileName: "copper-rainbow-bars.s"),
+            "Copper Rainbow Bars"
+        )
+        XCTAssertEqual(
+            TutorialCatalogService.humanTitle(forFileName: "read_the_joystick.asm"),
+            "Read The Joystick"
+        )
+        XCTAssertTrue(TutorialCatalogService.isSourceFile("demo.s"))
+        XCTAssertFalse(TutorialCatalogService.isSourceFile("index.json"))
+        XCTAssertFalse(TutorialCatalogService.isSourceFile("README.md"))
+    }
+
+    func testBundledTutorialSourcesExistAndLookLikeCode() throws {
+        let root = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent() // AmigaPlaygroundTests
+            .deletingLastPathComponent() // AmigaPlayground
+            .appendingPathComponent("tutorials", isDirectory: true)
+        let indexURL = root.appendingPathComponent("index.json")
+        let data = try Data(contentsOf: indexURL)
+        let entries = try TutorialCatalogService.parseIndexJSON(data)
+        XCTAssertFalse(entries.isEmpty)
+
+        for entry in entries {
+            let sourceURL = root.appendingPathComponent(entry.file)
+            let code = try String(contentsOf: sourceURL, encoding: .utf8)
+            XCTAssertFalse(code.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, entry.file)
+            XCTAssertFalse(code.contains("<html"), "\(entry.file) must not be HTML")
+            XCTAssertFalse(code.contains("```"), "\(entry.file) must not be Markdown fenced code")
+        }
     }
 
     func testDockerBackendDisplayNameAndArgs() {

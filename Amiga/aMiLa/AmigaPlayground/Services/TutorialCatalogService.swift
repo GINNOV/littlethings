@@ -4,295 +4,333 @@ import Combine
 struct TutorialEntry: Identifiable, Codable, Equatable {
     let id: String
     let title: String
-    let relativePath: String
-    let absoluteURLString: String
+    let summary: String
+    let file: String
+    let language: String
+    let order: Int
 
-    var absoluteURL: URL? {
-        URL(string: absoluteURLString)
+    init(
+        id: String,
+        title: String,
+        summary: String = "",
+        file: String,
+        language: String = "assembly",
+        order: Int = 0
+    ) {
+        self.id = id
+        self.title = title
+        self.summary = summary
+        self.file = file
+        self.language = language
+        self.order = order
     }
 }
 
 struct TutorialSource: Equatable {
     let language: String
     let code: String
+    let title: String
 }
 
 enum TutorialCatalogError: LocalizedError {
-    case invalidCatalogURL
-    case invalidTutorialURL
+    case invalidURL
     case network(String)
     case emptyCatalog
-    case noSourceCode
-    case cacheWriteFailed
+    case missingSource(String)
+    case decode(String)
 
     var errorDescription: String? {
         switch self {
-        case .invalidCatalogURL:
+        case .invalidURL:
             return "Tutorial catalog URL is invalid."
-        case .invalidTutorialURL:
-            return "Tutorial URL is invalid."
         case .network(let message):
             return message
         case .emptyCatalog:
-            return "No tutorials were found in the walkthroughs catalog."
-        case .noSourceCode:
-            return "No assembly or C source code block was found in the tutorial page."
-        case .cacheWriteFailed:
-            return "Failed to write the tutorial cache."
+            return "No tutorials were found in the tutorials folder."
+        case .missingSource(let file):
+            return "Tutorial source file is missing: \(file)"
+        case .decode(let message):
+            return "Could not read tutorial catalog: \(message)"
         }
     }
 }
 
-/// Fetches and caches tutorials listed on littlethings/amiga/walkthroughs.html.
+/// Pulls playground-ready sources from the GitHub `tutorials` folder and caches them locally.
+///
+/// Remote layout (master):
+///   Amiga/aMiLa/AmigaPlayground/tutorials/index.json
+///   Amiga/aMiLa/AmigaPlayground/tutorials/*.s|*.asm|*.c
 final class TutorialCatalogService: ObservableObject {
     static let shared = TutorialCatalogService()
 
-    static let catalogURLString = "https://ginnov.github.io/littlethings/amiga/walkthroughs.html"
-    static let catalogBaseURLString = "https://ginnov.github.io/littlethings/amiga/"
+    /// Repo-relative folder that is the source of truth on GitHub.
+    static let remoteFolderPath = "Amiga/aMiLa/AmigaPlayground/tutorials"
+    static let rawBaseURLString =
+        "https://raw.githubusercontent.com/GINNOV/littlethings/master/\(remoteFolderPath)"
+    static let contentsAPIURLString =
+        "https://api.github.com/repos/GINNOV/littlethings/contents/\(remoteFolderPath)?ref=master"
 
     @Published private(set) var tutorials: [TutorialEntry] = []
     @Published private(set) var isLoading = false
     @Published private(set) var lastErrorMessage: String?
+    @Published private(set) var lastSyncedAt: Date?
 
     private let session: URLSession
     private let fileManager: FileManager
-    private let cacheFileName = "tutorial_catalog.json"
-    private let sourceCacheDirectoryName = "tutorial_sources"
-    private var hasLoaded = false
-    private let queue = DispatchQueue(label: "com.littlethings.amigaplayground.tutorials")
+    private let queue = DispatchQueue(label: "com.littlethings.amigaplayground.tutorials", qos: .utility)
+    private var hasStarted = false
+
+    private struct RemoteIndex: Codable {
+        let version: Int?
+        let tutorials: [RemoteTutorial]
+    }
+
+    private struct RemoteTutorial: Codable {
+        let id: String
+        let title: String
+        let summary: String?
+        let file: String
+        let language: String?
+        let order: Int?
+    }
+
+    private struct GitHubContentItem: Codable {
+        let name: String
+        let type: String
+        let download_url: String?
+    }
 
     init(session: URLSession = .shared, fileManager: FileManager = .default) {
         self.session = session
         self.fileManager = fileManager
     }
 
+    /// Load cached tutorials immediately, then refresh from GitHub in the background.
     func loadIfNeeded() {
-        guard !hasLoaded else { return }
-        hasLoaded = true
+        guard !hasStarted else { return }
+        hasStarted = true
 
         if let cached = loadCachedCatalog(), !cached.isEmpty {
             tutorials = cached
             lastErrorMessage = nil
-            return
+        } else if let bundled = loadBundledCatalog(), !bundled.isEmpty {
+            tutorials = bundled
+            persistCatalog(bundled)
+            seedCacheFromBundle(bundled)
         }
 
-        refreshCatalog()
+        refreshFromRemote()
     }
 
-    func refreshCatalog() {
-        guard let catalogURL = URL(string: Self.catalogURLString) else {
-            lastErrorMessage = TutorialCatalogError.invalidCatalogURL.localizedDescription
-            return
-        }
-
+    /// Force a network refresh of index + sources.
+    func refreshFromRemote() {
         isLoading = true
         lastErrorMessage = nil
 
-        let task = session.dataTask(with: catalogURL) { [weak self] data, response, error in
+        queue.async { [weak self] in
             guard let self else { return }
-
-            if let error {
+            do {
+                let catalog = try self.fetchRemoteCatalog()
+                try self.downloadSources(for: catalog)
+                self.persistCatalog(catalog)
+                DispatchQueue.main.async {
+                    self.tutorials = catalog
+                    self.isLoading = false
+                    self.lastErrorMessage = nil
+                    self.lastSyncedAt = Date()
+                }
+            } catch {
                 DispatchQueue.main.async {
                     self.isLoading = false
-                    self.lastErrorMessage = TutorialCatalogError.network(error.localizedDescription).localizedDescription
+                    if self.tutorials.isEmpty {
+                        self.lastErrorMessage = error.localizedDescription
+                    }
+                    // Keep showing whatever we already have when offline.
                 }
-                return
-            }
-
-            let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
-            guard let data, (200...299).contains(statusCode) else {
-                DispatchQueue.main.async {
-                    self.isLoading = false
-                    self.lastErrorMessage = TutorialCatalogError.network("HTTP \(statusCode) while fetching tutorials.").localizedDescription
-                }
-                return
-            }
-
-            let html = String(data: data, encoding: .utf8) ?? String(decoding: data, as: UTF8.self)
-            let parsed = Self.parseCatalogHTML(html, baseURLString: Self.catalogBaseURLString)
-
-            DispatchQueue.main.async {
-                self.isLoading = false
-                if parsed.isEmpty {
-                    self.lastErrorMessage = TutorialCatalogError.emptyCatalog.localizedDescription
-                    return
-                }
-                self.tutorials = parsed
-                self.lastErrorMessage = nil
-                self.persistCatalog(parsed)
             }
         }
-        task.resume()
     }
 
     func fetchSource(for tutorial: TutorialEntry, completion: @escaping (Result<TutorialSource, Error>) -> Void) {
-        if let cached = loadCachedSource(for: tutorial) {
-            completion(.success(cached))
-            return
-        }
-
-        guard let url = tutorial.absoluteURL else {
-            completion(.failure(TutorialCatalogError.invalidTutorialURL))
-            return
-        }
-
-        let task = session.dataTask(with: url) { [weak self] data, response, error in
+        queue.async { [weak self] in
             guard let self else { return }
+            do {
+                let code = try self.loadSourceCode(for: tutorial)
+                let source = TutorialSource(
+                    language: tutorial.language,
+                    code: code,
+                    title: tutorial.title
+                )
+                DispatchQueue.main.async { completion(.success(source)) }
+            } catch {
+                DispatchQueue.main.async { completion(.failure(error)) }
+            }
+        }
+    }
 
+    // MARK: - Remote
+
+    private func fetchRemoteCatalog() throws -> [TutorialEntry] {
+        // 1) Preferred: index.json with human titles.
+        var byID: [String: TutorialEntry] = [:]
+        if let index = try? downloadIndex() {
+            for item in index.tutorials {
+                let entry = TutorialEntry(
+                    id: item.id,
+                    title: item.title,
+                    summary: item.summary ?? "",
+                    file: item.file,
+                    language: item.language ?? Self.language(forFileName: item.file),
+                    order: item.order ?? 0
+                )
+                byID[entry.id] = entry
+            }
+        }
+
+        // 2) Merge with live folder listing so new files appear even before index is edited.
+        if let listed = try? listRemoteSourceFiles() {
+            for fileName in listed {
+                let id = Self.id(forFileName: fileName)
+                if byID[id] == nil {
+                    byID[id] = TutorialEntry(
+                        id: id,
+                        title: Self.humanTitle(forFileName: fileName),
+                        summary: "",
+                        file: fileName,
+                        language: Self.language(forFileName: fileName),
+                        order: 10_000
+                    )
+                }
+            }
+        }
+
+        let sorted = byID.values.sorted {
+            if $0.order != $1.order { return $0.order < $1.order }
+            return $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending
+        }
+        if sorted.isEmpty {
+            throw TutorialCatalogError.emptyCatalog
+        }
+        return sorted
+    }
+
+    private func downloadIndex() throws -> RemoteIndex {
+        guard let url = URL(string: "\(Self.rawBaseURLString)/index.json") else {
+            throw TutorialCatalogError.invalidURL
+        }
+        let data = try downloadData(from: url)
+        do {
+            return try JSONDecoder().decode(RemoteIndex.self, from: data)
+        } catch {
+            throw TutorialCatalogError.decode(error.localizedDescription)
+        }
+    }
+
+    private func listRemoteSourceFiles() throws -> [String] {
+        guard let url = URL(string: Self.contentsAPIURLString) else {
+            throw TutorialCatalogError.invalidURL
+        }
+        var request = URLRequest(url: url)
+        request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
+        let data = try downloadData(for: request)
+        let items = try JSONDecoder().decode([GitHubContentItem].self, from: data)
+        return items
+            .filter { $0.type == "file" && Self.isSourceFile($0.name) }
+            .map(\.name)
+            .sorted()
+    }
+
+    private func downloadSources(for catalog: [TutorialEntry]) throws {
+        try fileManager.createDirectory(at: sourcesDirectory, withIntermediateDirectories: true)
+        for tutorial in catalog {
+            guard let url = URL(string: "\(Self.rawBaseURLString)/\(tutorial.file)") else {
+                continue
+            }
+            let data = try downloadData(from: url)
+            let dest = sourcesDirectory.appendingPathComponent(tutorial.file)
+            try data.write(to: dest, options: .atomic)
+        }
+    }
+
+    private func downloadData(from url: URL) throws -> Data {
+        try downloadData(for: URLRequest(url: url))
+    }
+
+    private func downloadData(for request: URLRequest) throws -> Data {
+        let semaphore = DispatchSemaphore(value: 0)
+        var resultData: Data?
+        var resultError: Error?
+
+        let task = session.dataTask(with: request) { data, response, error in
+            defer { semaphore.signal() }
             if let error {
-                DispatchQueue.main.async {
-                    completion(.failure(TutorialCatalogError.network(error.localizedDescription)))
-                }
+                resultError = TutorialCatalogError.network(error.localizedDescription)
                 return
             }
-
-            let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
-            guard let data, (200...299).contains(statusCode) else {
-                DispatchQueue.main.async {
-                    completion(.failure(TutorialCatalogError.network("HTTP \(statusCode) while fetching \(tutorial.title).")))
-                }
+            let status = (response as? HTTPURLResponse)?.statusCode ?? 0
+            guard let data, (200...299).contains(status) else {
+                resultError = TutorialCatalogError.network("HTTP \(status) for \(request.url?.absoluteString ?? "request")")
                 return
             }
-
-            let html = String(data: data, encoding: .utf8) ?? String(decoding: data, as: UTF8.self)
-            guard let source = Self.extractSource(from: html) else {
-                DispatchQueue.main.async {
-                    completion(.failure(TutorialCatalogError.noSourceCode))
-                }
-                return
-            }
-
-            self.persistSource(source, for: tutorial)
-            DispatchQueue.main.async {
-                completion(.success(source))
-            }
+            resultData = data
         }
         task.resume()
+        semaphore.wait()
+
+        if let resultError { throw resultError }
+        guard let resultData else {
+            throw TutorialCatalogError.network("Empty response")
+        }
+        return resultData
     }
 
-    // MARK: - Parsing
+    // MARK: - Local source
 
-    static func parseCatalogHTML(_ html: String, baseURLString: String) -> [TutorialEntry] {
-        var entries: [TutorialEntry] = []
-        var seen = Set<String>()
-
-        // Match each article card: title in <h3>, first tutorial link in the card.
-        let articlePattern = #"<article[\s\S]*?<h3[^>]*>(.*?)</h3>[\s\S]*?href=\"(tutorials/[^\"]+\.html)\""#
-        guard let regex = try? NSRegularExpression(pattern: articlePattern, options: [.caseInsensitive]) else {
-            return []
+    private func loadSourceCode(for tutorial: TutorialEntry) throws -> String {
+        let cached = sourcesDirectory.appendingPathComponent(tutorial.file)
+        if let text = try? String(contentsOf: cached, encoding: .utf8),
+           !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return text
         }
 
-        let ns = html as NSString
-        let matches = regex.matches(in: html, options: [], range: NSRange(location: 0, length: ns.length))
-        for match in matches {
-            guard match.numberOfRanges >= 3 else { continue }
-            let rawTitle = ns.substring(with: match.range(at: 1))
-            let relative = ns.substring(with: match.range(at: 2))
-            let title = decodeHTMLEntities(stripTags(rawTitle)).trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !title.isEmpty, !relative.isEmpty else { continue }
-            guard !seen.contains(relative) else { continue }
-            seen.insert(relative)
-
-            let absolute = baseURLString.hasSuffix("/")
-                ? baseURLString + relative
-                : baseURLString + "/" + relative
-
-            entries.append(
-                TutorialEntry(
-                    id: relative,
-                    title: title,
-                    relativePath: relative,
-                    absoluteURLString: absolute
-                )
-            )
+        // Try bundle seed
+        if let bundled = bundleSourceURL(for: tutorial.file),
+           let text = try? String(contentsOf: bundled, encoding: .utf8),
+           !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            try? text.write(to: cached, atomically: true, encoding: .utf8)
+            return text
         }
 
-        return entries
+        // Last resort: fetch single file now
+        guard let url = URL(string: "\(Self.rawBaseURLString)/\(tutorial.file)") else {
+            throw TutorialCatalogError.invalidURL
+        }
+        let data = try downloadData(from: url)
+        guard let text = String(data: data, encoding: .utf8),
+              !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            throw TutorialCatalogError.missingSource(tutorial.file)
+        }
+        try fileManager.createDirectory(at: sourcesDirectory, withIntermediateDirectories: true)
+        try text.write(to: cached, atomically: true, encoding: .utf8)
+        return text
     }
 
-    static func extractSource(from html: String) -> TutorialSource? {
-        let patterns: [(language: String, pattern: String)] = [
-            ("assembly", #"<code[^>]*(?:class=\"[^\"]*language-assembly[^\"]*\"|data-lang=\"assembly\")[^>]*>([\s\S]*?)</code>"#),
-            ("c", #"<code[^>]*(?:class=\"[^\"]*language-c[^\"]*\"|data-lang=\"c\")[^>]*>([\s\S]*?)</code>"#),
-            ("assembly", #"<pre[^>]*>\s*<code[^>]*>([\s\S]*?)</code>\s*</pre>"#)
-        ]
-
-        for item in patterns {
-            guard let regex = try? NSRegularExpression(pattern: item.pattern, options: [.caseInsensitive]) else {
-                continue
-            }
-            let ns = html as NSString
-            guard let match = regex.firstMatch(in: html, options: [], range: NSRange(location: 0, length: ns.length)),
-                  match.numberOfRanges >= 2 else {
-                continue
-            }
-            let raw = ns.substring(with: match.range(at: 1))
-            let decoded = decodeHTMLEntities(raw)
-                .replacingOccurrences(of: "\r\n", with: "\n")
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-            if !decoded.isEmpty {
-                return TutorialSource(language: item.language, code: decoded)
-            }
-        }
-        return nil
-    }
-
-    static func stripTags(_ value: String) -> String {
-        value.replacingOccurrences(of: #"<[^>]+>"#, with: "", options: .regularExpression)
-    }
-
-    static func decodeHTMLEntities(_ value: String) -> String {
-        var result = value
-        let named: [String: String] = [
-            "&amp;": "&",
-            "&lt;": "<",
-            "&gt;": ">",
-            "&quot;": "\"",
-            "&#34;": "\"",
-            "&#39;": "'",
-            "&apos;": "'",
-            "&nbsp;": " "
-        ]
-        for (entity, replacement) in named {
-            result = result.replacingOccurrences(of: entity, with: replacement)
-        }
-
-        // Numeric entities &#NNN; and &#xHH;
-        if let regex = try? NSRegularExpression(pattern: #"&#(x?[0-9A-Fa-f]+);"#) {
-            let ns = result as NSString
-            let matches = regex.matches(in: result, options: [], range: NSRange(location: 0, length: ns.length)).reversed()
-            for match in matches {
-                let token = ns.substring(with: match.range(at: 1))
-                let scalarValue: UInt32?
-                if token.lowercased().hasPrefix("x") {
-                    scalarValue = UInt32(token.dropFirst(), radix: 16)
-                } else {
-                    scalarValue = UInt32(token)
-                }
-                if let scalarValue, let scalar = UnicodeScalar(scalarValue) {
-                    result = (result as NSString).replacingCharacters(in: match.range, with: String(Character(scalar)))
-                }
-            }
-        }
-        return result
-    }
-
-    // MARK: - Cache
+    // MARK: - Cache + bundle
 
     private var supportDirectory: URL {
         let base = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
             ?? fileManager.temporaryDirectory
-        let dir = base.appendingPathComponent("AmigaPlayground", isDirectory: true)
+        let dir = base.appendingPathComponent("AmigaPlayground/tutorials", isDirectory: true)
         try? fileManager.createDirectory(at: dir, withIntermediateDirectories: true)
         return dir
     }
 
     private var catalogCacheURL: URL {
-        supportDirectory.appendingPathComponent(cacheFileName)
+        supportDirectory.appendingPathComponent("catalog.json")
     }
 
-    private var sourceCacheDirectory: URL {
-        let dir = supportDirectory.appendingPathComponent(sourceCacheDirectoryName, isDirectory: true)
+    private var sourcesDirectory: URL {
+        let dir = supportDirectory.appendingPathComponent("sources", isDirectory: true)
         try? fileManager.createDirectory(at: dir, withIntermediateDirectories: true)
         return dir
     }
@@ -303,38 +341,127 @@ final class TutorialCatalogService: ObservableObject {
     }
 
     private func persistCatalog(_ entries: [TutorialEntry]) {
-        queue.async {
-            guard let data = try? JSONEncoder().encode(entries) else { return }
-            try? data.write(to: self.catalogCacheURL, options: .atomic)
+        guard let data = try? JSONEncoder().encode(entries) else { return }
+        try? data.write(to: catalogCacheURL, options: .atomic)
+    }
+
+    private func bundleTutorialsDirectory() -> URL? {
+        // Prefer a folder reference copied into the app bundle.
+        if let url = Bundle.main.resourceURL?.appendingPathComponent("tutorials", isDirectory: true),
+           fileManager.fileExists(atPath: url.path) {
+            return url
+        }
+        if let url = Bundle.main.url(forResource: "tutorials", withExtension: nil) {
+            return url
+        }
+        return nil
+    }
+
+    private func bundleSourceURL(for fileName: String) -> URL? {
+        if let dir = bundleTutorialsDirectory() {
+            let url = dir.appendingPathComponent(fileName)
+            if fileManager.fileExists(atPath: url.path) { return url }
+        }
+        let stem = (fileName as NSString).deletingPathExtension
+        let ext = (fileName as NSString).pathExtension
+        return Bundle.main.url(forResource: stem, withExtension: ext, subdirectory: "tutorials")
+    }
+
+    private func loadBundledCatalog() -> [TutorialEntry]? {
+        guard let dir = bundleTutorialsDirectory() else { return nil }
+        let indexURL = dir.appendingPathComponent("index.json")
+        if let data = try? Data(contentsOf: indexURL),
+           let remote = try? JSONDecoder().decode(RemoteIndex.self, from: data) {
+            return remote.tutorials.enumerated().map { idx, item in
+                TutorialEntry(
+                    id: item.id,
+                    title: item.title,
+                    summary: item.summary ?? "",
+                    file: item.file,
+                    language: item.language ?? Self.language(forFileName: item.file),
+                    order: item.order ?? (idx + 1)
+                )
+            }
+        }
+
+        // Fall back to enumerating source files in the bundle folder.
+        guard let files = try? fileManager.contentsOfDirectory(atPath: dir.path) else { return nil }
+        return files
+            .filter { Self.isSourceFile($0) }
+            .sorted()
+            .enumerated()
+            .map { idx, name in
+                TutorialEntry(
+                    id: Self.id(forFileName: name),
+                    title: Self.humanTitle(forFileName: name),
+                    summary: "",
+                    file: name,
+                    language: Self.language(forFileName: name),
+                    order: idx + 1
+                )
+            }
+    }
+
+    private func seedCacheFromBundle(_ catalog: [TutorialEntry]) {
+        queue.async { [weak self] in
+            guard let self else { return }
+            try? self.fileManager.createDirectory(at: self.sourcesDirectory, withIntermediateDirectories: true)
+            for tutorial in catalog {
+                guard let src = self.bundleSourceURL(for: tutorial.file) else { continue }
+                let dest = self.sourcesDirectory.appendingPathComponent(tutorial.file)
+                if self.fileManager.fileExists(atPath: dest.path) { continue }
+                try? self.fileManager.copyItem(at: src, to: dest)
+            }
         }
     }
 
-    private func sourceCacheURL(for tutorial: TutorialEntry) -> URL {
-        let safeName = tutorial.id
-            .replacingOccurrences(of: "/", with: "_")
-            .replacingOccurrences(of: " ", with: "_")
-        return sourceCacheDirectory.appendingPathComponent(safeName).appendingPathExtension("json")
+    // MARK: - Naming helpers
+
+    static func isSourceFile(_ name: String) -> Bool {
+        let lower = name.lowercased()
+        guard !name.hasPrefix(".") else { return false }
+        return lower.hasSuffix(".s") || lower.hasSuffix(".asm") || lower.hasSuffix(".c")
     }
 
-    private struct CachedSource: Codable {
-        let language: String
-        let code: String
+    static func language(forFileName name: String) -> String {
+        name.lowercased().hasSuffix(".c") ? "c" : "assembly"
     }
 
-    private func loadCachedSource(for tutorial: TutorialEntry) -> TutorialSource? {
-        let url = sourceCacheURL(for: tutorial)
-        guard let data = try? Data(contentsOf: url),
-              let cached = try? JSONDecoder().decode(CachedSource.self, from: data) else {
-            return nil
-        }
-        return TutorialSource(language: cached.language, code: cached.code)
+    static func id(forFileName name: String) -> String {
+        let stem = (name as NSString).deletingPathExtension
+        return stem
+            .lowercased()
+            .replacingOccurrences(of: "_", with: "-")
+            .replacingOccurrences(of: " ", with: "-")
     }
 
-    private func persistSource(_ source: TutorialSource, for tutorial: TutorialEntry) {
-        queue.async {
-            let payload = CachedSource(language: source.language, code: source.code)
-            guard let data = try? JSONEncoder().encode(payload) else { return }
-            try? data.write(to: self.sourceCacheURL(for: tutorial), options: .atomic)
+    /// Turn `copper-rainbow-bars.s` into "Copper Rainbow Bars".
+    static func humanTitle(forFileName name: String) -> String {
+        let stem = (name as NSString).deletingPathExtension
+        let parts = stem
+            .replacingOccurrences(of: "_", with: "-")
+            .split(separator: "-")
+            .map { part -> String in
+                let s = String(part)
+                guard let first = s.first else { return s }
+                return String(first).uppercased() + s.dropFirst().lowercased()
+            }
+        return parts.joined(separator: " ")
+    }
+
+    // MARK: - Testing helpers
+
+    static func parseIndexJSON(_ data: Data) throws -> [TutorialEntry] {
+        let remote = try JSONDecoder().decode(RemoteIndex.self, from: data)
+        return remote.tutorials.enumerated().map { idx, item in
+            TutorialEntry(
+                id: item.id,
+                title: item.title,
+                summary: item.summary ?? "",
+                file: item.file,
+                language: item.language ?? language(forFileName: item.file),
+                order: item.order ?? (idx + 1)
+            )
         }
     }
 }

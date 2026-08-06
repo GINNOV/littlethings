@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "source": "Amiga/aMiLa/AmigaPlayground/tutorials",
+  "tutorials": [
+    {
+      "id": "copper-rainbow-bars",
+      "title": "Copper Rainbow Bars",
+      "summary": "Classic vertical color bands using the copper list and a friendly OS takeover.",
+      "file": "copper-rainbow-bars.s",
+      "language": "assembly",
+      "order": 1
+    },
+    {
+      "id": "joystick-reader",
+      "title": "Read the Joystick",
+      "summary": "Read direction bits from the joystick port register.",
+      "file": "joystick-reader.s",
+      "language": "assembly",
+      "order": 2
+    },
+    {
+      "id": "audio-sine-wave",
+      "title": "Play a Sine Wave",
+      "summary": "Play a short sine sample on audio channel 0.",
+      "file": "audio-sine-wave.s",
+      "language": "assembly",
+      "order": 3
+    },
+    {
+      "id": "clean-system-takeover",
+      "title": "Clean System Takeover",
+      "summary": "Save the Workbench screen, install a tiny copper list, wait for the mouse, then restore the OS.",
+      "file": "clean-system-takeover.s",
+      "language": "assembly",
+      "order": 4
+    },
+    {
+      "id": "hardware-sprite",
+      "title": "Hardware Sprite",
+      "summary": "Show sprite 0 and animate it along a small path.",
+      "file": "hardware-sprite.s",
+      "language": "assembly",
+      "order": 5
+    },
+    {
+      "id": "animated-sprite",
+      "title": "Animated Sprite",
+      "summary": "Move a hardware sprite with a vertical-blank interrupt.",
+      "file": "animated-sprite.s",
+      "language": "assembly",
+      "order": 6
+    }
+  ]
+}

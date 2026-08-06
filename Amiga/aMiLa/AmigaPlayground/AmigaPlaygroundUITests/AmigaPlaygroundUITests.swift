@@ -33,7 +33,7 @@ final class AmigaPlaygroundUITests: XCTestCase {
 
         XCTAssertTrue(window.buttons["Assemble"].exists)
         XCTAssertTrue(window.buttons["Export ADF"].exists)
-        XCTAssertTrue(window.descendants(matching: .any)["goldExamplesMenu"].exists)
+        XCTAssertTrue(window.descendants(matching: .any)["tutorialsPicker"].exists)
         XCTAssertTrue(window.descendants(matching: .any)["assistantPromptField"].exists)
         XCTAssertTrue(window.buttons["Send"].exists)
 
