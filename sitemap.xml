@@ -2,6 +2,12 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
+    <loc>https://ginnov.github.io/littlethings/index.html</loc>
+    <lastmod>2026-08-06T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://ginnov.github.io/littlethings/xbook.html</loc>
+    <lastmod>2026-08-06T00:00:00+00:00</lastmod>
+  </url><url>
     <loc>https://ginnov.github.io/littlethings/amiga/about.html</loc>
   </url><url>
     <loc>https://ginnov.github.io/littlethings/amiga/adfinder_learnmore.html</loc>
@@ -31,9 +37,5 @@
     <loc>https://ginnov.github.io/littlethings/amiga/tutorials/setup-asm.html</loc>
   </url><url>
     <loc>https://ginnov.github.io/littlethings/amiga/tutorials/copper_tutorial.html</loc>
-  </url><url>
-    <loc>https://ginnov.github.io/littlethings/index.html</loc>
-  </url><url>
-    <loc>https://ginnov.github.io/littlethings/xbook.html</loc>
   </url>
 </urlset>

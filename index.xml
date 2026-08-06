@@ -10,7 +10,16 @@
 		
 		
 		
+			<lastBuildDate>Thu, 06 Aug 2026 00:00:00 +0000</lastBuildDate>
+		
 			<atom:link href="https://ginnov.github.io/littlethings/index.xml" rel="self" type="application/rss+xml" />
+			<item>
+				<title>XBook Console</title>
+				<link>https://ginnov.github.io/littlethings/xbook.html</link>
+				<pubDate>Thu, 06 Aug 2026 00:00:00 +0000</pubDate>
+				<guid>https://ginnov.github.io/littlethings/xbook.html</guid>
+				<description></description>
+			</item>
 			<item>
 				<title>A little story</title>
 				<link>https://ginnov.github.io/littlethings/amiga/about.html</link>
@@ -108,13 +117,6 @@
 				<pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
 				<guid>https://ginnov.github.io/littlethings/amiga/tutorials/copper_tutorial.html</guid>
 				<description>&lt;p&gt;Hey Amiga fans! Ever looked at a stunning Amiga demo or game and wondered how they pulled off those amazing color effects? You know the ones – the vibrant, multi-colored skies that seem to defy the Amiga&amp;rsquo;s color limits, or a screen that&amp;rsquo;s split into different color palettes? The secret, my friends, often lies in one of the Amiga&amp;rsquo;s most unique and powerful hardware features: the &lt;strong&gt;Copper&lt;/strong&gt;.&lt;/p&gt;&#xA;&lt;h2 id=&#34;what-is-the-copper&#34;&gt;What is the Copper?&lt;/h2&gt;&#xA;&lt;p&gt;In the heart of the Amiga&amp;rsquo;s custom chipset lies a special co-processor called the Copper. Think of it as a tiny, dedicated graphics programmer that works alongside the main CPU. While the CPU is busy running the game&amp;rsquo;s logic or your Workbench applications, the Copper is tirelessly manipulating the display hardware.&lt;/p&gt;</description>
-			</item>
-			<item>
-				<title>XBook Console</title>
-				<link>https://ginnov.github.io/littlethings/xbook.html</link>
-				<pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-				<guid>https://ginnov.github.io/littlethings/xbook.html</guid>
-				<description></description>
 			</item>
 	</channel>
 </rss>

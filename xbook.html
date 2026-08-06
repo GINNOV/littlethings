@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>XBook Console — Local bookmark knowledge base</title>
+    <title>XBook — Turn bookmarks into knowledge</title>
     <link rel="stylesheet" href="/littlethings/common/style.css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link
@@ -41,208 +41,175 @@
         <i class="fas fa-arrow-left text-xs"></i> Workspace Hub
       </a>
       <span class="inline-flex items-center gap-2 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-300">
-        v0.3 · standalone repo
+        Private knowledge library
       </span>
     </div>
 
     
     <header class="overflow-hidden rounded-2xl border border-slate-700/60 bg-slate-900/70 shadow-2xl backdrop-blur-md mb-10">
-      <div class="aspect-[21/9] w-full overflow-hidden bg-slate-950">
+      <div class="w-full overflow-hidden bg-slate-950 flex justify-center">
         <img
           src="/littlethings/images/xbook/splash.jpg"
-          alt="XBook Console"
-          class="h-full w-full object-cover"
-          onerror="this.onerror=null;this.src='https://placehold.co/1200x514/0b1220/34d399?text=XBook+Console&font=inter';"
+          alt="Colorful bookmark cards in a collection box"
+          class="block h-auto w-full max-w-3xl object-contain"
+          onerror="this.onerror=null;this.src='https://placehold.co/1024x1024/0b1220/34d399?text=XBook+Console&font=inter';"
         />
       </div>
 
       <div class="p-8 sm:p-10">
         <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div class="max-w-2xl">
-            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-400/90 mb-3">Local-first research console</p>
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-400/90 mb-3">Turn saved links into knowledge</p>
             <h1 class="text-4xl sm:text-5xl font-semibold tracking-tight text-white leading-tight">
-              XBook Console
+              Make your bookmarks useful again.
             </h1>
             <p class="mt-3 text-lg text-slate-300 leading-relaxed">
-              Turn X bookmarks and YouTube saves into a private, searchable library—summarized and tagged by your own LLM, indexed for semantic recall.
+              XBook takes the bookmarks and videos you save, turns them into clear narratives, articles, and tutorials, then makes the whole collection searchable by meaning. Stop scrolling through a list to find the idea you remember.
             </p>
           </div>
           <div class="flex flex-wrap gap-3 shrink-0">
             <a
-              href="https://github.com/GINNOV/xbook/releases"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/"
               class="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-900/40 transition hover:bg-emerald-500 no-underline"
             >
-              <i class="fas fa-download"></i> Download desktop
-            </a>
-            <a
-              href="https://github.com/GINNOV/xbook"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-600 bg-slate-950/50 px-5 py-3 text-sm font-semibold text-slate-100 transition hover:border-emerald-500/50 hover:text-white no-underline"
-            >
-              <i class="fab fa-github"></i> Source
+              <i class="fas fa-arrow-right"></i> Explore the hub
             </a>
           </div>
         </div>
 
         <div class="mt-8 grid gap-3 sm:grid-cols-3">
           <div class="rounded-xl border border-slate-700/60 bg-slate-950/50 px-4 py-3">
-            <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Sources</p>
-            <p class="mt-1 text-sm font-medium text-slate-200">X + YouTube OAuth</p>
+            <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Your starting point</p>
+            <p class="mt-1 text-sm font-medium text-slate-200">X bookmarks + YouTube saves</p>
           </div>
           <div class="rounded-xl border border-slate-700/60 bg-slate-950/50 px-4 py-3">
-            <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">AI</p>
-            <p class="mt-1 text-sm font-medium text-slate-200">Ollama · LM Studio · vLLM</p>
+            <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Your finished library</p>
+            <p class="mt-1 text-sm font-medium text-slate-200">Narratives · articles · tutorials</p>
           </div>
           <div class="rounded-xl border border-slate-700/60 bg-slate-950/50 px-4 py-3">
-            <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Data</p>
-            <p class="mt-1 text-sm font-medium text-slate-200">Local SQLite · no cloud lock-in</p>
+            <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Your way to find it</p>
+            <p class="mt-1 text-sm font-medium text-slate-200">Search by meaning, not by scrolling</p>
           </div>
         </div>
       </div>
     </header>
 
-    
     <section class="mb-12">
-      <h2 class="text-2xl font-semibold text-white tracking-tight mb-2">What it does</h2>
+      <h2 class="text-2xl font-semibold text-white tracking-tight mb-2">Turn scattered saves into useful knowledge</h2>
       <p class="text-slate-400 text-sm max-w-3xl mb-6 leading-relaxed">
-        Bookmark on the go. Later, run one <strong class="text-slate-200 font-semibold">Process inbox</strong> pass to import, enrich, and index—so you can find ideas by meaning, not by scrolling platform UIs.
+        Save things as you do today. XBook brings them together, helps you make sense of them, and gives you something better than another endless list of links.
       </p>
       <div class="grid gap-4 sm:grid-cols-2">
         <article class="rounded-xl border border-slate-700/50 bg-slate-900/50 p-5">
           <h3 class="text-base font-semibold text-emerald-300 flex items-center gap-2">
-            <i class="fas fa-inbox text-sm"></i> Unified inbox
+            <i class="fas fa-inbox text-sm"></i> Bring your saves together
           </h3>
           <p class="mt-2 text-sm text-slate-400 leading-relaxed">
-            Delta-sync X bookmarks and YouTube playlists into one library. Folder membership stays in sync without re-burning tweet API reads on known items.
+            Keep X bookmarks and YouTube saves in one private library, ready to be understood instead of forgotten.
           </p>
         </article>
         <article class="rounded-xl border border-slate-700/50 bg-slate-900/50 p-5">
           <h3 class="text-base font-semibold text-emerald-300 flex items-center gap-2">
-            <i class="fas fa-brain text-sm"></i> Local AI enrichment
+            <i class="fas fa-brain text-sm"></i> Get the story, not just a summary
           </h3>
           <p class="mt-2 text-sm text-slate-400 leading-relaxed">
-            Summaries, categories, and tags via your models. Chat can run on a remote vLLM host while embeddings stay on Ollama—split base URLs are first-class.
+            Turn a trail of saved links into readable narratives, articles, and tutorials that give the ideas context.
           </p>
         </article>
         <article class="rounded-xl border border-slate-700/50 bg-slate-900/50 p-5">
           <h3 class="text-base font-semibold text-emerald-300 flex items-center gap-2">
-            <i class="fas fa-search text-sm"></i> Semantic search &amp; Ask AI
+            <i class="fas fa-search text-sm"></i> Search the way you remember
           </h3>
           <p class="mt-2 text-sm text-slate-400 leading-relaxed">
-            Vector embeddings power concept search and chat-style answers with citations from your library—not generic web RAG.
+            Search for a question, topic, or feeling and find the right idea, even when you cannot remember the original title.
           </p>
         </article>
         <article class="rounded-xl border border-slate-700/50 bg-slate-900/50 p-5">
           <h3 class="text-base font-semibold text-emerald-300 flex items-center gap-2">
-            <i class="fas fa-robot text-sm"></i> Agent API
+            <i class="fas fa-book-open text-sm"></i> Build a library that grows with you
           </h3>
           <p class="mt-2 text-sm text-slate-400 leading-relaxed">
-            Local HTTP API for tools like Hermes: search bookmarks, pull context, draft into Obsidian—credentials and data never leave your machine.
+            Every new save can become part of a personal body of knowledge you can revisit, connect, and use.
           </p>
         </article>
       </div>
     </section>
 
-    
     <section class="mb-12 rounded-2xl border border-slate-700/50 bg-slate-900/40 p-6 sm:p-8">
-      <h2 class="text-2xl font-semibold text-white tracking-tight mb-2">Day-to-day flow</h2>
+      <h2 class="text-2xl font-semibold text-white tracking-tight mb-2">From save to insight</h2>
       <p class="text-sm text-slate-400 mb-6 max-w-2xl">
-        First launch points you at Settings and Docs when the library is empty; Process inbox stays soft-disabled until OAuth and a chat model are ready.
+        A simple path from “I should read this later” to “now I understand it.”
       </p>
       <ol class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <li class="rounded-xl bg-slate-950/60 border border-slate-800 p-4">
           <span class="text-xs font-bold text-emerald-400">01</span>
-          <p class="mt-2 text-sm font-semibold text-white">Connect</p>
-          <p class="mt-1 text-xs text-slate-400 leading-relaxed">X and optional YouTube OAuth under Settings → Connections.</p>
+          <p class="mt-2 text-sm font-semibold text-white">Save</p>
+          <p class="mt-1 text-xs text-slate-400 leading-relaxed">Keep bookmarking on X and YouTube exactly as you do now.</p>
         </li>
         <li class="rounded-xl bg-slate-950/60 border border-slate-800 p-4">
           <span class="text-xs font-bold text-emerald-400">02</span>
-          <p class="mt-2 text-sm font-semibold text-white">Configure AI</p>
-          <p class="mt-1 text-xs text-slate-400 leading-relaxed">Chat model + embedding model (and separate embed host if needed). Test LLM.</p>
+          <p class="mt-2 text-sm font-semibold text-white">Gather</p>
+          <p class="mt-1 text-xs text-slate-400 leading-relaxed">Bring your saves into one private library you can return to.</p>
         </li>
         <li class="rounded-xl bg-slate-950/60 border border-slate-800 p-4">
           <span class="text-xs font-bold text-emerald-400">03</span>
-          <p class="mt-2 text-sm font-semibold text-white">Process inbox</p>
-          <p class="mt-1 text-xs text-slate-400 leading-relaxed">One button: sync → enrich pending → index embeddings for the active tab.</p>
+          <p class="mt-2 text-sm font-semibold text-white">Create</p>
+          <p class="mt-1 text-xs text-slate-400 leading-relaxed">Generate narratives, articles, and tutorials from the ideas inside.</p>
         </li>
         <li class="rounded-xl bg-slate-950/60 border border-slate-800 p-4">
           <span class="text-xs font-bold text-emerald-400">04</span>
-          <p class="mt-2 text-sm font-semibold text-white">Retrieve</p>
-          <p class="mt-1 text-xs text-slate-400 leading-relaxed">Filter the library, semantic search, or call the Agent API from your writing stack.</p>
+          <p class="mt-2 text-sm font-semibold text-white">Find</p>
+          <p class="mt-1 text-xs text-slate-400 leading-relaxed">Search by topic or question and jump straight to what matters.</p>
         </li>
       </ol>
     </section>
 
-    
     <section class="mb-12">
-      <h2 class="text-2xl font-semibold text-white tracking-tight mb-6">Built for operators</h2>
+      <h2 class="text-2xl font-semibold text-white tracking-tight mb-2">More than a bookmark list</h2>
+      <p class="text-slate-400 text-sm max-w-3xl mb-6 leading-relaxed">
+        XBook turns the things you meant to come back to into a collection you can read, search, and build on.
+      </p>
       <div class="grid gap-4 sm:grid-cols-3">
         <div class="rounded-xl border border-slate-700/40 p-5 bg-slate-900/30">
-          <h3 class="text-sm font-semibold text-white">Cost-aware X sync</h3>
-          <p class="mt-2 text-xs text-slate-400 leading-relaxed">Monthly caps, live/local usage, and delta sync that does not re-fetch immutable tweets already in the library.</p>
+          <h3 class="text-sm font-semibold text-white">Readable stories</h3>
+          <p class="mt-2 text-xs text-slate-400 leading-relaxed">Turn a collection of links into a narrative you can follow from beginning to end.</p>
         </div>
         <div class="rounded-xl border border-slate-700/40 p-5 bg-slate-900/30">
-          <h3 class="text-sm font-semibold text-white">Index health</h3>
-          <p class="mt-2 text-xs text-slate-400 leading-relaxed">Dashboard shows indexed vs missing embeddings; config mistakes fail fast instead of “100 failed” noise.</p>
+          <h3 class="text-sm font-semibold text-white">Practical guides</h3>
+          <p class="mt-2 text-xs text-slate-400 leading-relaxed">Generate articles and step-by-step tutorials you can actually use later.</p>
         </div>
         <div class="rounded-xl border border-slate-700/40 p-5 bg-slate-900/30">
-          <h3 class="text-sm font-semibold text-white">Processing audit</h3>
-          <p class="mt-2 text-xs text-slate-400 leading-relaxed">Runs, events, and LLM request logs so you can see what enriched, what failed, and why.</p>
+          <h3 class="text-sm font-semibold text-white">Searchable memory</h3>
+          <p class="mt-2 text-xs text-slate-400 leading-relaxed">Find the idea you remember, even when the title or source has slipped your mind.</p>
         </div>
         <div class="rounded-xl border border-slate-700/40 p-5 bg-slate-900/30">
-          <h3 class="text-sm font-semibold text-white">Desktop or CLI</h3>
-          <p class="mt-2 text-xs text-slate-400 leading-relaxed">Tauri app with auto migrations and updater, or Next.js + Prisma for development and custom builds.</p>
+          <h3 class="text-sm font-semibold text-white">A private library</h3>
+          <p class="mt-2 text-xs text-slate-400 leading-relaxed">Keep your saved ideas together and choose how they are processed.</p>
         </div>
         <div class="rounded-xl border border-slate-700/40 p-5 bg-slate-900/30">
-          <h3 class="text-sm font-semibold text-white">In-app docs</h3>
-          <p class="mt-2 text-xs text-slate-400 leading-relaxed">Getting started: Connections, LLM, Process inbox, Library, and Agent API—without leaving the console.</p>
+          <h3 class="text-sm font-semibold text-white">A library that grows</h3>
+          <p class="mt-2 text-xs text-slate-400 leading-relaxed">Every new save adds to a richer body of knowledge you can revisit and connect.</p>
         </div>
         <div class="rounded-xl border border-slate-700/40 p-5 bg-slate-900/30">
-          <h3 class="text-sm font-semibold text-white">Privacy by default</h3>
-          <p class="mt-2 text-xs text-slate-400 leading-relaxed">SQLite, tokens, and embeddings stay on disk. You choose which LLM endpoints ever see content.</p>
+          <h3 class="text-sm font-semibold text-white">Your sources stay close</h3>
+          <p class="mt-2 text-xs text-slate-400 leading-relaxed">Keep the original links alongside the stories and guides they helped create.</p>
         </div>
       </div>
     </section>
 
-    
-    <section class="mb-12">
-      <h2 class="text-2xl font-semibold text-white tracking-tight mb-6">How to run it</h2>
-      <div class="grid gap-6 md:grid-cols-2">
-        <div class="rounded-2xl border border-emerald-500/20 bg-emerald-950/20 p-6">
-          <p class="text-xs font-bold uppercase tracking-wide text-emerald-400 mb-2">Default</p>
-          <h3 class="text-lg font-semibold text-white">Desktop app</h3>
-          <p class="mt-2 text-sm text-slate-300 leading-relaxed">
-            Grab the latest build from GitHub Releases. Launch, complete OAuth in your browser, point Settings at your models, hit Process inbox.
-          </p>
-          <a href="https://github.com/GINNOV/xbook/releases" target="_blank" rel="noopener noreferrer" class="mt-4 inline-flex text-sm font-semibold text-emerald-300 hover:text-emerald-200 no-underline">
-            Releases →
-          </a>
-        </div>
-        <div class="rounded-2xl border border-slate-600/50 bg-slate-900/50 p-6">
-          <p class="text-xs font-bold uppercase tracking-wide text-slate-400 mb-2">Developers</p>
-          <h3 class="text-lg font-semibold text-white">From source</h3>
-          <p class="mt-2 text-sm text-slate-300 leading-relaxed">
-            Clone <a href="https://github.com/GINNOV/xbook" class="text-emerald-300 font-semibold underline decoration-emerald-500/40 hover:text-emerald-200" target="_blank" rel="noopener noreferrer">GINNOV/xbook</a>, migrate SQLite, run the Next.js app or package with Tauri. Full test suite and Agent API for automation.
-          </p>
-          <pre class="mt-4 overflow-x-auto rounded-lg bg-slate-950 border border-slate-800 p-3 text-xs text-slate-300 font-mono leading-relaxed">npm install
-npx prisma migrate dev
-npm run dev</pre>
-        </div>
-      </div>
+    <section class="mb-12 rounded-2xl border border-emerald-500/20 bg-emerald-950/20 p-6 text-center sm:p-8">
+      <h2 class="text-2xl font-semibold text-white tracking-tight mb-2">Ready to stop scrolling?</h2>
+      <p class="mx-auto max-w-2xl text-sm text-slate-300 leading-relaxed">
+        XBook is part of a growing collection of tools for making the things you save more useful. Explore the Workspace Hub and see what else is waiting there.
+      </p>
+      <a href="/" class="mt-5 inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-900/40 transition hover:bg-emerald-500 no-underline">
+        <i class="fas fa-arrow-right"></i> Explore the Workspace Hub
+      </a>
     </section>
 
-    
-    <section class="mb-8 rounded-xl border border-slate-800 bg-slate-950/40 px-5 py-4 text-sm text-slate-400 leading-relaxed">
-      <strong class="text-slate-200">Stack:</strong> Next.js App Router, Prisma + SQLite, Tauri desktop shell, OpenAI-compatible LLM clients.
-      Active development lives only in <a href="https://github.com/GINNOV/xbook" class="text-emerald-300 font-medium underline decoration-emerald-500/30" target="_blank" rel="noopener noreferrer">github.com/GINNOV/xbook</a>—this page is the product landing on the Workspace Hub.
-    </section>
-
-    <footer class="pb-8 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
-      <a href="/" class="hover:text-slate-300 no-underline">← Back to hub</a>
-      <span>No Amiga chrome here—just a research console.</span>
+    <footer class="xbook-footer border-t border-slate-800/80 pb-8 pt-5 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
+      <span>Last updated: August 6, 2026</span>
+      <a href="https://ginnov.github.io/" class="text-slate-400 hover:text-emerald-300 no-underline">← Back to ginnov.github.io</a>
     </footer>
   </div>
 </div>
@@ -276,6 +243,16 @@ npm run dev</pre>
   }
   .xbook-shell a.underline {
     text-decoration: underline;
+  }
+  .xbook-page-bg .xbook-footer {
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+    color: #64748b;
+    margin-top: 0;
+    padding-left: 0;
+    padding-right: 0;
+    text-align: left;
   }
 </style>
 
