@@ -1,0 +1,36 @@
+<header>
+    <div class="header-content">
+        <a href="{{ "amiga/index.html" | relURL }}">
+            <img src="{{ "images/back_to_the_amiga.png" | relURL }}" alt="Back to Amiga Dev Hub Logo" class="header-logo" onerror="this.onerror=null;this.src='https://placehold.co/180x50/003366/FF8800?text=Amiga+Dev+Hub&font=press-start-2p';this.alt='Amiga Dev Hub';">
+        </a>
+        <button class="menu-toggle" id="menu-toggle-btn">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+    <nav class="sidebar" id="header-nav">
+        <ul style="font-family: 'Press Start 2P', cursive; font-size: 0.8rem;">
+            <li><a href="{{ "amiga/index.html" | relURL }}" id="nav-projects" class="{{ if eq .RelPermalink ("amiga/index.html" | relURL) }}active{{ end }}">PROJECTS</a></li>
+            <li><a href="{{ "amiga/walkthroughs.html" | relURL }}" id="nav-tutorials" class="{{ if or (eq .RelPermalink ("amiga/walkthroughs.html" | relURL)) (in .RelPermalink "/tutorials/") }}active{{ end }}">TUTORIALS</a></li>
+            <li><a href="{{ "amiga/resources.html" | relURL }}" id="nav-resources" class="{{ if eq .RelPermalink ("amiga/resources.html" | relURL) }}active{{ end }}">RESOURCES</a></li>
+            <li><a href="{{ "amiga/about.html" | relURL }}" id="nav-about" class="{{ if eq .RelPermalink ("amiga/about.html" | relURL) }}active{{ end }}">ABOUT</a></li>
+        </ul>
+    </nav>
+</header>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      const menuToggle = document.getElementById('menu-toggle-btn');
+      const sidebar = document.querySelector('#header-nav ul');
+      if (menuToggle && sidebar) {
+          if (window.innerWidth < 768) sidebar.classList.add('hidden');
+          menuToggle.addEventListener('click', () => sidebar.classList.toggle('hidden'));
+          window.addEventListener('resize', () => {
+              if (window.innerWidth >= 768) {
+                  sidebar.classList.remove('hidden');
+              } else {
+                  sidebar.classList.add('hidden');
+              }
+          });
+      }
+  });
+</script>

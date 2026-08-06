@@ -1,0 +1,251 @@
+{{ define "title" }}XBook Console — Local bookmark knowledge base{{ end }}
+{{ define "bodyclass" }}xbook-page-bg{{ end }}
+{{ define "mainclass" }}xbook-page-main{{ end }}
+
+{{ define "main" }}
+<div class="xbook-shell min-h-screen py-10 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-5xl mx-auto">
+
+    <div class="mb-8 flex flex-wrap items-center justify-between gap-3">
+      <a href="{{ "/" | relURL }}" class="inline-flex items-center text-sm font-medium text-slate-400 hover:text-emerald-300 transition-colors gap-2 no-underline">
+        <i class="fas fa-arrow-left text-xs"></i> Workspace Hub
+      </a>
+      <span class="inline-flex items-center gap-2 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-300">
+        v0.3 · standalone repo
+      </span>
+    </div>
+
+    <!-- Hero -->
+    <header class="overflow-hidden rounded-2xl border border-slate-700/60 bg-slate-900/70 shadow-2xl backdrop-blur-md mb-10">
+      <div class="aspect-[21/9] w-full overflow-hidden bg-slate-950">
+        <img
+          src="{{ "images/xbook/splash.jpg" | relURL }}"
+          alt="XBook Console"
+          class="h-full w-full object-cover"
+          onerror="this.onerror=null;this.src='https://placehold.co/1200x514/0b1220/34d399?text=XBook+Console&font=inter';"
+        />
+      </div>
+
+      <div class="p-8 sm:p-10">
+        <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div class="max-w-2xl">
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-400/90 mb-3">Local-first research console</p>
+            <h1 class="text-4xl sm:text-5xl font-semibold tracking-tight text-white leading-tight">
+              XBook Console
+            </h1>
+            <p class="mt-3 text-lg text-slate-300 leading-relaxed">
+              Turn X bookmarks and YouTube saves into a private, searchable library—summarized and tagged by your own LLM, indexed for semantic recall.
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-3 shrink-0">
+            <a
+              href="https://github.com/GINNOV/xbook/releases"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-900/40 transition hover:bg-emerald-500 no-underline"
+            >
+              <i class="fas fa-download"></i> Download desktop
+            </a>
+            <a
+              href="https://github.com/GINNOV/xbook"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-600 bg-slate-950/50 px-5 py-3 text-sm font-semibold text-slate-100 transition hover:border-emerald-500/50 hover:text-white no-underline"
+            >
+              <i class="fab fa-github"></i> Source
+            </a>
+          </div>
+        </div>
+
+        <div class="mt-8 grid gap-3 sm:grid-cols-3">
+          <div class="rounded-xl border border-slate-700/60 bg-slate-950/50 px-4 py-3">
+            <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Sources</p>
+            <p class="mt-1 text-sm font-medium text-slate-200">X + YouTube OAuth</p>
+          </div>
+          <div class="rounded-xl border border-slate-700/60 bg-slate-950/50 px-4 py-3">
+            <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">AI</p>
+            <p class="mt-1 text-sm font-medium text-slate-200">Ollama · LM Studio · vLLM</p>
+          </div>
+          <div class="rounded-xl border border-slate-700/60 bg-slate-950/50 px-4 py-3">
+            <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Data</p>
+            <p class="mt-1 text-sm font-medium text-slate-200">Local SQLite · no cloud lock-in</p>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- What it does -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-semibold text-white tracking-tight mb-2">What it does</h2>
+      <p class="text-slate-400 text-sm max-w-3xl mb-6 leading-relaxed">
+        Bookmark on the go. Later, run one <strong class="text-slate-200 font-semibold">Process inbox</strong> pass to import, enrich, and index—so you can find ideas by meaning, not by scrolling platform UIs.
+      </p>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <article class="rounded-xl border border-slate-700/50 bg-slate-900/50 p-5">
+          <h3 class="text-base font-semibold text-emerald-300 flex items-center gap-2">
+            <i class="fas fa-inbox text-sm"></i> Unified inbox
+          </h3>
+          <p class="mt-2 text-sm text-slate-400 leading-relaxed">
+            Delta-sync X bookmarks and YouTube playlists into one library. Folder membership stays in sync without re-burning tweet API reads on known items.
+          </p>
+        </article>
+        <article class="rounded-xl border border-slate-700/50 bg-slate-900/50 p-5">
+          <h3 class="text-base font-semibold text-emerald-300 flex items-center gap-2">
+            <i class="fas fa-brain text-sm"></i> Local AI enrichment
+          </h3>
+          <p class="mt-2 text-sm text-slate-400 leading-relaxed">
+            Summaries, categories, and tags via your models. Chat can run on a remote vLLM host while embeddings stay on Ollama—split base URLs are first-class.
+          </p>
+        </article>
+        <article class="rounded-xl border border-slate-700/50 bg-slate-900/50 p-5">
+          <h3 class="text-base font-semibold text-emerald-300 flex items-center gap-2">
+            <i class="fas fa-search text-sm"></i> Semantic search &amp; Ask AI
+          </h3>
+          <p class="mt-2 text-sm text-slate-400 leading-relaxed">
+            Vector embeddings power concept search and chat-style answers with citations from your library—not generic web RAG.
+          </p>
+        </article>
+        <article class="rounded-xl border border-slate-700/50 bg-slate-900/50 p-5">
+          <h3 class="text-base font-semibold text-emerald-300 flex items-center gap-2">
+            <i class="fas fa-robot text-sm"></i> Agent API
+          </h3>
+          <p class="mt-2 text-sm text-slate-400 leading-relaxed">
+            Local HTTP API for tools like Hermes: search bookmarks, pull context, draft into Obsidian—credentials and data never leave your machine.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <!-- Day-to-day flow -->
+    <section class="mb-12 rounded-2xl border border-slate-700/50 bg-slate-900/40 p-6 sm:p-8">
+      <h2 class="text-2xl font-semibold text-white tracking-tight mb-2">Day-to-day flow</h2>
+      <p class="text-sm text-slate-400 mb-6 max-w-2xl">
+        First launch points you at Settings and Docs when the library is empty; Process inbox stays soft-disabled until OAuth and a chat model are ready.
+      </p>
+      <ol class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <li class="rounded-xl bg-slate-950/60 border border-slate-800 p-4">
+          <span class="text-xs font-bold text-emerald-400">01</span>
+          <p class="mt-2 text-sm font-semibold text-white">Connect</p>
+          <p class="mt-1 text-xs text-slate-400 leading-relaxed">X and optional YouTube OAuth under Settings → Connections.</p>
+        </li>
+        <li class="rounded-xl bg-slate-950/60 border border-slate-800 p-4">
+          <span class="text-xs font-bold text-emerald-400">02</span>
+          <p class="mt-2 text-sm font-semibold text-white">Configure AI</p>
+          <p class="mt-1 text-xs text-slate-400 leading-relaxed">Chat model + embedding model (and separate embed host if needed). Test LLM.</p>
+        </li>
+        <li class="rounded-xl bg-slate-950/60 border border-slate-800 p-4">
+          <span class="text-xs font-bold text-emerald-400">03</span>
+          <p class="mt-2 text-sm font-semibold text-white">Process inbox</p>
+          <p class="mt-1 text-xs text-slate-400 leading-relaxed">One button: sync → enrich pending → index embeddings for the active tab.</p>
+        </li>
+        <li class="rounded-xl bg-slate-950/60 border border-slate-800 p-4">
+          <span class="text-xs font-bold text-emerald-400">04</span>
+          <p class="mt-2 text-sm font-semibold text-white">Retrieve</p>
+          <p class="mt-1 text-xs text-slate-400 leading-relaxed">Filter the library, semantic search, or call the Agent API from your writing stack.</p>
+        </li>
+      </ol>
+    </section>
+
+    <!-- Capabilities grid (updated) -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-semibold text-white tracking-tight mb-6">Built for operators</h2>
+      <div class="grid gap-4 sm:grid-cols-3">
+        <div class="rounded-xl border border-slate-700/40 p-5 bg-slate-900/30">
+          <h3 class="text-sm font-semibold text-white">Cost-aware X sync</h3>
+          <p class="mt-2 text-xs text-slate-400 leading-relaxed">Monthly caps, live/local usage, and delta sync that does not re-fetch immutable tweets already in the library.</p>
+        </div>
+        <div class="rounded-xl border border-slate-700/40 p-5 bg-slate-900/30">
+          <h3 class="text-sm font-semibold text-white">Index health</h3>
+          <p class="mt-2 text-xs text-slate-400 leading-relaxed">Dashboard shows indexed vs missing embeddings; config mistakes fail fast instead of “100 failed” noise.</p>
+        </div>
+        <div class="rounded-xl border border-slate-700/40 p-5 bg-slate-900/30">
+          <h3 class="text-sm font-semibold text-white">Processing audit</h3>
+          <p class="mt-2 text-xs text-slate-400 leading-relaxed">Runs, events, and LLM request logs so you can see what enriched, what failed, and why.</p>
+        </div>
+        <div class="rounded-xl border border-slate-700/40 p-5 bg-slate-900/30">
+          <h3 class="text-sm font-semibold text-white">Desktop or CLI</h3>
+          <p class="mt-2 text-xs text-slate-400 leading-relaxed">Tauri app with auto migrations and updater, or Next.js + Prisma for development and custom builds.</p>
+        </div>
+        <div class="rounded-xl border border-slate-700/40 p-5 bg-slate-900/30">
+          <h3 class="text-sm font-semibold text-white">In-app docs</h3>
+          <p class="mt-2 text-xs text-slate-400 leading-relaxed">Getting started: Connections, LLM, Process inbox, Library, and Agent API—without leaving the console.</p>
+        </div>
+        <div class="rounded-xl border border-slate-700/40 p-5 bg-slate-900/30">
+          <h3 class="text-sm font-semibold text-white">Privacy by default</h3>
+          <p class="mt-2 text-xs text-slate-400 leading-relaxed">SQLite, tokens, and embeddings stay on disk. You choose which LLM endpoints ever see content.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dual experience -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-semibold text-white tracking-tight mb-6">How to run it</h2>
+      <div class="grid gap-6 md:grid-cols-2">
+        <div class="rounded-2xl border border-emerald-500/20 bg-emerald-950/20 p-6">
+          <p class="text-xs font-bold uppercase tracking-wide text-emerald-400 mb-2">Default</p>
+          <h3 class="text-lg font-semibold text-white">Desktop app</h3>
+          <p class="mt-2 text-sm text-slate-300 leading-relaxed">
+            Grab the latest build from GitHub Releases. Launch, complete OAuth in your browser, point Settings at your models, hit Process inbox.
+          </p>
+          <a href="https://github.com/GINNOV/xbook/releases" target="_blank" rel="noopener noreferrer" class="mt-4 inline-flex text-sm font-semibold text-emerald-300 hover:text-emerald-200 no-underline">
+            Releases →
+          </a>
+        </div>
+        <div class="rounded-2xl border border-slate-600/50 bg-slate-900/50 p-6">
+          <p class="text-xs font-bold uppercase tracking-wide text-slate-400 mb-2">Developers</p>
+          <h3 class="text-lg font-semibold text-white">From source</h3>
+          <p class="mt-2 text-sm text-slate-300 leading-relaxed">
+            Clone <a href="https://github.com/GINNOV/xbook" class="text-emerald-300 font-semibold underline decoration-emerald-500/40 hover:text-emerald-200" target="_blank" rel="noopener noreferrer">GINNOV/xbook</a>, migrate SQLite, run the Next.js app or package with Tauri. Full test suite and Agent API for automation.
+          </p>
+          <pre class="mt-4 overflow-x-auto rounded-lg bg-slate-950 border border-slate-800 p-3 text-xs text-slate-300 font-mono leading-relaxed">npm install
+npx prisma migrate dev
+npm run dev</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stack note -->
+    <section class="mb-8 rounded-xl border border-slate-800 bg-slate-950/40 px-5 py-4 text-sm text-slate-400 leading-relaxed">
+      <strong class="text-slate-200">Stack:</strong> Next.js App Router, Prisma + SQLite, Tauri desktop shell, OpenAI-compatible LLM clients.
+      Active development lives only in <a href="https://github.com/GINNOV/xbook" class="text-emerald-300 font-medium underline decoration-emerald-500/30" target="_blank" rel="noopener noreferrer">github.com/GINNOV/xbook</a>—this page is the product landing on the Workspace Hub.
+    </section>
+
+    <footer class="pb-8 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
+      <a href="{{ "/" | relURL }}" class="hover:text-slate-300 no-underline">← Back to hub</a>
+      <span>No Amiga chrome here—just a research console.</span>
+    </footer>
+  </div>
+</div>
+
+<style>
+  /* Product page: modern UI only — do not inherit Amiga pixel fonts or pointer */
+  .xbook-page-bg,
+  .xbook-page-bg * {
+    font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+    cursor: auto;
+  }
+  .xbook-page-bg code,
+  .xbook-page-bg pre,
+  .xbook-page-bg .font-mono {
+    font-family: ui-monospace, "SF Mono", "Source Code Pro", Menlo, Consolas, monospace !important;
+  }
+  .xbook-page-bg {
+    background-color: #070b12;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(16, 185, 129, 0.12), transparent 55%),
+      radial-gradient(circle at 80% 20%, rgba(30, 41, 59, 0.5), transparent 40%);
+    color: #e2e8f0;
+  }
+  .xbook-page-main {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .xbook-shell a {
+    text-decoration: none;
+  }
+  .xbook-shell a.underline {
+    text-decoration: underline;
+  }
+</style>
+{{ end }}

@@ -1,0 +1,14 @@
+[
+  {
+    "image": "2_pixdeluxe.png",
+    "description": "You can open individual images or entire directories. If you pick one file at the time tabs are automatically used."
+  },
+  {
+    "image": "3_pixdeluxe.png",
+    "description": "You can browse entire directories and sub folders are parsed as well."
+  },
+  {
+    "image": "4_pixdeluxe.png",
+    "description": "Both in browser or single file mode you can always peek about the image details."
+  }
+]
