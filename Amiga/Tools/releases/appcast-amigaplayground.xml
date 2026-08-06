@@ -3,6 +3,20 @@
   <channel>
     <title>Amiga Playground Changelog</title>
     <item>
+      <title>Version 1.0.0 (Build 43)</title>
+      <description><![CDATA[
+<h4>Playground-ready tutorials folder</h4>
+<ul>
+    <li>One <strong>Tutorials</strong> combo with human-readable names (no HTML walkthrough scraping).</li>
+    <li>Sources live in <code>Amiga/aMiLa/AmigaPlayground/tutorials</code> on GitHub and are cached on launch.</li>
+    <li>Adding a new <code>.s</code>/<code>.asm</code>/<code>.c</code> file (and optional <code>index.json</code> entry) grows the list automatically.</li>
+    <li>Every tutorial is pure, assembleable code validated for the playground.</li>
+</ul>
+]]></description>
+      <pubDate>Thu, 06 Aug 2026 15:23:06 +0200</pubDate>
+      <enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/AmigaPlayground-1.0.0_43.zip" sparkle:version="43" sparkle:shortVersionString="1.0.0" length="2803176" type="application/octet-stream" sparkle:edSignature="4vJUn2DTHcRaYANDZN3eZLwPKaenNfKRVJRKD88mRnHNsLMBTeoR2yEvSrX0y+6jR1q3X50m/j9Jv/cp6mjcBg==" />
+    </item>
+    <item>
       <title>Version 1.0.0 (Build 42)</title>
       <description><![CDATA[
 <h4>Assemble/Run workflow, tutorials, Docker, empty start</h4>

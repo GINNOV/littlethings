@@ -25,9 +25,15 @@ let package = Package(
                 "build",
                 "Helpers",
                 "AmigaPlayground.app",
+                "Amiga Playground.app",
                 "AmigaPlaygroundTests",
+                "AmigaPlaygroundUITests",
                 "AmigaPlayground.xcodeproj",
-                "script"
+                "script",
+                "distribution",
+                "tutorials",
+                "Resources/tutorials",
+                "AGENTIC_AMIGA_CODE_PRODUCER_GOAL.md"
             ],
             resources: [
                 .process("Resources")
