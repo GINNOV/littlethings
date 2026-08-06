@@ -103,4 +103,24 @@ bash "$SCRIPT_DIR/gendmg.sh" \
     --volicon "$VOLUME_ICON" \
     || { echo "Error: DMG creation failed (exit code $?)"; exit 1; }
 
+INFO_PLIST_PATH="${APP_PATH}/Contents/Info.plist"
+VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$INFO_PLIST_PATH")
+BUILD_NUMBER=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$INFO_PLIST_PATH")
+ZIP_NAME="${PROJECT_NAME}-${VERSION}_${BUILD_NUMBER}.zip"
+ZIP_PATH="${DMG_DIR}/${ZIP_NAME}"
+
+echo "Creating ZIP for Sparkle..."
+/usr/bin/ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "$ZIP_PATH"
+
+OBJROOT=$(xcodebuild -project "$PROJECT_PATH" -scheme "$SCHEME" -showBuildSettings -json | sed -n 's/.*"OBJROOT" : "\([^"]*\)".*/\1/p' | head -1)
+PROJECT_DERIVED_DATA_ROOT=$(dirname "$(dirname "$OBJROOT")")
+SIGN_UPDATE_TOOL="${PROJECT_DERIVED_DATA_ROOT}/SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update"
+
+if [[ -x "$SIGN_UPDATE_TOOL" ]]; then
+    echo "Signing ZIP with Sparkle sign_update..."
+    "$SIGN_UPDATE_TOOL" "$ZIP_PATH"
+fi
+
 echo "Build and packaging complete."
+echo "Created DMG: ${DMG_DIR}/${PROJECT_NAME}-${VERSION}_${BUILD_NUMBER}.dmg"
+echo "Created ZIP: ${ZIP_PATH}"
