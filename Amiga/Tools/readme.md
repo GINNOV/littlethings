@@ -9,9 +9,11 @@ This folder contains utility apps and experiments built during the Amiga flashba
 | Folder | Purpose |
 | --- | --- |
 | `ADFinder/` | ADF-related macOS utility project. |
+| `AmigaROMExplorer/` | Amiga ROM catalog and local firmware explorer. |
 | `AuDeluxe/` | Audio-related macOS utility project. |
 | `IFFViewer/` | IFF viewing and preview tooling. |
 | `PixDeluxe/` | Pixel/image utility project. |
+| `build-support/` | Shared build and dependency support used by Amiga tools. |
 | `send2adf/` | Tooling and docs for sending data to ADF workflows. |
 | `releases/` | Compiled release builds when they are available. |
 | `assets/` | Shared assets used by the tools. |
