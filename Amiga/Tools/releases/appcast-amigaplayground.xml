@@ -9,10 +9,11 @@
 <ul>
     <li>Updated ADF floppy disk image generation to use native C-based send2adf instead of xdftool.</li>
     <li>Faster, lightweight bootable floppy creation without external Python dependencies.</li>
+    <li>Rotated Sparkle signing key to match official release key. (This build is a one-time manual update; automatic updates resume after build 39 is installed).</li>
 </ul>
 ]]></description>
-      <pubDate>Thu, 06 Aug 2026 12:58:29 +0200</pubDate>
-      <enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/AmigaPlayground-1.0.0_39.zip" sparkle:version="39" sparkle:shortVersionString="1.0.0" length="2671344" type="application/octet-stream" sparkle:edSignature="ZKr75R981ldyIei9ycgCtdD4woeyOzW0beUVq517LKbgnrzH3XQsDhe/ZpQkyRTrIMG8+AGy2B3veVAg3pWGCQ==" />
+      <pubDate>Thu, 06 Aug 2026 13:19:20 +0200</pubDate>
+      <enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/AmigaPlayground-1.0.0_39.zip" sparkle:version="39" sparkle:shortVersionString="1.0.0" length="2671347" type="application/octet-stream" sparkle:edSignature="yENQpekGpe8PXHNO8RY4pNTOaVv9kmkqGfikRemv/XEX/AuIxgRg/J1h2vCbzb6oOHC0dRDWWzne0LGrQMHPCA==" />
     </item>
     <item>
       <title>Version 1.0.0 (Build 38)</title>
