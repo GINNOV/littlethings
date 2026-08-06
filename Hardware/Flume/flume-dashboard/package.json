@@ -19,7 +19,7 @@
     "date-fns": "^4.1.0",
     "lucide-react": "^0.575.0",
     "next": "^16.2.12",
-    "react": "^19.2.6",
+    "react": "^19.2.8",
     "react-dom": "^19.2.6",
     "recharts": "^3.7.0",
     "rehype-slug": "^6.0.0",
