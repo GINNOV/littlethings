@@ -66,14 +66,25 @@ class CompilerService {
         }
     }
     
-    let xdftoolPath = "/Users/megov/code/GitHub/littlethings/Amiga/aMiLa/fine_tuning/.venv/bin/xdftool"
+    var send2adfPath: String {
+        let candidatePaths = [
+            "/usr/local/bin/send2adf",
+            "/Volumes/AIWork/code/littlethings/Amiga/Tools/send2adf/build/ci/send2adf",
+            "/Volumes/AIWork/code/littlethings/Amiga/Tools/send2adf/build/send2adf"
+        ]
+        for path in candidatePaths {
+            if FileManager.default.fileExists(atPath: path) {
+                return path
+            }
+        }
+        return "/usr/local/bin/send2adf"
+    }
 
     func generateBootableADF(assemblyCode: String, targetADFPath: String, completion: @escaping (Bool, String) -> Void) {
         DispatchQueue.global(qos: .userInitiated).async {
             let tempDir = FileManager.default.temporaryDirectory
             let sourceFile = tempDir.appendingPathComponent("playground_source.s")
             let outputFile = tempDir.appendingPathComponent("playground_bin")
-            let startupFile = tempDir.appendingPathComponent("test_startup")
             
             // 1. Write assembly source code
             do {
@@ -127,71 +138,101 @@ class CompilerService {
                 return
             }
             
-            // 3. Write standard startup-sequence text
-            let startupSequenceContent = "playground_bin\n"
+            // 3. Create staging directory for send2adf (s/startup-sequence and playground_bin)
+            let stagingDir = tempDir.appendingPathComponent(UUID().uuidString)
+            let sDir = stagingDir.appendingPathComponent("s")
+            let startupFile = sDir.appendingPathComponent("startup-sequence")
+            let stagingBinFile = stagingDir.appendingPathComponent("playground_bin")
+            
             do {
+                try FileManager.default.createDirectory(at: sDir, withIntermediateDirectories: true, attributes: nil)
+                let startupSequenceContent = "playground_bin\n"
                 try startupSequenceContent.write(to: startupFile, atomically: true, encoding: .utf8)
+                try FileManager.default.copyItem(at: outputFile, to: stagingBinFile)
             } catch {
                 try? FileManager.default.removeItem(at: sourceFile)
                 try? FileManager.default.removeItem(at: outputFile)
+                try? FileManager.default.removeItem(at: stagingDir)
                 DispatchQueue.main.async {
-                    completion(false, "Failed to write startup-sequence file: \(error.localizedDescription)")
+                    completion(false, "Failed to prepare staging directory for send2adf: \(error.localizedDescription)")
                 }
                 return
             }
             
-            // 4. Create and format ADF using xdftool
-            // Remove existing ADF if it exists at targetADFPath
-            try? FileManager.default.removeItem(atPath: targetADFPath)
+            // 4. Create and format ADF using send2adf
+            // Resolve canonical paths using realpath for POSIX O_NOFOLLOW compatibility with send2adf
+            let resolvedTargetADFPath = self.canonicalPath(for: targetADFPath)
+            try? FileManager.default.removeItem(atPath: resolvedTargetADFPath)
             
-            let xdfProcess = Process()
-            xdfProcess.executableURL = URL(fileURLWithPath: self.xdftoolPath)
-            xdfProcess.arguments = [
-                targetADFPath,
-                "create",
-                "+", "format", "Playground",
-                "+", "boot", "install",
-                "+", "makedir", "s",
-                "+", "write", startupFile.path, "s/startup-sequence",
-                "+", "write", outputFile.path, "playground_bin"
+            let resolvedSDirPath = self.canonicalDirectoryPath(for: sDir.path)
+            let resolvedStagingBinPath = self.canonicalPath(for: stagingBinFile.path)
+            
+            let send2adfProcess = Process()
+            send2adfProcess.executableURL = URL(fileURLWithPath: self.send2adfPath)
+            send2adfProcess.arguments = [
+                "-o", resolvedTargetADFPath,
+                "-N", "Playground",
+                "-B", "1.3",
+                resolvedSDirPath,
+                resolvedStagingBinPath
             ]
             
-            let xdfErrorPipe = Pipe()
-            xdfProcess.standardError = xdfErrorPipe
-            let xdfOutputPipe = Pipe()
-            xdfProcess.standardOutput = xdfOutputPipe
+            let send2adfErrorPipe = Pipe()
+            send2adfProcess.standardError = send2adfErrorPipe
+            let send2adfOutputPipe = Pipe()
+            send2adfProcess.standardOutput = send2adfOutputPipe
             
             do {
-                try xdfProcess.run()
-                xdfProcess.waitUntilExit()
+                try send2adfProcess.run()
+                send2adfProcess.waitUntilExit()
                 
-                let errorData = xdfErrorPipe.fileHandleForReading.readDataToEndOfFile()
+                let errorData = send2adfErrorPipe.fileHandleForReading.readDataToEndOfFile()
                 let errorStr = String(data: errorData, encoding: .utf8) ?? ""
-                let outputData = xdfOutputPipe.fileHandleForReading.readDataToEndOfFile()
+                let outputData = send2adfOutputPipe.fileHandleForReading.readDataToEndOfFile()
                 let outputStr = String(data: outputData, encoding: .utf8) ?? ""
                 
                 // Cleanup temp files
                 try? FileManager.default.removeItem(at: sourceFile)
                 try? FileManager.default.removeItem(at: outputFile)
-                try? FileManager.default.removeItem(at: startupFile)
+                try? FileManager.default.removeItem(at: stagingDir)
                 
-                if xdfProcess.terminationStatus == 0 {
+                if send2adfProcess.terminationStatus == 0 {
                     DispatchQueue.main.async {
-                        completion(true, "Successfully generated bootable ADF disk image at:\n\(targetADFPath)\n\nMount this disk in your Amiga emulator (e.g. FS-UAE / WinUAE) to boot and run your compiled assembly program instantly!")
+                        completion(true, "Successfully generated bootable ADF disk image at:\n\(resolvedTargetADFPath)\n\nMount this disk in your Amiga emulator (e.g. FS-UAE / WinUAE) to boot and run your compiled assembly program instantly!")
                     }
                 } else {
                     DispatchQueue.main.async {
-                        completion(false, "xdftool failed to generate ADF:\n\(errorStr)\n\(outputStr)")
+                        completion(false, "send2adf failed to generate ADF:\n\(errorStr)\n\(outputStr)")
                     }
                 }
             } catch {
                 try? FileManager.default.removeItem(at: sourceFile)
                 try? FileManager.default.removeItem(at: outputFile)
-                try? FileManager.default.removeItem(at: startupFile)
+                try? FileManager.default.removeItem(at: stagingDir)
                 DispatchQueue.main.async {
-                    completion(false, "Failed to run xdftool process: \(error.localizedDescription)")
+                    completion(false, "Failed to run send2adf process: \(error.localizedDescription)")
                 }
             }
         }
+    }
+    
+    private func canonicalPath(for path: String) -> String {
+        let url = URL(fileURLWithPath: path)
+        let parentDir = url.deletingLastPathComponent().path
+        if let realParent = realpath(parentDir, nil) {
+            let realParentPath = String(cString: realParent)
+            free(realParent)
+            return (realParentPath as NSString).appendingPathComponent(url.lastPathComponent)
+        }
+        return path
+    }
+    
+    private func canonicalDirectoryPath(for path: String) -> String {
+        if let realDir = realpath(path, nil) {
+            let realDirPath = String(cString: realDir)
+            free(realDir)
+            return realDirPath
+        }
+        return path
     }
 }

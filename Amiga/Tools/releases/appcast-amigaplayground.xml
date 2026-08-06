@@ -3,6 +3,18 @@
   <channel>
     <title>Amiga Playground Changelog</title>
     <item>
+      <title>Version 1.0.0 (Build 39)</title>
+      <description><![CDATA[
+<h4>send2adf Tool Integration</h4>
+<ul>
+    <li>Updated ADF floppy disk image generation to use native C-based send2adf instead of xdftool.</li>
+    <li>Faster, lightweight bootable floppy creation without external Python dependencies.</li>
+</ul>
+]]></description>
+      <pubDate>Thu, 06 Aug 2026 12:58:29 +0200</pubDate>
+      <enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/AmigaPlayground-1.0.0_39.dmg" sparkle:version="39" sparkle:shortVersionString="1.0.0" length="3920422" type="application/octet-stream" sparkle:edSignature="H7GaWfzQgZ0RsnFWzTQF8k2tocp2XTqxxXbCs78WSFb/xczYrbSssrgGqN9aFB31JZvtCUX6Zb8h6DO8NEakCA==" />
+    </item>
+    <item>
       <title>Version 1.0.0 (Build 38)</title>
       <description><![CDATA[
 <h4>Sparkle updates</h4>

@@ -17,6 +17,7 @@ struct HelperStatus: Codable {
 
 struct HelperConfiguration {
     let modelPath: String
+    let adapterPath: String?
     let port: Int
     let logFilePath: String
     let runtimeCommand: String
@@ -91,8 +92,10 @@ func parseArguments(_ arguments: [String]) throws -> HelperConfiguration {
         throw HelperArgumentError.invalidPort(portString)
     }
 
+    let adapterRaw = values["--adapter-path"]?.trimmingCharacters(in: .whitespacesAndNewlines)
     return HelperConfiguration(
         modelPath: try required("--model"),
+        adapterPath: (adapterRaw?.isEmpty == false) ? adapterRaw : nil,
         port: port,
         logFilePath: try required("--log-file"),
         runtimeCommand: try required("--runtime-command"),
@@ -111,11 +114,15 @@ func shellQuote(_ value: String) -> String {
 
 func launchCommand(configuration: HelperConfiguration) -> String {
     let runtimeCommand = normalizedRuntimeCommand(configuration.runtimeCommand, uvPath: configuration.uvPath)
-    return [
+    var parts = [
         runtimeCommand,
         "--model", shellQuote(configuration.modelPath),
         "--port", shellQuote("\(configuration.port)")
-    ].joined(separator: " ")
+    ]
+    if let adapterPath = configuration.adapterPath, !adapterPath.isEmpty {
+        parts += ["--adapter-path", shellQuote(adapterPath)]
+    }
+    return parts.joined(separator: " ")
 }
 
 func normalizedRuntimeCommand(_ command: String, uvPath: String?) -> String {
@@ -260,8 +267,19 @@ func preflight(configuration: HelperConfiguration) -> HelperConfiguration {
         fail(
             "MLX model directory was not found: \(configuration.modelPath)",
             code: "missing_model",
-            action: "Build or copy the fused MLX model to \(configuration.modelPath), then start the server again."
+            action: "Run aMiLa/fine_tuning/download_model.sh to fetch the Qwen2.5-Coder base into default_model/, then start the server again."
         )
+    }
+
+    if let adapterPath = configuration.adapterPath, !adapterPath.isEmpty {
+        let weights = URL(fileURLWithPath: adapterPath).appendingPathComponent("adapters.safetensors").path
+        guard FileManager.default.fileExists(atPath: weights) else {
+            fail(
+                "MLX adapter was not found: \(weights)",
+                code: "missing_adapter",
+                action: "Run aMiLa/fine_tuning/download_model.sh to fetch adapters_b6 from bmove/amiga-rc-cappella-asm-qwen25."
+            )
+        }
     }
 
     guard let uvPath = resolveUVExecutable(explicitPath: configuration.uvPath) else {
@@ -300,6 +318,7 @@ func preflight(configuration: HelperConfiguration) -> HelperConfiguration {
     emit(event: "preflight", message: "MLX runtime preflight passed")
     return HelperConfiguration(
         modelPath: configuration.modelPath,
+        adapterPath: configuration.adapterPath,
         port: configuration.port,
         logFilePath: configuration.logFilePath,
         runtimeCommand: configuration.runtimeCommand,

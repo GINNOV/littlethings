@@ -583,13 +583,13 @@ CopperList:
     func testGenerateBootableADF() {
         let compiler = CompilerService.shared
 
-        // Ensure both vasm and xdftool exist before running ADF generation test
+        // Ensure both vasm and send2adf exist before running ADF generation test
         guard FileManager.default.fileExists(atPath: compiler.vasmPath) else {
             print("Skipping ADF generation test: VASM compiler not found at \(compiler.vasmPath)")
             return
         }
-        guard FileManager.default.fileExists(atPath: compiler.xdftoolPath) else {
-            print("Skipping ADF generation test: xdftool not found at \(compiler.xdftoolPath)")
+        guard FileManager.default.fileExists(atPath: compiler.send2adfPath) else {
+            print("Skipping ADF generation test: send2adf not found at \(compiler.send2adfPath)")
             return
         }
 
@@ -1231,13 +1231,14 @@ CopperList:
     func testMLXServerBuildsExpectedLaunchInvocation() throws {
         let tempDirectory = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString, isDirectory: true)
-        let modelDirectory = tempDirectory.appendingPathComponent("fused_model", isDirectory: true)
+        let modelDirectory = tempDirectory.appendingPathComponent("default_model", isDirectory: true)
         try FileManager.default.createDirectory(at: modelDirectory, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: tempDirectory) }
 
         let config = MLXServerController.Configuration(
             workingDirectory: tempDirectory,
-            modelDirectoryName: "fused_model",
+            modelDirectoryName: "default_model",
+            adapterDirectoryName: "adapters_b6",
             port: 1234,
             logFileName: "server.log"
         )
@@ -1247,7 +1248,7 @@ CopperList:
         XCTAssertEqual(invocation.executableURL.path, "/bin/zsh")
         XCTAssertEqual(invocation.arguments, [
             "-lc",
-            "cd '\(tempDirectory.path)' && exec uv run python -m mlx_lm.server --model 'fused_model' --port '1234'"
+            "cd '\(tempDirectory.path)' && exec uv run python -m mlx_lm.server --model 'default_model' --port '1234' --adapter-path 'adapters_b6'"
         ])
         XCTAssertEqual(invocation.workingDirectory, tempDirectory)
         XCTAssertEqual(invocation.logFile, tempDirectory.appendingPathComponent("server.log"))
@@ -1262,7 +1263,8 @@ CopperList:
         let controller = MLXServerController(
             configuration: MLXServerController.Configuration(
                 workingDirectory: tempDirectory,
-                modelDirectoryName: "fused_model",
+                modelDirectoryName: "default_model",
+                adapterDirectoryName: "adapters_b6",
                 port: 1234,
                 logFileName: "server.log"
             )
@@ -1275,7 +1277,7 @@ CopperList:
             return
         }
 
-        XCTAssertTrue(message.contains("fused_model"))
+        XCTAssertTrue(message.contains("default_model"))
     }
 }
 
