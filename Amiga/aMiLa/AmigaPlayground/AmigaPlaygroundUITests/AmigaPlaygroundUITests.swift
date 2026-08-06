@@ -23,16 +23,16 @@ final class AmigaPlaygroundUITests: XCTestCase {
         let window = app.windows.firstMatch
         XCTAssertTrue(window.staticTexts["Amiga Playground"].waitForExistence(timeout: 3))
 
-        let runButtons = window.buttons.matching(NSPredicate(format: "label == %@", "Run Emulator [F6]"))
+        let runButtons = window.buttons.matching(NSPredicate(format: "label == %@", "Run"))
         XCTAssertEqual(runButtons.count, 1, "The main UI must expose one default-emulator run button.")
-        XCTAssertEqual(runButtons.firstMatch.label, "Run Emulator [F6]")
+        XCTAssertEqual(runButtons.firstMatch.label, "Run")
 
         XCTAssertFalse(window.buttons["Run in FS-UAE [F6]"].exists)
         XCTAssertFalse(window.buttons["Validate vAmiga [F8]"].exists)
         XCTAssertFalse(window.buttons["Web Emulator [F7]"].exists)
 
-        XCTAssertTrue(window.buttons["Assemble [F5]"].exists)
-        XCTAssertTrue(window.buttons["Export Bootable ADF"].exists)
+        XCTAssertTrue(window.buttons["Assemble"].exists)
+        XCTAssertTrue(window.buttons["Export ADF"].exists)
         XCTAssertTrue(window.descendants(matching: .any)["goldExamplesMenu"].exists)
         XCTAssertTrue(window.descendants(matching: .any)["assistantPromptField"].exists)
         XCTAssertTrue(window.buttons["Send"].exists)
@@ -49,7 +49,7 @@ final class AmigaPlaygroundUITests: XCTestCase {
         XCTAssertGreaterThanOrEqual(idleLabels.count, 1)
         let indicator = idleLabels.firstMatch
 
-        let runButton = window.buttons["Run Emulator [F6]"]
+        let runButton = window.buttons["Run"]
         XCTAssertTrue(runButton.exists)
         XCTAssertGreaterThan(indicator.frame.minX, runButton.frame.maxX)
         XCTAssertGreaterThan(indicator.frame.maxX, window.frame.maxX - 150)
@@ -91,9 +91,9 @@ final class AmigaPlaygroundUITests: XCTestCase {
         XCTAssertTrue(app.buttons["vAmiga"].exists)
 
         app.buttons["AI"].click()
-        XCTAssertTrue(app.staticTexts["Model name"].waitForExistence(timeout: 2))
-        XCTAssertTrue(app.staticTexts["Custom API URL"].exists)
-        XCTAssertTrue(app.descendants(matching: .any)["activeEndpointLabel"].exists)
+        XCTAssertTrue(app.descendants(matching: .any)["aiConnectionModePicker"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.descendants(matching: .any)["startMLXServerButton"].exists)
+        XCTAssertTrue(app.descendants(matching: .any)["openMLXServerFolderButton"].exists)
 
         let screenshot = XCTAttachment(screenshot: app.windows.element(boundBy: 1).screenshot())
         screenshot.name = "Settings Tabs Visual Contract"

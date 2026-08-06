@@ -158,6 +158,13 @@ CRITICAL DIRECTIVES:
         return trimmed.isEmpty || trimmed == Self.playgroundModelId
     }
 
+    /// Bundled Playground path: LM Studio port, no custom URL, product model id.
+    var isUsingPlaygroundConnection: Bool {
+        provider == .lmStudio
+            && customUrl.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            && isUsingPlaygroundModel
+    }
+
     var connectionStatusLabel: String {
         connectionStatus.label(for: provider)
     }

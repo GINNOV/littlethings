@@ -967,6 +967,8 @@ CopperList:
         service.customUrl = "http://somewhere:9"
         service.modelName = "default_model"
 
+        XCTAssertFalse(service.isUsingPlaygroundConnection)
+
         service.applyPlaygroundConnectionDefaults()
 
         XCTAssertEqual(service.provider, .lmStudio)
@@ -974,6 +976,7 @@ CopperList:
         XCTAssertEqual(service.modelName, "amiga-playground-asm")
         XCTAssertEqual(service.requestModelName, "amiga-playground-asm")
         XCTAssertTrue(service.isUsingPlaygroundModel)
+        XCTAssertTrue(service.isUsingPlaygroundConnection)
     }
 
     func testOllamaServiceMigrateLegacyModelNameIfNeededRewritesUIField() {
@@ -1328,6 +1331,73 @@ CopperList:
 
         XCTAssertTrue(message.contains("runtime/base"))
     }
+
+    // MARK: - Tutorial Catalog
+
+    func testTutorialCatalogParsesWalkthroughs() {
+        let html = """
+        <article class="project-card">
+            <h3 class="!text-2xl">Getting Started with Amiga Assembly</h3>
+            <a href="tutorials/setup-asm.html" class="learn-button">Read</a>
+        </article>
+        <article class="project-card">
+            <h3 class="!text-2xl">Basics of Joystick Control</h3>
+            <a href="tutorials/joystick.html" class="learn-button">Read</a>
+        </article>
+        """
+        let entries = TutorialCatalogService.parseCatalogHTML(
+            html,
+            baseURLString: TutorialCatalogService.catalogBaseURLString
+        )
+        XCTAssertEqual(entries.count, 2)
+        XCTAssertEqual(entries[0].title, "Getting Started with Amiga Assembly")
+        XCTAssertEqual(entries[0].relativePath, "tutorials/setup-asm.html")
+        XCTAssertEqual(
+            entries[0].absoluteURLString,
+            "https://ginnov.github.io/littlethings/amiga/tutorials/setup-asm.html"
+        )
+        XCTAssertEqual(entries[1].title, "Basics of Joystick Control")
+    }
+
+    func testTutorialSourceExtractionDecodesEntities() {
+        let html = """
+        <pre><code class="language-assembly" data-lang="assembly">; hello&#34;world&#34;
+            moveq #0,d0
+        </code></pre>
+        """
+        let source = TutorialCatalogService.extractSource(from: html)
+        XCTAssertEqual(source?.language, "assembly")
+        XCTAssertTrue(source?.code.contains("; hello\"world\"") == true)
+        XCTAssertTrue(source?.code.contains("moveq #0,d0") == true)
+    }
+
+    func testDockerBackendDisplayNameAndArgs() {
+        XCTAssertEqual(EmulatorBackend.docker.displayName, "Docker (vamos)")
+        let service = EmulatorService.shared
+        let vasmArgs = service.buildDockerVasmArguments(
+            workDir: "/tmp/work",
+            sourceFileName: "program.s",
+            outputFileName: "program"
+        )
+        XCTAssertEqual(vasmArgs[0], "run")
+        XCTAssertTrue(vasmArgs.contains("sebastianbergmann/m68k-amigaos-bebbo"))
+        XCTAssertTrue(vasmArgs.contains("/opt/folder/program.s"))
+
+        let vamosArgs = service.buildDockerVamosArguments(
+            workDir: "/tmp/work",
+            binaryFileName: "program",
+            cpu: "68020"
+        )
+        XCTAssertTrue(vamosArgs.contains("sebastianbergmann/amitools:latest"))
+        XCTAssertTrue(vamosArgs.contains("vamos"))
+        XCTAssertTrue(vamosArgs.contains("68020"))
+    }
+
+    func testLoadLastEditedFilePreferenceDefaultsOff() {
+        XCTAssertEqual(AppPreferenceDefaults.loadLastEditedFileKey, "loadLastEditedFile")
+        XCTAssertFalse(AppPreferenceDefaults.loadLastEditedFile)
+    }
+
 }
 
 private extension URLRequest {

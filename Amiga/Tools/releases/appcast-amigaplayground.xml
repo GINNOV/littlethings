@@ -3,6 +3,20 @@
   <channel>
     <title>Amiga Playground Changelog</title>
     <item>
+      <title>Version 1.0.0 (Build 42)</title>
+      <description><![CDATA[
+<h4>Assemble/Run workflow, tutorials, Docker, empty start</h4>
+<ul>
+    <li><strong>⌘B</strong> assembles; <strong>⌘R</strong> runs in the default emulator. Run sits right after Assemble in the toolbar.</li>
+    <li>Toolbar <strong>Tutorials</strong> combo loads walkthroughs from littlethings/amiga (catalog + source code cached after first fetch).</li>
+    <li>Settings → General: <strong>Load last edited file</strong> (off by default). With it off, the editor starts empty.</li>
+    <li>Default emulator option <strong>Docker (vamos)</strong> assembles and runs via Docker/vamos.</li>
+</ul>
+]]></description>
+      <pubDate>Thu, 06 Aug 2026 15:07:52 +0200</pubDate>
+      <enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/AmigaPlayground-1.0.0_42.zip" sparkle:version="42" sparkle:shortVersionString="1.0.0" length="2780748" type="application/octet-stream" sparkle:edSignature="cBUUpjvkKYB49oLOXcqp/Uo0mpRHqo2GJwnnvLx8oNYLIzAipM7B5DpoAzhn2bx/T0pDZHZKo/CyKYno5zwvBg==" />
+    </item>
+    <item>
       <title>Version 1.0.0 (Build 41)</title>
       <description><![CDATA[
 <h4>Playground ASM model UX</h4>

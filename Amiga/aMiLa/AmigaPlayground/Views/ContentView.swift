@@ -34,6 +34,9 @@ extension FocusedValues {
 enum AppPreferenceDefaults {
     static let showChatBoingBallKey = "showChatBoingBall"
     static let showChatBoingBall = true
+    static let loadLastEditedFileKey = "loadLastEditedFile"
+    static let loadLastEditedFile = false
+    static let lastEditedFilePathKey = "lastEditedFilePath"
 }
 
 struct AmigaPlaygroundCommands: Commands {
@@ -46,7 +49,7 @@ struct AmigaPlaygroundCommands: Commands {
                     actions.assemble()
                 }
                 .disabled(!actions.canRun)
-                .keyboardShortcut("r", modifiers: .command)
+                .keyboardShortcut("b", modifiers: .command)
 
                 Button("Fix Compile Errors with Assistant") {
                     actions.fixCompileErrors()
@@ -92,7 +95,7 @@ struct AmigaPlaygroundCommands: Commands {
                     actions.runDefaultEmulator()
                 }
                 .disabled(!actions.canRun)
-                .keyboardShortcut("r", modifiers: [.command, .shift])
+                .keyboardShortcut("r", modifiers: .command)
 
                 Divider()
 
@@ -183,97 +186,7 @@ struct ContentView: View {
     }
 
     // Editor State
-    @State private var codeText: String = """
-; ==========================================================
-;   Amiga 68000 Copper List Example
-;   Generates a classic vertical raster rainbow bar
-;   (System-friendly graphics.library takeover)
-; ==========================================================
-
-            SECTION    Code,CODE,CHIP       ; Must be in CHIP RAM!
-
-            XDEF       _StartCopper
-_StartCopper:
-            movem.l    d2-d7/a2-a6,-(sp)    ; Save registers
-
-            ; 1. Open Graphics Library
-            move.l     $4.w,a6              ; ExecBase
-            lea        gfxName(pc),a1
-            moveq      #0,d0
-            jsr        -408(a6)             ; OpenLibrary
-            move.l     d0,GfxBase
-            beq.s      .exit
-
-            ; 2. Shut down OS View/Display (System-friendly loadview)
-            move.l     GfxBase(pc),a6
-            move.l     34(a6),oldView       ; Save GfxBase->ActiView (offset 34)
-
-            sub.l      a1,a1                ; Load NULL view (turns off OS screen)
-            jsr        -222(a6)             ; LoadView(NULL)
-            jsr        -270(a6)             ; WaitTOF()
-            jsr        -270(a6)             ; Double WaitTOF for interlaced setup
-
-            ; 3. Setup Custom Copper List
-            lea        $dff000,a5
-            lea        CopperList(pc),a0
-            move.l     a0,$80(a5)           ; Write COP1LC ($DFF080)
-            move.w     #$0000,$88(a5)       ; Strobe COPJMP1 ($DFF088) to activate
-
-            ; Enable copper DMA
-            move.w     #$8280,$96(a5)       ; DMACON: set COPEN and DMAEN
-
-.waitButton:
-            ; Wait for left mouse button (Port $bfe001, bit 6)
-            btst       #6,$bfe001
-            bne.s      .waitButton
-
-            ; 4. Restore OS View and Copper
-            move.l     GfxBase(pc),a6
-            move.l     oldView(pc),a1       ; Load old view pointer
-            jsr        -222(a6)             ; LoadView(oldView)
-            jsr        -270(a6)             ; WaitTOF()
-            jsr        -270(a6)             ; WaitTOF()
-
-            ; Close Graphics Library
-            move.l     $4.w,a6
-            move.l     GfxBase(pc),a1
-            jsr        -414(a6)             ; CloseLibrary
-
-.exit:
-            movem.l    (sp)+,d2-d7/a2-a6    ; Restore registers
-            moveq      #0,d0                ; Return 0
-            rts
-
-gfxName:    dc.b       "graphics.library",0
-            EVEN
-GfxBase:    dc.l       0
-oldView:    dc.l       0
-
-            ALIGN      4
-CopperList:
-            ; Custom screen copper instructions
-            dc.w       $0100,$0200          ; BPLCON0: disable all bitplanes (black screen)
-
-            ; Vertical color raster splits
-            dc.w       $5007,$fffe          ; Wait for line 80
-            dc.w       $0180,$0f00          ; Color 0 = Red
-            dc.w       $5807,$fffe          ; Wait for line 88
-            dc.w       $0180,$0f70          ; Color 0 = Orange
-            dc.w       $6007,$fffe          ; Wait for line 96
-            dc.w       $0180,$0ff0          ; Color 0 = Yellow
-            dc.w       $6807,$fffe          ; Wait for line 104
-            dc.w       $0180,$00f0          ; Color 0 = Green
-            dc.w       $7007,$fffe          ; Wait for line 112
-            dc.w       $0180,$00ff          ; Color 0 = Cyan
-            dc.w       $7807,$fffe          ; Wait for line 120
-            dc.w       $0180,$000f          ; Color 0 = Blue
-            dc.w       $8007,$fffe          ; Wait for line 128
-            dc.w       $0180,$0f0f          ; Color 0 = Purple
-            dc.w       $8807,$fffe          ; Wait for line 136
-            dc.w       $0180,$0000          ; Color 0 = Black
-
-            dc.w       $ffff,$fffe          ; End of copper list
-"""
+    @State private var codeText: String = ""
 
 
     // Persisted Amiga Hardware Settings
@@ -294,6 +207,8 @@ CopperList:
     @AppStorage("vAmigaSerialPort") private var vAmigaSerialPort: Int = 8085
     @AppStorage("autoRunEmulator") private var autoRunEmulator: Bool = false
     @AppStorage(AppPreferenceDefaults.showChatBoingBallKey) private var showChatBoingBall: Bool = AppPreferenceDefaults.showChatBoingBall
+    @AppStorage(AppPreferenceDefaults.loadLastEditedFileKey) private var loadLastEditedFile: Bool = AppPreferenceDefaults.loadLastEditedFile
+    @AppStorage(AppPreferenceDefaults.lastEditedFilePathKey) private var lastEditedFilePath: String = ""
 
     // Compilation & Output State
     @State private var outputConsole: String = "VASM compiler idle.\nPress Assemble to build the program."
@@ -304,6 +219,10 @@ CopperList:
     @State private var activeOutputTab: OutputTab = .console
     @State private var didCopyConsole: Bool = false
     @State private var lastSavedCodeURL: URL?
+    @StateObject private var tutorialCatalog = TutorialCatalogService.shared
+    @State private var selectedTutorialID: String = ""
+    @State private var isLoadingTutorial: Bool = false
+    @State private var didApplyStartupEditorState: Bool = false
 
     private var selectedBackend: EmulatorBackend {
         EmulatorBackend(rawValue: emulatorBackend) ?? .fsUAE
@@ -524,16 +443,30 @@ SineWave:
                     HStack(spacing: 8) {
                         Button(action: runCompilation) {
                             HStack {
-                                Image(systemName: "play.fill")
+                                Image(systemName: "hammer.fill")
                                 Text("Assemble")
                             }
                         }
                         .disabled(isCompiling || isExportingADF)
-                        .keyboardShortcut(.init("r"), modifiers: .command)
+                        .keyboardShortcut(.init("b"), modifiers: .command)
                         .controlSize(.large)
                         .buttonStyle(.borderedProminent)
                         .accessibilityIdentifier("assembleButton")
-                        .help("Assemble the current source")
+                        .accessibilityLabel("Assemble")
+                        .help("Assemble the current source (⌘B)")
+
+                        Button(action: runInEmulator) {
+                            HStack {
+                                Image(systemName: "play.fill")
+                                Text("Run")
+                            }
+                        }
+                        .disabled(isCompiling || isExportingADF || isLoadingTutorial)
+                        .keyboardShortcut(.init("r"), modifiers: .command)
+                        .buttonStyle(.bordered)
+                        .accessibilityIdentifier("runDefaultEmulatorButton")
+                        .accessibilityLabel("Run")
+                        .help("Assemble and run in the selected emulator (⌘R)")
 
                         Button(action: fixCompileErrorsWithAssistant) {
                             HStack {
@@ -576,17 +509,6 @@ SineWave:
                         .accessibilityIdentifier("indentCodeButton")
                         .help("Indent assembly or C source for vasm")
 
-                        Button(action: runInEmulator) {
-                            HStack {
-                                Image(systemName: "play.tv")
-                                Text("Run")
-                            }
-                        }
-                        .disabled(isCompiling || isExportingADF)
-                        .buttonStyle(.bordered)
-                        .accessibilityIdentifier("runDefaultEmulatorButton")
-                        .help("Assemble and run in the selected emulator")
-
                         Button(action: exportToADF) {
                             HStack {
                                 Image(systemName: "opticaldisc")
@@ -614,6 +536,31 @@ SineWave:
                         .buttonStyle(.bordered)
                         .accessibilityIdentifier("goldExamplesMenu")
                         .help("Load an example assembly program")
+
+                        Picker(selection: $selectedTutorialID) {
+                            Text("Tutorials").tag("")
+                            if tutorialCatalog.isLoading && tutorialCatalog.tutorials.isEmpty {
+                                Text("Loading tutorials…").tag("__loading__")
+                            }
+                            ForEach(tutorialCatalog.tutorials) { tutorial in
+                                Text(tutorial.title).tag(tutorial.id)
+                            }
+                        } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: "graduationcap")
+                                Text("Tutorials")
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .labelsHidden()
+                        .frame(minWidth: 140)
+                        .disabled(isLoadingTutorial || (tutorialCatalog.isLoading && tutorialCatalog.tutorials.isEmpty))
+                        .accessibilityIdentifier("tutorialsPicker")
+                        .help("Load a tutorial from littlethings/amiga walkthroughs")
+                        .onChange(of: selectedTutorialID) { _, newValue in
+                            guard !newValue.isEmpty, newValue != "__loading__" else { return }
+                            loadTutorial(id: newValue)
+                        }
 
                         Button(role: .destructive) {
                             clearEditor()
@@ -974,6 +921,8 @@ SineWave:
         .focusedSceneValue(\.amigaPlaygroundActions, playgroundActions)
         .onAppear {
             llm.refreshConnectionStatus()
+            tutorialCatalog.loadIfNeeded()
+            applyStartupEditorStateIfNeeded()
         }
         .onChange(of: llm.provider) {
             llm.refreshConnectionStatus()
@@ -1011,12 +960,70 @@ SineWave:
 
     private func clearEditor() {
         codeText = ""
+        selectedTutorialID = ""
         outputConsole = "Editor Cleared."
     }
 
     private func loadExample(named key: String) {
         codeText = examples[key] ?? ""
+        selectedTutorialID = ""
         outputConsole = "Loaded '\(key)' example assembly source code."
+    }
+
+    private func applyStartupEditorStateIfNeeded() {
+        guard !didApplyStartupEditorState else { return }
+        didApplyStartupEditorState = true
+
+        guard loadLastEditedFile else {
+            codeText = ""
+            lastSavedCodeURL = nil
+            return
+        }
+
+        let path = lastEditedFilePath.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !path.isEmpty else {
+            codeText = ""
+            return
+        }
+
+        let url = URL(fileURLWithPath: path)
+        guard FileManager.default.fileExists(atPath: url.path) else {
+            codeText = ""
+            outputConsole = "Last edited file not found:\n\(path)"
+            return
+        }
+
+        do {
+            codeText = try String(contentsOf: url, encoding: .utf8)
+            lastSavedCodeURL = url
+            outputConsole = "Loaded last edited file:\n\(url.path)"
+        } catch {
+            codeText = ""
+            outputConsole = "Failed to load last edited file:\n\(error.localizedDescription)"
+        }
+    }
+
+    private func rememberEditedFile(at url: URL) {
+        lastSavedCodeURL = url
+        lastEditedFilePath = url.path
+    }
+
+    private func loadTutorial(id: String) {
+        guard let tutorial = tutorialCatalog.tutorials.first(where: { $0.id == id }) else { return }
+        isLoadingTutorial = true
+        outputConsole = "Loading tutorial '\(tutorial.title)'..."
+
+        tutorialCatalog.fetchSource(for: tutorial) { result in
+            self.isLoadingTutorial = false
+            switch result {
+            case .success(let source):
+                self.codeText = source.code
+                self.outputConsole = "Loaded tutorial '\(tutorial.title)' (\(source.language))."
+            case .failure(let error):
+                self.selectedTutorialID = ""
+                self.outputConsole = "Failed to load tutorial '\(tutorial.title)':\n\(error.localizedDescription)"
+            }
+        }
     }
 
     private func startNewChat() {
@@ -1048,11 +1055,29 @@ SineWave:
     }
 
     private func runInEmulator() {
+        if selectedBackend == .docker {
+            runInDockerEmulator()
+            return
+        }
+
         runNativeEmulator(
             backend: selectedBackend,
             label: selectedBackendName,
             openingMessage: "Assembling code and packaging bootable ADF for \(selectedBackendName)...\n"
         )
+    }
+
+    private func runInDockerEmulator() {
+        isCompiling = true
+        buildStatus = .running
+        activeOutputTab = .console
+        outputConsole = "Assembling and running via Docker (vasm + vamos)...\n"
+
+        EmulatorService.shared.launchDocker(assemblyCode: codeText, cpu: emulatorCpu) { result in
+            self.isCompiling = false
+            self.buildStatus = result.success ? .success : .failure
+            self.outputConsole = result.message
+        }
     }
 
     // Validate compiled code through vAmiga Desktop automation servers.
@@ -1482,7 +1507,7 @@ SineWave:
 
         savePanel.begin { response in
             if response == .OK, let targetURL = savePanel.url {
-                self.lastSavedCodeURL = targetURL
+                self.rememberEditedFile(at: targetURL)
                 self.writeCode(to: targetURL)
             }
         }
@@ -1491,6 +1516,7 @@ SineWave:
     private func writeCode(to url: URL) {
         do {
             try codeText.write(to: url, atomically: true, encoding: .utf8)
+            rememberEditedFile(at: url)
             outputConsole = "Saved source code to:\n\(url.path)"
         } catch {
             outputConsole = "Failed to save source code:\n\(error.localizedDescription)"
@@ -1547,9 +1573,25 @@ struct SettingsView: View {
     @AppStorage("vAmigaSerialPort") private var vAmigaSerialPort: Int = 8085
     @AppStorage("autoRunEmulator") private var autoRunEmulator: Bool = false
     @AppStorage(AppPreferenceDefaults.showChatBoingBallKey) private var showChatBoingBall: Bool = AppPreferenceDefaults.showChatBoingBall
+    @AppStorage(AppPreferenceDefaults.loadLastEditedFileKey) private var loadLastEditedFile: Bool = AppPreferenceDefaults.loadLastEditedFile
     @AppStorage("romsDirectoryPath") private var romsDirectoryPath: String = "/Users/megov/code/GitHub/littlethings/Amiga/commodore-amiga-firmware"
 
     @State private var availableRoms: [RomEntry] = []
+    @State private var aiConnectionMode: AIConnectionMode = .playground
+
+    private enum AIConnectionMode: String, CaseIterable, Identifiable {
+        case playground
+        case custom
+
+        var id: String { rawValue }
+
+        var title: String {
+            switch self {
+            case .playground: return "Playground"
+            case .custom: return "Custom"
+            }
+        }
+    }
 
     let models = ["A500", "A500+", "A600", "A1000", "A1200", "A2000", "A3000", "A4000"]
     let cpus = ["68000", "68010", "68020", "68030", "68040", "68060"]
@@ -1607,6 +1649,8 @@ struct SettingsView: View {
             return "FS-UAE launches the generated ADF with the selected ROM and hardware configuration."
         case .vAmiga:
             return "vAmiga validation uses Desktop automation servers to collect RPC trace, CPU, and runtime evidence."
+        case .docker:
+            return "Docker assembles with vasm and runs the hunk executable via vamos (sebastianbergmann/amitools)."
         }
     }
 
@@ -1759,8 +1803,10 @@ struct SettingsView: View {
                 .tabItem { Label("vAmiga", systemImage: "waveform.path.ecg") }
                 .accessibilityIdentifier("settingsVAmigaTab")
         }
-        .padding(20)
-        .frame(width: 680, height: 620)
+        .padding(.horizontal, 12)
+        .padding(.bottom, 12)
+        .padding(.top, 2)
+        .frame(width: 680, height: 580)
         .onAppear {
             self.availableRoms = EmulatorService.shared.getAvailableRoms()
             if !selectedRomFilename.isEmpty && !availableRoms.contains(where: { $0.relativePath == selectedRomFilename }) {
@@ -1782,6 +1828,10 @@ struct SettingsView: View {
 
             Toggle("Automatically run default emulator after assembly", isOn: $autoRunEmulator)
 
+            Toggle("Load last edited file", isOn: $loadLastEditedFile)
+                .accessibilityIdentifier("loadLastEditedFileToggle")
+                .help("When enabled, reopen the last saved source file on launch. When disabled, start with an empty editor.")
+
             Toggle("Show Boing Ball animation in chat", isOn: $showChatBoingBall)
                 .accessibilityIdentifier("showChatBoingBallToggle")
         }
@@ -1789,173 +1839,180 @@ struct SettingsView: View {
         .padding()
     }
 
+    private var aiConnectionModeBinding: Binding<AIConnectionMode> {
+        Binding(
+            get: { aiConnectionMode },
+            set: { mode in
+                aiConnectionMode = mode
+                if mode == .playground {
+                    llm.applyPlaygroundConnectionDefaults()
+                    llm.refreshConnectionStatus()
+                }
+            }
+        )
+    }
+
     private var aiSettings: some View {
         Form {
             Section {
-                Text("Recommended: start the local MLX server. It configures the endpoint and model for you — no typing required.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-
-                HStack(spacing: 8) {
-                    Circle()
-                        .fill(mlxServerStatusColor)
-                        .frame(width: 8, height: 8)
-                        .accessibilityHidden(true)
-
-                    Text(mlxServer.status.label)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .accessibilityIdentifier("mlxServerStatusLabel")
+                Picker("Connection", selection: aiConnectionModeBinding) {
+                    ForEach(AIConnectionMode.allCases) { mode in
+                        Text(mode.title).tag(mode)
+                    }
                 }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .accessibilityLabel("Connection")
+                .accessibilityIdentifier("aiConnectionModePicker")
+                .help("Playground uses the bundled MLX model. Custom uses any OpenAI-compatible or Ollama server.")
+            }
 
-                if let detail = mlxServer.status.detail {
-                    Text(detail)
-                        .font(.caption)
-                        .foregroundStyle(.red)
-                }
-
-                HStack {
-                    Button {
-                        llm.applyPlaygroundConnectionDefaults()
-                        mlxServer.start()
-                    } label: {
-                        Label("Start MLX Server", systemImage: "play.fill")
-                    }
-                    .disabled(!mlxServer.canStart)
-                    .accessibilityIdentifier("startMLXServerButton")
-
-                    Button {
-                        mlxServer.stop()
-                        llm.refreshConnectionStatus()
-                    } label: {
-                        Label("Stop", systemImage: "stop.fill")
-                    }
-                    .disabled(!mlxServer.canStop)
-                    .accessibilityIdentifier("stopMLXServerButton")
-
-                    Button {
-                        mlxServer.refreshStatus()
-                        llm.refreshConnectionStatus()
-                    } label: {
-                        Label("Refresh", systemImage: "arrow.clockwise")
-                    }
-                    .accessibilityIdentifier("refreshMLXServerButton")
-
-                    Button {
-                        NSWorkspace.shared.open(mlxServer.configuration.workingDirectory)
-                    } label: {
-                        Label("Folder", systemImage: "folder")
-                    }
-                    .accessibilityIdentifier("openMLXServerFolderButton")
-                }
-
-                Text("Endpoint: \(mlxServer.endpointDescription)")
-                    .font(.caption.monospaced())
-                    .foregroundStyle(.secondary)
-
-                Text("Model: \(OllamaService.playgroundModelId)")
-                    .font(.caption.monospaced())
-                    .foregroundStyle(.secondary)
-                    .accessibilityIdentifier("mlxServerModelLabel")
-
-                Text("Log: \(mlxServer.logFilePath)")
-                    .font(.caption.monospaced())
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
-                    .truncationMode(.middle)
-            } header: {
-                Text("Local MLX Server")
+            if aiConnectionMode == .playground {
+                playgroundServerSection
+            } else {
+                customServerSection
             }
 
             Section {
-                Picker("Provider", selection: $llm.provider) {
-                    ForEach(OllamaService.Provider.allCases) { provider in
-                        Text(provider.rawValue).tag(provider)
-                    }
-                }
-
-                HStack(alignment: .firstTextBaseline, spacing: 8) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Model name")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        TextField("amiga-playground-asm", text: $llm.modelName)
-                            .textFieldStyle(.roundedBorder)
-                            .accessibilityIdentifier("assistantModelNameField")
-                            .help("OpenAI-compatible model id sent with each request.")
-                    }
-
-                    Button("Use Playground model") {
-                        llm.applyPlaygroundConnectionDefaults()
-                    }
-                    .help("Set provider, endpoint, and model to the bundled Amiga Playground ASM runtime.")
-                    .accessibilityIdentifier("usePlaygroundModelButton")
-                }
-
-                if llm.isUsingPlaygroundModel {
-                    Text("Using the Amiga Playground ASM model (`\(OllamaService.playgroundModelId)`).")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                } else {
-                    Text("Custom model id. Retired names like `default_model` are rewritten automatically.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-
-                TextField("Custom API URL", text: $llm.customUrl)
-                    .textFieldStyle(.roundedBorder)
-                    .help("Leave empty to use the selected provider’s default URL.")
-
-                Text("Active endpoint: \(llm.apiUrl)")
-                    .font(.caption.monospaced())
-                    .foregroundStyle(.secondary)
-                    .accessibilityIdentifier("activeEndpointLabel")
-
-                Text("Request model: \(llm.requestModelName)")
-                    .font(.caption.monospaced())
-                    .foregroundStyle(.secondary)
-                    .accessibilityIdentifier("requestModelLabel")
-            } header: {
-                Text("Connection")
-            } footer: {
-                Text("Most people only need Local MLX Server above. Use this section for Ollama or another OpenAI-compatible host.")
-            }
-
-            Section("Instruction") {
-                VStack(alignment: .leading, spacing: 8) {
-                    TextField("Context window", value: $llm.contextWindow, formatter: contextWindowFormatter)
+                HStack(spacing: 10) {
+                    Text("Context window")
+                    Slider(value: contextWindowSliderValue, in: 1024...32768, step: 512)
+                        .accessibilityIdentifier("assistantContextWindowSlider")
+                    TextField("", value: $llm.contextWindow, formatter: contextWindowFormatter)
                         .textFieldStyle(.roundedBorder)
+                        .frame(width: 72)
+                        .multilineTextAlignment(.trailing)
                         .accessibilityIdentifier("assistantContextWindowField")
-
-                    HStack(spacing: 10) {
-                        Slider(value: contextWindowSliderValue, in: 1024...32768, step: 512)
-                            .accessibilityIdentifier("assistantContextWindowSlider")
-
-                        Text("\(llm.contextWindow)")
-                            .font(.caption.monospacedDigit())
-                            .foregroundStyle(.secondary)
-                            .frame(width: 52, alignment: .trailing)
-                    }
                 }
+                .help("Maximum tokens of conversation context sent with each request.")
 
                 TextEditor(text: $llm.systemPrompt)
                     .font(.body.monospaced())
-                    .frame(minHeight: 120)
+                    .frame(minHeight: 100)
                     .accessibilityIdentifier("assistantSystemPromptEditor")
-
-                Text("System prompt is sent as a system message before the chat history.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .help("Sent as a system message before chat history.")
+            } header: {
+                Text("Prompt")
             }
         }
         .formStyle(.grouped)
-        .padding()
+        .padding(.horizontal, 4)
+        .padding(.vertical, 2)
         .accessibilityIdentifier("aiSettingsPane")
         .onAppear {
             llm.migrateLegacyModelNameIfNeeded()
+            aiConnectionMode = llm.isUsingPlaygroundConnection ? .playground : .custom
             mlxServer.refreshStatus()
             llm.refreshConnectionStatus()
+        }
+    }
+
+    @ViewBuilder
+    private var playgroundServerSection: some View {
+        Section {
+            HStack(spacing: 8) {
+                Circle()
+                    .fill(mlxServerStatusColor)
+                    .frame(width: 8, height: 8)
+                    .accessibilityHidden(true)
+
+                Text(mlxServer.status.label)
+                    .foregroundStyle(.secondary)
+                    .accessibilityIdentifier("mlxServerStatusLabel")
+
+                Spacer()
+
+                Text(OllamaService.playgroundModelId)
+                    .font(.caption.monospaced())
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .help("Model id requested by the app: \(OllamaService.playgroundModelId)\nEndpoint: \(mlxServer.endpointDescription)")
+                    .accessibilityIdentifier("mlxServerModelLabel")
+            }
+
+            if let detail = mlxServer.status.detail {
+                Text(detail)
+                    .font(.caption)
+                    .foregroundStyle(.red)
+                    .textSelection(.enabled)
+            }
+
+            HStack(spacing: 8) {
+                Button {
+                    llm.applyPlaygroundConnectionDefaults()
+                    mlxServer.start()
+                } label: {
+                    Label("Start", systemImage: "play.fill")
+                }
+                .disabled(!mlxServer.canStart)
+                .help("Start the local MLX server and point the app at \(OllamaService.playgroundModelId) on \(mlxServer.endpointDescription).")
+                .accessibilityLabel("Start MLX Server")
+                .accessibilityIdentifier("startMLXServerButton")
+
+                Button {
+                    mlxServer.stop()
+                    llm.refreshConnectionStatus()
+                } label: {
+                    Label("Stop", systemImage: "stop.fill")
+                }
+                .disabled(!mlxServer.canStop)
+                .help("Stop the MLX server started by Amiga Playground.")
+                .accessibilityIdentifier("stopMLXServerButton")
+
+                Button {
+                    mlxServer.refreshStatus()
+                    llm.refreshConnectionStatus()
+                } label: {
+                    Label("Refresh", systemImage: "arrow.clockwise")
+                }
+                .help("Re-check whether the local MLX server is running.")
+                .accessibilityIdentifier("refreshMLXServerButton")
+
+                Spacer()
+
+                Button {
+                    NSWorkspace.shared.open(mlxServer.configuration.workingDirectory)
+                } label: {
+                    Label("Runtime folder", systemImage: "folder")
+                }
+                .help("Opens the fine_tuning runtime directory (base weights, adapter, and server.log).")
+                .accessibilityIdentifier("openMLXServerFolderButton")
+            }
+        } header: {
+            Text("Local MLX")
+        }
+    }
+
+    @ViewBuilder
+    private var customServerSection: some View {
+        Section {
+            Picker("Provider", selection: $llm.provider) {
+                ForEach(OllamaService.Provider.allCases) { provider in
+                    Text(provider.displayName).tag(provider)
+                }
+            }
+            .help("Chooses the default port and API shape. Override the URL below if needed.")
+
+            TextField("Model name", text: $llm.modelName)
+                .textFieldStyle(.roundedBorder)
+                .accessibilityIdentifier("assistantModelNameField")
+                .help("Model id sent with each request. Leave blank for \(OllamaService.playgroundModelId).")
+
+            TextField("API URL", text: $llm.customUrl)
+                .textFieldStyle(.roundedBorder)
+                .help("Optional. Leave blank to use \(llm.provider.defaultUrl).")
+
+            LabeledContent("Active") {
+                Text("\(llm.apiUrl) · \(llm.requestModelName)")
+                    .font(.caption.monospaced())
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                    .help("Endpoint and model used for the next assistant request.")
+                    .accessibilityIdentifier("activeEndpointLabel")
+            }
+        } header: {
+            Text("Custom server")
         }
     }
 

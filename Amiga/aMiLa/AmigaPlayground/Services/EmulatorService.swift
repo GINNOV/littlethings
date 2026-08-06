@@ -3,6 +3,7 @@ import Foundation
 enum EmulatorBackend: String, CaseIterable, Identifiable {
     case fsUAE = "fsUAE"
     case vAmiga = "vAmiga"
+    case docker = "docker"
 
     var id: String { rawValue }
 
@@ -12,6 +13,8 @@ enum EmulatorBackend: String, CaseIterable, Identifiable {
             return "FS-UAE"
         case .vAmiga:
             return "vAmiga CPU Trace"
+        case .docker:
+            return "Docker (vamos)"
         }
     }
 }
@@ -162,6 +165,184 @@ class EmulatorService {
             launchFSUAE(config: config, completion: completion)
         case .vAmiga:
             launchVAmiga(config: config, completion: completion)
+        case .docker:
+            completion(EmulatorLaunchResult(
+                success: false,
+                backend: .docker,
+                message: "Docker backend requires source assembly. Use launchDocker(assemblyCode:cpu:completion:).",
+                tracePath: nil
+            ))
+        }
+    }
+
+    /// Assemble with Docker vasm (or local vasm) and execute the hunk binary via Docker vamos.
+    func launchDocker(assemblyCode: String, cpu: String = "68020", completion: @escaping (EmulatorLaunchResult) -> Void) {
+        DispatchQueue.global(qos: .userInitiated).async {
+            let result = self.runDockerPipeline(assemblyCode: assemblyCode, cpu: cpu)
+            DispatchQueue.main.async {
+                completion(result)
+            }
+        }
+    }
+
+    func resolveDockerExecutablePath() -> String? {
+        let candidates = [
+            "/usr/local/bin/docker",
+            "/opt/homebrew/bin/docker",
+            "/usr/bin/docker"
+        ]
+        for path in candidates where FileManager.default.isExecutableFile(atPath: path) {
+            return path
+        }
+        return nil
+    }
+
+    func buildDockerVasmArguments(workDir: String, sourceFileName: String, outputFileName: String) -> [String] {
+        [
+            "run", "--rm",
+            "-v", "\(workDir):/opt/folder",
+            "sebastianbergmann/m68k-amigaos-bebbo",
+            "vasm",
+            "-Fhunkexe",
+            "-o", "/opt/folder/\(outputFileName)",
+            "/opt/folder/\(sourceFileName)"
+        ]
+    }
+
+    func buildDockerVamosArguments(workDir: String, binaryFileName: String, cpu: String) -> [String] {
+        [
+            "run", "--rm",
+            "-v", "\(workDir):/opt/folder",
+            "sebastianbergmann/amitools:latest",
+            "vamos",
+            "-C", cpu,
+            "/opt/folder/\(binaryFileName)"
+        ]
+    }
+
+    private func runDockerPipeline(assemblyCode: String, cpu: String) -> EmulatorLaunchResult {
+        guard let dockerPath = resolveDockerExecutablePath() else {
+            return EmulatorLaunchResult(
+                success: false,
+                backend: .docker,
+                message: "Docker CLI not found. Install Docker Desktop and ensure `docker` is on your PATH.",
+                tracePath: nil
+            )
+        }
+
+        let workDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("AmigaPlayground/docker-\(UUID().uuidString)", isDirectory: true)
+        let sourceURL = workDir.appendingPathComponent("program.s")
+        let binaryURL = workDir.appendingPathComponent("program")
+
+        do {
+            try FileManager.default.createDirectory(at: workDir, withIntermediateDirectories: true)
+            let normalized = AssemblySourceFormatter.vasmReadySource(from: assemblyCode)
+            try normalized.write(to: sourceURL, atomically: true, encoding: .utf8)
+        } catch {
+            return EmulatorLaunchResult(
+                success: false,
+                backend: .docker,
+                message: "Failed to prepare Docker work directory: \(error.localizedDescription)",
+                tracePath: nil
+            )
+        }
+
+        defer {
+            try? FileManager.default.removeItem(at: workDir)
+        }
+
+        // Prefer local vasm when available for speed; fall back to Docker vasm.
+        let localVasm = "/usr/local/bin/vasmm68k_mot"
+        let assembleOutput: (status: Int32, text: String)
+        if FileManager.default.isExecutableFile(atPath: localVasm) {
+            assembleOutput = runProcess(
+                executable: localVasm,
+                arguments: [
+                    "-kick1hunks",
+                    "-Fhunkexe",
+                    "-o", binaryURL.path,
+                    "-nosym",
+                    sourceURL.path
+                ]
+            )
+        } else {
+            assembleOutput = runProcess(
+                executable: dockerPath,
+                arguments: buildDockerVasmArguments(
+                    workDir: workDir.path,
+                    sourceFileName: sourceURL.lastPathComponent,
+                    outputFileName: binaryURL.lastPathComponent
+                )
+            )
+        }
+
+        guard assembleOutput.status == 0, FileManager.default.fileExists(atPath: binaryURL.path) else {
+            return EmulatorLaunchResult(
+                success: false,
+                backend: .docker,
+                message: "Docker assemble failed:\n\(assembleOutput.text)",
+                tracePath: nil
+            )
+        }
+
+        let mappedCPU = mapDockerCPU(cpu)
+        let runOutput = runProcess(
+            executable: dockerPath,
+            arguments: buildDockerVamosArguments(
+                workDir: workDir.path,
+                binaryFileName: binaryURL.lastPathComponent,
+                cpu: mappedCPU
+            )
+        )
+
+        let success = runOutput.status == 0
+        var message = success
+            ? "Docker run completed successfully (vamos -C \(mappedCPU))."
+            : "Docker run failed (exit \(runOutput.status))."
+        if !assembleOutput.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            message += "\n\nAssemble output:\n\(assembleOutput.text)"
+        }
+        if !runOutput.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            message += "\n\nVamos output:\n\(runOutput.text)"
+        }
+
+        return EmulatorLaunchResult(
+            success: success,
+            backend: .docker,
+            message: message,
+            tracePath: nil
+        )
+    }
+
+    private func mapDockerCPU(_ cpu: String) -> String {
+        let trimmed = cpu.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty { return "68020" }
+        return trimmed
+    }
+
+    private func runProcess(executable: String, arguments: [String]) -> (status: Int32, text: String) {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: executable)
+        process.arguments = arguments
+
+        let stdout = Pipe()
+        let stderr = Pipe()
+        process.standardOutput = stdout
+        process.standardError = stderr
+
+        do {
+            try process.run()
+            process.waitUntilExit()
+            let out = String(data: stdout.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+            let err = String(data: stderr.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+            let combined = [out, err]
+                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+                .filter { !$0.isEmpty }
+                .joined(separator: "\n")
+            return (process.terminationStatus, combined)
+        } catch {
+            return (-1, "Failed to execute \(executable): \(error.localizedDescription)")
         }
     }
 

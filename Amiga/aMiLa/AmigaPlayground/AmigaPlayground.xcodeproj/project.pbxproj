@@ -13,6 +13,7 @@
 		A11100002E80002400000000 /* Views/ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E80001400000000 /* Views/ContentView.swift */; };
 		A11100002E80002500000000 /* Services/OllamaService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E80001500000000 /* Services/OllamaService.swift */; };
 		A11100002E80002600000000 /* Services/EmulatorService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E80001600000000 /* Services/EmulatorService.swift */; };
+		A11100002E8000F200000000 /* Services/TutorialCatalogService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E8000F100000000 /* Services/TutorialCatalogService.swift */; };
 		A11100002E80002700000000 /* Views/WebEmulatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E80001700000000 /* Views/WebEmulatorView.swift */; };
 		A11100002E80002800000000 /* AmigaPlaygroundTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E80001800000000 /* AmigaPlaygroundTests.swift */; };
 		A11100002E80002900000000 /* Services/VAmigaValidationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E80001900000000 /* Services/VAmigaValidationService.swift */; };
@@ -53,6 +54,7 @@
 		A11100002E80001400000000 /* Views/ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/ContentView.swift; sourceTree = "<group>"; };
 		A11100002E80001500000000 /* Services/OllamaService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/OllamaService.swift; sourceTree = "<group>"; };
 		A11100002E80001600000000 /* Services/EmulatorService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/EmulatorService.swift; sourceTree = "<group>"; };
+		A11100002E8000F100000000 /* Services/TutorialCatalogService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/TutorialCatalogService.swift; sourceTree = "<group>"; };
 		A11100002E80001700000000 /* Views/WebEmulatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/WebEmulatorView.swift; sourceTree = "<group>"; };
 		A11100002E80001800000000 /* AmigaPlaygroundTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AmigaPlaygroundTests.swift; path = AmigaPlaygroundTests/AmigaPlaygroundTests.swift; sourceTree = "<group>"; };
 		A11100002E80001900000000 /* Services/VAmigaValidationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/VAmigaValidationService.swift; sourceTree = "<group>"; };
@@ -150,6 +152,7 @@
 				A11100002E8000B100000000 /* Services/AssistantChatSession.swift */,
 				A11100002E80001300000000 /* Services/CompilerService.swift */,
 				A11100002E80001600000000 /* Services/EmulatorService.swift */,
+				A11100002E8000F100000000 /* Services/TutorialCatalogService.swift */,
 				A11100002E8000D100000000 /* Services/MLXServerController.swift */,
 				A11100002E80001500000000 /* Services/OllamaService.swift */,
 				A11100002E8000C100000000 /* Services/PromptLibraryStore.swift */,
@@ -316,6 +319,7 @@
 				A11100002E80002400000000 /* Views/ContentView.swift in Sources */,
 				A11100002E80002500000000 /* Services/OllamaService.swift in Sources */,
 				A11100002E80002600000000 /* Services/EmulatorService.swift in Sources */,
+				A11100002E8000F200000000 /* Services/TutorialCatalogService.swift in Sources */,
 				A11100002E8000B200000000 /* Services/AssistantChatSession.swift in Sources */,
 				A11100002E8000D200000000 /* Services/MLXServerController.swift in Sources */,
 				A11100002E8000C200000000 /* Services/PromptLibraryStore.swift in Sources */,
@@ -487,7 +491,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 41;
+				CURRENT_PROJECT_VERSION = 42;
 				DEAD_CODE_STRIPPING = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -520,7 +524,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 41;
+				CURRENT_PROJECT_VERSION = 42;
 				DEAD_CODE_STRIPPING = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -552,7 +556,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 41;
+				CURRENT_PROJECT_VERSION = 42;
 				DEAD_CODE_STRIPPING = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -572,7 +576,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 41;
+				CURRENT_PROJECT_VERSION = 42;
 				DEAD_CODE_STRIPPING = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -591,7 +595,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 41;
+				CURRENT_PROJECT_VERSION = 42;
 				ENABLE_HARDENED_RUNTIME = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0.0;
@@ -609,7 +613,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 41;
+				CURRENT_PROJECT_VERSION = 42;
 				ENABLE_HARDENED_RUNTIME = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0.0;
