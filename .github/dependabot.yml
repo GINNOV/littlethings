@@ -10,4 +10,3 @@ updates:
     exclude-paths:
       - "Amiga/aMiLa/Dataset/**"
       - "Hardware/Flume/flume-dashboard/.next/**"
-      - "Web_Apps/xbook-console/.next/**"

@@ -8,7 +8,7 @@
         </button>
     </div>
     <nav class="sidebar" id="header-nav">
-        <ul>
+        <ul style="font-family: 'Press Start 2P', cursive; font-size: 0.8rem;">
             <li><a href="{{ "amiga/index.html" | relURL }}" id="nav-projects" class="{{ if eq .RelPermalink ("amiga/index.html" | relURL) }}active{{ end }}">PROJECTS</a></li>
             <li><a href="{{ "amiga/walkthroughs.html" | relURL }}" id="nav-tutorials" class="{{ if or (eq .RelPermalink ("amiga/walkthroughs.html" | relURL)) (in .RelPermalink "/tutorials/") }}active{{ end }}">TUTORIALS</a></li>
             <li><a href="{{ "amiga/resources.html" | relURL }}" id="nav-resources" class="{{ if eq .RelPermalink ("amiga/resources.html" | relURL) }}active{{ end }}">RESOURCES</a></li>

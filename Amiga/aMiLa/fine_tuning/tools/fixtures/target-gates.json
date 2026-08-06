@@ -1,0 +1,34 @@
+{
+  "cToolchain" : {
+    "dockerExecutable" : "",
+    "dockerImage" : "",
+    "dockerImageDigest" : "",
+    "dockerSha256" : "",
+    "gccExecutable" : "",
+    "gccSha256" : "",
+    "ndkRoot" : "",
+    "timeoutSeconds" : 30
+  },
+  "runtime" : {
+    "caseTimeoutSeconds" : 30,
+    "chipset" : "OCS",
+    "cpu" : "68000",
+    "emulatorExecutable" : "\/Applications\/vAmiga.app\/Contents\/MacOS\/vAmiga",
+    "emulatorSha256" : "c9c53de6cf0bb20cbd50fd1a95aabc02e4f1f0f4a46268283293f75e4079e826",
+    "jit" : false,
+    "kickstart" : "KS1.3",
+    "model" : "A500",
+    "resetState" : "cold",
+    "romPath" : "\/Users\/megov\/Documents\/FS-UAE\/Kickstarts\/Kickstart v1.3 r34.005 (1987-12)(Commodore)(A500-A1000-A2000-CDTV)[!].rom",
+    "romSha256" : "ee05862d8102a08436ac4056da7d549db31625c7d47b24dfb7b3c9a5c113ca53",
+    "runtimeDriverExecutable" : "\/Volumes\/AIWork\/code\/littlethings\/Amiga\/aMiLa\/AmigaPlayground\/script\/vamiga_runtime_driver.rb",
+    "runtimeDriverSha256" : "7bb796e92b1c7c85d896d8c7e760411cdb937e5396ee4e45aae7dd6fc3356b09",
+    "startupTimeoutSeconds" : 12
+  },
+  "schemaVersion" : 1,
+  "vasm" : {
+    "executable" : "\/usr\/local\/bin\/vasmm68k_mot",
+    "sha256" : "a12d9a853c1d791633bb8cb39c22fa9cab59eec6faaa133f84db949dab340e3f",
+    "timeoutSeconds" : 30
+  }
+}

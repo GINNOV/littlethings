@@ -12,7 +12,7 @@ Fro the Amiga, the most polished entries are collected on the project [site](htt
 | `Hardware/` | Raspberry Pi, SensorTag, Flume, Sleepia, and robotics projects. | Small hardware experiments and notes. |
 | `Animations/` | Animation experiments and media assets. | Sketches, renders, and supporting files. |
 | `Apple_Watch_Apps/` | Small Apple Watch experiments. | Small,silly and usuful WatchOS projects. |
-| `Web_Apps/` | Browser-based experiments and small web apps. | Project-specific setup lives nearby. |
+| `Web_Apps/` | Browser-based experiments and small web apps. | Project-specific setup lives nearby. (XBook Console has transitioned to its own standalone repository at [GINNOV/xbook](https://github.com/GINNOV/xbook)). |
 | `useful_scripts/` | Shell scripts for media and file organization tasks. | Small utilities, usually self-contained. |
 | `docs/` | The GitHub Pages site and supporting reference material. | Source for the public project pages. |
 

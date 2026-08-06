@@ -1,154 +1,234 @@
 ---
-title: "Interactive Sound: The 'Push My Button' Tutorial"
+title: "Interactive Sound in C"
 layout: "single"
 ---
 
-<p>So far, we've made things move on screen. Now, let's make some noise! The Amiga's four 8-bit sound channels, collectively named "Paula," gave it an audio capability that was light-years ahead of its time. This tutorial will guide you through loading a sound sample, drawing a button on the screen, and playing the sound when the user clicks the button.</p>
+So far, we've explored custom chip hardware programming in assembly. Now let's look at how to play audio using AmigaOS operating system APIs in C! In this tutorial, we'll write an OS-friendly C application using `datatypes.library` to load sound samples dynamically, create an Intuition window with interactive UI buttons, and trigger audio playback on mouse clicks.
 
-<h3>The Concept: Events and Audio</h3>
-<p>Unlike our previous examples that took over the whole system, this program will run as a proper AmigaDOS process. We'll open a window, draw our button, and then enter a loop to wait for user input (events). When we detect a mouse click inside our button's area, we'll trigger the sound and provide some visual feedback by changing the button's color.</p>
+## The Concept: OS V39 DataTypes & Audio
 
-<img src="https://placehold.co/600x350/9333ea/ddd6fe?text=Amiga+Audio+Fun&font=press-start-2p" alt="Illustration of an Amiga playing sound" class="w-full max-w-lg mx-auto my-8 rounded-lg shadow-lg border-2 border-gray-600" />
+AmigaOS 3.0 (V39) introduced the **DataTypes system**, a powerful object-oriented framework that allows applications to load, display, and play media files (images, sounds, text) without needing custom file parsers. By creating a sound datatype object with `NewDTObject()`, your program can play IFF 8SVX audio files using high-level OS calls (`DTM_PLAY`).
 
-<h3>Preparing Your Sound Sample</h3>
-<p>The Amiga hardware plays raw 8-bit signed audio samples. You can't just use an MP3 or WAV file directly. You'll need to convert your sound into the Amiga's native `8SVX` IFF format.</p>
-<ol class="list-decimal list-inside space-y-2 pl-4">
-    <li>Find a sound effect you like (a short `.wav` file is perfect).</li>
-    <li>Use a modern audio editor like <a href="https://www.audacityteam.org/" target="_blank" rel="noopener noreferrer">Audacity</a> to convert it. Open your sound, change the format to "Other uncompressed files", and under "Header," select "SDS (Amiga 8SVX)". Set the encoding to "Signed 8-bit PCM".</li>
-    <li>Save this new file as `sound.8svx`.</li>
-</ol>
+<a href="images/sound_c_cover.jpg" target="_blank" class="block group cursor-pointer text-center my-8">
+    <img src="images/sound_c_cover.jpg" alt="Amiga C Audio Programming Workstation" class="w-full max-w-xl mx-auto rounded-lg shadow-lg border-2 border-gray-600 transition-transform duration-200 group-hover:scale-[1.02]" />
+    <span class="block text-sm text-amber-500 mt-2 font-medium group-hover:underline"><i class="fas fa-search-plus mr-1"></i> Click diagram to expand / view full size</span>
+</a>
 
-<h4>The Code (button_sound.c):</h4>
-<div class="code-block-wrapper">
-    <button class="copy-code-button"><i class="far fa-copy"></i> Copy</button>
-    <pre><code>/*
- * button_sound.c - A simple program to demonstrate
- * interactive sound playback on the Amiga.
- * - Opens a window
- * - Draws a button
- * - Plays a sound on mouse click
+## Preparing Your Sound Sample
+
+AmigaOS DataTypes expects sound files in the native **8SVX** (8-bit Sampled Voice) IFF audio format:
+
+1. **Find a Sample:** Find a short sound effect (`.wav` or `.aiff` format is ideal).
+2. **Convert in Audacity:** Open the file in [Audacity](https://www.audacityteam.org/):
+   - Set the project sample rate (bottom left) to **8363 Hz** or **11025 Hz**.
+   - Select `File > Export > Export Audio`.
+   - Choose **Other uncompressed files** as format.
+   - Under **Header**, select **SDS (Amiga 8SVX)** or **IFF 8SVX**.
+   - Under **Encoding**, select **Signed 8-bit PCM**.
+3. **Save File:** Save the exported file as `sound.8svx` in your project folder.
+
+## Interactive Audio Button in C
+
+### The Complete Code:
+
+```c
+/*
+ * button_sound.c
+ * Interactive Audio Playback in C using AmigaOS 3.0+ DataTypes
  */
 
-#include &lt;proto/exec.h&gt;
-#include &lt;proto/dos.h&gt;
-#include &lt;proto/graphics.h&gt;
-#include &lt;proto/intuition.h&gt;
-#include &lt;proto/datatypes.h&gt;
+#include <proto/exec.h>
+#include <proto/dos.h>
+#include <proto/graphics.h>
+#include <proto/intuition.h>
+#include <proto/datatypes.h>
+#include <datatypes/soundclass.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-#include &lt;datatypes/soundclass.h&gt;
-#include &lt;stdio.h&gt;
+#define WIN_WIDTH       320
+#define WIN_HEIGHT      100
+#define BUTTON_LEFT     50
+#define BUTTON_TOP      30
+#define BUTTON_RIGHT    270
+#define BUTTON_BOTTOM   70
+#define PEN_PRIMARY     1
+#define PEN_SECONDARY   2
 
-/* Globals */
-struct Library *ExecBase = NULL;
-struct Library *DOSBase = NULL;
-struct Library *GfxBase = NULL;
+struct Library *DOSBase       = NULL;
+struct Library *GfxBase       = NULL;
 struct Library *IntuitionBase = NULL;
 struct Library *DataTypesBase = NULL;
+struct Window  *win           = NULL;
+Object         *sound_obj     = NULL;
 
-struct Window *win = NULL;
-Object *sound_obj = NULL;
-
-/* Cleanup function */
-void cleanup(int code) {
-    if (sound_obj) DisposeDTObject(sound_obj);
-    if (DOSBase) CloseLibrary(DOSBase);
+static void cleanup(int status) {
+    if (sound_obj)     DisposeDTObject(sound_obj);
+    if (win)           CloseWindow(win);
     if (DataTypesBase) CloseLibrary(DataTypesBase);
-    if (win) CloseWindow(win);
+    if (DOSBase)       CloseLibrary(DOSBase);
     if (IntuitionBase) CloseLibrary(IntuitionBase);
-    if (GfxBase) CloseLibrary(GfxBase);
-    exit(code);
+    if (GfxBase)       CloseLibrary(GfxBase);
+    exit(status);
 }
 
-/* Draws the button in a specific state */
-void draw_button(int state) {
-    SetAPen(win-&gt;RPort, (state == 1) ? 2 : 1); // state 1 = pressed (color 2), 0 = normal (color 1)
-    RectFill(win-&gt;RPort, 100, 40, 220, 60);
-    
-    SetAPen(win-&gt;RPort, (state == 1) ? 1 : 2);
-    Move(win-&gt;RPort, 140, 50);
-    Text(win-&gt;RPort, "Play Sound", 10);
+static void draw_button(int pressed) {
+    UWORD fill_pen = pressed ? PEN_SECONDARY : PEN_PRIMARY;
+    UWORD text_pen = pressed ? PEN_PRIMARY   : PEN_SECONDARY;
+    if (!win || !win->RPort) return;
+    SetAPen(win->RPort, fill_pen);
+    RectFill(win->RPort, BUTTON_LEFT, BUTTON_TOP, BUTTON_RIGHT, BUTTON_BOTTOM);
+    SetAPen(win->RPort, text_pen);
+    Move(win->RPort, 110, 52);
+    Text(win->RPort, "Play Sound", 10);
 }
 
 int main(void) {
-    ExecBase = (*(struct ExecBase **)4);
-
-    /* Open necessary libraries */
-    GfxBase = OpenLibrary("graphics.library", 37);
-    IntuitionBase = OpenLibrary("intuition.library", 37);
-    DOSBase = OpenLibrary("dos.library", 37);
-    DataTypesBase = OpenLibrary("datatypes.library", 37);
+    GfxBase       = OpenLibrary("graphics.library", 39);
+    IntuitionBase = OpenLibrary("intuition.library", 39);
+    DOSBase       = OpenLibrary("dos.library", 39);
+    DataTypesBase = OpenLibrary("datatypes.library", 39);
     if (!GfxBase || !IntuitionBase || !DOSBase || !DataTypesBase) {
-        puts("Failed to open a required library.");
+        puts("Error: Requires AmigaOS 3.0+ (V39) libraries.");
         cleanup(20);
     }
-    
-    /* Load the sound file using DataTypes */
+
     sound_obj = NewDTObject("sound.8svx", DTA_SourceType, DTST_FILE, DTA_GroupID, GID_SOUND, TAG_END);
     if (!sound_obj) {
-        puts("Could not load sound.8svx. Make sure it's in the same directory.");
+        puts("Error: Could not load sound.8svx from current directory.");
         cleanup(20);
     }
 
-    /* Open a simple window */
     win = OpenWindowTags(NULL,
-        WA_Width, 320, WA_Height, 100,
-        WA_Title, "Sound Player",
+        WA_Left, 20, WA_Top, 20, WA_Width, WIN_WIDTH, WA_Height, WIN_HEIGHT,
+        WA_Title, (ULONG)"C Sound Player",
         WA_IDCMP, IDCMP_CLOSEWINDOW | IDCMP_MOUSEBUTTONS,
-        WA_Activate, TRUE,
-        WA_DragBar, TRUE,
-        WA_CloseGadget, TRUE,
+        WA_Flags, WFLG_DRAGBAR | WFLG_DEPTHGADGET | WFLG_CLOSEGADGET | WFLG_ACTIVATE,
         TAG_END);
     if (!win) {
-        puts("Could not open window.");
+        puts("Error: Could not open window.");
         cleanup(20);
     }
 
-    draw_button(0); // Draw initial button state
+    draw_button(0);
 
-    /* --- Main event loop --- */
     BOOL running = TRUE;
-    while(running) {
+    while (running) {
         struct IntuiMessage *msg;
-        Wait(1L &lt;&lt; win-&gt;UserPort-&gt;mp_SigBit);
-        while(msg = (struct IntuiMessage *)GetMsg(win-&gt;UserPort)) {
-            if (msg-&gt;Class == IDCMP_CLOSEWINDOW) {
+        Wait(1L << win->UserPort->mp_SigBit);
+        while ((msg = (struct IntuiMessage *)GetMsg(win->UserPort))) {
+            ULONG msgClass = msg->Class;
+            UWORD msgCode  = msg->Code;
+            WORD  mouseX   = msg->MouseX;
+            WORD  mouseY   = msg->MouseY;
+            ReplyMsg((struct Message *)msg);
+
+            if (msgClass == IDCMP_CLOSEWINDOW) {
                 running = FALSE;
-            }
-            if (msg-&gt;Class == IDCMP_MOUSEBUTTONS) {
-                if (msg-&gt;Code == SELECTDOWN) {
-                    // Check if click is inside our button area
-                    if (msg-&gt;MouseX &gt;= 100 && msg-&gt;MouseX &lt;= 220 &&
-                        msg-&gt;MouseY &gt;= 40 && msg-&gt;MouseY &lt;= 60)
-                    {
-                        draw_button(1); // Animate: pressed state
+            } else if (msgClass == IDCMP_MOUSEBUTTONS) {
+                if (msgCode == SELECTDOWN) {
+                    if (mouseX >= BUTTON_LEFT && mouseX <= BUTTON_RIGHT &&
+                        mouseY >= BUTTON_TOP  && mouseY <= BUTTON_BOTTOM) {
+                        draw_button(1);
                         DoDTMethod(sound_obj, NULL, NULL, DTM_PLAY, NULL, SNDA_DEST_AUDION, 0, TAG_END);
                     }
-                }
-                if (msg-&gt;Code == SELECTUP) {
-                    draw_button(0); // Animate: normal state
+                } else if (msgCode == SELECTUP) {
+                    draw_button(0);
                 }
             }
-            ReplyMsg((struct Message *)msg);
         }
     }
 
     cleanup(0);
     return 0;
 }
-</code></pre>
+```
+
+### How to Compile and Run with vbcc (Terminal & Emulator)
+
+1. **Save Source Code:** Save the C source code into a file named `button_sound.c`.
+2. **Prepare Audio Sample:** Place your converted `sound.8svx` file in the same folder as `button_sound.c`.
+3. **Compile with vbcc:** Open Terminal, navigate to your folder, and compile targeting AmigaOS 3.0+ (V39):
+   ```bash
+   vc +os39 -o button_sound button_sound.c -lauto -lamiga
+   ```
+   *Note: Using `+os39` ensures `datatypes.library` headers and AmigaOS 3.0+ system V39 structures are properly linked.*
+4. **Run in Emulator:** Mount the folder in FS-UAE or vAmiga configured with **Kickstart 3.0 or 3.1**. Boot Workbench, open Shell/CLI, type `button_sound`, and press Enter.
+5. **See the Result:** An Intuition window will open with a button. Click it to animate the button and play your sound through `datatypes.library`!
+
+## Compiling with Docker (`Dockerfile`)
+
+Using a **`Dockerfile`** is the cleanest approach for reproducible builds because it encapsulates all cross-compilation toolchains inside a container, requiring zero local toolchain setup.
+
+<div class="flex items-center justify-between my-4">
+    <h4 class="text-lg font-bold mb-0">Project Dockerfile</h4>
+    <a href="src/Dockerfile" download class="px-3 py-1 bg-amber-600 hover:bg-amber-500 !text-white rounded text-sm font-semibold transition-colors duration-150 flex items-center gap-2" style="color: #ffffff !important;"><i class="fas fa-download"></i> Download Dockerfile</a>
 </div>
 
-<h4>How to Compile and Run on macOS</h4>
-<ol class="list-decimal list-inside space-y-2 pl-4">
-    <li><strong>Save the Code:</strong> Save the C code above into a file named `button_sound.c`.</li>
-    <li><strong>Get your Sound:</strong> Make sure you have your `sound.8svx` file in the same folder.</li>
-    <li><strong>Compile:</strong> Open your Terminal. If you've set up the vbcc environment variables from the previous tutorial, you can use this simple command:
-         <div class="code-block-wrapper">
-            <button class="copy-code-button"><i class="far fa-copy"></i> Copy</button>
-            <pre><code>vc +kick13 -o button_sound button_sound.c -lauto -lamiga</code></pre>
-        </div>
-        <p class="mt-2 text-sm">This command tells vbcc to link the necessary Amiga libraries (`-lamiga` and `-lauto`) for OS functions and create an executable named `button_sound`.</p>
-    </li>
-     <li><strong>Run in Emulator:</strong> In vAmiga or FS-UAE, mount the folder containing your new `button_sound` executable and `sound.8svx`. Boot into Workbench, open the Shell, and run your program by typing `button_sound`.</li>
-     <li><strong>See the Result:</strong> A window will open with a button. Click it to hear your sound play and see the button animate!</li>
-</ol>
+```dockerfile
+# Amiga 68k Cross-Development Docker Environment
+FROM amigadev/crosstools:m68k-amigaos
+
+WORKDIR /work
+
+# Default command compiles C source file button_sound.c
+CMD ["m68k-amigaos-gcc", "-O2", "button_sound.c", "-o", "button_sound", "-noixemul"]
+```
+
+### How the `Dockerfile` Works:
+- **`FROM amigadev/crosstools:m68k-amigaos`**: Pulls a pre-configured Docker image containing the 68k AmigaOS GCC cross-compiler (`m68k-amigaos-gcc`), NDK headers (`<proto/exec.h>`, `<proto/intuition.h>`), and C runtime libraries.
+- **`WORKDIR /work`**: Sets the container's internal working directory to `/work`.
+- **`CMD ["m68k-amigaos-gcc", ...]`**: Specifies the default build command executed when the container starts.
+
+### Project Folder Setup
+Place the `Dockerfile`, your source code (`button_sound.c`), and audio file (`sound.8svx`) **all in the same directory on your host machine** (for example, in `~/code/amiga_sound` or `~/Downloads/amiga_sound`):
+
+```text
+~/code/amiga_sound/
+├── Dockerfile
+├── button_sound.c
+└── sound.8svx
+```
+
+### Step 1: Build the Container Image
+Open Terminal, navigate to your project folder (`cd ~/code/amiga_sound`), and build the container image:
+
+```bash
+docker build -t amiga-c-dev .
+```
+
+### Step 2: Compile Your Code
+Run the container to compile `button_sound.c`. The `-v $(pwd):/work` flag mounts your current host folder (e.g. `~/code/amiga_sound`) into the container's internal `/work` folder:
+
+```bash
+docker run --rm -v $(pwd):/work amiga-c-dev
+```
+
+When this command finishes, your compiled Amiga executable (`button_sound`) will appear directly in your host directory alongside `button_sound.c`!
+
+### Step 3: Test Execution with `vamos` (CLI Emulator)
+You can test your compiled binary directly in Terminal without launching a GUI emulator using `amitools` (`vamos`):
+
+```bash
+docker run --rm -v $(pwd):/work -w /work sebastianbergmann/amitools:latest vamos button_sound
+```
+
+---
+
+## Creating an ADF Floppy Disk Image with `send2adf`
+
+To test your compiled binary on hardware or in emulators as a bootable floppy disk image (`.adf`), you can package your executable and sound sample using the repository's [`send2adf`](https://github.com/GINNOV/littlethings/tree/main/Amiga/Tools/send2adf) tool:
+
+### 1. Packaging Files into an `.adf` Disk Image
+Run `send2adf` in Terminal to build an 880 KiB Amiga disk file containing `button_sound` and `sound.8svx`:
+
+```bash
+send2adf -o disk.adf -N SoundDemo -B 1.3 button_sound sound.8svx
+```
+
+- `-o disk.adf`: Output filename for the generated disk image.
+- `-N SoundDemo`: Floppy disk volume label.
+- `-B 1.3`: Installs a Kickstart bootblock.
+
+### 2. Mounting and Testing in Emulators
+Mount the resulting `disk.adf` image into Floppy Drive `DF0:` in your emulator (vAmiga or FS-UAE) to boot and test your program directly from floppy disk!

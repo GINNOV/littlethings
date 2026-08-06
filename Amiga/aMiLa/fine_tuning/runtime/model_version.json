@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "product": "amiga-playground-asm",
+  "version": "0.1.0",
+  "base_model": "mlx-community/Qwen2.5-Coder-3B-Instruct-4bit",
+  "adapter_sha256": "3c6cadccd24af796bcb9f6a8a3677539e764709abe982dce4c4f7be9ee6cf88a",
+  "evaluation": {
+    "pass_count": 140,
+    "case_count": 140,
+    "eligible": true,
+    "gate": "first-shot compile"
+  },
+  "runtime": {
+    "base": "runtime/base",
+    "adapter": "runtime/adapter",
+    "model_id": "amiga-playground-asm"
+  }
+}

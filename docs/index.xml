@@ -1,246 +1,113 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Workspace Hub on Back to Amiga Dev Hub</title><link>https://ginnov.github.io/littlethings/index.html</link><description>Recent content in Workspace Hub on Back to Amiga Dev Hub</description><generator>Hugo</generator><language>en</language><atom:link href="https://ginnov.github.io/littlethings/index.xml" rel="self" type="application/rss+xml"/><item><title>A little story</title><link>https://ginnov.github.io/littlethings/amiga/about.html</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://ginnov.github.io/littlethings/amiga/about.html</guid><description>&lt;p&gt;
- The Commodore Amiga is a legendary platform that revolutionized
- computing with its advanced graphics, sound, and multitasking. This
- site is dedicated to “almost” developers who share a passion for
- coding on the Amiga, whether in 68k assembly, C, or modern AmigaOS with
- macOS in mind.&lt;/p&gt;
-&lt;p class="mt-4"&gt;
- By “almost” I mean you know your way around coding tools, but you can't
- split the byte just yet like a digital lumberjack.
-&lt;/p&gt;
-&lt;p class="mt-4"&gt;
- My fascination with the Amiga began in the 1980s, drawn to its
- groundbreaking hardware and vibrant developer community. From coding
- demos in AMOS to exploring AmigaOS, the Amiga shaped my love for
- programming.
- &lt;/p&gt;</description></item><item><title>ADF.inder at glance</title><link>https://ginnov.github.io/littlethings/amiga/adfinder_learnmore.html</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://ginnov.github.io/littlethings/amiga/adfinder_learnmore.html</guid><description>&lt;p&gt;
- A few screenshots to give you an idea of what the tool looks like and what it does. I spent many hours
- developing this tool, and I hope it will be useful for you. And so the people that enabled me with the &lt;a href="https://github.com/adflib/ADFlib" target="_blank" rel="noopener noreferrer"&gt;ADFlib library&lt;/a&gt;, which is a key asset behind this tool.
-&lt;/p&gt;
-&lt;p&gt;ADFinder requires macOS 15 or later. Public downloads and automatic updates are
-temporarily paused while new packages are rebuilt with verified dependency
-provenance, approved notices, and complete corresponding source. No release
-version or download URL is announced until those exact bytes pass the hosted
-arm64 and x86_64 release gates. The
-&lt;a href="https://github.com/GINNOV/littlethings/blob/master/Amiga/Tools/ADFinder/CHANGELOG.md"&gt;release history&lt;/a&gt;
-remains available.&lt;/p&gt;</description></item><item><title>Amiga Development Tutorials</title><link>https://ginnov.github.io/littlethings/amiga/walkthroughs.html</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://ginnov.github.io/littlethings/amiga/walkthroughs.html</guid><description>&lt;p class="mb-6"&gt;An aspirational goal is to build walkthroughs for various Amiga development topics.&lt;/p&gt;
-&lt;div class="grid md:grid-cols-2 gap-8"&gt;
- &lt;article class="project-card !flex-col !items-start"&gt;
- &lt;img src="https://placehold.co/600x350/1E40AF/BFDBFE?text=build+it&amp;font=press-start-2p" alt="Tutorial 1 Placeholder" class="project-image mb-4"&gt;
- &lt;div class="w-full"&gt;
- &lt;h3 class="!text-2xl"&gt;Getting Started with Amiga Assembly&lt;/h3&gt;
- &lt;p class="!text-sm !text-left"&gt;
- A beginner's guide to setting up your 68k assembly development environment and writing your first "Hello, Amiga!" program. Covers essential tools and concepts.
- &lt;/p&gt;
- &lt;div class="project-button-container !flex-row !justify-start"&gt;
- &lt;a href="tutorials/setup-asm.html" class="learn-button project-button !py-2 !px-4 !text-sm"&gt;
- &lt;i class="fas fa-book-reader"&gt;&lt;/i&gt;Read Tutorial
- &lt;/a&gt;
- &lt;/div&gt;
- &lt;/div&gt;
- &lt;/article&gt;
- &lt;article class="project-card !flex-col !items-start"&gt;
- &lt;img src="tutorials/images/joystick.jpeg" alt="Tutorial 2 Placeholder" class="project-image mb-4"&gt;
- &lt;div class="w-full"&gt;
- &lt;h3 class="!text-2xl"&gt;Basics of Joystick Control&lt;/h3&gt;
- &lt;p class="!text-sm !text-left"&gt;
- Learn the basics of how to read joystick input on the Amiga. This tutorial will guide you through writing code to handle joystick events.
- &lt;/p&gt;</description></item><item><title>Amiga File System Protection Bits</title><link>https://ginnov.github.io/littlethings/amiga/kb/readme.html</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://ginnov.github.io/littlethings/amiga/kb/readme.html</guid><description>&lt;h2 id="overview"&gt;Overview&lt;/h2&gt;
-&lt;p&gt;The Amiga File System (AFS), used by the Amiga operating system, includes a set of &lt;strong&gt;protection bits&lt;/strong&gt; to control file and directory access permissions. These bits define what actions users or programs can perform, offering a simple yet flexible permission system. This document explains the protection bits, their meanings, and how they are used.&lt;/p&gt;
-&lt;h2 id="protection-bits"&gt;Protection Bits&lt;/h2&gt;
-&lt;p&gt;The Amiga file system uses &lt;strong&gt;8 protection bits&lt;/strong&gt; per file or directory, often represented as a string of characters (e.g., &lt;code&gt;rwhedspa&lt;/code&gt;) or a numeric value. Each bit corresponds to a specific permission or attribute. The bits are divided into two groups: &lt;strong&gt;access permissions&lt;/strong&gt; and &lt;strong&gt;special attributes&lt;/strong&gt;.&lt;/p&gt;</description></item><item><title>AuDeluxe at glance</title><link>https://ginnov.github.io/littlethings/amiga/audeluxe_learnmore.html</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://ginnov.github.io/littlethings/amiga/audeluxe_learnmore.html</guid><description>&lt;p&gt;
- A few screenshots to give you an idea of what the tool looks like and what it does. I spent many hours
- developing this tool, and I hope it will be useful for you. And so the people that enabled me with the
- &lt;a href="https://github.com/OpenMPT/openmpt" target="_blank" rel="noopener noreferrer"&gt;OpenMPT library&lt;/a&gt;, which is a key asset behind this tool.
-&lt;/p&gt;
-&lt;div class="slideshow-container" data-source="../images/slideshow/audeluxe"&gt;
- &lt;div class="slide"&gt;
- &lt;img
- src=""
- alt="Slideshow Image"
- class="slide-image"
- id="slideImage"
- /&gt;
- &lt;div class="slide-description" id="slideDescription"&gt;&lt;/div&gt;
- &lt;/div&gt;
-&lt;p&gt;&lt;a class="slide-prev" id="prevBtn"&gt;❮&lt;/a&gt;
-&lt;a class="slide-next" id="nextBtn"&gt;❯&lt;/a&gt;&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="slide-controls"&gt;
- &lt;button id="playPauseBtn" class="project-button learn-button"&gt;
- &lt;i class="fas fa-pause"&gt;&lt;/i&gt;&lt;span&gt;Pause&lt;/span&gt;
- &lt;/button&gt;
-&lt;/div&gt;</description></item><item><title>Basic Sprite Animation</title><link>https://ginnov.github.io/littlethings/amiga/tutorials/sprite_basic.html</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://ginnov.github.io/littlethings/amiga/tutorials/sprite_basic.html</guid><description>&lt;p&gt;An introduction to using hardware sprites on the Amiga. Learn how to define sprite data, position sprites, and create simple animations. The Amiga's hardware sprites were a game-changer, allowing for fast, smooth-moving objects without needing to redraw the background (a process managed by the Blitter!).&lt;/p&gt;
-&lt;h3&gt;What is a Hardware Sprite?&lt;/h3&gt;
-&lt;p&gt;A hardware sprite is a separate, small graphical object that the Amiga's video hardware can display on top of the normal background screen. The Amiga has 8 hardware sprites, each 16 pixels wide and any height. They have their own color palettes and their positions can be updated independently of the main screen, making them perfect for characters, bullets, and cursors.&lt;/p&gt;</description></item><item><title>Developer Resources</title><link>https://ginnov.github.io/littlethings/amiga/resources.html</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://ginnov.github.io/littlethings/amiga/resources.html</guid><description>&lt;p class="mb-6"&gt;
- There is a huge amount of material out there, a curated collection of
- tools, emulators, and communities for Amiga developers would be an
- impossible endeavor. Not to mention that each engineer has their own
- unique workflow and preferences. So this list is around what I usually
- end up using.
-&lt;/p&gt;
-&lt;div class="space-y-8"&gt;
- &lt;div&gt;
- &lt;h3 class="text-xl font-semibold mb-3"&gt;Emulators&lt;/h3&gt;
- &lt;ul class="list-disc list-inside space-y-2"&gt;
- &lt;li&gt;
- &lt;a
- href="https://vamigaweb.github.io/"
- target="_blank"
- rel="noopener noreferrer"
- &gt;vAmiga Web Emulator&lt;/a
- &gt;: The best option for testing Amiga code in a browser and mobile.
- &lt;/li&gt;
- &lt;li&gt;
- &lt;a
- href="https://github.com/dirkwhoffmann/vAmiga"
- target="_blank"
- rel="noopener noreferrer"
- &gt;vAmiga&lt;/a
- &gt;: User-friendly Amiga 500/1000/2000 emulator for macOS. (&lt;a
- href="https://dirkwhoffmann.github.io/vAmiga/"
- target="_blank"
- rel="noopener noreferrer"
- &gt;Website&lt;/a
- &gt;)
- &lt;/li&gt;
- &lt;li&gt;
- &lt;a
- href="https://fs-uae.net/"
- target="_blank"
- rel="noopener noreferrer"
- &gt;FS-UAE&lt;/a
- &gt;: Cross-platform Amiga emulator with a focus on accuracy.
- &lt;/li&gt;
- &lt;li&gt;
- &lt;a
- href="https://vamigados.github.io/"
- target="_blank"
- rel="noopener noreferrer"
- &gt;ADF Inspector&lt;/a
- &gt;: Cross-platform Amiga ADF inspector.
- &lt;/li&gt;
- &lt;/ul&gt;
- &lt;/div&gt;
- &lt;div&gt;
- &lt;h3 class="text-xl font-semibold mb-3"&gt;
- Documentation &amp; Tutorials
- &lt;/h3&gt;
- &lt;ul class="list-disc list-inside space-y-2"&gt;
- &lt;li&gt;
- &lt;a
- href="http://amigadev.elowar.com/"
- target="_blank"
- rel="noopener noreferrer"
- &gt;Amiga Developer Docs&lt;/a
- &gt;: Official AmigaOS programming documentation.
- &lt;/li&gt;
- &lt;li&gt;
- &lt;a
- href="https://www.amigacoding.com/"
- target="_blank"
- rel="noopener noreferrer"
- &gt;C &amp; ASM&lt;/a
- &gt;: Tutorials for 68k assembly and C programming.
- &lt;/li&gt;
- &lt;li&gt;
- &lt;a
- href="https://retrogamecoders.com/amos-basic-screens-images/"
- target="_blank"
- rel="noopener noreferrer"
- &gt;AMOS Coding&lt;/a
- &gt;: Tutorials for one of the best developer creations for Amiga. (&lt;a href="https://retro-commodore.eu/files/downloads/amigamanuals-xiik.net/eBooks/Mastering%20Amiga%20Amos%20-%20eBook-ENG.pdf"&gt;book&lt;/a&gt;)
- &lt;/li&gt;
- &lt;/ul&gt;
- &lt;/div&gt;
- &lt;div&gt;
- &lt;h3 class="text-xl font-semibold mb-3"&gt;Communities&lt;/h3&gt;
- &lt;ul class="list-disc list-inside space-y-2"&gt;
- &lt;li&gt;
- &lt;a
- href="https://eab.abime.net/"
- target="_blank"
- rel="noopener noreferrer"
- &gt;English Amiga Board&lt;/a
- &gt;: Active forum for developers and enthusiasts.
- &lt;/li&gt;
- &lt;li&gt;
- &lt;a
- href="https://www.amiga.org/forums/"
- target="_blank"
- rel="noopener noreferrer"
- &gt;Amiga.org&lt;/a
- &gt;: Community for Amiga support and discussions.
- &lt;/li&gt;
- &lt;li&gt;
- &lt;a
- href="https://www.amiga-news.de/en/"
- target="_blank"
- rel="noopener noreferrer"
- &gt;Amiga News&lt;/a
- &gt;: The latest and greatest about Amiga. Community and discussions.
- &lt;/li&gt;
- &lt;/ul&gt;
- &lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="mt-8"&gt;
- &lt;h3 class="text-xl font-semibold mb-3"&gt;Art at Work&lt;/h3&gt;
- &lt;ul class="list-disc list-inside space-y-2"&gt;
- &lt;li&gt;
- &lt;a
- href="https://www.stef.be/bassoontracker/?index=9"
- target="_blank"
- rel="noopener noreferrer"
- &gt;A great soundtracker&lt;/a
- &gt;: For background white noise and ocassional f-yeah moments!.
- &lt;/li&gt;
- &lt;li&gt;
- &lt;a
- href="https://amiga.lychesis.net/sceners/DAS.html"
- target="_blank"
- rel="noopener noreferrer"
- &gt;Amiga Scenes&lt;/a
- &gt;: A curated collection of Amiga scenes.
- &lt;/li&gt;
- &lt;li&gt;
- &lt;a
- href="https://modarchive.org/index.php?request=view_top_favourites"
- target="_blank"
- rel="noopener noreferrer"
- &gt;Amiga Mods Archive&lt;/a
- &gt;: A curated collection of Amiga Music.
- &lt;/li&gt;
- &lt;/ul&gt;
-&lt;/div&gt;</description></item><item><title>Interactive Sound in Assembly: The Real Deal</title><link>https://ginnov.github.io/littlethings/amiga/tutorials/sound_asm.html</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://ginnov.github.io/littlethings/amiga/tutorials/sound_asm.html</guid><description>&lt;p&gt;So far, we've made things move on screen. Now, let's make some noise! The Amiga's four 8-bit sound channels, collectively named "Paula," gave it an audio capability that was light-years ahead of its time. In the last tutorial, we used C to work with the OS, but you asked for the real deal: how to do it in pure 68k assembly. Let's dive in.&lt;/p&gt;
-&lt;h3&gt;The Concept: OS Libraries from Assembly&lt;/h3&gt;
-&lt;p&gt;This program will run as a proper AmigaDOS process. To do that, we need to talk to the Amiga's libraries. In assembly, this means loading the library into memory to get its "base address," and then calling its functions by jumping to specific negative offsets from that base address. We'll open a window, draw our button, and enter a loop to wait for user input (events). When we detect a mouse click inside our button's area, we'll trigger the sound and provide some visual feedback by changing the button's color.&lt;/p&gt;</description></item><item><title>Interactive Sound: The 'Push My Button' Tutorial</title><link>https://ginnov.github.io/littlethings/amiga/tutorials/sound_c.html</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://ginnov.github.io/littlethings/amiga/tutorials/sound_c.html</guid><description>&lt;p&gt;So far, we've made things move on screen. Now, let's make some noise! The Amiga's four 8-bit sound channels, collectively named "Paula," gave it an audio capability that was light-years ahead of its time. This tutorial will guide you through loading a sound sample, drawing a button on the screen, and playing the sound when the user clicks the button.&lt;/p&gt;
-&lt;h3&gt;The Concept: Events and Audio&lt;/h3&gt;
-&lt;p&gt;Unlike our previous examples that took over the whole system, this program will run as a proper AmigaDOS process. We'll open a window, draw our button, and then enter a loop to wait for user input (events). When we detect a mouse click inside our button's area, we'll trigger the sound and provide some visual feedback by changing the button's color.&lt;/p&gt;</description></item><item><title>Interactive Sprites: Joystick Control</title><link>https://ginnov.github.io/littlethings/amiga/tutorials/joystick.html</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://ginnov.github.io/littlethings/amiga/tutorials/joystick.html</guid><description>&lt;p&gt;Moving a sprite automatically is cool, but letting the user control it is what makes a game! This tutorial builds on our animation example by adding joystick support. We'll read input from the joystick port to move our sprite around the screen and use the fire button to trigger a simple explosion effect.&lt;/p&gt;
-&lt;h3&gt;How the Amiga Reads Joysticks&lt;/h3&gt;
-&lt;p&gt;The Amiga reads the state of the standard joystick (connected to Port 1) through one of its custom chips, the CIA (Complex Interface Adapter). Specifically, we read from a register often labelled `JOY0DAT` at address `$DFF00A`. This register gives us a snapshot of the joystick's direction and button states.&lt;/p&gt;</description></item><item><title>PixDeluxe at glance</title><link>https://ginnov.github.io/littlethings/amiga/pixdeluxe_learnmore.html</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://ginnov.github.io/littlethings/amiga/pixdeluxe_learnmore.html</guid><description>&lt;p&gt;
- A few screenshots to give you an idea of what the tool looks like and what it does. I spent many hours
- developing this tool, and I hope it will be useful for you. And so the people that enabled me with the
- &lt;a href="https://github.com/svanderburg/libiff/tree/master" target="_blank" rel="noopener noreferrer"&gt;libiff library&lt;/a&gt;, which is a key asset behind this tool.
-&lt;/p&gt;
-&lt;div class="slideshow-container" data-source="../images/slideshow/pixdeluxe"&gt;
- &lt;div class="slide"&gt;
- &lt;img
- src=""
- alt="Slideshow Image"
- class="slide-image"
- id="slideImage"
- /&gt;
- &lt;div class="slide-description" id="slideDescription"&gt;&lt;/div&gt;
- &lt;/div&gt;
-&lt;p&gt;&lt;a class="slide-prev" id="prevBtn"&gt;❮&lt;/a&gt;
-&lt;a class="slide-next" id="nextBtn"&gt;❯&lt;/a&gt;&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="slide-controls"&gt;
- &lt;button id="playPauseBtn" class="project-button learn-button"&gt;
- &lt;i class="fas fa-pause"&gt;&lt;/i&gt;&lt;span&gt;Pause&lt;/span&gt;
- &lt;/button&gt;
-&lt;/div&gt;</description></item><item><title>Setting Up vbcc on macOS</title><link>https://ginnov.github.io/littlethings/amiga/tutorials/setup-asm.html</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://ginnov.github.io/littlethings/amiga/tutorials/setup-asm.html</guid><description>&lt;p&gt;To properly set up vbcc on macOS for compiling Amiga code, you have a couple of primary methods: using an automated script or undertaking a manual compilation and setup process. Both approaches will provide you with the necessary tools: the vbcc compiler, the vasm assembler, and the vlink linker, all configured for the m68k Amiga target.&lt;/p&gt;
-&lt;h3&gt;Automated Script Installation&lt;/h3&gt;
-&lt;p&gt;This is often the most straightforward way, as it handles many of the download, compilation, and setup steps for you. A great script is available on GitHub:&lt;/p&gt;</description></item><item><title>The Magic of the Amiga Copper</title><link>https://ginnov.github.io/littlethings/amiga/tutorials/copper_tutorial.html</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://ginnov.github.io/littlethings/amiga/tutorials/copper_tutorial.html</guid><description>&lt;p&gt;Hey Amiga fans! Ever looked at a stunning Amiga demo or game and wondered how they pulled off those amazing color effects? You know the ones – the vibrant, multi-colored skies that seem to defy the Amiga's color limits, or a screen that's split into different color palettes? The secret, my friends, often lies in one of the Amiga's most unique and powerful hardware features: the &lt;strong&gt;Copper&lt;/strong&gt;.&lt;/p&gt;
-&lt;h3&gt;What in the World is a Copper?&lt;/h3&gt;
-&lt;p&gt;In the heart of the Amiga's custom chipset lies a special co-processor called the Copper. Think of it as a tiny, dedicated graphics programmer that works alongside the main CPU. While the CPU is busy running the game's logic or your Workbench applications, the Copper is tirelessly manipulating the display hardware.&lt;/p&gt;</description></item><item><title>XBook Console</title><link>https://ginnov.github.io/littlethings/xbook.html</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://ginnov.github.io/littlethings/xbook.html</guid><description/></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+	<channel>
+		<title>Workspace Hub on Back to Amiga Dev Hub</title>
+		<link>https://ginnov.github.io/littlethings/index.html</link>
+		<description>Recent content in Workspace Hub on Back to Amiga Dev Hub</description>
+		<generator>Hugo</generator>
+		<language>en</language>
+		
+		
+		
+		
+			<atom:link href="https://ginnov.github.io/littlethings/index.xml" rel="self" type="application/rss+xml" />
+			<item>
+				<title>A little story</title>
+				<link>https://ginnov.github.io/littlethings/amiga/about.html</link>
+				<pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+				<guid>https://ginnov.github.io/littlethings/amiga/about.html</guid>
+				<description>&lt;p&gt;&#xA;  The Commodore Amiga is a legendary platform that revolutionized&#xA;  computing with its advanced graphics, sound, and multitasking. This&#xA;  site is dedicated to “almost” developers who share a passion for&#xA;  coding on the Amiga, whether in 68k assembly, C, or modern AmigaOS with&#xA;  macOS in mind.&lt;/p&gt;&#xA;&lt;p class=&#34;mt-4&#34;&gt;&#xA;  By “almost” I mean you know your way around coding tools, but you can&#39;t&#xA;  split the byte just yet like a digital lumberjack.&#xA;&lt;/p&gt;&#xA;&lt;p class=&#34;mt-4&#34;&gt;&#xA;  My fascination with the Amiga began in the 1980s, drawn to its&#xA;  groundbreaking hardware and vibrant developer community. From coding&#xA;  demos in AMOS to exploring AmigaOS, the Amiga shaped my love for&#xA;  programming. &#xA;  &lt;/p&gt;</description>
+			</item>
+			<item>
+				<title>ADF.inder at glance</title>
+				<link>https://ginnov.github.io/littlethings/amiga/adfinder_learnmore.html</link>
+				<pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+				<guid>https://ginnov.github.io/littlethings/amiga/adfinder_learnmore.html</guid>
+				<description>&lt;p&gt;&#xA;  A few screenshots to give you an idea of what the tool looks like and what it does. I spent many hours&#xA;  developing this tool, and I hope it will be useful for you. And so the people that enabled me with the &lt;a href=&#34;https://github.com/adflib/ADFlib&#34; target=&#34;_blank&#34; rel=&#34;noopener noreferrer&#34;&gt;ADFlib library&lt;/a&gt;, which is a key asset behind this tool.&#xA;&lt;/p&gt;&#xA;&lt;p&gt;ADFinder requires macOS 15 or later. Public downloads and automatic updates are&#xA;temporarily paused while new packages are rebuilt with verified dependency&#xA;provenance, approved notices, and complete corresponding source. No release&#xA;version or download URL is announced until those exact bytes pass the hosted&#xA;arm64 and x86_64 release gates. The&#xA;&lt;a href=&#34;https://github.com/GINNOV/littlethings/blob/master/Amiga/Tools/ADFinder/CHANGELOG.md&#34;&gt;release history&lt;/a&gt;&#xA;remains available.&lt;/p&gt;</description>
+			</item>
+			<item>
+				<title>Amiga Development Tutorials</title>
+				<link>https://ginnov.github.io/littlethings/amiga/walkthroughs.html</link>
+				<pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+				<guid>https://ginnov.github.io/littlethings/amiga/walkthroughs.html</guid>
+				<description>&lt;p class=&#34;mb-6&#34;&gt;An aspirational goal is to build walkthroughs for various Amiga development topics.&lt;/p&gt;&#xA;&lt;div class=&#34;grid md:grid-cols-2 gap-8&#34;&gt;&#xA;    &lt;article class=&#34;project-card !flex-col !items-start&#34;&gt;&#xA;        &lt;img src=&#34;tutorials/images/setup_asm_cover.jpg&#34; alt=&#34;Getting Started with Amiga Assembly&#34; class=&#34;project-image mb-4&#34;&gt;&#xA;        &lt;div class=&#34;w-full&#34;&gt;&#xA;            &lt;h3 class=&#34;!text-2xl&#34;&gt;Getting Started with Amiga Assembly&lt;/h3&gt;&#xA;            &lt;p class=&#34;!text-sm !text-left&#34;&gt;&#xA;                A beginner&#39;s guide to setting up your 68k assembly development environment and writing your first &#34;Hello, Amiga!&#34; program. Covers essential tools and concepts.&#xA;            &lt;/p&gt;&#xA;            &lt;div class=&#34;project-button-container !flex-row !justify-start&#34;&gt;&#xA;                 &lt;a href=&#34;tutorials/setup-asm.html&#34; class=&#34;learn-button project-button !py-2 !px-4 !text-sm&#34;&gt;&#xA;                    &lt;i class=&#34;fas fa-book-reader&#34;&gt;&lt;/i&gt;Read Tutorial&#xA;                &lt;/a&gt;&#xA;            &lt;/div&gt;&#xA;        &lt;/div&gt;&#xA;    &lt;/article&gt;&#xA;    &lt;article class=&#34;project-card !flex-col !items-start&#34;&gt;&#xA;        &lt;img src=&#34;tutorials/images/joystick.jpeg&#34; alt=&#34;Basics of Joystick Control&#34; class=&#34;project-image mb-4&#34;&gt;&#xA;         &lt;div class=&#34;w-full&#34;&gt;&#xA;            &lt;h3 class=&#34;!text-2xl&#34;&gt;Basics of Joystick Control&lt;/h3&gt;&#xA;            &lt;p class=&#34;!text-sm !text-left&#34;&gt;&#xA;               Learn the basics of how to read joystick input on the Amiga. This tutorial will guide you through writing code to handle joystick events.&#xA;            &lt;/p&gt;</description>
+			</item>
+			<item>
+				<title>Amiga File System Protection Bits</title>
+				<link>https://ginnov.github.io/littlethings/amiga/kb/readme.html</link>
+				<pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+				<guid>https://ginnov.github.io/littlethings/amiga/kb/readme.html</guid>
+				<description>&lt;h2 id=&#34;overview&#34;&gt;Overview&lt;/h2&gt;&#xA;&lt;p&gt;The Amiga File System (AFS), used by the Amiga operating system, includes a set of &lt;strong&gt;protection bits&lt;/strong&gt; to control file and directory access permissions. These bits define what actions users or programs can perform, offering a simple yet flexible permission system. This document explains the protection bits, their meanings, and how they are used.&lt;/p&gt;&#xA;&lt;h2 id=&#34;protection-bits&#34;&gt;Protection Bits&lt;/h2&gt;&#xA;&lt;p&gt;The Amiga file system uses &lt;strong&gt;8 protection bits&lt;/strong&gt; per file or directory, often represented as a string of characters (e.g., &lt;code&gt;rwhedspa&lt;/code&gt;) or a numeric value. Each bit corresponds to a specific permission or attribute. The bits are divided into two groups: &lt;strong&gt;access permissions&lt;/strong&gt; and &lt;strong&gt;special attributes&lt;/strong&gt;.&lt;/p&gt;</description>
+			</item>
+			<item>
+				<title>AuDeluxe at glance</title>
+				<link>https://ginnov.github.io/littlethings/amiga/audeluxe_learnmore.html</link>
+				<pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+				<guid>https://ginnov.github.io/littlethings/amiga/audeluxe_learnmore.html</guid>
+				<description>&lt;p&gt;&#xA;  A few screenshots to give you an idea of what the tool looks like and what it does. I spent many hours&#xA;  developing this tool, and I hope it will be useful for you. And so the people that enabled me with the &#xA;  &lt;a href=&#34;https://github.com/OpenMPT/openmpt&#34; target=&#34;_blank&#34; rel=&#34;noopener noreferrer&#34;&gt;OpenMPT library&lt;/a&gt;, which is a key asset behind this tool.&#xA;&lt;/p&gt;&#xA;&lt;div class=&#34;slideshow-container&#34; data-source=&#34;../images/slideshow/audeluxe&#34;&gt;&#xA;  &lt;div class=&#34;slide&#34;&gt;&#xA;    &lt;img&#xA;      src=&#34;&#34;&#xA;      alt=&#34;Slideshow Image&#34;&#xA;      class=&#34;slide-image&#34;&#xA;      id=&#34;slideImage&#34;&#xA;    /&gt;&#xA;    &lt;div class=&#34;slide-description&#34; id=&#34;slideDescription&#34;&gt;&lt;/div&gt;&#xA;  &lt;/div&gt;&#xA;&lt;p&gt;&lt;a class=&#34;slide-prev&#34; id=&#34;prevBtn&#34;&gt;❮&lt;/a&gt;&#xA;&lt;a class=&#34;slide-next&#34; id=&#34;nextBtn&#34;&gt;❯&lt;/a&gt;&lt;/p&gt;&#xA;&lt;/div&gt;&#xA;&lt;div class=&#34;slide-controls&#34;&gt;&#xA;  &lt;button id=&#34;playPauseBtn&#34; class=&#34;project-button learn-button&#34;&gt;&#xA;    &lt;i class=&#34;fas fa-pause&#34;&gt;&lt;/i&gt;&lt;span&gt;Pause&lt;/span&gt;&#xA;  &lt;/button&gt;&#xA;&lt;/div&gt;</description>
+			</item>
+			<item>
+				<title>Basic Sprite Animation</title>
+				<link>https://ginnov.github.io/littlethings/amiga/tutorials/sprite_basic.html</link>
+				<pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+				<guid>https://ginnov.github.io/littlethings/amiga/tutorials/sprite_basic.html</guid>
+				<description>&lt;p&gt;An introduction to using hardware sprites on the Amiga. Learn how to define sprite data, position sprites, and create simple animations. The Amiga&amp;rsquo;s hardware sprites were a game-changer, allowing for fast, smooth-moving objects without needing to redraw the background (a process managed by the Blitter!).&lt;/p&gt;&#xA;&lt;h2 id=&#34;what-is-a-hardware-sprite&#34;&gt;What is a Hardware Sprite?&lt;/h2&gt;&#xA;&lt;p&gt;A hardware sprite is a separate, small graphical object that the Amiga&amp;rsquo;s video hardware can display on top of the normal background screen. The Amiga has 8 hardware sprites, each 16 pixels wide and any height. They have their own color palettes and their positions can be updated independently of the main screen, making them perfect for characters, bullets, and cursors.&lt;/p&gt;</description>
+			</item>
+			<item>
+				<title>Developer Resources</title>
+				<link>https://ginnov.github.io/littlethings/amiga/resources.html</link>
+				<pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+				<guid>https://ginnov.github.io/littlethings/amiga/resources.html</guid>
+				<description>&lt;p class=&#34;mb-6&#34;&gt;&#xA;  There is a huge amount of material out there, a curated collection of&#xA;  tools, emulators, and communities for Amiga developers would be an&#xA;  impossible endeavor. Not to mention that each engineer has their own&#xA;  unique workflow and preferences. So this list is around what I usually&#xA;  end up using.&#xA;&lt;/p&gt;&#xA;&lt;div class=&#34;space-y-8&#34;&gt;&#xA;  &lt;div&gt;&#xA;    &lt;h3 class=&#34;text-xl font-semibold mb-3&#34;&gt;Emulators&lt;/h3&gt;&#xA;    &lt;ul class=&#34;list-disc list-inside space-y-2&#34;&gt;&#xA;      &lt;li&gt;&#xA;        &lt;a&#xA;          href=&#34;https://vamigaweb.github.io/&#34;&#xA;          target=&#34;_blank&#34;&#xA;          rel=&#34;noopener noreferrer&#34;&#xA;          &gt;vAmiga Web Emulator&lt;/a&#xA;        &gt;: The best option for testing Amiga code in a browser and mobile.&#xA;      &lt;/li&gt;&#xA;      &lt;li&gt;&#xA;        &lt;a&#xA;          href=&#34;https://github.com/dirkwhoffmann/vAmiga&#34;&#xA;          target=&#34;_blank&#34;&#xA;          rel=&#34;noopener noreferrer&#34;&#xA;          &gt;vAmiga&lt;/a&#xA;        &gt;: User-friendly Amiga 500/1000/2000 emulator for macOS. (&lt;a&#xA;          href=&#34;https://dirkwhoffmann.github.io/vAmiga/&#34;&#xA;          target=&#34;_blank&#34;&#xA;          rel=&#34;noopener noreferrer&#34;&#xA;          &gt;Website&lt;/a&#xA;        &gt;)&#xA;      &lt;/li&gt;&#xA;      &lt;li&gt;&#xA;        &lt;a&#xA;          href=&#34;https://fs-uae.net/&#34;&#xA;          target=&#34;_blank&#34;&#xA;          rel=&#34;noopener noreferrer&#34;&#xA;          &gt;FS-UAE&lt;/a&#xA;        &gt;: Cross-platform Amiga emulator with a focus on accuracy.&#xA;      &lt;/li&gt;&#xA;        &lt;li&gt;&#xA;        &lt;a&#xA;          href=&#34;https://vamigados.github.io/&#34;&#xA;          target=&#34;_blank&#34;&#xA;          rel=&#34;noopener noreferrer&#34;&#xA;          &gt;ADF Inspector&lt;/a&#xA;        &gt;: Cross-platform Amiga ADF inspector.&#xA;      &lt;/li&gt;&#xA;    &lt;/ul&gt;&#xA;  &lt;/div&gt;&#xA;  &lt;div&gt;&#xA;    &lt;h3 class=&#34;text-xl font-semibold mb-3&#34;&gt;&#xA;      Documentation &amp; Tutorials&#xA;    &lt;/h3&gt;&#xA;    &lt;ul class=&#34;list-disc list-inside space-y-2&#34;&gt;&#xA;      &lt;li&gt;&#xA;        &lt;a&#xA;          href=&#34;http://amigadev.elowar.com/&#34;&#xA;          target=&#34;_blank&#34;&#xA;          rel=&#34;noopener noreferrer&#34;&#xA;          &gt;Amiga Developer Docs&lt;/a&#xA;        &gt;: Official AmigaOS programming documentation.&#xA;      &lt;/li&gt;&#xA;      &lt;li&gt;&#xA;        &lt;a&#xA;          href=&#34;https://www.amigacoding.com/&#34;&#xA;          target=&#34;_blank&#34;&#xA;          rel=&#34;noopener noreferrer&#34;&#xA;          &gt;C &amp; ASM&lt;/a&#xA;        &gt;: Tutorials for 68k assembly and C programming.&#xA;      &lt;/li&gt;&#xA;      &lt;li&gt;&#xA;        &lt;a&#xA;          href=&#34;https://retrogamecoders.com/amos-basic-screens-images/&#34;&#xA;          target=&#34;_blank&#34;&#xA;          rel=&#34;noopener noreferrer&#34;&#xA;          &gt;AMOS Coding&lt;/a&#xA;        &gt;: Tutorials for one of the best developer creations for Amiga. (&lt;a href=&#34;https://retro-commodore.eu/files/downloads/amigamanuals-xiik.net/eBooks/Mastering%20Amiga%20Amos%20-%20eBook-ENG.pdf&#34;&gt;book&lt;/a&gt;)&#xA;      &lt;/li&gt;&#xA;    &lt;/ul&gt;&#xA;  &lt;/div&gt;&#xA;  &lt;div&gt;&#xA;    &lt;h3 class=&#34;text-xl font-semibold mb-3&#34;&gt;Communities&lt;/h3&gt;&#xA;    &lt;ul class=&#34;list-disc list-inside space-y-2&#34;&gt;&#xA;      &lt;li&gt;&#xA;        &lt;a&#xA;          href=&#34;https://eab.abime.net/&#34;&#xA;          target=&#34;_blank&#34;&#xA;          rel=&#34;noopener noreferrer&#34;&#xA;          &gt;English Amiga Board&lt;/a&#xA;        &gt;: Active forum for developers and enthusiasts.&#xA;      &lt;/li&gt;&#xA;      &lt;li&gt;&#xA;        &lt;a&#xA;          href=&#34;https://www.amiga.org/forums/&#34;&#xA;          target=&#34;_blank&#34;&#xA;          rel=&#34;noopener noreferrer&#34;&#xA;          &gt;Amiga.org&lt;/a&#xA;        &gt;: Community for Amiga support and discussions.&#xA;      &lt;/li&gt;&#xA;      &lt;li&gt;&#xA;        &lt;a&#xA;          href=&#34;https://www.amiga-news.de/en/&#34;&#xA;          target=&#34;_blank&#34;&#xA;          rel=&#34;noopener noreferrer&#34;&#xA;          &gt;Amiga News&lt;/a&#xA;        &gt;: The latest and greatest about Amiga. Community and discussions.&#xA;      &lt;/li&gt;&#xA;    &lt;/ul&gt;&#xA;  &lt;/div&gt;&#xA;&lt;/div&gt;&#xA;&lt;div class=&#34;mt-8&#34;&gt;&#xA;    &lt;h3 class=&#34;text-xl font-semibold mb-3&#34;&gt;Art at Work&lt;/h3&gt;&#xA;    &lt;ul class=&#34;list-disc list-inside space-y-2&#34;&gt;&#xA;      &lt;li&gt;&#xA;        &lt;a&#xA;          href=&#34;https://www.stef.be/bassoontracker/?index=9&#34;&#xA;          target=&#34;_blank&#34;&#xA;          rel=&#34;noopener noreferrer&#34;&#xA;          &gt;A great soundtracker&lt;/a&#xA;        &gt;: For background white noise and ocassional f-yeah moments!.&#xA;      &lt;/li&gt;&#xA;      &lt;li&gt;&#xA;        &lt;a&#xA;          href=&#34;https://amiga.lychesis.net/sceners/DAS.html&#34;&#xA;          target=&#34;_blank&#34;&#xA;          rel=&#34;noopener noreferrer&#34;&#xA;          &gt;Amiga Scenes&lt;/a&#xA;        &gt;: A curated collection of Amiga scenes.&#xA;      &lt;/li&gt;&#xA;      &lt;li&gt;&#xA;        &lt;a&#xA;          href=&#34;https://modarchive.org/index.php?request=view_top_favourites&#34;&#xA;          target=&#34;_blank&#34;&#xA;          rel=&#34;noopener noreferrer&#34;&#xA;          &gt;Amiga Mods Archive&lt;/a&#xA;        &gt;: A curated collection of Amiga Music.&#xA;      &lt;/li&gt;&#xA;    &lt;/ul&gt;&#xA;&lt;/div&gt;</description>
+			</item>
+			<item>
+				<title>Interactive Sound in Assembly: The Real Deal</title>
+				<link>https://ginnov.github.io/littlethings/amiga/tutorials/sound_asm.html</link>
+				<pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+				<guid>https://ginnov.github.io/littlethings/amiga/tutorials/sound_asm.html</guid>
+				<description>&lt;p&gt;So far, we&amp;rsquo;ve made things move on screen. Now, let&amp;rsquo;s make some noise! The Amiga&amp;rsquo;s four 8-bit sound channels, collectively managed by the custom chip &lt;strong&gt;Paula&lt;/strong&gt;, gave it audio capabilities that were light-years ahead of its time. In this tutorial, we&amp;rsquo;ll write an OS-friendly 68k assembly application that opens an Intuition window, renders an interactive button, and plays 8-bit PCM audio samples directly via hardware DMA.&lt;/p&gt;&#xA;&lt;h2 id=&#34;the-amiga-paula-audio-hardware&#34;&gt;The Amiga &amp;ldquo;Paula&amp;rdquo; Audio Hardware&lt;/h2&gt;&#xA;&lt;p&gt;The Paula custom chip features four independent 8-bit PCM sound channels (two mixed to the left audio output, two to the right). Each channel uses hardware DMA to fetch audio samples directly from &lt;strong&gt;Chip RAM&lt;/strong&gt; without consuming CPU cycles.&lt;/p&gt;</description>
+			</item>
+			<item>
+				<title>Interactive Sound in C</title>
+				<link>https://ginnov.github.io/littlethings/amiga/tutorials/sound_c.html</link>
+				<pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+				<guid>https://ginnov.github.io/littlethings/amiga/tutorials/sound_c.html</guid>
+				<description>&lt;p&gt;So far, we&amp;rsquo;ve explored custom chip hardware programming in assembly. Now let&amp;rsquo;s look at how to play audio using AmigaOS operating system APIs in C! In this tutorial, we&amp;rsquo;ll write an OS-friendly C application using &lt;code&gt;datatypes.library&lt;/code&gt; to load sound samples dynamically, create an Intuition window with interactive UI buttons, and trigger audio playback on mouse clicks.&lt;/p&gt;&#xA;&lt;h2 id=&#34;the-concept-os-v39-datatypes--audio&#34;&gt;The Concept: OS V39 DataTypes &amp;amp; Audio&lt;/h2&gt;&#xA;&lt;p&gt;AmigaOS 3.0 (V39) introduced the &lt;strong&gt;DataTypes system&lt;/strong&gt;, a powerful object-oriented framework that allows applications to load, display, and play media files (images, sounds, text) without needing custom file parsers. By creating a sound datatype object with &lt;code&gt;NewDTObject()&lt;/code&gt;, your program can play IFF 8SVX audio files using high-level OS calls (&lt;code&gt;DTM_PLAY&lt;/code&gt;).&lt;/p&gt;</description>
+			</item>
+			<item>
+				<title>Interactive Sprites: Joystick Control</title>
+				<link>https://ginnov.github.io/littlethings/amiga/tutorials/joystick.html</link>
+				<pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+				<guid>https://ginnov.github.io/littlethings/amiga/tutorials/joystick.html</guid>
+				<description>&lt;p&gt;Moving a sprite automatically is cool, but letting the user control it is what makes a game! This tutorial builds on our animation example by adding joystick support. We&#39;ll read input from the joystick port to move our sprite around the screen and use the fire button to trigger a simple explosion effect.&lt;/p&gt;&#xA;&lt;h3&gt;How the Amiga Reads Joysticks&lt;/h3&gt;&#xA;&lt;p&gt;The Amiga reads the state of the standard joystick (connected to Port 1) through one of its custom chips and the CIA (Complex Interface Adapter). Specifically, we read direction data from the 16-bit custom chip register &lt;code&gt;JOY1DAT&lt;/code&gt; at address &lt;code&gt;$DFF00C&lt;/code&gt; (Port 1), and fire button status from bit 7 of CIA register &lt;code&gt;CIAAPRA&lt;/code&gt; at address &lt;code&gt;$BFE001&lt;/code&gt;.&lt;/p&gt;</description>
+			</item>
+			<item>
+				<title>PixDeluxe at glance</title>
+				<link>https://ginnov.github.io/littlethings/amiga/pixdeluxe_learnmore.html</link>
+				<pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+				<guid>https://ginnov.github.io/littlethings/amiga/pixdeluxe_learnmore.html</guid>
+				<description>&lt;p&gt;&#xA;  A few screenshots to give you an idea of what the tool looks like and what it does. I spent many hours&#xA;  developing this tool, and I hope it will be useful for you. And so the people that enabled me with the &#xA;  &lt;a href=&#34;https://github.com/svanderburg/libiff/tree/master&#34; target=&#34;_blank&#34; rel=&#34;noopener noreferrer&#34;&gt;libiff library&lt;/a&gt;, which is a key asset behind this tool.&#xA;&lt;/p&gt;&#xA;&lt;div class=&#34;slideshow-container&#34; data-source=&#34;../images/slideshow/pixdeluxe&#34;&gt;&#xA;  &lt;div class=&#34;slide&#34;&gt;&#xA;    &lt;img&#xA;      src=&#34;&#34;&#xA;      alt=&#34;Slideshow Image&#34;&#xA;      class=&#34;slide-image&#34;&#xA;      id=&#34;slideImage&#34;&#xA;    /&gt;&#xA;    &lt;div class=&#34;slide-description&#34; id=&#34;slideDescription&#34;&gt;&lt;/div&gt;&#xA;  &lt;/div&gt;&#xA;&lt;p&gt;&lt;a class=&#34;slide-prev&#34; id=&#34;prevBtn&#34;&gt;❮&lt;/a&gt;&#xA;&lt;a class=&#34;slide-next&#34; id=&#34;nextBtn&#34;&gt;❯&lt;/a&gt;&lt;/p&gt;&#xA;&lt;/div&gt;&#xA;&lt;div class=&#34;slide-controls&#34;&gt;&#xA;  &lt;button id=&#34;playPauseBtn&#34; class=&#34;project-button learn-button&#34;&gt;&#xA;    &lt;i class=&#34;fas fa-pause&#34;&gt;&lt;/i&gt;&lt;span&gt;Pause&lt;/span&gt;&#xA;  &lt;/button&gt;&#xA;&lt;/div&gt;</description>
+			</item>
+			<item>
+				<title>Setting Up vbcc on macOS</title>
+				<link>https://ginnov.github.io/littlethings/amiga/tutorials/setup-asm.html</link>
+				<pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+				<guid>https://ginnov.github.io/littlethings/amiga/tutorials/setup-asm.html</guid>
+				<description>&lt;p&gt;To properly set up vbcc on macOS for compiling Amiga code, you have a couple of primary methods: using an automated script or undertaking a manual compilation and setup process. Both approaches will provide you with the necessary tools: the vbcc compiler, the vasm assembler, and the vlink linker, all configured for the m68k Amiga target.&lt;/p&gt;&#xA;&lt;h3&gt;Automated Script Installation&lt;/h3&gt;&#xA;&lt;p&gt;This is often the most straightforward way, as it handles many of the download, compilation, and setup steps for you. A great script is available on GitHub:&lt;/p&gt;</description>
+			</item>
+			<item>
+				<title>The Magic of the Amiga Copper</title>
+				<link>https://ginnov.github.io/littlethings/amiga/tutorials/copper_tutorial.html</link>
+				<pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+				<guid>https://ginnov.github.io/littlethings/amiga/tutorials/copper_tutorial.html</guid>
+				<description>&lt;p&gt;Hey Amiga fans! Ever looked at a stunning Amiga demo or game and wondered how they pulled off those amazing color effects? You know the ones – the vibrant, multi-colored skies that seem to defy the Amiga&amp;rsquo;s color limits, or a screen that&amp;rsquo;s split into different color palettes? The secret, my friends, often lies in one of the Amiga&amp;rsquo;s most unique and powerful hardware features: the &lt;strong&gt;Copper&lt;/strong&gt;.&lt;/p&gt;&#xA;&lt;h2 id=&#34;what-is-the-copper&#34;&gt;What is the Copper?&lt;/h2&gt;&#xA;&lt;p&gt;In the heart of the Amiga&amp;rsquo;s custom chipset lies a special co-processor called the Copper. Think of it as a tiny, dedicated graphics programmer that works alongside the main CPU. While the CPU is busy running the game&amp;rsquo;s logic or your Workbench applications, the Copper is tirelessly manipulating the display hardware.&lt;/p&gt;</description>
+			</item>
+			<item>
+				<title>XBook Console</title>
+				<link>https://ginnov.github.io/littlethings/xbook.html</link>
+				<pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+				<guid>https://ginnov.github.io/littlethings/xbook.html</guid>
+				<description></description>
+			</item>
+	</channel>
+</rss>

@@ -7,7 +7,7 @@ layout: "single"
 
 <div class="grid md:grid-cols-2 gap-8">
     <article class="project-card !flex-col !items-start">
-        <img src="https://placehold.co/600x350/1E40AF/BFDBFE?text=build+it&font=press-start-2p" alt="Tutorial 1 Placeholder" class="project-image mb-4">
+        <img src="tutorials/images/setup_asm_cover.jpg" alt="Getting Started with Amiga Assembly" class="project-image mb-4">
         <div class="w-full">
             <h3 class="!text-2xl">Getting Started with Amiga Assembly</h3>
             <p class="!text-sm !text-left">
@@ -21,7 +21,7 @@ layout: "single"
         </div>
     </article>
     <article class="project-card !flex-col !items-start">
-        <img src="tutorials/images/joystick.jpeg" alt="Tutorial 2 Placeholder" class="project-image mb-4">
+        <img src="tutorials/images/joystick.jpeg" alt="Basics of Joystick Control" class="project-image mb-4">
          <div class="w-full">
             <h3 class="!text-2xl">Basics of Joystick Control</h3>
             <p class="!text-sm !text-left">
@@ -35,7 +35,7 @@ layout: "single"
         </div>
     </article>
      <article class="project-card !flex-col !items-start">
-        <img src="tutorials/images/copper.gif" alt="Tutorial 3 Placeholder" class="project-image mb-4">
+        <img src="tutorials/images/copper.gif" alt="Understanding Copper Lists" class="project-image mb-4">
          <div class="w-full">
             <h3 class="!text-2xl">Understanding Copper Lists</h3>
             <p class="!text-sm !text-left">
@@ -49,7 +49,7 @@ layout: "single"
         </div>
     </article>
      <article class="project-card !flex-col !items-start">
-        <img src="tutorials/images/Lotus2_Intro1.gif" alt="Tutorial 4 Placeholder" class="project-image mb-4">
+        <img src="tutorials/images/sprite_diagram.jpg" alt="Basic Sprite Animation" class="project-image mb-4">
          <div class="w-full">
             <h3 class="!text-2xl">Basic Sprite Animation</h3>
             <p class="!text-sm !text-left">
@@ -63,7 +63,7 @@ layout: "single"
         </div>
     </article>
     <article class="project-card !flex-col !items-start">
-        <img src="https://placehold.co/600x350/1E40AF/BFDBFE?text=in+progress&font=press-start-2p" alt="Tutorial 5 Placeholder" class="project-image mb-4">
+        <img src="tutorials/images/sound_asm_diagram.jpg" alt="Sound in Assembler" class="project-image mb-4">
          <div class="w-full">
             <h3 class="!text-2xl">Sound in Assembler</h3>
             <p class="!text-sm !text-left">
@@ -77,7 +77,7 @@ layout: "single"
         </div>
     </article>
      <article class="project-card !flex-col !items-start">
-        <img src="https://placehold.co/600x350/1E40AF/BFDBFE?text=in+progress&font=press-start-2p" alt="Tutorial 6 Placeholder" class="project-image mb-4">
+        <img src="tutorials/images/sound_c_cover.jpg" alt="Sounds in C" class="project-image mb-4">
          <div class="w-full">
             <h3 class="!text-2xl">Sounds in C</h3>
             <p class="!text-sm !text-left">
