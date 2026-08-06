@@ -100,4 +100,66 @@ final class AmigaPlaygroundUITests: XCTestCase {
         screenshot.lifetime = .keepAlways
         add(screenshot)
     }
+
+    func testSettingsExposeEmulatorPresetsAndApplySelections() {
+        app.typeKey(",", modifierFlags: .command)
+
+        let settingsWindow = app.windows.element(boundBy: 1)
+        XCTAssertTrue(settingsWindow.waitForExistence(timeout: 5))
+
+        app.buttons["Hardware"].click()
+        let hardwarePreset = app.descendants(matching: .any)["hardwarePresetPicker"]
+        XCTAssertTrue(
+            hardwarePreset.waitForExistence(timeout: 2),
+            "Hardware Settings must expose the emulator preset combo."
+        )
+        hardwarePreset.click()
+        app.menuItems["A1200 Kickstart 3.1"].click()
+        XCTAssertEqual(app.descendants(matching: .any)["emulatorModelPicker"].value as? String, "A1200")
+        XCTAssertEqual(app.descendants(matching: .any)["emulatorCpuPicker"].value as? String, "68020")
+        XCTAssertEqual(app.descendants(matching: .any)["emulatorChipRamPicker"].value as? String, "2 MB")
+
+        let hardwareScreenshot = XCTAttachment(screenshot: settingsWindow.screenshot())
+        hardwareScreenshot.name = "Hardware Emulator Preset Settings"
+        hardwareScreenshot.lifetime = .keepAlways
+        add(hardwareScreenshot)
+
+        app.buttons["FS-UAE"].click()
+        let launchPreset = app.descendants(matching: .any)["fsUaeArgumentPresetPicker"]
+        XCTAssertTrue(
+            launchPreset.waitForExistence(timeout: 2),
+            "FS-UAE Settings must expose the launch-argument preset combo."
+        )
+        launchPreset.click()
+        app.menuItems["Classic CRT look"].click()
+        XCTAssertEqual(
+            app.descendants(matching: .any)["fsUaeCustomArgumentsField"].value as? String,
+            "--scanlines=1 --keep_aspect=1"
+        )
+
+        let screenshot = XCTAttachment(screenshot: settingsWindow.screenshot())
+        screenshot.name = "Emulator Preset Settings"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+
+        app.terminate()
+        app.launch()
+        XCTAssertTrue(app.windows.firstMatch.waitForExistence(timeout: 8))
+        app.typeKey(",", modifierFlags: .command)
+        XCTAssertTrue(app.windows.element(boundBy: 1).waitForExistence(timeout: 5))
+
+        app.buttons["Hardware"].click()
+        XCTAssertEqual(
+            app.descendants(matching: .any)["hardwarePresetPicker"].value as? String,
+            "A1200 Kickstart 3.1",
+            "The selected hardware preset must survive an app relaunch."
+        )
+
+        app.buttons["FS-UAE"].click()
+        XCTAssertEqual(
+            app.descendants(matching: .any)["fsUaeArgumentPresetPicker"].value as? String,
+            "Classic CRT look",
+            "The selected FS-UAE preset must survive an app relaunch."
+        )
+    }
 }

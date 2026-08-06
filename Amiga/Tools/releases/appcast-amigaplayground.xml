@@ -3,6 +3,19 @@
   <channel>
     <title>Amiga Playground Changelog</title>
     <item>
+      <title>Version 1.0.0 (Build 40)</title>
+      <description><![CDATA[
+<h4>Emulator presets</h4>
+<ul>
+    <li>Added ready-to-use hardware presets for A500, A500+, A600, A1200, and A4000 configurations.</li>
+    <li>Added FS-UAE launch presets for fullscreen, windowed HD, low-latency, classic CRT, and fast-floppy sessions.</li>
+    <li>Preset selections automatically apply the matching emulator settings and remain selected between launches.</li>
+</ul>
+]]></description>
+      <pubDate>Thu, 06 Aug 2026 14:01:13 +0200</pubDate>
+      <enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/AmigaPlayground-1.0.0_40.zip" sparkle:version="40" sparkle:shortVersionString="1.0.0" length="2697800" type="application/octet-stream" sparkle:edSignature="wUbQ+BJ9oIRLV8kA2QTCM1xLxR9Wp9/ufx2vtt0FqWKa3gWfPEvbKc2soQr4Fzo3yHDJA9jyS33YELdjlvFBCA==" />
+    </item>
+    <item>
       <title>Version 1.0.0 (Build 39)</title>
       <description><![CDATA[
 <h4>send2adf Tool Integration</h4>

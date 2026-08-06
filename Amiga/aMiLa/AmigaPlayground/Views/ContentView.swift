@@ -1610,6 +1610,112 @@ struct SettingsView: View {
         }
     }
 
+    private var hardwarePresetSelection: Binding<String> {
+        Binding(
+            get: { selectedHardwarePresetID },
+            set: { presetID in
+                guard let preset = HardwarePreset.presets.first(where: { $0.id == presetID }) else { return }
+                applyHardwarePreset(preset)
+            }
+        )
+    }
+
+    private var fsUaeArgumentPresetSelection: Binding<String> {
+        Binding(
+            get: {
+                FSUAEArgumentPreset.presets.first(where: { $0.arguments == emulatorCustomArgs })?.id
+                    ?? FSUAEArgumentPreset.customID
+            },
+            set: { presetID in
+                guard let preset = FSUAEArgumentPreset.presets.first(where: { $0.id == presetID }) else { return }
+                emulatorCustomArgs = preset.arguments
+            }
+        )
+    }
+
+    private var selectedHardwarePresetID: String {
+        HardwarePreset.presets.first(where: hardwareMatches)?.id ?? HardwarePreset.customID
+    }
+
+    private var hardwarePresetDescription: String {
+        HardwarePreset.presets.first(where: { $0.id == selectedHardwarePresetID })?.summary
+            ?? "Manual ROM, model, CPU, memory, or JIT settings are active."
+    }
+
+    private var fsUaeArgumentPresetDescription: String {
+        FSUAEArgumentPreset.presets.first(where: { $0.arguments == emulatorCustomArgs })?.summary
+            ?? "Manual FS-UAE command-line arguments are active."
+    }
+
+    private func hardwareMatches(_ preset: HardwarePreset) -> Bool {
+        emulatorModel == preset.model
+            && emulatorCpu == preset.cpu
+            && emulatorChipRam == preset.chipRam
+            && emulatorFastRam == preset.fastRam
+            && emulatorJit == preset.jit
+    }
+
+    private func applyHardwarePreset(_ preset: HardwarePreset) {
+        emulatorModel = preset.model
+        emulatorCpu = preset.cpu
+        emulatorChipRam = preset.chipRam
+        emulatorFastRam = preset.fastRam
+        emulatorJit = preset.jit
+
+        if let matchingRom = bestRom(for: preset) {
+            selectedRomFilename = matchingRom
+        }
+    }
+
+    private func bestRom(for preset: HardwarePreset) -> String? {
+        let matches = availableRoms.compactMap { rom -> (rom: RomEntry, score: Int)? in
+            let name = rom.relativePath.lowercased()
+            guard preset.requiredRomTerms.allSatisfy(name.contains),
+                  preset.anyRomTerms.isEmpty || preset.anyRomTerms.contains(where: name.contains),
+                  !preset.excludedRomTerms.contains(where: name.contains)
+            else {
+                return nil
+            }
+
+            let fileSize = romFileSize(rom)
+            if let minimumRomSize = preset.minimumRomSize, fileSize < minimumRomSize {
+                return nil
+            }
+
+            var score = preset.preferredRomTerms.reduce(0) {
+                $0 + (name.contains($1) ? 10 : 0)
+            }
+            if fileSize == preset.idealRomSize {
+                score += 5
+            }
+            if name.contains("[!]") {
+                score += 2
+            }
+            return (rom, score)
+        }
+
+        return matches
+            .sorted {
+                if $0.score == $1.score {
+                    return $0.rom.displayName.localizedStandardCompare($1.rom.displayName) == .orderedAscending
+                }
+                return $0.score > $1.score
+            }
+            .first?
+            .rom
+            .relativePath
+    }
+
+    private func romFileSize(_ rom: RomEntry) -> Int {
+        guard
+            let attributes = try? FileManager.default.attributesOfItem(atPath: rom.absolutePath),
+            let size = attributes[.size] as? NSNumber
+        else {
+            return 0
+        }
+        return size.intValue
+    }
+
     private func chooseRomsDirectory() {
         let panel = NSOpenPanel()
         panel.title = "Select Kickstart ROM Directory"
@@ -1812,6 +1918,20 @@ struct SettingsView: View {
 
     private var hardwareSettings: some View {
         Form {
+            Section("Ideal Configuration") {
+                Picker("Preset", selection: hardwarePresetSelection) {
+                    Text("Custom").tag(HardwarePreset.customID)
+                    ForEach(HardwarePreset.presets) { preset in
+                        Text(preset.name).tag(preset.id)
+                    }
+                }
+                .accessibilityIdentifier("hardwarePresetPicker")
+
+                Text(hardwarePresetDescription)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
             Section("Kickstart ROM") {
                 Text("Directory: \(romsDirectoryPath)")
                     .font(.caption.monospaced())
@@ -1850,16 +1970,19 @@ struct SettingsView: View {
                 Picker("Amiga model", selection: $emulatorModel) {
                     ForEach(models, id: \.self) { model in Text(model).tag(model) }
                 }
+                .accessibilityIdentifier("emulatorModelPicker")
 
                 Picker("CPU", selection: $emulatorCpu) {
                     ForEach(cpus, id: \.self) { cpu in Text(cpu).tag(cpu) }
                 }
+                .accessibilityIdentifier("emulatorCpuPicker")
             }
 
             Section("Memory") {
                 Picker("Chip RAM", selection: $emulatorChipRam) {
                     ForEach(chipRams, id: \.self) { ram in Text(ram).tag(ram) }
                 }
+                .accessibilityIdentifier("emulatorChipRamPicker")
 
                 Picker("Fast RAM", selection: $emulatorFastRam) {
                     ForEach(fastRams, id: \.self) { ram in Text(ram).tag(ram) }
@@ -1874,11 +1997,27 @@ struct SettingsView: View {
 
     private var fsUaeSettings: some View {
         Form {
-            TextField("Custom FS-UAE launch arguments", text: $emulatorCustomArgs)
-                .textFieldStyle(.roundedBorder)
-            Text("These arguments are appended when the default emulator is FS-UAE.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            Section("Launch Arguments") {
+                Picker("Preset", selection: fsUaeArgumentPresetSelection) {
+                    Text("Custom").tag(FSUAEArgumentPreset.customID)
+                    ForEach(FSUAEArgumentPreset.presets) { preset in
+                        Text(preset.name).tag(preset.id)
+                    }
+                }
+                .accessibilityIdentifier("fsUaeArgumentPresetPicker")
+
+                Text(fsUaeArgumentPresetDescription)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                TextField("Custom FS-UAE launch arguments", text: $emulatorCustomArgs)
+                    .textFieldStyle(.roundedBorder)
+                    .accessibilityIdentifier("fsUaeCustomArgumentsField")
+
+                Text("These arguments are appended when the default emulator is FS-UAE.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
         .formStyle(.grouped)
         .padding()
@@ -1913,6 +2052,110 @@ struct SettingsView: View {
         .formStyle(.grouped)
         .padding()
     }
+}
+
+private struct FSUAEArgumentPreset: Identifiable {
+    static let customID = "custom"
+
+    let id: String
+    let name: String
+    let arguments: String
+    let summary: String
+
+    static let presets: [FSUAEArgumentPreset] = [
+        FSUAEArgumentPreset(
+            id: "fullscreen",
+            name: "Fullscreen display",
+            arguments: "--fullscreen=1 --keep_aspect=1",
+            summary: "Starts FS-UAE fullscreen while preserving the original Amiga display aspect ratio."
+        ),
+        FSUAEArgumentPreset(
+            id: "windowed-hd",
+            name: "Windowed HD",
+            arguments: "--fullscreen=0 --window_width=1280 --window_height=720 --keep_aspect=1",
+            summary: "Forces a 1280x720 window and keeps the Amiga image proportional."
+        ),
+        FSUAEArgumentPreset(
+            id: "low-latency",
+            name: "Low-latency video",
+            arguments: "--video_sync=0 --scanlines=0",
+            summary: "Disables video sync and scanline styling for faster feedback while testing generated code."
+        ),
+        FSUAEArgumentPreset(
+            id: "classic-crt",
+            name: "Classic CRT look",
+            arguments: "--scanlines=1 --keep_aspect=1",
+            summary: "Adds scanlines and keeps the display closer to a classic monitor shape."
+        ),
+        FSUAEArgumentPreset(
+            id: "fast-floppy",
+            name: "Fast floppy loading",
+            arguments: "--floppy_drive_speed=0",
+            summary: "Speeds up disk loading for iteration-heavy compile and run loops."
+        )
+    ]
+}
+
+private struct HardwarePreset: Identifiable {
+    static let customID = "custom"
+
+    let id: String
+    let name: String
+    let model: String
+    let cpu: String
+    let chipRam: String
+    let fastRam: String
+    let jit: Bool
+    let anyRomTerms: [String]
+    let requiredRomTerms: [String]
+    let preferredRomTerms: [String]
+    let excludedRomTerms: [String]
+    let minimumRomSize: Int?
+    let idealRomSize: Int
+
+    var summary: String {
+        "\(model), CPU \(cpu), Chip RAM \(chipRam), Fast RAM \(fastRam), JIT \(jit ? "On" : "Off")"
+    }
+
+    static let presets: [HardwarePreset] = [
+        HardwarePreset(
+            id: "a500-kickstart-13", name: "A500 Kickstart 1.3", model: "A500", cpu: "68000",
+            chipRam: "512 KB", fastRam: "0 MB", jit: false,
+            anyRomTerms: ["kick13", "1.3", "34.5", "315093-02"], requiredRomTerms: [],
+            preferredRomTerms: ["34.5", "315093-02", "[!]"], excludedRomTerms: ["a3000", "beta", "proto", "[h]", "[o]"],
+            minimumRomSize: nil, idealRomSize: 262_144
+        ),
+        HardwarePreset(
+            id: "a500-plus-kickstart-204", name: "A500+ Kickstart 2.04", model: "A500+", cpu: "68000",
+            chipRam: "1 MB", fastRam: "0 MB", jit: false,
+            anyRomTerms: ["a500+", "a500 plus", "390979"], requiredRomTerms: ["2.04"],
+            preferredRomTerms: ["37.175", "390979", "[!]"], excludedRomTerms: ["beta", "proto", "[h]", "[o]"],
+            minimumRomSize: 524_288, idealRomSize: 524_288
+        ),
+        HardwarePreset(
+            id: "a600-kickstart-205", name: "A600 Kickstart 2.05", model: "A600", cpu: "68000",
+            chipRam: "1 MB", fastRam: "0 MB", jit: false,
+            anyRomTerms: ["a600", "391304", "391388"], requiredRomTerms: ["2.05"],
+            preferredRomTerms: ["37.350", "37.300", "391304", "391388", "[!]"], excludedRomTerms: ["beta", "proto", "[h]", "[o]"],
+            minimumRomSize: 524_288, idealRomSize: 524_288
+        ),
+        HardwarePreset(
+            id: "a1200-kickstart-31", name: "A1200 Kickstart 3.1", model: "A1200", cpu: "68020",
+            chipRam: "2 MB", fastRam: "0 MB", jit: false,
+            anyRomTerms: ["a1200"], requiredRomTerms: ["3.1"],
+            preferredRomTerms: ["40.68", "kick31", "[!]"],
+            excludedRomTerms: ["391773", "391774", "rom0", "rom1", "odd", "even", "beta", "proto", "[h]", "[o]"],
+            minimumRomSize: 524_288, idealRomSize: 524_288
+        ),
+        HardwarePreset(
+            id: "a4000-kickstart-31", name: "A4000 Kickstart 3.1", model: "A4000", cpu: "68040",
+            chipRam: "2 MB", fastRam: "8 MB", jit: false,
+            anyRomTerms: ["a4000"], requiredRomTerms: ["3.1"],
+            preferredRomTerms: ["40.70", "40.68", "kick31", "[!]"],
+            excludedRomTerms: ["391657", "391773", "391774", "rom0", "rom1", "odd", "even", "beta", "proto", "[h]", "[o]"],
+            minimumRomSize: 524_288, idealRomSize: 524_288
+        )
+    ]
 }
 
 struct SettingsPickerField<SelectionValue: Hashable, Content: View>: View {
