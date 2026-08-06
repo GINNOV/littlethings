@@ -181,7 +181,7 @@ sprite_data:
 3. **Paste & Run:** Paste the code into the source editor and press **Cmd + R** (or click **Build & Run**).
 4. **See the Result:** [Amiga Playground](../index.html#amiga-playground) will compile the source code with `vasm` and run the emulator automatically. You should see a multi-colored sprite gliding back and forth across the screen! You can click the left mouse button to exit cleanly.
 
-### How to Compile and Run with vasm (Terminal & Emulator)
+### How to Compile and Run with vasm
 
 1. **Save the Code:** Save the complete code above into a file named `anim_sprite.asm`.
 2. **Assemble:** Open your Terminal, navigate to the folder where you saved the file, and run: `vasmm68k_mot -Fhunk -o anim_sprite anim_sprite.asm`

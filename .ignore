@@ -1,0 +1,15 @@
+# Local agent/tooling state
+.artifacts/
+.omo/
+.playwright-cli/
+.ruff_cache/
+.venv/
+node_modules/
+.next/
+
+# Large vendored/reference corpora
+Amiga/aMiLa/Dataset/
+Hardware/robotics/huenit/external/
+
+# Generated site output is committed for GitHub Pages, but should not dominate searches.
+docs/

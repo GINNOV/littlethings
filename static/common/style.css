@@ -105,6 +105,10 @@ main.content-page {
     max-width: 800px; 
 }
 
+main.content-page:has(.tutorials-section) {
+    max-width: 1200px;
+}
+
 /* General Section Styling */
 section {
     background-color: #fff; 
@@ -312,19 +316,80 @@ body:not(.dark-theme) .project-card h3 {
     color: #1d4ed8; 
 }
 
+.tutorial-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
+    min-width: 0;
+}
+
+.tutorial-card {
+    flex-direction: column;
+    align-items: stretch;
+    height: 100%;
+    margin-bottom: 0;
+    min-width: 0;
+}
+
+.tutorial-card-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    width: 100%;
+    min-width: 0;
+}
+
+.project-card .tutorial-title {
+    font-size: 1.225rem;
+    line-height: 1.4;
+    overflow-wrap: break-word;
+    word-break: normal;
+}
+
+.tutorial-card .project-button-container {
+    margin-top: auto;
+}
+
+.tutorial-card .project-image {
+    flex: 0 0 auto;
+    width: 100%;
+}
 
 .project-card p {
     line-height: 1.6; 
     text-align: justify;
     margin-bottom: 1.5rem; 
 }
+
+.project-card .tutorial-meta {
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
 body.dark-theme .project-card p {
     color: #CBD5E1;
 }
 body:not(.dark-theme) .project-card p {
     color: #4b5563; 
 }
+body.dark-theme .project-card .tutorial-meta {
+    color: #93A4B8;
+}
+body:not(.dark-theme) .project-card .tutorial-meta {
+    color: #64748b;
+}
 
+@media (min-width: 768px) {
+    .tutorial-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1200px) {
+    .tutorial-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
 
 .project-button-container {
     display: flex;
@@ -493,11 +558,14 @@ a[download] {
     nav.sidebar ul li { margin: 0 0.75rem; }
     nav.sidebar ul li a { padding: 0.25rem 0; }
     .project-card { flex-direction: row; }
+    .project-card.tutorial-card { flex-direction: column; }
     .project-card.reverse { flex-direction: row-reverse; }
     .md-img-container { width: 40%; margin-bottom: 0; }
     .project-card.reverse .md-img-container { padding-left: 1.5rem; padding-right: 0; }
     .project-card:not(.reverse) .md-img-container { padding-right: 1.5rem; padding-left: 0; }
+    .tutorial-card .md-img-container { width: 100%; margin-bottom: 1.5rem; padding-left: 0; padding-right: 0; }
     .md-text-container { width: 60%; }
+    .tutorial-card .md-text-container { width: 100%; }
     .project-button-container { flex-direction: row; gap: 1rem; }
     .project-button-container .project-button { flex: 1 1 10rem; }
     .project-button { margin-bottom: 0; }

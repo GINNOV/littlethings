@@ -1,12 +1,22 @@
 version: 2
 updates:
   - package-ecosystem: "npm"
-    directory: "/"
+    directory: "/Amiga/aMiLa/mcp-server-vamigaweb"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 0
-    ignore:
-      - dependency-name: "*"
-    exclude-paths:
-      - "Amiga/aMiLa/Dataset/**"
-      - "Hardware/Flume/flume-dashboard/.next/**"
+    open-pull-requests-limit: 3
+  - package-ecosystem: "npm"
+    directory: "/Hardware/Flume/flume-dashboard"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 3
+  - package-ecosystem: "npm"
+    directory: "/Hardware/SensorTag"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 3
+  - package-ecosystem: "npm"
+    directory: "/Hardware/sleepia"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 3

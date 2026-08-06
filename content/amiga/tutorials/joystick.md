@@ -172,7 +172,7 @@ sprite_explosion:
     <li><strong>Control the Sprite:</strong> <a href="../index.html#amiga-playground">Amiga Playground</a> will compile the source code with <code>vasm</code> and run the emulator automatically. Use your joystick or arrow keys to move the sprite, and press the fire button to trigger the explosion!</li>
 </ol>
 
-<h4>How to Compile and Run with vasm (Terminal &amp; Emulator)</h4>
+<h4>How to Compile and Run with vasm</h4>
 <ol class="list-decimal list-inside space-y-2 pl-4">
     <li><strong>Save the Code:</strong> Save the complete code above into a file named <code>joystick_sprite.asm</code>.</li>
     <li><strong>Assemble:</strong> Open your Terminal, navigate to the folder where you saved the file, and run: <code>vasmm68k_mot -Fhunk -o joystick_sprite joystick_sprite.asm</code></li>

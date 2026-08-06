@@ -96,7 +96,7 @@ my_copper_list:
 3. **Paste & Run:** Paste the code into the source editor and press **Cmd + R** (or click **Build & Run**).
 4. **See the Result:** [Amiga Playground](../index.html#amiga-playground) will compile the source code with `vasm` and run the emulator automatically. You should see the top half of the screen in white and the bottom half in blue!
 
-### How to Compile and Run with vasm (Terminal & Emulator)
+### How to Compile and Run with vasm
 
 1. **Save the Code:** Save the complete code above into a file named `split_screen.asm`.
 2. **Assemble:** Open Terminal, navigate to where you saved the file, and run: `vasmm68k_mot -Fhunk -o split_screen split_screen.asm`
@@ -111,6 +111,5 @@ To see the Copper pushed to its limits, check out these classic titles:
 - **Turrican II:** Rich color palettes and smooth parallax scrolling.
 - **Agony:** Ethereal background gradients.
 - **Demoscene Productions:** Classic demogroup releases from *Phenomena*, *Sanity*, and *Spaceballs*.
-
 
 

@@ -5,7 +5,7 @@ Whenever creating, editing, or reviewing Amiga tutorial articles (such as those 
 ## 1. Tooling & Primary Target
 - **Primary Target**: Focus on 68k Assembly cross-compiling.
 - **Featured Tool**: The primary workflow section MUST be titled `### How to Run in Amiga Playground` and detail steps for running in the browser-based Amiga Playground (`../index.html#amiga-playground`).
-- **Secondary Workflow**: The secondary section MUST be titled `### How to Compile and Run with vasm (Terminal & Emulator)` for desktop `vasm` + FS-UAE/vAmiga users.
+- **Secondary Workflow**: The secondary section MUST be titled `### How to Compile and Run with vasm` for desktop `vasm` + FS-UAE/vAmiga users.
 - **No Unsupported Languages**: Do NOT include AMOS, BASIC, C, or other non-assembly code blocks unless the tutorial explicitly targets that language (e.g., `sound_c.md`). If Amiga Playground does not support the language, remove it.
 
 ## 2. Code Block Formatting

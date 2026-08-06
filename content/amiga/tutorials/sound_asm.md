@@ -294,7 +294,7 @@ When compiled with `vasm`, the assembler inserts the contents of `sound.raw` dir
 3. **Paste & Run:** Paste the code into the source editor and press **Cmd + R** (or click **Build & Run**).
 4. **See the Result:** [Amiga Playground](../index.html#amiga-playground) assembles the self-contained code with `vasm` and runs it. Click the button to trigger audio playback!
 
-### How to Compile and Run with vasm (Terminal & Emulator)
+### How to Compile and Run with vasm
 
 1. **Save the Code:** Save Example 1 or Example 2 (with `sound.raw` in the same directory) as `asm_sound_button.asm`.
 2. **Assemble:** Open Terminal, navigate to your source folder, and run: `vasmm68k_mot -Fhunk -o asm_sound_button asm_sound_button.asm`

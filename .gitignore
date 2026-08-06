@@ -43,14 +43,21 @@ fastlane/test_output
 
 # Node
 **/node_modules/
+**/.next/
 
 # Python
 **/__pycache__/
+**/.venv/
+.ruff_cache/
 *.py[cod]
 *.egg-info/
 
 # Other
 *.DS_Store
+.debug-journal.md
+.codegraph
+.omo/
+.playwright-cli/
 *.idea/
 *.swp
 *.lock
