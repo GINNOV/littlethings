@@ -567,7 +567,11 @@ a[download] {
     .md-text-container { width: 60%; }
     .tutorial-card .md-text-container { width: 100%; }
     .project-button-container { flex-direction: row; gap: 1rem; }
-    .project-button-container .project-button { flex: 1 1 10rem; }
+    .project-button-container .project-button {
+        flex: 1 1 0;
+        min-width: 0;
+        white-space: nowrap;
+    }
     .project-button { margin-bottom: 0; }
 }
 
