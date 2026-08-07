@@ -14,13 +14,24 @@
 
     <!-- Hero -->
     <header class="overflow-hidden rounded-2xl border border-slate-700/60 bg-slate-900/70 shadow-2xl backdrop-blur-md mb-10">
-      <div class="w-full overflow-hidden bg-slate-950 flex justify-center">
-        <img
-          src="{{ "images/xbook/splash.jpg" | relURL }}"
-          alt="Colorful bookmark cards in a collection box"
-          class="block h-auto w-full max-w-3xl object-contain"
-          onerror="this.onerror=null;this.src='https://placehold.co/1024x1024/0b1220/34d399?text=XB%F0%9F%91%80%F0%9F%91%80K&font=inter';"
-        />
+      <div class="w-full overflow-hidden bg-slate-950">
+        <div class="relative mx-auto w-full max-w-4xl">
+          <video
+            class="block h-auto w-full bg-black"
+            controls
+            playsinline
+            preload="metadata"
+            poster="{{ "images/xbook/trailer-poster.png" | relURL }}"
+            aria-label="XB👀K product trailer — about one minute"
+          >
+            <source src="{{ "images/xbook/trailer.mp4" | relURL }}" type="video/mp4" />
+            Your browser does not support the video tag.
+            <a href="{{ "images/xbook/trailer.mp4" | relURL }}">Download the trailer</a>
+          </video>
+          <p class="px-4 py-2 text-center text-[11px] font-medium uppercase tracking-[0.16em] text-slate-500 border-t border-slate-800/80">
+            Product overview · ~1 min
+          </p>
+        </div>
       </div>
 
       <div class="p-8 sm:p-10">
