@@ -1,6 +1,6 @@
 ---
-title: "XBook Console"
+title: "XB👀K"
 layout: "xbook"
-description: "Turn X bookmarks and YouTube saves into searchable narratives, articles, and tutorials you can actually use."
+description: "XB👀K turns X bookmarks and YouTube saves into searchable narratives, articles, and tutorials you can actually use."
 lastmod: 2026-08-06
 ---
