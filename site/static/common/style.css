@@ -436,6 +436,11 @@ a.project-button:hover {
 .demo-button { background-color: #10B981; }
 .demo-button:hover { background-color: #059669; }
 
+.quarantine-guide ol {
+    list-style-type: decimal;
+    padding-left: 2rem;
+}
+
 /* Style for buttons that contain only an icon */
 a.project-button.icon-only {
     padding: 0.75rem; /* Make it more square */
