@@ -446,6 +446,14 @@ a.project-button:hover {
     margin-bottom: 1.5rem;
 }
 
+.quarantine-guide h3 {
+    margin-top: 2.5rem;
+}
+
+.quarantine-guide p {
+    margin-bottom: 1.5rem;
+}
+
 /* Style for buttons that contain only an icon */
 a.project-button.icon-only {
     padding: 0.75rem; /* Make it more square */
