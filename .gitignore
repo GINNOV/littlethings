@@ -103,3 +103,5 @@ Amiga/aMiLa/.antigravitycli/
 
 # Hugo local build output
 /site/public/
+output
+site/site
