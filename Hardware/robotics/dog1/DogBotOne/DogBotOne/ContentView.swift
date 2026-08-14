@@ -8,12 +8,15 @@
 import SwiftUI
 import CoreBluetooth
 import Combine
+import AppKit
 
 // MARK: - Bluetooth Manager
 class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     @Published var status = "Disconnected"
     @Published var logs: [LogEntry] = []
+    @Published var sentCommands: [SentCommand] = []
     @Published var isAutoDiscovering = false
+    @Published var discoveredCharacteristic = "Not discovered"
     
     private var centralManager: CBCentralManager!
     private var peripheral: CBPeripheral?
@@ -24,7 +27,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     
     let targetDeviceName = "Rapidpower-dog-fire"
     let serviceUUID = CBUUID(string: "FA879AF4-D601-420C-B2B4-07FFB528DDE3")
-    let characteristicUUID = CBUUID(string: "0000AF30-0000-1000-8000-00805F9B34FB")
+    let characteristicUUID = CBUUID(string: "B02EAEAA-F6BC-4A7E-BC94-F7B7FC8DED0B")
     let scanTimeout: TimeInterval = 10
     
     override init() {
@@ -43,6 +46,16 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
             addLog("Bluetooth not ready to scan", type: .error)
             return
         }
+
+        if let connectedPeripheral = centralManager
+            .retrieveConnectedPeripherals(withServices: [serviceUUID])
+            .first(where: { $0.name == targetDeviceName }) {
+            peripheral = connectedPeripheral
+            addLog("Found already-connected device: \(targetDeviceName)")
+            centralManager.connect(connectedPeripheral, options: nil)
+            return
+        }
+
         addLog("Starting scan...")
         centralManager.scanForPeripherals(withServices: nil, options: nil)
         scheduleScanTimeout()
@@ -73,15 +86,33 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     }
 
     func sendHex(_ hexString: String) {
+        guard let data = parseHexInput(hexString) else { return }
+        send(data, description: hexString)
+    }
+
+    func send(_ command: RobotCommand) {
+        send(command.packet, description: command.displayName)
+    }
+
+    private func send(_ data: Data, description: String) {
         guard let characteristic = writeCharacteristic else {
-            addLog("Not connected to characteristic", type: .error)
+            addLog("Robot controls are not ready", type: .error)
             return
         }
-        
-        guard let data = parseHexInput(hexString) else { return }
-        
+
         peripheral?.writeValue(data, for: characteristic, type: writeType)
-        addLog("Sent: \(hexString)", type: .success)
+        let hex = data.map { String(format: "%02X", $0) }.joined(separator: " ")
+        addLog("Sent: \(description)", type: .success)
+        recordSentCommand(description: description, hex: hex)
+    }
+
+    private func recordSentCommand(description: String, hex: String) {
+        DispatchQueue.main.async {
+            self.sentCommands.append(SentCommand(description: description, hex: hex))
+            if self.sentCommands.count > 500 {
+                self.sentCommands.removeFirst(self.sentCommands.count - 500)
+            }
+        }
     }
 
     func startAutoDiscover(range: ClosedRange<UInt8> = 0x00...0x0F, delaySeconds: TimeInterval = 0.5) {
@@ -178,7 +209,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         addLog("Connected!", type: .success)
-        status = "Connected"
+        status = "Preparing"
         peripheral.delegate = self
         peripheral.discoverServices([serviceUUID])
     }
@@ -188,38 +219,79 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         status = "Disconnected"
         self.peripheral = nil
         self.writeCharacteristic = nil
+        self.discoveredCharacteristic = "Not discovered"
         stopAutoDiscover()
         startScanning()
     }
     
     // MARK: - CBPeripheralDelegate
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
+        if let error {
+            addLog("Service discovery error: \(error.localizedDescription)", type: .error)
+            return
+        }
         guard let services = peripheral.services else { return }
         
         for service in services {
             addLog("Found service: \(service.uuid)")
-            peripheral.discoverCharacteristics([characteristicUUID], for: service)
+            peripheral.discoverCharacteristics(nil, for: service)
         }
     }
     
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
+        if let error {
+            addLog("Characteristic discovery error: \(error.localizedDescription)", type: .error)
+            return
+        }
         guard let characteristics = service.characteristics else { return }
         
         for characteristic in characteristics {
-            addLog("Found characteristic: \(characteristic.uuid)")
-            if characteristic.uuid == characteristicUUID {
-                if characteristic.properties.contains(.write) {
-                    writeType = .withResponse
-                } else if characteristic.properties.contains(.writeWithoutResponse) {
-                    writeType = .withoutResponse
-                } else {
-                    addLog("Characteristic not writable", type: .error)
-                    continue
-                }
+            let rawProperties = String(characteristic.properties.rawValue, radix: 16)
+            addLog("Found characteristic: \(characteristic.uuid) properties=0x\(rawProperties)")
+            if characteristic.properties.contains(.notify) || characteristic.properties.contains(.indicate) {
+                peripheral.setNotifyValue(true, for: characteristic)
+                addLog("Subscribing to notifications: \(characteristic.uuid)")
+            }
+            if characteristic.properties.contains(.write) {
+                writeType = .withResponse
                 writeCharacteristic = characteristic
-                addLog("Ready to send commands!", type: .success)
+                discoveredCharacteristic = characteristic.uuid.uuidString
+                status = "Connected"
+                addLog("Selected writable characteristic: \(characteristic.uuid)", type: .success)
+            } else if characteristic.properties.contains(.writeWithoutResponse) {
+                writeType = .withoutResponse
+                writeCharacteristic = characteristic
+                discoveredCharacteristic = characteristic.uuid.uuidString
+                status = "Connected"
+                addLog("Selected write-without-response characteristic: \(characteristic.uuid)", type: .success)
             }
         }
+    }
+
+    func peripheral(
+        _ peripheral: CBPeripheral,
+        didUpdateNotificationStateFor characteristic: CBCharacteristic,
+        error: Error?
+    ) {
+        if let error {
+            addLog("Notification subscription error: \(error.localizedDescription)", type: .error)
+        } else {
+            let state = characteristic.isNotifying ? "active" : "inactive"
+            addLog("Notifications \(state): \(characteristic.uuid)", type: .success)
+        }
+    }
+
+    func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
+        if let error {
+            addLog("Notification error: \(error.localizedDescription)", type: .error)
+            return
+        }
+        guard let value = characteristic.value else {
+            addLog("Received empty notification: \(characteristic.uuid)")
+            return
+        }
+        let hex = value.map { String(format: "%02X", $0) }.joined(separator: " ")
+        addLog("Received [\(characteristic.uuid)]: \(hex)", type: .success)
     }
     
     func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
@@ -285,6 +357,19 @@ struct LogEntry: Identifiable {
     let type: LogType
 }
 
+struct SentCommand: Identifiable {
+    let id = UUID()
+    let time = Date()
+    let description: String
+    let hex: String
+
+    static let timestampFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm:ss.SSS"
+        return formatter
+    }()
+}
+
 enum LogType {
     case info, success, error
 }
@@ -319,13 +404,13 @@ struct ContentView: View {
             HStack {
                 Image(systemName: "dot.radiowaves.left.and.right")
                     .font(.system(size: 32))
-                    .foregroundColor(.blue)
+                    .foregroundStyle(.blue)
                 VStack(alignment: .leading) {
                     Text("BLE Toy Controller")
                         .font(.title)
                         .bold()
-                    Text("Rapidpower-dog-fire")
-                        .foregroundColor(.secondary)
+                    Text("DOG KNOWNS")
+                        .foregroundStyle(.secondary)
                 }
                 Spacer()
                 Circle()
@@ -338,20 +423,20 @@ struct ContentView: View {
             }
             .padding()
             .background(Color(NSColor.controlBackgroundColor))
-            .cornerRadius(10)
+            .clipShape(.rect(cornerRadius: 10))
 
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
                     Text("Service UUID:")
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                     Text(bleManager.serviceUUID.uuidString)
                         .font(.system(.caption, design: .monospaced))
                 }
                 HStack {
                     Text("Characteristic UUID:")
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                     Text(bleManager.characteristicUUID.uuidString)
                         .font(.system(.caption, design: .monospaced))
                 }
@@ -375,7 +460,7 @@ struct ContentView: View {
                 if !hexInput.isEmpty && !hexInputIsValid {
                     Text("Invalid hex input")
                         .font(.caption)
-                        .foregroundColor(.red)
+                        .foregroundStyle(.red)
                 }
                 
                 HStack {
@@ -388,12 +473,12 @@ struct ContentView: View {
                 }
 
                 HStack {
-                    Button("Auto Discover (1-byte)") {
+                    Button("Sweep 1-byte commands") {
                         bleManager.startAutoDiscover()
                     }
                     .disabled(bleManager.status != "Connected" || bleManager.isAutoDiscovering)
 
-                    Button("Auto Discover (2-byte)") {
+                    Button("Sweep 2-byte commands") {
                         bleManager.startAutoDiscoverTwoByte()
                     }
                     .disabled(bleManager.status != "Connected" || bleManager.isAutoDiscovering)
@@ -406,8 +491,20 @@ struct ContentView: View {
             }
             .padding()
             .background(Color(NSColor.controlBackgroundColor))
-            .cornerRadius(10)
-            
+            .clipShape(.rect(cornerRadius: 10))
+
+            if bleManager.status != "Connected" {
+                Label(
+                    bleManager.status == "Bluetooth Off"
+                        ? "Turn on Bluetooth to connect to your robot dog."
+                        : "Looking for DogBotOne. Keep the robot nearby and switched on.",
+                    systemImage: bleManager.status == "Bluetooth Off" ? "bolt.horizontal.circle" : "dot.radiowaves.left.and.right"
+                )
+                .font(.callout)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
             // Log Section
             VStack(alignment: .leading) {
                 Text("Activity Log")
@@ -419,11 +516,11 @@ struct ContentView: View {
                             ForEach(bleManager.logs) { log in
                                 HStack {
                                     Text(log.time, style: .time)
-                                        .foregroundColor(.secondary)
+                                        .foregroundStyle(.secondary)
                                         .font(.system(.caption, design: .monospaced))
                                     Text(log.message)
                                         .font(.system(.caption, design: .monospaced))
-                                        .foregroundColor(colorForLogType(log.type))
+                                        .foregroundStyle(colorForLogType(log.type))
                                 }
                                 .id(log.id)
                             }
@@ -439,11 +536,11 @@ struct ContentView: View {
                 .frame(height: 200)
                 .padding(8)
                 .background(Color(NSColor.textBackgroundColor))
-                .cornerRadius(8)
+                .clipShape(.rect(cornerRadius: 8))
             }
             .padding()
             .background(Color(NSColor.controlBackgroundColor))
-            .cornerRadius(10)
+            .clipShape(.rect(cornerRadius: 10))
             
             Spacer()
         }

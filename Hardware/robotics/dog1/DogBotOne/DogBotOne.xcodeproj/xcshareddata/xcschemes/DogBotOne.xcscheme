@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "2620"
+   LastUpgradeVersion = "2660"
    version = "1.7">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -16,9 +16,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "C29C0EBA2F16AC2100357461"
-               BuildableName = "dogAttack.app"
-               BlueprintName = "dogAttack"
-               ReferencedContainer = "container:dogAttack.xcodeproj">
+               BuildableName = "DogBotOne.app"
+               BlueprintName = "DogBotOne"
+               ReferencedContainer = "container:DogBotOne.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -45,9 +45,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "C29C0EBA2F16AC2100357461"
-            BuildableName = "dogAttack.app"
-            BlueprintName = "dogAttack"
-            ReferencedContainer = "container:dogAttack.xcodeproj">
+            BuildableName = "DogBotOne.app"
+            BlueprintName = "DogBotOne"
+            ReferencedContainer = "container:DogBotOne.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -62,9 +62,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "C29C0EBA2F16AC2100357461"
-            BuildableName = "dogAttack.app"
-            BlueprintName = "dogAttack"
-            ReferencedContainer = "container:dogAttack.xcodeproj">
+            BuildableName = "DogBotOne.app"
+            BlueprintName = "DogBotOne"
+            ReferencedContainer = "container:DogBotOne.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
