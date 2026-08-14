@@ -194,6 +194,7 @@ This frame layout is inferred only from `DogBotOne/DogBotOne/RobotCommand.swift`
 | Push-up | `2A 00 31` | `F0 2A 00 31 D5 FF CE` | Action button |
 | Swimming | `2A 00 34` | `F0 2A 00 34 D5 FF CB` | Official D-pad bottom. Inferred: next unused `2A 00` slot after Push-up (`31 + 3`). Not hardware-verified. |
 | Dance | `12 00 01` | `F0 12 00 01 ED FF FE` | Only command using family `12` |
+| Stay awake | `2A 00 28` | `F0 2A 00 28 D5 FF D7` | Same bytes as vendor Stand / Handstand. Unused `2A 00 00` is ignored, so it cannot keep the dog awake. |
 
 Pattern notes from the table, not from hardware:
 
@@ -201,7 +202,8 @@ Pattern notes from the table, not from hardware:
 - The official 12-action grid continues that stride from Sit (`10`) through Push-up (`31`).
 - The seven buttons between Greetings and Patrol fill the previously unused slots `16`–`28`.
 - Swimming is on the official D-pad, not in that grid, so it is encoded as the next unused slot after Push-up (`34`).
-- There is no encoded `Stand` or `Sleep` command in the current enum.
+- Vendor Stand / Handstand is `2A 00 28`. Stay awake sends those bytes; unused `2A 00 00` is not a heartbeat.
+- Vendor Sleep is family `24` (`F0 24 00 01` … `04`), not Stop.
 
 Confidence for every row: **client encoding only**. Repeat count: 0 live-dog observations in this repository.
 

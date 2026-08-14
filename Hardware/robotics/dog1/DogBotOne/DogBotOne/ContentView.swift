@@ -31,7 +31,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     private var scanTimeoutWorkItem: DispatchWorkItem?
     private var autoDiscoverTask: Task<Void, Never>?
     private var keepAwakeTask: Task<Void, Never>?
-    private var lastNamedCommand: RobotCommand?
     private var userRequestedDisconnect = false
 
     private let keepAwakeInterval: TimeInterval = 3
@@ -116,19 +115,16 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
             AppSound.error.play()
             return
         }
-        lastNamedCommand = nil
         send(data, description: hexString)
         syncKeepAwakeLoop()
     }
 
     func send(_ command: RobotCommand) {
-        if command == .stop, stayAwake {
-            addLog("Stay awake skipped Stop")
-            syncKeepAwakeLoop()
-            return
+        let outbound = RobotCommand.outbound(command, stayAwake: stayAwake)
+        if command == .stop, outbound == .keepAlive {
+            addLog("Stay awake sent Stand instead of Stop")
         }
-        lastNamedCommand = command
-        send(command.packet, description: command.displayName)
+        send(outbound.packet, description: outbound.displayName)
         syncKeepAwakeLoop()
     }
 
@@ -202,7 +198,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
 
     private func sendKeepAwakePing() {
         guard stayAwake, writeCharacteristic != nil else { return }
-        send(RobotCommand.keepAlive.packet, description: RobotCommand.keepAlive.displayName, record: true, log: false)
+        send(RobotCommand.keepAlive.packet, description: RobotCommand.keepAlive.displayName, record: true, log: true)
     }
 
     private func recordSentCommand(description: String, hex: String) {
@@ -319,7 +315,6 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         self.peripheral = nil
         self.writeCharacteristic = nil
         self.discoveredCharacteristic = "Not discovered"
-        lastNamedCommand = nil
         stopAutoDiscover()
         syncKeepAwakeLoop()
         if !userRequestedDisconnect {

@@ -59,8 +59,8 @@ struct RemoteView: View {
                 set: { bleManager.setStayAwake($0) }
             ))
                 .toggleStyle(.switch)
-                .help("Sends a keep-alive packet every 3 seconds. Blocks Stop, which puts this dog to sleep.")
-                .accessibilityHint("When on, the remote writes a keep-alive command so the dog is less likely to sleep.")
+                .help("Sends the vendor Stand command every 3 seconds. Replaces Stop so the dog keeps receiving a recognized frame instead of timing out.")
+                .accessibilityHint("When on, the remote writes Stand so the dog is less likely to sleep.")
 
             Button(isLinkActive ? "Disconnect" : "Reconnect") {
                 if isLinkActive {

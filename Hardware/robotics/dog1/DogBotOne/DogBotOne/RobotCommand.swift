@@ -28,7 +28,7 @@ enum RobotCommand: Equatable {
     /// Official D-pad bottom. Inferred: next unused `2A 00` stride after Push-up (`31 + 3`).
     case swimming
     case dance
-    /// Framed heartbeat. Mapped actions start at `2A 00 01`; `00` is unused.
+    /// Vendor Stand / Handstand (`2A 00 28`). Unused `00` is ignored by firmware.
     case keepAlive
 
     var packet: Data {
@@ -52,7 +52,7 @@ enum RobotCommand: Equatable {
         case .pushUp: (0x2A, 0x00, 0x31)
         case .swimming: (0x2A, 0x00, 0x34)
         case .dance: (0x12, 0x00, 0x01)
-        case .keepAlive: (0x2A, 0x00, 0x00)
+        case .keepAlive: (0x2A, 0x00, 0x28)
         }
 
         return Data([
@@ -85,5 +85,14 @@ enum RobotCommand: Equatable {
         case .dance: "Dance"
         case .keepAlive: "Stay awake"
         }
+    }
+
+    /// Command bytes actually written. Stay-awake replaces Stop with Stand
+    /// so the dog still receives a vendor-recognized frame.
+    static func outbound(_ command: RobotCommand, stayAwake: Bool) -> RobotCommand {
+        if stayAwake, command == .stop {
+            return .keepAlive
+        }
+        return command
     }
 }
