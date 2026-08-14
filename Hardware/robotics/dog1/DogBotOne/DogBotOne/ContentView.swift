@@ -12,11 +12,17 @@ import AppKit
 
 // MARK: - Bluetooth Manager
 class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDelegate {
-    @Published var status = "Disconnected"
+    @Published var status = "Disconnected" {
+        didSet {
+            guard oldValue != status else { return }
+            playSound(forStatusChangeFrom: oldValue, to: status)
+        }
+    }
     @Published var logs: [LogEntry] = []
     @Published var sentCommands: [SentCommand] = []
     @Published var isAutoDiscovering = false
     @Published var discoveredCharacteristic = "Not discovered"
+    @Published var stayAwake = UserDefaults.standard.bool(forKey: "stayAwake")
     
     private var centralManager: CBCentralManager!
     private var peripheral: CBPeripheral?
@@ -24,6 +30,10 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     private var writeType: CBCharacteristicWriteType = .withResponse
     private var scanTimeoutWorkItem: DispatchWorkItem?
     private var autoDiscoverTask: Task<Void, Never>?
+    private var keepAwakeTask: Task<Void, Never>?
+    private var lastNamedCommand: RobotCommand?
+
+    private let keepAwakeInterval: TimeInterval = 3
     
     let targetDeviceName = "Rapidpower-dog-fire"
     let serviceUUID = CBUUID(string: "FA879AF4-D601-420C-B2B4-07FFB528DDE3")
@@ -85,25 +95,106 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         startScanning()
     }
 
+    func setStayAwake(_ enabled: Bool) {
+        guard stayAwake != enabled else { return }
+        stayAwake = enabled
+        UserDefaults.standard.set(enabled, forKey: "stayAwake")
+        addLog(enabled ? "Stay awake on" : "Stay awake off")
+        syncKeepAwakeLoop(pingNow: enabled)
+    }
+
     func sendHex(_ hexString: String) {
-        guard let data = parseHexInput(hexString) else { return }
+        guard let data = parseHexInput(hexString) else {
+            AppSound.error.play()
+            return
+        }
+        lastNamedCommand = nil
         send(data, description: hexString)
+        syncKeepAwakeLoop()
     }
 
     func send(_ command: RobotCommand) {
+        if command == .stop, stayAwake {
+            addLog("Stay awake skipped Stop")
+            syncKeepAwakeLoop()
+            return
+        }
+        lastNamedCommand = command
         send(command.packet, description: command.displayName)
+        syncKeepAwakeLoop()
     }
 
-    private func send(_ data: Data, description: String) {
+    private func send(_ data: Data, description: String, record: Bool = true, log: Bool = true) {
         guard let characteristic = writeCharacteristic else {
             addLog("Robot controls are not ready", type: .error)
+            AppSound.error.play()
             return
         }
 
         peripheral?.writeValue(data, for: characteristic, type: writeType)
         let hex = data.map { String(format: "%02X", $0) }.joined(separator: " ")
-        addLog("Sent: \(description)", type: .success)
-        recordSentCommand(description: description, hex: hex)
+        if log {
+            addLog("Sent: \(description)", type: .success)
+        }
+        if record {
+            recordSentCommand(description: description, hex: hex)
+            if shouldPlaySendSound(for: description) {
+                AppSound.commandSent.play()
+            }
+        }
+    }
+
+    private func shouldPlaySendSound(for description: String) -> Bool {
+        switch description {
+        case RobotCommand.forward.displayName,
+             RobotCommand.back.displayName,
+             RobotCommand.left.displayName,
+             RobotCommand.right.displayName,
+             RobotCommand.stop.displayName,
+             RobotCommand.keepAlive.displayName:
+            return false
+        default:
+            return true
+        }
+    }
+
+    private func playSound(forStatusChangeFrom oldStatus: String, to newStatus: String) {
+        switch newStatus {
+        case "Connected":
+            AppSound.connected.play()
+        case "Disconnected", "Bluetooth Off":
+            if oldStatus == "Connected" || oldStatus == "Preparing" {
+                AppSound.disconnected.play()
+            }
+        case "Unsupported":
+            AppSound.error.play()
+        default:
+            break
+        }
+    }
+
+    private func syncKeepAwakeLoop(pingNow: Bool = false) {
+        keepAwakeTask?.cancel()
+        keepAwakeTask = nil
+        guard stayAwake, writeCharacteristic != nil else { return }
+        if pingNow {
+            sendKeepAwakePing()
+        }
+        keepAwakeTask = Task { [weak self] in
+            while !Task.isCancelled {
+                guard let interval = self?.keepAwakeInterval else { return }
+                try? await Task.sleep(nanoseconds: UInt64(interval * 1_000_000_000))
+                guard !Task.isCancelled else { return }
+                await MainActor.run {
+                    self?.sendKeepAwakePing()
+                }
+            }
+        }
+    }
+
+    private func sendKeepAwakePing() {
+        guard stayAwake, writeCharacteristic != nil else { return }
+        send(RobotCommand.keepAlive.packet, description: RobotCommand.keepAlive.displayName, record: true, log: false)
     }
 
     private func recordSentCommand(description: String, hex: String) {
@@ -220,7 +311,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         self.peripheral = nil
         self.writeCharacteristic = nil
         self.discoveredCharacteristic = "Not discovered"
+        lastNamedCommand = nil
         stopAutoDiscover()
+        syncKeepAwakeLoop()
         startScanning()
     }
     
@@ -258,12 +351,14 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
                 discoveredCharacteristic = characteristic.uuid.uuidString
                 status = "Connected"
                 addLog("Selected writable characteristic: \(characteristic.uuid)", type: .success)
+                syncKeepAwakeLoop(pingNow: true)
             } else if characteristic.properties.contains(.writeWithoutResponse) {
                 writeType = .withoutResponse
                 writeCharacteristic = characteristic
                 discoveredCharacteristic = characteristic.uuid.uuidString
                 status = "Connected"
                 addLog("Selected write-without-response characteristic: \(characteristic.uuid)", type: .success)
+                syncKeepAwakeLoop(pingNow: true)
             }
         }
     }
@@ -294,9 +389,16 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         addLog("Received [\(characteristic.uuid)]: \(hex)", type: .success)
     }
     
+    func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {
+        if let error {
+            addLog("Stay-awake link check failed: \(error.localizedDescription)", type: .error)
+        }
+    }
+
     func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
         if let error = error {
             addLog("Write error: \(error.localizedDescription)", type: .error)
+            AppSound.error.play()
         } else {
             addLog("Write successful", type: .success)
         }

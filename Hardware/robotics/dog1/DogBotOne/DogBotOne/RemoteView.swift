@@ -8,6 +8,7 @@ struct RemoteView: View {
     @State private var showDeveloperTools = false
     @State private var commandSearch = ""
     @State private var newestFirst = true
+    @AppStorage(AppSound.enabledDefaultsKey) private var soundsEnabled = true
 
     var body: some View {
         VStack(spacing: 24) {
@@ -41,6 +42,25 @@ struct RemoteView: View {
             Spacer()
 
             StatusBadge(status: bleManager.status)
+
+            Button {
+                soundsEnabled.toggle()
+            } label: {
+                Image(systemName: soundsEnabled ? "speaker.wave.2.fill" : "speaker.slash.fill")
+            }
+            .buttonStyle(.borderless)
+            .help(soundsEnabled
+                  ? "App sounds are on. Click to mute connect, send, and error sounds."
+                  : "App sounds are off. Click to enable connect, send, and error sounds.")
+            .accessibilityLabel(soundsEnabled ? "Mute app sounds" : "Enable app sounds")
+
+            Toggle("Stay awake", isOn: Binding(
+                get: { bleManager.stayAwake },
+                set: { bleManager.setStayAwake($0) }
+            ))
+                .toggleStyle(.switch)
+                .help("Sends a keep-alive packet every 3 seconds. Blocks Stop, which puts this dog to sleep.")
+                .accessibilityHint("When on, the remote writes a keep-alive command so the dog is less likely to sleep.")
 
             Button("Reconnect", action: bleManager.reconnect)
                 .disabled(bleManager.status == "Connected")
@@ -114,6 +134,7 @@ struct RemoteView: View {
             .font(.caption)
             .padding(.top, 8)
         }
+        .disclosureGroupStyle(FatChevronDisclosureGroupStyle())
     }
 
     private var rawCommandSection: some View {
@@ -143,24 +164,39 @@ struct RemoteView: View {
 
     private var serviceDiscoverySection: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("Service discovery")
-                .font(.caption.bold())
+            HStack(spacing: 6) {
+                Text("Service discovery")
+                    .font(.caption.bold())
+
+                Button(action: openDeveloperDocumentation) {
+                    Image(systemName: "questionmark.circle")
+                }
+                .buttonStyle(.borderless)
+                .controlSize(.small)
+                .disabled(!FileManager.default.fileExists(atPath: developerDocumentationURL.path))
+                .help(developerDocumentationHelp)
+                .accessibilityLabel("Open BLE developer documentation")
+                .accessibilityHint("Opens the local BLE protocol notes for this robot.")
+            }
 
             labeledUUID("Service", bleManager.serviceUUID.uuidString)
             labeledUUID("Characteristic", bleManager.characteristicUUID.uuidString)
             labeledUUID("Discovered writable", bleManager.discoveredCharacteristic)
-
-            Button("Open BLE developer documentation") {
-                NSWorkspace.shared.open(developerDocumentationURL)
-            }
-            .disabled(!FileManager.default.fileExists(atPath: developerDocumentationURL.path))
-            .help(developerDocumentationURL.path)
-            .accessibilityLabel("Open BLE developer documentation")
         }
         .frame(maxWidth: .infinity, alignment: .topLeading)
         .padding(10)
         .background(.background.secondary)
         .clipShape(.rect(cornerRadius: 8))
+    }
+
+    private var developerDocumentationHelp: String {
+        """
+        Open BLE developer notes (deveinfo.md).
+
+        Covers device identity, GATT service and characteristic UUIDs, how writes are selected, the 7-byte command frame, raw hex syntax, and the safe protocol-discovery procedure.
+
+        \(developerDocumentationURL.path)
+        """
     }
 
     private var sentCommandsSection: some View {
@@ -249,6 +285,20 @@ struct RemoteView: View {
             .appendingPathComponent("deveinfo.md")
     }
 
+    private func openDeveloperDocumentation() {
+        let url = developerDocumentationURL
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.promptsUserIfNeeded = true
+
+        NSWorkspace.shared.open(url, configuration: configuration) { _, error in
+            guard error != nil else { return }
+            guard let textEdit = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.apple.TextEdit") else {
+                return
+            }
+            NSWorkspace.shared.open([url], withApplicationAt: textEdit, configuration: configuration)
+        }
+    }
+
     private func sectionTitle(_ title: String, subtitle: String) -> some View {
         VStack(alignment: .leading, spacing: 3) {
             Text(title)
@@ -283,7 +333,7 @@ private struct JogWheel: View {
         static let ringSize: CGFloat = 190
         static let knobSize: CGFloat = 72
         static let rimPadding: CGFloat = 14
-        static let labelExtent: CGFloat = 250
+        static let labelGap: CGFloat = 10
         static var maxTravel: CGFloat { (ringSize - knobSize) / 2 - rimPadding }
     }
 
@@ -323,25 +373,20 @@ private struct JogWheel: View {
                         }
                 )
 
-            VStack {
-                Text("FORWARD")
-                Spacer()
-                Text("STOP")
+            VStack(spacing: Metrics.labelGap) {
+                compassLabel("FORWARD")
+                Color.clear.frame(width: Metrics.ringSize, height: Metrics.ringSize)
+                compassLabel("STOP")
             }
-            .font(.caption2.bold())
-            .foregroundStyle(.secondary)
-            .frame(height: Metrics.labelExtent)
+            .allowsHitTesting(false)
 
-            HStack {
-                Text("LEFT")
-                Spacer()
-                Text("RIGHT")
+            HStack(spacing: Metrics.labelGap) {
+                compassLabel("LEFT")
+                Color.clear.frame(width: Metrics.ringSize, height: Metrics.ringSize)
+                compassLabel("RIGHT")
             }
-            .font(.caption2.bold())
-            .foregroundStyle(.secondary)
-            .frame(width: Metrics.labelExtent)
+            .allowsHitTesting(false)
         }
-        .frame(width: Metrics.labelExtent, height: Metrics.labelExtent)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Movement jog wheel")
         .accessibilityHint("Drag up, left, or right to move; drag down, return to center, or release to stop")
@@ -357,6 +402,16 @@ private struct JogWheel: View {
         .accessibilityAction(named: "Stop") {
             action(.stop)
         }
+    }
+
+    private func compassLabel(_ title: String) -> some View {
+        Text(title)
+            .font(.caption2.bold())
+            .foregroundStyle(.secondary)
+            .lineLimit(1)
+            .fixedSize()
+            .frame(minWidth: 48)
+            .multilineTextAlignment(.center)
     }
 
     private func boundedOffset(_ translation: CGSize) -> CGSize {
@@ -407,5 +462,34 @@ private struct CardStyle: ViewModifier {
 private extension View {
     func cardStyle() -> some View {
         modifier(CardStyle())
+    }
+}
+
+private struct FatChevronDisclosureGroupStyle: DisclosureGroupStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Button {
+                withAnimation(.snappy(duration: 0.2)) {
+                    configuration.isExpanded.toggle()
+                }
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .black, design: .rounded))
+                        .imageScale(.large)
+                        .frame(width: 18, height: 16)
+                        .rotationEffect(.degrees(configuration.isExpanded ? 90 : 0))
+                    configuration.label
+                    Spacer(minLength: 0)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityAddTraits(.isButton)
+
+            if configuration.isExpanded {
+                configuration.content
+            }
+        }
     }
 }

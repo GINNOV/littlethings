@@ -12,6 +12,8 @@ enum RobotCommand: Equatable {
     case kungFu
     case pushUp
     case dance
+    /// Framed heartbeat. Mapped actions start at `2A 00 01`; `00` is unused.
+    case keepAlive
 
     var packet: Data {
         let payload: (UInt8, UInt8, UInt8) = switch self {
@@ -26,6 +28,7 @@ enum RobotCommand: Equatable {
         case .kungFu: (0x2A, 0x00, 0x2E)
         case .pushUp: (0x2A, 0x00, 0x31)
         case .dance: (0x12, 0x00, 0x01)
+        case .keepAlive: (0x2A, 0x00, 0x00)
         }
 
         return Data([
@@ -48,6 +51,7 @@ enum RobotCommand: Equatable {
         case .kungFu: "Kung Fu"
         case .pushUp: "Push-up"
         case .dance: "Dance"
+        case .keepAlive: "Stay awake"
         }
     }
 }
