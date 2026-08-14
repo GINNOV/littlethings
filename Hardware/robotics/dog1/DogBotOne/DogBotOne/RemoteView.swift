@@ -62,9 +62,22 @@ struct RemoteView: View {
                 .help("Sends a keep-alive packet every 3 seconds. Blocks Stop, which puts this dog to sleep.")
                 .accessibilityHint("When on, the remote writes a keep-alive command so the dog is less likely to sleep.")
 
-            Button("Reconnect", action: bleManager.reconnect)
-                .disabled(bleManager.status == "Connected")
+            Button(isLinkActive ? "Disconnect" : "Reconnect") {
+                if isLinkActive {
+                    bleManager.disconnect()
+                } else {
+                    bleManager.reconnect()
+                }
+            }
+            .disabled(!isLinkActive && (bleManager.status == "Bluetooth Off" || bleManager.status == "Unsupported"))
+            .help(isLinkActive
+                  ? "Disconnect from the dog. It will not reconnect until you tap Reconnect."
+                  : "Scan again and connect when the dog appears.")
         }
+    }
+
+    private var isLinkActive: Bool {
+        bleManager.status == "Connected" || bleManager.status == "Preparing"
     }
 
     private var connectedRemote: some View {
@@ -88,13 +101,26 @@ struct RemoteView: View {
         VStack(alignment: .leading, spacing: 18) {
             sectionTitle("Actions", subtitle: "Make your dog do something")
 
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                ActionButton(title: "Sit", systemImage: "figure.seated.side") { bleManager.send(.sit) }
-                ActionButton(title: "Greet", systemImage: "hand.wave") { bleManager.send(.greet) }
-                ActionButton(title: "Dance", systemImage: "music.note") { bleManager.send(.dance) }
+            LazyVGrid(columns: [
+                GridItem(.flexible()),
+                GridItem(.flexible()),
+                GridItem(.flexible()),
+                GridItem(.flexible()),
+            ], spacing: 12) {
+                ActionButton(title: "Sit Down", systemImage: "figure.seated.side") { bleManager.send(.sit) }
+                ActionButton(title: "Greetings", systemImage: "hand.wave") { bleManager.send(.greet) }
+                ActionButton(title: "Get Down", systemImage: "arrow.down.to.line") { bleManager.send(.getDown) }
+                ActionButton(title: "Act Cute", systemImage: "heart") { bleManager.send(.actCute) }
+                ActionButton(title: "Handshake", systemImage: "handshake") { bleManager.send(.handshake) }
+                ActionButton(title: "Attack", systemImage: "bolt.fill") { bleManager.send(.attack) }
+                ActionButton(title: "Surrender", systemImage: "flag") { bleManager.send(.surrender) }
+                ActionButton(title: "Urinate", systemImage: "drop") { bleManager.send(.urinate) }
+                ActionButton(title: "Handstand", systemImage: "figure.flexibility") { bleManager.send(.handstand) }
                 ActionButton(title: "Patrol", systemImage: "figure.walk.motion") { bleManager.send(.patrol) }
                 ActionButton(title: "Kung Fu", systemImage: "figure.martial.arts") { bleManager.send(.kungFu) }
                 ActionButton(title: "Push-up", systemImage: "figure.strengthtraining.traditional") { bleManager.send(.pushUp) }
+                ActionButton(title: "Swimming", systemImage: "figure.pool.swim") { bleManager.send(.swimming) }
+                ActionButton(title: "Dance", systemImage: "music.note") { bleManager.send(.dance) }
             }
         }
         .cardStyle()

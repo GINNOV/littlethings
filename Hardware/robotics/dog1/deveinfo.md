@@ -32,7 +32,7 @@ What *is* known:
 - `RemoteView` now sends framed 7-byte packets for drive and named actions. Those packets are defined in `RobotCommand.packet`.
 - Raw hexadecimal writes remain available in Developer mode for protocol discovery.
 
-Earlier notes about `controlsAreMapped = false`, locked consumer buttons, and `Stand` / `Sleep` labels are obsolete. The current remote enables the jog wheel and six action buttons.
+Earlier notes about `controlsAreMapped = false`, locked consumer buttons, and `Stand` / `Sleep` labels are obsolete. The current remote enables the jog wheel and the official 12-action grid plus Swimming and Dance.
 
 ## BLE protocol
 
@@ -180,18 +180,27 @@ This frame layout is inferred only from `DogBotOne/DogBotOne/RobotCommand.swift`
 | Right | `2A 00 07` | `F0 2A 00 07 D5 FF F8` | Jog wheel right |
 | Stop | `2A 00 0A` | `F0 2A 00 0A D5 FF F5` | Jog wheel center / release |
 | Back | `2A 00 0D` | `F0 2A 00 0D D5 FF F2` | Jog wheel down. Inferred: next unused `2A 00` slot after Stop (`0A + 3`). Not hardware-verified. |
-| Sit | `2A 00 10` | `F0 2A 00 10 D5 FF EF` | Action button |
-| Greet | `2A 00 13` | `F0 2A 00 13 D5 FF EC` | Action button |
+| Sit Down | `2A 00 10` | `F0 2A 00 10 D5 FF EF` | Action button |
+| Greetings | `2A 00 13` | `F0 2A 00 13 D5 FF EC` | Action button |
+| Get Down | `2A 00 16` | `F0 2A 00 16 D5 FF E9` | Official grid after Greetings. Inferred: `13 + 3`. Not hardware-verified. |
+| Act Cute | `2A 00 19` | `F0 2A 00 19 D5 FF E6` | Official grid after Get Down. Inferred: `16 + 3`. Not hardware-verified. |
+| Handshake | `2A 00 1C` | `F0 2A 00 1C D5 FF E3` | Official grid after Act Cute. Inferred: `19 + 3`. Not hardware-verified. |
+| Attack | `2A 00 1F` | `F0 2A 00 1F D5 FF E0` | Official grid after Handshake. Inferred: `1C + 3`. Not hardware-verified. |
+| Surrender | `2A 00 22` | `F0 2A 00 22 D5 FF DD` | Official grid after Attack. Inferred: `1F + 3`. Not hardware-verified. |
+| Urinate | `2A 00 25` | `F0 2A 00 25 D5 FF DA` | Official grid after Surrender. Inferred: `22 + 3`. Not hardware-verified. |
+| Handstand | `2A 00 28` | `F0 2A 00 28 D5 FF D7` | Official grid after Urinate, before Patrol. Inferred: `25 + 3`. Not hardware-verified. |
 | Patrol | `2A 00 2B` | `F0 2A 00 2B D5 FF D4` | Action button |
 | Kung Fu | `2A 00 2E` | `F0 2A 00 2E D5 FF D1` | Action button |
 | Push-up | `2A 00 31` | `F0 2A 00 31 D5 FF CE` | Action button |
+| Swimming | `2A 00 34` | `F0 2A 00 34 D5 FF CB` | Official D-pad bottom. Inferred: next unused `2A 00` slot after Push-up (`31 + 3`). Not hardware-verified. |
 | Dance | `12 00 01` | `F0 12 00 01 ED FF FE` | Only command using family `12` |
 
 Pattern notes from the table, not from hardware:
 
 - Motion variants under `2A 00` step by 3: `01` forward, `04` left, `07` right, `0A` stop, then inferred `0D` back.
-- Sit / greet continue that stride: `10`, `13`.
-- Patrol / kung fu / push-up also stride by 3: `2B`, `2E`, `31`.
+- The official 12-action grid continues that stride from Sit (`10`) through Push-up (`31`).
+- The seven buttons between Greetings and Patrol fill the previously unused slots `16`–`28`.
+- Swimming is on the official D-pad, not in that grid, so it is encoded as the next unused slot after Push-up (`34`).
 - There is no encoded `Stand` or `Sleep` command in the current enum.
 
 Confidence for every row: **client encoding only**. Repeat count: 0 live-dog observations in this repository.
@@ -223,7 +232,7 @@ The application launches `RemoteView`, not `ContentView`.
 When a writable characteristic is selected (`status == "Connected"`):
 
 - the jog wheel sends Forward / Back / Left / Right while dragged, Stop when the knob returns to center, and Stop again on release;
-- Sit, Greet, Dance, Patrol, Kung Fu, and Push-up send the packets above;
+- Sit Down, Greetings, Get Down, Act Cute, Handshake, Attack, Surrender, Urinate, Handstand, Patrol, Kung Fu, Push-up, Swimming, and Dance send the packets above;
 - Developer mode stays collapsed until opened.
 
 Developer mode provides:
@@ -319,7 +328,7 @@ The following are not answered by the current repository and require hardware te
 - Which of the encoded packets actually produce the labeled motion or animation on a live dog?
 - Is the `F0` + inverted-trailer frame required, optional, or client-invented relative to the official controller?
 - Why does Dance use family `12` while every other named command uses `2A`?
-- What do the unused `2A 00 xx` values between the known variants do?
+- Do the inferred `2A 00` slots `16`–`28` and `34` actually match Get Down, Act Cute, Handshake, Attack, Surrender, Urinate, Handstand, and Swimming on a live dog?
 - Are commands one-shot, timed, queued, or held (the jog wheel resends when the sector changes, then sends Stop on release)?
 - Is there a required initialization, wake, pairing, or mode-selection command?
 - Does the dog send useful telemetry or acknowledgements through notifications?

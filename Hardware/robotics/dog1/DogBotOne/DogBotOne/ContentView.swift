@@ -32,6 +32,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     private var autoDiscoverTask: Task<Void, Never>?
     private var keepAwakeTask: Task<Void, Never>?
     private var lastNamedCommand: RobotCommand?
+    private var userRequestedDisconnect = false
 
     private let keepAwakeInterval: TimeInterval = 3
     
@@ -52,6 +53,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     }
     
     func startScanning() {
+        guard !userRequestedDisconnect else { return }
         guard centralManager.state == .poweredOn else {
             addLog("Bluetooth not ready to scan", type: .error)
             return
@@ -79,12 +81,18 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     }
     
     func disconnect() {
+        userRequestedDisconnect = true
+        addLog("Disconnecting...")
+        stopScanning()
         if let peripheral = peripheral {
             centralManager.cancelPeripheralConnection(peripheral)
+        } else {
+            status = "Disconnected"
         }
     }
 
     func reconnect() {
+        userRequestedDisconnect = false
         addLog("Reconnecting...")
         stopScanning()
         if let peripheral = peripheral {
@@ -306,7 +314,7 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
     }
     
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
-        addLog("Disconnected", type: .error)
+        addLog("Disconnected", type: userRequestedDisconnect ? .info : .error)
         status = "Disconnected"
         self.peripheral = nil
         self.writeCharacteristic = nil
@@ -314,7 +322,9 @@ class BLEManager: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeriph
         lastNamedCommand = nil
         stopAutoDiscover()
         syncKeepAwakeLoop()
-        startScanning()
+        if !userRequestedDisconnect {
+            startScanning()
+        }
     }
     
     // MARK: - CBPeripheralDelegate
@@ -519,9 +529,14 @@ struct ContentView: View {
                     .fill(bleManager.status == "Connected" ? Color.green : Color.red)
                     .frame(width: 12, height: 12)
                 Text(bleManager.status)
-                Button("Reconnect") {
-                    bleManager.reconnect()
+                Button(bleManager.status == "Connected" || bleManager.status == "Preparing" ? "Disconnect" : "Reconnect") {
+                    if bleManager.status == "Connected" || bleManager.status == "Preparing" {
+                        bleManager.disconnect()
+                    } else {
+                        bleManager.reconnect()
+                    }
                 }
+                .disabled(bleManager.status == "Bluetooth Off" || bleManager.status == "Unsupported")
             }
             .padding()
             .background(Color(NSColor.controlBackgroundColor))
