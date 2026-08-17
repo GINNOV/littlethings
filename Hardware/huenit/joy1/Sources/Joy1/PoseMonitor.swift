@@ -39,6 +39,12 @@ final class MonitorState: @unchecked Sendable {
     private let lock = NSLock()
     private var task: Task<Void, Never>?
 
+    var isRunning: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return task != nil
+    }
+
     func set(_ task: Task<Void, Never>) {
         lock.lock()
         self.task = task

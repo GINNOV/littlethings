@@ -55,4 +55,36 @@ struct PendantModelTests {
         let written = await serial.written
         #expect(written.contains("M1400 A0"))
     }
+
+    @Test @MainActor func startJogLoopIdlesWhileDisconnectedAndSurvivesConnect() async throws {
+        let serial = FakeSerial()
+        await serial.setReplies([
+            marlinIdentity(),
+            "ok\n",
+            "ok\n",
+            "X:1.00 Y:2.00 Z:3.00\nok\n",
+            "A:10.00 B:20.00 C:30.00\nok\n",
+        ] + Array(repeating: "ok\n", count: 16))
+        let arm = HuenitArm(transport: serial)
+        let model = PendantModel(arm: arm, detector: { [] })
+
+        model.startJogLoop()
+        model.startJogLoop()
+        try await Task.sleep(for: .milliseconds(80))
+        #expect(!model.isConnected)
+
+        await model.connect(path: "/dev/cu.usbserial-test")
+        #expect(model.isConnected)
+
+        model.setHeld(.x, .pos, down: true)
+        try await Task.sleep(for: .milliseconds(80))
+
+        let written = await serial.written
+        #expect(written.contains(where: { $0.hasPrefix("G1 X") }))
+
+        await model.disconnect()
+        #expect(!model.isConnected)
+        try await Task.sleep(for: .milliseconds(80))
+        #expect(!model.isConnected)
+    }
 }

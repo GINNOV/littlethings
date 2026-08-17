@@ -42,7 +42,6 @@ public final class PendantModel {
         lastError = nil
         portPath = path
         await monitor.stop()
-        jogState.cancel()
 
         do {
             try await arm.connect()
@@ -142,13 +141,21 @@ public final class PendantModel {
     }
 
     public func startJogLoop() {
-        jogState.cancel()
+        if jogState.isRunning { return }
         let task = Task { [weak self] in
             let dt = 1.0 / 60.0
             while !Task.isCancelled {
-                guard let self, self.isConnected else { break }
+                guard let self else { break }
+                if !self.isConnected {
+                    try? await Task.sleep(for: .milliseconds(50))
+                    continue
+                }
+                let started = ContinuousClock.now
                 await self.tickJog(dt: dt)
-                try? await Task.sleep(for: .seconds(dt))
+                let remaining = Duration.seconds(dt) - started.duration(to: .now)
+                if remaining > .zero {
+                    try? await Task.sleep(for: remaining)
+                }
             }
         }
         jogState.set(task)
@@ -157,7 +164,6 @@ public final class PendantModel {
     public func stop() async {
         clearHolds()
         vacuumOn = false
-        jogState.cancel()
         do {
             try await arm.stop()
         } catch {
