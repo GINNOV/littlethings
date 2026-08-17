@@ -5,7 +5,7 @@ public actor FakeSerial: SerialTransport {
     public private(set) var replies: [String] = []
 
     private var pending = ""
-    private var isOpen = false
+    public private(set) var isOpen = false
 
     public init() {}
 
