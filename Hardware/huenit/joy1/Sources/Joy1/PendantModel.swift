@@ -14,6 +14,7 @@ public final class PendantModel {
     public private(set) var candidates: [SerialCandidate] = []
 
     public var makeTransport: @Sendable (String) -> any SerialTransport = { SerialPort(path: $0) }
+    public var settleAfterOpen: Duration = .seconds(2)
 
     private var arm: HuenitArm
     private let detector: @Sendable () -> [SerialCandidate]
@@ -53,7 +54,7 @@ public final class PendantModel {
         await monitor.stop()
         await arm.disconnect()
 
-        let arm = HuenitArm(transport: makeTransport(path))
+        let arm = HuenitArm(transport: makeTransport(path), settleAfterOpen: settleAfterOpen)
         self.arm = arm
         await monitor.setArm(arm)
 

@@ -43,7 +43,7 @@ enum LiveArm {
         // FTDI open often resets Marlin; wait out the banner, then drop it.
         try await Task.sleep(for: .seconds(2))
         await transport.discardInput()
-        let arm = HuenitArm(transport: transport, commandTimeout: .seconds(10))
+        let arm = HuenitArm(transport: transport, commandTimeout: .seconds(10), settleAfterOpen: .zero)
         try await arm.connect()
         return arm
     }

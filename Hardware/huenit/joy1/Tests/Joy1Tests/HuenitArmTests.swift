@@ -74,7 +74,7 @@ struct HuenitArmTests {
             "ok\n",
             "ok\n",
         ])
-        let arm = HuenitArm(transport: serial)
+        let arm = HuenitArm(transport: serial, settleAfterOpen: .zero)
         try await arm.connect()
         #expect(await arm.isConnected)
         #expect(await serial.isOpen)
@@ -85,7 +85,7 @@ struct HuenitArmTests {
     @Test func connectRejectsNonMarlin() async {
         let serial = FakeSerial()
         await serial.setReplies(["hello\nok\n"])
-        let arm = HuenitArm(transport: serial)
+        let arm = HuenitArm(transport: serial, settleAfterOpen: .zero)
         let thrown = await #expect(throws: ArmError.self) {
             try await arm.connect()
         }
@@ -104,7 +104,7 @@ struct HuenitArmTests {
 
     @Test func rejectsG28() async {
         let serial = FakeSerial()
-        let arm = HuenitArm(transport: serial)
+        let arm = HuenitArm(transport: serial, settleAfterOpen: .zero)
         await #expect(throws: ArmError.forbiddenCommand("G28")) {
             try await arm.send("G28")
         }
@@ -114,7 +114,7 @@ struct HuenitArmTests {
 
     @Test func sendRejectsAnyLineContainingG28() async {
         let serial = FakeSerial()
-        let arm = HuenitArm(transport: serial)
+        let arm = HuenitArm(transport: serial, settleAfterOpen: .zero)
         await arm.forceConnectedForTests()
         await #expect(throws: ArmError.forbiddenCommand("G28")) {
             try await arm.send("g28")
@@ -128,7 +128,7 @@ struct HuenitArmTests {
 
     @Test func sendG21WhileDisconnectedThrowsDisconnected() async {
         let serial = FakeSerial()
-        let arm = HuenitArm(transport: serial)
+        let arm = HuenitArm(transport: serial, settleAfterOpen: .zero)
         await #expect(throws: ArmError.disconnected) {
             try await arm.send("G21")
         }
@@ -142,7 +142,7 @@ struct HuenitArmTests {
     @Test func stopThrowsWhenM410AndM84Fail() async {
         let serial = FakeSerial()
         await serial.setReplies(["ok\n"])
-        let arm = HuenitArm(transport: serial, commandTimeout: .milliseconds(40))
+        let arm = HuenitArm(transport: serial, commandTimeout: .milliseconds(40), settleAfterOpen: .zero)
         await arm.forceConnectedForTests()
         await #expect(throws: ArmError.timeout) {
             try await arm.stop()
@@ -152,7 +152,7 @@ struct HuenitArmTests {
 
     @Test func disconnectedErrorClearsIsConnected() async {
         let serial = FakeSerial()
-        let arm = HuenitArm(transport: serial)
+        let arm = HuenitArm(transport: serial, settleAfterOpen: .zero)
         await arm.forceConnectedForTests()
         #expect(await arm.isConnected)
         await serial.enqueueWriteError(.disconnected)
@@ -164,7 +164,7 @@ struct HuenitArmTests {
 
     @Test func forceConnectedForTestsSetsFlag() async {
         let serial = FakeSerial()
-        let arm = HuenitArm(transport: serial)
+        let arm = HuenitArm(transport: serial, settleAfterOpen: .zero)
         #expect(await arm.isConnected == false)
         await arm.forceConnectedForTests()
         #expect(await arm.isConnected)
@@ -176,7 +176,7 @@ struct HuenitArmTests {
             "X:-0.12 Y:233.81 Z:3.15\nok\n",
             "A:164.97 B:60.73 C:31.64\nok\n",
         ])
-        let arm = HuenitArm(transport: serial)
+        let arm = HuenitArm(transport: serial, settleAfterOpen: .zero)
         await arm.forceConnectedForTests()
         let pose = try await arm.queryPose()
         #expect(abs(pose.cartesian.y - 233.81) < 0.001)
@@ -189,7 +189,7 @@ struct HuenitArmTests {
     @Test func vacuumCommands() async throws {
         let serial = FakeSerial()
         await serial.setReplies(["ok\n", "ok\n"])
-        let arm = HuenitArm(transport: serial)
+        let arm = HuenitArm(transport: serial, settleAfterOpen: .zero)
         await arm.forceConnectedForTests()
         try await arm.setVacuum(true)
         try await arm.setVacuum(false)
@@ -200,7 +200,7 @@ struct HuenitArmTests {
     @Test func jogStepSendsRelativeG1() async throws {
         let serial = FakeSerial()
         await serial.setReplies(["ok\n"])
-        let arm = HuenitArm(transport: serial)
+        let arm = HuenitArm(transport: serial, settleAfterOpen: .zero)
         await arm.forceConnectedForTests()
         try await arm.jogCartesian(axis: .x, deltaMm: 3, feedMmPerMin: 1200)
         let written = await serial.written
@@ -212,7 +212,7 @@ struct HuenitArmTests {
     @Test func jogJointUsesDefaultFormat() async throws {
         let serial = FakeSerial()
         await serial.setReplies(["ok\n"])
-        let arm = HuenitArm(transport: serial)
+        let arm = HuenitArm(transport: serial, settleAfterOpen: .zero)
         await arm.forceConnectedForTests()
         try await arm.jogJoint(axis: .a, deltaDeg: 2.5, feedMmPerMin: 800)
         let written = await serial.written
@@ -223,7 +223,7 @@ struct HuenitArmTests {
     @Test func setJointCommandFormatChangesWrittenLine() async throws {
         let serial = FakeSerial()
         await serial.setReplies(["ok\n"])
-        let arm = HuenitArm(transport: serial)
+        let arm = HuenitArm(transport: serial, settleAfterOpen: .zero)
         await arm.forceConnectedForTests()
         await arm.setJointCommandFormat("M1007 {A}{delta}")
         try await arm.jogJoint(axis: .b, deltaDeg: -2, feedMmPerMin: 300)
@@ -234,7 +234,7 @@ struct HuenitArmTests {
     @Test func flushSendsM400() async throws {
         let serial = FakeSerial()
         await serial.setReplies(["ok\n"])
-        let arm = HuenitArm(transport: serial)
+        let arm = HuenitArm(transport: serial, settleAfterOpen: .zero)
         await arm.forceConnectedForTests()
         try await arm.flush()
         #expect(await serial.written == ["M400"])
@@ -243,7 +243,7 @@ struct HuenitArmTests {
     @Test func stopSendsVacuumOffThenM410() async throws {
         let serial = FakeSerial()
         await serial.setReplies(["ok\n", "ok\n"])
-        let arm = HuenitArm(transport: serial)
+        let arm = HuenitArm(transport: serial, settleAfterOpen: .zero)
         await arm.forceConnectedForTests()
         try await arm.stop()
         #expect(await serial.written == ["M1400 A0", "M410"])
@@ -251,7 +251,7 @@ struct HuenitArmTests {
 
     @Test func disconnectClosesTransport() async {
         let serial = FakeSerial()
-        let arm = HuenitArm(transport: serial)
+        let arm = HuenitArm(transport: serial, settleAfterOpen: .zero)
         await arm.forceConnectedForTests()
         try? await serial.open()
         await arm.disconnect()

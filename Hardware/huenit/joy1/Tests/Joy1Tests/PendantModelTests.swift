@@ -19,6 +19,7 @@ struct PendantModelTests {
         let arm = HuenitArm(transport: serial)
         let model = PendantModel(arm: arm, detector: { [] })
         model.makeTransport = { _ in serial }
+        model.settleAfterOpen = .zero
         await model.connect(path: "/dev/cu.usbserial-test")
         #expect(model.isConnected)
         #expect(abs((model.pose?.cartesian.y ?? 0) - 233.81) < 0.001)
@@ -47,6 +48,7 @@ struct PendantModelTests {
         let arm = HuenitArm(transport: serial)
         let model = PendantModel(arm: arm, detector: { [] })
         model.makeTransport = { _ in serial }
+        model.settleAfterOpen = .zero
         await model.connect(path: "/dev/cu.usbserial-test")
         model.setHeld(.x, .pos, down: true)
         #expect(model.held[.x] == .pos)
@@ -70,6 +72,7 @@ struct PendantModelTests {
         let arm = HuenitArm(transport: serial)
         let model = PendantModel(arm: arm, detector: { [] })
         model.makeTransport = { _ in serial }
+        model.settleAfterOpen = .zero
 
         model.startJogLoop()
         model.startJogLoop()
@@ -106,6 +109,7 @@ struct PendantModelTests {
             requested.value = path
             return serial
         }
+        model.settleAfterOpen = .zero
 
         await model.connect(path: "/dev/cu.usbserial-selected")
 

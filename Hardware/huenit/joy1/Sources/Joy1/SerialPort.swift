@@ -44,7 +44,7 @@ public actor SerialPort: SerialTransport {
         pending = ""
     }
 
-    public func discardInput() {
+    public func discardInput() async {
         pending = ""
         guard fd >= 0 else { return }
         var chunk = [UInt8](repeating: 0, count: 256)

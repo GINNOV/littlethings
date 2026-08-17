@@ -12,17 +12,28 @@ public actor HuenitArm {
     }
 
     private let commandTimeout: Duration
+    private let settleAfterOpen: Duration
     private var ioBusy = false
     private var ioWaiters: [CheckedContinuation<Void, Never>] = []
 
-    public init(transport: any SerialTransport, commandTimeout: Duration = .seconds(2)) {
+    public init(
+        transport: any SerialTransport,
+        commandTimeout: Duration = .seconds(2),
+        settleAfterOpen: Duration = .seconds(2)
+    ) {
         self.transport = transport
         self.commandTimeout = commandTimeout
+        self.settleAfterOpen = settleAfterOpen
     }
 
     public func connect() async throws {
         try await transport.open()
         do {
+            // FTDI open resets Marlin; wait out the banner, then drop it.
+            if settleAfterOpen > .zero {
+                try await Task.sleep(for: settleAfterOpen)
+            }
+            await transport.discardInput()
             let identity = try await transact("M115")
             guard FirmwareIdentity.parse(identity).isHuenitMarlin else {
                 throw ArmError.connectFailed("not HUENIT Marlin: \(identity)")

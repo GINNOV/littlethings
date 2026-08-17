@@ -27,6 +27,10 @@ public actor FakeSerial: SerialTransport {
         pending = ""
     }
 
+    public func discardInput() async {
+        pending = ""
+    }
+
     public func writeLine(_ line: String) async throws {
         if !isOpen {
             try await open()
