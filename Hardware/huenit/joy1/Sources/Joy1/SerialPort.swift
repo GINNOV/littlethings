@@ -44,6 +44,18 @@ public actor SerialPort: SerialTransport {
         pending = ""
     }
 
+    public func discardInput() {
+        pending = ""
+        guard fd >= 0 else { return }
+        var chunk = [UInt8](repeating: 0, count: 256)
+        while true {
+            let n = chunk.withUnsafeMutableBytes { buf in
+                Darwin.read(fd, buf.baseAddress, buf.count)
+            }
+            if n <= 0 { break }
+        }
+    }
+
     public func writeLine(_ line: String) async throws {
         if fd < 0 {
             throw ArmError.disconnected
@@ -127,16 +139,12 @@ public actor SerialPort: SerialTransport {
         }
         if n > 0 {
             pending += String(decoding: chunk.prefix(n), as: UTF8.self)
-        } else if n == 0 {
-            Darwin.close(fd)
-            fd = -1
-            pending = ""
-            throw ArmError.disconnected
         } else if n < 0 {
             let err = errno
             if err != EAGAIN, err != EWOULDBLOCK {
                 throw ArmError.disconnected
             }
         }
+        // n == 0: VMIN=0/VTIME=0 means no bytes waiting, not hangup.
     }
 }

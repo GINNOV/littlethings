@@ -220,6 +220,17 @@ struct HuenitArmTests {
         #expect(written[0] == "G1 A2.5000 F800.0")
     }
 
+    @Test func setJointCommandFormatChangesWrittenLine() async throws {
+        let serial = FakeSerial()
+        await serial.setReplies(["ok\n"])
+        let arm = HuenitArm(transport: serial)
+        await arm.forceConnectedForTests()
+        await arm.setJointCommandFormat("M1007 {A}{delta}")
+        try await arm.jogJoint(axis: .b, deltaDeg: -2, feedMmPerMin: 300)
+        #expect(await serial.written == ["M1007 B-2.0000"])
+        #expect(await arm.jointCommandFormat == "M1007 {A}{delta}")
+    }
+
     @Test func flushSendsM400() async throws {
         let serial = FakeSerial()
         await serial.setReplies(["ok\n"])

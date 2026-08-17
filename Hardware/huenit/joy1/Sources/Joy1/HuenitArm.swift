@@ -3,7 +3,13 @@ import Foundation
 public actor HuenitArm {
     private let transport: any SerialTransport
     public private(set) var isConnected = false
-    public var jointCommandFormat: String = "G1 {A}{delta} F{F}"
+    /// Live probe of G1 A, G1 I, and M1007 A all returned `ok` without moving joint A.
+    /// Default stays the G1 template; do not couple joints through Cartesian G1 X/Y/Z.
+    public private(set) var jointCommandFormat: String = "G1 {A}{delta} F{F}"
+
+    public func setJointCommandFormat(_ format: String) {
+        jointCommandFormat = format
+    }
 
     private let commandTimeout: Duration
     private var ioBusy = false
