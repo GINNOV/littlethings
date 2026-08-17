@@ -19,6 +19,7 @@ public actor FakeSerial: SerialTransport {
 
     public func close() async {
         isOpen = false
+        pending = ""
     }
 
     public func writeLine(_ line: String) async throws {
@@ -41,11 +42,13 @@ public actor FakeSerial: SerialTransport {
                 return result
             }
             if clock.now >= deadline {
+                pending = ""
                 throw ArmError.timeout
             }
             let remaining = deadline - clock.now
             let slice = min(remaining, .milliseconds(5))
             if slice <= .zero {
+                pending = ""
                 throw ArmError.timeout
             }
             try await Task.sleep(for: slice)

@@ -10,17 +10,25 @@ public actor SerialPort: SerialTransport {
         self.path = path
     }
 
+    deinit {
+        if fd >= 0 {
+            Darwin.close(fd)
+        }
+    }
+
     public func open() async throws {
         if fd >= 0 { return }
 
         let opened = Darwin.open(path, O_RDWR | O_NOCTTY | O_NONBLOCK)
         guard opened >= 0 else {
-            throw ArmError.connectFailed("open \(path) failed: \(errno)")
+            let err = errno
+            throw ArmError.connectFailed("open \(path) failed: \(err)")
         }
         fd = opened
 
         do {
             try configureTermios()
+            tcflush(fd, TCIOFLUSH)
         } catch {
             Darwin.close(fd)
             fd = -1
@@ -38,7 +46,7 @@ public actor SerialPort: SerialTransport {
 
     public func writeLine(_ line: String) async throws {
         if fd < 0 {
-            try await open()
+            throw ArmError.disconnected
         }
         let payload = line.hasSuffix("\n") ? line : line + "\n"
         let bytes = Array(payload.utf8)
@@ -48,7 +56,8 @@ public actor SerialPort: SerialTransport {
                 Darwin.write(fd, buf.baseAddress!.advanced(by: offset), bytes.count - offset)
             }
             if n < 0 {
-                if errno == EAGAIN || errno == EWOULDBLOCK {
+                let err = errno
+                if err == EAGAIN || err == EWOULDBLOCK {
                     try await Task.sleep(for: .milliseconds(5))
                     continue
                 }
@@ -72,11 +81,13 @@ public actor SerialPort: SerialTransport {
                 return result
             }
             if clock.now >= deadline {
+                pending = ""
                 throw ArmError.timeout
             }
             let remaining = deadline - clock.now
             let slice = min(remaining, .milliseconds(10))
             if slice <= .zero {
+                pending = ""
                 throw ArmError.timeout
             }
             try await Task.sleep(for: slice)
@@ -86,10 +97,12 @@ public actor SerialPort: SerialTransport {
     private func configureTermios() throws {
         var term = termios()
         guard tcgetattr(fd, &term) == 0 else {
-            throw ArmError.connectFailed("tcgetattr failed: \(errno)")
+            let err = errno
+            throw ArmError.connectFailed("tcgetattr failed: \(err)")
         }
 
         cfmakeraw(&term)
+        term.c_cflag &= ~tcflag_t(CRTSCTS)
         cfsetspeed(&term, speed_t(B115200))
         term.c_cflag |= tcflag_t(CS8 | CLOCAL | CREAD)
         term.c_cflag &= ~tcflag_t(PARENB | CSTOPB)
@@ -102,7 +115,8 @@ public actor SerialPort: SerialTransport {
         }
 
         guard tcsetattr(fd, TCSANOW, &term) == 0 else {
-            throw ArmError.connectFailed("tcsetattr failed: \(errno)")
+            let err = errno
+            throw ArmError.connectFailed("tcsetattr failed: \(err)")
         }
     }
 
@@ -113,8 +127,16 @@ public actor SerialPort: SerialTransport {
         }
         if n > 0 {
             pending += String(decoding: chunk.prefix(n), as: UTF8.self)
-        } else if n < 0, errno != EAGAIN, errno != EWOULDBLOCK {
+        } else if n == 0 {
+            Darwin.close(fd)
+            fd = -1
+            pending = ""
             throw ArmError.disconnected
+        } else if n < 0 {
+            let err = errno
+            if err != EAGAIN, err != EWOULDBLOCK {
+                throw ArmError.disconnected
+            }
         }
     }
 }

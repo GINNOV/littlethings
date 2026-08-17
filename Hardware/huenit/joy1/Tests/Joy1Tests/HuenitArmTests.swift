@@ -22,4 +22,46 @@ struct FakeSerialTests {
             _ = try await serial.readUntilOk(timeout: .milliseconds(50))
         }
     }
+
+    @Test func timeoutClearsPendingSoLaterWriteTimesOutWithoutNewReply() async {
+        let serial = FakeSerial()
+        await serial.setReplies(["nope\n"])
+        try? await serial.open()
+        try? await serial.writeLine("M115")
+        await #expect(throws: ArmError.timeout) {
+            _ = try await serial.readUntilOk(timeout: .milliseconds(50))
+        }
+        try? await serial.writeLine("M114")
+        await #expect(throws: ArmError.timeout) {
+            _ = try await serial.readUntilOk(timeout: .milliseconds(50))
+        }
+    }
+
+    @Test func afterTimeoutNextReplyIsOnlyTheNewEnqueue() async throws {
+        let serial = FakeSerial()
+        await serial.setReplies(["nope\n"])
+        try await serial.open()
+        try await serial.writeLine("M115")
+        await #expect(throws: ArmError.timeout) {
+            _ = try await serial.readUntilOk(timeout: .milliseconds(50))
+        }
+        await serial.setReplies(["new-ok\nok\n"])
+        try await serial.writeLine("M114")
+        let reply = try await serial.readUntilOk(timeout: .seconds(1))
+        #expect(reply == "new-ok\nok\n")
+        #expect(!reply.contains("nope"))
+    }
+
+    @Test func closeClearsPending() async throws {
+        let serial = FakeSerial()
+        await serial.setReplies(["late ok\n"])
+        try await serial.open()
+        try await serial.writeLine("M115")
+        await serial.close()
+        await serial.setReplies(["fresh\nok\n"])
+        try await serial.writeLine("M114")
+        let reply = try await serial.readUntilOk(timeout: .seconds(1))
+        #expect(reply == "fresh\nok\n")
+        #expect(!reply.contains("late"))
+    }
 }
