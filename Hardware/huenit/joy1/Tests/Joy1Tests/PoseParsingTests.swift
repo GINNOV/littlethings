@@ -18,6 +18,22 @@ struct PoseParsingTests {
         #expect(abs(pose.c - 31.64) < 0.001)
     }
 
+    @Test func parseCartesianIgnoresExtraTokens() throws {
+        let text = "MAX:1 X:-0.12 Y:233.81 Z:3.15"
+        let pose = try CartesianPose.parseM1008(text)
+        #expect(abs(pose.x - (-0.12)) < 0.001)
+        #expect(abs(pose.y - 233.81) < 0.001)
+        #expect(abs(pose.z - 3.15) < 0.001)
+    }
+
+    @Test func cartesianValueForJointAxisIsNil() {
+        let pose = CartesianPose(x: 1, y: 2, z: 3)
+        #expect(pose.value(for: .a) == nil)
+        #expect(pose.value(for: .b) == nil)
+        #expect(pose.value(for: .c) == nil)
+        #expect(pose.value(for: .x) == 1)
+    }
+
     @Test func parseBrokenLineThrows() {
         #expect(throws: ArmError.self) {
             _ = try CartesianPose.parseM1008("garbage\nok\n")

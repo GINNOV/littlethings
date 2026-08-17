@@ -1,5 +1,18 @@
 import Foundation
 
+/// Labeled number with a leading token boundary so key `A` does not match inside `MAX:` or `AX:`.
+func parseLabeledNumber(_ text: String, key: String) throws -> Double {
+    let pattern = "(?<![A-Za-z0-9_])\(NSRegularExpression.escapedPattern(for: key))\\s*[:=]\\s*(-?\\d+(?:\\.\\d+)?)"
+    guard let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive),
+          let match = regex.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)),
+          let range = Range(match.range(at: 1), in: text),
+          let value = Double(text[range])
+    else {
+        throw ArmError.parseFailed("missing \(key) in \(text)")
+    }
+    return value
+}
+
 public struct CartesianPose: Equatable, Sendable {
     public var x: Double
     public var y: Double
@@ -12,26 +25,19 @@ public struct CartesianPose: Equatable, Sendable {
     }
 
     public static func parseM1008(_ text: String) throws -> CartesianPose {
-        func num(_ key: String) throws -> Double {
-            let pattern = "\(key)\\s*[:=]\\s*(-?\\d+(?:\\.\\d+)?)"
-            guard let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive),
-                  let match = regex.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)),
-                  let range = Range(match.range(at: 1), in: text),
-                  let value = Double(text[range])
-            else {
-                throw ArmError.parseFailed("missing \(key) in \(text)")
-            }
-            return value
-        }
-        return try CartesianPose(x: num("X"), y: num("Y"), z: num("Z"))
+        try CartesianPose(
+            x: parseLabeledNumber(text, key: "X"),
+            y: parseLabeledNumber(text, key: "Y"),
+            z: parseLabeledNumber(text, key: "Z")
+        )
     }
 
-    public func value(for axis: Axis) -> Double {
+    public func value(for axis: Axis) -> Double? {
         switch axis {
         case .x: x
         case .y: y
         case .z: z
-        default: 0
+        default: nil
         }
     }
 }
@@ -48,26 +54,19 @@ public struct JointPose: Equatable, Sendable {
     }
 
     public static func parseM1008(_ text: String) throws -> JointPose {
-        func num(_ key: String) throws -> Double {
-            let pattern = "\(key)\\s*[:=]\\s*(-?\\d+(?:\\.\\d+)?)"
-            guard let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive),
-                  let match = regex.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)),
-                  let range = Range(match.range(at: 1), in: text),
-                  let value = Double(text[range])
-            else {
-                throw ArmError.parseFailed("missing \(key) in \(text)")
-            }
-            return value
-        }
-        return try JointPose(a: num("A"), b: num("B"), c: num("C"))
+        try JointPose(
+            a: parseLabeledNumber(text, key: "A"),
+            b: parseLabeledNumber(text, key: "B"),
+            c: parseLabeledNumber(text, key: "C")
+        )
     }
 
-    public func value(for axis: Axis) -> Double {
+    public func value(for axis: Axis) -> Double? {
         switch axis {
         case .a: a
         case .b: b
         case .c: c
-        default: 0
+        default: nil
         }
     }
 }
