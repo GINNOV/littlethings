@@ -5,12 +5,17 @@ public actor FakeSerial: SerialTransport {
     public private(set) var replies: [String] = []
 
     private var pending = ""
+    private var writeErrors: [ArmError] = []
     public private(set) var isOpen = false
 
     public init() {}
 
     public func setReplies(_ replies: [String]) {
         self.replies = replies
+    }
+
+    public func enqueueWriteError(_ error: ArmError) {
+        writeErrors.append(error)
     }
 
     public func open() async throws {
@@ -27,6 +32,9 @@ public actor FakeSerial: SerialTransport {
             try await open()
         }
         written.append(line)
+        if !writeErrors.isEmpty {
+            throw writeErrors.removeFirst()
+        }
         if !replies.isEmpty {
             pending += replies.removeFirst()
         }

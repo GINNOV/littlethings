@@ -5,19 +5,24 @@ public actor HuenitArm {
     public private(set) var isConnected = false
     public var jointCommandFormat: String = "G1 {A}{delta} F{F}"
 
-    public init(transport: any SerialTransport) {
+    private let commandTimeout: Duration
+    private var ioBusy = false
+    private var ioWaiters: [CheckedContinuation<Void, Never>] = []
+
+    public init(transport: any SerialTransport, commandTimeout: Duration = .seconds(2)) {
         self.transport = transport
+        self.commandTimeout = commandTimeout
     }
 
     public func connect() async throws {
         try await transport.open()
         do {
-            let identity = try await send("M115")
+            let identity = try await transact("M115")
             guard FirmwareIdentity.parse(identity).isHuenitMarlin else {
                 throw ArmError.connectFailed("not HUENIT Marlin: \(identity)")
             }
-            _ = try await send("G21")
-            _ = try await send("G91")
+            _ = try await transact("G21")
+            _ = try await transact("G91")
             isConnected = true
         } catch {
             await transport.close()
@@ -41,11 +46,10 @@ public actor HuenitArm {
         if trimmed.uppercased().contains("G28") {
             throw ArmError.forbiddenCommand("G28")
         }
-        guard isConnected || trimmed == "M115" || trimmed == "G21" || trimmed == "G91" else {
+        guard isConnected else {
             throw ArmError.disconnected
         }
-        try await transport.writeLine(trimmed)
-        return try await transport.readUntilOk(timeout: .seconds(2))
+        return try await transact(trimmed)
     }
 
     public func queryPose() async throws -> ArmPose {
@@ -67,11 +71,11 @@ public actor HuenitArm {
     }
 
     public func stop() async throws {
-        _ = try? await send("M1400 A0")
+        _ = try? await transact("M1400 A0")
         do {
-            _ = try await send("M410")
+            _ = try await transact("M410")
         } catch {
-            _ = try? await send("M84")
+            _ = try await transact("M84")
         }
     }
 
@@ -88,5 +92,36 @@ public actor HuenitArm {
             .replacingOccurrences(of: "{delta}", with: String(format: "%.4f", deltaDeg))
             .replacingOccurrences(of: "{F}", with: String(format: "%.1f", feedMmPerMin))
         _ = try await send(line)
+    }
+
+    @discardableResult
+    private func transact(_ line: String) async throws -> String {
+        await acquireIO()
+        defer { releaseIO() }
+        do {
+            try await transport.writeLine(line)
+            return try await transport.readUntilOk(timeout: commandTimeout)
+        } catch let error as ArmError where error == .disconnected || error == .timeout {
+            isConnected = false
+            throw error
+        }
+    }
+
+    private func acquireIO() async {
+        if ioBusy {
+            await withCheckedContinuation { continuation in
+                ioWaiters.append(continuation)
+            }
+        } else {
+            ioBusy = true
+        }
+    }
+
+    private func releaseIO() {
+        if ioWaiters.isEmpty {
+            ioBusy = false
+        } else {
+            ioWaiters.removeFirst().resume()
+        }
     }
 }

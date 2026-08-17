@@ -126,23 +126,40 @@ struct HuenitArmTests {
         #expect(!written.contains(where: { $0.uppercased().contains("G28") }))
     }
 
-    @Test func sendBeforeConnectAllowsOnlyHandshake() async throws {
+    @Test func sendG21WhileDisconnectedThrowsDisconnected() async {
         let serial = FakeSerial()
-        await serial.setReplies([
-            "FIRMWARE_NAME:Marlin MACHINE_TYPE:FYSETC_E4\nok\n",
-            "ok\n",
-            "ok\n",
-        ])
         let arm = HuenitArm(transport: serial)
-        #expect(await arm.isConnected == false)
-        _ = try await arm.send("M115")
-        _ = try await arm.send("G21")
-        _ = try await arm.send("G91")
         await #expect(throws: ArmError.disconnected) {
-            try await arm.send("M1008 A3")
+            try await arm.send("G21")
         }
-        let written = await serial.written
-        #expect(written == ["M115", "G21", "G91"])
+        await #expect(throws: ArmError.disconnected) {
+            try await arm.send("M115")
+        }
+        #expect(await serial.written.isEmpty)
+        #expect(await arm.isConnected == false)
+    }
+
+    @Test func stopThrowsWhenM410AndM84Fail() async {
+        let serial = FakeSerial()
+        await serial.setReplies(["ok\n"])
+        let arm = HuenitArm(transport: serial, commandTimeout: .milliseconds(40))
+        await arm.forceConnectedForTests()
+        await #expect(throws: ArmError.timeout) {
+            try await arm.stop()
+        }
+        #expect(await serial.written == ["M1400 A0", "M410", "M84"])
+    }
+
+    @Test func disconnectedErrorClearsIsConnected() async {
+        let serial = FakeSerial()
+        let arm = HuenitArm(transport: serial)
+        await arm.forceConnectedForTests()
+        #expect(await arm.isConnected)
+        await serial.enqueueWriteError(.disconnected)
+        await #expect(throws: ArmError.disconnected) {
+            try await arm.send("M400")
+        }
+        #expect(await arm.isConnected == false)
     }
 
     @Test func forceConnectedForTestsSetsFlag() async {
