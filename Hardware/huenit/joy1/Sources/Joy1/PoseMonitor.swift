@@ -1,10 +1,15 @@
 import Foundation
 
 public actor PoseMonitor {
-    private let arm: HuenitArm
+    private var arm: HuenitArm
     private let state = MonitorState()
 
     public init(arm: HuenitArm) {
+        self.arm = arm
+    }
+
+    public func setArm(_ arm: HuenitArm) {
+        state.cancel()
         self.arm = arm
     }
 

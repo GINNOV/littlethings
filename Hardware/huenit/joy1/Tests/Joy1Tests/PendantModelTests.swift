@@ -18,6 +18,7 @@ struct PendantModelTests {
         ])
         let arm = HuenitArm(transport: serial)
         let model = PendantModel(arm: arm, detector: { [] })
+        model.makeTransport = { _ in serial }
         await model.connect(path: "/dev/cu.usbserial-test")
         #expect(model.isConnected)
         #expect(abs((model.pose?.cartesian.y ?? 0) - 233.81) < 0.001)
@@ -45,6 +46,7 @@ struct PendantModelTests {
         ])
         let arm = HuenitArm(transport: serial)
         let model = PendantModel(arm: arm, detector: { [] })
+        model.makeTransport = { _ in serial }
         await model.connect(path: "/dev/cu.usbserial-test")
         model.setHeld(.x, .pos, down: true)
         #expect(model.held[.x] == .pos)
@@ -67,6 +69,7 @@ struct PendantModelTests {
         ] + Array(repeating: "ok\n", count: 16))
         let arm = HuenitArm(transport: serial)
         let model = PendantModel(arm: arm, detector: { [] })
+        model.makeTransport = { _ in serial }
 
         model.startJogLoop()
         model.startJogLoop()
@@ -87,4 +90,31 @@ struct PendantModelTests {
         try await Task.sleep(for: .milliseconds(80))
         #expect(!model.isConnected)
     }
+
+    @Test @MainActor func connectCallsMakeTransportWithSelectedPath() async throws {
+        let serial = FakeSerial()
+        await serial.setReplies([
+            marlinIdentity(),
+            "ok\n",
+            "ok\n",
+            "X:1.00 Y:2.00 Z:3.00\nok\n",
+            "A:10.00 B:20.00 C:30.00\nok\n",
+        ])
+        let model = PendantModel(arm: HuenitArm(transport: FakeSerial()), detector: { [] })
+        let requested = PathBox()
+        model.makeTransport = { path in
+            requested.value = path
+            return serial
+        }
+
+        await model.connect(path: "/dev/cu.usbserial-selected")
+
+        #expect(requested.value == "/dev/cu.usbserial-selected")
+        #expect(model.portPath == "/dev/cu.usbserial-selected")
+        #expect(model.isConnected)
+    }
+}
+
+private final class PathBox: @unchecked Sendable {
+    var value: String?
 }

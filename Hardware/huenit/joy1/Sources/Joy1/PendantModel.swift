@@ -13,7 +13,9 @@ public final class PendantModel {
     public private(set) var held: [Axis: Sign] = [:]
     public private(set) var candidates: [SerialCandidate] = []
 
-    private let arm: HuenitArm
+    public var makeTransport: @Sendable (String) -> any SerialTransport = { SerialPort(path: $0) }
+
+    private var arm: HuenitArm
     private let detector: @Sendable () -> [SerialCandidate]
     private let monitor: PoseMonitor
     private let jogState = MonitorState()
@@ -41,7 +43,19 @@ public final class PendantModel {
     public func connect(path: String) async {
         lastError = nil
         portPath = path
+
+        if isConnected {
+            await stop()
+        } else {
+            clearHolds()
+            vacuumOn = false
+        }
         await monitor.stop()
+        await arm.disconnect()
+
+        let arm = HuenitArm(transport: makeTransport(path))
+        self.arm = arm
+        await monitor.setArm(arm)
 
         do {
             try await arm.connect()
