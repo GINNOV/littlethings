@@ -38,6 +38,7 @@ struct ContentView: View {
         .frame(minWidth: 720, minHeight: 420)
         .sheet(isPresented: $showCheatsheet) {
             StickCheatsheet()
+                .frame(minWidth: 780, minHeight: 600)
                 .toolbar {
                     ToolbarItem(placement: .confirmationAction) {
                         Button("Close") { showCheatsheet = false }

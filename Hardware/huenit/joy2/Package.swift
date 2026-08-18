@@ -19,7 +19,8 @@ let package = Package(
                 "Joy2",
                 .product(name: "Joy1", package: "joy1"),
             ],
-            exclude: ["App/Joy2App.entitlements"]
+            exclude: ["App/Joy2App.entitlements"],
+            resources: [.process("Resources")]
         ),
         .testTarget(
             name: "Joy2Tests",
