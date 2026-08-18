@@ -6,7 +6,7 @@ struct VacuumToggle: View {
 
     var body: some View {
         Toggle(
-            "Vacuum",
+            "Suction",
             isOn: Binding(
                 get: { model.vacuumOn },
                 set: { on in
@@ -15,6 +15,6 @@ struct VacuumToggle: View {
             )
         )
         .disabled(!model.isConnected)
-        .accessibilityLabel("Vacuum")
+        .accessibilityLabel("Suction")
     }
 }

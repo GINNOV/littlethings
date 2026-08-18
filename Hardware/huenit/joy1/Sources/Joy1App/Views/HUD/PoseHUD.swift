@@ -5,38 +5,45 @@ struct PoseHUD: View {
     let pose: ArmPose?
 
     var body: some View {
-        Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 6) {
-            GridRow {
-                labeled("X", pose?.cartesian.x)
-                labeled("Y", pose?.cartesian.y)
-                labeled("Z", pose?.cartesian.z)
-                labeled("E", pose?.e)
+        PendantCard(title: "Status") {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Coordinate")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 6) {
+                    GridRow {
+                        labeled("x", pose?.cartesian.x, "mm")
+                        labeled("y", pose?.cartesian.y, "mm")
+                    }
+                    GridRow {
+                        labeled("z", pose?.cartesian.z, "mm")
+                        labeled("e", pose?.e, "°")
+                    }
+                }
+                if pose?.isStale == true {
+                    Text("Stale")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
             }
-            GridRow {
-                labeled("A", pose?.joints.a)
-                labeled("B", pose?.joints.b)
-                labeled("C", pose?.joints.c)
-            }
+            .foregroundStyle(pose?.isStale == true ? .secondary : .primary)
         }
-        .font(.body.monospacedDigit())
-        .foregroundStyle(pose?.isStale == true ? .secondary : .primary)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityText)
     }
 
-    @ViewBuilder
-    private func labeled(_ axis: String, _ value: Double?) -> some View {
-        HStack(spacing: 6) {
-            Text(axis)
+    private func labeled(_ axis: String, _ value: Double?, _ unit: String) -> some View {
+        HStack(spacing: 4) {
+            Text("\(axis):")
                 .foregroundStyle(.secondary)
-            Text(format(value))
-                .gridColumnAlignment(.trailing)
+            Text(format(value) + unit)
+                .font(.body.monospacedDigit())
         }
     }
 
     private func format(_ value: Double?) -> String {
         guard let value else { return "—" }
-        return String(format: "%7.2f", value)
+        return String(format: "%.2f", value)
     }
 
     private var accessibilityText: String {
@@ -47,9 +54,6 @@ struct PoseHUD: View {
             "Y \(format(pose.cartesian.y))",
             "Z \(format(pose.cartesian.z))",
             "E \(format(pose.e))",
-            "A \(format(pose.joints.a))",
-            "B \(format(pose.joints.b))",
-            "C \(format(pose.joints.c))",
         ].joined(separator: " ")
     }
 }
