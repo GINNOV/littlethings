@@ -10,7 +10,11 @@ let package = Package(
     ],
     targets: [
         .target(name: "Joy1"),
-        .executableTarget(name: "Joy1App", dependencies: ["Joy1"]),
+        .executableTarget(
+            name: "Joy1App",
+            dependencies: ["Joy1"],
+            exclude: ["App/Joy1App.entitlements"]
+        ),
         .testTarget(name: "Joy1Tests", dependencies: ["Joy1"]),
     ]
 )
