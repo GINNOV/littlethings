@@ -9,7 +9,7 @@ struct StickCheatsheet: View {
             Text("Keep the stick held. The arm moves for as long as you point. Release to stop that direction.")
                 .foregroundStyle(.secondary)
 
-            cheatsheetRow("Stick", "Slide the cup on the table (X / Y). Away is Y+, right is X+.")
+            cheatsheetRow("Stick", "Slide the cup on the table (X / Y). Away is Y+. Stick right is X−, stick left is X+.")
             cheatsheetRow("Hold left fire", "Stick is now height and cup twist: forward/back = Z, left/right = angle.")
             cheatsheetRow("Right fire", "Suction on or off (one press).")
             cheatsheetRow("Both fires", "Still just suction plus Z/angle mode. Nothing extra.")

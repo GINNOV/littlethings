@@ -40,13 +40,13 @@ public struct JoystickMapper: Sendable {
         switch d {
         case .center: JogVector(dx: 0, dy: 0, dz: 0, de: 0)
         case .n: JogVector(dx: 0, dy: 1, dz: 0, de: 0)
-        case .ne: JogVector(dx: 1, dy: 1, dz: 0, de: 0)
-        case .e: JogVector(dx: 1, dy: 0, dz: 0, de: 0)
-        case .se: JogVector(dx: 1, dy: -1, dz: 0, de: 0)
+        case .ne: JogVector(dx: -1, dy: 1, dz: 0, de: 0)
+        case .e: JogVector(dx: -1, dy: 0, dz: 0, de: 0)
+        case .se: JogVector(dx: -1, dy: -1, dz: 0, de: 0)
         case .s: JogVector(dx: 0, dy: -1, dz: 0, de: 0)
-        case .sw: JogVector(dx: -1, dy: -1, dz: 0, de: 0)
-        case .w: JogVector(dx: -1, dy: 0, dz: 0, de: 0)
-        case .nw: JogVector(dx: -1, dy: 1, dz: 0, de: 0)
+        case .sw: JogVector(dx: 1, dy: -1, dz: 0, de: 0)
+        case .w: JogVector(dx: 1, dy: 0, dz: 0, de: 0)
+        case .nw: JogVector(dx: 1, dy: 1, dz: 0, de: 0)
         }
     }
 

@@ -21,10 +21,10 @@ struct LiveStickTests {
             await arm.disconnect()
             return
         }
-        #expect(vector.dx == 1)
-        try await arm.step(dx: 1, dy: 0, dz: 0, feedMmPerMin: 300)
+        #expect(vector.dx == -1)
+        try await arm.step(dx: Double(vector.dx), dy: 0, dz: 0, feedMmPerMin: 300)
         try await arm.flush()
-        try await arm.step(dx: -1, dy: 0, dz: 0, feedMmPerMin: 300)
+        try await arm.step(dx: Double(-vector.dx), dy: 0, dz: 0, feedMmPerMin: 300)
         try await arm.flush()
         let after = try await arm.queryPose()
         #expect(abs(after.cartesian.x - before.cartesian.x) < 2)
