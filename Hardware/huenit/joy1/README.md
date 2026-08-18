@@ -2,7 +2,7 @@
 
 A macOS controller for a HUENIT robotic arm with a suction cup. Connect over USB, jog in X/Y/Z, set home, turn suction on and off, and rotate the cup.
 
-![Joy1 window with labels for each control](docs/joy1-guide.png)
+![Joy1 window with labels for each control](joy1-guide.png)
 
 ## Requirements
 
