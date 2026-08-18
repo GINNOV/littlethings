@@ -8,17 +8,17 @@ struct SpeedSlider: View {
         VStack(alignment: .leading, spacing: 6) {
             Slider(
                 value: Binding(
-                    get: { model.speedMmPerSec },
-                    set: { model.setSpeed($0) }
+                    get: { model.labSpeed },
+                    set: { model.setLabSpeed($0) }
                 ),
-                in: 1...80,
+                in: 1...400,
                 step: 1
             ) {
                 Text("Speed")
             } minimumValueLabel: {
                 Text("1")
             } maximumValueLabel: {
-                Text("80")
+                Text("400")
             }
             Text(speedCaption)
                 .font(.caption.monospacedDigit())
@@ -30,7 +30,6 @@ struct SpeedSlider: View {
     }
 
     private var speedCaption: String {
-        let value = model.speedMmPerSec
-        return String(format: "%.0f mm/s   %.0f °/s", value, value)
+        String(format: "Lab %.0f   F %.0f mm/min", model.labSpeed, model.feedMmPerMin)
     }
 }

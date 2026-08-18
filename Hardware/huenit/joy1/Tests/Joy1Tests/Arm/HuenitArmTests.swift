@@ -175,15 +175,18 @@ struct HuenitArmTests {
         await serial.setReplies([
             "X:-0.12 Y:233.81 Z:3.15\nok\n",
             "A:164.97 B:60.73 C:31.64\nok\n",
+            "X:-0.12 Y:233.81 Z:3.15 E:240.00 current_module:0 module_status:0 motor_status:1\nok\n",
         ])
         let arm = HuenitArm(transport: serial, settleAfterOpen: .zero)
         await arm.forceConnectedForTests()
         let pose = try await arm.queryPose()
         #expect(abs(pose.cartesian.y - 233.81) < 0.001)
         #expect(abs(pose.joints.a - 164.97) < 0.001)
+        #expect(abs(pose.e - 240) < 0.001)
+        #expect(pose.motorStatus == 1)
         #expect(pose.isStale == false)
         let written = await serial.written
-        #expect(written == ["M1008 A3", "M1008 A2"])
+        #expect(written == ["M1008 A3", "M1008 A2", "M114"])
     }
 
     @Test func vacuumCommands() async throws {
@@ -247,6 +250,57 @@ struct HuenitArmTests {
         await arm.forceConnectedForTests()
         try await arm.stop()
         #expect(await serial.written == ["M1400 A0", "M410"])
+    }
+
+    @Test func homeSendsAbsoluteOfficialHomeThenRelative() async throws {
+        let serial = FakeSerial()
+        await serial.setReplies(["ok\n", "ok\n", "ok\n", "ok\n"])
+        let arm = HuenitArm(transport: serial, settleAfterOpen: .zero)
+        await arm.forceConnectedForTests()
+        try await arm.home(feedMmPerMin: 600)
+        #expect(await serial.written == [
+            "G90",
+            "G1 X0.0000 Y180.0000 Z0.0000 F600.0",
+            "M400",
+            "G91",
+        ])
+    }
+
+    @Test func setZ0SendsAbsoluteZThenRelative() async throws {
+        let serial = FakeSerial()
+        await serial.setReplies(["ok\n", "ok\n", "ok\n", "ok\n"])
+        let arm = HuenitArm(transport: serial, settleAfterOpen: .zero)
+        await arm.forceConnectedForTests()
+        try await arm.setZ0(feedMmPerMin: 600)
+        #expect(await serial.written == ["G90", "G1 Z0.0000 F600.0", "M400", "G91"])
+    }
+
+    @Test func stepSendsCombinedRelativeG1() async throws {
+        let serial = FakeSerial()
+        await serial.setReplies(["ok\n"])
+        let arm = HuenitArm(transport: serial, settleAfterOpen: .zero)
+        await arm.forceConnectedForTests()
+        try await arm.step(dx: 10, dy: 10, dz: 0, feedMmPerMin: 600)
+        #expect(await serial.written == ["G1 X10.0000 Y10.0000 F600.0"])
+    }
+
+    @Test func jogModuleSendsE() async throws {
+        let serial = FakeSerial()
+        await serial.setReplies(["ok\n"])
+        let arm = HuenitArm(transport: serial, settleAfterOpen: .zero)
+        await arm.forceConnectedForTests()
+        try await arm.jogModule(delta: 5, feedMmPerMin: 300)
+        #expect(await serial.written == ["G1 E5.0000 F300.0"])
+    }
+
+    @Test func setMotorsOnOff() async throws {
+        let serial = FakeSerial()
+        await serial.setReplies(["ok\n", "ok\n"])
+        let arm = HuenitArm(transport: serial, settleAfterOpen: .zero)
+        await arm.forceConnectedForTests()
+        try await arm.setMotors(true)
+        try await arm.setMotors(false)
+        #expect(await serial.written == ["M17", "M84"])
     }
 
     @Test func disconnectClosesTransport() async {

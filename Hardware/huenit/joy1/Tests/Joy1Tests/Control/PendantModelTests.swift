@@ -14,6 +14,7 @@ struct PendantModelTests {
             "ok\n",
             "X:-0.12 Y:233.81 Z:3.15\nok\n",
             "A:164.97 B:60.73 C:31.64\nok\n",
+            "X:-0.12 Y:233.81 Z:3.15 E:240.00 motor_status:1\nok\n",
             "ok\n",
         ])
         let arm = HuenitArm(transport: serial)
@@ -30,7 +31,7 @@ struct PendantModelTests {
         await model.tickJog(dt: 0.1)
 
         let written = await serial.written
-        #expect(written.prefix(5).elementsEqual(["M115", "G21", "G91", "M1008 A3", "M1008 A2"]))
+        #expect(written.prefix(6).elementsEqual(["M115", "G21", "G91", "M1008 A3", "M1008 A2", "M114"]))
         #expect(written.contains(where: { $0.hasPrefix("G1 X") }))
     }
 
@@ -42,6 +43,7 @@ struct PendantModelTests {
             "ok\n",
             "X:1.00 Y:2.00 Z:3.00\nok\n",
             "A:10.00 B:20.00 C:30.00\nok\n",
+            "X:1.00 Y:2.00 Z:3.00 E:0.00 motor_status:1\nok\n",
             "ok\n",
             "ok\n",
         ])
@@ -68,7 +70,8 @@ struct PendantModelTests {
             "ok\n",
             "X:1.00 Y:2.00 Z:3.00\nok\n",
             "A:10.00 B:20.00 C:30.00\nok\n",
-        ] + Array(repeating: "ok\n", count: 16))
+            "X:1.00 Y:2.00 Z:3.00 E:0.00 motor_status:1\nok\n",
+        ] + Array(repeating: "ok\n", count: 24))
         let arm = HuenitArm(transport: serial)
         let model = PendantModel(arm: arm, detector: { [] })
         model.makeTransport = { _ in serial }
@@ -102,6 +105,7 @@ struct PendantModelTests {
             "ok\n",
             "X:1.00 Y:2.00 Z:3.00\nok\n",
             "A:10.00 B:20.00 C:30.00\nok\n",
+            "X:1.00 Y:2.00 Z:3.00 E:0.00 motor_status:1\nok\n",
         ])
         let model = PendantModel(arm: HuenitArm(transport: FakeSerial()), detector: { [] })
         let requested = PathBox()
@@ -116,6 +120,29 @@ struct PendantModelTests {
         #expect(requested.value == "/dev/cu.usbserial-selected")
         #expect(model.portPath == "/dev/cu.usbserial-selected")
         #expect(model.isConnected)
+    }
+
+    @Test @MainActor func stepAndHomeSendLabCommands() async throws {
+        let serial = FakeSerial()
+        await serial.setReplies([
+            marlinIdentity(),
+            "ok\n",
+            "ok\n",
+            "X:0.00 Y:180.00 Z:0.00\nok\n",
+            "A:0.00 B:0.00 C:0.00\nok\n",
+            "X:0.00 Y:180.00 Z:0.00 E:0.00 motor_status:1\nok\n",
+        ] + Array(repeating: "ok\n", count: 12))
+        let model = PendantModel(arm: HuenitArm(transport: FakeSerial()), detector: { [] })
+        model.makeTransport = { _ in serial }
+        model.settleAfterOpen = .zero
+        await model.connect(path: "/dev/cu.test")
+        model.setControlMode(.step)
+        model.setStepWidth(10)
+        await model.step(dx: 1, dy: 1, dz: 0)
+        await model.home()
+        let written = await serial.written
+        #expect(written.contains("G1 X10.0000 Y10.0000 F600.0"))
+        #expect(written.contains("G1 X0.0000 Y180.0000 Z0.0000 F600.0"))
     }
 }
 

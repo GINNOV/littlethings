@@ -24,6 +24,8 @@ public struct CartesianPose: Equatable, Sendable {
         self.z = z
     }
 
+    public static let officialHome = CartesianPose(x: 0, y: 180, z: 0)
+
     public static func parseM1008(_ text: String) throws -> CartesianPose {
         try CartesianPose(
             x: parseLabeledNumber(text, key: "X"),
@@ -37,7 +39,7 @@ public struct CartesianPose: Equatable, Sendable {
         case .x: x
         case .y: y
         case .z: z
-        default: nil
+        case .a, .b, .c, .e: nil
         }
     }
 }
@@ -66,7 +68,7 @@ public struct JointPose: Equatable, Sendable {
         case .a: a
         case .b: b
         case .c: c
-        default: nil
+        case .x, .y, .z, .e: nil
         }
     }
 }
@@ -74,12 +76,29 @@ public struct JointPose: Equatable, Sendable {
 public struct ArmPose: Equatable, Sendable {
     public var cartesian: CartesianPose
     public var joints: JointPose
+    /// End-effector / suction rotation from `M114` `E`.
+    public var e: Double
+    public var motorStatus: Int?
     public var isStale: Bool
 
-    public init(cartesian: CartesianPose, joints: JointPose, isStale: Bool = false) {
+    public init(
+        cartesian: CartesianPose,
+        joints: JointPose,
+        e: Double = 0,
+        motorStatus: Int? = nil,
+        isStale: Bool = false
+    ) {
         self.cartesian = cartesian
         self.joints = joints
+        self.e = e
+        self.motorStatus = motorStatus
         self.isStale = isStale
+    }
+
+    public static func parseM114Extras(_ text: String) -> (e: Double, motorStatus: Int?) {
+        let e = (try? parseLabeledNumber(text, key: "E")) ?? 0
+        let motor = try? parseLabeledNumber(text, key: "motor_status")
+        return (e, motor.map { Int($0) })
     }
 }
 
@@ -95,10 +114,14 @@ public struct FirmwareIdentity: Equatable, Sendable {
 }
 
 public enum Axis: String, Sendable, CaseIterable {
-    case x, y, z, a, b, c
+    case x, y, z, a, b, c, e
 
     public var isCartesian: Bool {
         self == .x || self == .y || self == .z
+    }
+
+    public var isModule: Bool {
+        self == .e
     }
 
     public var gcodeLetter: String {
@@ -109,4 +132,9 @@ public enum Axis: String, Sendable, CaseIterable {
 public enum Sign: Int, Sendable {
     case neg = -1
     case pos = 1
+}
+
+public enum ControlMode: String, Sendable, CaseIterable {
+    case hold
+    case step
 }

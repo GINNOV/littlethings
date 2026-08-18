@@ -9,7 +9,14 @@ public final class PendantModel {
     public private(set) var lastError: String?
     public private(set) var pose: ArmPose?
     public private(set) var vacuumOn = false
+    public private(set) var motorsOn = true
     public private(set) var speedMmPerSec: Double = 20
+    public private(set) var labSpeed: Double = 100
+    public private(set) var stepWidthMm: Double = 1
+    public private(set) var controlMode: ControlMode = .step
+    public var targetX: Double = CartesianPose.officialHome.x
+    public var targetY: Double = CartesianPose.officialHome.y
+    public var targetZ: Double = CartesianPose.officialHome.z
     public private(set) var held: [Axis: Sign] = [:]
     public private(set) var candidates: [SerialCandidate] = []
 
@@ -102,6 +109,24 @@ public final class PendantModel {
         engine.speedDegPerSec = mmPerSec
     }
 
+    public func setLabSpeed(_ value: Double) {
+        labSpeed = min(400, max(1, value))
+        setSpeed(labSpeed / 5)
+    }
+
+    public func setStepWidth(_ mm: Double) {
+        stepWidthMm = mm
+    }
+
+    public func setControlMode(_ mode: ControlMode) {
+        clearHolds()
+        controlMode = mode
+    }
+
+    public var feedMmPerMin: Double {
+        labSpeed * 6
+    }
+
     public func setVacuum(_ on: Bool) async {
         do {
             try await arm.setVacuum(on)
@@ -125,6 +150,8 @@ public final class PendantModel {
                         deltaMm: step.delta,
                         feedMmPerMin: step.feedMmPerMin
                     )
+                } else if step.axis.isModule {
+                    try await arm.jogModule(delta: step.delta, feedMmPerMin: step.feedMmPerMin)
                 } else {
                     try await arm.jogJoint(
                         axis: step.axis,
@@ -181,6 +208,67 @@ public final class PendantModel {
         vacuumOn = false
         do {
             try await arm.stop()
+            motorsOn = false
+        } catch {
+            lastError = describe(error)
+        }
+    }
+
+    public func setMotors(_ on: Bool) async {
+        guard isConnected else { return }
+        do {
+            try await arm.setMotors(on)
+            motorsOn = on
+        } catch {
+            lastError = describe(error)
+        }
+    }
+
+    public func step(dx: Double, dy: Double, dz: Double) async {
+        guard isConnected, controlMode == .step else { return }
+        do {
+            try await arm.step(
+                dx: dx * stepWidthMm,
+                dy: dy * stepWidthMm,
+                dz: dz * stepWidthMm,
+                feedMmPerMin: feedMmPerMin
+            )
+        } catch {
+            lastError = describe(error)
+        }
+    }
+
+    public func home() async {
+        guard isConnected else { return }
+        do {
+            try await arm.home(feedMmPerMin: feedMmPerMin)
+        } catch {
+            lastError = describe(error)
+        }
+    }
+
+    public func zeroZ() async {
+        guard isConnected else { return }
+        do {
+            try await arm.setZ0(feedMmPerMin: feedMmPerMin)
+        } catch {
+            lastError = describe(error)
+        }
+    }
+
+    public func moveToTarget() async {
+        guard isConnected else { return }
+        do {
+            try await arm.moveAbsolute(x: targetX, y: targetY, z: targetZ, feedMmPerMin: feedMmPerMin)
+        } catch {
+            lastError = describe(error)
+        }
+    }
+
+    public func jogModule(sign: Sign) async {
+        guard isConnected else { return }
+        do {
+            try await arm.jogModule(delta: Double(sign.rawValue) * stepWidthMm, feedMmPerMin: feedMmPerMin)
         } catch {
             lastError = describe(error)
         }

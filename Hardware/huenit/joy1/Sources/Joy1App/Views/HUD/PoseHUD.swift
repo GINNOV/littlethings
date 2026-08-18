@@ -10,6 +10,7 @@ struct PoseHUD: View {
                 labeled("X", pose?.cartesian.x)
                 labeled("Y", pose?.cartesian.y)
                 labeled("Z", pose?.cartesian.z)
+                labeled("E", pose?.e)
             }
             GridRow {
                 labeled("A", pose?.joints.a)
@@ -45,6 +46,7 @@ struct PoseHUD: View {
             "X \(format(pose.cartesian.x))",
             "Y \(format(pose.cartesian.y))",
             "Z \(format(pose.cartesian.z))",
+            "E \(format(pose.e))",
             "A \(format(pose.joints.a))",
             "B \(format(pose.joints.b))",
             "C \(format(pose.joints.c))",
