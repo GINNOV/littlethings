@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Joy1 🤖 — Native macOS controller for HUENIT robotic arm with suction cup tool module." />
+    <title>Joy1 🤖 — HUENIT Robot Controller for macOS</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet" />
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              display: ['Outfit', 'sans-serif'],
+            },
+          },
+        },
+      }
+    </script>
+    
+    <style>
+      body {
+        background-color: #09090b;
+        background-image: 
+          radial-gradient(circle at 10% 20%, rgba(6, 182, 212, 0.08) 0%, transparent 45%),
+          radial-gradient(circle at 90% 80%, rgba(99, 102, 241, 0.06) 0%, transparent 45%);
+        background-attachment: fixed;
+      }
+      .glass-card {
+        background: rgba(15, 23, 42, 0.55);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+      }
+    </style>
+  </head>
+  <body class="min-h-screen text-slate-300 font-sans selection:bg-cyan-500/30 selection:text-white">
+
+    <div class="min-h-screen py-10 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-5xl mx-auto">
+
+        <!-- Navigation Header -->
+        <div class="mb-8 flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <a href="{{ "huenit.html" | relURL }}" class="inline-flex items-center text-sm font-semibold text-slate-400 hover:text-cyan-300 transition-colors gap-2 no-underline">
+              <i class="fas fa-arrow-left text-xs"></i> HUENIT Hub
+            </a>
+            <span class="text-slate-600">/</span>
+            <a href="{{ "/" | relURL }}" class="inline-flex items-center text-sm font-medium text-slate-500 hover:text-slate-300 transition-colors no-underline">
+              Workspace Hub
+            </a>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-xs font-mono font-medium text-cyan-300">
+              <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+              SwiftUI · macOS 15+ · USB Serial
+            </span>
+            <a href="https://github.com/GINNOV/littlethings/tree/master/Hardware/huenit/joy1" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 no-underline">
+              <i class="fab fa-github"></i> GitHub Source
+            </a>
+          </div>
+        </div>
+
+        <!-- Hero Card -->
+        <header class="overflow-hidden rounded-3xl border border-cyan-500/20 bg-gradient-to-b from-slate-900/90 via-slate-900/60 to-slate-950/90 shadow-2xl backdrop-blur-xl mb-12 relative">
+          <!-- Ambient lighting effects -->
+          <div class="absolute -top-32 -right-32 w-96 h-96 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none"></div>
+          <div class="absolute -bottom-32 -left-32 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div class="p-8 sm:p-12 relative z-10">
+            <div class="grid lg:grid-cols-12 gap-10 items-center">
+              
+              <!-- Hero Text -->
+              <div class="lg:col-span-7 space-y-6">
+                <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-950/70 border border-cyan-400/30 text-xs font-semibold uppercase tracking-widest text-cyan-300 shadow-inner">
+                  <i class="fas fa-robot text-cyan-400"></i>
+                  <span>Hardware & Robotics Suite</span>
+                </div>
+
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight font-display">
+                  Joy<span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-teal-300 to-indigo-400">1</span> 🤖
+                </h1>
+
+                <p class="text-lg sm:text-xl text-slate-300 leading-relaxed font-normal">
+                  A native macOS controller app for the <strong class="text-white font-semibold">HUENIT robotic arm</strong> equipped with a suction cup tool module. Tactile 3D X/Y/Z jogging, dynamic vacuum pump control, automatic USB serial discovery, and non-destructive homing safety.
+                </p>
+
+                <div class="flex flex-wrap items-center gap-3 pt-2">
+                  <a
+                    href="https://github.com/GINNOV/littlethings/releases?q=joy1"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center justify-center gap-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 active:bg-cyan-600 px-6 py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-500/25 transition-all no-underline"
+                  >
+                    <i class="fas fa-download text-base"></i> Download Joy1 DMG
+                  </a>
+                  <a
+                    href="https://github.com/GINNOV/littlethings/tree/master/Hardware/huenit/joy1"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700/80 bg-slate-900/60 hover:bg-slate-800/80 px-6 py-3.5 text-sm font-semibold text-slate-200 transition hover:border-cyan-400/50 hover:text-cyan-300 no-underline backdrop-blur-sm"
+                  >
+                    <i class="fab fa-github"></i> View Repository
+                  </a>
+                </div>
+
+                <!-- Quick Specs Row -->
+                <div class="grid grid-cols-3 gap-3 pt-4 border-t border-slate-800/80 text-center sm:text-left">
+                  <div>
+                    <span class="block text-[11px] font-mono uppercase tracking-wider text-slate-500">Target Hardware</span>
+                    <span class="text-sm font-semibold text-slate-200">HUENIT Arm</span>
+                  </div>
+                  <div>
+                    <span class="block text-[11px] font-mono uppercase tracking-wider text-slate-500">End Effector</span>
+                    <span class="text-sm font-semibold text-slate-200">Suction Module</span>
+                  </div>
+                  <div>
+                    <span class="block text-[11px] font-mono uppercase tracking-wider text-slate-500">Serial Lookup</span>
+                    <span class="text-sm font-semibold text-cyan-400">HUENIT_HUEARM</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Hero Image & Badge Preview -->
+              <div class="lg:col-span-5 flex flex-col items-center justify-center">
+                <div class="w-full rounded-2xl bg-slate-950/80 border border-slate-800/90 p-4 shadow-2xl backdrop-blur-md relative overflow-hidden group">
+                  <div class="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-indigo-500/5 pointer-events-none"></div>
+                  
+                  <!-- Device header -->
+                  <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-800/60 text-xs font-mono text-slate-400">
+                    <div class="flex items-center gap-2">
+                      <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                      <span class="text-slate-300 font-semibold">Joy1 Control Panel</span>
+                    </div>
+                    <span class="text-[10px] px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-800/50 text-cyan-400">v1.0.0 Live</span>
+                  </div>
+
+                  <!-- Labeled Screenshot -->
+                  <div class="overflow-hidden rounded-lg border border-slate-800 bg-black">
+                    <img
+                      src="{{ "images/huenit/joy1-guide.png" | relURL }}"
+                      alt="Joy1 control window with labeled controls"
+                      class="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-102"
+                    />
+                  </div>
+
+                  <p class="mt-3 text-center text-xs text-slate-400 font-mono">
+                    Interactive control window: Jogging, Suction, Home &amp; Pose entry
+                  </p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </header>
+
+        <!-- Key Features Grid -->
+        <section class="mb-14">
+          <div class="text-center max-w-2xl mx-auto mb-10">
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight font-display">
+              Built for Precision &amp; Hardware Safety
+            </h2>
+            <p class="mt-2 text-slate-400 text-sm">
+              Everything you need to control, pose, and automate your HUENIT arm without risky commands.
+            </p>
+          </div>
+
+          <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            
+            <!-- Feature 1 -->
+            <div class="glass-card rounded-2xl p-6 hover:border-cyan-500/40 transition-all duration-300">
+              <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 mb-4 text-xl">
+                <i class="fas fa-plug"></i>
+              </div>
+              <h3 class="text-lg font-bold text-white mb-2 font-display">USB Auto-Connect</h3>
+              <p class="text-sm text-slate-400 leading-relaxed">
+                Automatically discovers the arm by its hardware identity (<code class="text-cyan-300 text-xs">HUENIT_HUEARM</code>). Immune to macOS serial port path changes when unplugged and replugged.
+              </p>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="glass-card rounded-2xl p-6 hover:border-cyan-500/40 transition-all duration-300">
+              <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 mb-4 text-xl">
+                <i class="fas fa-gamepad"></i>
+              </div>
+              <h3 class="text-lg font-bold text-white mb-2 font-display">3D Jogging &amp; Step Tuning</h3>
+              <p class="text-sm text-slate-400 leading-relaxed">
+                Hold direction buttons for continuous motion or tap for exact micro-steps (<strong class="text-slate-200">0.1 mm</strong>, <strong class="text-slate-200">1 mm</strong>, or <strong class="text-slate-200">10 mm</strong>) across X, Y, and Z axes.
+              </p>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="glass-card rounded-2xl p-6 hover:border-cyan-500/40 transition-all duration-300">
+              <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 mb-4 text-xl">
+                <i class="fas fa-wind"></i>
+              </div>
+              <h3 class="text-lg font-bold text-white mb-2 font-display">Suction Pump &amp; Cup Rotation</h3>
+              <p class="text-sm text-slate-400 leading-relaxed">
+                Full end-effector control: turn suction vacuum ON/OFF, adjust rotation angle (<code class="text-cyan-300 text-xs">E-axis</code>), and pick or release objects seamlessly.
+              </p>
+            </div>
+
+            <!-- Feature 4 -->
+            <div class="glass-card rounded-2xl p-6 hover:border-cyan-500/40 transition-all duration-300">
+              <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 mb-4 text-xl">
+                <i class="fas fa-hand-paper"></i>
+              </div>
+              <h3 class="text-lg font-bold text-white mb-2 font-display">Motor Lock &amp; Free Posing</h3>
+              <p class="text-sm text-slate-400 leading-relaxed">
+                Use <strong class="text-slate-200">Motor Off</strong> to disengage stepper motors, allowing you to move the arm freely by hand to test physical workspace limits, then re-engage with <strong class="text-slate-200">Motor On</strong>.
+              </p>
+            </div>
+
+            <!-- Feature 5 -->
+            <div class="glass-card rounded-2xl p-6 hover:border-red-500/40 transition-all duration-300">
+              <div class="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 mb-4 text-xl">
+                <i class="fas fa-hand-octothorpe"></i>
+              </div>
+              <h3 class="text-lg font-bold text-white mb-2 font-display">Instant Emergency STOP</h3>
+              <p class="text-sm text-slate-400 leading-relaxed">
+                Safety first: press <kbd class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-xs text-slate-300 font-mono">Esc</kbd>, click <strong class="text-red-400">STOP</strong>, or switch away from the app to immediately halt all movement and disengage suction.
+              </p>
+            </div>
+
+            <!-- Feature 6 -->
+            <div class="glass-card rounded-2xl p-6 hover:border-emerald-500/40 transition-all duration-300">
+              <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-4 text-xl">
+                <i class="fas fa-shield-alt"></i>
+              </div>
+              <h3 class="text-lg font-bold text-white mb-2 font-display">Non-Destructive Homing</h3>
+              <p class="text-sm text-slate-400 leading-relaxed">
+                Bypasses dangerous Marlin <code class="text-xs font-mono text-emerald-300">G28</code> commands (which lack limit switches and can crash the arm). Uses official home (<code class="text-xs font-mono text-slate-300">X 0, Y 180, Z 0</code>).
+              </p>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- Quick Start & Setup Section -->
+        <section class="mb-14 rounded-3xl border border-slate-800 bg-slate-900/40 p-8 sm:p-10 backdrop-blur-md">
+          <div class="max-w-3xl">
+            <h2 class="text-2xl font-extrabold text-white tracking-tight mb-4 flex items-center gap-3 font-display">
+              <i class="fas fa-play-circle text-cyan-400"></i> Quick Start &amp; Hardware Connection
+            </h2>
+            
+            <p class="text-slate-300 text-sm mb-6 leading-relaxed">
+              Connect your HUENIT arm to your Mac via USB and run Joy1 directly from source using Swift Package Manager or through Xcode.
+            </p>
+
+            <div class="space-y-4">
+              
+              <div class="rounded-xl border border-slate-800 bg-black/60 p-4 font-mono text-xs text-slate-300">
+                <div class="text-slate-500 mb-2 font-sans font-semibold text-[11px] uppercase tracking-wider">
+                  1. Clone and launch with Swift CLI
+                </div>
+                <div class="space-y-1">
+                  <div class="text-cyan-400"><span class="text-slate-600">$</span> cd Hardware/huenit/joy1</div>
+                  <div class="text-cyan-400"><span class="text-slate-600">$</span> swift run Joy1App</div>
+                </div>
+              </div>
+
+              <div class="rounded-xl border border-slate-800 bg-black/60 p-4 font-mono text-xs text-slate-300">
+                <div class="text-slate-500 mb-2 font-sans font-semibold text-[11px] uppercase tracking-wider">
+                  2. Open in Xcode
+                </div>
+                <div class="text-cyan-400"><span class="text-slate-600">$</span> open Joy1.xcodeproj</div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- Safety Warning Callout -->
+        <div class="rounded-2xl border border-amber-500/20 bg-amber-950/20 p-6 flex items-start gap-4 mb-14 backdrop-blur-md">
+          <div class="text-amber-400 text-2xl flex-shrink-0 mt-0.5">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-amber-200 mb-1 font-display">
+              Safety First · Physical Workspace Clearances
+            </h3>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Always ensure the robotic arm's 360-degree envelope is free of obstructions before powering the steppers. In any unexpected movement, hit <strong class="text-white">Esc</strong> on your keyboard to instantly cut power to the motors and turn off the suction vacuum.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="w-full text-center py-8 border-t border-slate-900/80 bg-slate-950/20 text-xs text-slate-500 font-mono">
+      <div class="max-w-5xl mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <span>© 2026 Dunno Much / Garage Innovation. All rights reserved.</span>
+        <div class="flex items-center gap-4">
+          <a href="{{ "huenit.html" | relURL }}" class="hover:text-slate-400 transition-colors">
+            HUENIT Hub
+          </a>
+          <a href="https://github.com/GINNOV/littlethings" target="_blank" class="hover:text-slate-400 transition-colors">
+            <i class="fab fa-github text-sm"></i> GitHub repo
+          </a>
+        </div>
+      </div>
+    </footer>
+
+  </body>
+</html>

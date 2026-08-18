@@ -129,31 +129,31 @@ body.dark-theme section {
 
 /* Headings */
 h1, h2, h3, h4, h5, h6 {
-    font-family: 'Press Start 2P', cursive;
-    line-height: 1.4;
+    font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.3;
 }
 h1 { 
-    font-size: 1.8rem;
-}
-h2, h3, h4 {
-    margin-top: 2rem;
-    margin-bottom: 1rem;
+    font-size: 2rem;
+    font-weight: 700;
 }
 h2 {
-    color: #004080; 
-    font-size: 1.4rem; 
-    font-weight: bold;
+    font-size: 1.5rem; 
+    font-weight: 700;
 }
 h3 {
-    font-size: 1.1rem;
-    font-weight: bold;
-}
-h4 {
-    font-size: 0.9rem;
+    font-size: 1.25rem;
     font-weight: 600;
 }
-body.dark-theme h2, body.dark-theme h3, body.dark-theme h4 {
-    color: #60A5FA; 
+h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+/* Retro styling scoped exclusively to Amiga sections */
+.projects-list-main .project-card h3,
+.amiga-content h1, .amiga-content h2, .amiga-content h3, .amiga-content h4 {
+    font-family: 'Press Start 2P', cursive;
+    line-height: 1.4;
 }
 
 /* General Links */
