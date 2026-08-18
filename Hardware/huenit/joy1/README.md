@@ -4,6 +4,10 @@ A macOS controller for a HUENIT robotic arm with a suction cup. Connect over USB
 
 ![Joy1 window with labels for each control](joy1-guide.png)
 
+Download the disk image from [Releases](https://github.com/GINNOV/littlethings/releases?q=joy1). Open the `.dmg` and drag **Joy1** to Applications.
+
+See [CHANGELOG.md](CHANGELOG.md) for what changed in each version.
+
 ## Requirements
 
 - macOS 15 or later
