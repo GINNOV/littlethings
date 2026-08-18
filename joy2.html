@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Joy2 🕹️ — macOS Lab pad for HUENIT robotic arms driven by a Speedlink Competition Pro Extra USB joystick." />
+    <title>Joy2 🕹️ — HUENIT Joystick Lab Pad for macOS</title>
+    
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet" />
+    
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              display: ['Outfit', 'sans-serif'],
+            },
+          },
+        },
+      }
+    </script>
+    
+    <style>
+      body {
+        background-color: #09090b;
+        background-image: 
+          radial-gradient(circle at 10% 20%, rgba(6, 182, 212, 0.08) 0%, transparent 45%),
+          radial-gradient(circle at 90% 80%, rgba(99, 102, 241, 0.06) 0%, transparent 45%);
+        background-attachment: fixed;
+      }
+      .glass-card {
+        background: rgba(15, 23, 42, 0.55);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+      }
+    </style>
+  </head>
+  <body class="min-h-screen text-slate-300 font-sans selection:bg-cyan-500/30 selection:text-white">
+
+    <div class="min-h-screen py-10 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-5xl mx-auto">
+
+        
+        <div class="mb-8 flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <a href="/littlethings/huenit.html" class="inline-flex items-center text-sm font-semibold text-slate-400 hover:text-cyan-300 transition-colors gap-2 no-underline">
+              <i class="fas fa-arrow-left text-xs"></i> HUENIT Hub
+            </a>
+            <span class="text-slate-600">/</span>
+            <a href="/" class="inline-flex items-center text-sm font-medium text-slate-500 hover:text-slate-300 transition-colors no-underline">
+              Workspace Hub
+            </a>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-xs font-mono font-medium text-cyan-300">
+              <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+              SwiftUI · macOS 15+ · USB Joystick
+            </span>
+            <a href="https://github.com/GINNOV/littlethings/tree/master/Hardware/huenit/joy2" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 no-underline">
+              <i class="fab fa-github"></i> GitHub Source
+            </a>
+          </div>
+        </div>
+
+        
+        <header class="overflow-hidden rounded-3xl border border-cyan-500/20 bg-gradient-to-b from-slate-900/90 via-slate-900/60 to-slate-950/90 shadow-2xl backdrop-blur-xl mb-12 relative">
+          
+          <div class="absolute -top-32 -right-32 w-96 h-96 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none"></div>
+          <div class="absolute -bottom-32 -left-32 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div class="p-8 sm:p-12 relative z-10">
+            <div class="grid lg:grid-cols-12 gap-10 items-center">
+              
+              
+              <div class="lg:col-span-7 space-y-6">
+                <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-950/70 border border-cyan-400/30 text-xs font-semibold uppercase tracking-widest text-cyan-300 shadow-inner">
+                  <i class="fas fa-gamepad text-cyan-400"></i>
+                  <span>Hardware Lab Controller</span>
+                </div>
+
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight font-display">
+                  Joy<span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-teal-300 to-indigo-400">2</span> 🕹️
+                </h1>
+
+                <p class="text-lg sm:text-xl text-slate-300 leading-relaxed font-normal">
+                  A macOS Lab pad for the <strong class="text-white font-semibold">HUENIT robotic arm</strong>, driven by a <strong class="text-white font-semibold">Speedlink Competition Pro Extra</strong> USB joystick. Continuous X/Y table motion, intuitive Z-elevation & cup angle control, and instant suction toggling.
+                </p>
+
+                <div class="flex flex-wrap items-center gap-3 pt-2">
+                  <a
+                    href="https://github.com/GINNOV/littlethings/releases?q=joy2"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center justify-center gap-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 active:bg-cyan-600 px-6 py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-500/25 transition-all no-underline"
+                  >
+                    <i class="fas fa-download text-base"></i> Download Joy2 DMG
+                  </a>
+                  <a
+                    href="https://github.com/GINNOV/littlethings/tree/master/Hardware/huenit/joy2"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700/80 bg-slate-900/60 hover:bg-slate-800/80 px-6 py-3.5 text-sm font-semibold text-slate-200 transition hover:border-cyan-400/50 hover:text-cyan-300 no-underline backdrop-blur-sm"
+                  >
+                    <i class="fab fa-github"></i> View Repository
+                  </a>
+                </div>
+
+                
+                <div class="grid grid-cols-3 gap-3 pt-4 border-t border-slate-800/80 text-center sm:text-left">
+                  <div>
+                    <span class="block text-[11px] font-mono uppercase tracking-wider text-slate-500">Target Hardware</span>
+                    <span class="text-sm font-semibold text-slate-200">HUENIT Arm</span>
+                  </div>
+                  <div>
+                    <span class="block text-[11px] font-mono uppercase tracking-wider text-slate-500">Input Device</span>
+                    <span class="text-sm font-semibold text-slate-200">Competition Pro</span>
+                  </div>
+                  <div>
+                    <span class="block text-[11px] font-mono uppercase tracking-wider text-slate-500">Suction Mode</span>
+                    <span class="text-sm font-semibold text-cyan-400">M1400 Path</span>
+                  </div>
+                </div>
+              </div>
+
+              
+              <div class="lg:col-span-5 flex flex-col items-center justify-center">
+                <div class="w-full rounded-2xl bg-slate-950/80 border border-slate-800/90 p-4 shadow-2xl backdrop-blur-md relative overflow-hidden group">
+                  <div class="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-indigo-500/5 pointer-events-none"></div>
+                  
+                  
+                  <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-3">
+                    <div class="flex items-center gap-2">
+                      <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
+                      <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+                      <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
+                      <span class="text-xs font-mono text-slate-400 ml-2 font-medium">Joy2 Joystick Mapping</span>
+                    </div>
+                    <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-cyan-950 border border-cyan-500/40 text-cyan-300">
+                      USB HID
+                    </span>
+                  </div>
+
+                  
+                  <div class="overflow-hidden rounded-lg border border-slate-800 bg-black">
+                    <img
+                      src="/littlethings/images/huenit/joy2-mapping.jpg"
+                      alt="Joy2 Speedlink Competition Pro mapping diagram"
+                      class="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-102"
+                    />
+                  </div>
+
+                  <div class="mt-3 flex items-center justify-between text-[11px] text-slate-400 font-mono">
+                    <span>Joystick: X/Y Jogging</span>
+                    <span class="text-cyan-400">Fire: Z & Suction</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </header>
+
+        
+        <section class="mb-16">
+          <div class="text-center max-w-2xl mx-auto mb-10">
+            <h2 class="text-2xl sm:text-3xl font-bold text-white font-display mb-3">
+              Precision Physical Control for HUENIT
+            </h2>
+            <p class="text-slate-400 text-sm sm:text-base">
+              Turn a classic arcade joystick into a fast, tactile laboratory pad for continuous robotic arm manipulation.
+            </p>
+          </div>
+
+          <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            
+            <div class="glass-card rounded-2xl p-6 hover:border-cyan-500/30 transition-all group">
+              <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 mb-4 group-hover:scale-110 transition-transform">
+                <i class="fas fa-arrows-alt text-xl"></i>
+              </div>
+              <h3 class="text-lg font-bold text-white font-display mb-2">Continuous X/Y Table Jogging</h3>
+              <p class="text-sm text-slate-400 leading-relaxed">
+                Hold the joystick in any direction to smoothly traverse the Cartesian table workspace with continuous jog commands.
+              </p>
+            </div>
+
+            
+            <div class="glass-card rounded-2xl p-6 hover:border-cyan-500/30 transition-all group">
+              <div class="w-12 h-12 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400 mb-4 group-hover:scale-110 transition-transform">
+                <i class="fas fa-angle-double-up text-xl"></i>
+              </div>
+              <h3 class="text-lg font-bold text-white font-display mb-2">Z-Elevation & Wrist Pitch</h3>
+              <p class="text-sm text-slate-400 leading-relaxed">
+                Hold the left fire button to switch the stick to Z-axis height (forward/back) and suction cup pitch angle (left/right).
+              </p>
+            </div>
+
+            
+            <div class="glass-card rounded-2xl p-6 hover:border-cyan-500/30 transition-all group">
+              <div class="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-4 group-hover:scale-110 transition-transform">
+                <i class="fas fa-wind text-xl"></i>
+              </div>
+              <h3 class="text-lg font-bold text-white font-display mb-2">Instant Suction Toggle</h3>
+              <p class="text-sm text-slate-400 leading-relaxed">
+                Tap the right fire button to instantaneously engage or release vacuum suction via the tested <code class="text-indigo-300 font-mono text-xs">M1400</code> tool protocol.
+              </p>
+            </div>
+
+            
+            <div class="glass-card rounded-2xl p-6 hover:border-cyan-500/30 transition-all group">
+              <div class="w-12 h-12 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 mb-4 group-hover:scale-110 transition-transform">
+                <i class="fas fa-th text-xl"></i>
+              </div>
+              <h3 class="text-lg font-bold text-white font-display mb-2">Interactive Visual Pad</h3>
+              <p class="text-sm text-slate-400 leading-relaxed">
+                The macOS user interface dynamically lights up the active matrix cells corresponding to the real-time joystick deflection.
+              </p>
+            </div>
+
+            
+            <div class="glass-card rounded-2xl p-6 hover:border-cyan-500/30 transition-all group">
+              <div class="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 mb-4 group-hover:scale-110 transition-transform">
+                <i class="fas fa-shield-alt text-xl"></i>
+              </div>
+              <h3 class="text-lg font-bold text-white font-display mb-2">Hardware-Safe Motion</h3>
+              <p class="text-sm text-slate-400 leading-relaxed">
+                Instant emergency stop via STOP button, <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-[10px] font-mono">Esc</kbd> key, or window blur. Zero collision risk by omitting destructive <code class="text-purple-300 font-mono text-xs">G28</code> commands.
+              </p>
+            </div>
+
+            
+            <div class="glass-card rounded-2xl p-6 hover:border-cyan-500/30 transition-all group">
+              <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 mb-4 group-hover:scale-110 transition-transform">
+                <i class="fas fa-info-circle text-xl"></i>
+              </div>
+              <h3 class="text-lg font-bold text-white font-display mb-2">Built-in Cheatsheet</h3>
+              <p class="text-sm text-slate-400 leading-relaxed">
+                Access a labeled photo overlay anytime directly inside the app to inspect stick mapping, axes, and button configurations.
+              </p>
+            </div>
+
+          </div>
+        </section>
+
+        
+        <section class="glass-card rounded-3xl p-8 sm:p-10 mb-16 relative overflow-hidden">
+          <div class="max-w-3xl">
+            <h2 class="text-2xl sm:text-3xl font-bold text-white font-display mb-4">
+              Quick Start & Running Joy2
+            </h2>
+            <p class="text-slate-400 text-sm sm:text-base mb-6 leading-relaxed">
+              Launch Joy2 from the pre-built application bundle or run directly from the Swift Package:
+            </p>
+
+            <div class="space-y-4">
+              <div class="bg-slate-950 rounded-xl p-4 border border-slate-800 font-mono text-sm">
+                <div class="text-xs text-slate-500 mb-2"># Open in Xcode</div>
+                <div class="text-cyan-300">open Hardware/huenit/joy2/Joy2.xcodeproj</div>
+              </div>
+
+              <div class="bg-slate-950 rounded-xl p-4 border border-slate-800 font-mono text-sm">
+                <div class="text-xs text-slate-500 mb-2"># Run from CLI</div>
+                <div class="text-cyan-300">cd Hardware/huenit/joy2 && swift run Joy2App</div>
+              </div>
+            </div>
+
+            <div class="mt-6 flex items-center gap-2 text-xs text-slate-400 font-mono">
+              <i class="fas fa-plug text-cyan-400"></i>
+              <span>Requires HUENIT USB-C connection (<code class="text-cyan-300">HUENIT_HUEARM</code>) and Speedlink Competition Pro Extra USB joystick.</span>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    
+    <footer class="w-full text-center py-8 border-t border-slate-900/80 bg-slate-950/20 text-xs text-slate-500 font-mono">
+      <div class="max-w-5xl mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <span>© 2026 Dunno Much / Garage Innovation. All rights reserved.</span>
+        <div class="flex items-center gap-4">
+          <a href="/littlethings/huenit.html" class="hover:text-cyan-400 transition-colors">
+            HUENIT Robotics Hub
+          </a>
+          <span class="text-slate-700">·</span>
+          <a href="/" class="hover:text-slate-400 transition-colors">
+            Workspace Hub
+          </a>
+          <span class="text-slate-700">·</span>
+          <a href="https://github.com/GINNOV/littlethings" target="_blank" class="hover:text-slate-400 transition-colors">
+            <i class="fab fa-github text-sm"></i> GitHub repo
+          </a>
+        </div>
+      </div>
+    </footer>
+
+  </body>
+</html>

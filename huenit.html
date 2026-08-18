@@ -55,11 +55,11 @@
   <body class="min-h-screen text-slate-300 font-sans selection:bg-cyan-500/30 selection:text-white flex flex-col justify-between">
 
     
-    <main class="w-full max-w-5xl mx-auto px-6 py-12 flex-grow flex flex-col justify-center">
+    <main class="w-full max-w-6xl mx-auto px-6 py-12 flex-grow flex flex-col justify-center">
 
       
       <div class="mb-10 flex items-center justify-between">
-        <a href="/" class="inline-flex items-center text-sm font-semibold text-slate-400 hover:text-white transition-colors gap-2 no-underline">
+        <a href="https://ginnov.github.io/" class="inline-flex items-center text-sm font-semibold text-slate-400 hover:text-white transition-colors gap-2 no-underline">
           <i class="fas fa-arrow-left text-xs"></i> Back to Workspace Hub
         </a>
         <span class="text-xs font-mono px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">
@@ -82,10 +82,10 @@
       </header>
 
       
-      <section class="grid gap-8 md:grid-cols-2 mb-12">
+      <section class="grid gap-8 md:grid-cols-2 lg:grid-cols-3 mb-12">
 
         
-        <article class="glass-card rounded-2xl p-8 flex flex-col justify-between group" id="app-joy1">
+        <article class="glass-card rounded-2xl p-6 flex flex-col justify-between group" id="app-joy1">
           <div>
             <div class="aspect-video w-full overflow-hidden rounded-xl bg-slate-950 border border-slate-800/80 mb-6 relative">
               <img
@@ -107,7 +107,7 @@
               </span>
             </div>
 
-            <h2 class="text-2xl font-bold text-white font-display mb-2">
+            <h2 class="text-xl font-bold text-white font-display mb-2">
               Joy1 🤖 Controller
             </h2>
             <p class="text-sm text-slate-400 leading-relaxed">
@@ -115,46 +115,90 @@
             </p>
           </div>
 
-          <div class="mt-8 pt-5 border-t border-slate-800/60 flex items-center justify-between text-xs">
+          <div class="mt-6 pt-4 border-t border-slate-800/60 flex items-center justify-between text-xs">
             <a href="https://github.com/GINNOV/littlethings/tree/master/Hardware/huenit/joy1" target="_blank" rel="noopener noreferrer" class="text-slate-500 hover:text-slate-400 font-mono flex items-center gap-1 transition-all">
-              <i class="fab fa-github"></i> GINNOV/joy1
+              <i class="fab fa-github"></i> joy1
             </a>
-            <a href="/littlethings/joy1.html" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-slate-950 bg-cyan-400 hover:bg-cyan-300 active:bg-cyan-500 transition-all shadow-md shadow-cyan-900/30 no-underline">
-              Open Product Page <i class="fas fa-arrow-right text-xs"></i>
+            <a href="/littlethings/joy1.html" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-semibold text-slate-950 bg-cyan-400 hover:bg-cyan-300 active:bg-cyan-500 transition-all shadow-md shadow-cyan-900/30 no-underline">
+              Product Page <i class="fas fa-arrow-right text-[10px]"></i>
             </a>
           </div>
         </article>
 
         
-        <article class="glass-card rounded-2xl p-8 flex flex-col justify-between group opacity-85" id="app-joy2">
+        <article class="glass-card rounded-2xl p-6 flex flex-col justify-between group" id="app-joy2">
           <div>
-            <div class="aspect-video w-full overflow-hidden rounded-xl bg-slate-950/60 border border-slate-800/80 mb-6 flex flex-col items-center justify-center text-center p-6">
-              <div class="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-3 text-2xl">
-                <i class="fas fa-layer-group"></i>
+            <div class="aspect-video w-full overflow-hidden rounded-xl bg-slate-950 border border-slate-800/80 mb-6 relative">
+              <img
+                src="/littlethings/images/huenit/joy2-mapping.jpg"
+                alt="Joy2 Speedlink Competition Pro Joystick Controller"
+                class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              <div class="absolute top-3 right-3 px-2.5 py-1 rounded-md bg-slate-950/80 border border-cyan-500/30 text-[10px] font-mono font-semibold text-cyan-300 backdrop-blur-sm">
+                v1.0.0 Live
               </div>
-              <span class="text-xs font-mono text-indigo-300 font-semibold uppercase tracking-wider">In Active Research</span>
+            </div>
+
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+                <i class="fas fa-gamepad text-lg"></i>
+              </div>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                macOS 15+
+              </span>
+            </div>
+
+            <h2 class="text-xl font-bold text-white font-display mb-2">
+              Joy2 🕹️ Joystick Pad
+            </h2>
+            <p class="text-sm text-slate-400 leading-relaxed">
+              macOS Lab pad driving HUENIT from a Speedlink Competition Pro Extra USB joystick. Continuous X/Y table motion, Z-elevation & cup angle pitch via left fire, and instant suction toggling.
+            </p>
+          </div>
+
+          <div class="mt-6 pt-4 border-t border-slate-800/60 flex items-center justify-between text-xs">
+            <a href="https://github.com/GINNOV/littlethings/tree/master/Hardware/huenit/joy2" target="_blank" rel="noopener noreferrer" class="text-slate-500 hover:text-slate-400 font-mono flex items-center gap-1 transition-all">
+              <i class="fab fa-github"></i> joy2
+            </a>
+            <a href="/littlethings/joy2.html" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-semibold text-slate-950 bg-cyan-400 hover:bg-cyan-300 active:bg-cyan-500 transition-all shadow-md shadow-cyan-900/30 no-underline">
+              Product Page <i class="fas fa-arrow-right text-[10px]"></i>
+            </a>
+          </div>
+        </article>
+
+        
+        <article class="glass-card rounded-2xl p-6 flex flex-col justify-between group opacity-90" id="app-armageddon">
+          <div>
+            <div class="aspect-video w-full overflow-hidden rounded-xl bg-slate-950/70 border border-slate-800/80 mb-6 flex flex-col items-center justify-center text-center p-6 relative">
+              <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-2 text-xl">
+                <i class="fas fa-brain"></i>
+              </div>
+              <span class="text-[11px] font-mono text-indigo-300 font-semibold uppercase tracking-wider">In Active Research</span>
+              <div class="absolute top-3 right-3 px-2 py-0.5 rounded-md bg-slate-900/80 border border-indigo-500/30 text-[10px] font-mono text-indigo-300 backdrop-blur-sm">
+                Research
+              </div>
             </div>
 
             <div class="flex items-center justify-between mb-3">
               <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
-                <i class="fas fa-microchip text-lg"></i>
+                <i class="fas fa-layer-group text-lg"></i>
               </div>
               <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                Planned
+                Active Research
               </span>
             </div>
 
-            <h2 class="text-2xl font-bold text-white font-display mb-2">
-              Joy2 · Multi-Tool &amp; Sequences
+            <h2 class="text-xl font-bold text-white font-display mb-2">
+              Arm-ageddon 🦾 Suite
             </h2>
             <p class="text-sm text-slate-400 leading-relaxed">
-              Next-generation trajectory sequencer and multi-effector manager for laser engraving, 3D printing, and automated pick-and-place routines.
+              Native Swift controller & intelligence suite for HUENIT robotic arms. Dependable USB serial control on macOS, Cartesian kinematics, workspace safety envelopes, and vision-guided automation.
             </p>
           </div>
 
-          <div class="mt-8 pt-5 border-t border-slate-800/60 flex items-center justify-between text-xs font-mono">
-            <span class="text-slate-500">Hardware/huenit/joy2</span>
-            <span class="text-slate-500 italic">Coming Soon</span>
+          <div class="mt-6 pt-4 border-t border-slate-800/60 flex items-center justify-between text-xs font-mono">
+            <span class="text-slate-500">Hardware/huenit/arm-ageddon</span>
+            <span class="text-indigo-400 font-semibold">Active Research</span>
           </div>
         </article>
 
@@ -164,12 +208,13 @@
 
     
     <footer class="w-full text-center py-8 border-t border-slate-900/80 bg-slate-950/20 text-xs text-slate-500 font-mono">
-      <div class="max-w-5xl mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div class="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-4">
         <span>© 2026 Dunno Much / Garage Innovation. All rights reserved.</span>
         <div class="flex items-center gap-4">
-          <a href="/" class="hover:text-slate-400 transition-colors">
+          <a href="https://ginnov.github.io/" class="hover:text-slate-400 transition-colors">
             Workspace Hub
           </a>
+          <span class="text-slate-700">·</span>
           <a href="https://github.com/GINNOV/littlethings" target="_blank" class="hover:text-slate-400 transition-colors">
             <i class="fab fa-github text-sm"></i> GitHub repo
           </a>
