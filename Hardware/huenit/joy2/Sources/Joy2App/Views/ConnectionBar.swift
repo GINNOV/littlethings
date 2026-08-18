@@ -3,6 +3,7 @@ import SwiftUI
 
 struct ConnectionBar: View {
     @Bindable var model: PilotModel
+    @Binding var showCheatsheet: Bool
 
     private var pendant: PendantModel { model.pendant }
 
@@ -22,21 +23,22 @@ struct ConnectionBar: View {
                     )
                 }
 
-                HStack {
-                    Text("Motor")
-                        .foregroundStyle(.secondary)
-                    Picker("Motor", selection: Binding(
-                        get: { pendant.motorsOn },
-                        set: { on in Task { await pendant.setMotors(on) } }
-                    )) {
-                        Text("On").tag(true)
-                        Text("Off").tag(false)
+                if pendant.isConnected {
+                    HStack {
+                        Text("Motor")
+                            .foregroundStyle(.secondary)
+                        Picker("Motor", selection: Binding(
+                            get: { pendant.motorsOn },
+                            set: { on in Task { await pendant.setMotors(on) } }
+                        )) {
+                            Text("On").tag(true)
+                            Text("Off").tag(false)
+                        }
+                        .pickerStyle(.segmented)
+                        .frame(maxWidth: 160)
+                        .labelsHidden()
+                        .accessibilityLabel("Motors")
                     }
-                    .pickerStyle(.segmented)
-                    .frame(maxWidth: 160)
-                    .disabled(!pendant.isConnected)
-                    .labelsHidden()
-                    .accessibilityLabel("Motors")
                 }
 
                 HStack(spacing: 8) {
@@ -51,6 +53,7 @@ struct ConnectionBar: View {
                     }
                     .buttonStyle(.borderedProminent)
                     Button("Rescan") { pendant.refreshPorts() }
+                    Button("How the stick works") { showCheatsheet = true }
                     Spacer(minLength: 0)
                     Circle()
                         .fill(pendant.isConnected ? PendantChrome.connected : Color.secondary.opacity(0.35))

@@ -4,7 +4,7 @@ macOS Lab pad for a HUENIT arm, driven by a Speedlink Competition Pro Extra joys
 
 ## Stick
 
-- Stick: X/Y on the table
+- Stick: hold to keep moving in X/Y on the table
 - Hold left fire: stick is Z (forward/back) and cup angle (left/right)
 - Right fire: suction on/off
 - The pad lights the cell that is active
