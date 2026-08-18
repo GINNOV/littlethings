@@ -95,6 +95,30 @@ struct PendantModelTests {
         #expect(!model.isConnected)
         try await Task.sleep(for: .milliseconds(80))
         #expect(!model.isConnected)
+        #expect(model.lastError?.contains("CancellationError") != true)
+    }
+
+    @Test @MainActor func disconnectClearsLastError() async throws {
+        let serial = FakeSerial()
+        await serial.setReplies([
+            marlinIdentity(),
+            "ok\n",
+            "ok\n",
+            "X:1.00 Y:2.00 Z:3.00\nok\n",
+            "A:10.00 B:20.00 C:30.00\nok\n",
+            "X:1.00 Y:2.00 Z:3.00 E:0.00 motor_status:1\nok\n",
+            "ok\n",
+            "ok\n",
+        ])
+        let arm = HuenitArm(transport: serial)
+        let model = PendantModel(arm: arm, detector: { [] })
+        model.makeTransport = { _ in serial }
+        model.settleAfterOpen = .zero
+        await model.connect(path: "/dev/cu.usbserial-test")
+        #expect(model.isConnected)
+        await model.disconnect()
+        #expect(!model.isConnected)
+        #expect(model.lastError == nil)
     }
 
     @Test @MainActor func connectCallsMakeTransportWithSelectedPath() async throws {

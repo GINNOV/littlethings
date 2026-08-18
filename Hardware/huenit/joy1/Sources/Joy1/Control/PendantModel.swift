@@ -94,6 +94,7 @@ public final class PendantModel {
         await monitor.stop()
         await arm.disconnect()
         isConnected = false
+        lastError = nil
     }
 
     public func setHeld(_ axis: Axis, _ sign: Sign, down: Bool) {
@@ -135,7 +136,7 @@ public final class PendantModel {
             try await arm.setVacuum(on)
             vacuumOn = on
         } catch {
-            lastError = describe(error)
+            record(error)
             if isTimeout(error) {
                 isConnected = false
             }
@@ -164,7 +165,7 @@ public final class PendantModel {
                 }
             } catch {
                 clearHolds()
-                lastError = describe(error)
+                record(error)
                 if isTimeout(error) {
                     isConnected = false
                 }
@@ -177,7 +178,7 @@ public final class PendantModel {
                 engine.didFlush()
             } catch {
                 clearHolds()
-                lastError = describe(error)
+                record(error)
                 if isTimeout(error) {
                     isConnected = false
                 }
@@ -213,7 +214,7 @@ public final class PendantModel {
             try await arm.stop()
             motorsOn = false
         } catch {
-            lastError = describe(error)
+            record(error)
         }
     }
 
@@ -223,7 +224,7 @@ public final class PendantModel {
             try await arm.setMotors(on)
             motorsOn = on
         } catch {
-            lastError = describe(error)
+            record(error)
         }
     }
 
@@ -237,7 +238,7 @@ public final class PendantModel {
                 feedMmPerMin: feedMmPerMin
             )
         } catch {
-            lastError = describe(error)
+            record(error)
         }
     }
 
@@ -246,7 +247,7 @@ public final class PendantModel {
         do {
             try await arm.home(feedMmPerMin: feedMmPerMin)
         } catch {
-            lastError = describe(error)
+            record(error)
         }
     }
 
@@ -255,7 +256,7 @@ public final class PendantModel {
         do {
             try await arm.setZ0(feedMmPerMin: feedMmPerMin)
         } catch {
-            lastError = describe(error)
+            record(error)
         }
     }
 
@@ -264,7 +265,7 @@ public final class PendantModel {
         do {
             try await arm.moveAbsolute(x: targetX, y: targetY, z: targetZ, feedMmPerMin: feedMmPerMin)
         } catch {
-            lastError = describe(error)
+            record(error)
         }
     }
 
@@ -273,7 +274,7 @@ public final class PendantModel {
         do {
             try await arm.jogModule(delta: Double(sign.rawValue) * stepWidthMm, feedMmPerMin: feedMmPerMin)
         } catch {
-            lastError = describe(error)
+            record(error)
         }
     }
 
@@ -282,6 +283,7 @@ public final class PendantModel {
         case .success(let pose):
             self.pose = pose
         case .failure(let error):
+            if isIgnored(error) { return }
             markPoseStale(error)
             if isTimeout(error) {
                 isConnected = false
@@ -290,11 +292,12 @@ public final class PendantModel {
     }
 
     private func markPoseStale(_ error: Error) {
+        if isIgnored(error) { return }
         if var current = pose {
             current.isStale = true
             pose = current
         }
-        lastError = describe(error)
+        record(error)
     }
 
     private func clearHolds() {
@@ -304,6 +307,15 @@ public final class PendantModel {
 
     private func isTimeout(_ error: Error) -> Bool {
         (error as? ArmError) == .timeout
+    }
+
+    private func isIgnored(_ error: Error) -> Bool {
+        error is CancellationError
+    }
+
+    private func record(_ error: Error) {
+        guard !isIgnored(error) else { return }
+        lastError = describe(error)
     }
 
     private func describe(_ error: Error) -> String {

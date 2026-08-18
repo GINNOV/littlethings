@@ -23,7 +23,10 @@ public actor PoseMonitor {
                 do {
                     let pose = try await arm.queryPose()
                     await onUpdate(.success(pose))
+                } catch is CancellationError {
+                    break
                 } catch {
+                    if Task.isCancelled { break }
                     await onUpdate(.failure(error))
                 }
             }
