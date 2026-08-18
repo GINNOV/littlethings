@@ -1,69 +1,66 @@
 # Joy1
 
-macOS teach pendant for a **HUENIT** desktop arm (suction cup). It talks to the arm over USB serial (Marlin on a FYSETC E4). The window is laid out like HUENIT Lab’s Control tab: connect, status, STOP, pad, module angle.
+A macOS controller for a HUENIT robotic arm with a suction cup. Connect over USB, jog in X/Y/Z, set home, turn suction on and off, and rotate the cup.
 
-The `Joy1` library is separate from the app. Other tools can import the library and drive the same arm without this UI.
+## Requirements
 
-## What you need
+- macOS 15 or later
+- Xcode 16 or later
+- Arm powered from the **DC IN** port
+- Arm **PC** USB-C cable plugged into the Mac
 
-- macOS 15+
-- Xcode 16+ (or Swift 6.1)
-- HUENIT arm powered from **DC IN**
-- Arm **PC USB-C** plugged into the Mac (device name `HUENIT_HUEARM`)
+Power the arm before plugging in USB. Do not use the camera USB-C in place of the arm cable.
 
-The AI camera is optional for this app. Do not plug the camera in place of the arm cable. If you use HUENIT OS on the camera, that camera USB-C goes to the arm’s rear port labeled **Serial**, not to the Mac.
-
-## Run
-
-From this folder:
+## Open the app
 
 ```bash
 open Joy1.xcodeproj
 ```
 
-Select the **Joy1App** scheme and Run. Sandbox is off so `/dev/cu.*` works.
+Choose the **Joy1App** scheme and press Run.
 
-Or from the command line:
+Alternatively:
 
 ```bash
 swift run Joy1App
 ```
 
-## Connect
+## Connect the arm
 
-1. Power the arm first (DC IN), then plug its PC USB-C into the Mac.
-2. Click **Rescan** if the Main tile shows no port.
-3. Click **Auto Connect**. The app finds `HUENIT_HUEARM` (FTDI). The TTY name (`/dev/cu.usbserial-…`) changes when you unplug; Connect always rescans.
-4. Wait a couple of seconds. Opening the port resets Marlin.
+1. Power on the arm, then connect USB.
+2. If the Main tile has no port, click **Rescan**.
+3. Click **Auto Connect** and wait a few seconds.
 
-If Connect fails with “No such file or directory”, the old path is gone. Rescan and Connect again. The camera (`HUENIT_CAM` / `HUECAM`) is never opened.
+macOS assigns a new serial device name after unplug/replug. Auto Connect looks up the arm by name (`HUENIT_HUEARM`), not by a fixed path.
 
-**Motor** On/Off is `M17` / `M84`. After Off, the arm can be moved by hand.
+**Motor Off** releases the joints so you can move the arm by hand. **Motor On** engages them again.
 
-## Controls
+## Using the pad
 
-**Status** shows live `x y z` (mm) and `e` (module angle). A/B/C joint angles are still read for diagnostics; they are not jogged (firmware has no joint increment we found).
+**Status** is the live tip position in millimetres (`x`, `y`, `z`) and the suction-cup angle (`e`).
 
-**STOP** (or Esc) clears motion, turns suction off, and tries a quick stop (`M410`, else motors off). Leaving the window also stops.
+**STOP** (or Esc) halts motion and turns suction off. Switching away from the window does the same.
 
-**Control**
-
-| Control | What it does |
+| Control | Action |
 |---|---|
-| Hold / Step | Hold = stream while pressed (HUENIT OS style). Step = one tap, one move (Lab style). |
-| Speed 1–400 | Lab scale. Feed is `speed × 6` mm/min (100 → 600). |
-| Width 0.1 / 1 / 10 mm | Step size in Step mode. |
-| Pad | X/Y/Z and diagonals. **⌂** is official home **(0, 180, 0)**, not `G28`. **Z0** sets Z to 0 and keeps X/Y. |
-| Move to | Type XYZ (mm) and **Move Now**. Default is home. |
-| Module | Suction on/off (`M1400`). **E− / E+** rotate the cup (`G1 E`). |
+| Hold | Arm moves while you hold a key |
+| Step | Each click moves a fixed distance |
+| Speed | 1–400 (same scale as HUENIT Lab) |
+| Width | Step size: 0.1, 1, or 10 mm |
+| Pad | X/Y/Z and diagonals |
+| ⌂ | Home: X 0, Y 180, Z 0 |
+| Z0 | Set Z to 0, keep X and Y |
+| Move to | Type a pose and click **Move Now** |
+| Suction | Vacuum on/off |
+| E− / E+ | Rotate the cup |
 
-Wait for a move to finish before stacking another (same as Lab). Out-of-reach poses can fail on the firmware (“No Reachable”).
+Let one move finish before starting the next. If the pose is outside reach, the arm will refuse it.
 
 ## Safety
 
-- **Never send `G28`.** This arm has no limit switches; firmware homing can crash the mechanics. Joy1 rejects `G28`.
-- Official home is **X=0 Y=180 Z=0** after power-on.
-- First motion requires Connect and a pad press or Move Now. Nothing moves at launch.
+- Do not home with Marlin `G28`. This arm has no limit switches and can drive into itself. The app will not send `G28`.
+- Power-on / official home is **X 0, Y 180, Z 0**.
+- The arm does not move until you connect and press a control.
 
 ## Tests
 
@@ -71,14 +68,4 @@ Wait for a move to finish before stacking another (same as Lab). Out-of-reach po
 swift test --skip LiveArmTests
 ```
 
-Live tests talk to the real arm (small XYZ moves, then undo). They skip if no HUEARM is plugged in. They will move the arm if it is.
-
-## Layout
-
-```
-Sources/Joy1/          Shared library (serial, arm, pose, detector)
-Sources/Joy1App/       This pendant (cards, pad, STOP)
-Tests/Joy1Tests/       Offline + optional live hardware tests
-```
-
-A second app can depend on the `Joy1` product and use `HuenitArm` / `PortDetector` without the pendant views.
+That suite does not move hardware. Live tests (not skipped) send small moves to a plugged-in arm and then undo them.
