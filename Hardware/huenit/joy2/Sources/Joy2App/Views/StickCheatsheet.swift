@@ -86,8 +86,17 @@ private struct AnnotatedStickMap: View {
     }
 
     private var photo: NSImage? {
-        if let url = Bundle.module.url(forResource: "joy_mapping", withExtension: "jpg") {
-            return NSImage(contentsOf: url)
+        let bundles = [Bundle.main] + {
+            #if SWIFT_PACKAGE
+            [Bundle.module]
+            #else
+            [Bundle]()
+            #endif
+        }()
+        for bundle in bundles {
+            if let url = bundle.url(forResource: "joy_mapping", withExtension: "jpg") {
+                return NSImage(contentsOf: url)
+            }
         }
         return nil
     }

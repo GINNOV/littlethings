@@ -2,6 +2,10 @@
 
 macOS Lab pad for a HUENIT arm, driven by a Speedlink Competition Pro Extra joystick.
 
+Download the disk image from [Releases](https://github.com/GINNOV/littlethings/releases?q=joy2). Open the `.dmg` and drag **Joy2** to Applications.
+
+See [CHANGELOG.md](CHANGELOG.md) for what changed in each version.
+
 ## Stick
 
 - Stick: hold to keep moving in X/Y on the table
@@ -9,19 +13,28 @@ macOS Lab pad for a HUENIT arm, driven by a Speedlink Competition Pro Extra joys
 - Right fire: suction on/off
 - The pad lights the cell that is active
 
-## Run
+Open **How the stick works** in the app for a labeled photo.
+
+## Open the app
+
+```bash
+open Joy2.xcodeproj
+```
+
+Choose the **Joy2App** scheme and press Run.
+
+Alternatively:
 
 ```bash
 swift run Joy2App
 ```
 
-Or open the built app so a window appears on screen:
-
-```bash
-swift build --product Joy2App
-open .build/arm64-apple-macosx/debug/Joy2App
-```
-
 Requires the Joy1 package next door (`../joy1`). Connect the arm USB-C (`HUENIT_HUEARM`). Do not home with `G28`. Suction uses Joy1’s `M1400` path, not `M1111`–`M1114`.
 
-See [docs/superpowers/specs/2026-08-18-joy2-joystick-design.md](docs/superpowers/specs/2026-08-18-joy2-joystick-design.md).
+## Tests
+
+```bash
+swift test --skip LiveStickTests
+```
+
+That suite does not move hardware.
