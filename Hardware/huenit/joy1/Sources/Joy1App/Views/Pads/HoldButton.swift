@@ -9,12 +9,18 @@ struct HoldButton: View {
 
     var body: some View {
         Text(title)
-            .font(.title2.monospaced())
-            .frame(minWidth: 56, minHeight: 40)
-            .padding(.horizontal, 10)
-            .background(isPressed ? Color.accentColor.opacity(0.35) : Color.secondary.opacity(0.18))
-            .clipShape(RoundedRectangle(cornerRadius: 8))
-            .contentShape(RoundedRectangle(cornerRadius: 8))
+            .font(.callout.weight(.medium))
+            .frame(maxWidth: .infinity, minHeight: 36)
+            .padding(.horizontal, 6)
+            .background(
+                Color.primary.opacity(isPressed ? 0.14 : 0.06),
+                in: RoundedRectangle(cornerRadius: 10, style: .continuous)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .strokeBorder(PendantChrome.hairline)
+            )
+            .contentShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             .gesture(
                 DragGesture(minimumDistance: 0)
                     .onChanged { _ in

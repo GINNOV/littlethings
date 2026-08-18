@@ -72,9 +72,13 @@ public actor HuenitArm {
     public func queryPose() async throws -> ArmPose {
         let xyzText = try await send("M1008 A3")
         let abcText = try await send("M1008 A2")
+        let statusText = try await send("M114")
+        let extras = ArmPose.parseM114Extras(statusText)
         return ArmPose(
             cartesian: try CartesianPose.parseM1008(xyzText),
             joints: try JointPose.parseM1008(abcText),
+            e: extras.e,
+            motorStatus: extras.motorStatus,
             isStale: false
         )
     }
@@ -98,8 +102,59 @@ public actor HuenitArm {
 
     public func jogCartesian(axis: Axis, deltaMm: Double, feedMmPerMin: Double) async throws {
         precondition(axis.isCartesian)
-        let line = String(format: "G1 \(axis.gcodeLetter)%.4f F%.1f", deltaMm, feedMmPerMin)
+        try await step(dx: axis == .x ? deltaMm : 0, dy: axis == .y ? deltaMm : 0, dz: axis == .z ? deltaMm : 0, feedMmPerMin: feedMmPerMin)
+    }
+
+    public func step(dx: Double, dy: Double, dz: Double, feedMmPerMin: Double) async throws {
+        var parts = ["G1"]
+        if dx != 0 { parts.append(String(format: "X%.4f", dx)) }
+        if dy != 0 { parts.append(String(format: "Y%.4f", dy)) }
+        if dz != 0 { parts.append(String(format: "Z%.4f", dz)) }
+        guard parts.count > 1 else { return }
+        parts.append(String(format: "F%.1f", feedMmPerMin))
+        _ = try await send(parts.joined(separator: " "))
+    }
+
+    public func jogModule(delta: Double, feedMmPerMin: Double) async throws {
+        let line = String(format: "G1 E%.4f F%.1f", delta, feedMmPerMin)
         _ = try await send(line)
+    }
+
+    public func moveAbsolute(x: Double, y: Double, z: Double, feedMmPerMin: Double) async throws {
+        _ = try await send("G90")
+        do {
+            _ = try await send(String(format: "G1 X%.4f Y%.4f Z%.4f F%.1f", x, y, z, feedMmPerMin))
+            try await flush()
+        } catch {
+            _ = try? await send("G91")
+            throw error
+        }
+        _ = try await send("G91")
+    }
+
+    public func home(feedMmPerMin: Double) async throws {
+        try await moveAbsolute(
+            x: CartesianPose.officialHome.x,
+            y: CartesianPose.officialHome.y,
+            z: CartesianPose.officialHome.z,
+            feedMmPerMin: feedMmPerMin
+        )
+    }
+
+    public func setZ0(feedMmPerMin: Double) async throws {
+        _ = try await send("G90")
+        do {
+            _ = try await send(String(format: "G1 Z0.0000 F%.1f", feedMmPerMin))
+            try await flush()
+        } catch {
+            _ = try? await send("G91")
+            throw error
+        }
+        _ = try await send("G91")
+    }
+
+    public func setMotors(_ on: Bool) async throws {
+        _ = try await send(on ? "M17" : "M84")
     }
 
     public func jogJoint(axis: Axis, deltaDeg: Double, feedMmPerMin: Double) async throws {

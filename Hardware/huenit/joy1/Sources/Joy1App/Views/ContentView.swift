@@ -6,24 +6,27 @@ struct ContentView: View {
     @Bindable var model: PendantModel
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            ConnectionBar(model: model)
-            PoseHUD(pose: model.pose)
-            HStack(alignment: .top, spacing: 32) {
-                CartesianPad(model: model)
-                JointPad(model: model)
+        HStack(alignment: .top, spacing: 16) {
+            VStack(spacing: 16) {
+                ConnectionBar(model: model)
+                ModuleCard(model: model)
             }
-            SpeedSlider(model: model)
-            HStack {
-                VacuumToggle(model: model)
-                Spacer()
-                StopButton {
-                    Task { await model.stop() }
+            .frame(minWidth: 280, maxWidth: 360)
+
+            VStack(spacing: 16) {
+                HStack(alignment: .top, spacing: 12) {
+                    PoseHUD(pose: model.pose)
+                    StopButton {
+                        Task { await model.stop() }
+                    }
                 }
+                .frame(height: 120)
+                LabPad(model: model)
             }
         }
         .padding(20)
-        .frame(minWidth: 720, minHeight: 420)
+        .background(PendantChrome.canvas)
+        .frame(minWidth: 980, minHeight: 640)
         .onAppear {
             model.refreshPorts()
             model.startJogLoop()

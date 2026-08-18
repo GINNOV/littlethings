@@ -5,32 +5,26 @@ struct SpeedSlider: View {
     @Bindable var model: PendantModel
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Text("Speed")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Text("\(Int(model.labSpeed))")
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(.secondary)
+            }
             Slider(
                 value: Binding(
-                    get: { model.speedMmPerSec },
-                    set: { model.setSpeed($0) }
+                    get: { model.labSpeed },
+                    set: { model.setLabSpeed($0) }
                 ),
-                in: 1...80,
+                in: 1...400,
                 step: 1
-            ) {
-                Text("Speed")
-            } minimumValueLabel: {
-                Text("1")
-            } maximumValueLabel: {
-                Text("80")
-            }
-            Text(speedCaption)
-                .font(.caption.monospacedDigit())
-                .foregroundStyle(.secondary)
+            )
+            .accessibilityLabel("Speed")
+            .accessibilityValue("\(Int(model.labSpeed))")
         }
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("Speed")
-        .accessibilityValue(speedCaption)
-    }
-
-    private var speedCaption: String {
-        let value = model.speedMmPerSec
-        return String(format: "%.0f mm/s   %.0f °/s", value, value)
     }
 }

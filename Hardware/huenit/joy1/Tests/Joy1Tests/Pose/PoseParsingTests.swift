@@ -48,4 +48,17 @@ struct PoseParsingTests {
     @Test func identityRejectsRandom() {
         #expect(!FirmwareIdentity.parse("hello").isHuenitMarlin)
     }
+
+    @Test func parseM114ExtrasReadsEAndMotorStatus() {
+        let text = "X:0.22 Y:216.26 Z:-61.97 E:240.00 current_module:0 module_status:0 motor_status:1\nok\n"
+        let extras = ArmPose.parseM114Extras(text)
+        #expect(abs(extras.e - 240) < 0.001)
+        #expect(extras.motorStatus == 1)
+    }
+
+    @Test func officialHomeIsLabHome() {
+        #expect(CartesianPose.officialHome.x == 0)
+        #expect(CartesianPose.officialHome.y == 180)
+        #expect(CartesianPose.officialHome.z == 0)
+    }
 }
