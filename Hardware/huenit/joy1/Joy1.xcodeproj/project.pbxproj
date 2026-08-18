@@ -1,0 +1,437 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXContainerItemProxy section */
+		DEP000000000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = PRJ000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = TGT000000000000000000001;
+			remoteInfo = Joy1;
+		};
+		DEP000000000000000000002 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = PRJ000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = TGT000000000000000000001;
+			remoteInfo = Joy1;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		PRD000000000000000000001 /* libJoy1.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libJoy1.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		PRD000000000000000000002 /* Joy1App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Joy1App.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		PRD000000000000000000003 /* Joy1Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Joy1Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		SYN000000000000000000001 /* Joy1 */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Sources/Joy1;
+			sourceTree = "<group>";
+		};
+		SYN000000000000000000002 /* Joy1App */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			explicitFileTypes = {
+				"App/Joy1App.entitlements" = text.plist.entitlements;
+			};
+			path = Sources/Joy1App;
+			sourceTree = "<group>";
+		};
+		SYN000000000000000000003 /* Joy1Tests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Tests/Joy1Tests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		FRM000000000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FRM000000000000000000002 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FRM000000000000000000003 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		GRP000000000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				SYN000000000000000000001 /* Joy1 */,
+				SYN000000000000000000002 /* Joy1App */,
+				SYN000000000000000000003 /* Joy1Tests */,
+				GRP000000000000000000002 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		GRP000000000000000000002 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				PRD000000000000000000001 /* libJoy1.a */,
+				PRD000000000000000000002 /* Joy1App.app */,
+				PRD000000000000000000003 /* Joy1Tests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXSourcesBuildPhase section */
+		SRC000000000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		SRC000000000000000000002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		SRC000000000000000000003 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		TGT000000000000000000001 /* Joy1 */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CFG000000000000000000011 /* Build configuration list for PBXNativeTarget "Joy1" */;
+			buildPhases = (
+				SRC000000000000000000001 /* Sources */,
+				FRM000000000000000000001 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				SYN000000000000000000001 /* Joy1 */,
+			);
+			name = Joy1;
+			productName = Joy1;
+			productReference = PRD000000000000000000001 /* libJoy1.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+		TGT000000000000000000002 /* Joy1App */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CFG000000000000000000012 /* Build configuration list for PBXNativeTarget "Joy1App" */;
+			buildPhases = (
+				SRC000000000000000000002 /* Sources */,
+				FRM000000000000000000002 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DEP000000000000000000011 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				SYN000000000000000000002 /* Joy1App */,
+			);
+			name = Joy1App;
+			productName = Joy1App;
+			productReference = PRD000000000000000000002 /* Joy1App.app */;
+			productType = "com.apple.product-type.application";
+		};
+		TGT000000000000000000003 /* Joy1Tests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CFG000000000000000000013 /* Build configuration list for PBXNativeTarget "Joy1Tests" */;
+			buildPhases = (
+				SRC000000000000000000003 /* Sources */,
+				FRM000000000000000000003 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DEP000000000000000000012 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				SYN000000000000000000003 /* Joy1Tests */,
+			);
+			name = Joy1Tests;
+			productName = Joy1Tests;
+			productReference = PRD000000000000000000003 /* Joy1Tests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		PRJ000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2600;
+				LastUpgradeCheck = 2600;
+				TargetAttributes = {
+					TGT000000000000000000001 = {
+						CreatedOnToolsVersion = 26.0;
+					};
+					TGT000000000000000000002 = {
+						CreatedOnToolsVersion = 26.0;
+					};
+					TGT000000000000000000003 = {
+						CreatedOnToolsVersion = 26.0;
+					};
+				};
+			};
+			buildConfigurationList = CFG000000000000000000010 /* Build configuration list for PBXProject "Joy1" */;
+			compatibilityVersion = "Xcode 16.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = GRP000000000000000000001;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = GRP000000000000000000002 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				TGT000000000000000000001 /* Joy1 */,
+				TGT000000000000000000002 /* Joy1App */,
+				TGT000000000000000000003 /* Joy1Tests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXTargetDependency section */
+		DEP000000000000000000011 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = TGT000000000000000000001 /* Joy1 */;
+			targetProxy = DEP000000000000000000001 /* PBXContainerItemProxy */;
+		};
+		DEP000000000000000000012 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = TGT000000000000000000001 /* Joy1 */;
+			targetProxy = DEP000000000000000000002 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		BCF000000000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		BCF000000000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_OPTIMIZATION_LEVEL = s;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		BCF000000000000000000011 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGNING_ALLOWED = NO;
+				EXECUTABLE_PREFIX = lib;
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_NAME = Joy1;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		BCF000000000000000000012 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGNING_ALLOWED = NO;
+				EXECUTABLE_PREFIX = lib;
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_NAME = Joy1;
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		BCF000000000000000000021 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				CODE_SIGN_ENTITLEMENTS = Sources/Joy1App/App/Joy1App.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGNING_ALLOWED = YES;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_APP_SANDBOX = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "HUENIT Joy1";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(BUILT_PRODUCTS_DIR)",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lJoy1",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.huenit.Joy1App;
+				PRODUCT_NAME = Joy1App;
+			};
+			name = Debug;
+		};
+		BCF000000000000000000022 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				CODE_SIGN_ENTITLEMENTS = Sources/Joy1App/App/Joy1App.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGNING_ALLOWED = YES;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_APP_SANDBOX = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "HUENIT Joy1";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(BUILT_PRODUCTS_DIR)",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lJoy1",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.huenit.Joy1App;
+				PRODUCT_NAME = Joy1App;
+			};
+			name = Release;
+		};
+		BCF000000000000000000031 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGNING_ALLOWED = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(BUILT_PRODUCTS_DIR)",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lJoy1",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.huenit.Joy1Tests;
+				PRODUCT_NAME = Joy1Tests;
+			};
+			name = Debug;
+		};
+		BCF000000000000000000032 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGNING_ALLOWED = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(BUILT_PRODUCTS_DIR)",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lJoy1",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.huenit.Joy1Tests;
+				PRODUCT_NAME = Joy1Tests;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		CFG000000000000000000010 /* Build configuration list for PBXProject "Joy1" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BCF000000000000000000001 /* Debug */,
+				BCF000000000000000000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CFG000000000000000000011 /* Build configuration list for PBXNativeTarget "Joy1" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BCF000000000000000000011 /* Debug */,
+				BCF000000000000000000012 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CFG000000000000000000012 /* Build configuration list for PBXNativeTarget "Joy1App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BCF000000000000000000021 /* Debug */,
+				BCF000000000000000000022 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CFG000000000000000000013 /* Build configuration list for PBXNativeTarget "Joy1Tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BCF000000000000000000031 /* Debug */,
+				BCF000000000000000000032 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = PRJ000000000000000000001 /* Project object */;
+}
