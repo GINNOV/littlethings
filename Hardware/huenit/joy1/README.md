@@ -13,6 +13,8 @@ A macOS controller for a HUENIT robotic arm with a suction cup. Connect over USB
 
 Power the arm before plugging in USB. Do not use the camera USB-C in place of the arm cable.
 
+Official HUENIT Lab (Windows) is documented here: [Installing HUENIT LAB](https://huenit.gitbook.io/huenit-manual-en/huenit-user-manual/how-to-use-huenit-lab/0.-getting-ready/installing-huenit-lab#windows).
+
 ## Open the app
 
 ```bash
