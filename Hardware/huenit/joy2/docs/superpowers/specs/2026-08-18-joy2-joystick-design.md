@@ -23,7 +23,9 @@ A second macOS pendant, in `Hardware/huenit/joy2`, that drives the same HUENIT a
 
 ### Arm
 
-Unchanged from Joy1. Connect by name `HUENIT_HUEARM`. Official home is `X 0, Y 180, Z 0`. Never send `G28`. Cartesian `G1` uses firmware IK. Cup rotation is `G1 E`. Vacuum is `M1400`. Stop is `M410` then `M84`. Joy2 calls `HuenitArm`; it does not open a second serial stack.
+Unchanged from Joy1. Connect by name `HUENIT_HUEARM`. Official home is `X 0, Y 180, Z 0`. Never send `G28`. Cartesian `G1` uses firmware IK. Cup rotation is `G1 E`. Vacuum is **only** `HuenitArm.setVacuum` (wire codes `M1400 A1023` / `M1400 A0`, proven on this desk). Stop is `M410` then `M84`. Joy2 calls `HuenitArm`; it does not open a second serial stack and does not invent module G-code.
+
+Community docs also list `M1111`–`M1114` (suction / gripper / pump) and `M1401` (valve). Those are a different firmware or Lab-Python layer. Joy2 must not send them and must not fall back if `M1400` fails. See the Joy1 spec section “Module-command profiles”.
 
 ### Stick (measured on this Mac)
 

@@ -38,6 +38,19 @@ Arm firmware: Marlin bugfix-2.0.x (Jun 28 2025), `MACHINE_TYPE:FYSETC_E4`.
 | Planner pose / module | `M114` (includes `current_module`, `module_status`, `motor_status`) |
 | Vacuum on | `M1400 A1023` |
 | Vacuum off | `M1400 A0` |
+
+### Module-command profiles (do not mix)
+
+Sources disagree about suction / valve / gripper codes. Treat them as **separate firmware or API layers**, not synonyms.
+
+| Profile | Commands | Where it appears |
+|---|---|---|
+| Wire / Marlin (this desk) | `M1400 A[0–1023]` suction PWM; some Python also uses `M1401 A…` for a valve | [Hackaday](https://hackaday.io/project/204061-getting-to-know-huenit), [piramja/huenit](https://github.com/piramja/huenit), Joy1 live `vacuumOk` |
+| Community SDK list | `M1111` suction on, `M1112` off, `M1113 A#` gripper, `M1114 C` pump | [elandivar/huenit_community_sdk](https://github.com/elandivar/huenit_community_sdk) “Command API” |
+
+Joy1 speaks **only** the wire profile. `HuenitArm.setVacuum` sends `M1400 A1023` / `M1400 A0`. That pair returned `ok` on this unit (`Marlin bugfix-2.0.x` / `FYSETC_E4`).
+
+Do **not** silently fall back to `M1111`–`M1114`. That list sits in Lab’s Python event docs and may never hit the serial port as written. The same SDK also lists `M1008 A5` as home, which is wrong on this firmware (`M1008 A2`/`A3` are pose queries). Unverified codes stay out of the send path until a captured transcript on this arm proves them.
 | Flush planner | `M400` |
 | Quick stop | `M410` if accepted, else `M84` (motors off) |
 | Identity | `M115` |

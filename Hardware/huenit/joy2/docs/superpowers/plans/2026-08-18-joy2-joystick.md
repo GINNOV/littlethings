@@ -46,7 +46,7 @@ README.md
 
 Working directory for every command: `/Volumes/AIWork/code/littlethings/Hardware/huenit/joy2`
 
-Do not edit Joy1App. Do not send `G28`. Do not invent a workspace box.
+Do not edit Joy1App. Do not send `G28`. Do not invent a workspace box. Do not send `M1111`–`M1114` or `M1401`. Suction is `pendant.setVacuum` only (Joy1 already sends `M1400`).
 
 ---
 

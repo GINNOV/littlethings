@@ -83,6 +83,8 @@ public actor HuenitArm {
         )
     }
 
+    /// Wire profile on this FYSETC E4: `M1400 A1023` / `M1400 A0`.
+    /// Do not send community-SDK `M1111`–`M1114` or silently fall back.
     public func setVacuum(_ on: Bool) async throws {
         _ = try await send(on ? "M1400 A1023" : "M1400 A0")
     }
