@@ -4,8 +4,23 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Projects - Back to Amiga Dev Hub</title>
-    <link rel="stylesheet" href="/littlethings/common/style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/common/style.css" />
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              display: ['Outfit', 'sans-serif'],
+            },
+          },
+        },
+      }
+    </script>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
@@ -31,8 +46,8 @@
       
         <header>
     <div class="header-content">
-        <a href="/littlethings/amiga/index.html">
-            <img src="/littlethings/images/back_to_the_amiga.png" alt="Back to Amiga Dev Hub Logo" class="header-logo" onerror="this.onerror=null;this.src='https://placehold.co/180x50/003366/FF8800?text=Amiga+Dev+Hub&font=press-start-2p';this.alt='Amiga Dev Hub';">
+        <a href="/amiga/index.html">
+            <img src="/images/back_to_the_amiga.png" alt="Back to Amiga Dev Hub Logo" class="header-logo" onerror="this.onerror=null;this.src='https://placehold.co/180x50/003366/FF8800?text=Amiga+Dev+Hub&font=press-start-2p';this.alt='Amiga Dev Hub';">
         </a>
         <button class="menu-toggle" id="menu-toggle-btn">
             <i class="fas fa-bars"></i>
@@ -40,10 +55,10 @@
     </div>
     <nav class="sidebar" id="header-nav">
         <ul style="font-family: 'Press Start 2P', cursive; font-size: 0.8rem;">
-            <li><a href="/littlethings/amiga/index.html" id="nav-projects" class="active">PROJECTS</a></li>
-            <li><a href="/littlethings/amiga/walkthroughs.html" id="nav-tutorials" class="">TUTORIALS</a></li>
-            <li><a href="/littlethings/amiga/resources.html" id="nav-resources" class="">RESOURCES</a></li>
-            <li><a href="/littlethings/amiga/about.html" id="nav-about" class="">ABOUT</a></li>
+            <li><a href="/amiga/index.html" id="nav-projects" class="active">PROJECTS</a></li>
+            <li><a href="/amiga/walkthroughs.html" id="nav-tutorials" class="">TUTORIALS</a></li>
+            <li><a href="/amiga/resources.html" id="nav-resources" class="">RESOURCES</a></li>
+            <li><a href="/amiga/about.html" id="nav-about" class="">ABOUT</a></li>
         </ul>
     </nav>
 </header>
@@ -73,7 +88,7 @@
       
       <section class="text-center mb-16">
         <img
-          src="/littlethings/images/projects-header.jpg"
+          src="/images/projects-header.jpg"
           alt="Project Showcase"
           class="projects-title-image"
           onerror="this.onerror=null;this.src='https://placehold.co/700x150/0F172A/FF8800?text=PROJECT+SHOWCASE&font=press-start-2p';this.alt='Project Showcase';"
@@ -86,7 +101,7 @@
       <article class="project-card">
         <div class="md-img-container">
           <img
-            src="/littlethings/images/tools/adf-finder.png"
+            src="/images/tools/adf-finder.png"
             onerror="this.onerror=null;this.src='https://placehold.co/600x350/0F172A/FF8800?text=ADF+Finder&font=press-start-2p';this.alt='ADF Finder';"
             alt="ADF Finder"
             class="project-image"
@@ -118,7 +133,7 @@
               <i class="fab fa-github"></i>
             </a>
             <a
-              href="/littlethings/amiga/adfinder_learnmore.html"
+              href="/amiga/adfinder_learnmore.html"
               class="learn-button project-button"
             >
               <i class="fas fa-book"></i>Details
@@ -147,7 +162,7 @@
       <article class="project-card reverse">
         <div class="md-img-container">
           <img
-            src="/littlethings/images/tools/pixDeluxe.jpg"
+            src="/images/tools/pixDeluxe.jpg"
             onerror="this.onerror=null;this.src='https://placehold.co/600x350/0F172A/FF8800?text=PixDeluxe&font=press-start-2p';this.alt='Hanle IFF Amiga files';"
             alt="Command line file manager for ADFs"
             class="project-image"
@@ -194,7 +209,7 @@
               <i class="fas fa-list-ul"></i>LOG
             </a>
             <a
-              href="/littlethings/amiga/pixdeluxe_learnmore.html"
+              href="/amiga/pixdeluxe_learnmore.html"
               class="learn-button project-button"
             >
               <i class="fas fa-book"></i>Details
@@ -215,7 +230,7 @@
       <article class="project-card">
         <div class="md-img-container">
           <img
-            src="/littlethings/images/tools/pixDeluxeQL.png"
+            src="/images/tools/pixDeluxeQL.png"
             onerror="this.onerror=null;this.src='https://placehold.co/600x350/0F172A/FF8800?text=PixDeluxeQL&font=press-start-2p';this.alt='Hanle IFF Amiga files for quickview';"
             alt="Preview IFF Amiga files with Quick Look"
             class="project-image"
@@ -267,7 +282,7 @@
       <article class="project-card reverse">
         <div class="md-img-container">
           <img
-            src="/littlethings/images/tools/AuDeluxe.png"
+            src="/images/tools/AuDeluxe.png"
             onerror="this.onerror=null;this.src='https://placehold.co/600x350/0F172A/FF8800?text=AuDeluxe&font=press-start-2p';this.alt='Player for Amiga audio files';"
             alt="Play many Amiga audio format"
             class="project-image"
@@ -313,7 +328,7 @@
               <i class="fas fa-list-ul"></i>LOG
             </a>
             <a
-              href="/littlethings/amiga/audeluxe_learnmore.html"
+              href="/amiga/audeluxe_learnmore.html"
               class="learn-button project-button"
             >
               <i class="fas fa-book"></i>Details
@@ -334,7 +349,7 @@
       <article class="project-card" id="amiga-playground">
         <div class="md-img-container">
           <img
-            src="/littlethings/images/tools/amiga-playground.png"
+            src="/images/tools/amiga-playground.png"
             onerror="this.onerror=null;this.src='https://placehold.co/600x350/0F172A/FF8800?text=Amiga+Playground&font=press-start-2p';this.alt='Amiga Playground';"
             alt="Amiga Playground editor and emulator workspace"
             class="project-image"
@@ -388,7 +403,7 @@
       <article class="project-card reverse">
         <div class="md-img-container">
           <img
-            src="/littlethings/images/tools/amiga-rom-explorer.png"
+            src="/images/tools/amiga-rom-explorer.png"
             onerror="this.onerror=null;this.src='https://placehold.co/600x350/0F172A/FF8800?text=Amiga+ROM+Explorer&font=press-start-2p';this.alt='Amiga ROM Explorer';"
             alt="Amiga ROM Explorer firmware catalog"
             class="project-image"
@@ -442,7 +457,7 @@
       <article class="project-card">
         <div class="md-img-container">
           <img
-            src="/littlethings/images/tools/send2adf.png"
+            src="/images/tools/send2adf.png"
             onerror="this.onerror=null;this.src='https://placehold.co/600x350/0F172A/FF8800?text=send+to+ADF&font=press-start-2p';this.alt='send to ADF';"
             alt="send to ADF"
             class="project-image"
@@ -573,6 +588,6 @@
     
 
     
-    <script src="/littlethings/common/js/copy-code.js"></script>
+    <script src="/common/js/copy-code.js"></script>
   </body>
 </html>

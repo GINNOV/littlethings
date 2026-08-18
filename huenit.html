@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="HUENIT Robotics — Native macOS applications and tools for HUENIT modular robotic arms." />
+    <title>HUENIT Robotics Hub — Garage Innovation</title>
+    
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet" />
+    
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              display: ['Outfit', 'sans-serif'],
+            },
+          },
+        },
+      }
+    </script>
+    
+    <style>
+      body {
+        background-color: #09090b;
+        background-image: 
+          radial-gradient(circle at 15% 20%, rgba(6, 182, 212, 0.07) 0%, transparent 45%),
+          radial-gradient(circle at 85% 80%, rgba(99, 102, 241, 0.07) 0%, transparent 45%);
+        background-attachment: fixed;
+      }
+      .glass-card {
+        background: rgba(15, 23, 42, 0.55);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .glass-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(6, 182, 212, 0.3);
+        box-shadow: 0 12px 40px -12px rgba(6, 182, 212, 0.15);
+        background: rgba(20, 28, 55, 0.6);
+      }
+    </style>
+  </head>
+  <body class="min-h-screen text-slate-300 font-sans selection:bg-cyan-500/30 selection:text-white flex flex-col justify-between">
+
+    
+    <main class="w-full max-w-5xl mx-auto px-6 py-12 flex-grow flex flex-col justify-center">
+
+      
+      <div class="mb-10 flex items-center justify-between">
+        <a href="/" class="inline-flex items-center text-sm font-semibold text-slate-400 hover:text-white transition-colors gap-2 no-underline">
+          <i class="fas fa-arrow-left text-xs"></i> Back to Workspace Hub
+        </a>
+        <span class="text-xs font-mono px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">
+          Hardware Suite
+        </span>
+      </div>
+
+      
+      <header class="text-center max-w-3xl mx-auto mb-16 space-y-4">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-xs font-semibold text-cyan-400 uppercase tracking-wider mb-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
+          Garage Innovation · Hardware
+        </div>
+        <h1 class="text-5xl font-extrabold tracking-tight text-white font-display md:text-6xl" id="hub-title">
+          HUENIT <span class="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-teal-300 to-indigo-400">Robotics</span>
+        </h1>
+        <p class="text-slate-400 text-base md:text-lg leading-relaxed">
+          The company never delivered on their promise of a macOS app. So I fixed that and added some more. No more paperweight robotic arm.
+        </p>
+      </header>
+
+      
+      <section class="grid gap-8 md:grid-cols-2 mb-12">
+
+        
+        <article class="glass-card rounded-2xl p-8 flex flex-col justify-between group" id="app-joy1">
+          <div>
+            <div class="aspect-video w-full overflow-hidden rounded-xl bg-slate-950 border border-slate-800/80 mb-6 relative">
+              <img
+                src="/images/huenit/joy1-guide.png"
+                alt="Joy1 HUENIT Robot Controller"
+                class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              <div class="absolute top-3 right-3 px-2.5 py-1 rounded-md bg-slate-950/80 border border-cyan-500/30 text-[10px] font-mono font-semibold text-cyan-300 backdrop-blur-sm">
+                v1.0.0 Live
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+                <i class="fas fa-robot text-lg"></i>
+              </div>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                macOS 15+
+              </span>
+            </div>
+
+            <h2 class="text-2xl font-bold text-white font-display mb-2">
+              Joy1 🤖 Controller
+            </h2>
+            <p class="text-sm text-slate-400 leading-relaxed">
+              Native macOS controller for the HUENIT robotic arm equipped with a suction cup tool module. Tactile 3D X/Y/Z jogging, auto-discovery by USB hardware identity, vacuum pump toggle, and non-destructive homing.
+            </p>
+          </div>
+
+          <div class="mt-8 pt-5 border-t border-slate-800/60 flex items-center justify-between text-xs">
+            <a href="https://github.com/GINNOV/littlethings/tree/master/Hardware/huenit/joy1" target="_blank" rel="noopener noreferrer" class="text-slate-500 hover:text-slate-400 font-mono flex items-center gap-1 transition-all">
+              <i class="fab fa-github"></i> GINNOV/joy1
+            </a>
+            <a href="/joy1.html" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-slate-950 bg-cyan-400 hover:bg-cyan-300 active:bg-cyan-500 transition-all shadow-md shadow-cyan-900/30 no-underline">
+              Open Product Page <i class="fas fa-arrow-right text-xs"></i>
+            </a>
+          </div>
+        </article>
+
+        
+        <article class="glass-card rounded-2xl p-8 flex flex-col justify-between group opacity-85" id="app-joy2">
+          <div>
+            <div class="aspect-video w-full overflow-hidden rounded-xl bg-slate-950/60 border border-slate-800/80 mb-6 flex flex-col items-center justify-center text-center p-6">
+              <div class="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-3 text-2xl">
+                <i class="fas fa-layer-group"></i>
+              </div>
+              <span class="text-xs font-mono text-indigo-300 font-semibold uppercase tracking-wider">In Active Research</span>
+            </div>
+
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+                <i class="fas fa-microchip text-lg"></i>
+              </div>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                Planned
+              </span>
+            </div>
+
+            <h2 class="text-2xl font-bold text-white font-display mb-2">
+              Joy2 · Multi-Tool &amp; Sequences
+            </h2>
+            <p class="text-sm text-slate-400 leading-relaxed">
+              Next-generation trajectory sequencer and multi-effector manager for laser engraving, 3D printing, and automated pick-and-place routines.
+            </p>
+          </div>
+
+          <div class="mt-8 pt-5 border-t border-slate-800/60 flex items-center justify-between text-xs font-mono">
+            <span class="text-slate-500">Hardware/huenit/joy2</span>
+            <span class="text-slate-500 italic">Coming Soon</span>
+          </div>
+        </article>
+
+      </section>
+
+    </main>
+
+    
+    <footer class="w-full text-center py-8 border-t border-slate-900/80 bg-slate-950/20 text-xs text-slate-500 font-mono">
+      <div class="max-w-5xl mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <span>© 2026 Dunno Much / Garage Innovation. All rights reserved.</span>
+        <div class="flex items-center gap-4">
+          <a href="/" class="hover:text-slate-400 transition-colors">
+            Workspace Hub
+          </a>
+          <a href="https://github.com/GINNOV/littlethings" target="_blank" class="hover:text-slate-400 transition-colors">
+            <i class="fab fa-github text-sm"></i> GitHub repo
+          </a>
+        </div>
+      </div>
+    </footer>
+
+  </body>
+</html>

@@ -4,118 +4,292 @@
 	<meta name="generator" content="Hugo 0.164.0">
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Workspace Hub - Littlethings</title>
-    <link rel="stylesheet" href="/littlethings/common/style.css" />
+    <meta name="description" content="DUNNO MUCH / Garage Innovation Hub - A collection of personal tools, Amiga projects, and learning hubs." />
+    <title>Garage Innovation Hub - DUNNO MUCH</title>
+    
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet" />
+    
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
-    />
-    
     <script>
-      (function() {
-        const savedTheme = localStorage.getItem('theme') || 
-                           (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        if (savedTheme === 'dark') {
-          document.documentElement.classList.add('dark-theme');
-          document.body?.classList.add('dark-theme');
-        } else {
-          document.documentElement.classList.remove('dark-theme');
-          document.body?.classList.remove('dark-theme');
-        }
-      })();
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              display: ['Outfit', 'sans-serif'],
+            },
+          },
+        },
+      }
     </script>
+    
+    <style>
+      body {
+        background-color: #09090b;
+        background-image: 
+          radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.05) 0%, transparent 40%),
+          radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.05) 0%, transparent 40%);
+        background-attachment: fixed;
+      }
+      .glass-card {
+        background: rgba(15, 23, 42, 0.45);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .glass-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(139, 92, 246, 0.3);
+        box-shadow: 0 12px 40px -12px rgba(139, 92, 246, 0.15);
+        background: rgba(20, 24, 48, 0.5);
+      }
+    </style>
   </head>
-  <body class="dark-theme hub-page-bg">
+  <body class="min-h-screen text-slate-300 flex flex-col justify-between selection:bg-violet-500/30 selection:text-white">
     
     
+    <main class="w-full max-w-6xl mx-auto px-6 py-16 flex-grow flex flex-col justify-center">
       
-    
-
-    <main class="hub-page-main">
       
-<div class="min-h-screen flex flex-col justify-between py-12 px-4 sm:px-6 lg:px-8">
-  <div class="max-w-5xl mx-auto w-full text-center mt-8">
-    <h1 class="font-bold tracking-tight text-white mb-4" style="font-family: 'Press Start 2P', cursive; font-size: 2.2rem; line-height: 1.4; text-shadow: 0 0 10px rgba(124, 58, 237, 0.5);">
-      LITTLETHINGS
-    </h1>
-    <p class="mt-3 max-w-2xl mx-auto text-lg text-slate-300 font-medium">
-      A personal collection of tools, experiments, source archives, and development workspaces. Select a hub to begin.
-    </p>
-
-    
-    <div class="mt-16 grid gap-10 md:grid-cols-2 max-w-4xl mx-auto">
-      
-      <div class="group relative flex flex-col justify-between rounded-2xl overflow-hidden bg-slate-900/60 border border-slate-700/50 backdrop-blur-md shadow-2xl transition-all duration-300 hover:scale-[1.03] hover:border-emerald-500 hover:shadow-emerald-500/20" style="font-family: Inter, ui-sans-serif, system-ui, sans-serif;">
-        <div class="aspect-video w-full overflow-hidden bg-slate-850">
-          <img src="/littlethings/images/xbook/splash.jpg" alt="XB👀K" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" onerror="this.onerror=null;this.src='https://placehold.co/600x350/070b12/34d399?text=XB%F0%9F%91%80%F0%9F%91%80K&font=inter';">
+      <header class="text-center max-w-2xl mx-auto mb-16 space-y-4">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 text-xs font-semibold text-violet-400 uppercase tracking-wider mb-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-violet-400 animate-ping"></span>
+          Garage Innovation
         </div>
-        <div class="p-8 flex-grow flex flex-col justify-between">
-          <div>
-            <h3 class="text-2xl font-bold text-white mb-3 group-hover:text-emerald-400 transition-colors">
-              XB👀K
-            </h3>
-            <p class="text-sm text-slate-400 leading-relaxed mb-6">
-              Local-first research console: import X &amp; YouTube saves, enrich with your LLM, index embeddings, search by meaning, and plug agents (Hermes) into Obsidian via a local API.
-            </p>
+        <h1 class="text-5xl font-extrabold tracking-tight text-white font-display md:text-6xl" id="hub-title">
+          Workspace <span class="bg-clip-text text-transparent bg-gradient-to-r from-violet-400 via-indigo-300 to-indigo-500">Hub</span>
+        </h1>
+        <p class="text-slate-400 text-base md:text-lg leading-relaxed">
+          I build little things for myself, some super useful others just to spin the neurons. I hope you find something here that is useful or fun.
+        </p>
+      </header>
+
+      
+      <section class="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8" id="projects-grid">
+        
+        
+        <article class="glass-card rounded-2xl p-6 flex flex-col justify-between group" id="project-amiga">
+          <div class="space-y-4">
+            <div class="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 group-hover:scale-110 transition-transform">
+              <i class="fas fa-microchip text-xl"></i>
+            </div>
+            <div>
+              <h2 class="text-xl font-bold text-white font-display mb-1 flex items-center gap-2">
+                Amiga Dev Hub
+                <span class="text-xs px-2 py-0.5 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 font-semibold">Active</span>
+              </h2>
+              <p class="text-sm text-slate-400 leading-relaxed">
+                Collection of Amiga assembly projects, hardware emulators, layouts, and system configurations.
+              </p>
+            </div>
           </div>
-          <div class="mt-4">
-            <a href="/littlethings/xbook.html" class="w-full py-3 px-6 rounded-xl font-semibold text-center text-white bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 transition-all shadow-lg shadow-emerald-900/30 inline-block text-decoration-none">
-              Open product page
+          <div class="mt-6 flex items-center justify-between border-t border-slate-800/40 pt-4">
+            <span class="text-xs text-slate-500 font-mono">GINNOV/littlethings</span>
+            <a href="/amiga/index.html" class="inline-flex items-center gap-1.5 text-xs font-semibold text-red-400 hover:text-red-300 hover:underline transition-all">
+              Launch Site <i class="fas fa-arrow-right text-[10px]"></i>
             </a>
           </div>
-        </div>
-      </div>
+        </article>
 
-      
-      <div class="group relative flex flex-col justify-between rounded-2xl overflow-hidden bg-slate-900/60 border border-slate-700/50 backdrop-blur-md shadow-2xl transition-all duration-300 hover:scale-[1.03] hover:border-amber-500 hover:shadow-amber-500/20">
-        <div class="aspect-video w-full overflow-hidden bg-slate-850">
-          <img src="/littlethings/images/projects-header.jpg" alt="Amiga Dev Hub" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" onerror="this.onerror=null;this.src='https://placehold.co/600x350/0F172A/F59E0B?text=AMIGA+DEV+HUB&font=press-start-2p';">
-        </div>
-        <div class="p-8 flex-grow flex flex-col justify-between">
-          <div>
-            <h3 class="text-2xl font-bold text-white mb-3 group-hover:text-amber-400 transition-colors" style="font-family: 'Inter', sans-serif;">
-              Amiga Projects Hub
-            </h3>
-            <p class="text-sm text-slate-400 leading-relaxed text-justify mb-6">
-              The original retrocomputing center containing custom utilities built for macOS (ADFinder, PixDeluxe, AuDeluxe, send2adf), 68000 assembly tutorials, Kickstart ROM catalogs, and emulator setups.
-            </p>
+        
+        <article class="glass-card rounded-2xl p-6 flex flex-col justify-between group animate-fade-in" id="project-xbook">
+          <div class="space-y-4">
+            <div class="w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400 group-hover:scale-110 transition-transform">
+              <i class="fas fa-book-open text-xl"></i>
+            </div>
+            <div>
+              <h2 class="text-xl font-bold text-white font-display mb-1 flex items-center gap-2">
+                XBook Console
+                <span class="text-xs px-2 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 font-semibold">Latest</span>
+              </h2>
+              <p class="text-sm text-slate-400 leading-relaxed">
+                Private knowledge triage center for X posts and YouTube videos. Features local AI summaries, semantic embeddings, and vector search.
+              </p>
+            </div>
           </div>
-          <div class="mt-4">
-            <a href="/littlethings/amiga/index.html" class="w-full py-3 px-6 rounded-xl font-semibold text-center text-white bg-amber-600 hover:bg-amber-700 active:bg-amber-800 transition-all shadow-lg shadow-amber-600/30 inline-block text-decoration-none">
-              Enter Dev Hub
+          <div class="mt-6 flex items-center justify-between border-t border-slate-800/40 pt-4">
+            <a href="https://github.com/GINNOV/xbook" target="_blank" class="text-xs text-slate-500 hover:text-slate-400 font-mono flex items-center gap-1 transition-all">
+              <i class="fab fa-github"></i> GINNOV/xbook
+            </a>
+            <a href="/xbook.html" class="inline-flex items-center gap-1.5 text-xs font-semibold text-violet-400 hover:text-violet-300 hover:underline transition-all">
+              Launch Site <i class="fas fa-arrow-right text-[10px]"></i>
             </a>
           </div>
-        </div>
-      </div>
+        </article>
 
-    </div>
-  </div>
+        
+        <article class="glass-card rounded-2xl p-6 flex flex-col justify-between group" id="project-bookmarks">
+          <div class="space-y-4">
+            <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
+              <i class="fab fa-chrome text-xl"></i>
+            </div>
+            <div>
+              <h2 class="text-xl font-bold text-white font-display mb-1">
+                Bookmarks Organizer
+              </h2>
+              <p class="text-sm text-slate-400 leading-relaxed">
+                A native macOS application to organize, rename, and optimize Chrome bookmarks using local AI.
+              </p>
+            </div>
+          </div>
+          <div class="mt-6 flex items-center justify-between border-t border-slate-800/40 pt-4">
+            <a href="https://github.com/GINNOV/Ultimate-Chrome-Bookmarks" target="_blank" class="text-xs text-slate-500 hover:text-slate-400 font-mono flex items-center gap-1 transition-all">
+              <i class="fab fa-github"></i> GINNOV/Ultimate-Chrome-Bookmarks
+            </a>
+            <a href="https://ginnov.github.io/Ultimate-Chrome-Bookmarks/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-400 hover:text-amber-300 hover:underline transition-all">
+              Launch Site <i class="fas fa-arrow-right text-[10px]"></i>
+            </a>
+          </div>
+        </article>
 
-  <div class="text-center text-xs text-slate-500 mt-16">
-    <p>🍕 <a href="https://about.me/marioesposito" class="hover:text-slate-400 transition-colors underline">windrago</a> was here.</p>
-  </div>
-</div>
+        
+        <article class="glass-card rounded-2xl p-6 flex flex-col justify-between group" id="project-poligest">
+          <div class="space-y-4">
+            <div class="w-12 h-12 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400 group-hover:scale-110 transition-transform">
+              <i class="fas fa-tooth text-xl"></i>
+            </div>
+            <div>
+              <h2 class="text-xl font-bold text-white font-display mb-1">
+                Poligest
+              </h2>
+              <p class="text-sm text-slate-400 leading-relaxed">
+                Full-stack dental clinic operating system paired with native Swift companions — featuring Apple Vision OCR to scan ID cards and parse Italian fiscal codes directly into patient intake.
+              </p>
+            </div>
+          </div>
+          <div class="mt-6 flex items-center justify-between border-t border-slate-800/40 pt-4">
+            <span class="text-xs text-slate-500 font-mono">GINNOV/poligest</span>
+            <a href="https://github.com/GINNOV/poligest" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-400 hover:text-teal-300 hover:underline transition-all">
+              View Source <i class="fas fa-arrow-right text-[10px]"></i>
+            </a>
+          </div>
+        </article>
 
-<style>
-  .hub-page-bg {
-    background-color: #0b0f19;
-    background-image: radial-gradient(circle at 50% 10%, #1e1b4b 0%, #09090b 70%);
-  }
-  .hub-page-main {
-    max-width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-</style>
+        
+        <article class="glass-card rounded-2xl p-6 flex flex-col justify-between group" id="project-cellforge">
+          <div class="space-y-4">
+            <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
+              <i class="fas fa-cube text-xl"></i>
+            </div>
+            <div>
+              <h2 class="text-xl font-bold text-white font-display mb-1 flex items-center gap-2">
+                3DCellForge
+                <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-semibold">Fork</span>
+              </h2>
+              <p class="text-sm text-slate-400 leading-relaxed">
+                AI-powered interactive 3D cell generation and exploration studio, mapping cellular structures in a web view.
+              </p>
+            </div>
+          </div>
+          <div class="mt-6 flex items-center justify-between border-t border-slate-800/40 pt-4">
+            <span class="text-xs text-slate-500 font-mono">3D Exploration</span>
+            <a href="https://github.com/GINNOV/3DCellForge" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-400 hover:text-emerald-300 hover:underline transition-all">
+              View Source <i class="fas fa-arrow-right text-[10px]"></i>
+            </a>
+          </div>
+        </article>
+
+        
+        <article class="glass-card rounded-2xl p-6 flex flex-col justify-between group" id="project-betterbcool">
+          <div class="space-y-4">
+            <div class="w-12 h-12 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 group-hover:scale-110 transition-transform">
+              <i class="fas fa-snowflake text-xl"></i>
+            </div>
+            <div>
+              <h2 class="text-xl font-bold text-white font-display mb-1 flex items-center gap-2">
+                betterBCool
+                <span class="text-xs px-2 py-0.5 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-400 font-semibold">SwiftUI</span>
+              </h2>
+              <p class="text-sm text-slate-400 leading-relaxed">
+                Independent SwiftUI climate-control app for Bosch air conditioners via HomeCom Easy. Includes iOS/watchOS apps and cloud automation.
+              </p>
+            </div>
+          </div>
+          <div class="mt-6 flex items-center justify-between border-t border-slate-800/40 pt-4">
+            <a href="https://github.com/GINNOV/betterBCool" target="_blank" class="text-xs text-slate-500 hover:text-slate-400 font-mono flex items-center gap-1 transition-all">
+              <i class="fab fa-github"></i> GINNOV/betterBCool
+            </a>
+            <a href="/betterbcool.html" class="inline-flex items-center gap-1.5 text-xs font-semibold text-sky-400 hover:text-sky-300 hover:underline transition-all">
+              Launch Site <i class="fas fa-arrow-right text-[10px]"></i>
+            </a>
+          </div>
+        </article>
+
+        
+        <article class="glass-card rounded-2xl p-6 flex flex-col justify-between group" id="project-lessonshub">
+          <div class="space-y-4">
+            <div class="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform">
+              <i class="fas fa-graduation-cap text-xl"></i>
+            </div>
+            <div>
+              <h2 class="text-xl font-bold text-white font-display mb-1 flex items-center gap-2">
+                lessonsHUB
+                <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 font-semibold">Next.js</span>
+              </h2>
+              <p class="text-sm text-slate-400 leading-relaxed">
+                Open teaching platform that allows anyone to create interactive lessons, grade students, and manage course communities.
+              </p>
+            </div>
+          </div>
+          <div class="mt-6 flex items-center justify-between border-t border-slate-800/40 pt-4">
+            <a href="https://github.com/GINNOV/lessonshub" target="_blank" class="text-xs text-slate-500 hover:text-slate-400 font-mono flex items-center gap-1 transition-all">
+              <i class="fab fa-github"></i> GINNOV/lessonshub
+            </a>
+            <a href="https://lessonshub.vercel.app" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-400 hover:text-indigo-300 hover:underline transition-all">
+              Launch Site <i class="fas fa-arrow-right text-[10px]"></i>
+            </a>
+          </div>
+        </article>
+
+        
+        <article class="glass-card rounded-2xl p-6 flex flex-col justify-between group" id="project-huenit">
+          <div class="space-y-4">
+            <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform">
+              <i class="fas fa-robot text-xl"></i>
+            </div>
+            <div>
+              <h2 class="text-xl font-bold text-white font-display mb-1 flex items-center gap-2">
+                HUENIT Robotics
+                <span class="text-xs px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 font-semibold">macOS 15+</span>
+              </h2>
+              <p class="text-sm text-slate-400 leading-relaxed">
+                The company never delivered on their promise of a macOS app. So I fixed that and added some more. No more paperweight robotic arm.
+              </p>
+            </div>
+          </div>
+          <div class="mt-6 flex items-center justify-between border-t border-slate-800/40 pt-4">
+            <a href="https://github.com/GINNOV/littlethings/tree/master/Hardware/huenit/joy1" target="_blank" class="text-xs text-slate-500 hover:text-slate-400 font-mono flex items-center gap-1 transition-all">
+              <i class="fab fa-github"></i> GINNOV/littlethings
+            </a>
+            <a href="/huenit.html" class="inline-flex items-center gap-1.5 text-xs font-semibold text-cyan-400 hover:text-cyan-300 hover:underline transition-all">
+              Launch Site <i class="fas fa-arrow-right text-[10px]"></i>
+            </a>
+          </div>
+        </article>
+
+      </section>
 
     </main>
 
     
-      
-    
+    <footer class="w-full text-center py-8 border-t border-slate-900/80 bg-slate-950/20 text-xs text-slate-500 font-mono">
+      <div class="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <span>© 2026 Dunno Much / Garage Innovation. All rights reserved.</span>
+        <div class="flex items-center gap-4">
+          <a href="https://github.com/GINNOV" target="_blank" class="hover:text-slate-400 transition-colors">
+            <i class="fab fa-github text-sm"></i> GitHub profile
+          </a>
+        </div>
+      </div>
+    </footer>
 
-    
-    <script src="/littlethings/common/js/copy-code.js"></script>
   </body>
 </html>
