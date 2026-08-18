@@ -22,7 +22,8 @@ public actor SerialPort: SerialTransport {
         let opened = Darwin.open(path, O_RDWR | O_NOCTTY | O_NONBLOCK)
         guard opened >= 0 else {
             let err = errno
-            throw ArmError.connectFailed("open \(path) failed: \(err)")
+            let reason = String(cString: strerror(err))
+            throw ArmError.connectFailed("open \(path) failed: \(reason) (\(err))")
         }
         fd = opened
 

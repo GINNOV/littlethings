@@ -122,6 +122,45 @@ struct PendantModelTests {
         #expect(model.isConnected)
     }
 
+    @Test @MainActor func connectPrefersRescanOverStalePath() async throws {
+        let serial = FakeSerial()
+        await serial.setReplies([
+            marlinIdentity(),
+            "ok\n",
+            "ok\n",
+            "X:1.00 Y:2.00 Z:3.00\nok\n",
+            "A:10.00 B:20.00 C:30.00\nok\n",
+            "X:1.00 Y:2.00 Z:3.00 E:0.00 motor_status:1\nok\n",
+        ])
+        let live = SerialCandidate(
+            path: "/dev/cu.usbserial-834430",
+            product: "HUENIT_HUEARM",
+            serial: "D30GQRUV_HUEARM",
+            vid: 0x0403,
+            pid: 0x6015
+        )
+        let requested = PathBox()
+        let model = PendantModel(arm: HuenitArm(transport: FakeSerial()), detector: { [live] })
+        model.makeTransport = { path in
+            requested.value = path
+            return serial
+        }
+        model.settleAfterOpen = .zero
+
+        await model.connect(path: "/dev/cu.usbserial-3120")
+
+        #expect(requested.value == "/dev/cu.usbserial-834430")
+        #expect(model.portPath == "/dev/cu.usbserial-834430")
+        #expect(model.isConnected)
+    }
+
+    @Test @MainActor func connectWithoutPortReportsMissingArm() async {
+        let model = PendantModel(arm: HuenitArm(transport: FakeSerial()), detector: { [] })
+        await model.connect()
+        #expect(!model.isConnected)
+        #expect(model.lastError?.contains("No HUEARM") == true)
+    }
+
     @Test @MainActor func stepAndHomeSendLabCommands() async throws {
         let serial = FakeSerial()
         await serial.setReplies([

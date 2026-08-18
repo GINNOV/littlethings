@@ -43,14 +43,17 @@ public final class PendantModel {
 
     public func refreshPorts() {
         candidates = detector()
-        if let picked = PortDetector.pickArm(from: candidates) {
-            portPath = picked.path
-        }
+        portPath = PortDetector.pickArm(from: candidates)?.path
     }
 
-    public func connect(path: String) async {
+    public func connect(path: String? = nil) async {
         lastError = nil
-        portPath = path
+        refreshPorts()
+        guard let resolved = PortDetector.pickArm(from: candidates)?.path ?? path, !resolved.isEmpty else {
+            lastError = "No HUEARM serial port. Plug the arm USB-C into the Mac and Rescan."
+            return
+        }
+        portPath = resolved
 
         if isConnected {
             await stop()
@@ -61,7 +64,7 @@ public final class PendantModel {
         await monitor.stop()
         await arm.disconnect()
 
-        let arm = HuenitArm(transport: makeTransport(path), settleAfterOpen: settleAfterOpen)
+        let arm = HuenitArm(transport: makeTransport(resolved), settleAfterOpen: settleAfterOpen)
         self.arm = arm
         await monitor.setArm(arm)
 

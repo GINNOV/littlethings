@@ -43,7 +43,7 @@ struct ConnectionBar: View {
                             if model.isConnected {
                                 await model.disconnect()
                             } else {
-                                await model.connect(path: model.portPath ?? "/dev/cu.usbserial-3120")
+                                await model.connect()
                             }
                         }
                     }

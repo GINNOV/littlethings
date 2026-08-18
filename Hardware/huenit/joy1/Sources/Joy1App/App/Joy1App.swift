@@ -7,10 +7,10 @@ struct Joy1App: App {
 
     init() {
         let scanned = PortDetector.scan()
-        let path = PortDetector.pickArm(from: scanned)?.path ?? "/dev/cu.usbserial-3120"
+        let path = PortDetector.pickArm(from: scanned)?.path
         _model = State(
             initialValue: PendantModel(
-                arm: HuenitArm(transport: SerialPort(path: path)),
+                arm: HuenitArm(transport: SerialPort(path: path ?? "/dev/null")),
                 detector: { PortDetector.scan() }
             )
         )

@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 71;
 	objects = {
 
 /* Begin PBXContainerItemProxy section */
@@ -30,24 +30,9 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		SYN000000000000000000001 /* Joy1 */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = Sources/Joy1;
-			sourceTree = "<group>";
-		};
-		SYN000000000000000000002 /* Joy1App */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-				"App/Joy1App.entitlements" = text.plist.entitlements;
-			};
-			path = Sources/Joy1App;
-			sourceTree = "<group>";
-		};
-		SYN000000000000000000003 /* Joy1Tests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = Tests/Joy1Tests;
-			sourceTree = "<group>";
-		};
+		SYN000000000000000000001 /* Sources/Joy1 */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Sources/Joy1; sourceTree = "<group>"; };
+		SYN000000000000000000002 /* Sources/Joy1App */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {App/Joy1App.entitlements = text.plist.entitlements; }; explicitFolders = (); path = Sources/Joy1App; sourceTree = "<group>"; };
+		SYN000000000000000000003 /* Tests/Joy1Tests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Tests/Joy1Tests; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -78,9 +63,9 @@
 		GRP000000000000000000001 = {
 			isa = PBXGroup;
 			children = (
-				SYN000000000000000000001 /* Joy1 */,
-				SYN000000000000000000002 /* Joy1App */,
-				SYN000000000000000000003 /* Joy1Tests */,
+				SYN000000000000000000001 /* Sources/Joy1 */,
+				SYN000000000000000000002 /* Sources/Joy1App */,
+				SYN000000000000000000003 /* Tests/Joy1Tests */,
 				GRP000000000000000000002 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -97,30 +82,6 @@
 		};
 /* End PBXGroup section */
 
-/* Begin PBXSourcesBuildPhase section */
-		SRC000000000000000000001 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		SRC000000000000000000002 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		SRC000000000000000000003 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXSourcesBuildPhase section */
-
 /* Begin PBXNativeTarget section */
 		TGT000000000000000000001 /* Joy1 */ = {
 			isa = PBXNativeTarget;
@@ -134,7 +95,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				SYN000000000000000000001 /* Joy1 */,
+				SYN000000000000000000001 /* Sources/Joy1 */,
 			);
 			name = Joy1;
 			productName = Joy1;
@@ -154,7 +115,7 @@
 				DEP000000000000000000011 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				SYN000000000000000000002 /* Joy1App */,
+				SYN000000000000000000002 /* Sources/Joy1App */,
 			);
 			name = Joy1App;
 			productName = Joy1App;
@@ -174,7 +135,7 @@
 				DEP000000000000000000012 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				SYN000000000000000000003 /* Joy1Tests */,
+				SYN000000000000000000003 /* Tests/Joy1Tests */,
 			);
 			name = Joy1Tests;
 			productName = Joy1Tests;
@@ -212,7 +173,6 @@
 			);
 			mainGroup = GRP000000000000000000001;
 			minimizedProjectReferenceProxies = 1;
-			preferredProjectObjectVersion = 77;
 			productRefGroup = GRP000000000000000000002 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -223,6 +183,30 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		SRC000000000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		SRC000000000000000000002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		SRC000000000000000000003 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
 		DEP000000000000000000011 /* PBXTargetDependency */ = {
@@ -300,9 +284,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				CODE_SIGNING_ALLOWED = YES;
 				CODE_SIGN_ENTITLEMENTS = Sources/Joy1App/App/Joy1App.entitlements;
 				CODE_SIGN_IDENTITY = "-";
-				CODE_SIGNING_ALLOWED = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				ENABLE_APP_SANDBOX = NO;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -330,9 +314,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				CODE_SIGNING_ALLOWED = YES;
 				CODE_SIGN_ENTITLEMENTS = Sources/Joy1App/App/Joy1App.entitlements;
 				CODE_SIGN_IDENTITY = "-";
-				CODE_SIGNING_ALLOWED = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				ENABLE_APP_SANDBOX = NO;
 				GENERATE_INFOPLIST_FILE = YES;
