@@ -2,11 +2,11 @@ import Testing
 @testable import Joy2
 
 struct MapperTests {
-    @Test func stickRightIsXMinusOnly() {
+    @Test func stickRightIsXPlusOnly() {
         var mapper = JoystickMapper()
         let result = mapper.map(.deflected(.e, leftFire: false, rightFire: false))
-        #expect(result.intent == .jog(JogVector(dx: -1, dy: 0, dz: 0, de: 0)))
-        #expect(result.highlights.cells == [.xMinus])
+        #expect(result.intent == .jog(JogVector(dx: 1, dy: 0, dz: 0, de: 0)))
+        #expect(result.highlights.cells == [.xPlus])
     }
 
     @Test func stickAwayIsYPlus() {
@@ -19,8 +19,8 @@ struct MapperTests {
     @Test func diagonalNorthEastHighlightsBoth() {
         var mapper = JoystickMapper()
         let result = mapper.map(.deflected(.ne, leftFire: false, rightFire: false))
-        #expect(result.intent == .jog(JogVector(dx: -1, dy: 1, dz: 0, de: 0)))
-        #expect(result.highlights.cells == [.xMinus, .yPlus, .xyNW])
+        #expect(result.intent == .jog(JogVector(dx: 1, dy: 1, dz: 0, de: 0)))
+        #expect(result.highlights.cells == [.xPlus, .yPlus, .xyNE])
     }
 
     @Test func leftFireForwardIsZPlus() {

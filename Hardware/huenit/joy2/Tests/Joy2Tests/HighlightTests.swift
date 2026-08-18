@@ -2,10 +2,10 @@ import Testing
 @testable import Joy2
 
 struct HighlightTests {
-    @Test func stickRightHighlightsXMinusOnly() {
+    @Test func stickRightHighlightsXPlusOnly() {
         var mapper = JoystickMapper()
         let result = mapper.map(.deflected(.e, leftFire: false, rightFire: false))
-        #expect(result.highlights.cells == [.xMinus])
+        #expect(result.highlights.cells == [.xPlus])
     }
 
     @Test func leftPlusForwardHighlightsZPlusAndMode() {

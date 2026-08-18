@@ -21,7 +21,7 @@ struct LiveStickTests {
             await arm.disconnect()
             return
         }
-        #expect(vector.dx == -1)
+        #expect(vector.dx == 1)
         try await arm.step(dx: Double(vector.dx), dy: 0, dz: 0, feedMmPerMin: 300)
         try await arm.flush()
         try await arm.step(dx: Double(-vector.dx), dy: 0, dz: 0, feedMmPerMin: 300)
