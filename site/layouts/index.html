@@ -76,201 +76,217 @@
         
         <!-- Project 1: Amiga Dev Hub (littlethings) -->
         <article class="glass-card rounded-2xl p-6 flex flex-col justify-between group" id="project-amiga">
-          <div class="space-y-4">
-            <div class="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 group-hover:scale-110 transition-transform ml-auto">
-              <i class="fas fa-microchip text-xl"></i>
-            </div>
-            <div>
-              <h2 class="text-xl font-bold text-white font-display mb-1 flex items-center gap-2">
+          <div class="flex items-start justify-between gap-4">
+            <div class="space-y-2 flex-1">
+              <h2 class="text-xl font-bold text-white font-display">
                 Amiga Dev Hub
-                <span class="text-xs px-2 py-0.5 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 font-semibold">Active</span>
               </h2>
               <p class="text-sm text-slate-400 leading-relaxed">
                 Collection of Amiga assembly projects, hardware emulators, layouts, and system configurations.
               </p>
             </div>
+            <div class="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 group-hover:scale-110 transition-transform flex-shrink-0">
+              <i class="fas fa-microchip text-xl"></i>
+            </div>
           </div>
           <div class="mt-6 flex items-center justify-between border-t border-slate-800/40 pt-4">
             <span class="text-xs text-slate-500 font-mono">GINNOV/littlethings</span>
-            <a href="{{ "amiga/index.html" | relURL }}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-red-400 hover:text-red-300 hover:underline transition-all">
-              Launch Site <i class="fas fa-arrow-right text-[10px]"></i>
-            </a>
+            <div class="flex items-center gap-2.5">
+              <span class="text-xs px-2 py-0.5 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 font-semibold">Active</span>
+              <a href="{{ "amiga/index.html" | relURL }}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-red-400 hover:text-red-300 hover:underline transition-all">
+                Launch Site <i class="fas fa-arrow-right text-[10px]"></i>
+              </a>
+            </div>
           </div>
         </article>
 
         <!-- Project 2: XBook Console -->
         <article class="glass-card rounded-2xl p-6 flex flex-col justify-between group animate-fade-in" id="project-xbook">
-          <div class="space-y-4">
-            <div class="w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400 group-hover:scale-110 transition-transform ml-auto">
-              <i class="fas fa-book-open text-xl"></i>
-            </div>
-            <div>
-              <h2 class="text-xl font-bold text-white font-display mb-1 flex items-center gap-2">
+          <div class="flex items-start justify-between gap-4">
+            <div class="space-y-2 flex-1">
+              <h2 class="text-xl font-bold text-white font-display">
                 XBook Console
-                <span class="text-xs px-2 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 font-semibold">Latest</span>
               </h2>
               <p class="text-sm text-slate-400 leading-relaxed">
                 Private knowledge triage center for X posts and YouTube videos. Features local AI summaries, semantic embeddings, and vector search.
               </p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400 group-hover:scale-110 transition-transform flex-shrink-0">
+              <i class="fas fa-book-open text-xl"></i>
             </div>
           </div>
           <div class="mt-6 flex items-center justify-between border-t border-slate-800/40 pt-4">
             <a href="https://github.com/GINNOV/xbook" target="_blank" class="text-xs text-slate-500 hover:text-slate-400 font-mono flex items-center gap-1 transition-all">
               <i class="fab fa-github"></i> GINNOV/xbook
             </a>
-            <a href="{{ "xbook.html" | relURL }}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-violet-400 hover:text-violet-300 hover:underline transition-all">
-              Launch Site <i class="fas fa-arrow-right text-[10px]"></i>
-            </a>
+            <div class="flex items-center gap-2.5">
+              <span class="text-xs px-2 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 font-semibold">Latest</span>
+              <a href="{{ "xbook.html" | relURL }}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-violet-400 hover:text-violet-300 hover:underline transition-all">
+                Launch Site <i class="fas fa-arrow-right text-[10px]"></i>
+              </a>
+            </div>
           </div>
         </article>
 
         <!-- Project 3: Ultimate Chrome Bookmarks -->
         <article class="glass-card rounded-2xl p-6 flex flex-col justify-between group" id="project-bookmarks">
-          <div class="space-y-4">
-            <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform ml-auto">
-              <i class="fab fa-chrome text-xl"></i>
-            </div>
-            <div>
-              <h2 class="text-xl font-bold text-white font-display mb-1">
+          <div class="flex items-start justify-between gap-4">
+            <div class="space-y-2 flex-1">
+              <h2 class="text-xl font-bold text-white font-display">
                 Bookmarks Organizer
               </h2>
               <p class="text-sm text-slate-400 leading-relaxed">
                 A native macOS application to organize, rename, and optimize Chrome bookmarks using local AI.
               </p>
             </div>
+            <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform flex-shrink-0">
+              <i class="fab fa-chrome text-xl"></i>
+            </div>
           </div>
           <div class="mt-6 flex items-center justify-between border-t border-slate-800/40 pt-4">
             <a href="https://github.com/GINNOV/Ultimate-Chrome-Bookmarks" target="_blank" class="text-xs text-slate-500 hover:text-slate-400 font-mono flex items-center gap-1 transition-all">
               <i class="fab fa-github"></i> GINNOV/Ultimate-Chrome-Bookmarks
             </a>
-            <a href="https://ginnov.github.io/Ultimate-Chrome-Bookmarks/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-400 hover:text-amber-300 hover:underline transition-all">
-              Launch Site <i class="fas fa-arrow-right text-[10px]"></i>
-            </a>
+            <div class="flex items-center gap-2.5">
+              <a href="https://ginnov.github.io/Ultimate-Chrome-Bookmarks/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-400 hover:text-amber-300 hover:underline transition-all">
+                Launch Site <i class="fas fa-arrow-right text-[10px]"></i>
+              </a>
+            </div>
           </div>
         </article>
 
         <!-- Project 4: Poligest -->
         <article class="glass-card rounded-2xl p-6 flex flex-col justify-between group" id="project-poligest">
-          <div class="space-y-4">
-            <div class="w-12 h-12 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400 group-hover:scale-110 transition-transform ml-auto">
-              <i class="fas fa-tooth text-xl"></i>
-            </div>
-            <div>
-              <h2 class="text-xl font-bold text-white font-display mb-1">
+          <div class="flex items-start justify-between gap-4">
+            <div class="space-y-2 flex-1">
+              <h2 class="text-xl font-bold text-white font-display">
                 Poligest
               </h2>
               <p class="text-sm text-slate-400 leading-relaxed">
                 Full-stack dental clinic operating system paired with native Swift companions — featuring Apple Vision OCR to scan ID cards and parse Italian fiscal codes directly into patient intake.
               </p>
             </div>
+            <div class="w-12 h-12 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400 group-hover:scale-110 transition-transform flex-shrink-0">
+              <i class="fas fa-tooth text-xl"></i>
+            </div>
           </div>
           <div class="mt-6 flex items-center justify-between border-t border-slate-800/40 pt-4">
             <span class="text-xs text-slate-500 font-mono">GINNOV/poligest</span>
-            <a href="https://github.com/GINNOV/poligest" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-400 hover:text-teal-300 hover:underline transition-all">
-              View Source <i class="fas fa-arrow-right text-[10px]"></i>
-            </a>
+            <div class="flex items-center gap-2.5">
+              <a href="https://github.com/GINNOV/poligest" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-400 hover:text-teal-300 hover:underline transition-all">
+                View Source <i class="fas fa-arrow-right text-[10px]"></i>
+              </a>
+            </div>
           </div>
         </article>
 
         <!-- Project 5: 3DCellForge -->
         <article class="glass-card rounded-2xl p-6 flex flex-col justify-between group" id="project-cellforge">
-          <div class="space-y-4">
-            <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform ml-auto">
-              <i class="fas fa-cube text-xl"></i>
-            </div>
-            <div>
-              <h2 class="text-xl font-bold text-white font-display mb-1 flex items-center gap-2">
+          <div class="flex items-start justify-between gap-4">
+            <div class="space-y-2 flex-1">
+              <h2 class="text-xl font-bold text-white font-display">
                 3DCellForge
-                <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-semibold">Fork</span>
               </h2>
               <p class="text-sm text-slate-400 leading-relaxed">
                 AI-powered interactive 3D cell generation and exploration studio, mapping cellular structures in a web view.
               </p>
             </div>
+            <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform flex-shrink-0">
+              <i class="fas fa-cube text-xl"></i>
+            </div>
           </div>
           <div class="mt-6 flex items-center justify-between border-t border-slate-800/40 pt-4">
             <span class="text-xs text-slate-500 font-mono">3D Exploration</span>
-            <a href="https://github.com/GINNOV/3DCellForge" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-400 hover:text-emerald-300 hover:underline transition-all">
-              View Source <i class="fas fa-arrow-right text-[10px]"></i>
-            </a>
+            <div class="flex items-center gap-2.5">
+              <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-semibold">Fork</span>
+              <a href="https://github.com/GINNOV/3DCellForge" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-400 hover:text-emerald-300 hover:underline transition-all">
+                View Source <i class="fas fa-arrow-right text-[10px]"></i>
+              </a>
+            </div>
           </div>
         </article>
 
         <!-- Project 6: betterBCool -->
         <article class="glass-card rounded-2xl p-6 flex flex-col justify-between group" id="project-betterbcool">
-          <div class="space-y-4">
-            <div class="w-12 h-12 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 group-hover:scale-110 transition-transform ml-auto">
-              <i class="fas fa-snowflake text-xl"></i>
-            </div>
-            <div>
-              <h2 class="text-xl font-bold text-white font-display mb-1 flex items-center gap-2">
+          <div class="flex items-start justify-between gap-4">
+            <div class="space-y-2 flex-1">
+              <h2 class="text-xl font-bold text-white font-display">
                 betterBCool
-                <span class="text-xs px-2 py-0.5 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-400 font-semibold">SwiftUI</span>
               </h2>
               <p class="text-sm text-slate-400 leading-relaxed">
                 Independent SwiftUI climate-control app for Bosch air conditioners via HomeCom Easy. Includes iOS/watchOS apps and cloud automation.
               </p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 group-hover:scale-110 transition-transform flex-shrink-0">
+              <i class="fas fa-snowflake text-xl"></i>
             </div>
           </div>
           <div class="mt-6 flex items-center justify-between border-t border-slate-800/40 pt-4">
             <a href="https://github.com/GINNOV/betterBCool" target="_blank" class="text-xs text-slate-500 hover:text-slate-400 font-mono flex items-center gap-1 transition-all">
               <i class="fab fa-github"></i> GINNOV/betterBCool
             </a>
-            <a href="{{ "betterbcool.html" | relURL }}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-sky-400 hover:text-sky-300 hover:underline transition-all">
-              Launch Site <i class="fas fa-arrow-right text-[10px]"></i>
-            </a>
+            <div class="flex items-center gap-2.5">
+              <span class="text-xs px-2 py-0.5 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-400 font-semibold">SwiftUI</span>
+              <a href="{{ "betterbcool.html" | relURL }}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-sky-400 hover:text-sky-300 hover:underline transition-all">
+                Launch Site <i class="fas fa-arrow-right text-[10px]"></i>
+              </a>
+            </div>
           </div>
         </article>
 
         <!-- Project 7: lessonsHUB -->
         <article class="glass-card rounded-2xl p-6 flex flex-col justify-between group" id="project-lessonshub">
-          <div class="space-y-4">
-            <div class="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform ml-auto">
-              <i class="fas fa-graduation-cap text-xl"></i>
-            </div>
-            <div>
-              <h2 class="text-xl font-bold text-white font-display mb-1 flex items-center gap-2">
+          <div class="flex items-start justify-between gap-4">
+            <div class="space-y-2 flex-1">
+              <h2 class="text-xl font-bold text-white font-display">
                 lessonsHUB
-                <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 font-semibold">Next.js</span>
               </h2>
               <p class="text-sm text-slate-400 leading-relaxed">
                 Open teaching platform that allows anyone to create interactive lessons, grade students, and manage course communities.
               </p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform flex-shrink-0">
+              <i class="fas fa-graduation-cap text-xl"></i>
             </div>
           </div>
           <div class="mt-6 flex items-center justify-between border-t border-slate-800/40 pt-4">
             <a href="https://github.com/GINNOV/lessonshub" target="_blank" class="text-xs text-slate-500 hover:text-slate-400 font-mono flex items-center gap-1 transition-all">
               <i class="fab fa-github"></i> GINNOV/lessonshub
             </a>
-            <a href="https://lessonshub.vercel.app" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-400 hover:text-indigo-300 hover:underline transition-all">
-              Launch Site <i class="fas fa-arrow-right text-[10px]"></i>
-            </a>
+            <div class="flex items-center gap-2.5">
+              <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 font-semibold">Next.js</span>
+              <a href="https://lessonshub.vercel.app" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-400 hover:text-indigo-300 hover:underline transition-all">
+                Launch Site <i class="fas fa-arrow-right text-[10px]"></i>
+              </a>
+            </div>
           </div>
         </article>
 
         <!-- Project 8: HUENIT Robotics -->
         <article class="glass-card rounded-2xl p-6 flex flex-col justify-between group" id="project-huenit">
-          <div class="space-y-4">
-            <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform ml-auto">
-              <i class="fas fa-robot text-xl"></i>
-            </div>
-            <div>
-              <h2 class="text-xl font-bold text-white font-display mb-1 flex items-center gap-2">
+          <div class="flex items-start justify-between gap-4">
+            <div class="space-y-2 flex-1">
+              <h2 class="text-xl font-bold text-white font-display">
                 HUENIT Robotics
-                <span class="text-xs px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 font-semibold">macOS 15+</span>
               </h2>
               <p class="text-sm text-slate-400 leading-relaxed">
                 The company never delivered on their promise of a macOS app. So I fixed that and added some more. No more paperweight robotic arm.
               </p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform flex-shrink-0">
+              <i class="fas fa-robot text-xl"></i>
             </div>
           </div>
           <div class="mt-6 flex items-center justify-between border-t border-slate-800/40 pt-4">
             <a href="https://github.com/GINNOV/littlethings/tree/master/Hardware/huenit/joy1" target="_blank" class="text-xs text-slate-500 hover:text-slate-400 font-mono flex items-center gap-1 transition-all">
               <i class="fab fa-github"></i> GINNOV/littlethings
             </a>
-            <a href="{{ "huenit.html" | relURL }}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-cyan-400 hover:text-cyan-300 hover:underline transition-all">
-              Launch Site <i class="fas fa-arrow-right text-[10px]"></i>
-            </a>
+            <div class="flex items-center gap-2.5">
+              <span class="text-xs px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 font-semibold">macOS 15+</span>
+              <a href="{{ "huenit.html" | relURL }}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-cyan-400 hover:text-cyan-300 hover:underline transition-all">
+                Launch Site <i class="fas fa-arrow-right text-[10px]"></i>
+              </a>
+            </div>
           </div>
         </article>
 
