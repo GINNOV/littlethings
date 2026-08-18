@@ -1,4 +1,4 @@
-baseURL = '/'
+baseURL = 'https://ginnov.github.io/littlethings/'
 title = 'Back to Amiga Dev Hub'
 defaultContentLanguage = 'en'
 publishDir = 'public'
