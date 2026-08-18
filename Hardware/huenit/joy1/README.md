@@ -2,6 +2,8 @@
 
 A macOS controller for a HUENIT robotic arm with a suction cup. Connect over USB, jog in X/Y/Z, set home, turn suction on and off, and rotate the cup.
 
+![Joy1 window with labels for each control](docs/joy1-guide.png)
+
 ## Requirements
 
 - macOS 15 or later
@@ -37,22 +39,7 @@ macOS assigns a new serial device name after unplug/replug. Auto Connect looks u
 
 ## Using the pad
 
-**Status** is the live tip position in millimetres (`x`, `y`, `z`) and the suction-cup angle (`e`).
-
-**STOP** (or Esc) halts motion and turns suction off. Switching away from the window does the same.
-
-| Control | Action |
-|---|---|
-| Hold | Arm moves while you hold a key |
-| Step | Each click moves a fixed distance |
-| Speed | 1–400 (same scale as HUENIT Lab) |
-| Width | Step size: 0.1, 1, or 10 mm |
-| Pad | X/Y/Z and diagonals |
-| ⌂ | Home: X 0, Y 180, Z 0 |
-| Z0 | Set Z to 0, keep X and Y |
-| Move to | Type a pose and click **Move Now** |
-| Suction | Vacuum on/off |
-| E− / E+ | Rotate the cup |
+See the labeled window above. **STOP** (or Esc) also fires if you switch away from the app.
 
 Let one move finish before starting the next. If the pose is outside reach, the arm will refuse it.
 

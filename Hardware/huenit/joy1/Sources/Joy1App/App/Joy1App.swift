@@ -6,6 +6,11 @@ struct Joy1App: App {
     @State private var model: PendantModel
 
     init() {
+        if CommandLine.arguments.contains("--snapshot") {
+            MainActor.assumeIsolated {
+                WindowSnapshot.write()
+            }
+        }
         let scanned = PortDetector.scan()
         let path = PortDetector.pickArm(from: scanned)?.path
         _model = State(
