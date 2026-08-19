@@ -30,7 +30,7 @@ enum DesignTokens {
         static let minimumWindowHeight: CGFloat = 720
         static let defaultWindowWidth: CGFloat = 1_280
         static let defaultWindowHeight: CGFloat = 800
-        static let sidebarWidth: CGFloat = 176
+        static let sidebarWidth: CGFloat = 210
         static let inspectorWidth: CGFloat = 216
     }
 }
