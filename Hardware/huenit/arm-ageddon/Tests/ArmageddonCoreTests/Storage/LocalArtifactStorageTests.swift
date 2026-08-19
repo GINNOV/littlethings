@@ -28,6 +28,65 @@ struct LocalArtifactStorageTests {
         #expect(try await reopened.bytes(id: "fixture") == Data("camera".utf8))
     }
 
+    @Test("Corrupt metadata and completion checkpoints are repaired")
+    func corruptCheckpointsAreRepaired() async throws {
+        let root = FileManager.default.temporaryDirectory
+            .appending(path: "armageddon-storage-corrupt-checkpoints-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let fileSystem = POSIXDurableFileSystem(root: root)
+        let metadata = try SwiftDataArtifactMetadataStore(
+            storeURL: root.appending(path: "Metadata/metadata.store")
+        )
+        let storage = LocalArtifactStorage(fileSystem: fileSystem, metadata: metadata)
+        try await storage.open()
+        _ = try await storage.create(id: "fixture", bytes: Data("camera".utf8))
+        let transaction = try #require(try await fileSystem.children("Transactions").first)
+        let transactionRoot = root.appending(path: "Transactions").appending(path: transaction)
+
+        try Data("torn".utf8).write(to: transactionRoot.appending(path: "20-metadataCommitted.json"))
+        let afterMetadataRepair = LocalArtifactStorage(
+            fileSystem: fileSystem,
+            metadata: try SwiftDataArtifactMetadataStore(storeURL: root.appending(path: "Metadata/metadata.store"))
+        )
+        try await afterMetadataRepair.open()
+        #expect(try await afterMetadataRepair.unresolvedTransactionCount() == 0)
+
+        try Data("torn".utf8).write(to: transactionRoot.appending(path: "40-checkpoint.json"))
+        let afterCheckpointRepair = LocalArtifactStorage(
+            fileSystem: fileSystem,
+            metadata: try SwiftDataArtifactMetadataStore(storeURL: root.appending(path: "Metadata/metadata.store"))
+        )
+        try await afterCheckpointRepair.open()
+        #expect(try await afterCheckpointRepair.unresolvedTransactionCount() == 0)
+        #expect(try await afterCheckpointRepair.bytes(id: "fixture") == Data("camera".utf8))
+    }
+
+    @Test("Recovery removes a leftover transaction temporary blob")
+    func leftoverTemporaryBlobIsRemoved() async throws {
+        let root = FileManager.default.temporaryDirectory
+            .appending(path: "armageddon-storage-leftover-temp-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let fileSystem = POSIXDurableFileSystem(root: root)
+        let metadata = try SwiftDataArtifactMetadataStore(
+            storeURL: root.appending(path: "Metadata/metadata.store")
+        )
+        let storage = LocalArtifactStorage(fileSystem: fileSystem, metadata: metadata)
+        try await storage.open()
+        _ = try await storage.create(id: "fixture", bytes: Data("camera".utf8))
+        let transaction = try #require(try await fileSystem.children("Transactions").first)
+        let transactionRoot = root.appending(path: "Transactions").appending(path: transaction)
+        try FileManager.default.removeItem(at: transactionRoot.appending(path: "10-fileRenamed.json"))
+        try Data("camera".utf8).write(to: root.appending(path: "Temp").appending(path: "\(transaction).blob"))
+
+        let reopened = LocalArtifactStorage(
+            fileSystem: fileSystem,
+            metadata: try SwiftDataArtifactMetadataStore(storeURL: root.appending(path: "Metadata/metadata.store"))
+        )
+        try await reopened.open()
+        #expect(try await fileSystem.exists("Temp/\(transaction).blob") == false)
+        #expect(try await reopened.bytes(id: "fixture") == Data("camera".utf8))
+    }
+
     @Test("Versioned metadata migrates V1 records to V2")
     func metadataMigration() async throws {
         let root = FileManager.default.temporaryDirectory

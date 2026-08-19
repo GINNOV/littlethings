@@ -1,6 +1,6 @@
 import Foundation
 
-private struct TransactionJournal: Codable, Sendable {
+private struct TransactionJournal: Codable, Equatable, Sendable {
     let transactionID: UUID
     let operation: StorageOperation
     let record: ArtifactRecord
@@ -144,7 +144,18 @@ public actor LocalArtifactStorage {
     public func unresolvedTransactionCount() async throws -> Int {
         var count = 0
         for child in try await fileSystem.children("Transactions") where !child.hasPrefix(".") {
-            if !(try await fileSystem.exists("Transactions/\(child)/40-checkpoint.json")) { count += 1 }
+            let checkpointPath = "Transactions/\(child)/40-checkpoint.json"
+            guard try await fileSystem.exists(checkpointPath) else {
+                count += 1
+                continue
+            }
+            guard let checkpoint = try? JSONDecoder().decode(
+                TransactionJournal.self,
+                from: try await fileSystem.read(checkpointPath)
+            ), checkpoint.transactionID.uuidString == child else {
+                count += 1
+                continue
+            }
         }
         return count
     }
@@ -216,9 +227,20 @@ public actor LocalArtifactStorage {
             expectedMetadataHash = SwiftDataArtifactMetadataStore.sha256(try encoder.encode(journal.record))
         }
         let stage20Path = "\(transactionPath)/20-metadataCommitted.json"
-        let currentHash = fresh ? nil : try await metadata.stableHash(id: journal.record.id)
-        let stage20Exists = fresh ? false : try await fileSystem.exists(stage20Path)
+        var stage20Exists = fresh ? false : try await fileSystem.exists(stage20Path)
+        if stage20Exists {
+            let checkpoint = try? JSONDecoder().decode(
+                MetadataCheckpoint.self,
+                from: try await fileSystem.read(stage20Path)
+            )
+            if checkpoint?.transactionID != journal.transactionID || checkpoint?.metadataHash != expectedMetadataHash {
+                try await fileSystem.unlink(stage20Path)
+                try await fileSystem.syncDirectory(transactionPath)
+                stage20Exists = false
+            }
+        }
         if fresh || !stage20Exists {
+            let currentHash = fresh ? nil : try await metadata.stableHash(id: journal.record.id)
             let verifiedHash: String
             if fresh || currentHash != expectedMetadataHash {
                 let mutation: MetadataMutation = journal.operation == .purge
@@ -242,8 +264,20 @@ public actor LocalArtifactStorage {
             try await writeStage("30-complete.json", data: encode(journal), transactionPath: transactionPath)
             try await fileSystem.syncDirectory("Transactions")
         }
-        let checkpointExists = fresh ? false : try await fileSystem.exists("\(transactionPath)/40-checkpoint.json")
-        if fresh || !checkpointExists {
+        let checkpointPath = "\(transactionPath)/40-checkpoint.json"
+        var checkpointExists = fresh ? false : try await fileSystem.exists(checkpointPath)
+        if checkpointExists {
+            let checkpoint = try? JSONDecoder().decode(
+                TransactionJournal.self,
+                from: try await fileSystem.read(checkpointPath)
+            )
+            if checkpoint != journal {
+                try await fileSystem.unlink(checkpointPath)
+                try await fileSystem.syncDirectory(transactionPath)
+                checkpointExists = false
+            }
+        }
+        if !checkpointExists {
             try await writeStage("40-checkpoint.json", data: encode(journal), transactionPath: transactionPath)
             try await fileSystem.syncDirectory("Transactions")
         }
@@ -263,6 +297,7 @@ public actor LocalArtifactStorage {
         case .create:
             let destination = try required(journal.destinationPath)
             if try await path(destination, hasHash: journal.record.contentHash) {
+                try await removeTemporaryIfPresent(journal)
                 try await fileSystem.syncDirectory(parent(of: try required(journal.temporaryPath)))
                 try await fileSystem.syncDirectory(parent(of: destination))
             } else {
@@ -285,10 +320,13 @@ public actor LocalArtifactStorage {
                 if let temporary = journal.temporaryPath, let destination = journal.destinationPath {
                     try await durableRename(temporary, destination)
                 }
-            } else if !(try await fileSystem.exists("\(transactionPath)/09-oldQuarantined.json")) {
-                try await syncRenameParents(journal.sourcePath, journal.quarantinePath)
-                try await writeStage("09-oldQuarantined.json", data: encode(journal), transactionPath: transactionPath)
-                try await syncRenameParents(journal.temporaryPath, journal.destinationPath)
+            } else {
+                try await removeTemporaryIfPresent(journal)
+                if !(try await fileSystem.exists("\(transactionPath)/09-oldQuarantined.json")) {
+                    try await syncRenameParents(journal.sourcePath, journal.quarantinePath)
+                    try await writeStage("09-oldQuarantined.json", data: encode(journal), transactionPath: transactionPath)
+                    try await syncRenameParents(journal.temporaryPath, journal.destinationPath)
+                }
             }
         case .trash, .restore:
             if let source = journal.sourcePath, let destination = journal.destinationPath,
@@ -350,6 +388,12 @@ public actor LocalArtifactStorage {
             try await fileSystem.syncFile(temporary)
             try await fileSystem.syncDirectory(parent(of: temporary))
         }
+    }
+
+    private func removeTemporaryIfPresent(_ journal: TransactionJournal) async throws {
+        guard let temporary = journal.temporaryPath, try await fileSystem.exists(temporary) else { return }
+        try await fileSystem.unlink(temporary)
+        try await fileSystem.syncDirectory(parent(of: temporary))
     }
 
     private func createTemporary(_ journal: TransactionJournal) async throws {
