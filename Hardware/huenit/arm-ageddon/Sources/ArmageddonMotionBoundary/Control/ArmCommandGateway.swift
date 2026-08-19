@@ -10,6 +10,7 @@ actor ArmCommandGateway {
     private var jogTask: Task<Void, Never>?
     private var engine = JogEngine(speedMmPerSec: 20, speedDegPerSec: 20)
     private var held: [Axis: Sign] = [:]
+    private var stopRequests = 0
 
     private(set) var isConnected = false
     private(set) var isMoving = false
@@ -43,7 +44,7 @@ actor ArmCommandGateway {
     }
 
     func setHeld(_ axis: Axis, _ sign: Sign, down: Bool) {
-        guard isConnected else { return }
+        guard isConnected, stopRequests == 0 else { return }
         if down { held[axis] = sign }
         else if held[axis] == sign { held[axis] = nil }
         engine.setHeld(axis, sign, down: down)
@@ -53,19 +54,23 @@ actor ArmCommandGateway {
     func heldAxes() -> [Axis: Sign] { held }
 
     func tickJog(dt: Double) async {
-        guard isConnected else { return }
+        guard isConnected, stopRequests == 0 else { return }
         let token = await emergencyStop.issueMotionGeneration()
+        let permit = motionPermit(for: token)
         let steps = engine.tick(dt: dt)
         for step in steps {
             guard await emergencyStop.isCurrent(token) else { return }
             do {
                 if step.axis.isCartesian {
-                    try await arm.jogCartesian(axis: step.axis, deltaMm: step.delta, feedMmPerMin: step.feedMmPerMin)
+                    try await arm.jogCartesian(axis: step.axis, deltaMm: step.delta, feedMmPerMin: step.feedMmPerMin, motionPermit: permit)
                 } else if step.axis.isModule {
-                    try await arm.jogModule(delta: step.delta, feedMmPerMin: step.feedMmPerMin)
+                    try await arm.jogModule(delta: step.delta, feedMmPerMin: step.feedMmPerMin, motionPermit: permit)
                 } else {
-                    try await arm.jogJoint(axis: step.axis, deltaDeg: step.delta, feedMmPerMin: step.feedMmPerMin)
+                    try await arm.jogJoint(axis: step.axis, deltaDeg: step.delta, feedMmPerMin: step.feedMmPerMin, motionPermit: permit)
                 }
+            } catch let error as ArmError where error == .motionInvalidated {
+                clearHolds()
+                return
             } catch let error as ArmError {
                 lastError = error
                 clearHolds()
@@ -78,8 +83,10 @@ actor ArmCommandGateway {
         isMoving = !held.isEmpty
         if engine.wantsFlush, await emergencyStop.isCurrent(token) {
             do {
-                try await arm.flush()
+                try await arm.flush(motionPermit: permit)
                 engine.didFlush()
+            } catch let error as ArmError where error == .motionInvalidated {
+                clearHolds()
             } catch let error as ArmError {
                 lastError = error
                 clearHolds()
@@ -90,12 +97,12 @@ actor ArmCommandGateway {
     }
 
     func step(dx: Double, dy: Double, dz: Double, feedMmPerMin: Double = 1200) async throws {
-        guard isConnected else { throw ArmError.disconnected }
+        guard isConnected, stopRequests == 0 else { throw ArmError.disconnected }
         guard controlMode == .step else { throw ArmError.invalidControlMode }
         let token = await emergencyStop.issueMotionGeneration()
         guard await emergencyStop.isCurrent(token) else { return }
         do {
-            try await arm.step(dx: dx, dy: dy, dz: dz, feedMmPerMin: feedMmPerMin)
+            try await arm.step(dx: dx, dy: dy, dz: dz, feedMmPerMin: feedMmPerMin, motionPermit: motionPermit(for: token))
         } catch let error as ArmError {
             lastError = error
             throw error
@@ -113,17 +120,17 @@ actor ArmCommandGateway {
     }
 
     func home(feedMmPerMin: Double = 1200) async throws {
-        guard isConnected else { throw ArmError.disconnected }
+        guard isConnected, stopRequests == 0 else { throw ArmError.disconnected }
         let token = await emergencyStop.issueMotionGeneration()
         guard await emergencyStop.isCurrent(token) else { return }
-        try await arm.home(feedMmPerMin: feedMmPerMin)
+        try await arm.home(feedMmPerMin: feedMmPerMin, motionPermit: motionPermit(for: token))
     }
 
     func zeroZ(feedMmPerMin: Double = 1200) async throws {
-        guard isConnected else { throw ArmError.disconnected }
+        guard isConnected, stopRequests == 0 else { throw ArmError.disconnected }
         let token = await emergencyStop.issueMotionGeneration()
         guard await emergencyStop.isCurrent(token) else { return }
-        try await arm.setZ0(feedMmPerMin: feedMmPerMin)
+        try await arm.setZ0(feedMmPerMin: feedMmPerMin, motionPermit: motionPermit(for: token))
     }
 
     func startJogLoop() {
@@ -159,8 +166,10 @@ actor ArmCommandGateway {
     }
 
     func emergencyStop() async -> EmergencyStopReceipt {
+        beginStop()
         stopJogLoop()
         let receipt = await emergencyStop.stop()
+        finishStop()
         isMoving = false
         return receipt
     }
@@ -170,10 +179,13 @@ actor ArmCommandGateway {
     }
 
     func disconnect() async -> EmergencyStopReceipt {
-        let receipt = await emergencyStop()
+        beginStop()
+        stopJogLoop()
+        let receipt = await emergencyStop.stop()
         await poseMonitor.stop()
         await arm.disconnect()
         isConnected = false
+        finishStop()
         return receipt
     }
 
@@ -185,5 +197,20 @@ actor ArmCommandGateway {
         held.removeAll()
         engine.clearAll()
         isMoving = false
+    }
+
+    private func beginStop() {
+        stopRequests += 1
+        clearHolds()
+    }
+
+    private func finishStop() {
+        clearHolds()
+        stopRequests = max(0, stopRequests - 1)
+    }
+
+    private func motionPermit(for token: MotionGenerationToken) -> ArmMotionPermit {
+        let emergencyStop = self.emergencyStop
+        return { await emergencyStop.isCurrent(token) }
     }
 }

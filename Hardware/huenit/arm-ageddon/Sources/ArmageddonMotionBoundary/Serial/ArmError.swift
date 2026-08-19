@@ -6,4 +6,5 @@ enum ArmError: Error, Equatable, Sendable {
     case disconnected
     case portBusy(String)
     case invalidControlMode
+    case motionInvalidated
 }

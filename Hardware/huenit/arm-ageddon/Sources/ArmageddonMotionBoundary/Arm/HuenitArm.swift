@@ -1,5 +1,7 @@
 import Foundation
 
+typealias ArmMotionPermit = @Sendable () async -> Bool
+
 actor HuenitArm {
     private let transport: any SerialTransport
     private let commandTimeout: Duration
@@ -49,11 +51,11 @@ actor HuenitArm {
     }
 
     @discardableResult
-    func send(_ line: String) async throws -> String {
+    func send(_ line: String, motionPermit: ArmMotionPermit? = nil) async throws -> String {
         let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.uppercased().contains("G28") { throw ArmError.forbiddenCommand("G28") }
         guard isConnected else { throw ArmError.disconnected }
-        return try await transact(trimmed)
+        return try await transact(trimmed, motionPermit: motionPermit)
     }
 
     func queryPose() async throws -> ArmPose {
@@ -74,7 +76,7 @@ actor HuenitArm {
         _ = try await send(on ? "M1400 A1023" : "M1400 A0")
     }
 
-    func flush() async throws { _ = try await send("M400") }
+    func flush(motionPermit: ArmMotionPermit? = nil) async throws { _ = try await send("M400", motionPermit: motionPermit) }
 
     func stop() async throws {
         _ = try? await transact("M1400 A0")
@@ -82,67 +84,68 @@ actor HuenitArm {
         catch { _ = try await transact("M84") }
     }
 
-    func jogCartesian(axis: Axis, deltaMm: Double, feedMmPerMin: Double) async throws {
+    func jogCartesian(axis: Axis, deltaMm: Double, feedMmPerMin: Double, motionPermit: ArmMotionPermit? = nil) async throws {
         precondition(axis.isCartesian)
-        try await step(dx: axis == .x ? deltaMm : 0, dy: axis == .y ? deltaMm : 0, dz: axis == .z ? deltaMm : 0, feedMmPerMin: feedMmPerMin)
+        try await step(dx: axis == .x ? deltaMm : 0, dy: axis == .y ? deltaMm : 0, dz: axis == .z ? deltaMm : 0, feedMmPerMin: feedMmPerMin, motionPermit: motionPermit)
     }
 
-    func step(dx: Double, dy: Double, dz: Double, feedMmPerMin: Double) async throws {
+    func step(dx: Double, dy: Double, dz: Double, feedMmPerMin: Double, motionPermit: ArmMotionPermit? = nil) async throws {
         var parts = ["G1"]
         if dx != 0 { parts.append(String(format: "X%.4f", dx)) }
         if dy != 0 { parts.append(String(format: "Y%.4f", dy)) }
         if dz != 0 { parts.append(String(format: "Z%.4f", dz)) }
         guard parts.count > 1 else { return }
         parts.append(String(format: "F%.1f", feedMmPerMin))
-        _ = try await send(parts.joined(separator: " "))
+        _ = try await send(parts.joined(separator: " "), motionPermit: motionPermit)
     }
 
-    func jogJoint(axis: Axis, deltaDeg: Double, feedMmPerMin: Double) async throws {
+    func jogJoint(axis: Axis, deltaDeg: Double, feedMmPerMin: Double, motionPermit: ArmMotionPermit? = nil) async throws {
         precondition(!axis.isCartesian && axis != .e)
         let line = jointCommandFormat
             .replacingOccurrences(of: "{A}", with: axis.gcodeLetter)
             .replacingOccurrences(of: "{delta}", with: String(format: "%.4f", deltaDeg))
             .replacingOccurrences(of: "{F}", with: String(format: "%.1f", feedMmPerMin))
-        _ = try await send(line)
+        _ = try await send(line, motionPermit: motionPermit)
     }
 
-    func jogModule(delta: Double, feedMmPerMin: Double) async throws {
-        _ = try await send(String(format: "G1 E%.4f F%.1f", delta, feedMmPerMin))
+    func jogModule(delta: Double, feedMmPerMin: Double, motionPermit: ArmMotionPermit? = nil) async throws {
+        _ = try await send(String(format: "G1 E%.4f F%.1f", delta, feedMmPerMin), motionPermit: motionPermit)
     }
 
-    func moveAbsolute(x: Double, y: Double, z: Double, feedMmPerMin: Double) async throws {
-        _ = try await send("G90")
+    func moveAbsolute(x: Double, y: Double, z: Double, feedMmPerMin: Double, motionPermit: ArmMotionPermit? = nil) async throws {
+        _ = try await send("G90", motionPermit: motionPermit)
         do {
-            _ = try await send(String(format: "G1 X%.4f Y%.4f Z%.4f F%.1f", x, y, z, feedMmPerMin))
-            try await flush()
+            _ = try await send(String(format: "G1 X%.4f Y%.4f Z%.4f F%.1f", x, y, z, feedMmPerMin), motionPermit: motionPermit)
+            try await flush(motionPermit: motionPermit)
         } catch {
-            _ = try? await send("G91")
+            _ = try? await send("G91", motionPermit: motionPermit)
             throw error
         }
-        _ = try await send("G91")
+        _ = try await send("G91", motionPermit: motionPermit)
     }
 
-    func home(feedMmPerMin: Double) async throws {
-        try await moveAbsolute(x: CartesianPose.officialHome.x, y: CartesianPose.officialHome.y, z: CartesianPose.officialHome.z, feedMmPerMin: feedMmPerMin)
+    func home(feedMmPerMin: Double, motionPermit: ArmMotionPermit? = nil) async throws {
+        try await moveAbsolute(x: CartesianPose.officialHome.x, y: CartesianPose.officialHome.y, z: CartesianPose.officialHome.z, feedMmPerMin: feedMmPerMin, motionPermit: motionPermit)
     }
 
-    func setZ0(feedMmPerMin: Double) async throws {
-        _ = try await send("G90")
+    func setZ0(feedMmPerMin: Double, motionPermit: ArmMotionPermit? = nil) async throws {
+        _ = try await send("G90", motionPermit: motionPermit)
         do {
-            _ = try await send(String(format: "G1 Z0.0000 F%.1f", feedMmPerMin))
-            try await flush()
+            _ = try await send(String(format: "G1 Z0.0000 F%.1f", feedMmPerMin), motionPermit: motionPermit)
+            try await flush(motionPermit: motionPermit)
         } catch {
-            _ = try? await send("G91")
+            _ = try? await send("G91", motionPermit: motionPermit)
             throw error
         }
-        _ = try await send("G91")
+        _ = try await send("G91", motionPermit: motionPermit)
     }
 
     func setMotors(_ on: Bool) async throws { _ = try await send(on ? "M17" : "M84") }
 
-    private func transact(_ line: String) async throws -> String {
+    private func transact(_ line: String, motionPermit: ArmMotionPermit? = nil) async throws -> String {
         await acquireIO()
         defer { releaseIO() }
+        if let motionPermit, await motionPermit() == false { throw ArmError.motionInvalidated }
         do {
             try await transport.writeLine(line)
             return try await transport.readUntilOk(timeout: commandTimeout)
