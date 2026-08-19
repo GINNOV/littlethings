@@ -8,31 +8,51 @@ struct ArmageddonApp: App {
 
     init() {
         let processArguments = ProcessInfo.processInfo.arguments
-        launch = Result {
+        let result = Result {
             let arguments = try LaunchArguments.parse(processArguments)
             try ScopeBootstrap.prepare(arguments.scope)
             return arguments
         }
+        launch = result
     }
 
     var body: some Scene {
         WindowGroup {
-            VStack(spacing: 12) {
-                Text(ArmageddonCore.productName)
-                    .font(.title)
-                switch launch {
-                case .success(let arguments):
-                    Text(arguments.profile.title)
-                        .accessibilityIdentifier("launch.profile.\(arguments.profile.rawValue)")
-                    Text("Fixture state ready")
-                        .accessibilityIdentifier("launch.ready")
-                case .failure:
-                    Text("Fixture configuration failed")
-                        .accessibilityIdentifier("launch.failed")
-                }
-            }
-            .padding(32)
+            RootSplitView(
+                model: shellModel,
+                actions: actions,
+                profile: isUITesting ? try? launch.get().profile : nil
+            )
         }
         .defaultLaunchBehavior(.presented)
+        .defaultSize(width: windowSize.width, height: windowSize.height)
+        .windowResizability(.contentMinSize)
+        .commands {
+            AppCommands(actions: actions)
+        }
+
+        Settings {
+            SettingsView()
+        }
+    }
+
+    private var actions: AppActions {
+        AppActions(
+            navigate: shellModel.select,
+            requestRecovery: shellModel.requestRecovery,
+            stop: shellModel.stop
+        )
+    }
+
+    private var shellModel: AppShellModel {
+        fixtureLaunchDelegate.model(requestedDestination: try? launch.get().requestedDestination)
+    }
+
+    private var isUITesting: Bool {
+        ProcessInfo.processInfo.arguments.contains("-ui-testing")
+    }
+
+    private var windowSize: WindowSize {
+        (try? launch.get().windowSize) ?? .standard
     }
 }

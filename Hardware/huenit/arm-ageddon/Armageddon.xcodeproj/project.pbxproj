@@ -17,6 +17,28 @@
 		A10000000000000000000008 /* LaunchProfileTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000009 /* LaunchProfileTests.swift */; };
 		A10000000000000000000009 /* FixtureLaunchDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000010 /* FixtureLaunchDelegate.swift */; };
 		A10000000000000000000010 /* FixtureLaunchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000011 /* FixtureLaunchView.swift */; };
+		A10000000000000000000011 /* AppShellUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000012 /* AppShellUITests.swift */; };
+		A10000000000000000000012 /* AppActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000013 /* AppActions.swift */; };
+		A10000000000000000000013 /* AppCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000014 /* AppCommands.swift */; };
+		A10000000000000000000014 /* AppDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000015 /* AppDestination.swift */; };
+		A10000000000000000000015 /* AppShellModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000016 /* AppShellModel.swift */; };
+		A10000000000000000000016 /* ContextualInspectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000017 /* ContextualInspectorView.swift */; };
+		A10000000000000000000017 /* DestinationSidebarRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000018 /* DestinationSidebarRow.swift */; };
+		A10000000000000000000018 /* DestinationWorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000019 /* DestinationWorkspaceView.swift */; };
+		A10000000000000000000019 /* RootSplitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000020 /* RootSplitView.swift */; };
+		A10000000000000000000020 /* WindowSize.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000021 /* WindowSize.swift */; };
+		A10000000000000000000021 /* DesignTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000022 /* DesignTokens.swift */; };
+		A10000000000000000000022 /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000023 /* EmptyStateView.swift */; };
+		A10000000000000000000023 /* ErrorStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000024 /* ErrorStateView.swift */; };
+		A10000000000000000000024 /* StatusItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000025 /* StatusItemView.swift */; };
+		A10000000000000000000025 /* StatusStripView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000026 /* StatusStripView.swift */; };
+		A10000000000000000000026 /* LiveWorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000027 /* LiveWorkspaceView.swift */; };
+		A10000000000000000000027 /* CaptureWorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000028 /* CaptureWorkspaceView.swift */; };
+		A10000000000000000000028 /* ModelsWorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000029 /* ModelsWorkspaceView.swift */; };
+		A10000000000000000000029 /* RunsWorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000030 /* RunsWorkspaceView.swift */; };
+		A10000000000000000000030 /* DiagnosticsWorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000031 /* DiagnosticsWorkspaceView.swift */; };
+		A10000000000000000000031 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000032 /* SettingsView.swift */; };
+		A10000000000000000000032 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000033 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -41,6 +63,28 @@
 		A20000000000000000000009 /* LaunchProfileTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchProfileTests.swift; sourceTree = "<group>"; };
 		A20000000000000000000010 /* FixtureLaunchDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FixtureLaunchDelegate.swift; sourceTree = "<group>"; };
 		A20000000000000000000011 /* FixtureLaunchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FixtureLaunchView.swift; sourceTree = "<group>"; };
+		A20000000000000000000012 /* AppShellUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppShellUITests.swift; sourceTree = "<group>"; };
+		A20000000000000000000013 /* AppActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppActions.swift; sourceTree = "<group>"; };
+		A20000000000000000000014 /* AppCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCommands.swift; sourceTree = "<group>"; };
+		A20000000000000000000015 /* AppDestination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDestination.swift; sourceTree = "<group>"; };
+		A20000000000000000000016 /* AppShellModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppShellModel.swift; sourceTree = "<group>"; };
+		A20000000000000000000017 /* ContextualInspectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextualInspectorView.swift; sourceTree = "<group>"; };
+		A20000000000000000000018 /* DestinationSidebarRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DestinationSidebarRow.swift; sourceTree = "<group>"; };
+		A20000000000000000000019 /* DestinationWorkspaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DestinationWorkspaceView.swift; sourceTree = "<group>"; };
+		A20000000000000000000020 /* RootSplitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootSplitView.swift; sourceTree = "<group>"; };
+		A20000000000000000000021 /* WindowSize.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowSize.swift; sourceTree = "<group>"; };
+		A20000000000000000000022 /* DesignTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignTokens.swift; sourceTree = "<group>"; };
+		A20000000000000000000023 /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateView.swift; sourceTree = "<group>"; };
+		A20000000000000000000024 /* ErrorStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorStateView.swift; sourceTree = "<group>"; };
+		A20000000000000000000025 /* StatusItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusItemView.swift; sourceTree = "<group>"; };
+		A20000000000000000000026 /* StatusStripView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusStripView.swift; sourceTree = "<group>"; };
+		A20000000000000000000027 /* LiveWorkspaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveWorkspaceView.swift; sourceTree = "<group>"; };
+		A20000000000000000000028 /* CaptureWorkspaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureWorkspaceView.swift; sourceTree = "<group>"; };
+		A20000000000000000000029 /* ModelsWorkspaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelsWorkspaceView.swift; sourceTree = "<group>"; };
+		A20000000000000000000030 /* RunsWorkspaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunsWorkspaceView.swift; sourceTree = "<group>"; };
+		A20000000000000000000031 /* DiagnosticsWorkspaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsWorkspaceView.swift; sourceTree = "<group>"; };
+		A20000000000000000000032 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		A20000000000000000000033 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -84,6 +128,15 @@
 			children = (
 				A20000000000000000000001 /* ArmageddonApp.swift */,
 				A50000000000000000000005 /* App */,
+				A50000000000000000000007 /* DesignSystem */,
+				A50000000000000000000008 /* Components */,
+				A50000000000000000000009 /* Live */,
+				A50000000000000000000010 /* Capture */,
+				A50000000000000000000011 /* Models */,
+				A50000000000000000000012 /* Runs */,
+				A50000000000000000000013 /* Diagnostics */,
+				A50000000000000000000014 /* Settings */,
+				A50000000000000000000015 /* Resources */,
 			);
 			path = ArmageddonApp;
 			sourceTree = "<group>";
@@ -91,6 +144,13 @@
 		A50000000000000000000005 /* App */ = {
 			isa = PBXGroup;
 			children = (
+				A20000000000000000000013 /* AppActions.swift */,
+				A20000000000000000000014 /* AppCommands.swift */,
+				A20000000000000000000015 /* AppDestination.swift */,
+				A20000000000000000000016 /* AppShellModel.swift */,
+				A20000000000000000000017 /* ContextualInspectorView.swift */,
+				A20000000000000000000018 /* DestinationSidebarRow.swift */,
+				A20000000000000000000019 /* DestinationWorkspaceView.swift */,
 				A20000000000000000000004 /* LaunchProfile.swift */,
 				A20000000000000000000005 /* LaunchArguments.swift */,
 				A20000000000000000000006 /* LaunchPaths.swift */,
@@ -98,14 +158,41 @@
 				A20000000000000000000008 /* ScopeBootstrap.swift */,
 				A20000000000000000000010 /* FixtureLaunchDelegate.swift */,
 				A20000000000000000000011 /* FixtureLaunchView.swift */,
+				A20000000000000000000020 /* RootSplitView.swift */,
+				A20000000000000000000021 /* WindowSize.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
 		};
+		A50000000000000000000007 /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (A20000000000000000000022 /* DesignTokens.swift */,);
+			path = DesignSystem;
+			sourceTree = "<group>";
+		};
+		A50000000000000000000008 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000023 /* EmptyStateView.swift */,
+				A20000000000000000000024 /* ErrorStateView.swift */,
+				A20000000000000000000025 /* StatusItemView.swift */,
+				A20000000000000000000026 /* StatusStripView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		A50000000000000000000009 /* Live */ = {isa = PBXGroup; children = (A20000000000000000000027 /* LiveWorkspaceView.swift */,); path = Live; sourceTree = "<group>"; };
+		A50000000000000000000010 /* Capture */ = {isa = PBXGroup; children = (A20000000000000000000028 /* CaptureWorkspaceView.swift */,); path = Capture; sourceTree = "<group>"; };
+		A50000000000000000000011 /* Models */ = {isa = PBXGroup; children = (A20000000000000000000029 /* ModelsWorkspaceView.swift */,); path = Models; sourceTree = "<group>"; };
+		A50000000000000000000012 /* Runs */ = {isa = PBXGroup; children = (A20000000000000000000030 /* RunsWorkspaceView.swift */,); path = Runs; sourceTree = "<group>"; };
+		A50000000000000000000013 /* Diagnostics */ = {isa = PBXGroup; children = (A20000000000000000000031 /* DiagnosticsWorkspaceView.swift */,); path = Diagnostics; sourceTree = "<group>"; };
+		A50000000000000000000014 /* Settings */ = {isa = PBXGroup; children = (A20000000000000000000032 /* SettingsView.swift */,); path = Settings; sourceTree = "<group>"; };
+		A50000000000000000000015 /* Resources */ = {isa = PBXGroup; children = (A20000000000000000000033 /* Assets.xcassets */,); path = Resources; sourceTree = "<group>"; };
 		A50000000000000000000006 /* ArmageddonUITests */ = {
 			isa = PBXGroup;
 			children = (
 				A20000000000000000000009 /* LaunchProfileTests.swift */,
+				A20000000000000000000012 /* AppShellUITests.swift */,
 			);
 			path = ArmageddonUITests;
 			sourceTree = "<group>";
@@ -204,7 +291,7 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		A40000000000000000000005 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		A40000000000000000000005 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000032 /* Assets.xcassets in Resources */,); runOnlyForDeploymentPostprocessing = 0; };
 		A40000000000000000000006 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXResourcesBuildPhase section */
 
@@ -214,6 +301,26 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10000000000000000000001 /* ArmageddonApp.swift in Sources */,
+				A10000000000000000000012 /* AppActions.swift in Sources */,
+				A10000000000000000000013 /* AppCommands.swift in Sources */,
+				A10000000000000000000014 /* AppDestination.swift in Sources */,
+				A10000000000000000000015 /* AppShellModel.swift in Sources */,
+				A10000000000000000000016 /* ContextualInspectorView.swift in Sources */,
+				A10000000000000000000017 /* DestinationSidebarRow.swift in Sources */,
+				A10000000000000000000018 /* DestinationWorkspaceView.swift in Sources */,
+				A10000000000000000000019 /* RootSplitView.swift in Sources */,
+				A10000000000000000000020 /* WindowSize.swift in Sources */,
+				A10000000000000000000021 /* DesignTokens.swift in Sources */,
+				A10000000000000000000022 /* EmptyStateView.swift in Sources */,
+				A10000000000000000000023 /* ErrorStateView.swift in Sources */,
+				A10000000000000000000024 /* StatusItemView.swift in Sources */,
+				A10000000000000000000025 /* StatusStripView.swift in Sources */,
+				A10000000000000000000026 /* LiveWorkspaceView.swift in Sources */,
+				A10000000000000000000027 /* CaptureWorkspaceView.swift in Sources */,
+				A10000000000000000000028 /* ModelsWorkspaceView.swift in Sources */,
+				A10000000000000000000029 /* RunsWorkspaceView.swift in Sources */,
+				A10000000000000000000030 /* DiagnosticsWorkspaceView.swift in Sources */,
+				A10000000000000000000031 /* SettingsView.swift in Sources */,
 				A10000000000000000000003 /* LaunchProfile.swift in Sources */,
 				A10000000000000000000004 /* LaunchArguments.swift in Sources */,
 				A10000000000000000000005 /* LaunchPaths.swift in Sources */,
@@ -224,7 +331,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		A40000000000000000000004 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000008 /* LaunchProfileTests.swift in Sources */,); runOnlyForDeploymentPostprocessing = 0; };
+		A40000000000000000000004 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000008 /* LaunchProfileTests.swift in Sources */, A10000000000000000000011 /* AppShellUITests.swift in Sources */,); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
