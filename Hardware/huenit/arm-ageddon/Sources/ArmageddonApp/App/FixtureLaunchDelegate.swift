@@ -18,6 +18,14 @@ final class FixtureLaunchDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         guard ProcessInfo.processInfo.arguments.contains("-ui-testing"), NSApplication.shared.windows.isEmpty else { return }
         let arguments = try? LaunchArguments.parse(ProcessInfo.processInfo.arguments)
+        switch arguments?.interfaceStyle {
+        case "Dark":
+            NSApplication.shared.appearance = NSAppearance(named: .darkAqua)
+        case "Light":
+            NSApplication.shared.appearance = NSAppearance(named: .aqua)
+        default:
+            break
+        }
         let model = model(requestedDestination: arguments?.requestedDestination)
         let actions = AppActions(
             navigate: model.select,

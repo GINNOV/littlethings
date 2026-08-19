@@ -60,6 +60,20 @@ final class AppShellUITests: XCTestCase {
         app.terminate()
     }
 
+    func testSettingsInspectorPreferenceControlsPresentation() throws {
+        let app = try launch(style: "Light", width: 1_280, height: 800)
+        let inspector = app.descendants(matching: .any)["inspector.live"]
+        XCTAssertTrue(inspector.waitForExistence(timeout: 5), "The inspector should be visible by default")
+
+        app.typeKey(",", modifierFlags: .command)
+        let showInspector = app.descendants(matching: .any)["settings.show-inspector"]
+        XCTAssertTrue(showInspector.waitForExistence(timeout: 5), "The Settings toggle should open with Command-comma")
+        showInspector.click()
+        XCTAssertFalse(inspector.waitForExistence(timeout: 2), "Disabling the setting should dismiss the inspector")
+        try capture(app, named: "app-shell-settings-inspector-hidden")
+        app.terminate()
+    }
+
     private func launch(style: String, width: Int, height: Int, destination: String? = nil) throws -> XCUIApplication {
         let root = try privateRoot()
         addTeardownBlock { try? FileManager.default.removeItem(at: root) }

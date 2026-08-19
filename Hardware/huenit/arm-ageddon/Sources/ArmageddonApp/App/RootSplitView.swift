@@ -4,6 +4,7 @@ struct RootSplitView: View {
     @Bindable var model: AppShellModel
     let actions: AppActions
     let profile: LaunchProfile?
+    @AppStorage("showInspectorOnLaunch") private var showInspectorOnLaunch = true
 
     var body: some View {
         NavigationSplitView {
@@ -28,7 +29,7 @@ struct RootSplitView: View {
                 recoveryAction: actions.requestRecovery
             )
         }
-        .inspector(isPresented: .constant(true)) {
+        .inspector(isPresented: $showInspectorOnLaunch) {
             ContextualInspectorView(destination: model.destination)
                 .inspectorColumnWidth(DesignTokens.Layout.inspectorWidth)
         }

@@ -6,6 +6,7 @@ struct LaunchArguments: Sendable {
     let scope: ScopeArguments?
     let requestedDestination: String?
     let windowSize: WindowSize
+    let interfaceStyle: String?
 
     static func parse(_ arguments: [String]) throws -> LaunchArguments {
         let values = try values(arguments)
@@ -20,12 +21,13 @@ struct LaunchArguments: Sendable {
             paths: paths,
             scope: scope,
             requestedDestination: values["-fixture-destination"],
-            windowSize: windowSize
+            windowSize: windowSize,
+            interfaceStyle: values["-AppleInterfaceStyle"]
         )
     }
 
     private static func values(_ arguments: [String]) throws -> [String: String] {
-        let names: Set<String> = ["-fixture-profile", "-fixture-destination", "-qa-window-width", "-qa-window-height", "-qa-preference-suite", "-qa-application-support-root", "-qa-cache-root", "-qa-temp-root", "-qa-fixture-root", "-qa-scope-launch-receipt", "-qa-scope-ready-receipt", "-qa-await-scope-gate"]
+        let names: Set<String> = ["-fixture-profile", "-fixture-destination", "-qa-window-width", "-qa-window-height", "-qa-preference-suite", "-qa-application-support-root", "-qa-cache-root", "-qa-temp-root", "-qa-fixture-root", "-qa-scope-launch-receipt", "-qa-scope-ready-receipt", "-qa-await-scope-gate", "-AppleInterfaceStyle"]
         var result: [String: String] = [:]
         for name in names {
             guard let index = arguments.firstIndex(of: name) else { continue }

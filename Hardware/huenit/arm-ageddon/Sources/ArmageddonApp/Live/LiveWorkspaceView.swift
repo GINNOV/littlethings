@@ -12,12 +12,14 @@ struct LiveWorkspaceView: View {
                 VStack(spacing: DesignTokens.Spacing.standard) {
                     Image(systemName: "viewfinder")
                         .font(.largeTitle)
+                        .foregroundStyle(DesignTokens.Colors.canvasPrimary)
                         .accessibilityHidden(true)
                     Text("Camera preview will appear here")
                         .font(DesignTokens.Typography.body)
+                        .foregroundStyle(DesignTokens.Colors.canvasPrimary)
                     Text("Connect a supported source to begin local inspection.")
                         .font(DesignTokens.Typography.supporting)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(DesignTokens.Colors.canvasSecondary)
                 }
                 .multilineTextAlignment(.center)
                 .padding(DesignTokens.Spacing.roomy)

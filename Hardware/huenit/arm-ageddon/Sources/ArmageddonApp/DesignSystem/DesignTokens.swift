@@ -7,6 +7,8 @@ enum DesignTokens {
         static let selected = Color("SelectionSurface")
         static let status = Color("StatusSurface")
         static let danger = Color("DangerAction")
+        static let canvasPrimary = Color.white
+        static let canvasSecondary = Color.white.opacity(0.82)
     }
 
     enum Spacing {
