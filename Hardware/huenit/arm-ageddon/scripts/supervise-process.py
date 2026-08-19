@@ -43,7 +43,23 @@ def receipt_paths(launch: Path, exit_path: Path) -> tuple[Path, Path]:
     return launch_parent / launch.name, exit_parent / exit_path.name
 
 
-def child_executable(pid: int, executable: Path, executable_sha: str) -> Path:
+def trusted_xcodebuild_shim(command: list[str], requested: Path, observed: Path, environment: dict[str, str]) -> bool:
+    if Path(command[0]).name != "xcodebuild" or requested != Path("/usr/bin/xcodebuild"):
+        return False
+    selected = subprocess.run(["/usr/bin/xcode-select", "-p"], env=environment, check=False, capture_output=True, text=True)
+    developer = Path(environment.get("DEVELOPER_DIR", selected.stdout.strip())).resolve(strict=True)
+    return developer == Path("/Applications/Xcode.app/Contents/Developer") and observed == (developer / "usr/bin/xcodebuild").resolve(strict=True)
+
+
+def same_child_identity(observed: dict[str, JsonValue], current: dict[str, JsonValue], command: list[str], executable: Path, environment: dict[str, str]) -> bool:
+    if observed == current:
+        return True
+    observed_command = observed.get("birthAndCommand")
+    current_command = current.get("birthAndCommand")
+    return trusted_xcodebuild_shim(command, Path("/usr/bin/xcodebuild"), executable, environment) and observed.get("pid") == current.get("pid") and isinstance(observed_command, str) and isinstance(current_command, str) and observed_command.split(maxsplit=5)[:5] == current_command.split(maxsplit=5)[:5] and Path(observed_command).name == Path(current_command).name == "xcodebuild"
+
+
+def child_executable(pid: int, command: list[str], executable: Path, executable_sha: str, environment: dict[str, str]) -> Path:
     result = subprocess.run(["/usr/sbin/lsof", "-nP", "-a", "-p", str(pid), "-d", "txt", "-Fn"], check=False, capture_output=True, text=True)
     paths = [Path(line[1:]) for line in result.stdout.splitlines() if line.startswith("n")]
     if result.returncode != 0 or not paths:
@@ -52,32 +68,40 @@ def child_executable(pid: int, executable: Path, executable_sha: str) -> Path:
         observed = paths[0].resolve(strict=True)
     except OSError as error:
         raise EvidenceError("live-io-command-mismatch", f"pid {pid}: {paths[0]}") from error
-    if observed != executable.resolve(strict=True):
+    if observed != executable.resolve(strict=True) and not trusted_xcodebuild_shim(command, executable, observed, environment):
         raise EvidenceError("live-io-command-mismatch", f"pid {pid}: {observed} != {executable}")
-    if sha256_file(observed) != executable_sha:
+    if observed == executable.resolve(strict=True) and sha256_file(observed) != executable_sha:
         raise EvidenceError("live-io-binary-mismatch", str(observed))
     return observed
 
 
-def child_identity(pid: int, executable: Path, executable_sha: str) -> dict[str, JsonValue]:
-    child_executable(pid, executable, executable_sha)
-    return process_identity(pid)
+def child_identity(pid: int, command: list[str], executable: Path, executable_sha: str, environment: dict[str, str]) -> tuple[dict[str, JsonValue], Path]:
+    return process_identity(pid), child_executable(pid, command, executable, executable_sha, environment)
 
 
-def await_child_identity(pid: int, executable: Path, executable_sha: str) -> dict[str, JsonValue]:
+def await_child_identity(pid: int, command: list[str], executable: Path, executable_sha: str, environment: dict[str, str]) -> tuple[dict[str, JsonValue], Path] | None:
     deadline = time.monotonic() + 5
-    last_error: EvidenceError | None = None
     while time.monotonic() < deadline:
         try:
-            return child_identity(pid, executable, executable_sha)
+            return child_identity(pid, command, executable, executable_sha, environment)
         except EvidenceError as error:
             if error.code != "missing-process":
                 raise
-            last_error = error
+            state = subprocess.run(["/bin/ps", "-p", str(pid), "-o", "stat="], check=False, capture_output=True, text=True)
+            if state.returncode != 0 or state.stdout.strip().startswith("Z"):
+                return None
             time.sleep(0.01)
-    if last_error is not None:
-        raise last_error
     raise EvidenceError("missing-process", f"pid {pid}")
+
+
+def await_exec(read_fd: int) -> None:
+    try:
+        marker = os.read(read_fd, 1)
+        trailing = os.read(read_fd, 1)
+    finally:
+        os.close(read_fd)
+    if marker != b"1" or trailing:
+        raise EvidenceError("exec-failed", "child could not exec command")
 
 
 def finalize_receipt(fd: int, child_status: int, launch: Path, exit_path: Path, trace: Path, observation: Path) -> None:
@@ -126,26 +150,46 @@ def run(args: argparse.Namespace) -> int:
         observation = observation.parent.resolve(strict=True) / observation.name
         trace = trace.parent.resolve(strict=True) / trace.name
     environment = clean_environment(os.environ, ALLOWLIST)
-    executable, executable_sha = executable_hash(command[0], environment)
-    read_fd, write_fd = os.pipe()
+    try:
+        executable, executable_sha = executable_hash(command[0], environment)
+    except EvidenceError as error:
+        if error.code not in {"missing-path", "missing-executable"}:
+            raise
+        executable = Path(command[0]).absolute()
+        executable_sha = ""
+    barrier_read, barrier_write = os.pipe()
+    exec_read, exec_write = os.pipe()
+    os.set_inheritable(exec_write, False)
     started = time.monotonic_ns()
     child_pid = os.fork()
     if child_pid == 0:
         os.setsid()
-        os.close(write_fd)
-        if args.preexec_barrier and os.read(read_fd, 1) != b"1":
+        os.close(barrier_write)
+        os.close(exec_read)
+        if args.preexec_barrier and os.read(barrier_read, 1) != b"1":
+            os.write(exec_write, b"0")
             os._exit(126)
-        os.close(read_fd)
+        os.close(barrier_read)
         try:
+            os.write(exec_write, b"1")
             os.execvpe(command[0], command, environment)
         except OSError:
+            os.write(exec_write, b"0")
             os._exit(126)
-    os.close(read_fd)
+    os.close(barrier_read)
+    os.close(exec_write)
     if args.preexec_barrier:
-        os.write(write_fd, b"1")
-    os.close(write_fd)
-    observed_child = await_child_identity(child_pid, executable, executable_sha)
-    observed_executable = child_executable(child_pid, executable, executable_sha)
+        os.write(barrier_write, b"1")
+    os.close(barrier_write)
+    await_exec(exec_read)
+    observed = await_child_identity(child_pid, command, executable, executable_sha, environment)
+    if observed is None:
+        observed_child: dict[str, JsonValue] = {"pid": child_pid, "birthAndCommand": "exec-success-handshake"}
+        observed_executable = executable
+    else:
+        observed_child, observed_executable = observed
+        executable = observed_executable
+        executable_sha = sha256_file(executable)
     started = time.monotonic_ns()
     launch_value: JsonValue = {"schemaVersion": 1, "kind": "process-launch", "commandID": args.command_id, "argv": command, "supervisor": process_identity(os.getpid()), "child": observed_child, "processGroup": child_pid, "executable": str(executable), "executableSHA256": executable_sha, "observedExecutable": str(observed_executable), "observedExecutableSHA256": sha256_file(observed_executable), "startMonotonicNs": started, "preexecBarrier": args.preexec_barrier}
     try:
@@ -155,7 +199,7 @@ def run(args: argparse.Namespace) -> int:
         os.waitpid(child_pid, 0)
         raise
     observed_events: list[JsonValue] = []
-    sample_count = 0
+    sample_count = 1 if observed is None else 0
     observation_error: EvidenceError | None = None
     observation_finished = threading.Event()
     observation_started = threading.Event()
@@ -164,7 +208,8 @@ def run(args: argparse.Namespace) -> int:
         nonlocal observation_error, sample_count
         while not observation_finished.is_set():
             try:
-                if child_identity(child_pid, executable, executable_sha) != observed_child:
+                identity = child_identity(child_pid, command, executable, executable_sha, environment)
+                if not same_child_identity(observed_child, identity[0], command, executable, environment):
                     raise EvidenceError("live-io-process-mismatch", str(child_pid))
             except EvidenceError as error:
                 if error.code != "missing-process":

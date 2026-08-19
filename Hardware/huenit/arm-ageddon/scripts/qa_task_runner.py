@@ -240,12 +240,10 @@ def main() -> int:
             raise error
     os.mkdir(root, 0o700)
     environment = clean_environment(os.environ, ALLOWLIST)
-    home = root / "home"
-    temporary = root / "tmp"
-    os.mkdir(home, 0o700)
-    os.mkdir(temporary, 0o700)
-    environment["HOME"] = str(home)
-    environment["TMPDIR"] = str(temporary)
+    for directory in (root / "home", root / "tmp"):
+        os.mkdir(directory, 0o700)
+    environment["HOME"] = str(root / "home")
+    environment["TMPDIR"] = str(root / "tmp")
     environment["ARMAGEDDON_QA_BUILD_ROOT"] = str(root / "build")
     environment["GIT_CEILING_DIRECTORIES"] = str(Path.cwd().parent)
     environment["GIT_CONFIG_COUNT"] = "2"

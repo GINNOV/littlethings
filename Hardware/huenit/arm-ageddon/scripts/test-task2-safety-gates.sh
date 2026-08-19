@@ -54,16 +54,16 @@ def receive(control):
     with control.makefile("rb") as stream:
         return json.loads(stream.readline())
 
-def run_case(name, expected_error=None):
+def run_case(name, expected_error=None, child_command=None, child_exit=0):
     case_root = root / name
     case_root.mkdir()
     control, supervisor = socket.socketpair()
-    command = ["python3", "scripts/supervise-process.py", "run", "--launch-receipt", str(case_root / "launch.json"), "--exit-receipt", str(case_root / "exit.json"), "--command-id", name, "--preexec-barrier", "--live-io-observation", str(case_root / "observation.json"), "--live-io-trace", str(case_root / "trace.json"), "--finalize-fd", str(supervisor.fileno()), "--", "/bin/sleep", "0.3"]
+    command = ["python3", "scripts/supervise-process.py", "run", "--launch-receipt", str(case_root / "launch.json"), "--exit-receipt", str(case_root / "exit.json"), "--command-id", name, "--preexec-barrier", "--live-io-observation", str(case_root / "observation.json"), "--live-io-trace", str(case_root / "trace.json"), "--finalize-fd", str(supervisor.fileno()), "--", *(child_command or ["/bin/sleep", "0.3"])]
     with (case_root / "supervisor.stdout").open("wb") as stdout, (case_root / "supervisor.stderr").open("wb") as stderr:
         process = subprocess.Popen(command, pass_fds=(supervisor.fileno(),), stdout=stdout, stderr=stderr)
         supervisor.close()
         ready = receive(control)
-        if ready != {"status": "ready", "childExitStatus": 0}:
+        if ready != {"status": "ready", "childExitStatus": child_exit}:
             raise SystemExit(f"{name}: supervisor not ready: {ready}")
         observation_path = case_root / "observation.json"
         observation = json.loads(observation_path.read_text(encoding="utf-8"))
@@ -89,7 +89,7 @@ def run_case(name, expected_error=None):
     (case_root / "response.json").write_text(json.dumps(response) + "\n", encoding="utf-8")
     (case_root / "exit-status.txt").write_text(f"{status}\n", encoding="utf-8")
     if expected_error is None:
-        if response != {"status": "pass"} or status != 0:
+        if response != {"status": "pass"} or status != child_exit:
             raise SystemExit(f"{name}: valid finalization failed: {response}, {status}")
     elif response != {"status": "fail", "error": expected_error} or status == 0:
         raise SystemExit(f"{name}: expected {expected_error}, got {response}, {status}")
@@ -99,7 +99,18 @@ run_case("missing", "missing-live-io-observation")
 run_case("forged", "live-io-hash-mismatch")
 run_case("mismatched", "live-io-process-mismatch")
 run_case("window", "live-io-window-mismatch")
+run_case("short-lived", child_command=["/bin/sh", "-c", "exit 1"], child_exit=1)
+run_case("xcode-shim", child_command=["/usr/bin/xcodebuild", "-version"])
+shim = json.loads((root / "xcode-shim" / "launch.json").read_text(encoding="utf-8"))
+if shim["executable"] != "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild":
+    raise SystemExit(f"xcode-shim: unexpected observed executable {shim['executable']}")
 PY
+
+if python3 scripts/supervise-process.py run --launch-receipt "$root/io/exec-launch.json" --exit-receipt "$root/io/exec-exit.json" --command-id exec-failed --preexec-barrier -- /private/tmp/armageddon-task2-no-such-command > "$root/io/exec-failed.stdout" 2> "$root/io/exec-failed.stderr"; then
+    printf '%s\n' 'ERROR[test-exec-failure]: missing command validated' >&2
+    exit 1
+fi
+grep -q 'ERROR\[exec-failed\]' "$root/io/exec-failed.stderr"
 
 PYTHONDONTWRITEBYTECODE=1 python3 - "$root/io/synthetic" <<'PY'
 import hashlib
