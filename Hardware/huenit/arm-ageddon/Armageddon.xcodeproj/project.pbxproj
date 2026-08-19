@@ -22,6 +22,7 @@
 		A10000000000000000000013 /* AppCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000014 /* AppCommands.swift */; };
 		A10000000000000000000014 /* AppDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000015 /* AppDestination.swift */; };
 		A10000000000000000000015 /* AppShellModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000016 /* AppShellModel.swift */; };
+		A10000000000000000000033 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000034 /* AppModel.swift */; };
 		A10000000000000000000016 /* ContextualInspectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000017 /* ContextualInspectorView.swift */; };
 		A10000000000000000000017 /* DestinationSidebarRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000018 /* DestinationSidebarRow.swift */; };
 		A10000000000000000000018 /* DestinationWorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000019 /* DestinationWorkspaceView.swift */; };
@@ -68,6 +69,7 @@
 		A20000000000000000000014 /* AppCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCommands.swift; sourceTree = "<group>"; };
 		A20000000000000000000015 /* AppDestination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDestination.swift; sourceTree = "<group>"; };
 		A20000000000000000000016 /* AppShellModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppShellModel.swift; sourceTree = "<group>"; };
+		A20000000000000000000034 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 		A20000000000000000000017 /* ContextualInspectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextualInspectorView.swift; sourceTree = "<group>"; };
 		A20000000000000000000018 /* DestinationSidebarRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DestinationSidebarRow.swift; sourceTree = "<group>"; };
 		A20000000000000000000019 /* DestinationWorkspaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DestinationWorkspaceView.swift; sourceTree = "<group>"; };
@@ -148,6 +150,7 @@
 				A20000000000000000000014 /* AppCommands.swift */,
 				A20000000000000000000015 /* AppDestination.swift */,
 				A20000000000000000000016 /* AppShellModel.swift */,
+				A20000000000000000000034 /* AppModel.swift */,
 				A20000000000000000000017 /* ContextualInspectorView.swift */,
 				A20000000000000000000018 /* DestinationSidebarRow.swift */,
 				A20000000000000000000019 /* DestinationWorkspaceView.swift */,
@@ -305,6 +308,7 @@
 				A10000000000000000000013 /* AppCommands.swift in Sources */,
 				A10000000000000000000014 /* AppDestination.swift in Sources */,
 				A10000000000000000000015 /* AppShellModel.swift in Sources */,
+				A10000000000000000000033 /* AppModel.swift in Sources */,
 				A10000000000000000000016 /* ContextualInspectorView.swift in Sources */,
 				A10000000000000000000017 /* DestinationSidebarRow.swift in Sources */,
 				A10000000000000000000018 /* DestinationWorkspaceView.swift in Sources */,

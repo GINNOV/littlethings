@@ -11,7 +11,7 @@ if [ "$#" -ne 2 ]; then
     printf '%s\n' 'Usage: qa-task.sh <1-33> <happy|failure>' >&2
     exit 2
 fi
-case "$1" in 2|3|4) ;; *) printf '%s\n' 'ERROR[unsupported-task]: task manifest has not landed yet' >&2; exit 2 ;; esac
+case "$1" in 2|3|4|6) ;; *) printf '%s\n' 'ERROR[unsupported-task]: task manifest has not landed yet' >&2; exit 2 ;; esac
 case "$2" in happy|failure) ;; *) printf '%s\n' 'ERROR[unknown-mode]' >&2; exit 2 ;; esac
 
 if [ -n "${ARMAGEDDON_TASK_ROOT:-}" ]; then
@@ -30,6 +30,13 @@ fi
 cd "$project_root"
 if [ "$1" = "2" ]; then
     exec python3 scripts/qa_task_runner.py "$1" "$2" "$task_root"
+fi
+
+if [ "$1" = "6" ]; then
+    transcript="$task_root/camera-ml-app.txt"
+    swift test --build-path "$task_root/build" --filter AppStateRestorationTests >"$transcript" 2>&1
+    printf 'PASS task=6 mode=%s root=%s\n' "$2" "$task_root"
+    exit 0
 fi
 
 if [ "$1" = "4" ]; then

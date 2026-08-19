@@ -5,6 +5,7 @@ import SwiftUI
 struct ArmageddonApp: App {
     @NSApplicationDelegateAdaptor(FixtureLaunchDelegate.self) private var fixtureLaunchDelegate
     private let launch: Result<LaunchArguments, Error>
+    @State private var appModel: AppModel
 
     init() {
         let processArguments = ProcessInfo.processInfo.arguments
@@ -14,6 +15,15 @@ struct ArmageddonApp: App {
             return arguments
         }
         launch = result
+        let coordinator = AppStateCoordinator(repository: InMemoryAppStateRepository())
+        let restored = AppStateRestorer.restore(AppStateSnapshot(
+            destination: "live.workspace",
+            selectedDevice: nil,
+            selectedModelID: nil,
+            armed: false,
+            moving: false
+        ))
+        _appModel = State(initialValue: AppModel(coordinator: coordinator, restoredState: restored))
     }
 
     var body: some Scene {
@@ -24,6 +34,7 @@ struct ArmageddonApp: App {
                 profile: isUITesting ? try? launch.get().profile : nil,
                 preferenceSuite: preferenceSuite
             )
+            .environment(appModel)
         }
         .defaultLaunchBehavior(.presented)
         .defaultSize(width: windowSize.width, height: windowSize.height)
