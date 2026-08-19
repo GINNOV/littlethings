@@ -16,12 +16,25 @@ struct ArmageddonApp: App {
         }
         launch = result
         let coordinator = AppStateCoordinator(repository: FileAppStateRepository(fileURL: Self.appStateURL(for: result)))
+        let authorizationClient = AVFoundationCameraAuthorizationClient()
+        let cameraCatalog = DeviceCatalog(
+            nativeCameraDiscovery: AVFoundationCameraDiscovery(authorizationClient: authorizationClient),
+            serialDeviceDiscovery: DeterministicSerialDeviceDiscovery(devices: [])
+        )
+        let cameraLifecycle = NativeCameraLifecycleController(
+            authorizationClient: authorizationClient,
+            catalog: cameraCatalog
+        )
         let restored = AppStateRestorer.restore(AppStateSnapshot(
             destination: "live.workspace",
             selectedDevice: nil,
             selectedModelID: nil
         ))
-        _appModel = State(initialValue: AppModel(coordinator: coordinator, restoredState: restored))
+        _appModel = State(initialValue: AppModel(
+            coordinator: coordinator,
+            restoredState: restored,
+            cameraLifecycle: cameraLifecycle
+        ))
     }
 
     var body: some Scene {
@@ -35,6 +48,7 @@ struct ArmageddonApp: App {
             .environment(appModel)
             .task {
                 await appModel.restore()
+                await appModel.refreshCameraLifecycle()
             }
         }
         .defaultLaunchBehavior(.presented)
