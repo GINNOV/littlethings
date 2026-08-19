@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Swift review receipt",
+  "type": "object",
+  "required": ["schemaVersion", "commitSHA", "reviewer", "promptSHA256", "skillSHA256", "transcript", "verdict"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "commitSHA": {"type": "string", "pattern": "[0-9a-f]{40}"},
+    "reviewer": {"type": "string"},
+    "promptSHA256": {"type": "string", "pattern": "[0-9a-f]{64}"},
+    "skillSHA256": {"type": "string", "pattern": "[0-9a-f]{64}"},
+    "transcript": {"type": "string"},
+    "transcriptSHA256": {"type": "string", "pattern": "[0-9a-f]{64}"},
+    "verdict": {"enum": ["PASS", "FAIL"]}
+  },
+  "additionalProperties": false
+}

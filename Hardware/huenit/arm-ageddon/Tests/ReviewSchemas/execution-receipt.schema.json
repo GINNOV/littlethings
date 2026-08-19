@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Armageddon execution receipt",
+  "type": "object",
+  "required": ["schemaVersion", "kind"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "kind": {"enum": ["build", "process-launch", "process-exit", "recorded-process-exit", "gate-release", "gui-lease", "task-execution"]},
+    "parentRunID": {"type": "string", "pattern": "[0-9a-f-]{36}"},
+    "childNonce": {"type": "string", "pattern": "[0-9a-f-]{36}"},
+    "baseCommit": {"type": "string", "pattern": "[0-9a-f]{40}"},
+    "finalCommit": {"type": "string", "pattern": "[0-9a-f]{40}"},
+    "planSHA256": {"type": "string", "pattern": "[0-9a-f]{64}"},
+    "outcome": {"enum": ["PASS", "EXPECTED_FAILURE", "FAIL", "NOT_RUN_OPERATOR_REQUIRED"]}
+  }
+}

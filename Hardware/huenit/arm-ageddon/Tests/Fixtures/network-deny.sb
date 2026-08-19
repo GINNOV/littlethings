@@ -1,0 +1,6 @@
+(version 1)
+(deny default)
+(allow process*)
+(allow file-read*)
+(allow file-write* (subpath (param "ARMAGEDDON_QA_ROOT")))
+(deny network*)

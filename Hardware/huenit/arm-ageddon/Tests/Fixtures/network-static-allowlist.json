@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "entries": [
+    {"matcher": "CFNetwork", "rationale": "Apple framework metadata may name CFNetwork without opening a connection."}
+  ]
+}

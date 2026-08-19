@@ -1,0 +1,7 @@
+schemaVersion: 1
+surface: scope-launch
+requires:
+  - launch-receipt
+  - scope-ready-receipt
+  - runtime-trace
+hardwareAllowed: false

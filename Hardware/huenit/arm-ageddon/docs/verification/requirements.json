@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "planSHA256": "beed619c2c60325c9d6ab29a9a80ed371f46d8bbad80313a04b6c200401825ab",
+  "taskModes": {
+    "2": {
+      "happy": {
+        "required": ["camera-ml-app.txt", "camera-ml-app.xcresult", "execution-receipt.json"],
+        "expectedExit": 0
+      },
+      "failure": {
+        "required": ["camera-ml-app.txt", "execution-receipt.json"],
+        "expectedExit": 0
+      }
+    }
+  },
+  "forbiddenOutcomes": ["SKIP", "NOT_APPLICABLE"],
+  "liveSchemes": ["LiveCameraAcceptance", "LiveArmAcceptance"]
+}

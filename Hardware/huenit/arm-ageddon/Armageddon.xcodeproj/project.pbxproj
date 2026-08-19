@@ -9,6 +9,14 @@
 /* Begin PBXBuildFile section */
 		A10000000000000000000001 /* ArmageddonApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000001 /* ArmageddonApp.swift */; };
 		A10000000000000000000002 /* ArmageddonCore in Frameworks */ = {isa = PBXBuildFile; productRef = A90000000000000000000001 /* ArmageddonCore */; };
+		A10000000000000000000003 /* LaunchProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000004 /* LaunchProfile.swift */; };
+		A10000000000000000000004 /* LaunchArguments.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000005 /* LaunchArguments.swift */; };
+		A10000000000000000000005 /* LaunchPaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000006 /* LaunchPaths.swift */; };
+		A10000000000000000000006 /* ScopeArguments.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000007 /* ScopeArguments.swift */; };
+		A10000000000000000000007 /* ScopeBootstrap.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000008 /* ScopeBootstrap.swift */; };
+		A10000000000000000000008 /* LaunchProfileTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000009 /* LaunchProfileTests.swift */; };
+		A10000000000000000000009 /* FixtureLaunchDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000010 /* FixtureLaunchDelegate.swift */; };
+		A10000000000000000000010 /* FixtureLaunchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000011 /* FixtureLaunchView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -25,6 +33,14 @@
 		A20000000000000000000001 /* ArmageddonApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArmageddonApp.swift; sourceTree = "<group>"; };
 		A20000000000000000000002 /* Armageddon.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Armageddon.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A20000000000000000000003 /* ArmageddonUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ArmageddonUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A20000000000000000000004 /* LaunchProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchProfile.swift; sourceTree = "<group>"; };
+		A20000000000000000000005 /* LaunchArguments.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchArguments.swift; sourceTree = "<group>"; };
+		A20000000000000000000006 /* LaunchPaths.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchPaths.swift; sourceTree = "<group>"; };
+		A20000000000000000000007 /* ScopeArguments.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScopeArguments.swift; sourceTree = "<group>"; };
+		A20000000000000000000008 /* ScopeBootstrap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScopeBootstrap.swift; sourceTree = "<group>"; };
+		A20000000000000000000009 /* LaunchProfileTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchProfileTests.swift; sourceTree = "<group>"; };
+		A20000000000000000000010 /* FixtureLaunchDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FixtureLaunchDelegate.swift; sourceTree = "<group>"; };
+		A20000000000000000000011 /* FixtureLaunchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FixtureLaunchView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -50,6 +66,7 @@
 			isa = PBXGroup;
 			children = (
 				A50000000000000000000002 /* Sources */,
+				A50000000000000000000006 /* ArmageddonUITests */,
 				A50000000000000000000004 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -66,8 +83,31 @@
 			isa = PBXGroup;
 			children = (
 				A20000000000000000000001 /* ArmageddonApp.swift */,
+				A50000000000000000000005 /* App */,
 			);
 			path = ArmageddonApp;
+			sourceTree = "<group>";
+		};
+		A50000000000000000000005 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000004 /* LaunchProfile.swift */,
+				A20000000000000000000005 /* LaunchArguments.swift */,
+				A20000000000000000000006 /* LaunchPaths.swift */,
+				A20000000000000000000007 /* ScopeArguments.swift */,
+				A20000000000000000000008 /* ScopeBootstrap.swift */,
+				A20000000000000000000010 /* FixtureLaunchDelegate.swift */,
+				A20000000000000000000011 /* FixtureLaunchView.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		A50000000000000000000006 /* ArmageddonUITests */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000009 /* LaunchProfileTests.swift */,
+			);
+			path = ArmageddonUITests;
 			sourceTree = "<group>";
 		};
 		A50000000000000000000004 /* Products */ = {
@@ -174,10 +214,17 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10000000000000000000001 /* ArmageddonApp.swift in Sources */,
+				A10000000000000000000003 /* LaunchProfile.swift in Sources */,
+				A10000000000000000000004 /* LaunchArguments.swift in Sources */,
+				A10000000000000000000005 /* LaunchPaths.swift in Sources */,
+				A10000000000000000000006 /* ScopeArguments.swift in Sources */,
+				A10000000000000000000007 /* ScopeBootstrap.swift in Sources */,
+				A10000000000000000000009 /* FixtureLaunchDelegate.swift in Sources */,
+				A10000000000000000000010 /* FixtureLaunchView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		A40000000000000000000004 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		A40000000000000000000004 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000008 /* LaunchProfileTests.swift in Sources */,); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -229,7 +276,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = arm64;
-				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_ALLOWED = YES;
+				CODE_SIGN_IDENTITY = "-";
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Armageddon;
@@ -267,7 +315,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = arm64;
-				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_ALLOWED = YES;
+				CODE_SIGN_IDENTITY = "-";
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;

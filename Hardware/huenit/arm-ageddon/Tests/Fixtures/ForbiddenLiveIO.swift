@@ -1,0 +1,8 @@
+FORBIDDEN_FIXTURE_ONLY
+AVCaptureDevice.requestAccess
+AVCaptureDevice.DiscoverySession
+URLSession.shared
+IOServiceGetMatchingServices
+/dev/cu.usbmodem
+SerialPort.open
+writeHardwareCommand

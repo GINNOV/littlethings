@@ -11,6 +11,9 @@ let package = Package(
     platforms: [.macOS(.v15)],
     products: [
         .library(name: "ArmageddonCore", targets: ["ArmageddonCore"]),
+        .executable(name: "RuntimeTraceProbe", targets: ["RuntimeTraceProbe"]),
+        .executable(name: "SandboxLogProbe", targets: ["SandboxLogProbe"]),
+        .executable(name: "ModelFixtureGenerator", targets: ["ModelFixtureGenerator"]),
     ],
     targets: [
         .target(
@@ -20,6 +23,28 @@ let package = Package(
         .target(
             name: "ArmageddonMotionBoundary",
             dependencies: ["ArmageddonCore"],
+            swiftSettings: strictConcurrency
+        ),
+        .target(
+            name: "EvidenceProbeSupport",
+            path: "Tools/EvidenceProbeSupport",
+            swiftSettings: strictConcurrency
+        ),
+        .executableTarget(
+            name: "RuntimeTraceProbe",
+            dependencies: ["EvidenceProbeSupport"],
+            path: "Tools/RuntimeTraceProbe",
+            swiftSettings: strictConcurrency
+        ),
+        .executableTarget(
+            name: "SandboxLogProbe",
+            dependencies: ["EvidenceProbeSupport"],
+            path: "Tools/SandboxLogProbe",
+            swiftSettings: strictConcurrency
+        ),
+        .executableTarget(
+            name: "ModelFixtureGenerator",
+            path: "Tools/ModelFixtures",
             swiftSettings: strictConcurrency
         ),
         .testTarget(

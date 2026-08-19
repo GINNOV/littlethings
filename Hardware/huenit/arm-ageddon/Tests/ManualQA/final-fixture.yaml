@@ -1,0 +1,7 @@
+schemaVersion: 1
+surface: executable-tools
+requires:
+  - help-output
+  - controlled-exit
+  - receipt-inspection
+hardwareAllowed: false
