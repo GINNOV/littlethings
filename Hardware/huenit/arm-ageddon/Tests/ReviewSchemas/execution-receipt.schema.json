@@ -20,12 +20,18 @@
         "sha256": {"type": "string", "pattern": "[0-9a-f]{64}"}
       },
       "additionalProperties": false
-    }
+    },
+    "observedExecutable": {"type": "string"},
+    "observedExecutableSHA256": {"type": "string", "pattern": "[0-9a-f]{64}"}
   },
   "allOf": [
     {
       "if": {"properties": {"kind": {"const": "task-execution"}}},
       "then": {"required": ["startMonotonicNs", "endMonotonicNs", "deviceOpenCount", "serialWriteCount", "liveIOObservation"]}
+    },
+    {
+      "if": {"properties": {"kind": {"const": "process-launch"}}},
+      "then": {"required": ["observedExecutable", "observedExecutableSHA256"]}
     }
   ]
 }

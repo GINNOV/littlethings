@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import json
 import os
+import socket
 import subprocess
 import sys
 import time
@@ -22,6 +24,45 @@ def execute(command: list[str], transcript, environment: dict[str, str], expecte
     transcript.flush()
     if result.returncode != expected:
         raise EvidenceError("unexpected-exit", f"{command[0]}: {result.returncode}, expected {expected}")
+
+
+def control_message(control: socket.socket) -> dict[str, JsonValue]:
+    with control.makefile("rb") as stream:
+        line = stream.readline(4097)
+    if not line or len(line) > 4096:
+        raise EvidenceError("invalid-finalization-response", "supervisor control response")
+    value = json.loads(line)
+    return require_mapping(value, "supervisor control response")
+
+
+def begin_supervision(command: list[str], transcript, environment: dict[str, str], expected: int = 0) -> tuple[subprocess.Popen[bytes], socket.socket]:
+    control, supervisor_control = socket.socketpair()
+    try:
+        divider = command.index("--")
+        supervised = [*command[:divider], "--finalize-fd", str(supervisor_control.fileno()), *command[divider:]]
+        transcript.write(("$ " + " ".join(supervised) + "\n").encode())
+        transcript.flush()
+        process = subprocess.Popen(supervised, env=environment, stdout=transcript, stderr=subprocess.STDOUT, pass_fds=(supervisor_control.fileno(),))
+    finally:
+        supervisor_control.close()
+    ready = control_message(control)
+    if ready.get("status") != "ready" or ready.get("childExitStatus") != expected:
+        control.close()
+        process.terminate()
+        process.wait()
+        raise EvidenceError("unexpected-exit", f"{command[0]}: {ready}")
+    return process, control
+
+
+def finish_supervision(process: subprocess.Popen[bytes], control: socket.socket, receipt: Path, expected: int = 0) -> None:
+    control.sendall((json.dumps({"receipt": str(receipt)}) + "\n").encode())
+    response = control_message(control)
+    control.close()
+    exit_status = process.wait(timeout=10)
+    if response.get("status") != "pass":
+        raise EvidenceError(require_string(response.get("error"), "finalization error"), str(receipt))
+    if exit_status != expected:
+        raise EvidenceError("unexpected-exit", f"supervisor: {exit_status}, expected {expected}")
 
 
 def task1_validation(root: Path, transcript, environment: dict[str, str]) -> Path:
@@ -124,7 +165,7 @@ def artifact_record(path: Path) -> JsonValue:
     return {"path": str(resolved), "sha256": digest}
 
 
-def happy(root: Path, transcript, environment: dict[str, str]) -> list[Path]:
+def happy(root: Path, transcript, environment: dict[str, str]) -> tuple[list[Path], subprocess.Popen[bytes], socket.socket]:
     build = root / "build"
     os.mkdir(build, 0o700)
     execute(["scripts/verify-no-live-io-in-tests.sh"], transcript, environment)
@@ -142,22 +183,22 @@ def happy(root: Path, transcript, environment: dict[str, str]) -> list[Path]:
     trace = observation_root / "trace.json"
     observation = observation_root / "observation.json"
     xcode_command = ["xcodebuild", "-project", "Armageddon.xcodeproj", "-scheme", "ArmageddonApp", "-destination", "platform=macOS", "-derivedDataPath", str(build / "xcode"), "-resultBundlePath", str(result_bundle), "test", "-only-testing:ArmageddonUITests/LaunchProfileTests/testAllFixtureProfilesReachStableUI"]
-    execute(["python3", "scripts/supervise-process.py", "run", "--launch-receipt", str(launch_receipt), "--exit-receipt", str(exit_receipt), "--command-id", "task2-ui-profiles", "--preexec-barrier", "--live-io-observation", str(observation), "--live-io-trace", str(trace), "--", *xcode_command], transcript, environment)
+    process, control = begin_supervision(["python3", "scripts/supervise-process.py", "run", "--launch-receipt", str(launch_receipt), "--exit-receipt", str(exit_receipt), "--command-id", "task2-ui-profiles", "--preexec-barrier", "--live-io-observation", str(observation), "--live-io-trace", str(trace), "--", *xcode_command], transcript, environment)
     app = build / "xcode/Build/Products/Debug/Armageddon.app/Contents/MacOS/Armageddon"
     network_receipt = root / "network-static.json"
     execute(["python3", "scripts/audit-network.py", "--app", str(app), "--allowlist", "Tests/Fixtures/network-static-allowlist.json", "--receipt", str(network_receipt)], transcript, environment)
     parent = task1_validation(root, transcript, environment)
-    return [result_bundle, parent, network_receipt, launch_receipt, exit_receipt, trace, observation, root / "RuntimeTraceProbe.events.jsonl", root / "SandboxLogProbe.events.jsonl", *infrastructure_tools(root, transcript, environment)]
+    return [result_bundle, parent, network_receipt, launch_receipt, exit_receipt, trace, observation, root / "RuntimeTraceProbe.events.jsonl", root / "SandboxLogProbe.events.jsonl", *infrastructure_tools(root, transcript, environment)], process, control
 
 
-def failure(root: Path, transcript, environment: dict[str, str]) -> list[Path]:
+def failure(root: Path, transcript, environment: dict[str, str]) -> tuple[list[Path], subprocess.Popen[bytes], socket.socket]:
     observation_root = root / "live-io"
     os.mkdir(observation_root, 0o700)
     launch_receipt = observation_root / "launch.json"
     exit_receipt = observation_root / "exit.json"
     trace = observation_root / "trace.json"
     observation = observation_root / "observation.json"
-    execute(["python3", "scripts/supervise-process.py", "run", "--launch-receipt", str(launch_receipt), "--exit-receipt", str(exit_receipt), "--command-id", "task2-forbidden-live-io", "--preexec-barrier", "--live-io-observation", str(observation), "--live-io-trace", str(trace), "--", "scripts/verify-no-live-io-in-tests.sh", "Tests/Fixtures/ForbiddenLiveIO.swift"], transcript, environment, expected=1)
+    process, control = begin_supervision(["python3", "scripts/supervise-process.py", "run", "--launch-receipt", str(launch_receipt), "--exit-receipt", str(exit_receipt), "--command-id", "task2-forbidden-live-io", "--preexec-barrier", "--live-io-observation", str(observation), "--live-io-trace", str(trace), "--", "/bin/sh", "scripts/verify-no-live-io-in-tests.sh", "Tests/Fixtures/ForbiddenLiveIO.swift"], transcript, environment, expected=1)
     fixture_output = root / "existing.json"
     fixture_output.write_text("immutable\n", encoding="utf-8")
     execute(["python3", "scripts/write-merkle.py", "--root", str(root), "--output", str(fixture_output)], transcript, environment, expected=2)
@@ -180,7 +221,7 @@ def failure(root: Path, transcript, environment: dict[str, str]) -> list[Path]:
     task1_validation(root, transcript, environment)
     if any(name.startswith(("ARMAGEDDON_LIVE_", "ARMAGEDDON_OPERATOR_", "HUENIT_LIVE_")) or "DEVICE" in name for name in environment):
         raise EvidenceError("poisoned-environment-leak", "live/operator/device variable survived")
-    return [root / "task-1-parent-chain.json", launch_receipt, exit_receipt, trace, observation]
+    return [root / "task-1-parent-chain.json", launch_receipt, exit_receipt, trace, observation], process, control
 
 
 def main() -> int:
@@ -215,23 +256,22 @@ def main() -> int:
     transcript_path = root / "camera-ml-app.txt"
     try:
         with transcript_path.open("xb") as transcript:
-            artifacts = happy(root, transcript, environment) if mode == "happy" else failure(root, transcript, environment)
+            artifacts, process, control = happy(root, transcript, environment) if mode == "happy" else failure(root, transcript, environment)
             transcript.flush()
             os.fsync(transcript.fileno())
-        env_data = "\0".join(f"{key}={environment[key]}" for key in sorted(environment)).encode()
-        observation_path = root / "live-io/observation.json"
-        observation = require_mapping(read_json(observation_path), "live I/O observation")
-        observation_start = observation.get("observationStartMonotonicNs")
-        observation_end = observation.get("observationEndMonotonicNs")
-        device_opens = observation.get("deviceOpenCount")
-        serial_writes = observation.get("serialWriteCount")
-        if not all(isinstance(item, int) and not isinstance(item, bool) for item in (observation_start, observation_end, device_opens, serial_writes)):
-            raise EvidenceError("invalid-live-io-observation", str(observation_path))
-        value: JsonValue = {"schemaVersion": 1, "kind": "task-execution", "parentRunID": os.environ.get("ARMAGEDDON_PARENT_RUN_ID", "00000000-0000-0000-0000-000000000000"), "childNonce": child_nonce, "task": 2, "mode": mode, "baseCommit": "2fd5b1723f16c7405898e476f167206f72be1e84", "finalCommit": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(), "planSHA256": PLAN_SHA256, "startMonotonicNs": observation_start, "endMonotonicNs": observation_end, "environmentSHA256": sha256_bytes(env_data), "scrubbedLiveVariables": True, "liveSchemesExcluded": True, "deviceOpenCount": device_opens, "serialWriteCount": serial_writes, "liveIOObservation": artifact_record(observation_path), "outcome": "PASS" if mode == "happy" else "EXPECTED_FAILURE", "artifacts": [artifact_record(path) for path in artifacts], "transcriptSHA256": sha256_file(transcript_path)}
-        exclusive_json(root / "execution-receipt.json", value)
-        validation = subprocess.run(["python3", "scripts/validate-execution-receipts.py", str(root / "execution-receipt.json")], env=environment, check=False, capture_output=True, text=True)
-        if validation.returncode != 0:
-            raise EvidenceError("invalid-execution-receipt", validation.stderr.strip())
+            env_data = "\0".join(f"{key}={environment[key]}" for key in sorted(environment)).encode()
+            observation_path = root / "live-io/observation.json"
+            observation = require_mapping(read_json(observation_path), "live I/O observation")
+            observation_start = observation.get("observationStartMonotonicNs")
+            observation_end = observation.get("observationEndMonotonicNs")
+            device_opens = observation.get("deviceOpenCount")
+            serial_writes = observation.get("serialWriteCount")
+            if not all(isinstance(item, int) and not isinstance(item, bool) for item in (observation_start, observation_end, device_opens, serial_writes)):
+                raise EvidenceError("invalid-live-io-observation", str(observation_path))
+            value: JsonValue = {"schemaVersion": 1, "kind": "task-execution", "parentRunID": os.environ.get("ARMAGEDDON_PARENT_RUN_ID", "00000000-0000-0000-0000-000000000000"), "childNonce": child_nonce, "task": 2, "mode": mode, "baseCommit": "2fd5b1723f16c7405898e476f167206f72be1e84", "finalCommit": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(), "planSHA256": PLAN_SHA256, "startMonotonicNs": observation_start, "endMonotonicNs": observation_end, "environmentSHA256": sha256_bytes(env_data), "scrubbedLiveVariables": True, "liveSchemesExcluded": True, "deviceOpenCount": device_opens, "serialWriteCount": serial_writes, "liveIOObservation": artifact_record(observation_path), "outcome": "PASS" if mode == "happy" else "EXPECTED_FAILURE", "artifacts": [artifact_record(path) for path in artifacts], "transcriptSHA256": sha256_file(transcript_path)}
+            execution_receipt = root / "execution-receipt.json"
+            exclusive_json(execution_receipt, value)
+            finish_supervision(process, control, execution_receipt, expected=0 if mode == "happy" else 1)
         print(root)
         return 0
     except (EvidenceError, OSError, subprocess.SubprocessError) as error:

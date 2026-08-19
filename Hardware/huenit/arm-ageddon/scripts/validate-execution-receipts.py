@@ -4,10 +4,19 @@ from __future__ import annotations
 
 import argparse
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 
 from evidence_common import EvidenceError, JsonValue, read_json, require_mapping, require_string, sha256_file
 from validate_evidence_support import validate_document
+
+
+@dataclass(frozen=True, slots=True)
+class SupervisedRuntime:
+    launch: tuple[Path, str]
+    exit_receipt: tuple[Path, str]
+    trace: tuple[Path, str]
+    observation: tuple[Path, str]
 
 
 def require_int(value: JsonValue | None, label: str) -> int:
@@ -25,10 +34,10 @@ def receipt_reference(value: JsonValue | None, label: str) -> tuple[Path, str]:
     return path, digest
 
 
-def validate_live_io(receipt: dict[str, JsonValue]) -> None:
+def validate_live_io(receipt: dict[str, JsonValue], runtime: SupervisedRuntime) -> None:
     if receipt.get("liveIOObservation") is None:
         raise EvidenceError("missing-live-io-observation", "execution receipt")
-    observation_path, _ = receipt_reference(receipt.get("liveIOObservation"), "liveIOObservation")
+    observation_path, observation_hash = receipt_reference(receipt.get("liveIOObservation"), "liveIOObservation")
     observation = require_mapping(read_json(observation_path), "live I/O observation")
     if observation.get("kind") != "live-io-observation":
         raise EvidenceError("forged-live-io-observation", str(observation_path))
@@ -36,18 +45,31 @@ def validate_live_io(receipt: dict[str, JsonValue]) -> None:
     if not isinstance(sources, list) or len(sources) != 2:
         raise EvidenceError("missing-live-io-source", str(observation_path))
     launch_path, launch_hash = receipt_reference(sources[0], "launch receipt")
-    exit_path, _ = receipt_reference(sources[1], "exit receipt")
+    exit_path, exit_hash = receipt_reference(sources[1], "exit receipt")
     launch = require_mapping(read_json(launch_path), "launch receipt")
     exit_receipt = require_mapping(read_json(exit_path), "exit receipt")
     process = require_mapping(observation.get("process"), "observed process")
     if launch.get("kind") != "process-launch" or launch.get("child") != process:
         raise EvidenceError("live-io-process-mismatch", str(observation_path))
+    observed_command = Path(require_string(launch.get("observedExecutable"), "observed executable"))
+    executable = Path(require_string(launch.get("executable"), "executable"))
+    try:
+        observed_executable = observed_command.resolve(strict=True)
+        requested_executable = executable.resolve(strict=True)
+    except OSError as error:
+        raise EvidenceError("live-io-command-mismatch", str(launch_path)) from error
+    if observed_executable != requested_executable:
+        raise EvidenceError("live-io-command-mismatch", str(launch_path))
+    if launch.get("observedExecutableSHA256") != launch.get("executableSHA256"):
+        raise EvidenceError("live-io-binary-mismatch", str(launch_path))
+    if sha256_file(observed_executable) != launch.get("executableSHA256"):
+        raise EvidenceError("live-io-binary-mismatch", str(launch_path))
     if observation.get("executable") != launch.get("executable") or observation.get("executableSHA256") != launch.get("executableSHA256"):
         raise EvidenceError("live-io-binary-mismatch", str(observation_path))
     exit_launch = require_mapping(exit_receipt.get("launchReceipt"), "exit launch receipt")
     if exit_launch.get("path") != str(launch_path) or exit_launch.get("sha256") != launch_hash:
         raise EvidenceError("live-io-process-mismatch", str(exit_path))
-    trace_path, _ = receipt_reference(observation.get("trace"), "live I/O trace")
+    trace_path, trace_hash = receipt_reference(observation.get("trace"), "live I/O trace")
     trace = require_mapping(read_json(trace_path), "live I/O trace")
     if trace.get("kind") != "live-io-trace" or trace.get("process") != process or trace.get("executableSHA256") != observation.get("executableSHA256"):
         raise EvidenceError("forged-live-io-observation", str(trace_path))
@@ -78,6 +100,18 @@ def validate_live_io(receipt: dict[str, JsonValue]) -> None:
         raise EvidenceError("live-io-counter-mismatch", str(observation_path))
     if receipt.get("deviceOpenCount") != device_opens or receipt.get("serialWriteCount") != serial_writes:
         raise EvidenceError("live-io-counter-mismatch", "execution receipt")
+    observed_runtime = ((launch_path, launch_hash), (exit_path, exit_hash), (trace_path, trace_hash), (observation_path, observation_hash))
+    expected_runtime = (runtime.launch, runtime.exit_receipt, runtime.trace, runtime.observation)
+    if observed_runtime != expected_runtime:
+        raise EvidenceError("producer-origin-mismatch", str(observation_path))
+
+
+def validate_receipt(path: Path, schema: Path, runtime: SupervisedRuntime | None = None) -> None:
+    if runtime is None:
+        raise EvidenceError("missing-producer-origin-proof", "receipt requires supervisor-held runtime state")
+    receipt = require_mapping(read_json(path.resolve(strict=True)), "execution receipt")
+    validate_document(schema, receipt)
+    validate_live_io(receipt, runtime)
 
 
 def main() -> int:
@@ -87,9 +121,7 @@ def main() -> int:
     args = parser.parse_args()
     try:
         for path in args.receipts:
-            receipt = require_mapping(read_json(path.resolve(strict=True)), "execution receipt")
-            validate_document(args.schema, receipt)
-            validate_live_io(receipt)
+            validate_receipt(path, args.schema)
     except (EvidenceError, OSError) as error:
         code = error.code if isinstance(error, EvidenceError) else "missing-live-io-observation"
         print(f"ERROR[{code}]: {error}", file=sys.stderr)
