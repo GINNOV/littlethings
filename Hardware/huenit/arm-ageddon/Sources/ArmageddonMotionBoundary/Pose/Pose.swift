@@ -76,5 +76,6 @@ enum Axis: String, Sendable, CaseIterable {
     case x, y, z, a, b, c, e
 
     var isCartesian: Bool { [.x, .y, .z].contains(self) }
+    var isModule: Bool { self == .e }
     var gcodeLetter: String { rawValue.uppercased() }
 }

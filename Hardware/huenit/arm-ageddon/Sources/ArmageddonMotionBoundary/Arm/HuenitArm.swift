@@ -106,6 +106,10 @@ actor HuenitArm {
         _ = try await send(line)
     }
 
+    func jogModule(delta: Double, feedMmPerMin: Double) async throws {
+        _ = try await send(String(format: "G1 E%.4f F%.1f", delta, feedMmPerMin))
+    }
+
     func moveAbsolute(x: Double, y: Double, z: Double, feedMmPerMin: Double) async throws {
         _ = try await send("G90")
         do {
