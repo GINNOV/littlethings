@@ -11,7 +11,7 @@ if [ "$#" -ne 2 ]; then
     printf '%s\n' 'Usage: qa-task.sh <1-33> <happy|failure>' >&2
     exit 2
 fi
-case "$1" in 2|3|4|6|7) ;; *) printf '%s\n' 'ERROR[unsupported-task]: task manifest has not landed yet' >&2; exit 2 ;; esac
+case "$1" in 2|3|4|6|7|8) ;; *) printf '%s\n' 'ERROR[unsupported-task]: task manifest has not landed yet' >&2; exit 2 ;; esac
 case "$2" in happy|failure) ;; *) printf '%s\n' 'ERROR[unknown-mode]' >&2; exit 2 ;; esac
 
 if [ -n "${ARMAGEDDON_TASK_ROOT:-}" ]; then
@@ -47,6 +47,13 @@ if [ "$1" = "7" ]; then
         swift test --filter forbiddenG28WritesNothing >"$transcript" 2>&1
     fi
     printf 'PASS task=7 mode=%s root=%s\n' "$2" "$task_root"
+    exit 0
+fi
+
+if [ "$1" = "8" ]; then
+    transcript="$task_root/camera-ml-app.txt"
+    swift test --filter EmergencyStopTests >"$transcript" 2>&1
+    printf 'PASS task=8 mode=%s root=%s\n' "$2" "$task_root"
     exit 0
 fi
 
