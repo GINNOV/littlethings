@@ -6,7 +6,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from evidence_common import EvidenceError, read_json, reject_forbidden_outcomes, require_mapping, sha256_file
+from evidence_common import EvidenceError, read_json, reject_forbidden_outcomes, require_mapping, sha256_bytes, sha256_file
 from validate_evidence_support import validate_document
 
 
@@ -20,13 +20,20 @@ def main() -> int:
     try:
         for path in args.receipts:
             receipt = require_mapping(read_json(path.resolve(strict=True)), "review receipt")
-            validate_document(args.schema, receipt)
             reject_forbidden_outcomes(receipt)
-            if receipt.get("commitSHA") != args.commit or receipt.get("verdict") != "PASS":
-                raise EvidenceError("review-mismatch", str(path))
             transcript = Path(str(receipt.get("transcript"))).resolve(strict=True)
             if receipt.get("transcriptSHA256") != sha256_file(transcript) or transcript.stat().st_size == 0:
                 raise EvidenceError("transcript-mismatch", str(transcript))
+            lines = [line.strip() for line in transcript.read_text(encoding="utf-8").splitlines() if line.strip()]
+            for line in lines:
+                reject_forbidden_outcomes(line)
+            if not lines or lines[-1] != "VERDICT: PASS":
+                raise EvidenceError("missing-review-verdict", str(transcript))
+            if receipt.get("verdictLine") != lines[-1] or receipt.get("verdictLineSHA256") != sha256_bytes((lines[-1] + "\n").encode()):
+                raise EvidenceError("review-verdict-mismatch", str(transcript))
+            validate_document(args.schema, receipt)
+            if receipt.get("commitSHA") != args.commit or receipt.get("verdict") != "PASS":
+                raise EvidenceError("review-mismatch", str(path))
             if args.not_before_epoch_ns is not None and transcript.stat().st_mtime_ns < args.not_before_epoch_ns:
                 raise EvidenceError("stale-transcript", str(transcript))
     except (EvidenceError, OSError) as error:

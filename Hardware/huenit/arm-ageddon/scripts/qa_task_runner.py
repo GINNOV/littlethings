@@ -135,16 +135,29 @@ def happy(root: Path, transcript, environment: dict[str, str]) -> list[Path]:
     probe("RuntimeTraceProbe", root, transcript, environment)
     probe("SandboxLogProbe", root, transcript, environment)
     result_bundle = root / "camera-ml-app.xcresult"
-    execute(["xcodebuild", "-project", "Armageddon.xcodeproj", "-scheme", "ArmageddonApp", "-destination", "platform=macOS", "-derivedDataPath", str(build / "xcode"), "-resultBundlePath", str(result_bundle), "test", "-only-testing:ArmageddonUITests/LaunchProfileTests/testAllFixtureProfilesReachStableUI"], transcript, environment)
+    observation_root = root / "live-io"
+    os.mkdir(observation_root, 0o700)
+    launch_receipt = observation_root / "launch.json"
+    exit_receipt = observation_root / "exit.json"
+    trace = observation_root / "trace.json"
+    observation = observation_root / "observation.json"
+    xcode_command = ["xcodebuild", "-project", "Armageddon.xcodeproj", "-scheme", "ArmageddonApp", "-destination", "platform=macOS", "-derivedDataPath", str(build / "xcode"), "-resultBundlePath", str(result_bundle), "test", "-only-testing:ArmageddonUITests/LaunchProfileTests/testAllFixtureProfilesReachStableUI"]
+    execute(["python3", "scripts/supervise-process.py", "run", "--launch-receipt", str(launch_receipt), "--exit-receipt", str(exit_receipt), "--command-id", "task2-ui-profiles", "--preexec-barrier", "--live-io-observation", str(observation), "--live-io-trace", str(trace), "--", *xcode_command], transcript, environment)
     app = build / "xcode/Build/Products/Debug/Armageddon.app/Contents/MacOS/Armageddon"
     network_receipt = root / "network-static.json"
     execute(["python3", "scripts/audit-network.py", "--app", str(app), "--allowlist", "Tests/Fixtures/network-static-allowlist.json", "--receipt", str(network_receipt)], transcript, environment)
     parent = task1_validation(root, transcript, environment)
-    return [result_bundle, parent, network_receipt, root / "RuntimeTraceProbe.events.jsonl", root / "SandboxLogProbe.events.jsonl", *infrastructure_tools(root, transcript, environment)]
+    return [result_bundle, parent, network_receipt, launch_receipt, exit_receipt, trace, observation, root / "RuntimeTraceProbe.events.jsonl", root / "SandboxLogProbe.events.jsonl", *infrastructure_tools(root, transcript, environment)]
 
 
 def failure(root: Path, transcript, environment: dict[str, str]) -> list[Path]:
-    execute(["scripts/verify-no-live-io-in-tests.sh", "Tests/Fixtures/ForbiddenLiveIO.swift"], transcript, environment, expected=1)
+    observation_root = root / "live-io"
+    os.mkdir(observation_root, 0o700)
+    launch_receipt = observation_root / "launch.json"
+    exit_receipt = observation_root / "exit.json"
+    trace = observation_root / "trace.json"
+    observation = observation_root / "observation.json"
+    execute(["python3", "scripts/supervise-process.py", "run", "--launch-receipt", str(launch_receipt), "--exit-receipt", str(exit_receipt), "--command-id", "task2-forbidden-live-io", "--preexec-barrier", "--live-io-observation", str(observation), "--live-io-trace", str(trace), "--", "scripts/verify-no-live-io-in-tests.sh", "Tests/Fixtures/ForbiddenLiveIO.swift"], transcript, environment, expected=1)
     fixture_output = root / "existing.json"
     fixture_output.write_text("immutable\n", encoding="utf-8")
     execute(["python3", "scripts/write-merkle.py", "--root", str(root), "--output", str(fixture_output)], transcript, environment, expected=2)
@@ -167,7 +180,7 @@ def failure(root: Path, transcript, environment: dict[str, str]) -> list[Path]:
     task1_validation(root, transcript, environment)
     if any(name.startswith(("ARMAGEDDON_LIVE_", "ARMAGEDDON_OPERATOR_", "HUENIT_LIVE_")) or "DEVICE" in name for name in environment):
         raise EvidenceError("poisoned-environment-leak", "live/operator/device variable survived")
-    return [root / "task-1-parent-chain.json"]
+    return [root / "task-1-parent-chain.json", launch_receipt, exit_receipt, trace, observation]
 
 
 def main() -> int:
@@ -178,10 +191,12 @@ def main() -> int:
     parent = Path(sys.argv[3]).resolve(strict=True)
     child_nonce = str(uuid.uuid4())
     root = parent / mode / child_nonce
+    mode_root = parent / mode
     try:
-        os.mkdir(parent / mode, 0o700)
-    except FileExistsError:
-        pass
+        os.mkdir(mode_root, 0o700)
+    except FileExistsError as error:
+        if not mode_root.is_dir():
+            raise error
     os.mkdir(root, 0o700)
     environment = clean_environment(os.environ, ALLOWLIST)
     home = root / "home"
@@ -197,7 +212,6 @@ def main() -> int:
     environment["GIT_CONFIG_VALUE_0"] = "false"
     environment["GIT_CONFIG_KEY_1"] = "core.untrackedCache"
     environment["GIT_CONFIG_VALUE_1"] = "false"
-    start = time.monotonic_ns()
     transcript_path = root / "camera-ml-app.txt"
     try:
         with transcript_path.open("xb") as transcript:
@@ -205,8 +219,19 @@ def main() -> int:
             transcript.flush()
             os.fsync(transcript.fileno())
         env_data = "\0".join(f"{key}={environment[key]}" for key in sorted(environment)).encode()
-        value: JsonValue = {"schemaVersion": 1, "kind": "task-execution", "parentRunID": os.environ.get("ARMAGEDDON_PARENT_RUN_ID", "00000000-0000-0000-0000-000000000000"), "childNonce": child_nonce, "task": 2, "mode": mode, "baseCommit": "2fd5b1723f16c7405898e476f167206f72be1e84", "finalCommit": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(), "planSHA256": PLAN_SHA256, "startMonotonicNs": start, "endMonotonicNs": time.monotonic_ns(), "environmentSHA256": sha256_bytes(env_data), "scrubbedLiveVariables": True, "liveSchemesExcluded": True, "deviceOpenCount": 0, "serialWriteCount": 0, "outcome": "PASS" if mode == "happy" else "EXPECTED_FAILURE", "artifacts": [artifact_record(path) for path in artifacts], "transcriptSHA256": sha256_file(transcript_path)}
+        observation_path = root / "live-io/observation.json"
+        observation = require_mapping(read_json(observation_path), "live I/O observation")
+        observation_start = observation.get("observationStartMonotonicNs")
+        observation_end = observation.get("observationEndMonotonicNs")
+        device_opens = observation.get("deviceOpenCount")
+        serial_writes = observation.get("serialWriteCount")
+        if not all(isinstance(item, int) and not isinstance(item, bool) for item in (observation_start, observation_end, device_opens, serial_writes)):
+            raise EvidenceError("invalid-live-io-observation", str(observation_path))
+        value: JsonValue = {"schemaVersion": 1, "kind": "task-execution", "parentRunID": os.environ.get("ARMAGEDDON_PARENT_RUN_ID", "00000000-0000-0000-0000-000000000000"), "childNonce": child_nonce, "task": 2, "mode": mode, "baseCommit": "2fd5b1723f16c7405898e476f167206f72be1e84", "finalCommit": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(), "planSHA256": PLAN_SHA256, "startMonotonicNs": observation_start, "endMonotonicNs": observation_end, "environmentSHA256": sha256_bytes(env_data), "scrubbedLiveVariables": True, "liveSchemesExcluded": True, "deviceOpenCount": device_opens, "serialWriteCount": serial_writes, "liveIOObservation": artifact_record(observation_path), "outcome": "PASS" if mode == "happy" else "EXPECTED_FAILURE", "artifacts": [artifact_record(path) for path in artifacts], "transcriptSHA256": sha256_file(transcript_path)}
         exclusive_json(root / "execution-receipt.json", value)
+        validation = subprocess.run(["python3", "scripts/validate-execution-receipts.py", str(root / "execution-receipt.json")], env=environment, check=False, capture_output=True, text=True)
+        if validation.returncode != 0:
+            raise EvidenceError("invalid-execution-receipt", validation.stderr.strip())
         print(root)
         return 0
     except (EvidenceError, OSError, subprocess.SubprocessError) as error:
