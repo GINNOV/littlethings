@@ -61,6 +61,17 @@ final class AppShellUITests: XCTestCase {
     }
 
     func testSettingsInspectorPreferenceControlsPresentation() throws {
+        let appDefaults = try XCTUnwrap(UserDefaults(suiteName: "com.huenit.ArmageddonApp"))
+        let previousValue = appDefaults.object(forKey: "showInspectorOnLaunch")
+        appDefaults.set(false, forKey: "showInspectorOnLaunch")
+        addTeardownBlock {
+            if let previousValue {
+                appDefaults.set(previousValue, forKey: "showInspectorOnLaunch")
+            } else {
+                appDefaults.removeObject(forKey: "showInspectorOnLaunch")
+            }
+        }
+
         let app = try launch(style: "Light", width: 1_280, height: 800)
         let inspector = app.descendants(matching: .any)["inspector.live"]
         XCTAssertTrue(inspector.waitForExistence(timeout: 5), "The inspector should be visible by default")

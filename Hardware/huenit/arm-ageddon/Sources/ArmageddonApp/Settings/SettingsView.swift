@@ -1,7 +1,15 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @AppStorage("showInspectorOnLaunch") private var showInspectorOnLaunch = true
+    @AppStorage private var showInspectorOnLaunch: Bool
+
+    init(preferenceSuite: String? = nil) {
+        _showInspectorOnLaunch = AppStorage(
+            wrappedValue: true,
+            "showInspectorOnLaunch",
+            store: preferenceSuite.flatMap { UserDefaults(suiteName: $0) }
+        )
+    }
 
     var body: some View {
         Form {

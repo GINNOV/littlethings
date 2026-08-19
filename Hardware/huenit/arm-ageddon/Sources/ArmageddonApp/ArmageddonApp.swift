@@ -21,7 +21,8 @@ struct ArmageddonApp: App {
             RootSplitView(
                 model: shellModel,
                 actions: actions,
-                profile: isUITesting ? try? launch.get().profile : nil
+                profile: isUITesting ? try? launch.get().profile : nil,
+                preferenceSuite: preferenceSuite
             )
         }
         .defaultLaunchBehavior(.presented)
@@ -32,7 +33,7 @@ struct ArmageddonApp: App {
         }
 
         Settings {
-            SettingsView()
+            SettingsView(preferenceSuite: preferenceSuite)
         }
     }
 
@@ -50,6 +51,11 @@ struct ArmageddonApp: App {
 
     private var isUITesting: Bool {
         ProcessInfo.processInfo.arguments.contains("-ui-testing")
+    }
+
+    private var preferenceSuite: String? {
+        guard let arguments = try? launch.get() else { return nil }
+        return arguments.paths?.preferenceSuite
     }
 
     private var windowSize: WindowSize {

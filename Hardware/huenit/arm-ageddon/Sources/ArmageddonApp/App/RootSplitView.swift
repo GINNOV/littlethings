@@ -4,7 +4,18 @@ struct RootSplitView: View {
     @Bindable var model: AppShellModel
     let actions: AppActions
     let profile: LaunchProfile?
-    @AppStorage("showInspectorOnLaunch") private var showInspectorOnLaunch = true
+    @AppStorage private var showInspectorOnLaunch: Bool
+
+    init(model: AppShellModel, actions: AppActions, profile: LaunchProfile?, preferenceSuite: String? = nil) {
+        self.model = model
+        self.actions = actions
+        self.profile = profile
+        _showInspectorOnLaunch = AppStorage(
+            wrappedValue: true,
+            "showInspectorOnLaunch",
+            store: preferenceSuite.flatMap { UserDefaults(suiteName: $0) }
+        )
+    }
 
     var body: some View {
         NavigationSplitView {

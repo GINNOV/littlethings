@@ -45,7 +45,12 @@ final class FixtureLaunchDelegate: NSObject, NSApplicationDelegate {
             height: DesignTokens.Layout.minimumWindowHeight
         )
         window.contentView = NSHostingView(
-            rootView: RootSplitView(model: model, actions: actions, profile: arguments?.profile)
+            rootView: RootSplitView(
+                model: model,
+                actions: actions,
+                profile: arguments?.profile,
+                preferenceSuite: arguments?.paths?.preferenceSuite
+            )
         )
         window.center()
         fixtureWindow = window
