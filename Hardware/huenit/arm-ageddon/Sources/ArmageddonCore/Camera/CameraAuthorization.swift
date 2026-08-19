@@ -15,9 +15,9 @@ public enum CameraAuthorizationStatus: String, Codable, CaseIterable, Equatable,
             .requestPermission
         case .denied, .restricted:
             .openSystemSettings
-        case .authorized:
+        case .authorized, .unavailable, .failed:
             .rescan
-        case .requesting, .unavailable, .failed:
+        case .requesting:
             nil
         }
     }

@@ -33,7 +33,8 @@ public struct NativeCameraLifecycleSnapshot: Equatable, Sendable {
         self.connection = connection
         canRequestPermission = authorization == .notDetermined
         canOpenSystemSettings = authorization == .denied || authorization == .restricted
-        canRescan = authorization == .authorized && connection != .connected
+        canRescan = (authorization == .authorized || authorization == .unavailable || authorization == .failed)
+            && connection != .connected
     }
 }
 
@@ -93,6 +94,9 @@ public actor NativeCameraLifecycleController {
     }
 
     public func select(_ identity: DeviceIdentity) async throws {
+        guard currentState.authorization == .authorized else {
+            throw CameraLifecycleError.unavailable
+        }
         guard case .nativeCamera = identity else {
             throw CameraLifecycleError.notNativeCamera
         }
