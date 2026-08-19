@@ -100,7 +100,9 @@ def run(args: argparse.Namespace) -> int:
                 if not same_child_identity(observed_child, observed_executable, executable_sha, identity[0], identity[1], identity[2], command, requested_executable, environment):
                     raise EvidenceError("live-io-process-mismatch", str(child_pid))
             except EvidenceError as error:
-                if error.code != "missing-process":
+                if error.code == "live-io-command-mismatch":
+                    observation_error = EvidenceError("live-io-process-mismatch", str(child_pid))
+                elif error.code != "missing-process":
                     observation_error = error
                 observation_started.set()
                 return

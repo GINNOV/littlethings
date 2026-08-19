@@ -152,11 +152,11 @@ if python3 scripts/validate-execution-receipts.py "$root/io/synthetic/execution.
 fi
 grep -q 'ERROR\[missing-producer-origin-proof\]' "$root/io/synthetic.stderr"
 
-if python3 scripts/supervise-process.py run --launch-receipt "$root/io/window-launch.json" --exit-receipt "$root/io/window-exit.json" --command-id identity-window --preexec-barrier --live-io-observation "$root/io/window-observation.json" --live-io-trace "$root/io/window-trace.json" -- /bin/sh -c 'sleep 0.15; exec /bin/sleep 0.15' > "$root/io/window-supervisor.stdout" 2> "$root/io/window-supervisor.stderr"; then
+if python3 scripts/supervise-process.py run --launch-receipt "$root/io/window-launch.json" --exit-receipt "$root/io/window-exit.json" --command-id identity-window --preexec-barrier --live-io-observation "$root/io/window-observation.json" --live-io-trace "$root/io/window-trace.json" -- /bin/bash -c 'sleep 0.30; exec /bin/sleep 0.30' > "$root/io/window-supervisor.stdout" 2> "$root/io/window-supervisor.stderr"; then
     printf '%s\n' 'ERROR[test-identity-window]: executable change during observation validated' >&2
     exit 1
 fi
-grep -q 'ERROR\[live-io-command-mismatch\]' "$root/io/window-supervisor.stderr"
+grep -q 'ERROR\[live-io-process-mismatch\]' "$root/io/window-supervisor.stderr"
 if rg -n 'ARMAGEDDON_PRODUCER_ORIGIN|producer-origin-fd|secret\.hex' scripts/supervise-process.py scripts/qa_task_runner.py scripts/validate-execution-receipts.py > "$root/io/leaked-proof.txt"; then
     printf '%s\n' 'ERROR[test-origin-leak]: caller-readable proof channel remains' >&2
     exit 1
