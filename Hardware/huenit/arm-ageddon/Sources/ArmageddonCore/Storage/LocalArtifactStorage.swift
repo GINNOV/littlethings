@@ -226,6 +226,32 @@ public actor LocalArtifactStorage {
             encoder.outputFormatting = [.sortedKeys]
             expectedMetadataHash = SwiftDataArtifactMetadataStore.sha256(try encoder.encode(journal.record))
         }
+        let stage30Path = "\(transactionPath)/30-complete.json"
+        var stage30Exists = fresh ? false : try await fileSystem.exists(stage30Path)
+        if stage30Exists {
+            let complete = try? JSONDecoder().decode(
+                TransactionJournal.self,
+                from: try await fileSystem.read(stage30Path)
+            )
+            if complete != journal {
+                try await fileSystem.unlink(stage30Path)
+                try await fileSystem.syncDirectory(transactionPath)
+                stage30Exists = false
+            }
+        }
+        let checkpointPath = "\(transactionPath)/40-checkpoint.json"
+        var checkpointExists = fresh ? false : try await fileSystem.exists(checkpointPath)
+        if checkpointExists {
+            let checkpoint = try? JSONDecoder().decode(
+                TransactionJournal.self,
+                from: try await fileSystem.read(checkpointPath)
+            )
+            if checkpoint != journal {
+                try await fileSystem.unlink(checkpointPath)
+                try await fileSystem.syncDirectory(transactionPath)
+                checkpointExists = false
+            }
+        }
         let stage20Path = "\(transactionPath)/20-metadataCommitted.json"
         var stage20Exists = fresh ? false : try await fileSystem.exists(stage20Path)
         if stage20Exists {
@@ -240,42 +266,32 @@ public actor LocalArtifactStorage {
             }
         }
         if fresh || !stage20Exists {
-            let currentHash = fresh ? nil : try await metadata.stableHash(id: journal.record.id)
             let verifiedHash: String
-            if fresh || currentHash != expectedMetadataHash {
-                let mutation: MetadataMutation = journal.operation == .purge
-                    ? .remove(id: journal.record.id)
-                    : .upsert(journal.record)
-                try await metadata.applyAndSave(mutation)
-                for path in await metadata.durableStorePaths {
-                    try await fileSystem.syncFileIfPresent(path)
-                }
-                try await fileSystem.syncDirectory("Metadata")
-                verifiedHash = try await metadata.stableHash(id: journal.record.id)
+            if !fresh && (stage30Exists || checkpointExists) {
+                verifiedHash = expectedMetadataHash
             } else {
-                verifiedHash = try required(currentHash)
+                let currentHash = fresh ? nil : try await metadata.stableHash(id: journal.record.id)
+                if fresh || currentHash != expectedMetadataHash {
+                    let mutation: MetadataMutation = journal.operation == .purge
+                        ? .remove(id: journal.record.id)
+                        : .upsert(journal.record)
+                    try await metadata.applyAndSave(mutation)
+                    for path in await metadata.durableStorePaths {
+                        try await fileSystem.syncFileIfPresent(path)
+                    }
+                    try await fileSystem.syncDirectory("Metadata")
+                    verifiedHash = try await metadata.stableHash(id: journal.record.id)
+                } else {
+                    verifiedHash = try required(currentHash)
+                }
             }
             guard verifiedHash == expectedMetadataHash else { throw StorageError.hashMismatch(journal.record.id) }
             let checkpoint = MetadataCheckpoint(transactionID: journal.transactionID, metadataHash: verifiedHash)
             try await writeStage("20-metadataCommitted.json", data: encode(checkpoint), transactionPath: transactionPath)
         }
-        let stage30Exists = fresh ? false : try await fileSystem.exists("\(transactionPath)/30-complete.json")
         if fresh || !stage30Exists {
             try await writeStage("30-complete.json", data: encode(journal), transactionPath: transactionPath)
             try await fileSystem.syncDirectory("Transactions")
-        }
-        let checkpointPath = "\(transactionPath)/40-checkpoint.json"
-        var checkpointExists = fresh ? false : try await fileSystem.exists(checkpointPath)
-        if checkpointExists {
-            let checkpoint = try? JSONDecoder().decode(
-                TransactionJournal.self,
-                from: try await fileSystem.read(checkpointPath)
-            )
-            if checkpoint != journal {
-                try await fileSystem.unlink(checkpointPath)
-                try await fileSystem.syncDirectory(transactionPath)
-                checkpointExists = false
-            }
         }
         if !checkpointExists {
             try await writeStage("40-checkpoint.json", data: encode(journal), transactionPath: transactionPath)

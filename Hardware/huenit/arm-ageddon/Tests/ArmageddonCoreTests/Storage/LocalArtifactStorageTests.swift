@@ -42,6 +42,7 @@ struct LocalArtifactStorageTests {
         _ = try await storage.create(id: "fixture", bytes: Data("camera".utf8))
         let transaction = try #require(try await fileSystem.children("Transactions").first)
         let transactionRoot = root.appending(path: "Transactions").appending(path: transaction)
+        _ = try await storage.replace(id: "fixture", bytes: Data("arm".utf8))
 
         try Data("torn".utf8).write(to: transactionRoot.appending(path: "20-metadataCommitted.json"))
         let afterMetadataRepair = LocalArtifactStorage(
@@ -50,6 +51,7 @@ struct LocalArtifactStorageTests {
         )
         try await afterMetadataRepair.open()
         #expect(try await afterMetadataRepair.unresolvedTransactionCount() == 0)
+        #expect(try await afterMetadataRepair.bytes(id: "fixture") == Data("arm".utf8))
 
         try Data("torn".utf8).write(to: transactionRoot.appending(path: "40-checkpoint.json"))
         let afterCheckpointRepair = LocalArtifactStorage(
@@ -58,7 +60,7 @@ struct LocalArtifactStorageTests {
         )
         try await afterCheckpointRepair.open()
         #expect(try await afterCheckpointRepair.unresolvedTransactionCount() == 0)
-        #expect(try await afterCheckpointRepair.bytes(id: "fixture") == Data("camera".utf8))
+        #expect(try await afterCheckpointRepair.bytes(id: "fixture") == Data("arm".utf8))
     }
 
     @Test("Recovery removes a leftover transaction temporary blob")
