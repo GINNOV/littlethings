@@ -47,8 +47,8 @@ struct CameraAuthorizationTests {
             (.authorized, .rescan),
             (.denied, .openSystemSettings),
             (.restricted, .openSystemSettings),
-            (.unavailable, nil),
-            (.failed, nil),
+            (.unavailable, .rescan),
+            (.failed, .rescan),
         ]
 
         for (status, expectedAction) in outcomes {
@@ -64,6 +64,27 @@ struct CameraAuthorizationTests {
             #expect(snapshot.canRequestPermission == (status == .notDetermined))
             #expect(snapshot.canOpenSystemSettings == (status == .denied || status == .restricted))
         }
+    }
+
+    @Test("Requesting remains observable until a later request resolves")
+    func requestingTransitionIsExplicit() async {
+        let authorization = DeterministicCameraAuthorizationClient(
+            status: .notDetermined,
+            requestResult: .requesting
+        )
+        let controller = makeController(
+            authorization: authorization,
+            cameras: DeterministicNativeCameraDiscovery(cameras: [])
+        )
+
+        let requesting = await controller.requestAuthorization()
+        #expect(requesting.authorization == .requesting)
+        #expect(await authorization.requestCount == 1)
+
+        await authorization.setRequestResult(.authorized)
+        let authorized = await controller.requestAuthorization()
+        #expect(authorized.authorization == .authorized)
+        #expect(await authorization.requestCount == 2)
     }
 
     @Test("Denied permission never triggers discovery and offers system settings")
@@ -98,12 +119,17 @@ struct CameraAuthorizationTests {
         #expect(events.contains(.selectionBecameStale(.nativeCamera("camera-1"))))
         #expect((await controller.snapshot()).selection == .stale(.nativeCamera("camera-1")))
         #expect((await controller.snapshot()).connection == .disconnected)
+        #expect((await controller.snapshot()).canRescan)
 
         await cameras.setCameras([
             NativeCameraDevice(stableIdentifier: "camera-2", permission: .authorized),
         ])
         _ = await controller.refresh()
         #expect((await controller.snapshot()).connection == .disconnected)
+
+        try await controller.select(.nativeCamera("camera-2"))
+        #expect((await controller.snapshot()).selection == .selected(.nativeCamera("camera-2")))
+        #expect((await controller.snapshot()).connection == .available)
     }
 
     @Test("Interruptions and failures are explicit and recoverable by rescan")

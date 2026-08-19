@@ -43,6 +43,8 @@
 		A10000000000000000000034 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A20000000000000000000038 /* AVFoundation.framework */; };
 		A10000000000000000000035 /* AVFoundationCameraAuthorizationClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000035 /* AVFoundationCameraAuthorizationClient.swift */; };
 		A10000000000000000000036 /* AVFoundationCameraDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000036 /* AVFoundationCameraDiscovery.swift */; };
+		A10000000000000000000037 /* AVFoundationCameraLifecycleObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000039 /* AVFoundationCameraLifecycleObserver.swift */; };
+		A10000000000000000000038 /* CameraAuthorizationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000040 /* CameraAuthorizationView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -94,6 +96,8 @@
 		A20000000000000000000036 /* AVFoundationCameraDiscovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AVFoundationCameraDiscovery.swift; sourceTree = "<group>"; };
 		A20000000000000000000037 /* ArmageddonApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ArmageddonApp.entitlements; sourceTree = "<group>"; };
 		A20000000000000000000038 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		A20000000000000000000039 /* AVFoundationCameraLifecycleObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AVFoundationCameraLifecycleObserver.swift; sourceTree = "<group>"; };
+		A20000000000000000000040 /* CameraAuthorizationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraAuthorizationView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -157,7 +161,8 @@
 			children = (
 				A20000000000000000000035 /* AVFoundationCameraAuthorizationClient.swift */,
 				A20000000000000000000036 /* AVFoundationCameraDiscovery.swift */,
-				A20000000000000000000037 /* ArmageddonApp.entitlements */,
+				A20000000000000000000039 /* AVFoundationCameraLifecycleObserver.swift */,
+				A20000000000000000000040 /* CameraAuthorizationView.swift */,
 			);
 			path = Camera;
 			sourceTree = "<group>";
@@ -170,6 +175,7 @@
 				A20000000000000000000015 /* AppDestination.swift */,
 				A20000000000000000000016 /* AppShellModel.swift */,
 				A20000000000000000000034 /* AppModel.swift */,
+				A20000000000000000000037 /* ArmageddonApp.entitlements */,
 				A20000000000000000000017 /* ContextualInspectorView.swift */,
 				A20000000000000000000018 /* DestinationSidebarRow.swift */,
 				A20000000000000000000019 /* DestinationWorkspaceView.swift */,
@@ -353,6 +359,8 @@
 				A10000000000000000000010 /* FixtureLaunchView.swift in Sources */,
 				A10000000000000000000035 /* AVFoundationCameraAuthorizationClient.swift in Sources */,
 				A10000000000000000000036 /* AVFoundationCameraDiscovery.swift in Sources */,
+				A10000000000000000000037 /* AVFoundationCameraLifecycleObserver.swift in Sources */,
+				A10000000000000000000038 /* CameraAuthorizationView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -417,7 +425,7 @@
 				INFOPLIST_KEY_NSCameraUsageDescription = "Armageddon uses the camera only when you choose a native camera source for local inspection.";
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0.0;
-				CODE_SIGN_ENTITLEMENTS = Sources/ArmageddonApp/Camera/ArmageddonApp.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Sources/ArmageddonApp/App/ArmageddonApp.entitlements;
 				PRODUCT_BUNDLE_IDENTIFIER = com.huenit.ArmageddonApp;
 				PRODUCT_NAME = Armageddon;
 				SUPPORTED_PLATFORMS = macosx;
@@ -438,7 +446,7 @@
 				INFOPLIST_KEY_NSCameraUsageDescription = "Armageddon uses the camera only when you choose a native camera source for local inspection.";
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0.0;
-				CODE_SIGN_ENTITLEMENTS = Sources/ArmageddonApp/Camera/ArmageddonApp.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Sources/ArmageddonApp/App/ArmageddonApp.entitlements;
 				PRODUCT_BUNDLE_IDENTIFIER = com.huenit.ArmageddonApp;
 				PRODUCT_NAME = Armageddon;
 				SUPPORTED_PLATFORMS = macosx;

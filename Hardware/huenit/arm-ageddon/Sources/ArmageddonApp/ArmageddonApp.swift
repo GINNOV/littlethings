@@ -16,9 +16,22 @@ struct ArmageddonApp: App {
         }
         launch = result
         let coordinator = AppStateCoordinator(repository: FileAppStateRepository(fileURL: Self.appStateURL(for: result)))
-        let authorizationClient = AVFoundationCameraAuthorizationClient()
+        let isUITesting = processArguments.contains("-ui-testing")
+        let profile = try? result.get().profile
+        let authorizationClient: any CameraAuthorizationClient = if isUITesting, profile == .permissionDenied {
+            DeterministicCameraAuthorizationClient(status: .denied)
+        } else if isUITesting {
+            DeterministicCameraAuthorizationClient(status: .authorized)
+        } else {
+            AVFoundationCameraAuthorizationClient()
+        }
+        let nativeCameraDiscovery: any NativeCameraDiscovery = if isUITesting {
+            DeterministicNativeCameraDiscovery(cameras: [])
+        } else {
+            AVFoundationCameraDiscovery(authorizationClient: authorizationClient)
+        }
         let cameraCatalog = DeviceCatalog(
-            nativeCameraDiscovery: AVFoundationCameraDiscovery(authorizationClient: authorizationClient),
+            nativeCameraDiscovery: nativeCameraDiscovery,
             serialDeviceDiscovery: DeterministicSerialDeviceDiscovery(devices: [])
         )
         let cameraLifecycle = NativeCameraLifecycleController(
@@ -30,11 +43,13 @@ struct ArmageddonApp: App {
             selectedDevice: nil,
             selectedModelID: nil
         ))
-        _appModel = State(initialValue: AppModel(
+        let applicationModel = AppModel(
             coordinator: coordinator,
             restoredState: restored,
             cameraLifecycle: cameraLifecycle
-        ))
+        )
+        _appModel = State(initialValue: applicationModel)
+        fixtureLaunchDelegate.configure(appModel: applicationModel)
     }
 
     var body: some Scene {
@@ -49,6 +64,7 @@ struct ArmageddonApp: App {
             .task {
                 await appModel.restore()
                 await appModel.refreshCameraLifecycle()
+                appModel.startCameraLifecycleMonitoring()
             }
         }
         .defaultLaunchBehavior(.presented)

@@ -5,6 +5,11 @@ final class FixtureLaunchDelegate: NSObject, NSApplicationDelegate {
     private var fixtureWindow: NSWindow?
     private var keyMonitor: Any?
     private var shellModel: AppShellModel?
+    private var appModel: AppModel?
+
+    func configure(appModel: AppModel) {
+        self.appModel = appModel
+    }
 
     func model(requestedDestination: String?) -> AppShellModel {
         if let shellModel {
@@ -44,14 +49,14 @@ final class FixtureLaunchDelegate: NSObject, NSApplicationDelegate {
             width: DesignTokens.Layout.minimumWindowWidth,
             height: DesignTokens.Layout.minimumWindowHeight
         )
-        window.contentView = NSHostingView(
-            rootView: RootSplitView(
+        let rootView = RootSplitView(
                 model: model,
                 actions: actions,
                 profile: arguments?.profile,
                 preferenceSuite: arguments?.paths?.preferenceSuite
             )
-        )
+            .environment(appModel)
+        window.contentView = NSHostingView(rootView: rootView)
         window.center()
         fixtureWindow = window
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in

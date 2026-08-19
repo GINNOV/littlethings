@@ -85,14 +85,23 @@ final class AppShellUITests: XCTestCase {
         app.terminate()
     }
 
-    private func launch(style: String, width: Int, height: Int, destination: String? = nil) throws -> XCUIApplication {
+    func testCameraPermissionDeniedOffersRecoveryAction() throws {
+        let app = try launch(style: "Light", width: 1_100, height: 720, profile: "permission-denied")
+
+        XCTAssertTrue(app.descendants(matching: .any)["camera.authorization-card"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Open Camera Settings"].waitForExistence(timeout: 2))
+        XCTAssertFalse(app.buttons["Allow Camera Access"].exists)
+        app.terminate()
+    }
+
+    private func launch(style: String, width: Int, height: Int, destination: String? = nil, profile: String = "all-connected") throws -> XCUIApplication {
         let root = try privateRoot()
         addTeardownBlock { try? FileManager.default.removeItem(at: root) }
         let paths = try isolatedPaths(root: root)
         let app = XCUIApplication()
         app.launchEnvironment = ["CFFIXED_USER_HOME": paths.home.path]
         app.launchArguments = [
-            "-ui-testing", "-fixture-profile", "all-connected",
+            "-ui-testing", "-fixture-profile", profile,
             "-qa-preference-suite", "com.huenit.ArmageddonUITests.shell.\(UUID().uuidString)",
             "-qa-application-support-root", paths.support.path,
             "-qa-cache-root", paths.cache.path,

@@ -1,3 +1,4 @@
+import AppKit
 import ArmageddonCore
 import Observation
 
@@ -6,6 +7,7 @@ import Observation
 final class AppModel {
     private let coordinator: AppStateCoordinator
     private let cameraLifecycle: NativeCameraLifecycleController
+    private let cameraLifecycleObserver: AVFoundationCameraLifecycleObserver
 
     private(set) var destination: String
     private(set) var selectedDevice: DeviceIdentity?
@@ -18,10 +20,12 @@ final class AppModel {
     init(
         coordinator: AppStateCoordinator,
         restoredState: RestoredAppState,
-        cameraLifecycle: NativeCameraLifecycleController
+        cameraLifecycle: NativeCameraLifecycleController,
+        cameraLifecycleObserver: AVFoundationCameraLifecycleObserver = AVFoundationCameraLifecycleObserver()
     ) {
         self.coordinator = coordinator
         self.cameraLifecycle = cameraLifecycle
+        self.cameraLifecycleObserver = cameraLifecycleObserver
         destination = restoredState.destination
         selectedDevice = restoredState.selectedDevice
         selectedModelID = restoredState.selectedModelID
@@ -62,5 +66,24 @@ final class AppModel {
     func rescanCameras() async {
         _ = await cameraLifecycle.refresh()
         cameraLifecycleSnapshot = await cameraLifecycle.snapshot()
+    }
+
+    func startCameraLifecycleMonitoring() {
+        cameraLifecycleObserver.start { [weak self] event in
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                if case .interrupted = event {
+                    await cameraLifecycle.markInterrupted()
+                    cameraLifecycleSnapshot = await cameraLifecycle.snapshot()
+                } else {
+                    await refreshCameraLifecycle()
+                }
+            }
+        }
+    }
+
+    func openCameraSettings() {
+        guard let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Camera") else { return }
+        NSWorkspace.shared.open(url)
     }
 }
