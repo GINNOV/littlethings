@@ -52,40 +52,49 @@ root = Path(sys.argv[1])
 
 def receive(control):
     with control.makefile("rb") as stream:
-        return json.loads(stream.readline())
+        line = stream.readline()
+    return json.loads(line) if line else None
 
 def run_case(name, expected_error=None, child_command=None, child_exit=0):
     case_root = root / name
     case_root.mkdir()
     control, supervisor = socket.socketpair()
-    command = ["python3", "scripts/supervise-process.py", "run", "--launch-receipt", str(case_root / "launch.json"), "--exit-receipt", str(case_root / "exit.json"), "--command-id", name, "--preexec-barrier", "--live-io-observation", str(case_root / "observation.json"), "--live-io-trace", str(case_root / "trace.json"), "--finalize-fd", str(supervisor.fileno()), "--", *(child_command or ["/bin/sleep", "0.3"])]
+    command = ["python3", "scripts/supervise-process.py", "run", "--launch-receipt", str(case_root / "launch.json"), "--exit-receipt", str(case_root / "exit.json"), "--command-id", name, "--preexec-barrier", "--live-io-observation", str(case_root / "observation.json"), "--live-io-trace", str(case_root / "trace.json"), "--finalize-fd", str(supervisor.fileno()), "--", *(child_command or ["/bin/sleep", "1"])]
     with (case_root / "supervisor.stdout").open("wb") as stdout, (case_root / "supervisor.stderr").open("wb") as stderr:
         process = subprocess.Popen(command, pass_fds=(supervisor.fileno(),), stdout=stdout, stderr=stderr)
         supervisor.close()
         ready = receive(control)
-        if ready != {"status": "ready", "childExitStatus": child_exit}:
-            raise SystemExit(f"{name}: supervisor not ready: {ready}")
-        observation_path = case_root / "observation.json"
-        observation = json.loads(observation_path.read_text(encoding="utf-8"))
-        receipt = {"schemaVersion": 1, "kind": "task-execution", "startMonotonicNs": observation["observationStartMonotonicNs"], "endMonotonicNs": observation["observationEndMonotonicNs"], "deviceOpenCount": observation["deviceOpenCount"], "serialWriteCount": observation["serialWriteCount"], "liveIOObservation": {"path": str(observation_path), "sha256": hashlib.sha256(observation_path.read_bytes()).hexdigest()}}
-        if name == "missing":
-            receipt.pop("liveIOObservation")
-        elif name == "forged":
-            receipt["liveIOObservation"]["sha256"] = "0" * 64
-        elif name == "mismatched":
-            changed = dict(observation)
-            changed["process"] = {**changed["process"], "pid": changed["process"]["pid"] + 1}
-            changed_path = case_root / "changed-observation.json"
-            changed_path.write_text(json.dumps(changed, sort_keys=True, separators=(",", ":")) + "\n", encoding="utf-8")
-            receipt["liveIOObservation"] = {"path": str(changed_path), "sha256": hashlib.sha256(changed_path.read_bytes()).hexdigest()}
-        elif name == "window":
-            receipt["startMonotonicNs"] -= 1
-        receipt_path = case_root / "execution.json"
-        receipt_path.write_text(json.dumps(receipt, sort_keys=True, separators=(",", ":")) + "\n", encoding="utf-8")
-        control.sendall((json.dumps({"receipt": str(receipt_path)}) + "\n").encode())
-        response = receive(control)
-        control.close()
-        status = process.wait(timeout=10)
+        if ready is None:
+            status = process.wait(timeout=10)
+            stderr_text = (case_root / "supervisor.stderr").read_text(encoding="utf-8")
+            if expected_error is None or status == 0 or f"ERROR[{expected_error}]" not in stderr_text:
+                raise SystemExit(f"{name}: unexpected early supervisor failure: {status}, {stderr_text!r}")
+            response = {"status": "fail", "error": expected_error}
+            control.close()
+        else:
+            if ready != {"status": "ready", "childExitStatus": child_exit}:
+                raise SystemExit(f"{name}: supervisor not ready: {ready}")
+            observation_path = case_root / "observation.json"
+            observation = json.loads(observation_path.read_text(encoding="utf-8"))
+            receipt = {"schemaVersion": 1, "kind": "task-execution", "startMonotonicNs": observation["observationStartMonotonicNs"], "endMonotonicNs": observation["observationEndMonotonicNs"], "deviceOpenCount": observation["deviceOpenCount"], "serialWriteCount": observation["serialWriteCount"], "liveIOObservation": {"path": str(observation_path), "sha256": hashlib.sha256(observation_path.read_bytes()).hexdigest()}}
+            if name == "missing":
+                receipt.pop("liveIOObservation")
+            elif name == "forged":
+                receipt["liveIOObservation"]["sha256"] = "0" * 64
+            elif name == "mismatched":
+                changed = dict(observation)
+                changed["process"] = {**changed["process"], "pid": changed["process"]["pid"] + 1}
+                changed_path = case_root / "changed-observation.json"
+                changed_path.write_text(json.dumps(changed, sort_keys=True, separators=(",", ":")) + "\n", encoding="utf-8")
+                receipt["liveIOObservation"] = {"path": str(changed_path), "sha256": hashlib.sha256(changed_path.read_bytes()).hexdigest()}
+            elif name == "window":
+                receipt["startMonotonicNs"] -= 1
+            receipt_path = case_root / "execution.json"
+            receipt_path.write_text(json.dumps(receipt, sort_keys=True, separators=(",", ":")) + "\n", encoding="utf-8")
+            control.sendall((json.dumps({"receipt": str(receipt_path)}) + "\n").encode())
+            response = receive(control)
+            control.close()
+            status = process.wait(timeout=10)
     (case_root / "response.json").write_text(json.dumps(response) + "\n", encoding="utf-8")
     (case_root / "exit-status.txt").write_text(f"{status}\n", encoding="utf-8")
     if expected_error is None:
@@ -100,7 +109,7 @@ run_case("forged", "live-io-hash-mismatch")
 run_case("mismatched", "live-io-process-mismatch")
 run_case("window", "live-io-window-mismatch")
 run_case("short-lived", child_command=["/bin/sh", "-c", "exit 1"], child_exit=1)
-run_case("xcode-shim", child_command=["/usr/bin/xcodebuild", "-version"])
+run_case("xcode-shim", child_command=["/usr/bin/xcodebuild", "-showsdks"])
 shim = json.loads((root / "xcode-shim" / "launch.json").read_text(encoding="utf-8"))
 if shim["executable"] != "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild":
     raise SystemExit(f"xcode-shim: unexpected observed executable {shim['executable']}")
