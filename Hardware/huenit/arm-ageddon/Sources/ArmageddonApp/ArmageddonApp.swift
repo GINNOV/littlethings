@@ -75,7 +75,7 @@ struct ArmageddonApp: App {
     }
 
     private static func appStateURL(for launch: Result<LaunchArguments, Error>) -> URL {
-        let root = (try? launch.get().paths?.applicationSupport)
+        let root = (try? launch.get().paths?.fixtures)
             ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         return root.appendingPathComponent("Armageddon", isDirectory: true)
             .appendingPathComponent("app-state.json")
