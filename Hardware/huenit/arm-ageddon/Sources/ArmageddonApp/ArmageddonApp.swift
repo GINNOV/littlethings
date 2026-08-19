@@ -15,7 +15,7 @@ struct ArmageddonApp: App {
             return arguments
         }
         launch = result
-        let coordinator = AppStateCoordinator(repository: InMemoryAppStateRepository())
+        let coordinator = AppStateCoordinator(repository: FileAppStateRepository(fileURL: Self.appStateURL(for: result)))
         let restored = AppStateRestorer.restore(AppStateSnapshot(
             destination: "live.workspace",
             selectedDevice: nil,
@@ -72,5 +72,12 @@ struct ArmageddonApp: App {
 
     private var windowSize: WindowSize {
         (try? launch.get().windowSize) ?? .standard
+    }
+
+    private static func appStateURL(for launch: Result<LaunchArguments, Error>) -> URL {
+        let root = (try? launch.get().paths?.applicationSupport)
+            ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        return root.appendingPathComponent("Armageddon", isDirectory: true)
+            .appendingPathComponent("app-state.json")
     }
 }

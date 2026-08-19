@@ -67,6 +67,24 @@ struct AppStateRestorationTests {
         #expect(restored.notice == nil)
     }
 
+    @Test("File repository round trips only safe selections")
+    func fileRepositoryRoundTrip() async throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("armageddon-app-state-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let repository = FileAppStateRepository(fileURL: root.appendingPathComponent("state.json"))
+        let snapshot = AppStateSnapshot(
+            destination: "capture.library",
+            selectedDevice: .nativeCamera("camera-1"),
+            selectedModelID: "detector-v1"
+        )
+
+        try await repository.save(snapshot)
+        let loaded = try await repository.load()
+
+        #expect(loaded == snapshot)
+    }
+
     @Test("Persisted state contains no motion fields")
     func persistedStateContainsNoMotionFields() throws {
         let snapshot = AppStateSnapshot(
