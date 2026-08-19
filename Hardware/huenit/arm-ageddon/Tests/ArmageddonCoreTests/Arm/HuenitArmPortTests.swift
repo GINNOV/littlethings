@@ -2,6 +2,15 @@ import Testing
 @testable import ArmageddonMotionBoundary
 
 struct HuenitArmPortTests {
+    actor PermitSequence {
+        private var checks = 0
+
+        func next() -> Bool {
+            checks += 1
+            return checks == 1
+        }
+    }
+
     @Test("Recorded handshake uses the HUENIT serial profile")
     func recordedHandshakeAndJog() async throws {
         let serial = FakeSerial()
@@ -113,6 +122,23 @@ struct HuenitArmPortTests {
             "M400",
             "G91",
         ])
+    }
+
+    @Test("Aborted absolute moves restore relative mode before later jogs")
+    func abortedAbsoluteMoveRestoresRelativeMode() async throws {
+        let serial = FakeSerial()
+        await serial.setReplies(Array(repeating: "ok\n", count: 10))
+        let arm = HuenitArm(transport: serial, settleAfterOpen: .zero)
+        await arm.forceConnectedForTests()
+        let sequence = PermitSequence()
+        let permit: ArmMotionPermit = { await sequence.next() }
+
+        await #expect(throws: ArmError.motionInvalidated) {
+            try await arm.moveAbsolute(x: 1, y: 2, z: 3, feedMmPerMin: 600, motionPermit: permit)
+        }
+        try await arm.step(dx: 1, dy: 0, dz: 0, feedMmPerMin: 1200)
+
+        #expect(await serial.written == ["G90", "G91", "G1 X1.0000 F1200.0"])
     }
 
     @Test("Stop attempts vacuum off, M410, and explicit M84 fallback")

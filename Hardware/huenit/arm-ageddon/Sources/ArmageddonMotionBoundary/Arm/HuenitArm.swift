@@ -118,7 +118,7 @@ actor HuenitArm {
             _ = try await send(String(format: "G1 X%.4f Y%.4f Z%.4f F%.1f", x, y, z, feedMmPerMin), motionPermit: motionPermit)
             try await flush(motionPermit: motionPermit)
         } catch {
-            _ = try? await send("G91", motionPermit: motionPermit)
+            _ = try? await send("G91")
             throw error
         }
         _ = try await send("G91", motionPermit: motionPermit)
@@ -134,7 +134,7 @@ actor HuenitArm {
             _ = try await send(String(format: "G1 Z0.0000 F%.1f", feedMmPerMin), motionPermit: motionPermit)
             try await flush(motionPermit: motionPermit)
         } catch {
-            _ = try? await send("G91", motionPermit: motionPermit)
+            _ = try? await send("G91")
             throw error
         }
         _ = try await send("G91", motionPermit: motionPermit)
