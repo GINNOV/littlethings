@@ -212,11 +212,6 @@ public actor LocalArtifactStorage {
 
     private func reconcile(journal: TransactionJournal, transactionPath: String, fresh: Bool) async throws {
         let stage10 = journal.operation == .purge ? "10-fileRemoved.json" : "10-fileRenamed.json"
-        let stage10Exists = fresh ? false : try await fileSystem.exists("\(transactionPath)/\(stage10)")
-        if fresh || !stage10Exists {
-            try await makeDataDurable(journal, transactionPath: transactionPath, stage10: stage10, fresh: fresh)
-        }
-
         let expectedMetadataHash: String
         switch journal.operation {
         case .purge:
@@ -265,6 +260,18 @@ public actor LocalArtifactStorage {
                 stage20Exists = false
             }
         }
+
+        let stage10Path = "\(transactionPath)/\(stage10)"
+        let stage10Exists = fresh ? false : try await fileSystem.exists(stage10Path)
+        if fresh || !stage10Exists {
+            if !fresh && (stage30Exists || checkpointExists) {
+                try await removeTemporaryIfPresent(journal)
+                try await writeStage(stage10, data: encode(journal), transactionPath: transactionPath)
+            } else {
+                try await makeDataDurable(journal, transactionPath: transactionPath, stage10: stage10, fresh: fresh)
+            }
+        }
+
         if fresh || !stage20Exists {
             let verifiedHash: String
             if !fresh && (stage30Exists || checkpointExists) {
