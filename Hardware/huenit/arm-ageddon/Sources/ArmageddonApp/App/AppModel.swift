@@ -37,9 +37,7 @@ final class AppModel {
         let snapshot = AppStateSnapshot(
             destination: destination,
             selectedDevice: selectedDevice,
-            selectedModelID: selectedModelID,
-            armed: false,
-            moving: false
+            selectedModelID: selectedModelID
         )
         try? await coordinator.save(snapshot)
     }

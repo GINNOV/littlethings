@@ -4,22 +4,21 @@ public struct AppStateSnapshot: Codable, Equatable, Sendable {
     public let destination: String?
     public let selectedDevice: DeviceIdentity?
     public let selectedModelID: String?
-    public let armed: Bool
-    public let moving: Bool
 
     public init(
         destination: String?,
         selectedDevice: DeviceIdentity?,
-        selectedModelID: String?,
-        armed: Bool,
-        moving: Bool
+        selectedModelID: String?
     ) {
         self.destination = destination
         self.selectedDevice = selectedDevice
         self.selectedModelID = selectedModelID
-        self.armed = armed
-        self.moving = moving
     }
+}
+
+public enum AppStateUnsafeState: Equatable, Sendable {
+    case armed
+    case moving
 }
 
 public struct RestoredAppState: Equatable, Sendable {
@@ -63,11 +62,12 @@ public enum AppStateRestorer {
 
     public static func restore(
         _ snapshot: AppStateSnapshot,
-        validDestinations: Set<String> = Self.validDestinations
+        validDestinations: Set<String> = Self.validDestinations,
+        unsafeState: AppStateUnsafeState? = nil
     ) -> RestoredAppState {
         let destination = snapshot.destination.flatMap { validDestinations.contains($0) ? $0 : nil } ?? "live.workspace"
         let navigationNotice = snapshot.destination == destination ? nil : AppStateRestorationNotice.navigationRecovered
-        let unsafeNotice = snapshot.armed || snapshot.moving ? AppStateRestorationNotice.unsafeStateDiscarded : nil
+        let unsafeNotice = unsafeState == nil ? nil : AppStateRestorationNotice.unsafeStateDiscarded
         let notice = unsafeNotice ?? navigationNotice
         return RestoredAppState(
             destination: destination,
@@ -112,9 +112,7 @@ public actor AppStateCoordinator {
         AppStateRestorer.restore(try await repository.load() ?? AppStateSnapshot(
             destination: "live.workspace",
             selectedDevice: nil,
-            selectedModelID: nil,
-            armed: false,
-            moving: false
+            selectedModelID: nil
         ))
     }
 

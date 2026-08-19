@@ -19,9 +19,7 @@ struct ArmageddonApp: App {
         let restored = AppStateRestorer.restore(AppStateSnapshot(
             destination: "live.workspace",
             selectedDevice: nil,
-            selectedModelID: nil,
-            armed: false,
-            moving: false
+            selectedModelID: nil
         ))
         _appModel = State(initialValue: AppModel(coordinator: coordinator, restoredState: restored))
     }
@@ -35,6 +33,9 @@ struct ArmageddonApp: App {
                 preferenceSuite: preferenceSuite
             )
             .environment(appModel)
+            .task {
+                await appModel.restore()
+            }
         }
         .defaultLaunchBehavior(.presented)
         .defaultSize(width: windowSize.width, height: windowSize.height)

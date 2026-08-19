@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import ArmageddonCore
 
@@ -7,9 +8,7 @@ struct AppStateRestorationTests {
         let snapshot = AppStateSnapshot(
             destination: "capture.library",
             selectedDevice: .nativeCamera("camera-1"),
-            selectedModelID: "detector-v1",
-            armed: false,
-            moving: false
+            selectedModelID: "detector-v1"
         )
 
         let restored = AppStateRestorer.restore(snapshot)
@@ -27,12 +26,10 @@ struct AppStateRestorationTests {
         let snapshot = AppStateSnapshot(
             destination: "live.workspace",
             selectedDevice: .nativeCamera("camera-1"),
-            selectedModelID: "detector-v1",
-            armed: true,
-            moving: true
+            selectedModelID: "detector-v1"
         )
 
-        let restored = AppStateRestorer.restore(snapshot)
+        let restored = AppStateRestorer.restore(snapshot, unsafeState: .armed)
 
         #expect(restored.armed == false)
         #expect(restored.moving == false)
@@ -44,9 +41,7 @@ struct AppStateRestorationTests {
         let snapshot = AppStateSnapshot(
             destination: "unknown.destination",
             selectedDevice: nil,
-            selectedModelID: nil,
-            armed: false,
-            moving: false
+            selectedModelID: nil
         )
 
         let restored = AppStateRestorer.restore(snapshot)
@@ -60,9 +55,7 @@ struct AppStateRestorationTests {
         let repository = InMemoryAppStateRepository(snapshot: AppStateSnapshot(
             destination: "models.library",
             selectedDevice: nil,
-            selectedModelID: "detector-v2",
-            armed: true,
-            moving: false
+            selectedModelID: "detector-v2"
         ))
         let coordinator = AppStateCoordinator(repository: repository)
 
@@ -71,6 +64,20 @@ struct AppStateRestorationTests {
         #expect(restored.destination == "models.library")
         #expect(restored.selectedModelID == "detector-v2")
         #expect(restored.armed == false)
-        #expect(restored.notice == .unsafeStateDiscarded)
+        #expect(restored.notice == nil)
+    }
+
+    @Test("Persisted state contains no motion fields")
+    func persistedStateContainsNoMotionFields() throws {
+        let snapshot = AppStateSnapshot(
+            destination: "live.workspace",
+            selectedDevice: nil,
+            selectedModelID: "detector-v1"
+        )
+        let encoded = try JSONEncoder().encode(snapshot)
+        let json = String(decoding: encoded, as: UTF8.self)
+
+        #expect(!json.contains("armed"))
+        #expect(!json.contains("moving"))
     }
 }
