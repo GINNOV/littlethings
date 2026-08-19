@@ -3,11 +3,16 @@ import Testing
 
 struct HuenitArmPortTests {
     actor PermitSequence {
+        private let validChecks: Int
         private var checks = 0
+
+        init(validChecks: Int = 1) {
+            self.validChecks = validChecks
+        }
 
         func next() -> Bool {
             checks += 1
-            return checks == 1
+            return checks <= validChecks
         }
     }
 
@@ -139,6 +144,27 @@ struct HuenitArmPortTests {
         try await arm.step(dx: 1, dy: 0, dz: 0, feedMmPerMin: 1200)
 
         #expect(await serial.written == ["G90", "G91", "G1 X1.0000 F1200.0"])
+    }
+
+    @Test("Relative cleanup is not suppressed after the flush boundary")
+    func relativeCleanupAfterFlushBoundary() async throws {
+        let serial = FakeSerial()
+        await serial.setReplies(Array(repeating: "ok\n", count: 10))
+        let arm = HuenitArm(transport: serial, settleAfterOpen: .zero)
+        await arm.forceConnectedForTests()
+        let sequence = PermitSequence(validChecks: 3)
+        let permit: ArmMotionPermit = { await sequence.next() }
+
+        try await arm.moveAbsolute(x: 1, y: 2, z: 3, feedMmPerMin: 600, motionPermit: permit)
+        try await arm.step(dx: 1, dy: 0, dz: 0, feedMmPerMin: 1200)
+
+        #expect(await serial.written == [
+            "G90",
+            "G1 X1.0000 Y2.0000 Z3.0000 F600.0",
+            "M400",
+            "G91",
+            "G1 X1.0000 F1200.0",
+        ])
     }
 
     @Test("Stop attempts vacuum off, M410, and explicit M84 fallback")

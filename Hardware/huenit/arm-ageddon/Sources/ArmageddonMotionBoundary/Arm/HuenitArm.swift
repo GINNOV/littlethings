@@ -121,7 +121,7 @@ actor HuenitArm {
             _ = try? await send("G91")
             throw error
         }
-        _ = try await send("G91", motionPermit: motionPermit)
+        _ = try await send("G91")
     }
 
     func home(feedMmPerMin: Double, motionPermit: ArmMotionPermit? = nil) async throws {
@@ -137,7 +137,7 @@ actor HuenitArm {
             _ = try? await send("G91")
             throw error
         }
-        _ = try await send("G91", motionPermit: motionPermit)
+        _ = try await send("G91")
     }
 
     func setMotors(_ on: Bool) async throws { _ = try await send(on ? "M17" : "M84") }
