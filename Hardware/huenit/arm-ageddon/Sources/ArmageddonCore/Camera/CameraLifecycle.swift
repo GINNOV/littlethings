@@ -94,11 +94,11 @@ public actor NativeCameraLifecycleController {
     }
 
     public func select(_ identity: DeviceIdentity) async throws {
-        guard currentState.authorization == .authorized else {
-            throw CameraLifecycleError.unavailable
-        }
         guard case .nativeCamera = identity else {
             throw CameraLifecycleError.notNativeCamera
+        }
+        guard currentState.authorization == .authorized else {
+            throw CameraLifecycleError.unavailable
         }
         try await catalog.select(identity)
         currentState = NativeCameraLifecycleSnapshot(
