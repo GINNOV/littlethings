@@ -94,6 +94,17 @@ final class AppShellUITests: XCTestCase {
         app.terminate()
     }
 
+    func testCameraDisconnectCancelsWorkAndOffersRescan() throws {
+        let app = try launch(style: "Light", width: 1_100, height: 720, profile: "camera-disconnected")
+
+        XCTAssertTrue(app.staticTexts["Camera disconnected"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Rescan Cameras"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.descendants(matching: .any)["camera.work-cancelled"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.descendants(matching: .any)["arm.status"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts["Arm, Disarmed"].exists)
+        app.terminate()
+    }
+
     private func launch(style: String, width: Int, height: Int, destination: String? = nil, profile: String = "all-connected") throws -> XCUIApplication {
         let root = try privateRoot()
         addTeardownBlock { try? FileManager.default.removeItem(at: root) }

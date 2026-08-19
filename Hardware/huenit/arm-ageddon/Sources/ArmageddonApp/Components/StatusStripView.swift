@@ -3,13 +3,16 @@ import SwiftUI
 struct StatusStripView: View {
     let notice: String?
     let profile: LaunchProfile?
+    let armed: Bool
+    let cameraWorkCancelled: Bool
     let stopAction: @MainActor () -> Void
 
     var body: some View {
         HStack(spacing: DesignTokens.Spacing.roomy) {
             StatusItemView(title: "Camera", detail: "Fixture ready", symbol: "video")
             StatusItemView(title: "Model", detail: "No active model", symbol: "cube")
-            StatusItemView(title: "Arm", detail: "Disarmed", symbol: "hand.raised")
+            StatusItemView(title: "Arm", detail: armed ? "Armed" : "Disarmed", symbol: "hand.raised")
+                .accessibilityIdentifier("arm.status")
             if let profile {
                 Label(profile.title, systemImage: "checkmark.seal")
                     .font(DesignTokens.Typography.supporting)
@@ -26,6 +29,11 @@ struct StatusStripView: View {
                         .accessibilityIdentifier(identifier(for: notice))
                 }
                 .font(DesignTokens.Typography.supporting)
+            }
+            if cameraWorkCancelled {
+                Text("Camera work cancelled")
+                    .font(DesignTokens.Typography.supporting)
+                    .accessibilityIdentifier("camera.work-cancelled")
             }
             Button("STOP", systemImage: "stop.circle.fill", action: stopAction)
                 .buttonStyle(.borderedProminent)

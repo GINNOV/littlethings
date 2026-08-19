@@ -45,6 +45,10 @@ public actor DeviceCatalog {
             currentSelection = .stale(identity)
             events.append(.selectionBecameStale(identity))
         }
+        if case let .stale(identity) = currentSelection, records[identity] != nil {
+            currentSelection = .selected(identity)
+            events.append(.selectionRecovered(identity))
+        }
         return events
     }
 

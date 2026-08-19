@@ -14,6 +14,7 @@ final class AppModel {
     private(set) var selectedModelID: String?
     private(set) var armed: Bool
     private(set) var moving: Bool
+    private(set) var cameraWorkCancelled: Bool
     private(set) var restorationNotice: AppStateRestorationNotice?
     private(set) var cameraLifecycleSnapshot: NativeCameraLifecycleSnapshot
 
@@ -31,6 +32,7 @@ final class AppModel {
         selectedModelID = restoredState.selectedModelID
         armed = restoredState.armed
         moving = restoredState.moving
+        cameraWorkCancelled = false
         restorationNotice = restoredState.notice
         cameraLifecycleSnapshot = NativeCameraLifecycleSnapshot(authorization: .notDetermined)
     }
@@ -55,7 +57,12 @@ final class AppModel {
     }
 
     func refreshCameraLifecycle() async {
-        _ = await cameraLifecycle.refresh()
+        let events = await cameraLifecycle.refresh()
+        if events.contains(where: {
+            if case .selectionBecameStale = $0 { true } else { false }
+        }) {
+            cancelCameraWork()
+        }
         cameraLifecycleSnapshot = await cameraLifecycle.snapshot()
     }
 
@@ -66,16 +73,34 @@ final class AppModel {
     func rescanCameras() async {
         _ = await cameraLifecycle.refresh()
         cameraLifecycleSnapshot = await cameraLifecycle.snapshot()
+        if cameraLifecycleSnapshot.connection == .available || cameraLifecycleSnapshot.connection == .connected {
+            cameraWorkCancelled = false
+        }
+    }
+
+    func configureDisconnectedCameraFixture() async {
+        guard cameraLifecycleSnapshot.authorization == .authorized else { return }
+        try? await cameraLifecycle.select(.nativeCamera("fixture-camera"))
+        await cameraLifecycle.markConnected()
+        await cameraLifecycle.markDisconnected()
+        cancelCameraWork()
+        cameraLifecycleSnapshot = await cameraLifecycle.snapshot()
     }
 
     func startCameraLifecycleMonitoring() {
         cameraLifecycleObserver.start { [weak self] event in
             Task { @MainActor [weak self] in
                 guard let self else { return }
-                if case .interrupted = event {
-                    await cameraLifecycle.markInterrupted()
+                switch event {
+                case .deviceDisconnected:
+                    await cameraLifecycle.markDisconnected()
+                    cancelCameraWork()
                     cameraLifecycleSnapshot = await cameraLifecycle.snapshot()
-                } else {
+                case .interrupted:
+                    await cameraLifecycle.markInterrupted()
+                    cancelCameraWork()
+                    cameraLifecycleSnapshot = await cameraLifecycle.snapshot()
+                case .deviceConnected, .interruptionEnded:
                     await refreshCameraLifecycle()
                 }
             }
@@ -85,5 +110,11 @@ final class AppModel {
     func openCameraSettings() {
         guard let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Camera") else { return }
         NSWorkspace.shared.open(url)
+    }
+
+    private func cancelCameraWork() {
+        armed = false
+        moving = false
+        cameraWorkCancelled = true
     }
 }

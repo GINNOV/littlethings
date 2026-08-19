@@ -127,6 +127,7 @@ public enum DeviceEvent: Equatable, Sendable {
     case added(DeviceRecord)
     case removed(DeviceIdentity)
     case selectionBecameStale(DeviceIdentity)
+    case selectionRecovered(DeviceIdentity)
 }
 
 public enum DeviceSelectionError: Error, Equatable, Sendable {

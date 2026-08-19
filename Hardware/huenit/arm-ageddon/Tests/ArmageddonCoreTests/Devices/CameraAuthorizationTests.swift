@@ -122,13 +122,12 @@ struct CameraAuthorizationTests {
         #expect((await controller.snapshot()).canRescan)
 
         await cameras.setCameras([
-            NativeCameraDevice(stableIdentifier: "camera-2", permission: .authorized),
+            NativeCameraDevice(stableIdentifier: "camera-1", permission: .authorized),
         ])
-        _ = await controller.refresh()
-        #expect((await controller.snapshot()).connection == .disconnected)
+        let recoveryEvents = await controller.refresh()
 
-        try await controller.select(.nativeCamera("camera-2"))
-        #expect((await controller.snapshot()).selection == .selected(.nativeCamera("camera-2")))
+        #expect(recoveryEvents.contains(.selectionRecovered(.nativeCamera("camera-1"))))
+        #expect((await controller.snapshot()).selection == .selected(.nativeCamera("camera-1")))
         #expect((await controller.snapshot()).connection == .available)
     }
 

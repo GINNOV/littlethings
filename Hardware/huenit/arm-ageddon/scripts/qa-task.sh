@@ -81,6 +81,14 @@ if [ "$1" = "10" ]; then
             swift test --disable-sandbox --filter unplugAndRecover
         fi
     ) >"$transcript" 2>&1
+    if [ "$2" = "failure" ]; then
+        result="$task_root/camera-ml-app.xcresult"
+        xcodebuild -project Armageddon.xcodeproj -scheme ArmageddonApp -destination 'platform=macOS' \
+            -parallel-testing-enabled NO \
+            -derivedDataPath "$task_root/build" -resultBundlePath "$result" test \
+            -only-testing:ArmageddonUITests/AppShellUITests/testCameraDisconnectCancelsWorkAndOffersRescan >>"$transcript" 2>&1
+        [ -d "$result" ] || { printf '%s\n' 'ERROR[missing-task-10-xcresult]' >&2; exit 1; }
+    fi
     printf 'PASS task=10 mode=%s root=%s\n' "$2" "$task_root"
     exit 0
 fi

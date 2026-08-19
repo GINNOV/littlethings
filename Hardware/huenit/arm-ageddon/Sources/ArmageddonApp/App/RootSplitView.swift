@@ -2,6 +2,7 @@ import SwiftUI
 
 struct RootSplitView: View {
     @Bindable var model: AppShellModel
+    @Environment(AppModel.self) private var appModel
     let actions: AppActions
     let profile: LaunchProfile?
     @AppStorage private var showInspectorOnLaunch: Bool
@@ -45,7 +46,13 @@ struct RootSplitView: View {
                 .inspectorColumnWidth(DesignTokens.Layout.inspectorWidth)
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            StatusStripView(notice: model.notice, profile: profile, stopAction: actions.stop)
+            StatusStripView(
+                notice: model.notice,
+                profile: profile,
+                armed: appModel.armed,
+                cameraWorkCancelled: appModel.cameraWorkCancelled,
+                stopAction: actions.stop
+            )
         }
         .frame(
             minWidth: DesignTokens.Layout.minimumWindowWidth,

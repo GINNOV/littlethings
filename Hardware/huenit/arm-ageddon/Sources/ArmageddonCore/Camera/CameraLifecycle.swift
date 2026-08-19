@@ -83,7 +83,12 @@ public actor NativeCameraLifecycleController {
         case .none:
             currentState.connection == .connected ? .connected : .available
         case .selected:
-            currentState.connection == .unavailable ? .available : currentState.connection
+            switch currentState.connection {
+            case .unavailable, .disconnected, .interrupted, .failed:
+                .available
+            case .available, .connecting, .connected:
+                currentState.connection
+            }
         }
         currentState = NativeCameraLifecycleSnapshot(
             authorization: authorization,

@@ -26,7 +26,9 @@ struct ArmageddonApp: App {
             AVFoundationCameraAuthorizationClient()
         }
         let nativeCameraDiscovery: any NativeCameraDiscovery = if isUITesting {
-            DeterministicNativeCameraDiscovery(cameras: [])
+            DeterministicNativeCameraDiscovery(cameras: profile == .cameraDisconnected ? [
+                NativeCameraDevice(stableIdentifier: "fixture-camera", permission: .authorized),
+            ] : [])
         } else {
             AVFoundationCameraDiscovery(authorizationClient: authorizationClient)
         }
@@ -64,6 +66,9 @@ struct ArmageddonApp: App {
             .task {
                 await appModel.restore()
                 await appModel.refreshCameraLifecycle()
+                if isCameraDisconnectedFixture {
+                    await appModel.configureDisconnectedCameraFixture()
+                }
                 appModel.startCameraLifecycleMonitoring()
             }
         }
@@ -93,6 +98,11 @@ struct ArmageddonApp: App {
 
     private var isUITesting: Bool {
         ProcessInfo.processInfo.arguments.contains("-ui-testing")
+    }
+
+    private var isCameraDisconnectedFixture: Bool {
+        guard isUITesting, let profile = try? launch.get().profile else { return false }
+        return profile == .cameraDisconnected
     }
 
     private var preferenceSuite: String? {

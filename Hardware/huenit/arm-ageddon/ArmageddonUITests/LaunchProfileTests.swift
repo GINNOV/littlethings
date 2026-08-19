@@ -3,7 +3,7 @@ import XCTest
 
 final class LaunchProfileTests: XCTestCase {
     func testAllFixtureProfilesReachStableUI() throws {
-        let profiles = ["no-devices", "permission-denied", "all-connected", "model-failed", "calibrated-dry-run", "stop-unconfirmed"]
+        let profiles = ["no-devices", "permission-denied", "camera-disconnected", "all-connected", "model-failed", "calibrated-dry-run", "stop-unconfirmed"]
         for profile in profiles {
             let root = try privateRoot(profile: profile)
             addTeardownBlock { try FileManager.default.removeItem(at: root) }
