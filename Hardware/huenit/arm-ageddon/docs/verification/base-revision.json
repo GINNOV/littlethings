@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "baseSHA": "4d9036ae762c1fb44110e7d56b4de8c73c7fa7ed",
+  "projectRel": "Hardware/huenit/arm-ageddon",
+  "plan": ".omo/plans/camera-ml-app.md",
+  "planSHA256": "beed619c2c60325c9d6ab29a9a80ed371f46d8bbad80313a04b6c200401825ab",
+  "preflightReceipt": {
+    "path": "/private/tmp/armageddon-start-work.DxCy4H/preflight.json",
+    "sha256": "e558bf25e106167edf3410855e361936ae0b0542ef816e54c073d90ace1530fc",
+    "nonce": "a522d81a-6e18-4879-8a33-6f1f072de32c",
+    "parentSession": "codex:01a015df-3d71-7eb0-acc6-fbf76276949c",
+    "parentPIDBirth": {
+      "pid": 45881,
+      "startedAt": "2026-08-19T10:24:06Z"
+    },
+    "startedAtUtc": "2026-08-19T10:24:06Z",
+    "scopedStatus": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "empty": true
+    }
+  },
+  "subtreeManifest": {
+    "path": "/private/tmp/armageddon-start-work.DxCy4H/pre-subtree-manifest.txt",
+    "fileSHA256": "ee04cff7d39d58ce97f8cbd427f47002e50d740ea8fb53156d079d519c8bbd3a",
+    "receiptContentSHA256": "0a35874a16914559a0035e05579a0246184d7f83dcc9dd6ebda848b21d878db1",
+    "trackedEntries": 1
+  }
+}

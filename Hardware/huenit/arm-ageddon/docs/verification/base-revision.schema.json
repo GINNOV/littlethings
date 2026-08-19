@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Armageddon Task 1 base revision",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "baseSHA", "projectRel", "plan", "planSHA256", "preflightReceipt", "subtreeManifest"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "baseSHA": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "projectRel": { "type": "string", "minLength": 1 },
+    "plan": { "type": "string", "minLength": 1 },
+    "planSHA256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "preflightReceipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "nonce", "parentSession", "parentPIDBirth", "startedAtUtc", "scopedStatus"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "nonce": { "type": "string", "format": "uuid" },
+        "parentSession": { "type": "string", "minLength": 1 },
+        "parentPIDBirth": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["pid", "startedAt"],
+          "properties": {
+            "pid": { "type": "integer", "minimum": 1 },
+            "startedAt": { "type": "string", "format": "date-time" }
+          }
+        },
+        "startedAtUtc": { "type": "string", "format": "date-time" },
+        "scopedStatus": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sha256", "bytes", "empty"],
+          "properties": {
+            "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+            "bytes": { "const": 0 },
+            "empty": { "const": true }
+          }
+        }
+      }
+    },
+    "subtreeManifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "fileSHA256", "receiptContentSHA256", "trackedEntries"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "fileSHA256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "receiptContentSHA256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "trackedEntries": { "const": 1 }
+      }
+    }
+  }
+}

@@ -1,0 +1,3 @@
+UNTRUSTED TEST FIXTURE - DO NOT EXECUTE
+package-reference=https://example.invalid/community/unsafe-package.git
+reason=External runtime package references are forbidden.
