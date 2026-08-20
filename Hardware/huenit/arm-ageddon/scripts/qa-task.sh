@@ -106,13 +106,15 @@ if [ "$1" = "11" ]; then
     validation_root=$(mktemp -d "${TMPDIR:-/tmp}/armageddon-task11.XXXXXX")
     rsync -a --exclude '.git' --exclude '.build' "$project_root/" "$validation_root/"
     if [ "$2" = "happy" ]; then
-        filter='sixtySecondsOfCaptureMaintainsBoundedQueue'
+        filter='sixtySeconds'
+        filter_target='CapturePipelinePerformanceTests/sixtySeconds'
     else
         filter='stopCancelsSourceGeneration'
+        filter_target='NativeCaptureSessionTests/stopCancelsSourceGeneration'
     fi
     (
         cd "$validation_root"
-        swift test --disable-sandbox --filter "NativeCaptureSessionTests/$filter"
+        swift test --disable-sandbox --filter "$filter_target"
     ) >"$transcript" 2>&1
     probe="$task_root/probe.json"
     (
@@ -127,8 +129,8 @@ if [ "$1" = "11" ]; then
         -derivedDataPath "$task_root/build" -resultBundlePath "$result" build-for-testing >>"$transcript" 2>&1
     [ -d "$result" ] || { printf '%s\n' 'ERROR[missing-task-11-xcresult]' >&2; exit 1; }
     transcript_sha256=$(shasum -a 256 "$transcript" | awk '{print $1}')
-    printf '{"task":11,"mode":"%s","filter":"NativeCaptureSessionTests/%s","probe":%s,"transcript":"%s","transcriptSha256":"%s","result":"%s"}\n' \
-        "$2" "$filter" "$probe_json" "$transcript" "$transcript_sha256" "$result" >"$task_root/camera-ml-app.json"
+    printf '{"task":11,"mode":"%s","filter":"%s","probe":%s,"transcript":"%s","transcriptSha256":"%s","result":"%s"}\n' \
+        "$2" "$filter_target" "$probe_json" "$transcript" "$transcript_sha256" "$result" >"$task_root/camera-ml-app.json"
     printf 'PASS task=11 mode=%s root=%s\n' "$2" "$task_root"
     exit 0
 fi

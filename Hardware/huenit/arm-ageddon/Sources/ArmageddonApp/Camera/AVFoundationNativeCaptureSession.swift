@@ -4,7 +4,7 @@ import CoreMedia
 import Foundation
 
 @MainActor
-final class AVFoundationNativeCaptureSession {
+public final class AVFoundationNativeCaptureSession {
     private let captureSession = AVCaptureSession()
     private let nativeSession: NativeCaptureSession
     private let clock: any CaptureHostClock
@@ -15,7 +15,7 @@ final class AVFoundationNativeCaptureSession {
     private var source: CaptureSourceToken?
     private var correlation: CaptureTimestampCorrelation?
 
-    init(
+    public init(
         nativeSession: NativeCaptureSession = NativeCaptureSession(),
         clock: any CaptureHostClock = ContinuousCaptureHostClock()
     ) {
@@ -23,13 +23,13 @@ final class AVFoundationNativeCaptureSession {
         self.clock = clock
     }
 
-    func previewLayer() -> AVCaptureVideoPreviewLayer {
+    public func previewLayer() -> AVCaptureVideoPreviewLayer {
         let layer = AVCaptureVideoPreviewLayer(session: captureSession)
         layer.videoGravity = .resizeAspect
         return layer
     }
 
-    func start(
+    public func start(
         device: AVCaptureDevice,
         requestedFormat: CaptureFormat = CaptureFormat(width: 1_280, height: 720, frameRate: 30)
     ) async throws -> CaptureFormat {
@@ -78,11 +78,15 @@ final class AVFoundationNativeCaptureSession {
         }
     }
 
-    var isRunning: Bool {
+    public var isRunning: Bool {
         captureSession.isRunning
     }
 
-    func stop() async {
+    public var attachedResourceCount: Int {
+        captureSession.inputs.count + captureSession.outputs.count
+    }
+
+    public func stop() async {
         output?.setSampleBufferDelegate(nil, queue: nil)
         delegate = nil
         captureSession.stopRunning()
@@ -111,7 +115,10 @@ final class AVFoundationNativeCaptureSession {
 
     private func negotiatedFormat(for device: AVCaptureDevice, requested: CaptureFormat) -> CaptureFormat {
         let dimensions = CMVideoFormatDescriptionGetDimensions(device.activeFormat.formatDescription)
-        let frameRate = device.activeFormat.videoSupportedFrameRateRanges.first?.maxFrameRate ?? requested.frameRate
+        let configuredDuration = CMTimeGetSeconds(device.activeVideoMinFrameDuration)
+        let frameRate = configuredDuration.isFinite && configuredDuration > 0
+            ? 1 / configuredDuration
+            : device.activeFormat.videoSupportedFrameRateRanges.first?.maxFrameRate ?? requested.frameRate
         return CaptureFormat(
             width: Int(dimensions.width),
             height: Int(dimensions.height),
@@ -123,14 +130,15 @@ final class AVFoundationNativeCaptureSession {
 
     private func configure(connection: AVCaptureConnection?, for format: CaptureFormat) {
         guard let connection else { return }
-        if connection.isVideoOrientationSupported {
-            connection.videoOrientation = switch format.orientation {
-            case .portrait: .portrait
-            case .portraitUpsideDown: .portraitUpsideDown
-            case .landscapeLeft: .landscapeLeft
-            case .landscapeRight: .landscapeRight
-            case .unknown: connection.videoOrientation
-            }
+        let rotationAngle: CGFloat = switch format.orientation {
+        case .portrait: 90
+        case .portraitUpsideDown: 270
+        case .landscapeLeft: 180
+        case .landscapeRight: 0
+        case .unknown: connection.videoRotationAngle
+        }
+        if connection.isVideoRotationAngleSupported(rotationAngle) {
+            connection.videoRotationAngle = rotationAngle
         }
         if connection.isVideoMirroringSupported {
             connection.isVideoMirrored = format.mirrored

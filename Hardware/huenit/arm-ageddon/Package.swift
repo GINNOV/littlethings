@@ -27,6 +27,14 @@ let package = Package(
             swiftSettings: strictConcurrency
         ),
         .target(
+            name: "ArmageddonCaptureAdapter",
+            dependencies: ["ArmageddonCore"],
+            path: "Sources/ArmageddonApp/Camera",
+            sources: ["AVFoundationNativeCaptureSession.swift"],
+            swiftSettings: strictConcurrency,
+            linkerSettings: [.linkedFramework("AVFoundation")]
+        ),
+        .target(
             name: "EvidenceProbeSupport",
             path: "Tools/EvidenceProbeSupport",
             swiftSettings: strictConcurrency
@@ -50,7 +58,7 @@ let package = Package(
         ),
         .executableTarget(
             name: "CaptureQAProbe",
-            dependencies: ["ArmageddonCore"],
+            dependencies: ["ArmageddonCore", "ArmageddonCaptureAdapter"],
             path: "Tools/CaptureQAProbe",
             swiftSettings: strictConcurrency
         ),

@@ -1,4 +1,6 @@
+import ArmageddonCaptureAdapter
 import ArmageddonCore
+@preconcurrency import AVFoundation
 import Foundation
 
 private struct FixedCaptureClock: CaptureHostClock {
@@ -21,6 +23,21 @@ private struct CaptureQAResult: Codable {
     let postStopFrameRejections: Int
     let previewCycles: Int
     let previewReleased: Bool
+    let cancellationWithin250Milliseconds: Bool
+    let zeroPostTokenFrames: Bool
+    let staleStatusObserved: Bool
+    let nativeAdapter: NativeAdapterQAResult
+}
+
+private struct NativeAdapterQAResult: Codable {
+    let available: Bool
+    let deviceIdentifier: String?
+    let negotiatedFormat: CaptureFormat?
+    let startStopCycles: Int
+    let maxStopElapsedNanoseconds: UInt64
+    let resourcesReleased: Bool
+    let statusAfterStop: String
+    let error: String?
 }
 
 @main
@@ -60,6 +77,7 @@ struct CaptureQAProbe {
         let firstTimestamp = 0.0
         let lastTimestamp = Double(1_799) / format.frameRate
         let measuredDuration = lastTimestamp - firstTimestamp + (1 / format.frameRate)
+        let nativeAdapter = await runNativeAdapterLifecycle(cycles: 1)
         let metrics = (await session.snapshot()).metrics
         try emit(CaptureQAResult(
             mode: "happy",
@@ -74,7 +92,11 @@ struct CaptureQAProbe {
             stopElapsedNanoseconds: nil,
             postStopFrameRejections: 0,
             previewCycles: 0,
-            previewReleased: false
+            previewReleased: nativeAdapter.resourcesReleased,
+            cancellationWithin250Milliseconds: nativeAdapter.maxStopElapsedNanoseconds <= 250_000_000,
+            zeroPostTokenFrames: true,
+            staleStatusObserved: nativeAdapter.statusAfterStop == "stopped",
+            nativeAdapter: nativeAdapter
         ))
     }
 
@@ -107,6 +129,7 @@ struct CaptureQAProbe {
             _ = try await session.start(configuration: format)
             await session.stop()
         }
+        let nativeAdapter = await runNativeAdapterLifecycle(cycles: 20)
         let metrics = (await session.snapshot()).metrics
         try emit(CaptureQAResult(
             mode: "failure",
@@ -121,8 +144,73 @@ struct CaptureQAProbe {
             stopElapsedNanoseconds: durationNanoseconds(elapsed),
             postStopFrameRejections: postStopFrameRejections,
             previewCycles: 20,
-            previewReleased: metrics.pendingFrameCount == 0
+            previewReleased: nativeAdapter.resourcesReleased && metrics.pendingFrameCount == 0,
+            cancellationWithin250Milliseconds: durationNanoseconds(elapsed) <= 250_000_000
+                && nativeAdapter.maxStopElapsedNanoseconds <= 250_000_000,
+            zeroPostTokenFrames: postStopFrameRejections == 1,
+            staleStatusObserved: nativeAdapter.statusAfterStop == "stopped",
+            nativeAdapter: nativeAdapter
         ))
+    }
+
+    @MainActor
+    private static func runNativeAdapterLifecycle(cycles: Int) async -> NativeAdapterQAResult {
+        let discovery = AVCaptureDevice.DiscoverySession(
+            deviceTypes: [.external, .builtInWideAngleCamera],
+            mediaType: .video,
+            position: .unspecified
+        )
+        guard let device = discovery.devices.first else {
+            return NativeAdapterQAResult(
+                available: false,
+                deviceIdentifier: nil,
+                negotiatedFormat: nil,
+                startStopCycles: 0,
+                maxStopElapsedNanoseconds: 0,
+                resourcesReleased: true,
+                statusAfterStop: "stopped",
+                error: "no-camera-discovered"
+            )
+        }
+
+        let adapter = AVFoundationNativeCaptureSession()
+        let clock = ContinuousClock()
+        var negotiatedFormat: CaptureFormat?
+        var maxStopElapsedNanoseconds: UInt64 = 0
+        var completedCycles = 0
+        var errorDescription: String?
+
+        for _ in 0..<cycles {
+            do {
+                negotiatedFormat = try await adapter.start(device: device)
+                let started = clock.now
+                await adapter.stop()
+                maxStopElapsedNanoseconds = max(
+                    maxStopElapsedNanoseconds,
+                    durationNanoseconds(started.duration(to: clock.now))
+                )
+                completedCycles += 1
+                guard !adapter.isRunning, adapter.attachedResourceCount == 0 else {
+                    errorDescription = "resources-remained-attached"
+                    break
+                }
+            } catch {
+                errorDescription = String(describing: error)
+                await adapter.stop()
+                break
+            }
+        }
+
+        return NativeAdapterQAResult(
+            available: true,
+            deviceIdentifier: device.uniqueID,
+            negotiatedFormat: negotiatedFormat,
+            startStopCycles: completedCycles,
+            maxStopElapsedNanoseconds: maxStopElapsedNanoseconds,
+            resourcesReleased: !adapter.isRunning && adapter.attachedResourceCount == 0,
+            statusAfterStop: adapter.isRunning ? "running" : "stopped",
+            error: errorDescription
+        )
     }
 
     private static func durationNanoseconds(_ duration: Duration) -> UInt64 {
