@@ -31,7 +31,7 @@ struct LiveWorkspaceView: View {
                     appModel.livePreview.captureCurrentFrame()
                 }
                 .buttonStyle(.borderedProminent)
-                .disabled(!appModel.livePreview.isPaused && appModel.livePreview.observations.isEmpty)
+                .disabled(appModel.livePreview.isPaused || appModel.livePreview.observations.isEmpty)
                 .accessibilityIdentifier("live.capture")
             }
 
@@ -129,6 +129,13 @@ struct LiveWorkspaceView: View {
                 metricRow("Detections", value: "\(appModel.livePreview.observations.count)")
             }
 
+            if appModel.cameraLifecycleSnapshot.connection != .connected {
+                Label("Targeting stale until the camera source recovers.", systemImage: "clock.badge.exclamationmark")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .accessibilityIdentifier("live.source-stale")
+            }
+
             Divider()
 
             LabeledContent("Camera") {
@@ -168,7 +175,12 @@ struct LiveWorkspaceView: View {
 
     private var sourceMenu: some View {
         Menu {
-            Button("Native camera", systemImage: "camera.fill") {}
+            Button("Native camera", systemImage: "camera.fill") {
+                Task { await appModel.livePreview.selectSource(.nativeCamera) }
+            }
+            Button("Recorded fixture", systemImage: "rectangle.inset.filled") {
+                Task { await appModel.livePreview.selectSource(.recordedFixture) }
+            }
             Button("Rescan cameras", systemImage: "arrow.clockwise") {
                 Task { await appModel.rescanCameras() }
             }
@@ -176,7 +188,7 @@ struct LiveWorkspaceView: View {
             Button("HUENIT telemetry · detection only", systemImage: "cable.connector") {}
                 .disabled(true)
         } label: {
-            Label("Source · Native camera", systemImage: "camera.fill")
+            Label("Source · \(appModel.livePreview.selectedSource.label)", systemImage: "camera.fill")
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .buttonStyle(.bordered)
@@ -185,24 +197,40 @@ struct LiveWorkspaceView: View {
 
     private var modelMenu: some View {
         Menu {
-            if appModel.modelRegistrySnapshot.models.isEmpty {
-                Text("No verified model is active")
-            } else {
-                ForEach(appModel.modelRegistrySnapshot.models) { model in
-                    Button {
-                        Task { await appModel.activateModel(id: model.id) }
-                    } label: {
-                        Label(
-                            model.displayName,
-                            systemImage: model.id == appModel.modelRegistrySnapshot.activeModelID
-                                ? "checkmark.circle.fill"
-                                : "cube"
-                        )
-                    }
+            Button("Fixture detector", systemImage: "cube") {
+                Task {
+                    await appModel.livePreview.selectFixtureModel(
+                        id: "fixture.constant.detector",
+                        label: "Fixture detector"
+                    )
                 }
             }
+            Button("Recorded fixture detector", systemImage: "rectangle.inset.filled") {
+                Task {
+                    await appModel.livePreview.selectFixtureModel(
+                        id: "fixture.recorded.detector",
+                        label: "Recorded fixture detector"
+                    )
+                }
+            }
+            ForEach(appModel.modelRegistrySnapshot.models) { model in
+                Button {
+                    Task { await appModel.activateModel(id: model.id) }
+                } label: {
+                    Label(
+                        model.displayName,
+                        systemImage: model.id == appModel.modelRegistrySnapshot.activeModelID
+                            ? "checkmark.circle.fill"
+                            : "cube"
+                    )
+                }
+            }
+            if appModel.modelRegistrySnapshot.models.isEmpty {
+                Text("No imported model is active")
+                    .foregroundStyle(.secondary)
+            }
         } label: {
-            Label("Model · \(appModel.modelRegistrySnapshot.activeModelID ?? "Fixture detector")", systemImage: "cube")
+            Label("Model · \(appModel.livePreview.activeModelLabel)", systemImage: "cube")
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .buttonStyle(.bordered)
@@ -222,6 +250,14 @@ struct LiveWorkspaceView: View {
                 Text(snapshot.healthReason)
                     .font(DesignTokens.Typography.supporting)
                     .foregroundStyle(.secondary)
+                if snapshot.health != .ready,
+                   snapshot.health != .insufficientData {
+                    Button("Retry detection", systemImage: "arrow.clockwise") {
+                        Task { await appModel.retryLiveDetection() }
+                    }
+                    .buttonStyle(.bordered)
+                    .accessibilityIdentifier("live.retry-detection")
+                }
             }
             Spacer(minLength: DesignTokens.Spacing.standard)
             Text(targetingText)

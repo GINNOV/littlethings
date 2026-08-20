@@ -3,6 +3,20 @@ import AVFoundation
 import Foundation
 import Observation
 
+public enum LivePreviewSource: String, CaseIterable, Codable, Sendable {
+    case nativeCamera
+    case recordedFixture
+    case huenitTelemetry
+
+    public var label: String {
+        switch self {
+        case .nativeCamera: "Native camera"
+        case .recordedFixture: "Recorded fixture"
+        case .huenitTelemetry: "HUENIT telemetry · detection only"
+        }
+    }
+}
+
 @MainActor
 @Observable
 public final class LivePreviewModel {
@@ -19,6 +33,9 @@ public final class LivePreviewModel {
     public private(set) var capturedFrameCount = 0
     public private(set) var lastCaptureMessage: String?
     public private(set) var selectedObservationID: String?
+    public private(set) var selectedSource: LivePreviewSource = .nativeCamera
+    public private(set) var activeModelID = "fixture.constant.detector"
+    public private(set) var activeModelLabel = "Fixture detector"
 
     public var isRunning: Bool {
         capture.isRunning
@@ -95,6 +112,44 @@ public final class LivePreviewModel {
             : "Preview resumed."
     }
 
+    public func selectSource(_ source: LivePreviewSource) async {
+        guard source != .huenitTelemetry else {
+            lastCaptureMessage = "HUENIT telemetry is detection-only until its protocol is measured."
+            return
+        }
+        selectedSource = source
+        if source == .recordedFixture {
+            await reloadDeterministicFixtureOverlay()
+        } else {
+            lastCaptureMessage = "Source switched to Native camera."
+        }
+    }
+
+    public func selectFixtureModel(id: String, label: String) async {
+        activeModelID = id
+        activeModelLabel = label
+        await reloadDeterministicFixtureOverlay()
+    }
+
+    public func setActiveModel(id: String, label: String) {
+        activeModelID = id
+        activeModelLabel = label
+    }
+
+    public func reloadDeterministicFixtureOverlay() async {
+        await resetPerformanceTelemetry()
+        try? await loadDeterministicFixtureOverlay()
+        lastCaptureMessage = "Detection model ready: \(activeModelLabel)."
+    }
+
+    public func simulateModelFailureFixture() async {
+        guard let telemetry else { return }
+        await telemetry.recordModelFailure()
+        await telemetry.recordModelFailure()
+        await telemetry.recordModelFailure()
+        performanceSnapshot = await telemetry.snapshot(now: MonotonicInstant(nanoseconds: 1_100_000_000))
+    }
+
     public func captureCurrentFrame() {
         guard !isPaused else {
             lastCaptureMessage = "Resume the preview before capturing a frame."
@@ -145,6 +200,7 @@ public final class LivePreviewModel {
             now: MonotonicInstant(nanoseconds: 2_000_000_000),
             generation: 1
         )
+        selectedObservationID = nil
         if let telemetry {
             try? await telemetry.recordFrame(
                 captureInstant: frame.captureInstant,

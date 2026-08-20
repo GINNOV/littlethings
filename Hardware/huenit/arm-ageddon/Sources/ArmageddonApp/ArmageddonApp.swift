@@ -71,6 +71,9 @@ struct ArmageddonApp: App {
                 if isUITesting {
                     await appModel.loadFixtureOverlay()
                     let fixtureProfile = try? launch.get().profile
+                    if fixtureProfile == .modelFailed {
+                        await appModel.simulateModelFailureFixture()
+                    }
                     if fixtureProfile != .cameraDisconnected,
                        fixtureProfile != .permissionDenied,
                        fixtureProfile != .noDevices {

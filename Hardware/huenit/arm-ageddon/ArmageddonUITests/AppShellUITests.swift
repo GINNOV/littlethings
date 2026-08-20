@@ -59,9 +59,24 @@ final class AppShellUITests: XCTestCase {
 
         XCTAssertTrue(app.descendants(matching: .any)["live.performance-health"].waitForExistence(timeout: 5))
         XCTAssertEqual(app.descendants(matching: .any)["live.performance-health"].value as? String, "Ready")
+
+        let sourcePicker = app.buttons["live.source-picker"]
+        XCTAssertTrue(sourcePicker.waitForExistence(timeout: 2))
+        sourcePicker.click()
+        XCTAssertTrue(app.buttons["Recorded fixture"].waitForExistence(timeout: 2))
+        app.buttons["Recorded fixture"].click()
+        XCTAssertTrue(app.staticTexts["Source · Recorded fixture"].waitForExistence(timeout: 3))
+
+        let modelPicker = app.buttons["live.model-picker"]
+        modelPicker.click()
+        XCTAssertTrue(app.buttons["Recorded fixture detector"].waitForExistence(timeout: 2))
+        app.buttons["Recorded fixture detector"].click()
+        XCTAssertTrue(app.staticTexts["Model · Recorded fixture detector"].waitForExistence(timeout: 3))
+
         let target = app.descendants(matching: .any)["live.detection.target"].firstMatch
         XCTAssertTrue(target.waitForExistence(timeout: 5))
         target.click()
+        XCTAssertTrue(app.descendants(matching: .any)["inspector.target"].waitForExistence(timeout: 2))
         XCTAssertTrue(app.staticTexts["Selected"].waitForExistence(timeout: 2))
 
         let pauseResume = app.buttons["live.pause-resume"]
@@ -75,8 +90,22 @@ final class AppShellUITests: XCTestCase {
         XCTAssertTrue(manualControls.waitForExistence(timeout: 2))
         manualControls.click()
         XCTAssertTrue(app.buttons["− X"].waitForExistence(timeout: 2))
+        app.buttons["stop.button"].click()
+        XCTAssertTrue(app.staticTexts["STOP requested"].waitForExistence(timeout: 2))
         try capture(app, named: "live-workspace-core-flow")
         app.terminate()
+    }
+
+    func testLiveWorkspaceOverlayCoordinatesAtSupportedWindowSizes() throws {
+        for (width, height) in [(1_100, 720), (1_280, 800), (1_440, 900)] {
+            let app = try launch(style: "Light", width: width, height: height)
+            let canvas = app.descendants(matching: .any)["live.canvas"].firstMatch
+            let target = app.descendants(matching: .any)["live.detection.target"].firstMatch
+            XCTAssertTrue(target.waitForExistence(timeout: 5))
+            assertTargetFrame(target.frame, in: canvas.frame)
+            try capture(app, named: "live-overlay-(width)x(height)")
+            app.terminate()
+        }
     }
 
     func testUnknownDestinationRecoversToLive() throws {
@@ -128,10 +157,27 @@ final class AppShellUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Camera disconnected"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.descendants(matching: .any)["camera.rescan"].waitForExistence(timeout: 2))
         XCTAssertTrue(app.descendants(matching: .any)["camera.work-cancelled"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.descendants(matching: .any)["live.source-stale"].waitForExistence(timeout: 2))
         XCTAssertTrue(app.descendants(matching: .any)["arm.status"].waitForExistence(timeout: 2))
         XCTAssertTrue(app.staticTexts["Arm, Disarmed"].exists)
         try capture(app, named: "live-workspace-disconnected")
         app.terminate()
+    }
+
+    func testModelFailureAndNoDeviceStatesOfferRecovery() throws {
+        let failed = try launch(style: "Light", width: 1_100, height: 720, profile: "model-failed")
+        let health = failed.descendants(matching: .any)["live.performance-health"].firstMatch
+        XCTAssertTrue(health.waitForExistence(timeout: 5))
+        XCTAssertEqual(health.value as? String, "Model unavailable")
+        XCTAssertTrue(failed.buttons["live.retry-detection"].waitForExistence(timeout: 2))
+        failed.buttons["live.retry-detection"].click()
+        XCTAssertTrue(failed.staticTexts["Ready"].waitForExistence(timeout: 3))
+        failed.terminate()
+
+        let noDevices = try launch(style: "Light", width: 1_100, height: 720, profile: "no-devices")
+        XCTAssertTrue(noDevices.descendants(matching: .any)["camera.authorization-card"].waitForExistence(timeout: 5))
+        XCTAssertTrue(noDevices.buttons["Rescan Cameras"].waitForExistence(timeout: 2))
+        noDevices.terminate()
     }
 
     private func launch(style: String, width: Int, height: Int, destination: String? = nil, profile: String = "all-connected") throws -> XCUIApplication {
@@ -169,6 +215,28 @@ final class AppShellUITests: XCTestCase {
         if let output = ProcessInfo.processInfo.environment["ARMAGEDDON_SCREENSHOT_DIR"] {
             try screenshot.pngRepresentation.write(to: URL(fileURLWithPath: output).appending(path: "\(name).png"), options: .atomic)
         }
+    }
+
+    private func assertTargetFrame(_ actual: CGRect, in canvas: CGRect) {
+        let content = canvas.insetBy(dx: 20, dy: 20)
+        let modelToOrientedScale = min(224.0 / 1_920.0, 224.0 / 1_080.0)
+        let orientedX = 56.0 / modelToOrientedScale
+        let orientedY = (56.0 - (224.0 - 1_080.0 * modelToOrientedScale) / 2) / modelToOrientedScale
+        let orientedWidth = 44.8 / modelToOrientedScale
+        let orientedHeight = 44.8 / modelToOrientedScale
+        let viewScale = min(content.width / 1_920.0, content.height / 1_080.0)
+        let xOffset = (content.width - 1_920.0 * viewScale) / 2
+        let yOffset = (content.height - 1_080.0 * viewScale) / 2
+        let expected = CGRect(
+            x: content.minX + xOffset + orientedX * viewScale,
+            y: content.minY + yOffset + orientedY * viewScale,
+            width: orientedWidth * viewScale,
+            height: orientedHeight * viewScale
+        )
+        XCTAssertEqual(actual.minX, expected.minX, accuracy: 1)
+        XCTAssertEqual(actual.minY, expected.minY, accuracy: 1)
+        XCTAssertEqual(actual.width, expected.width, accuracy: 1)
+        XCTAssertEqual(actual.height, expected.height, accuracy: 1)
     }
 
     private func privateRoot() throws -> URL {

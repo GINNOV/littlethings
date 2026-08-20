@@ -13,8 +13,10 @@ struct ContextualInspectorView: View {
             LabeledContent("Target") {
                 if let selectedObservation {
                     Text("\(selectedObservation.label) · \(selectedObservation.confidence, format: .percent.precision(.fractionLength(0)))")
+                        .accessibilityIdentifier("inspector.target")
                 } else {
                     Text("None selected")
+                        .accessibilityIdentifier("inspector.target")
                 }
             }
             LabeledContent("Target state") {

@@ -264,7 +264,7 @@ if [ "$1" = "16" ]; then
     result="$task_root/camera-ml-app.xcresult"
     mkdir -m 700 "$task_root/screenshots"
     if [ "$2" = "happy" ]; then
-        filter='-only-testing:ArmageddonUITests/AppShellUITests/testLiveWorkspaceSelectsPausesCapturesAndOpensManualDrawer'
+        filter='-only-testing:ArmageddonUITests/AppShellUITests/testLiveWorkspaceSelectsPausesCapturesAndOpensManualDrawer -only-testing:ArmageddonUITests/AppShellUITests/testLiveWorkspaceOverlayCoordinatesAtSupportedWindowSizes -only-testing:ArmageddonUITests/AppShellUITests/testModelFailureAndNoDeviceStatesOfferRecovery'
         expected='live-workspace-core-flow'
     else
         filter='-only-testing:ArmageddonUITests/AppShellUITests/testCameraDisconnectCancelsWorkAndOffersRescan'

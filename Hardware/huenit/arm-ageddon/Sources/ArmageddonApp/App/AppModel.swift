@@ -94,6 +94,14 @@ final class AppModel {
         try? await livePreview.loadDeterministicFixtureOverlay()
     }
 
+    func retryLiveDetection() async {
+        await livePreview.reloadDeterministicFixtureOverlay()
+    }
+
+    func simulateModelFailureFixture() async {
+        await livePreview.simulateModelFailureFixture()
+    }
+
     func refreshModels() async {
         do {
             try await modelRegistry.open()
@@ -121,6 +129,9 @@ final class AppModel {
             modelRegistrySnapshot = try await modelRegistry.snapshot()
             modelImportError = nil
             selectedModelID = id
+            if let model = modelRegistrySnapshot.models.first(where: { $0.id == id }) {
+                livePreview.setActiveModel(id: model.id, label: model.displayName)
+            }
             await persistSelections()
         } catch {
             modelImportError = modelErrorMessage(error)
