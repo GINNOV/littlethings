@@ -3,9 +3,6 @@ import SwiftUI
 
 struct SettingsView: View {
     @AppStorage private var showInspectorOnLaunch: Bool
-    @AppStorage private var retentionDays: Int
-    @AppStorage private var diagnosticsOptIn: Bool
-    @AppStorage private var defaultModelID: String
     @State private var resetConfirmationPresented = false
 
     init(preferenceSuite: String? = nil) {
@@ -14,10 +11,6 @@ struct SettingsView: View {
             "showInspectorOnLaunch",
             store: preferenceSuite.flatMap { UserDefaults(suiteName: $0) }
         )
-        let store = preferenceSuite.flatMap { UserDefaults(suiteName: $0) }
-        _retentionDays = AppStorage(wrappedValue: 30, "retentionDays", store: store)
-        _diagnosticsOptIn = AppStorage(wrappedValue: false, "diagnosticsOptIn", store: store)
-        _defaultModelID = AppStorage(wrappedValue: "fixture.constant.detector", "defaultModelID", store: store)
     }
 
     var body: some View {
@@ -31,11 +24,8 @@ struct SettingsView: View {
                 Text("Captures are stored locally as JPEG with their source, model, and timing provenance.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                Stepper("Keep captures for \(retentionDays) days", value: $retentionDays, in: 1...365)
-                TextField("Default model ID", text: $defaultModelID)
             }
             Section("Privacy") {
-                Toggle("Include opt-in serial excerpts in support bundles", isOn: $diagnosticsOptIn)
                 Text("Frames, thumbnails, model bytes, credentials, full device serials, and raw logs are never included by default.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -77,8 +67,5 @@ struct SettingsView: View {
 
     private func resetPreferences() {
         showInspectorOnLaunch = true
-        retentionDays = 30
-        diagnosticsOptIn = false
-        defaultModelID = "fixture.constant.detector"
     }
 }

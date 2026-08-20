@@ -195,10 +195,14 @@ final class AppModel {
             captureError = "No camera frame is ready to capture."
             return
         }
-        guard let image = livePreview.currentCaptureImageData() ?? Self.fixtureJPEGData() else {
+        let cameraImage = livePreview.currentCaptureImageData()
+        guard let image = cameraImage ?? Self.fixtureJPEGData() else {
             captureError = "No valid JPEG image is ready to capture."
             return
         }
+        let imageSize = cameraImage == nil
+            ? PixelSize(width: 1, height: 1)
+            : PixelSize(width: Double(format.width), height: Double(format.height))
         let provenance = CaptureProvenance(
             sourceID: livePreview.selectedSource.rawValue,
             frameID: frame.id,
@@ -210,7 +214,7 @@ final class AppModel {
             armPose: nil,
             runID: nil,
             captureInstant: frame.captureInstant,
-            imageSize: PixelSize(width: Double(format.width), height: Double(format.height)),
+            imageSize: imageSize,
             imageFormat: .jpeg
         )
         do {

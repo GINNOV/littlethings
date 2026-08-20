@@ -8,6 +8,24 @@
     "Models": { "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Models" } } } },
     "Diagnostics": { "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Diagnostics" } } } },
     "Runs": { "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Runs" } } } },
-    "STOP Motion": { "localizations": { "en": { "stringUnit": { "state": "translated", "value": "STOP Motion" } } } }
+    "STOP Motion": { "localizations": { "en": { "stringUnit": { "state": "translated", "value": "STOP Motion" } } } },
+    "Inspect, select, and capture locally. Motion stays supervised.": { "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Inspect, select, and capture locally. Motion stays supervised." } } } },
+    "Capture frame": { "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Capture frame" } } } },
+    "Pause preview": { "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Pause preview" } } } },
+    "Resume preview": { "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Resume preview" } } } },
+    "Live controls": { "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Live controls" } } } },
+    "Review frames with their model, source, and timing provenance attached.": { "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Review frames with their model, source, and timing provenance attached." } } } },
+    "Capture from Live": { "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Capture from Live" } } } },
+    "Search captures": { "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Search captures" } } } },
+    "Capture name": { "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Capture name" } } } },
+    "Quarantined, verified, and ready for local inference.": { "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Quarantined, verified, and ready for local inference." } } } },
+    "Import model": { "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Import model" } } } },
+    "Search models": { "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Search models" } } } },
+    "Capture": { "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Capture" } } } },
+    "Privacy": { "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Privacy" } } } },
+    "Safety profile": { "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Safety profile" } } } },
+    "Show inspector on launch": { "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Show inspector on launch" } } } },
+    "Reveal local data in Finder": { "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Reveal local data in Finder" } } } },
+    "Required interlocks are always on": { "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Required interlocks are always on" } } } }
   }
 }
