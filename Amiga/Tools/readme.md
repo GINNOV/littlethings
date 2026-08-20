@@ -1,32 +1,37 @@
-# Amiga Tools for macOS
+# 🕹️ Amiga Tools for macOS
 
-This folder contains utility apps and experiments built during the Amiga flashback journey. The public write-up and project list live on the website:
+A collection of native macOS utility applications, command-line tools, and QuickLook plugins built for Amiga enthusiasts and developers.
 
-<https://ginnov.github.io/littlethings/>
+Live interactive showcases, details, and video demos live on the **[Amiga Dev Hub](https://ginnov.github.io/littlethings/amiga/index.html)**.
 
-## Folder Guide
+---
 
-| Folder | Purpose |
-| --- | --- |
-| `ADFinder/` | ADF-related macOS utility project. |
-| `amigaLoginScreen/` | macOS Droplet and CLI for Amiga lock screens & wallpapers. |
-| `AmigaROMExplorer/` | Amiga ROM catalog and local firmware explorer. |
-| `AuDeluxe/` | Audio-related macOS utility project. |
-| `IFFViewer/` | IFF viewing and preview tooling. |
-| `PixDeluxe/` | Pixel/image utility project. |
-| `build-support/` | Shared build and dependency support used by Amiga tools. |
-| `send2adf/` | Tooling and docs for sending data to ADF workflows. |
-| `releases/` | Compiled release builds when they are available. |
-| `assets/` | Shared assets used by the tools. |
+## 📂 Tools Directory Guide
 
-## Releases
+| Project | Type | Description | Links |
+| :--- | :--- | :--- | :--- |
+| **[ADFinder](./ADFinder/)** | macOS App | The ultimate ADF manager and disk manipulator for macOS. | [README](./ADFinder/README.md) · [Releases](./releases/) |
+| **[amigaLoginScreen](./amigaLoginScreen/)** | macOS Droplet / CLI | Formats and sets classic Amiga Kickstart boot screens as wallpaper and lock screen. | [README](./amigaLoginScreen/README.md) · [Releases](./releases/) |
+| **[AmigaROMExplorer](./AmigaROMExplorer/)** | macOS App | Comprehensive Amiga ROM & firmware atlas with local ROM matching. | [README](./AmigaROMExplorer/README.md) · [Releases](./releases/) |
+| **[AuDeluxe](./AuDeluxe/)** | macOS App / QuickLook | Modern player & QuickLook preview for Amiga audio formats (MOD, etc.) via OpenMPT. | [README](./AuDeluxe/README.md) · [Releases](./releases/) |
+| **[IFFViewer](./IFFViewer/)** | QuickLook Plugin | Modern macOS QuickLook preview extension for Amiga IFF images in Finder. | [README](./IFFViewer/README.md) · [Releases](./releases/) |
+| **[PixDeluxe](./PixDeluxe/)** | macOS App | IFF image manager, format inspector, and PNG batch converter. | [README](./PixDeluxe/README.md) · [Releases](./releases/) |
+| **[send2adf](./send2adf/)** | C CLI Utility | Lightweight terminal tool to dynamically package files or directories into bootable ADFs. | [README](./send2adf/README.md) |
+| **[AmigaPlayground](../aMiLa/AmigaPlayground/)** | macOS App | 68k assembly workspace with local MLX AI assistant, compiler, and emulator integration. | [README](../aMiLa/AmigaPlayground/README.md) · [Releases](./releases/) |
 
-If you only want a compiled app, start with:
+---
 
-<https://github.com/GINNOV/littlethings/tree/master/Amiga/Tools/releases>
+## 📦 Precompiled Releases
 
-Most builds are macOS-first, and often Apple Silicon-first. Check the project folder for source, build notes, and any extra documentation.
+Precompiled `.dmg` installers and `.zip` archives are available in the **[releases/](./releases/)** folder:
 
-## Testing Notes
+👉 **[Browse Compiled Releases](./releases/readme.md)**
 
-Some tools have an Amiga counterpart. They are tested in FS-UAE and/or vAmiga, with occasional checks on an Amiga 1200. Treat each project README as the source of truth for current status.
+> [!TIP]
+> Most builds are Universal Binaries (`arm64` Apple Silicon + `x86_64` Intel Macs). For instructions on removing macOS quarantine on first launch, see the [Quarantine Guide](https://ginnov.github.io/littlethings/amiga/index.html#remove-quarantine).
+
+---
+
+## 🧪 Testing Notes
+
+Amiga-side code and disk outputs are verified using [vAmiga](https://dirkwhoffmann.github.io/vAmiga/), [FS-UAE](https://fs-uae.net/), and real Amiga 1200 / 500 hardware.
