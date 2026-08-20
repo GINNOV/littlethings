@@ -9,6 +9,7 @@ final class AppModel {
     private let coordinator: AppStateCoordinator
     private let cameraLifecycle: NativeCameraLifecycleController
     private let cameraLifecycleObserver: AVFoundationCameraLifecycleObserver
+    private let modelRegistry: ModelRegistry
     let livePreview: LivePreviewModel
 
     private(set) var destination: String
@@ -19,17 +20,20 @@ final class AppModel {
     private(set) var cameraWorkCancelled: Bool
     private(set) var restorationNotice: AppStateRestorationNotice?
     private(set) var cameraLifecycleSnapshot: NativeCameraLifecycleSnapshot
+    private(set) var modelRegistrySnapshot: ModelRegistrySnapshot
 
     init(
         coordinator: AppStateCoordinator,
         restoredState: RestoredAppState,
         cameraLifecycle: NativeCameraLifecycleController,
         cameraLifecycleObserver: AVFoundationCameraLifecycleObserver = AVFoundationCameraLifecycleObserver(),
+        modelRegistry: ModelRegistry? = nil,
         livePreview: LivePreviewModel = LivePreviewModel()
     ) {
         self.coordinator = coordinator
         self.cameraLifecycle = cameraLifecycle
         self.cameraLifecycleObserver = cameraLifecycleObserver
+        self.modelRegistry = modelRegistry ?? ModelRegistry(root: Self.defaultModelRegistryRoot())
         self.livePreview = livePreview
         destination = restoredState.destination
         selectedDevice = restoredState.selectedDevice
@@ -39,6 +43,7 @@ final class AppModel {
         cameraWorkCancelled = false
         restorationNotice = restoredState.notice
         cameraLifecycleSnapshot = NativeCameraLifecycleSnapshot(authorization: .notDetermined)
+        modelRegistrySnapshot = .empty
     }
 
     func restore() async {
@@ -85,6 +90,36 @@ final class AppModel {
 
     func loadFixtureOverlay() async {
         try? await livePreview.loadDeterministicFixtureOverlay()
+    }
+
+    func refreshModels() async {
+        do {
+            try await modelRegistry.open()
+            modelRegistrySnapshot = try await modelRegistry.snapshot()
+        } catch {
+            modelRegistrySnapshot = .empty
+        }
+    }
+
+    func importModel(manifestURL: URL) async {
+        do {
+            try await modelRegistry.open()
+            _ = try await modelRegistry.importAndActivate(manifestURL: manifestURL)
+            modelRegistrySnapshot = try await modelRegistry.snapshot()
+        } catch {
+            modelRegistrySnapshot = .empty
+        }
+    }
+
+    func activateModel(id: String) async {
+        do {
+            _ = try await modelRegistry.activate(identifier: id)
+            modelRegistrySnapshot = try await modelRegistry.snapshot()
+            selectedModelID = id
+            await persistSelections()
+        } catch {
+            await refreshModels()
+        }
     }
 
     func configureDisconnectedCameraFixture() async {
@@ -145,5 +180,11 @@ final class AppModel {
         moving = false
         cameraWorkCancelled = true
         await livePreview.stop()
+    }
+
+    private static func defaultModelRegistryRoot() -> URL {
+        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("Armageddon", isDirectory: true)
+            .appendingPathComponent("Models", isDirectory: true)
     }
 }

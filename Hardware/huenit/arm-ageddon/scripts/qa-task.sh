@@ -12,7 +12,7 @@ if [ "$#" -ne 2 ]; then
     printf '%s\n' 'Usage: qa-task.sh <1-33> <happy|failure>' >&2
     exit 2
 fi
-case "$1" in 2|3|4|6|7|8|9|10|11|12) ;; *) printf '%s\n' 'ERROR[unsupported-task]: task manifest has not landed yet' >&2; exit 2 ;; esac
+case "$1" in 2|3|4|6|7|8|9|10|11|12|13) ;; *) printf '%s\n' 'ERROR[unsupported-task]: task manifest has not landed yet' >&2; exit 2 ;; esac
 case "$2" in happy|failure) ;; *) printf '%s\n' 'ERROR[unknown-mode]' >&2; exit 2 ;; esac
 
 if [ -n "${ARMAGEDDON_TASK_ROOT:-}" ]; then
@@ -164,6 +164,37 @@ if [ "$1" = "12" ]; then
     printf '{"task":12,"mode":"%s","filter":"%s","probe":%s,"transcript":"%s","transcriptSha256":"%s","result":"%s"}\n' \
         "$2" "$filter_target" "$probe_json" "$transcript" "$transcript_sha256" "$result" >"$task_root/camera-ml-app.json"
     printf 'PASS task=12 mode=%s root=%s\n' "$2" "$task_root"
+    exit 0
+fi
+
+if [ "$1" = "13" ]; then
+    transcript="$task_root/camera-ml-app.txt"
+    fixture_dir="$task_root/generated-fixture"
+    mkdir -m 700 "$fixture_dir"
+    generated_manifest="$fixture_dir/fixture.armmodel.json"
+    validation_root=$(mktemp -d /private/tmp/armageddon-task13.XXXXXX)
+    rsync -a --exclude '.git' --exclude '.build' "$project_root/" "$validation_root/"
+    if [ "$2" = "happy" ]; then
+        filter_target='ModelRegistryTests/activateRollback'
+    else
+        filter_target='ModelRegistryTests/corruptedV3KeepsPreviousActive'
+    fi
+    (
+        cd "$validation_root"
+        swift run --disable-sandbox --quiet --scratch-path "$task_root/build" ModelFixtureGenerator --output "$generated_manifest"
+        swift run --disable-sandbox --quiet --scratch-path "$task_root/build" ModelRegistryQAProbe --manifest "$generated_manifest" --root "$task_root/registry"
+        swift test --disable-sandbox --filter "$filter_target"
+    ) >"$transcript" 2>&1
+    result="$task_root/camera-ml-app.xcresult"
+    GIT_CEILING_DIRECTORIES="$repo_ceiling" xcodebuild -quiet -project Armageddon.xcodeproj -scheme ArmageddonApp \
+        -configuration Debug -destination 'platform=macOS' \
+        -derivedDataPath "$task_root/build-xcode" -resultBundlePath "$result" build-for-testing >>"$transcript" 2>&1
+    [ -d "$result" ] || { printf '%s\n' 'ERROR[missing-task-13-xcresult]' >&2; exit 1; }
+    transcript_sha256=$(shasum -a 256 "$transcript" | awk '{print $1}')
+    generated_sha256=$(shasum -a 256 "$generated_manifest" | awk '{print $1}')
+    printf '{"task":13,"mode":"%s","filter":"%s","generatedManifest":"%s","generatedManifestSha256":"%s","transcript":"%s","transcriptSha256":"%s","result":"%s"}\n' \
+        "$2" "$filter_target" "$generated_manifest" "$generated_sha256" "$transcript" "$transcript_sha256" "$result" >"$task_root/camera-ml-app.json"
+    printf 'PASS task=13 mode=%s root=%s\n' "$2" "$task_root"
     exit 0
 fi
 

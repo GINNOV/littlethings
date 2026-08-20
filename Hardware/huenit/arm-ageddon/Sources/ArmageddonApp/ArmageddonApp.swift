@@ -48,7 +48,8 @@ struct ArmageddonApp: App {
         let applicationModel = AppModel(
             coordinator: coordinator,
             restoredState: restored,
-            cameraLifecycle: cameraLifecycle
+            cameraLifecycle: cameraLifecycle,
+            modelRegistry: ModelRegistry(root: Self.modelRegistryURL(for: result))
         )
         _appModel = State(initialValue: applicationModel)
         fixtureLaunchDelegate.configure(appModel: applicationModel)
@@ -65,6 +66,7 @@ struct ArmageddonApp: App {
             .environment(appModel)
             .task {
                 await appModel.restore()
+                await appModel.refreshModels()
                 await appModel.refreshCameraLifecycle()
                 if isUITesting {
                     await appModel.loadFixtureOverlay()
@@ -122,5 +124,12 @@ struct ArmageddonApp: App {
             ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         return root.appendingPathComponent("Armageddon", isDirectory: true)
             .appendingPathComponent("app-state.json")
+    }
+
+    private static func modelRegistryURL(for launch: Result<LaunchArguments, Error>) -> URL {
+        let root = (try? launch.get().paths?.applicationSupport)
+            ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        return root.appendingPathComponent("Armageddon", isDirectory: true)
+            .appendingPathComponent("Models", isDirectory: true)
     }
 }
