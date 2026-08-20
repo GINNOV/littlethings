@@ -105,6 +105,7 @@ public enum CaptureTimestampMappingError: Error, Equatable, Sendable {
     case discontinuity
     case overflow
     case futureCapture
+    case negativeAge
 }
 
 public struct CaptureTimestampCorrelation: Codable, Equatable, Sendable {
@@ -138,6 +139,9 @@ public struct CaptureTimestampCorrelation: Codable, Equatable, Sendable {
         }
         guard let mapped = anchorInstant.adding(nanoseconds: Int64(deltaNanoseconds.rounded())) else {
             throw CaptureTimestampMappingError.overflow
+        }
+        guard anchorInstant <= now else {
+            throw CaptureTimestampMappingError.negativeAge
         }
         guard mapped <= now else {
             throw CaptureTimestampMappingError.futureCapture

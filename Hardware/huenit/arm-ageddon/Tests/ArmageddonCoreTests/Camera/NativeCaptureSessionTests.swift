@@ -107,6 +107,65 @@ struct NativeCaptureSessionTests {
                 now: MonotonicInstant(nanoseconds: 1_500_000_000)
             )
         }
+        #expect(throws: CaptureTimestampMappingError.negativeAge) {
+            try correlation.map(
+                presentationTimestamp: 10,
+                now: MonotonicInstant(nanoseconds: 500_000_000)
+            )
+        }
+    }
+
+    @Test("Sixty seconds of 30 FPS capture keeps the latest-frame queue bounded")
+    func sixtySecondsOfCaptureMaintainsBoundedQueue() async throws {
+        let session = NativeCaptureSession(clock: FixedCaptureClock(instant: .init(nanoseconds: 60_000_000_000)))
+        let format = CaptureFormat(width: 1_280, height: 720, frameRate: 30)
+        let source = try await session.start(configuration: format)
+
+        for id in 0..<1_800 {
+            try await session.ingest(
+                CameraFrameMetadata(
+                    id: UInt64(id),
+                    rawPresentationTimestamp: Double(id) / 30,
+                    captureInstant: MonotonicInstant(nanoseconds: UInt64(id) * 33_333_333),
+                    format: format
+                ),
+                source: source
+            )
+            if id.isMultiple(of: 30) && id > 0 {
+                _ = await session.consumeLatest()
+            }
+        }
+
+        let snapshot = await session.snapshot()
+        #expect(snapshot.metrics.produced == 1_800)
+        #expect(snapshot.metrics.delivered == 59)
+        #expect(snapshot.metrics.maxQueueDepth == 1)
+        #expect(snapshot.metrics.dropped == 1_740)
+    }
+
+    @Test("Twenty preview start-stop cycles leave no pending frame")
+    func previewLifecycleReleasesPendingFramesAcrossTwentyCycles() async throws {
+        let session = NativeCaptureSession(clock: FixedCaptureClock(instant: .init(nanoseconds: 1_000_000)))
+        let format = CaptureFormat(width: 1_280, height: 720, frameRate: 30)
+
+        for id in 0..<20 {
+            let source = try await session.start(configuration: format)
+            try await session.ingest(
+                CameraFrameMetadata(
+                    id: UInt64(id),
+                    rawPresentationTimestamp: Double(id),
+                    captureInstant: MonotonicInstant(nanoseconds: 1),
+                    format: format
+                ),
+                source: source
+            )
+            await session.stop()
+            #expect(await session.consumeLatest() == nil)
+        }
+
+        let snapshot = await session.snapshot()
+        #expect(snapshot.state == .stopped)
+        #expect(snapshot.metrics.maxQueueDepth == 1)
     }
 
     @Test("Frame metadata preserves negotiated orientation and mirroring")

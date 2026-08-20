@@ -114,14 +114,21 @@ if [ "$1" = "11" ]; then
         cd "$validation_root"
         swift test --disable-sandbox --filter "NativeCaptureSessionTests/$filter"
     ) >"$transcript" 2>&1
+    probe="$task_root/probe.json"
+    (
+        cd "$validation_root"
+        swift run --disable-sandbox --quiet CaptureQAProbe "$2"
+    ) >"$probe" 2>>"$transcript"
+    probe_json=$(tr -d '\n' <"$probe")
+    printf '%s\n' "CAPTURE_QA_PROBE=$probe_json" >>"$transcript"
     result="$task_root/camera-ml-app.xcresult"
     GIT_CEILING_DIRECTORIES="$repo_ceiling" xcodebuild -quiet -project Armageddon.xcodeproj -scheme ArmageddonApp \
         -configuration Debug -destination 'platform=macOS' \
         -derivedDataPath "$task_root/build" -resultBundlePath "$result" build-for-testing >>"$transcript" 2>&1
     [ -d "$result" ] || { printf '%s\n' 'ERROR[missing-task-11-xcresult]' >&2; exit 1; }
     transcript_sha256=$(shasum -a 256 "$transcript" | awk '{print $1}')
-    printf '{"task":11,"mode":"%s","filter":"NativeCaptureSessionTests/%s","transcript":"%s","transcriptSha256":"%s","result":"%s"}\n' \
-        "$2" "$filter" "$transcript" "$transcript_sha256" "$result" >"$task_root/camera-ml-app.json"
+    printf '{"task":11,"mode":"%s","filter":"NativeCaptureSessionTests/%s","probe":%s,"transcript":"%s","transcriptSha256":"%s","result":"%s"}\n' \
+        "$2" "$filter" "$probe_json" "$transcript" "$transcript_sha256" "$result" >"$task_root/camera-ml-app.json"
     printf 'PASS task=11 mode=%s root=%s\n' "$2" "$task_root"
     exit 0
 fi

@@ -32,6 +32,8 @@ final class AVFoundationNativeCaptureSession {
         device: AVCaptureDevice,
         requestedFormat: CaptureFormat = CaptureFormat(width: 1_280, height: 720, frameRate: 30)
     ) async throws -> CaptureFormat {
+        await stop()
+        try configure(device: device, requested: requestedFormat)
         let input = try AVCaptureDeviceInput(device: device)
         let actualFormat = negotiatedFormat(for: device, requested: requestedFormat)
         let videoOutput = AVCaptureVideoDataOutput()
@@ -66,6 +68,10 @@ final class AVFoundationNativeCaptureSession {
         return actualFormat
     }
 
+    var isRunning: Bool {
+        captureSession.isRunning
+    }
+
     func stop() async {
         output?.setSampleBufferDelegate(nil, queue: nil)
         delegate = nil
@@ -94,6 +100,37 @@ final class AVFoundationNativeCaptureSession {
             orientation: requested.orientation,
             mirrored: requested.mirrored
         )
+    }
+
+    private func configure(device: AVCaptureDevice, requested: CaptureFormat) throws {
+        let requestedDimensions = CMVideoFormatDescriptionGetDimensions(
+            device.activeFormat.formatDescription
+        )
+        let selectedFormat = device.formats.first { format in
+            let dimensions = CMVideoFormatDescriptionGetDimensions(format.formatDescription)
+            guard dimensions.width == Int32(requested.width), dimensions.height == Int32(requested.height) else {
+                return false
+            }
+            return format.videoSupportedFrameRateRanges.contains {
+                $0.minFrameRate <= requested.frameRate && requested.frameRate <= $0.maxFrameRate
+            }
+        }
+
+        guard selectedFormat != nil ||
+                (requestedDimensions.width == Int32(requested.width) &&
+                 requestedDimensions.height == Int32(requested.height)) else {
+            return
+        }
+
+        try device.lockForConfiguration()
+        defer { device.unlockForConfiguration() }
+        if let selectedFormat {
+            device.activeFormat = selectedFormat
+        }
+        let timescale = CMTimeScale(max(1, Int32(requested.frameRate.rounded())))
+        let frameDuration = CMTime(value: 1, timescale: timescale)
+        device.activeVideoMinFrameDuration = frameDuration
+        device.activeVideoMaxFrameDuration = frameDuration
     }
 }
 
