@@ -54,9 +54,17 @@ struct VisionInferenceSchedulerTests {
         }
 
         await scheduler.cancel()
+        while await scheduler.queueDepth() > 0 {
+            try await Task.sleep(nanoseconds: 1_000_000)
+        }
+        let metrics = await scheduler.metrics()
         #expect(maximumDepth == 1)
         #expect(await scheduler.queueDepth() == 0)
         #expect(await scheduler.generation() == 10_001)
+        #expect(metrics.submittedFrames == 10_000)
+        #expect(metrics.maximumActiveRequests == 1)
+        #expect(metrics.maximumPendingRequests == 1)
+        #expect(metrics.stalePublications == 0)
     }
 
     private func fixtureManifest() throws -> DetectorManifest {
@@ -106,6 +114,8 @@ struct VisionInferenceSchedulerTests {
 
 private struct DelayedVisionExecutor: VisionInferenceExecutor {
     let delayNanoseconds: UInt64
+
+    func currentModelGeneration() async -> UInt64 { 1 }
 
     func infer(
         frame: VisionInferenceFrame,

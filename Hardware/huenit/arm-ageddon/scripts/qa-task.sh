@@ -202,6 +202,7 @@ fi
 
 if [ "$1" = "14" ]; then
     transcript="$task_root/camera-ml-app.txt"
+    probe="$task_root/probe.json"
     validation_root=$(mktemp -d /private/tmp/armageddon-task14.XXXXXX)
     rsync -a --exclude '.git' --exclude '.build' "$project_root/" "$validation_root/"
     if [ "$2" = "happy" ]; then
@@ -211,6 +212,8 @@ if [ "$1" = "14" ]; then
     fi
     (
         cd "$validation_root"
+        swift run --disable-sandbox --quiet --scratch-path "$task_root/build-swift" VisionInferenceQAProbe \
+            "$validation_root/Tests/ArmageddonCoreTests/Fixtures/constant-detector.mlmodel" "$2" >"$probe"
         swift test --disable-sandbox --filter "$filter_target"
         swift test --disable-sandbox --filter VisionInferenceSchedulerTests/tenThousandFramesKeepQueueDepthOne
     ) >"$transcript" 2>&1
@@ -220,8 +223,9 @@ if [ "$1" = "14" ]; then
         -derivedDataPath "$task_root/build-xcode" -resultBundlePath "$result" build-for-testing >>"$transcript" 2>&1
     [ -d "$result" ] || { printf '%s\n' 'ERROR[missing-task-14-xcresult]' >&2; exit 1; }
     transcript_sha256=$(shasum -a 256 "$transcript" | awk '{print $1}')
-    printf '{"task":14,"mode":"%s","filter":"%s","stressFilter":"VisionInferenceSchedulerTests/tenThousandFramesKeepQueueDepthOne","stressFrameCount":10000,"expectedQueueDepth":1,"transcript":"%s","transcriptSha256":"%s","result":"%s"}\n' \
-        "$2" "$filter_target" "$transcript" "$transcript_sha256" "$result" >"$task_root/camera-ml-app.json"
+    probe_json=$(tr -d '\n' <"$probe")
+    printf '{"task":14,"mode":"%s","filter":"%s","probe":%s,"transcript":"%s","transcriptSha256":"%s","result":"%s"}\n' \
+        "$2" "$filter_target" "$probe_json" "$transcript" "$transcript_sha256" "$result" >"$task_root/camera-ml-app.json"
     printf 'PASS task=14 mode=%s root=%s\n' "$2" "$task_root"
     exit 0
 fi

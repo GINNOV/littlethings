@@ -41,6 +41,8 @@ public struct VisionInferenceFrame: @unchecked Sendable {
 }
 
 public protocol VisionInferenceExecutor: Sendable {
+    func currentModelGeneration() async -> UInt64
+
     func infer(
         frame: VisionInferenceFrame,
         manifest: DetectorManifest,
@@ -93,6 +95,10 @@ public actor VisionCoreMLInferenceEngine: VisionInferenceExecutor {
     }
 
     public func generation() -> UInt64 {
+        modelGeneration
+    }
+
+    public func currentModelGeneration() -> UInt64 {
         modelGeneration
     }
 
@@ -284,10 +290,73 @@ public actor VisionDetectorPipeline {
     }
 }
 
+public struct VisionInferenceSchedulerMetrics: Sendable, Equatable {
+    public let submittedFrames: Int
+    public let cancellations: Int
+    public let maximumActiveRequests: Int
+    public let maximumPendingRequests: Int
+    public let stalePublications: Int
+    public let discardedStaleResults: Int
+
+    public init(
+        submittedFrames: Int,
+        cancellations: Int,
+        maximumActiveRequests: Int,
+        maximumPendingRequests: Int,
+        stalePublications: Int,
+        discardedStaleResults: Int
+    ) {
+        self.submittedFrames = submittedFrames
+        self.cancellations = cancellations
+        self.maximumActiveRequests = maximumActiveRequests
+        self.maximumPendingRequests = maximumPendingRequests
+        self.stalePublications = stalePublications
+        self.discardedStaleResults = discardedStaleResults
+    }
+}
+
+private actor VisionInferenceResultSlot {
+    private var result: Result<VisionInferenceResult, Error>?
+    private var continuation: CheckedContinuation<VisionInferenceResult, Error>?
+
+    func wait() async throws -> VisionInferenceResult {
+        if let result { return try result.get() }
+        return try await withCheckedThrowingContinuation { continuation in
+            self.continuation = continuation
+        }
+    }
+
+    func resolve(_ result: Result<VisionInferenceResult, Error>) {
+        guard self.result == nil else { return }
+        if let continuation {
+            self.continuation = nil
+            continuation.resume(with: result)
+        } else {
+            self.result = result
+        }
+    }
+}
+
 public actor LatestVisionInferenceScheduler {
+    private struct PendingRequest: Sendable {
+        let id: UInt64
+        let frame: VisionInferenceFrame
+        let manifest: DetectorManifest
+        let slot: VisionInferenceResultSlot
+    }
+
     private let executor: any VisionInferenceExecutor
-    private var currentTask: Task<VisionInferenceResult, Error>?
+    private var workerTask: Task<Void, Never>?
+    private var pendingRequest: PendingRequest?
+    private var currentSlot: VisionInferenceResultSlot?
     private var currentGeneration: UInt64 = 0
+    private var submittedFrames = 0
+    private var cancellations = 0
+    private var activeRequests = 0
+    private var maximumActiveRequests = 0
+    private var maximumPendingRequests = 0
+    private var stalePublications = 0
+    private var discardedStaleResults = 0
 
     public init(executor: any VisionInferenceExecutor) {
         self.executor = executor
@@ -296,29 +365,49 @@ public actor LatestVisionInferenceScheduler {
     public func submit(
         frame: VisionInferenceFrame,
         manifest: DetectorManifest
-    ) -> Task<VisionInferenceResult, Error> {
-        currentTask?.cancel()
-        currentGeneration &+= 1
-        let generation = currentGeneration
-        let executor = self.executor
-        let task = Task.detached {
-            try Task.checkCancellation()
-            let output = try await executor.infer(frame: frame, manifest: manifest, generation: generation)
-            try Task.checkCancellation()
-            return VisionInferenceResult(frameID: frame.metadata.id, generation: generation, output: output)
+    ) async -> Task<VisionInferenceResult, Error> {
+        if let currentSlot {
+            await currentSlot.resolve(.failure(CancellationError()))
         }
-        currentTask = task
-        return task
+        if let pendingRequest {
+            await pendingRequest.slot.resolve(.failure(CancellationError()))
+            self.pendingRequest = nil
+        }
+        workerTask?.cancel()
+        currentGeneration &+= 1
+        submittedFrames += 1
+        let request = PendingRequest(
+            id: currentGeneration,
+            frame: frame,
+            manifest: manifest,
+            slot: VisionInferenceResultSlot()
+        )
+        currentSlot = request.slot
+        pendingRequest = request
+        maximumPendingRequests = max(maximumPendingRequests, 1)
+        startWorkerIfNeeded()
+        let slot = request.slot
+        return Task.detached {
+            try await slot.wait()
+        }
     }
 
-    public func cancel() {
-        currentTask?.cancel()
-        currentTask = nil
+    public func cancel() async {
+        cancellations += 1
+        if let currentSlot {
+            await currentSlot.resolve(.failure(CancellationError()))
+        }
+        currentSlot = nil
+        if let pendingRequest {
+            await pendingRequest.slot.resolve(.failure(CancellationError()))
+            self.pendingRequest = nil
+        }
+        workerTask?.cancel()
         currentGeneration &+= 1
     }
 
-    public func switchSourceOrModel() {
-        cancel()
+    public func switchSourceOrModel() async {
+        await cancel()
     }
 
     public func generation() -> UInt64 {
@@ -326,6 +415,63 @@ public actor LatestVisionInferenceScheduler {
     }
 
     public func queueDepth() -> Int {
-        currentTask == nil ? 0 : 1
+        (workerTask == nil && pendingRequest == nil) ? 0 : 1
+    }
+
+    public func metrics() -> VisionInferenceSchedulerMetrics {
+        VisionInferenceSchedulerMetrics(
+            submittedFrames: submittedFrames,
+            cancellations: cancellations,
+            maximumActiveRequests: maximumActiveRequests,
+            maximumPendingRequests: maximumPendingRequests,
+            stalePublications: stalePublications,
+            discardedStaleResults: discardedStaleResults
+        )
+    }
+
+    private func startWorkerIfNeeded() {
+        guard workerTask == nil, let request = pendingRequest else { return }
+        pendingRequest = nil
+        activeRequests += 1
+        maximumActiveRequests = max(maximumActiveRequests, activeRequests)
+        let executor = self.executor
+        let scheduler = self
+        workerTask = Task.detached {
+            let result: Result<VisionInferenceResult, Error>
+            do {
+                try Task.checkCancellation()
+                let modelGeneration = await executor.currentModelGeneration()
+                try Task.checkCancellation()
+                let output = try await executor.infer(
+                    frame: request.frame,
+                    manifest: request.manifest,
+                    generation: modelGeneration
+                )
+                try Task.checkCancellation()
+                result = .success(VisionInferenceResult(
+                    frameID: request.frame.metadata.id,
+                    generation: request.id,
+                    output: output
+                ))
+            } catch {
+                result = .failure(error)
+            }
+            await scheduler.finishWorker(request: request, result: result)
+        }
+    }
+
+    private func finishWorker(
+        request: PendingRequest,
+        result: Result<VisionInferenceResult, Error>
+    ) async {
+        activeRequests -= 1
+        workerTask = nil
+        if request.id == currentGeneration {
+            currentSlot = nil
+            await request.slot.resolve(result)
+        } else if case .success = result {
+            discardedStaleResults += 1
+        }
+        startWorkerIfNeeded()
     }
 }

@@ -1,6 +1,7 @@
 import Darwin
 import XCTest
 
+@MainActor
 final class LaunchProfileTests: XCTestCase {
     func testAllFixtureProfilesReachStableUI() throws {
         let profiles = ["no-devices", "permission-denied", "camera-disconnected", "all-connected", "model-failed", "calibrated-dry-run", "stop-unconfirmed"]
