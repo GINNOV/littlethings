@@ -8,6 +8,11 @@ public protocol CaptureIndexStore: Sendable {
     func replace(_ record: CaptureRecord) async throws
 }
 
+public enum CaptureIndexError: Error, Equatable, Sendable {
+    case persistenceFailed
+    case persistenceUncertain
+}
+
 public actor InMemoryCaptureIndexStore: CaptureIndexStore {
     private var records: [CaptureRecord] = []
 
@@ -82,28 +87,35 @@ public actor FileCaptureIndexStore: CaptureIndexStore {
         let data = try encoder.encode(records)
         let temporary = fileURL.deletingPathExtension()
             .appendingPathExtension("\(UUID().uuidString).tmp")
-        let descriptor = Darwin.open(temporary.path, O_WRONLY | O_CREAT | O_EXCL, mode_t(0o600))
-        guard descriptor >= 0 else { throw CaptureError.invalidExport("index create") }
-        var closeRequired = true
-        defer { if closeRequired { _ = Darwin.close(descriptor) } }
-        try data.withUnsafeBytes { buffer in
-            var offset = 0
-            while offset < buffer.count {
-                let written = Darwin.write(descriptor, buffer.baseAddress!.advanced(by: offset), buffer.count - offset)
-                guard written > 0 else { throw CaptureError.invalidExport("index write") }
-                offset += written
+        var renamed = false
+        do {
+            let descriptor = Darwin.open(temporary.path, O_WRONLY | O_CREAT | O_EXCL, mode_t(0o600))
+            guard descriptor >= 0 else { throw CaptureError.invalidExport("index create") }
+            var closeRequired = true
+            defer { if closeRequired { _ = Darwin.close(descriptor) } }
+            try data.withUnsafeBytes { buffer in
+                var offset = 0
+                while offset < buffer.count {
+                    let written = Darwin.write(descriptor, buffer.baseAddress!.advanced(by: offset), buffer.count - offset)
+                    guard written > 0 else { throw CaptureError.invalidExport("index write") }
+                    offset += written
+                }
             }
+            guard Darwin.fsync(descriptor) == 0 else { throw CaptureError.invalidExport("index fsync") }
+            guard Darwin.close(descriptor) == 0 else { throw CaptureError.invalidExport("index close") }
+            closeRequired = false
+            guard Darwin.rename(temporary.path, fileURL.path) == 0 else {
+                throw CaptureError.invalidExport("index rename")
+            }
+            renamed = true
+            let parent = Darwin.open(fileURL.deletingLastPathComponent().path, O_RDONLY | O_DIRECTORY)
+            guard parent >= 0 else { throw CaptureError.invalidExport("index parent") }
+            defer { _ = Darwin.close(parent) }
+            guard Darwin.fsync(parent) == 0 else { throw CaptureError.invalidExport("index directory fsync") }
+        } catch {
+            if !renamed { try? FileManager.default.removeItem(at: temporary) }
+            throw renamed ? CaptureIndexError.persistenceUncertain : CaptureIndexError.persistenceFailed
         }
-        guard Darwin.fsync(descriptor) == 0 else { throw CaptureError.invalidExport("index fsync") }
-        guard Darwin.close(descriptor) == 0 else { throw CaptureError.invalidExport("index close") }
-        closeRequired = false
-        guard Darwin.rename(temporary.path, fileURL.path) == 0 else {
-            throw CaptureError.invalidExport("index rename")
-        }
-        let parent = Darwin.open(fileURL.deletingLastPathComponent().path, O_RDONLY | O_DIRECTORY)
-        guard parent >= 0 else { throw CaptureError.invalidExport("index parent") }
-        defer { _ = Darwin.close(parent) }
-        guard Darwin.fsync(parent) == 0 else { throw CaptureError.invalidExport("index directory fsync") }
     }
 }
 
@@ -131,7 +143,7 @@ public actor CaptureSessionStore {
         let id = UUID().uuidString.lowercased()
         let imageID = "capture-\(id)-image"
         let thumbnailID = thumbnail.map { _ in "capture-\(id)-thumbnail" }
-        var indexInsertAttempted = false
+        var indexPersistenceUncertain = false
         do {
             let imageRecord = try await artifacts.create(id: imageID, bytes: image)
             if let thumbnail, let thumbnailID {
@@ -146,11 +158,15 @@ public actor CaptureSessionStore {
                 imageHash: imageRecord.contentHash,
                 imageByteCount: image.count
             )
-            indexInsertAttempted = true
-            try await index.insert(record)
+            do {
+                try await index.insert(record)
+            } catch let error as CaptureIndexError {
+                indexPersistenceUncertain = error == .persistenceUncertain
+                throw error
+            }
             return record
         } catch {
-            if !indexInsertAttempted {
+            if !indexPersistenceUncertain {
                 try? await artifacts.trash(id: imageID)
                 try? await artifacts.purge(id: imageID)
                 if let thumbnailID {
