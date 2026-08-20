@@ -83,6 +83,10 @@ final class AppModel {
         }
     }
 
+    func loadFixtureOverlay() async {
+        try? await livePreview.loadDeterministicFixtureOverlay()
+    }
+
     func configureDisconnectedCameraFixture() async {
         guard cameraLifecycleSnapshot.authorization == .authorized else { return }
         try? await cameraLifecycle.select(.nativeCamera("fixture-camera"))

@@ -15,8 +15,11 @@ struct LiveWorkspaceView: View {
                     if appModel.cameraLifecycleSnapshot.authorization == .authorized,
                        appModel.cameraLifecycleSnapshot.connection == .connected {
                         if let previewLayer = appModel.livePreview.previewLayer {
-                            CameraPreviewSurface(previewLayer: previewLayer)
-                                .accessibilityIdentifier("camera.preview")
+                            ZStack {
+                                CameraPreviewSurface(previewLayer: previewLayer)
+                                    .accessibilityIdentifier("camera.preview")
+                                DetectionOverlayView(observations: appModel.livePreview.observations)
+                            }
                         } else {
                             VStack(spacing: DesignTokens.Spacing.standard) {
                                 Image(systemName: "viewfinder")

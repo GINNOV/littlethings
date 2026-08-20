@@ -9,6 +9,7 @@ public final class LivePreviewModel {
     public private(set) var previewLayer: AVCaptureVideoPreviewLayer?
     public private(set) var snapshot: NativeCaptureSessionSnapshot
     public private(set) var negotiatedFormat: CaptureFormat?
+    public private(set) var observations: [DetectionObservation] = []
 
     public var isRunning: Bool {
         capture.isRunning
@@ -44,9 +45,43 @@ public final class LivePreviewModel {
         snapshot = await capture.snapshot()
     }
 
+    public func updateObservations(_ observations: [DetectionObservation]) {
+        self.observations = observations
+    }
+
+    public func loadDeterministicFixtureOverlay() async throws {
+        let manifest = try DetectorManifest(
+            identifier: "fixture.constant.detector",
+            sha256: String(repeating: "0", count: 64),
+            input: DetectorInputContract(width: 224, height: 224),
+            output: DetectorOutputContract(kind: .visionObjects),
+            labels: ["target", "other"]
+        )
+        let engine = DeterministicFakeInferenceEngine(detections: [
+            FakeDetection(
+                label: "target",
+                confidence: 0.9,
+                boundingBox: NormalizedRect(x: 0.25, y: 0.25, width: 0.2, height: 0.2)
+            ),
+        ])
+        let pipeline = try DetectorPipeline(manifest: manifest, engine: engine)
+        let frame = CameraFrameMetadata(
+            id: 1,
+            rawPresentationTimestamp: 1,
+            captureInstant: MonotonicInstant(nanoseconds: 1_000_000_000),
+            format: CaptureFormat(width: 1_920, height: 1_080, frameRate: 30)
+        )
+        observations = try await pipeline.process(
+            frame: frame,
+            now: MonotonicInstant(nanoseconds: 2_000_000_000),
+            generation: 1
+        )
+    }
+
     public func stop() async {
         await capture.stop()
         negotiatedFormat = nil
+        observations = []
         await refreshSnapshot()
     }
 }

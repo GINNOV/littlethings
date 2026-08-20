@@ -142,7 +142,7 @@ if [ "$1" = "12" ]; then
     if [ "$2" = "happy" ]; then
         filter_target='DetectorContractTests/letterboxedMirrored'
     else
-        filter_target='DetectorContractTests/normalizerContracts'
+        filter_target='DetectorContractTests/multiArrayContract'
     fi
     (
         cd "$validation_root"

@@ -66,6 +66,9 @@ struct ArmageddonApp: App {
             .task {
                 await appModel.restore()
                 await appModel.refreshCameraLifecycle()
+                if isUITesting {
+                    await appModel.loadFixtureOverlay()
+                }
                 if isCameraDisconnectedFixture {
                     await appModel.configureDisconnectedCameraFixture()
                 }

@@ -101,7 +101,8 @@ public struct DetectorCoordinateTransform: Sendable, Equatable {
 
     public func modelToView(_ rect: PixelRect) throws -> PixelRect {
         try validate(rect)
-        return transformRect(rect, using: modelPointToView)
+        let oriented = transformRect(rect, using: modelPointToOriented)
+        return transformRect(oriented, using: orientedPointToView)
     }
 
     public func sourceToView(_ rect: PixelRect) throws -> PixelRect {
@@ -130,9 +131,9 @@ public struct DetectorCoordinateTransform: Sendable, Equatable {
 
     private var orientedSize: PixelSize {
         switch orientation {
-        case .portrait, .portraitUpsideDown:
+        case .portrait, .landscapeLeft:
             PixelSize(width: sourceSize.height, height: sourceSize.width)
-        case .landscapeLeft, .landscapeRight, .unknown:
+        case .portraitUpsideDown, .landscapeRight, .unknown:
             sourceSize
         }
     }
@@ -177,8 +178,8 @@ public struct DetectorCoordinateTransform: Sendable, Equatable {
         return ((point.0 - fit.offsetX) / fit.scaleX, (point.1 - fit.offsetY) / fit.scaleY)
     }
 
-    private func modelPointToView(_ point: (Double, Double)) -> (Double, Double) {
-        let fit = fitParameters(from: modelSize, to: viewSize, mode: .letterbox)
+    private func orientedPointToView(_ point: (Double, Double)) -> (Double, Double) {
+        let fit = fitParameters(from: orientedSize, to: viewSize, mode: .letterbox)
         return (point.0 * fit.scaleX + fit.offsetX, point.1 * fit.scaleY + fit.offsetY)
     }
 

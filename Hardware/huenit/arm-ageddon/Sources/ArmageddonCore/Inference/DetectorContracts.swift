@@ -365,12 +365,17 @@ public actor DetectorPipeline {
     private let manifest: DetectorManifest
     private let engine: any InferenceEngine
     private let normalizer: DetectorOutputNormalizer
+    private let nmsPolicy: NMSPolicy
     private var lastFrameID: UInt64?
 
-    public init(manifest: DetectorManifest, engine: any InferenceEngine) {
+    public init(manifest: DetectorManifest, engine: any InferenceEngine) throws {
         self.manifest = manifest
         self.engine = engine
         normalizer = DetectorOutputNormalizer(manifest: manifest)
+        nmsPolicy = try NMSPolicy(
+            confidenceThreshold: manifest.confidenceThreshold,
+            iouThreshold: manifest.nmsIoUThreshold
+        )
     }
 
     public func process(
@@ -389,7 +394,7 @@ public actor DetectorPipeline {
             generation: generation
         )
         lastFrameID = frame.id
-        return observations
+        return DetectionFiltering.thresholdAndSuppress(observations, policy: nmsPolicy)
     }
 
     public func reset() {

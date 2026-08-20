@@ -52,7 +52,7 @@ struct DetectorQAProbe {
                 boundingBox: NormalizedRect(x: 0.25, y: 0.25, width: 0.2, height: 0.2)
             ),
         ])
-        let pipeline = DetectorPipeline(manifest: manifest, engine: engine)
+        let pipeline = try DetectorPipeline(manifest: manifest, engine: engine)
         let observations = try await pipeline.process(
             frame: CameraFrameMetadata(
                 id: 1,
@@ -76,7 +76,18 @@ struct DetectorQAProbe {
     }
 
     private static func failure() throws {
-        let manifest = try makeManifest()
+        let manifest = try DetectorManifest(
+            identifier: "fixture.constant.detector",
+            sha256: String(repeating: "0", count: 64),
+            input: DetectorInputContract(width: 224, height: 224),
+            output: DetectorOutputContract(
+                kind: .multiArray,
+                coordinatesKey: "coordinates",
+                confidenceKey: "confidence",
+                labelIndexKey: "labels"
+            ),
+            labels: ["target", "other"]
+        )
         let normalizer = DetectorOutputNormalizer(manifest: manifest)
         let frame = CameraFrameMetadata(
             id: 99,
@@ -88,7 +99,11 @@ struct DetectorQAProbe {
         var observationCount = 0
         do {
             observationCount = try normalizer.normalize(
-                .classification,
+                .multiArray(MultiArrayDetectionOutput(
+                    coordinates: [[0.1, 0.2, 0.3, 0.4]],
+                    confidences: [],
+                    labelIndices: [0]
+                )),
                 frame: frame,
                 now: MonotonicInstant(nanoseconds: 2_000_000_000),
                 generation: 1
@@ -106,7 +121,10 @@ struct DetectorQAProbe {
             rejectedObservationCount: observationCount,
             annotatedFailure: [
                 "frameID": "99",
-                "outputKind": "classification",
+                "outputKind": "multiArray",
+                "coordinates": "1 row",
+                "confidenceRows": "0",
+                "expectedError": "malformedMultiArray",
                 "expected": "objectDetection",
                 "observations": "0",
             ]

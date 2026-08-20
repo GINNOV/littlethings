@@ -101,6 +101,41 @@ struct DetectorContractTests {
         ))
     }
 
+    @Test("All orientations and resize policies preserve pixel geometry")
+    func parameterizedCoordinateFixtures() throws {
+        let orientations: [CaptureVideoOrientation] = [
+            .portrait, .portraitUpsideDown, .landscapeLeft, .landscapeRight, .unknown,
+        ]
+        let resizeModes: [DetectorResizeMode] = [.stretch, .letterbox, .centerCrop]
+        let sourceRect = PixelRect(x: 310, y: 190, width: 520, height: 330)
+
+        for orientation in orientations {
+            for resizeMode in resizeModes {
+                let transform = try DetectorCoordinateTransform(
+                    sourceSize: PixelSize(width: 1_920, height: 1_080),
+                    modelSize: PixelSize(width: 640, height: 640),
+                    viewSize: PixelSize(width: 1_280, height: 800),
+                    orientation: orientation,
+                    mirrored: true,
+                    resizeMode: resizeMode
+                )
+                let modelRect = try transform.sourceToModel(sourceRect)
+                let roundTrip = try transform.modelToSource(modelRect)
+                let actualView = try transform.modelToView(modelRect)
+                let expectedView = try transform.sourceToView(sourceRect)
+
+                #expect(abs(roundTrip.x - sourceRect.x) < 0.5)
+                #expect(abs(roundTrip.y - sourceRect.y) < 0.5)
+                #expect(abs(roundTrip.width - sourceRect.width) < 0.5)
+                #expect(abs(roundTrip.height - sourceRect.height) < 0.5)
+                #expect(abs(actualView.x - expectedView.x) < 0.5)
+                #expect(abs(actualView.y - expectedView.y) < 0.5)
+                #expect(abs(actualView.width - expectedView.width) < 0.5)
+                #expect(abs(actualView.height - expectedView.height) < 0.5)
+            }
+        }
+    }
+
     @Test("Thresholding and NMS are deterministic and label scoped")
     func thresholdAndNMS() throws {
         let instant = MonotonicInstant(nanoseconds: 1_000_000_000)
@@ -177,6 +212,24 @@ struct DetectorContractTests {
                 generation: 4
             )
         }
+
+        let mismatchedTimestamp = DetectionObservation(
+            id: "mismatch",
+            frameID: sourceFrame.id,
+            generation: 4,
+            captureInstant: MonotonicInstant(nanoseconds: 1_500_000_000),
+            label: "target",
+            confidence: 0.8,
+            boundingBox: NormalizedRect(x: 0, y: 0, width: 0.2, height: 0.2)
+        )
+        #expect(throws: DetectionValidationError.timestampMismatch) {
+            try normalizer.validate(
+                mismatchedTimestamp,
+                frame: sourceFrame,
+                now: MonotonicInstant(nanoseconds: 2_000_000_000),
+                generation: 4
+            )
+        }
     }
 
     @Test("Pipeline rejects stale frame IDs and fake inference is deterministic")
@@ -188,11 +241,22 @@ struct DetectorContractTests {
                 confidence: 0.9,
                 boundingBox: NormalizedRect(x: 0.25, y: 0.25, width: 0.2, height: 0.2)
             ),
+            FakeDetection(
+                label: "target",
+                confidence: 0.8,
+                boundingBox: NormalizedRect(x: 0.26, y: 0.26, width: 0.2, height: 0.2)
+            ),
+            FakeDetection(
+                label: "target",
+                confidence: 0.2,
+                boundingBox: NormalizedRect(x: 0.7, y: 0.7, width: 0.1, height: 0.1)
+            ),
         ])
-        let pipeline = DetectorPipeline(manifest: value, engine: engine)
+        let pipeline = try DetectorPipeline(manifest: value, engine: engine)
         let first = frame(id: 10)
         let now = MonotonicInstant(nanoseconds: 2_000_000_000)
         let observations = try await pipeline.process(frame: first, now: now, generation: 1)
+        #expect(observations.count == 1)
         #expect(observations[0].boundingBox == NormalizedRect(x: 0.25, y: 0.25, width: 0.2, height: 0.2))
 
         await #expect(throws: DetectionValidationError.staleFrame) {
