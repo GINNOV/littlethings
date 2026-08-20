@@ -12,7 +12,7 @@ if [ "$#" -ne 2 ]; then
     printf '%s\n' 'Usage: qa-task.sh <1-33> <happy|failure>' >&2
     exit 2
 fi
-case "$1" in 2|3|4|6|7|8|9|10|11|12|13|14) ;; *) printf '%s\n' 'ERROR[unsupported-task]: task manifest has not landed yet' >&2; exit 2 ;; esac
+case "$1" in 2|3|4|6|7|8|9|10|11|12|13|14|15) ;; *) printf '%s\n' 'ERROR[unsupported-task]: task manifest has not landed yet' >&2; exit 2 ;; esac
 case "$2" in happy|failure) ;; *) printf '%s\n' 'ERROR[unknown-mode]' >&2; exit 2 ;; esac
 
 if [ -n "${ARMAGEDDON_TASK_ROOT:-}" ]; then
@@ -227,6 +227,35 @@ if [ "$1" = "14" ]; then
     printf '{"task":14,"mode":"%s","filter":"%s","probe":%s,"transcript":"%s","transcriptSha256":"%s","result":"%s"}\n' \
         "$2" "$filter_target" "$probe_json" "$transcript" "$transcript_sha256" "$result" >"$task_root/camera-ml-app.json"
     printf 'PASS task=14 mode=%s root=%s\n' "$2" "$task_root"
+    exit 0
+fi
+
+if [ "$1" = "15" ]; then
+    transcript="$task_root/camera-ml-app.txt"
+    probe="$task_root/probe.json"
+    validation_root=$(mktemp -d /private/tmp/armageddon-task15.XXXXXX)
+    rsync -a --exclude '.git' --exclude '.build' "$project_root/" "$validation_root/"
+    if [ "$2" = "happy" ]; then
+        filter_target='PerformanceTelemetryTests/sixtySecondsAtThirtyFPS'
+    else
+        filter_target='PerformanceTelemetryTests/slowInferenceGate'
+    fi
+    (
+        cd "$validation_root"
+        swift run --disable-sandbox --quiet --scratch-path "$task_root/build-swift" PerformanceTelemetryQAProbe "$2" >"$probe"
+        swift test --disable-sandbox --filter "$filter_target"
+    ) >"$transcript" 2>&1
+    result="$task_root/camera-ml-app.xcresult"
+    GIT_CEILING_DIRECTORIES="$repo_ceiling" xcodebuild -quiet -project Armageddon.xcodeproj -scheme ArmageddonApp \
+        -configuration Debug -destination 'platform=macOS' \
+        -derivedDataPath "$task_root/build-xcode" -resultBundlePath "$result" build-for-testing >>"$transcript" 2>&1
+    [ -d "$result" ] || { printf '%s\n' 'ERROR[missing-task-15-xcresult]' >&2; exit 1; }
+    transcript_sha256=$(shasum -a 256 "$transcript" | awk '{print $1}')
+    probe_json=$(tr -d '\n' <"$probe")
+    printf '%s\n' "PERFORMANCE_TELEMETRY_QA_PROBE=$probe_json" >>"$transcript"
+    printf '{"task":15,"mode":"%s","filter":"%s","probe":%s,"transcript":"%s","transcriptSha256":"%s","result":"%s"}\n' \
+        "$2" "$filter_target" "$probe_json" "$transcript" "$transcript_sha256" "$result" >"$task_root/camera-ml-app.json"
+    printf 'PASS task=15 mode=%s root=%s\n' "$2" "$task_root"
     exit 0
 fi
 

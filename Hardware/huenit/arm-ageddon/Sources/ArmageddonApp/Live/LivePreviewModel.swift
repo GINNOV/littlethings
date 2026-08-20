@@ -6,11 +6,13 @@ import Observation
 @Observable
 public final class LivePreviewModel {
     private let capture: AVFoundationNativeCaptureSession
+    private let telemetry: PerformanceTelemetry?
     public private(set) var previewLayer: AVCaptureVideoPreviewLayer?
     public private(set) var snapshot: NativeCaptureSessionSnapshot
     public private(set) var negotiatedFormat: CaptureFormat?
     public private(set) var observations: [DetectionObservation] = []
     public private(set) var detectorInputSize = PixelSize(width: 224, height: 224)
+    public private(set) var performanceSnapshot = PerformanceTelemetrySnapshot()
 
     public var isRunning: Bool {
         capture.isRunning
@@ -20,8 +22,16 @@ public final class LivePreviewModel {
         capture.attachedResourceCount
     }
 
-    public init(capture: AVFoundationNativeCaptureSession = AVFoundationNativeCaptureSession()) {
+    public var targetingAvailable: Bool {
+        performanceSnapshot.targetingAvailable
+    }
+
+    public init(
+        capture: AVFoundationNativeCaptureSession = AVFoundationNativeCaptureSession(),
+        telemetry: PerformanceTelemetry? = try? PerformanceTelemetry()
+    ) {
         self.capture = capture
+        self.telemetry = telemetry
         snapshot = NativeCaptureSessionSnapshot(
             state: .idle,
             configuration: nil,
@@ -33,6 +43,7 @@ public final class LivePreviewModel {
     }
 
     public func start(device: AVCaptureDevice, requestedFormat: CaptureFormat = CaptureFormat(width: 1_280, height: 720, frameRate: 30)) async throws {
+        await resetPerformanceTelemetry()
         negotiatedFormat = try await capture.start(device: device, requestedFormat: requestedFormat)
         await refreshSnapshot()
     }
@@ -81,10 +92,77 @@ public final class LivePreviewModel {
             now: MonotonicInstant(nanoseconds: 2_000_000_000),
             generation: 1
         )
+        if let telemetry {
+            try? await telemetry.recordFrame(
+                captureInstant: frame.captureInstant,
+                receivedAt: MonotonicInstant(nanoseconds: 1_020_000_000),
+                negotiatedFPS: frame.format.frameRate,
+                droppedFramesSinceLastSample: 0,
+                queueDepth: 1
+            )
+            try? await telemetry.recordInference(
+                captureInstant: frame.captureInstant,
+                startedAt: MonotonicInstant(nanoseconds: 1_020_000_000),
+                finishedAt: MonotonicInstant(nanoseconds: 1_040_000_000),
+                overlayAt: MonotonicInstant(nanoseconds: 1_055_000_000),
+                queueDepth: 1
+            )
+            performanceSnapshot = await telemetry.snapshot(now: MonotonicInstant(nanoseconds: 1_055_000_000))
+        }
+    }
+
+    public func recordFrameTelemetry(
+        captureInstant: MonotonicInstant,
+        receivedAt: MonotonicInstant,
+        negotiatedFPS: Double,
+        droppedFramesSinceLastSample: UInt64,
+        queueDepth: Int,
+        now: MonotonicInstant
+    ) async {
+        guard let telemetry else { return }
+        try? await telemetry.recordFrame(
+            captureInstant: captureInstant,
+            receivedAt: receivedAt,
+            negotiatedFPS: negotiatedFPS,
+            droppedFramesSinceLastSample: droppedFramesSinceLastSample,
+            queueDepth: queueDepth
+        )
+        performanceSnapshot = await telemetry.snapshot(now: now)
+    }
+
+    public func recordInferenceTelemetry(
+        captureInstant: MonotonicInstant,
+        startedAt: MonotonicInstant,
+        finishedAt: MonotonicInstant,
+        overlayAt: MonotonicInstant,
+        queueDepth: Int,
+        now: MonotonicInstant
+    ) async {
+        guard let telemetry else { return }
+        try? await telemetry.recordInference(
+            captureInstant: captureInstant,
+            startedAt: startedAt,
+            finishedAt: finishedAt,
+            overlayAt: overlayAt,
+            queueDepth: queueDepth
+        )
+        performanceSnapshot = await telemetry.snapshot(now: now)
+    }
+
+    public func recordModelFailure(now: MonotonicInstant) async {
+        guard let telemetry else { return }
+        await telemetry.recordModelFailure()
+        performanceSnapshot = await telemetry.snapshot(now: now)
+    }
+
+    private func resetPerformanceTelemetry() async {
+        await telemetry?.reset()
+        performanceSnapshot = PerformanceTelemetrySnapshot()
     }
 
     public func stop() async {
         await capture.stop()
+        await resetPerformanceTelemetry()
         negotiatedFormat = nil
         observations = []
         await refreshSnapshot()

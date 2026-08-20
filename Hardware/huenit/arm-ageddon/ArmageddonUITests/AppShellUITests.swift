@@ -22,6 +22,9 @@ final class AppShellUITests: XCTestCase {
 
         lightApp.typeKey(.escape, modifierFlags: [])
         XCTAssertTrue(lightApp.staticTexts["STOP requested"].waitForExistence(timeout: 2))
+        let performanceHealth = lightApp.descendants(matching: .any)["live.performance-health"].firstMatch
+        XCTAssertTrue(performanceHealth.waitForExistence(timeout: 5))
+        XCTAssertEqual(performanceHealth.value as? String, "Ready")
         try capture(lightApp, named: "app-shell-light-1280x800")
 
         let canvas = lightApp.descendants(matching: .any)["live.canvas"].firstMatch

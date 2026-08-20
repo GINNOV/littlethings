@@ -18,6 +18,7 @@ let package = Package(
         .executable(name: "CaptureQAProbe", targets: ["CaptureQAProbe"]),
         .executable(name: "DetectorQAProbe", targets: ["DetectorQAProbe"]),
         .executable(name: "VisionInferenceQAProbe", targets: ["VisionInferenceQAProbe"]),
+        .executable(name: "PerformanceTelemetryQAProbe", targets: ["PerformanceTelemetryQAProbe"]),
     ],
     targets: [
         .target(
@@ -84,6 +85,12 @@ let package = Package(
             name: "VisionInferenceQAProbe",
             dependencies: ["ArmageddonCore"],
             path: "Tools/VisionInferenceQAProbe",
+            swiftSettings: strictConcurrency
+        ),
+        .executableTarget(
+            name: "PerformanceTelemetryQAProbe",
+            dependencies: ["ArmageddonCore"],
+            path: "Tools/PerformanceTelemetryQAProbe",
             swiftSettings: strictConcurrency
         ),
         .testTarget(

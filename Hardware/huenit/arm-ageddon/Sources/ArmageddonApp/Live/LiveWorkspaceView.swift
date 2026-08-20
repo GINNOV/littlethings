@@ -9,6 +9,7 @@ struct LiveWorkspaceView: View {
                 .font(DesignTokens.Typography.workspaceTitle)
                 .bold()
                 .accessibilityIdentifier("workspace.live")
+            performanceHealth
             ZStack {
                 DesignTokens.Colors.canvas
                 Group {
@@ -58,5 +59,33 @@ struct LiveWorkspaceView: View {
         .padding(DesignTokens.Spacing.roomy)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(DesignTokens.Colors.workspace)
+    }
+
+    private var performanceHealth: some View {
+        let snapshot = appModel.livePreview.performanceSnapshot
+        let targetingText = snapshot.targetingAvailable ? "Targeting available" : "Targeting inhibited"
+        return HStack(alignment: .top, spacing: DesignTokens.Spacing.standard) {
+            Image(systemName: snapshot.health.symbolName)
+                .font(.title3)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.compact) {
+                Text(snapshot.health.label)
+                    .font(DesignTokens.Typography.sectionTitle)
+                Text(snapshot.healthReason)
+                    .font(DesignTokens.Typography.supporting)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer(minLength: DesignTokens.Spacing.standard)
+            Text(targetingText)
+                .font(DesignTokens.Typography.supporting)
+                .multilineTextAlignment(.trailing)
+        }
+        .padding(DesignTokens.Spacing.standard)
+        .background(DesignTokens.Colors.status, in: RoundedRectangle(cornerRadius: DesignTokens.Spacing.compact))
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Performance health")
+        .accessibilityValue(snapshot.health.label)
+        .accessibilityHint(snapshot.healthReason + " " + targetingText)
+        .accessibilityIdentifier("live.performance-health")
     }
 }
