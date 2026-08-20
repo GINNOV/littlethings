@@ -472,6 +472,76 @@ public class UIHelper {
         alert.addButton(withTitle: "OK")
         alert.runModal()
     }
+    
+    public static func showAboutDialog() {
+        let alert = NSAlert()
+        alert.messageText = "Amiga Login Screen"
+        
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.1"
+        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "8"
+        
+        if let icon = NSApp.applicationIconImage ?? NSImage(named: NSImage.applicationIconName) {
+            alert.icon = icon
+        }
+        
+        let container = NSView(frame: NSRect(x: 0, y: 0, width: 380, height: 160))
+        
+        let verLabel = NSTextField(labelWithString: "Version \(version) (Build \(build))")
+        verLabel.frame = NSRect(x: 0, y: 135, width: 380, height: 20)
+        verLabel.font = NSFont.systemFont(ofSize: 12, weight: .semibold)
+        verLabel.textColor = .secondaryLabelColor
+        container.addSubview(verLabel)
+        
+        let descLabel = NSTextField(wrappingLabelWithString: "A retro wallpaper and lock screen formatter for classic Commodore Amiga boot screens and custom retro graphics.\nCreated by Mario Esposito.")
+        descLabel.frame = NSRect(x: 0, y: 85, width: 380, height: 45)
+        descLabel.font = NSFont.systemFont(ofSize: 12)
+        container.addSubview(descLabel)
+        
+        let sep = NSBox(frame: NSRect(x: 0, y: 75, width: 380, height: 1))
+        sep.boxType = .separator
+        container.addSubview(sep)
+        
+        let creditsTitle = NSTextField(labelWithString: "RESOURCES & CREDITS")
+        creditsTitle.frame = NSRect(x: 0, y: 52, width: 380, height: 16)
+        creditsTitle.font = NSFont.systemFont(ofSize: 11, weight: .bold)
+        creditsTitle.textColor = .secondaryLabelColor
+        container.addSubview(creditsTitle)
+        
+        let textView = NSTextView(frame: NSRect(x: 0, y: 0, width: 380, height: 48))
+        textView.isEditable = false
+        textView.isSelectable = true
+        textView.drawsBackground = false
+        
+        let contentStr = NSMutableAttributedString()
+        
+        func appendLink(prefix: String, linkText: String, urlStr: String, suffix: String) {
+            let pAttr = NSAttributedString(string: prefix, attributes: [.font: NSFont.systemFont(ofSize: 11), .foregroundColor: NSColor.labelColor])
+            contentStr.append(pAttr)
+            
+            if let url = URL(string: urlStr) {
+                let lAttr = NSAttributedString(string: linkText, attributes: [
+                    .font: NSFont.systemFont(ofSize: 11, weight: .medium),
+                    .link: url,
+                    .foregroundColor: NSColor.linkColor,
+                    .underlineStyle: NSUnderlineStyle.single.rawValue
+                ])
+                contentStr.append(lAttr)
+            }
+            let sAttr = NSAttributedString(string: suffix, attributes: [.font: NSFont.systemFont(ofSize: 11), .foregroundColor: NSColor.labelColor])
+            contentStr.append(sAttr)
+        }
+        
+        appendLink(prefix: "🌐 ", linkText: "Classic Amiga Kickstart Boot Screens", urlStr: "https://amiga.lychesis.net/applications/Kickstart.html", suffix: "\n")
+        appendLink(prefix: "🐛 ", linkText: "Report bugs or suggest features", urlStr: "https://github.com/GINNOV/littlethings/issues", suffix: "\n")
+        appendLink(prefix: "🕹️ ", linkText: "littlethings on GitHub", urlStr: "https://github.com/GINNOV/littlethings", suffix: "")
+        
+        textView.textStorage?.setAttributedString(contentStr)
+        container.addSubview(textView)
+        
+        alert.accessoryView = container
+        alert.addButton(withTitle: "Close")
+        alert.runModal()
+    }
 }
 
 // MARK: - App Delegate (Droplet Mode)
@@ -503,14 +573,14 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
                 case .success(let outputURL):
                     self.processedFilesCount += 1
                     UIHelper.sendNotification(
-                        title: "AmigaLoginScreen",
+                        title: "Amiga Login Screen",
                         subtitle: "\(mode.displayName) Updated!",
                         message: "Applied image from \(fileURL.lastPathComponent)"
                     )
                     print("Successfully applied: \(outputURL.path)")
                 case .failure(let error):
                     UIHelper.showAlert(
-                        title: "AmigaLoginScreen Error",
+                        title: "Amiga Login Screen Error",
                         message: "Failed to process image: \(error.localizedDescription)",
                         isError: true
                     )
@@ -554,6 +624,7 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
         alert.addButton(withTitle: "🟣 Kickstart 2.04")
         alert.addButton(withTitle: "🌈 Kickstart 3.1")
         alert.addButton(withTitle: "📁 Choose Image / GIF...")
+        alert.addButton(withTitle: "ℹ️ About")
         alert.addButton(withTitle: "Cancel")
         
         let response = alert.runModal()
@@ -572,6 +643,9 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
             applyPreset(preset: .ks31, mode: chosenMode)
         case NSApplication.ModalResponse(rawValue: 1003):
             promptFilePicker(mode: chosenMode)
+        case NSApplication.ModalResponse(rawValue: 1004):
+            UIHelper.showAboutDialog()
+            showInteractiveMenu()
         default:
             NSApp.terminate(nil)
         }

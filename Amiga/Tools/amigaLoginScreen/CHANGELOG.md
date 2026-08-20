@@ -1,16 +1,28 @@
 # Changelog
 
-All notable changes to **AmigaLoginScreen** will be documented in this file.
+All notable changes to **Amiga Login Screen** will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.0.1_8] - 2026-08-20
+
+### Added
+- **Display Name**: Set application bundle and installer name to **Amiga Login Screen.app** in the Applications folder.
+- **Custom Floppy App Icon**: Generated and configured a high-resolution 3.5" Amiga micro floppy disk icon featuring an embedded glowing Kickstart 1.3 screen (`AppIcon.icns`).
+- **About Dialog**: Added an About dialog accessible directly from the main menu, displaying version/build metadata, credits to Mario Esposito, and direct links to:
+  - 🌐 Classic Kickstart Boot Screens ([amiga.lychesis.net](https://amiga.lychesis.net/applications/Kickstart.html))
+  - 🐛 Bug reports and feature suggestions ([GINNOV/littlethings](https://github.com/GINNOV/littlethings/issues))
+  - 🕹️ [littlethings](https://github.com/GINNOV/littlethings) collection
+
+---
+
 ## [1.0.1_7] - 2026-08-20
 
 ### Added
-- **Target Selection Settings**: Users can now choose whether to apply images to:
+- **Target Selection Settings**: Users can choose whether to apply images to:
   - `🔒 Lock Screen Only` (**Default**)
   - `🖥️ Desktop Wallpaper Only`
   - `🔄 Both (Desktop & Lock Screen)`
@@ -31,4 +43,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0_1] - 2026-08-20
 
 ### Added
-- Initial release of AmigaLoginScreen Droplet and CLI utility.
+- Initial release of Amiga Login Screen Droplet and CLI utility.

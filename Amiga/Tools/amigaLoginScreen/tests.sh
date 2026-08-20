@@ -3,7 +3,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APP_EXE="${SCRIPT_DIR}/build/AmigaLoginScreen"
-APP_BUNDLE="${SCRIPT_DIR}/build/AmigaLoginScreen.app"
+APP_BUNDLE="${SCRIPT_DIR}/build/Amiga Login Screen.app"
 RELEASE_DMG="$(ls -t "${SCRIPT_DIR}/../releases/AmigaLoginScreen"*.dmg 2>/dev/null | head -1 || echo "")"
 
 echo "🧪 ========================================"
@@ -64,7 +64,7 @@ test -f "${RELEASE_DMG}" || (echo "❌ Missing DMG release" && exit 1)
 MOUNT_DIR="/tmp/amiga_test_mount_$$"
 mkdir -p "${MOUNT_DIR}"
 hdiutil attach "${RELEASE_DMG}" -mountpoint "${MOUNT_DIR}" -quiet
-test -d "${MOUNT_DIR}/AmigaLoginScreen.app" || (echo "❌ App missing in DMG" && hdiutil detach "${MOUNT_DIR}" && exit 1)
+(test -d "${MOUNT_DIR}/Amiga Login Screen.app" || test -d "${MOUNT_DIR}/AmigaLoginScreen.app") || (echo "❌ App missing in DMG" && hdiutil detach "${MOUNT_DIR}" && exit 1)
 hdiutil detach "${MOUNT_DIR}" -quiet
 rm -rf "${MOUNT_DIR}"
 echo "✅ Test 9 Passed: Release DMG mounts cleanly."

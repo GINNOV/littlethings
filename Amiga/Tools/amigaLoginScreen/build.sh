@@ -2,10 +2,11 @@
 set -e
 
 APP_NAME="AmigaLoginScreen"
+DISPLAY_NAME="Amiga Login Screen"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD_DIR="${SCRIPT_DIR}/build"
 RELEASE_DIR="${SCRIPT_DIR}/../releases"
-APP_BUNDLE="${BUILD_DIR}/${APP_NAME}.app"
+APP_BUNDLE="${BUILD_DIR}/${DISPLAY_NAME}.app"
 
 # 1. Auto-increment build number
 BUILD_FILE="${SCRIPT_DIR}/.build_number"
@@ -119,7 +120,7 @@ echo "📦 Creating Release ZIP..."
 ZIP_NAME="${APP_NAME}-${VERSION}_${BUILD_NUMBER}.zip"
 ZIP_PATH="${RELEASE_DIR}/${ZIP_NAME}"
 rm -f "${ZIP_PATH}"
-(cd "${BUILD_DIR}" && ditto -c -k --keepParent "${APP_NAME}.app" "${ZIP_PATH}")
+(cd "${BUILD_DIR}" && ditto -c -k --keepParent "${DISPLAY_NAME}.app" "${ZIP_PATH}")
 
 # 9. Create Distribution DMG
 echo "💿 Creating Release DMG..."
@@ -133,7 +134,7 @@ mkdir -p "${DMG_TMP}"
 cp -R "${APP_BUNDLE}" "${DMG_TMP}/"
 ln -s /Applications "${DMG_TMP}/Applications"
 
-hdiutil create -volname "${APP_NAME}" -srcfolder "${DMG_TMP}" -ov -format UDZO "${DMG_PATH}"
+hdiutil create -volname "${DISPLAY_NAME}" -srcfolder "${DMG_TMP}" -ov -format UDZO "${DMG_PATH}"
 rm -rf "${DMG_TMP}"
 
 # Clean up root stale binaries if any
