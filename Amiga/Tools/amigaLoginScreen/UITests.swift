@@ -118,6 +118,31 @@ final class AmigaLoginScreenUITests: XCTestCase {
         wait(for: [expectation], timeout: 10.0)
     }
     
+    // MARK: - Target Settings & Modes Tests
+    
+    func testTargetModeDefaultAndPersistence() throws {
+        // Default mode is lockScreenOnly
+        UserDefaults.standard.removeObject(forKey: SettingsManager.targetModeKey)
+        XCTAssertEqual(SettingsManager.targetMode, .lockScreenOnly, "Default mode should be lockScreenOnly")
+        
+        // Persistence
+        SettingsManager.targetMode = .desktopOnly
+        XCTAssertEqual(SettingsManager.targetMode, .desktopOnly)
+        
+        SettingsManager.targetMode = .both
+        XCTAssertEqual(SettingsManager.targetMode, .both)
+        
+        SettingsManager.targetMode = .lockScreenOnly
+        XCTAssertEqual(SettingsManager.targetMode, .lockScreenOnly)
+    }
+    
+    func testAllTargetModesHaveValidDescriptions() throws {
+        for mode in WallpaperTargetMode.allCases {
+            XCTAssertFalse(mode.displayName.isEmpty, "DisplayName for \(mode.rawValue) must not be empty")
+            XCTAssertFalse(mode.targetDescription.isEmpty, "TargetDescription for \(mode.rawValue) must not be empty")
+        }
+    }
+    
     // MARK: - Preset Enum Tests
     
     func testAllPresetsContainValidData() throws {

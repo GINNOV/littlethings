@@ -3,6 +3,46 @@ import Foundation
 import ImageIO
 import CoreGraphics
 
+// MARK: - Target Settings & Modes
+public enum WallpaperTargetMode: String, CaseIterable {
+    case lockScreenOnly = "lockscreen"
+    case desktopOnly = "desktop"
+    case both = "both"
+    
+    public var displayName: String {
+        switch self {
+        case .lockScreenOnly: return "🔒 Lock Screen Only (Default)"
+        case .desktopOnly: return "🖥️ Desktop Wallpaper Only"
+        case .both: return "🔄 Both (Desktop & Lock Screen)"
+        }
+    }
+    
+    public var targetDescription: String {
+        switch self {
+        case .lockScreenOnly: return "lock screen"
+        case .desktopOnly: return "desktop wallpaper"
+        case .both: return "desktop wallpaper and lock screen"
+        }
+    }
+}
+
+public struct SettingsManager {
+    public static let targetModeKey = "WallpaperTargetMode"
+    
+    public static var targetMode: WallpaperTargetMode {
+        get {
+            if let saved = UserDefaults.standard.string(forKey: targetModeKey),
+               let mode = WallpaperTargetMode(rawValue: saved) {
+                return mode
+            }
+            return .lockScreenOnly
+        }
+        set {
+            UserDefaults.standard.set(newValue.rawValue, forKey: targetModeKey)
+        }
+    }
+}
+
 // MARK: - Constants & Presets
 public enum KickstartPreset: String, CaseIterable {
     case ks13 = "1.3"
@@ -64,7 +104,7 @@ public class WallpaperEngine {
     }
     
     /// Process from Data directly (in-memory, embedded presets)
-    public static func processAndApply(data: Data, completion: @escaping (Result<URL, Error>) -> Void) {
+    public static func processAndApply(data: Data, mode: WallpaperTargetMode = SettingsManager.targetMode, completion: @escaping (Result<URL, Error>) -> Void) {
         DispatchQueue.global(qos: .userInitiated).async {
             do {
                 guard let imageSource = CGImageSourceCreateWithData(data as CFData, nil) else {
@@ -72,7 +112,7 @@ public class WallpaperEngine {
                 }
                 
                 let processedURL = try renderWallpaperFromSource(imageSource: imageSource)
-                try applyWallpaper(imageURL: processedURL)
+                try applyWallpaper(imageURL: processedURL, mode: mode)
                 completion(.success(processedURL))
             } catch {
                 completion(.failure(error))
@@ -81,7 +121,7 @@ public class WallpaperEngine {
     }
     
     /// Process an image from local file URL or download from web URL
-    public static func processAndApply(sourceURL: URL, completion: @escaping (Result<URL, Error>) -> Void) {
+    public static func processAndApply(sourceURL: URL, mode: WallpaperTargetMode = SettingsManager.targetMode, completion: @escaping (Result<URL, Error>) -> Void) {
         DispatchQueue.global(qos: .userInitiated).async {
             do {
                 var localURL = sourceURL
@@ -94,7 +134,7 @@ public class WallpaperEngine {
                 }
                 
                 let processedURL = try renderWallpaperFromSource(imageSource: imageSource)
-                try applyWallpaper(imageURL: processedURL)
+                try applyWallpaper(imageURL: processedURL, mode: mode)
                 completion(.success(processedURL))
             } catch {
                 completion(.failure(error))
@@ -349,24 +389,65 @@ public class WallpaperEngine {
         return (2560, 1440)
     }
     
-    /// Applies wallpaper to all screens via NSWorkspace and System Events for lockscreen synchronization
-    public static func applyWallpaper(imageURL: URL) throws {
-        for screen in NSScreen.screens {
-            try? NSWorkspace.shared.setDesktopImageURL(imageURL, for: screen, options: [:])
-        }
-        
+    /// Applies wallpaper to selected target (Lock Screen, Desktop, or Both)
+    public static func applyWallpaper(imageURL: URL, mode: WallpaperTargetMode = SettingsManager.targetMode) throws {
         let posixPath = imageURL.path.replacingOccurrences(of: "\"", with: "\\\"")
-        let scriptSource = """
-        tell application "System Events"
-            tell every desktop
-                set picture to "\(posixPath)"
-            end tell
-        end tell
-        """
         
-        if let appleScript = NSAppleScript(source: scriptSource) {
-            var errorInfo: NSDictionary?
-            appleScript.executeAndReturnError(&errorInfo)
+        switch mode {
+        case .desktopOnly:
+            for screen in NSScreen.screens {
+                try? NSWorkspace.shared.setDesktopImageURL(imageURL, for: screen, options: [:])
+            }
+            let scriptSource = """
+            tell application "System Events"
+                tell every desktop
+                    set picture to "\(posixPath)"
+                end tell
+            end tell
+            """
+            if let appleScript = NSAppleScript(source: scriptSource) {
+                var errorInfo: NSDictionary?
+                appleScript.executeAndReturnError(&errorInfo)
+            }
+            
+        case .lockScreenOnly:
+            // Sync to user lockscreen cache directory (~/Library/Caches/Desktop/lockscreen.png)
+            let lockScreenCacheDir = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Caches/Desktop")
+            try? FileManager.default.createDirectory(at: lockScreenCacheDir, withIntermediateDirectories: true, attributes: nil)
+            let cacheTarget = lockScreenCacheDir.appendingPathComponent("lockscreen.png")
+            
+            let pngSource = imageURL.pathExtension.lowercased() == "png" ? imageURL : outputDir.appendingPathComponent("amiga_lockscreen.png")
+            if FileManager.default.fileExists(atPath: pngSource.path) {
+                try? FileManager.default.removeItem(at: cacheTarget)
+                try? FileManager.default.copyItem(at: pngSource, to: cacheTarget)
+                try? FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: cacheTarget.path)
+            }
+            
+        case .both:
+            for screen in NSScreen.screens {
+                try? NSWorkspace.shared.setDesktopImageURL(imageURL, for: screen, options: [:])
+            }
+            let scriptSource = """
+            tell application "System Events"
+                tell every desktop
+                    set picture to "\(posixPath)"
+                end tell
+            end tell
+            """
+            if let appleScript = NSAppleScript(source: scriptSource) {
+                var errorInfo: NSDictionary?
+                appleScript.executeAndReturnError(&errorInfo)
+            }
+            
+            let lockScreenCacheDir = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Caches/Desktop")
+            try? FileManager.default.createDirectory(at: lockScreenCacheDir, withIntermediateDirectories: true, attributes: nil)
+            let cacheTarget = lockScreenCacheDir.appendingPathComponent("lockscreen.png")
+            let pngSource = imageURL.pathExtension.lowercased() == "png" ? imageURL : outputDir.appendingPathComponent("amiga_lockscreen.png")
+            if FileManager.default.fileExists(atPath: pngSource.path) {
+                try? FileManager.default.removeItem(at: cacheTarget)
+                try? FileManager.default.copyItem(at: pngSource, to: cacheTarget)
+                try? FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: cacheTarget.path)
+            }
         }
     }
 }
@@ -415,14 +496,15 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
         }
         
         let fileURL = URL(fileURLWithPath: firstFile)
-        WallpaperEngine.processAndApply(sourceURL: fileURL) { result in
+        let mode = SettingsManager.targetMode
+        WallpaperEngine.processAndApply(sourceURL: fileURL, mode: mode) { result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(let outputURL):
                     self.processedFilesCount += 1
                     UIHelper.sendNotification(
                         title: "AmigaLoginScreen",
-                        subtitle: "Lock Screen & Wallpaper Updated!",
+                        subtitle: "\(mode.displayName) Updated!",
                         message: "Applied image from \(fileURL.lastPathComponent)"
                     )
                     print("Successfully applied: \(outputURL.path)")
@@ -448,6 +530,26 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
         alert.messageText = "🕹️ Amiga Login Screen & Wallpaper"
         alert.informativeText = "Choose a classic Amiga Kickstart boot screen preset, or select your own custom image / animated GIF from disk."
         
+        // Add accessory view for target mode selection
+        let accessory = NSView(frame: NSRect(x: 0, y: 0, width: 330, height: 36))
+        let label = NSTextField(labelWithString: "Apply to:")
+        label.frame = NSRect(x: 0, y: 6, width: 70, height: 24)
+        label.font = NSFont.systemFont(ofSize: 13, weight: .medium)
+        
+        let popUp = NSPopUpButton(frame: NSRect(x: 75, y: 3, width: 250, height: 26), pullsDown: false)
+        for mode in WallpaperTargetMode.allCases {
+            popUp.addItem(withTitle: mode.displayName)
+        }
+        
+        let currentMode = SettingsManager.targetMode
+        if let idx = WallpaperTargetMode.allCases.firstIndex(of: currentMode) {
+            popUp.selectItem(at: idx)
+        }
+        
+        accessory.addSubview(label)
+        accessory.addSubview(popUp)
+        alert.accessoryView = accessory
+        
         alert.addButton(withTitle: "💾 Kickstart 1.3")
         alert.addButton(withTitle: "🟣 Kickstart 2.04")
         alert.addButton(withTitle: "🌈 Kickstart 3.1")
@@ -456,21 +558,26 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
         
         let response = alert.runModal()
         
+        // Persist selected mode
+        let selectedIdx = popUp.indexOfSelectedItem
+        let chosenMode = (selectedIdx >= 0 && selectedIdx < WallpaperTargetMode.allCases.count) ? WallpaperTargetMode.allCases[selectedIdx] : .lockScreenOnly
+        SettingsManager.targetMode = chosenMode
+        
         switch response {
         case .alertFirstButtonReturn:
-            applyPreset(preset: .ks13)
+            applyPreset(preset: .ks13, mode: chosenMode)
         case .alertSecondButtonReturn:
-            applyPreset(preset: .ks20)
+            applyPreset(preset: .ks20, mode: chosenMode)
         case .alertThirdButtonReturn:
-            applyPreset(preset: .ks31)
+            applyPreset(preset: .ks31, mode: chosenMode)
         case NSApplication.ModalResponse(rawValue: 1003):
-            promptFilePicker()
+            promptFilePicker(mode: chosenMode)
         default:
             NSApp.terminate(nil)
         }
     }
     
-    public func applyPreset(preset: KickstartPreset) {
+    public func applyPreset(preset: KickstartPreset, mode: WallpaperTargetMode = SettingsManager.targetMode) {
         guard let presetData = preset.loadData() else {
             UIHelper.showAlert(
                 title: "Error",
@@ -481,18 +588,18 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
         
-        WallpaperEngine.processAndApply(data: presetData) { result in
+        WallpaperEngine.processAndApply(data: presetData, mode: mode) { result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(let outputURL):
                     UIHelper.sendNotification(
                         title: "AmigaLoginScreen",
                         subtitle: "Preset Applied!",
-                        message: "\(preset.displayName) is now active as your wallpaper and lock screen."
+                        message: "\(preset.displayName) is now active as your \(mode.targetDescription)."
                     )
                     UIHelper.showAlert(
                         title: "Success! 💾",
-                        message: "\(preset.displayName) boot screen has been centered and set as your desktop wallpaper and lock screen.\n\nFile saved to:\n\(outputURL.path)"
+                        message: "\(preset.displayName) boot screen has been centered and set as your \(mode.targetDescription).\n\nFile saved to:\n\(outputURL.path)"
                     )
                 case .failure(let error):
                     UIHelper.showAlert(
@@ -506,7 +613,7 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
     
-    public func promptFilePicker() {
+    public func promptFilePicker(mode: WallpaperTargetMode = SettingsManager.targetMode) {
         let openPanel = NSOpenPanel()
         openPanel.title = "Select an Amiga Image or Animated GIF"
         openPanel.showsResizeIndicator = true
@@ -517,18 +624,18 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
         openPanel.allowedFileTypes = ["png", "jpg", "jpeg", "gif", "webp", "tiff", "bmp", "heic"]
         
         if openPanel.runModal() == .OK, let selectedURL = openPanel.url {
-            WallpaperEngine.processAndApply(sourceURL: selectedURL) { result in
+            WallpaperEngine.processAndApply(sourceURL: selectedURL, mode: mode) { result in
                 DispatchQueue.main.async {
                     switch result {
                     case .success(let outputURL):
                         UIHelper.sendNotification(
                             title: "AmigaLoginScreen",
                             subtitle: "Custom Image Applied!",
-                            message: "Wallpaper updated from \(selectedURL.lastPathComponent)"
+                            message: "Updated \(mode.targetDescription) from \(selectedURL.lastPathComponent)"
                         )
                         UIHelper.showAlert(
                             title: "Success! 🕹️",
-                            message: "Your image \(selectedURL.lastPathComponent) has been formatted and applied to your wallpaper and lock screen.\n\nFile saved to:\n\(outputURL.path)"
+                            message: "Your image \(selectedURL.lastPathComponent) has been formatted and applied as your \(mode.targetDescription).\n\nFile saved to:\n\(outputURL.path)"
                         )
                     case .failure(let error):
                         UIHelper.showAlert(

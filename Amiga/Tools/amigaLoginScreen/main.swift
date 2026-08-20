@@ -10,22 +10,37 @@ func runMain() {
         🕹️ AmigaLoginScreen - Zero-Dependency Amiga Wallpaper & Lock Screen Droplet / CLI
         
         Usage:
-          AmigaLoginScreen                          Launch interactive droplet dialog
-          AmigaLoginScreen <file_path_or_url>       Format & apply specified image or GIF
-          AmigaLoginScreen --preset <1.3|2.0|3.1>   Apply classic Kickstart preset (100% offline)
-          AmigaLoginScreen --help, -h               Show this help message
+          AmigaLoginScreen                                Launch interactive droplet dialog
+          AmigaLoginScreen <file_path_or_url>             Format & apply specified image or GIF
+          AmigaLoginScreen --preset <1.3|2.0|3.1>         Apply classic Kickstart preset (100% offline)
+          AmigaLoginScreen --target <lockscreen|desktop|both>  Choose target (default: lockscreen)
+          AmigaLoginScreen --help, -h                     Show this help message
         
         Supported Formats:
           PNG, JPEG, GIF (animated or static), WebP, TIFF, BMP, HEIC
         
         Features:
+          • Choose target: Lock Screen only (default), Desktop only, or Both
           • Preserves crisp pixel art without bilinear blur
+          • Multi-frame animated GIF preservation
           • Automatic background color detection from image corners
           • Built-in offline embedded presets for Kickstart 1.3, 2.04, and 3.1
           • Retina display & multi-monitor support
           • macOS Droplet drag-and-drop support
         """)
         exit(0)
+    }
+    
+    // Parse target mode (defaults to lockscreen)
+    var targetMode = SettingsManager.targetMode
+    if let targetIdx = args.firstIndex(of: "--target") ?? args.firstIndex(of: "-t"), targetIdx + 1 < args.count {
+        let val = args[targetIdx + 1].lowercased()
+        if let mode = WallpaperTargetMode(rawValue: val) {
+            targetMode = mode
+            SettingsManager.targetMode = mode
+        } else {
+            print("⚠️ Unknown target '\(val)'. Using '\(targetMode.rawValue)'. Valid: lockscreen, desktop, both")
+        }
     }
     
     if let presetIdx = args.firstIndex(of: "--preset"), presetIdx + 1 < args.count {
@@ -43,12 +58,12 @@ func runMain() {
             exit(1)
         }
         
-        print("🖥️ Processing embedded preset \(p.displayName)...")
+        print("🖥️ Processing embedded preset \(p.displayName) for \(targetMode.targetDescription)...")
         let semaphore = DispatchSemaphore(value: 0)
-        WallpaperEngine.processAndApply(data: data) { result in
+        WallpaperEngine.processAndApply(data: data, mode: targetMode) { result in
             switch result {
             case .success(let outputURL):
-                print("✅ Success! Wallpaper and lockscreen updated with \(p.displayName).")
+                print("✅ Success! Set \(p.displayName) as your \(targetMode.targetDescription).")
                 print("📁 Saved output to: \(outputURL.path)")
             case .failure(let error):
                 print("❌ Error: \(error.localizedDescription)")
@@ -66,12 +81,12 @@ func runMain() {
             url = URL(fileURLWithPath: input)
         }
         
-        print("🖥️ Processing image from: \(url.path)...")
+        print("🖥️ Processing image from: \(url.path) for \(targetMode.targetDescription)...")
         let semaphore = DispatchSemaphore(value: 0)
-        WallpaperEngine.processAndApply(sourceURL: url) { result in
+        WallpaperEngine.processAndApply(sourceURL: url, mode: targetMode) { result in
             switch result {
             case .success(let outputURL):
-                print("✅ Success! Wallpaper and lockscreen updated.")
+                print("✅ Success! Updated \(targetMode.targetDescription).")
                 print("📁 Saved output to: \(outputURL.path)")
             case .failure(let error):
                 print("❌ Error: \(error.localizedDescription)")
