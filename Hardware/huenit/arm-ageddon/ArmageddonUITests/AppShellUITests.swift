@@ -103,7 +103,7 @@ final class AppShellUITests: XCTestCase {
             let target = app.descendants(matching: .any)["live.detection.target"].firstMatch
             XCTAssertTrue(target.waitForExistence(timeout: 5))
             assertTargetFrame(target.frame, in: canvas.frame)
-            try capture(app, named: "live-overlay-(width)x(height)")
+            try capture(app, named: "live-overlay-\(width)x\(height)")
             app.terminate()
         }
     }

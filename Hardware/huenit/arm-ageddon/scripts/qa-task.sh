@@ -274,6 +274,14 @@ if [ "$1" = "16" ]; then
         -destination 'platform=macOS' -derivedDataPath "$task_root/build" -resultBundlePath "$result" test "$filter" >"$transcript" 2>&1
     [ -d "$result" ] || { printf '%s\n' 'ERROR[missing-task-16-xcresult]' >&2; exit 1; }
     [ -s "$task_root/screenshots/$expected.png" ] || { printf '%s\n' "ERROR[missing-task-16-screenshot]" >&2; exit 1; }
+    if [ "$2" = "happy" ]; then
+        for size in 1100x720 1280x800 1440x900; do
+            [ -s "$task_root/screenshots/live-overlay-$size.png" ] || {
+                printf '%s\n' "ERROR[missing-task-16-overlay-screenshot]: $size" >&2
+                exit 1
+            }
+        done
+    fi
     transcript_sha256=$(shasum -a 256 "$transcript" | awk '{print $1}')
     printf '{"task":16,"mode":"%s","filter":"%s","screenshot":"%s","transcript":"%s","transcriptSha256":"%s","result":"%s"}\n' \
         "$2" "$filter" "$task_root/screenshots/$expected.png" "$transcript" "$transcript_sha256" "$result" >"$task_root/camera-ml-app.json"
