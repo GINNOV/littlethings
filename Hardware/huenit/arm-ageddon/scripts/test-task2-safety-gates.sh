@@ -43,6 +43,7 @@ grep -q 'ERROR\[forbidden-outcome\]' "$root/review/forged.stderr"
 PYTHONDONTWRITEBYTECODE=1 python3 - "$root/io" <<'PY'
 import hashlib
 import json
+import os
 import socket
 import subprocess
 import sys
@@ -111,8 +112,18 @@ run_case("window", "live-io-window-mismatch")
 run_case("short-lived", child_command=["/bin/sh", "-c", "exit 1"], child_exit=1)
 run_case("xcode-shim", child_command=["/usr/bin/xcodebuild", "-showsdks"])
 shim = json.loads((root / "xcode-shim" / "launch.json").read_text(encoding="utf-8"))
-if shim["executable"] != "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild":
-    raise SystemExit(f"xcode-shim: unexpected observed executable {shim['executable']}")
+if shim["intendedExecutable"] != "/usr/bin/xcodebuild":
+    raise SystemExit(f"xcode-shim: unexpected intended executable {shim['intendedExecutable']}")
+run_case("receipt-before-exec", child_command=["/bin/sh", "-c", f"test -s '{root / 'receipt-before-exec' / 'launch.json'}'"])
+launch = json.loads((root / "receipt-before-exec" / "launch.json").read_text(encoding="utf-8"))
+if launch["preexecBarrier"] is not True or launch["intendedExecutable"] != "/bin/sh":
+    raise SystemExit("receipt-before-exec: launch receipt was not durable before exec")
+fake_bin = root / "fake-bin"
+fake_bin.mkdir()
+(fake_bin / "ps").write_text("#!/bin/sh\nexit 99\n", encoding="utf-8")
+(fake_bin / "ps").chmod(0o700)
+os.environ["PATH"] = f"{fake_bin}:{os.environ.get('PATH', '')}"
+run_case("path-hijack")
 PY
 
 if python3 scripts/supervise-process.py run --launch-receipt "$root/io/exec-launch.json" --exit-receipt "$root/io/exec-exit.json" --command-id exec-failed --preexec-barrier -- /private/tmp/armageddon-task2-no-such-command > "$root/io/exec-failed.stdout" 2> "$root/io/exec-failed.stderr"; then

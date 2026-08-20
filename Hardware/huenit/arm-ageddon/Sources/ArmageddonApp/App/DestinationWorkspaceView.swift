@@ -2,7 +2,6 @@ import SwiftUI
 
 struct DestinationWorkspaceView: View {
     let destination: AppDestination
-    let recoveryAction: @MainActor () -> Void
 
     var body: some View {
         switch destination {
@@ -15,7 +14,7 @@ struct DestinationWorkspaceView: View {
         case .runs:
             RunsWorkspaceView()
         case .diagnostics:
-            DiagnosticsWorkspaceView(recoveryAction: recoveryAction)
+            DiagnosticsWorkspaceView()
         }
     }
 }

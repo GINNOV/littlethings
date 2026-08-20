@@ -304,13 +304,59 @@ public struct SafetyPermit: Sendable, Equatable {
     }
 }
 
+public final class MotionExecutionPermit: @unchecked Sendable {
+    private let lock = NSLock()
+    private let id: UUID
+    private let proposal: TargetProposal
+    private let snapshot: SafetySnapshot
+    private var active = true
+    private var consumed = false
+
+    fileprivate init(id: UUID, proposal: TargetProposal, snapshot: SafetySnapshot) {
+        self.id = id
+        self.proposal = proposal
+        self.snapshot = snapshot
+    }
+
+    func consume(now: MonotonicInstant) -> MonotonicInstant? {
+        lock.lock()
+        defer { lock.unlock() }
+        guard active, !consumed,
+              SafetyPolicyV1.evaluate(snapshot, now: now).isEligible,
+              proposal.policyState == .eligible else { return nil }
+        consumed = true
+        return now
+    }
+
+    fileprivate func invalidate() {
+        lock.lock()
+        active = false
+        lock.unlock()
+    }
+
+    fileprivate var proposalHash: String { proposal.proposalHash }
+    fileprivate var idValue: UUID { id }
+}
+
+public protocol SupervisedXYMotionWriter: Sendable {
+    func writeXY(
+        delta: CalibrationPoint,
+        feedMillimetersPerMinute: Double,
+        executionPermit: MotionExecutionPermit,
+        now: @escaping @Sendable () -> MonotonicInstant
+    ) async throws -> MonotonicInstant
+}
+
 public actor SafetyController {
     private var snapshot = SafetySnapshot()
     private var permitID: UUID?
+    private var executionPermit: MotionExecutionPermit?
 
     public init() {}
 
     public func update(_ snapshot: SafetySnapshot) {
+        executionPermit?.invalidate()
+        executionPermit = nil
         self.snapshot = snapshot
         if snapshot.state != .armed { permitID = nil }
     }
@@ -329,14 +375,58 @@ public actor SafetyController {
             confirmedAt: nil
         )
         permitID = UUID()
+        executionPermit = nil
     }
 
     public func revoke(state: SafetyState = .detectionOnly) {
+        executionPermit?.invalidate()
+        executionPermit = nil
         snapshot = SafetySnapshot(state: state, observation: snapshot.observation, pose: snapshot.pose, profile: snapshot.profile)
         permitID = nil
     }
 
+    func reserveExecutionPermit(proposal: TargetProposal) throws -> MotionExecutionPermit {
+        guard snapshot.state == .armed,
+              permitID != nil,
+              executionPermit == nil,
+              proposal.policyState == .eligible,
+              proposal.armedAt == snapshot.armedAt,
+              proposal.frameID == snapshot.observation?.frameID,
+              proposal.generation == snapshot.observation?.generation,
+              proposal.detectionID == snapshot.observation?.detectionID,
+              proposal.captureInstant == snapshot.observation?.captureInstant,
+              proposal.formatIdentity == snapshot.observation?.formatIdentity,
+              proposal.modelHash == snapshot.observation?.modelHash,
+              proposal.poseInstant == snapshot.pose?.receivedAt,
+              proposal.calibrationID == snapshot.profile?.calibrationID,
+              proposal.modelHash == snapshot.profile?.modelHash else {
+            permitID = nil
+            throw SafetyControllerError.inhibited([.stateChanged])
+        }
+        let permit = MotionExecutionPermit(id: permitID!, proposal: proposal, snapshot: snapshot)
+        executionPermit = permit
+        permitID = nil
+        snapshot = SafetySnapshot(
+            state: .executing,
+            observation: snapshot.observation,
+            pose: snapshot.pose,
+            profile: snapshot.profile,
+            armedAt: snapshot.armedAt,
+            confirmedAt: snapshot.confirmedAt
+        )
+        return permit
+    }
+
     public func consumePermit(now: MonotonicInstant, proposal: TargetProposal) throws -> SafetyPermit {
+        if let executionPermit {
+            guard executionPermit.proposalHash == proposal.proposalHash,
+                  executionPermit.consume(now: now) != nil else {
+                self.executionPermit = nil
+                throw SafetyControllerError.inhibited([.stateChanged])
+            }
+            self.executionPermit = nil
+            return SafetyPermit(id: executionPermit.idValue, proposalHash: proposal.proposalHash)
+        }
         guard let armedAt = snapshot.armedAt,
               now.nanoseconds >= armedAt.nanoseconds,
               now.nanoseconds - armedAt.nanoseconds <= SafetyPolicyV1.armLifetimeNanoseconds,

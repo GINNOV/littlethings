@@ -6,10 +6,6 @@ public protocol RunPoseReader: Sendable {
     func readPose() async throws -> SafetyPoseReceipt
 }
 
-public protocol XYMotionWriter: Sendable {
-    func writeXY(delta: CalibrationPoint, feedMillimetersPerMinute: Double) async throws
-}
-
 public enum RunEventKind: String, Codable, Sendable {
     case reservation
     case intentDurable
@@ -18,6 +14,7 @@ public enum RunEventKind: String, Codable, Sendable {
     case permitConsumed
     case firstByte
     case completed
+    case indeterminate
     case noWrite
 }
 
@@ -60,7 +57,7 @@ public actor RunCoordinator {
     private let safety: SafetyController
     private let proposals: TargetProposalStore
     private let poseReader: any RunPoseReader
-    private let writer: any XYMotionWriter
+    private let writer: any SupervisedXYMotionWriter
     private let journalRoot: URL
     private let clock: @Sendable () -> MonotonicInstant
     private var activeExecutionID: UUID?
@@ -70,7 +67,7 @@ public actor RunCoordinator {
         safety: SafetyController,
         proposals: TargetProposalStore,
         poseReader: any RunPoseReader,
-        writer: any XYMotionWriter,
+        writer: any SupervisedXYMotionWriter,
         journalRoot: URL,
         clock: @escaping @Sendable () -> MonotonicInstant
     ) {
@@ -87,6 +84,7 @@ public actor RunCoordinator {
         let executionID = UUID()
         activeExecutionID = executionID
         timeline = [RunTimelineEvent(kind: .reservation, at: clock(), executionID: executionID, detail: "reserved")]
+        var motionStarted = false
         do {
             let proposal = try await proposals.consume(confirmation, now: clock())
             try DurableRunJournal.prepare(root: journalRoot, executionID: executionID, proposal: proposal)
@@ -104,30 +102,30 @@ public actor RunCoordinator {
             )
             await safety.update(safetySnapshot)
             append(.writerAcquired, executionID: executionID, detail: "writer actor")
-            let permit = try await safety.consumePermit(now: clock(), proposal: proposal)
-            guard permit.proposalHash == proposal.proposalHash else {
-                throw RunCoordinatorError.safetyFailure
-            }
-            append(.permitConsumed, executionID: executionID, detail: "private permit")
-            try await writer.writeXY(delta: proposal.deltaXY, feedMillimetersPerMinute: proposal.feedMillimetersPerMinute)
+            let permit = try await safety.reserveExecutionPermit(proposal: proposal)
+            let permitConsumedAt = try await writer.writeXY(
+                delta: proposal.deltaXY,
+                feedMillimetersPerMinute: proposal.feedMillimetersPerMinute,
+                executionPermit: permit,
+                now: clock
+            )
+            append(.permitConsumed, executionID: executionID, at: permitConsumedAt, detail: "private permit")
+            motionStarted = true
             append(.firstByte, executionID: executionID, detail: "XY writer accepted one move")
-            try DurableRunJournal.writeTerminal(root: journalRoot, executionID: executionID, kind: .completed, timeline: timeline)
             append(.completed, executionID: executionID, detail: "completed")
+            try DurableRunJournal.writeTerminal(root: journalRoot, executionID: executionID, kind: .completed, timeline: timeline)
             return RunResult(executionID: executionID, wroteMotion: true, timeline: timeline)
         } catch let error as RunCoordinatorError {
             await safety.revoke(state: .faulted)
-            try? DurableRunJournal.writeTerminal(root: journalRoot, executionID: executionID, kind: .noWrite, timeline: timeline)
-            append(.noWrite, executionID: executionID, detail: error.localizedDescription)
+            recordTerminal(kind: motionStarted ? .indeterminate : .noWrite, executionID: executionID, detail: error.localizedDescription)
             throw error
         } catch let error as SafetyControllerError {
             await safety.revoke(state: .faulted)
-            try? DurableRunJournal.writeTerminal(root: journalRoot, executionID: executionID, kind: .noWrite, timeline: timeline)
-            append(.noWrite, executionID: executionID, detail: "safety inhibited: \(error)")
+            recordTerminal(kind: motionStarted ? .indeterminate : .noWrite, executionID: executionID, detail: "safety inhibited: \(error)")
             throw RunCoordinatorError.safetyFailure
         } catch {
             await safety.revoke(state: .faulted)
-            try? DurableRunJournal.writeTerminal(root: journalRoot, executionID: executionID, kind: .noWrite, timeline: timeline)
-            append(.noWrite, executionID: executionID, detail: "no write")
+            recordTerminal(kind: motionStarted ? .indeterminate : .noWrite, executionID: executionID, detail: "no write")
             throw RunCoordinatorError.writerFailure
         }
     }
@@ -135,13 +133,23 @@ public actor RunCoordinator {
     public func currentTimeline() -> [RunTimelineEvent] { timeline }
 
     private func append(_ kind: RunEventKind, executionID: UUID, detail: String) {
-        timeline.append(RunTimelineEvent(kind: kind, at: clock(), executionID: executionID, detail: detail))
-        if kind == .completed || kind == .noWrite { activeExecutionID = nil }
+        append(kind, executionID: executionID, at: clock(), detail: detail)
+    }
+
+    private func append(_ kind: RunEventKind, executionID: UUID, at: MonotonicInstant, detail: String) {
+        timeline.append(RunTimelineEvent(kind: kind, at: at, executionID: executionID, detail: detail))
+        if kind == .completed || kind == .indeterminate || kind == .noWrite { activeExecutionID = nil }
+    }
+
+    private func recordTerminal(kind: RunEventKind, executionID: UUID, detail: String) {
+        append(kind, executionID: executionID, detail: detail)
+        try? DurableRunJournal.writeTerminal(root: journalRoot, executionID: executionID, kind: kind, timeline: timeline)
     }
 }
 
 private enum DurableRunJournal {
     static func prepare(root: URL, executionID: UUID, proposal: TargetProposal) throws {
+        try makeDirectory(root)
         let executions = root.appendingPathComponent("Executions", isDirectory: true)
         try makeDirectory(executions)
         let execution = executions.appendingPathComponent(executionID.uuidString, isDirectory: true)
@@ -167,9 +175,15 @@ private enum DurableRunJournal {
     }
 
     private static func makeDirectory(_ url: URL) throws {
-        try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true, attributes: [.posixPermissions: 0o700])
         let result = Darwin.mkdir(url.path, 0o700)
-        guard result == 0 || errno == EEXIST else { throw RunCoordinatorError.journalFailure("mkdir") }
+        if result != 0 {
+            guard errno == EEXIST else { throw RunCoordinatorError.journalFailure("mkdir") }
+            var info = stat()
+            guard Darwin.lstat(url.path, &info) == 0,
+                  (info.st_mode & S_IFMT) == S_IFDIR else {
+                throw RunCoordinatorError.journalFailure("existing journal path is not a directory")
+            }
+        }
         let parent = Darwin.open(url.deletingLastPathComponent().path, O_RDONLY | O_DIRECTORY)
         guard parent >= 0 else { throw RunCoordinatorError.journalFailure("parent fsync") }
         defer { _ = Darwin.close(parent) }

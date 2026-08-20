@@ -9,6 +9,12 @@ fi
 [ "$#" -eq 0 ] || { printf '%s\n' 'Usage: check-motion-boundary.sh' >&2; exit 2; }
 
 project_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd -P)
+repo_ceiling=$(CDPATH= cd -- "$project_root/.." && pwd -P)
+export GIT_CONFIG_NOSYSTEM=1
+export GIT_CONFIG_GLOBAL=/dev/null
+export GIT_CONFIG_SYSTEM=/dev/null
+export GIT_OPTIONAL_LOCKS=0
+export GIT_CEILING_DIRECTORIES="$repo_ceiling"
 scratch=${ARMAGEDDON_QA_BUILD_ROOT:?ARMAGEDDON_QA_BUILD_ROOT must name an external build root}
 case "$scratch" in
     "$project_root"|"$project_root"/*) printf '%s\n' 'ERROR[project-build-root]: build root must be external' >&2; exit 2 ;;

@@ -3,6 +3,7 @@ import SwiftUI
 struct ErrorStateView: View {
     let title: String
     let description: String
+    let actionTitle: String
     let recoveryAction: @MainActor () -> Void
 
     var body: some View {
@@ -11,8 +12,8 @@ struct ErrorStateView: View {
         } description: {
             Text(description)
         } actions: {
-            Button("Try Again", action: recoveryAction)
-                .accessibilityLabel("Try Again")
+            Button(actionTitle, action: recoveryAction)
+                .accessibilityLabel(actionTitle)
                 .accessibilityIdentifier("error.retry")
         }
         .accessibilityIdentifier("state.error")

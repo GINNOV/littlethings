@@ -17,6 +17,10 @@ class SupervisedRuntime:
     exit_receipt: tuple[Path, str]
     trace: tuple[Path, str]
     observation: tuple[Path, str]
+    pre_exec_child: dict[str, JsonValue]
+    post_exec_child: dict[str, JsonValue]
+    observed_executable: Path
+    observed_executable_sha256: str
 
 
 def require_int(value: JsonValue | None, label: str) -> int:
@@ -49,29 +53,28 @@ def validate_live_io(receipt: dict[str, JsonValue], runtime: SupervisedRuntime) 
     launch = require_mapping(read_json(launch_path), "launch receipt")
     exit_receipt = require_mapping(read_json(exit_path), "exit receipt")
     process = require_mapping(observation.get("process"), "observed process")
-    if launch.get("kind") != "process-launch" or launch.get("child") != process:
+    if launch.get("kind") != "process-launch" or launch.get("child") != runtime.pre_exec_child:
         raise EvidenceError("live-io-process-mismatch", str(observation_path))
-    observed_command = Path(require_string(launch.get("observedExecutable"), "observed executable"))
-    executable = Path(require_string(launch.get("executable"), "executable"))
+    intended_command = Path(require_string(launch.get("intendedExecutable"), "intended executable"))
+    intended_hash = require_string(launch.get("intendedExecutableSHA256"), "intended executable hash")
     try:
-        observed_executable = observed_command.resolve(strict=True)
-        requested_executable = executable.resolve(strict=True)
+        intended_executable = intended_command.resolve(strict=True)
     except OSError as error:
         raise EvidenceError("live-io-command-mismatch", str(launch_path)) from error
-    if observed_executable != requested_executable:
-        raise EvidenceError("live-io-command-mismatch", str(launch_path))
-    if launch.get("observedExecutableSHA256") != launch.get("executableSHA256"):
+    if intended_executable != Path(require_string(launch.get("executable"), "executable")).resolve(strict=True) or sha256_file(intended_executable) != intended_hash:
         raise EvidenceError("live-io-binary-mismatch", str(launch_path))
-    if sha256_file(observed_executable) != launch.get("executableSHA256"):
-        raise EvidenceError("live-io-binary-mismatch", str(launch_path))
-    if observation.get("executable") != launch.get("executable") or observation.get("executableSHA256") != launch.get("executableSHA256"):
+    exit_post_exec = require_mapping(exit_receipt.get("postExecChild"), "post-exec child")
+    if exit_post_exec != runtime.post_exec_child or process != runtime.post_exec_child:
+        raise EvidenceError("live-io-process-mismatch", str(observation_path))
+    observed_executable = runtime.observed_executable.resolve(strict=True)
+    if observation.get("executable") != str(observed_executable) or observation.get("executableSHA256") != runtime.observed_executable_sha256 or exit_receipt.get("observedExecutable") != str(observed_executable) or exit_receipt.get("observedExecutableSHA256") != runtime.observed_executable_sha256 or sha256_file(observed_executable) != runtime.observed_executable_sha256:
         raise EvidenceError("live-io-binary-mismatch", str(observation_path))
     exit_launch = require_mapping(exit_receipt.get("launchReceipt"), "exit launch receipt")
     if exit_launch.get("path") != str(launch_path) or exit_launch.get("sha256") != launch_hash:
         raise EvidenceError("live-io-process-mismatch", str(exit_path))
     trace_path, trace_hash = receipt_reference(observation.get("trace"), "live I/O trace")
     trace = require_mapping(read_json(trace_path), "live I/O trace")
-    if trace.get("kind") != "live-io-trace" or trace.get("process") != process or trace.get("executableSHA256") != observation.get("executableSHA256"):
+    if trace.get("kind") != "live-io-trace" or trace.get("process") != runtime.post_exec_child or trace.get("executableSHA256") != observation.get("executableSHA256"):
         raise EvidenceError("forged-live-io-observation", str(trace_path))
     if require_int(trace.get("sampleCount"), "sampleCount") < 1:
         raise EvidenceError("empty-live-io-observation", str(trace_path))

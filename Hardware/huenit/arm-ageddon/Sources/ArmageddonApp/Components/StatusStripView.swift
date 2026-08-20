@@ -46,6 +46,7 @@ struct StatusStripView: View {
         .padding(.vertical, DesignTokens.Spacing.compact)
         .background(DesignTokens.Colors.status)
         .overlay(alignment: .top) { Divider() }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("status.strip")
     }
 

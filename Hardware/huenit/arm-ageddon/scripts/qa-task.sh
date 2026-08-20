@@ -3,7 +3,13 @@
 set -eu
 
 project_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd -P)
-repo_ceiling=$(CDPATH= cd -- "$project_root/.." && pwd -P)
+export GIT_CONFIG_NOSYSTEM=1
+export GIT_CONFIG_GLOBAL=/dev/null
+export GIT_CONFIG_SYSTEM=/dev/null
+export GIT_OPTIONAL_LOCKS=0
+repo_root=$(/usr/bin/git -C "$project_root" rev-parse --show-toplevel)
+repo_ceiling=$(CDPATH= cd -- "$repo_root/.." && pwd -P)
+export GIT_CEILING_DIRECTORIES="$repo_ceiling"
 if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
     printf '%s\n' 'Usage: qa-task.sh <1-33> <happy|failure>'
     exit 0
@@ -12,8 +18,13 @@ if [ "$#" -ne 2 ]; then
     printf '%s\n' 'Usage: qa-task.sh <1-33> <happy|failure>' >&2
     exit 2
 fi
-case "$1" in 2|3|4|6|7|8|9|10|11|12|13|14|15|16) ;; *) printf '%s\n' 'ERROR[unsupported-task]: task manifest has not landed yet' >&2; exit 2 ;; esac
+case "$1" in 2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33) ;; *) printf '%s\n' 'ERROR[unsupported-task]: task manifest has not landed yet' >&2; exit 2 ;; esac
 case "$2" in happy|failure) ;; *) printf '%s\n' 'ERROR[unknown-mode]' >&2; exit 2 ;; esac
+
+for variable in $(env | awk -F= '$1 ~ /^(ARMAGEDDON_LIVE_|ARMAGEDDON_OPERATOR_|HUENIT_LIVE_|ARMAGEDDON_(CAMERA|SERIAL|DEVICE)_|HUENIT_(CAM|ARM)_)/ { print $1 }'); do
+    unset "$variable"
+done
+unset ARMAGEDDON_OPERATOR_PRESENT ARMAGEDDON_OPERATOR_CONFIRMATION ARMAGEDDON_DEVICE_OVERRIDE ARMAGEDDON_SERIAL_PORT_OVERRIDE
 
 if [ -n "${ARMAGEDDON_TASK_ROOT:-}" ]; then
     task_root=$ARMAGEDDON_TASK_ROOT
@@ -29,33 +40,96 @@ else
 fi
 
 cd "$project_root"
+export SWIFTPM_CUSTOM_CACHES_DIR="$task_root/swiftpm-caches"
+
+extract_named_screenshots() {
+    result="$1"
+    dest="$2"
+    export_dir=$(mktemp -d /private/tmp/armageddon-xcresult-attachments.XXXXXX)
+    xcrun xcresulttool export attachments --path "$result" --output-path "$export_dir" >/dev/null
+    python3 - "$export_dir" "$dest" <<'PY'
+import json, re, shutil, sys
+from pathlib import Path
+src, dest = Path(sys.argv[1]), Path(sys.argv[2])
+dest.mkdir(parents=True, exist_ok=True)
+copied = 0
+manifest = src / "manifest.json"
+suffix = re.compile(r"_\d+_[0-9A-Fa-f-]{8,}$")
+
+def canonical_name(raw: str) -> str:
+    stem = Path(raw).stem
+    stem = suffix.sub("", stem)
+    return f"{stem}.png"
+
+def walk(node):
+    if isinstance(node, dict):
+        yield node
+        for value in node.values():
+            yield from walk(value)
+    elif isinstance(node, list):
+        for value in node:
+            yield from walk(value)
+
+if manifest.is_file():
+    payload = json.loads(manifest.read_text())
+    for node in walk(payload):
+        exported = node.get("exportedFileName") or node.get("exportedFilePath") or node.get("path")
+        suggested = (
+            node.get("suggestedHumanReadableName")
+            or node.get("suggestedName")
+            or node.get("name")
+            or exported
+        )
+        if not exported or not suggested:
+            continue
+        file = Path(exported) if Path(exported).is_absolute() else src / exported
+        if not file.is_file() or file.suffix.lower() != ".png":
+            continue
+        shutil.copy2(file, dest / canonical_name(suggested))
+        copied += 1
+if copied == 0:
+    for file in src.rglob("*.png"):
+        shutil.copy2(file, dest / canonical_name(file.name))
+PY
+}
+
+run_swift_task() {
+    task="$1"
+    mode="$2"
+    filter="$3"
+    transcript="$task_root/camera-ml-app.txt"
+    build_root="$task_root/build"
+    swift test --disable-sandbox --parallel --scratch-path "$build_root" --filter "$filter" >"$transcript" 2>&1
+    [ -s "$transcript" ] || { printf '%s\n' "ERROR[empty-task-$task-transcript]" >&2; exit 1; }
+    transcript_sha256=$(shasum -a 256 "$transcript" | awk '{print $1}')
+    printf '{"task":%s,"mode":"%s","filter":"%s","transcript":"%s","transcriptSha256":"%s","outcome":"PASS"}\n' \
+        "$task" "$mode" "$filter" "$transcript" "$transcript_sha256" >"$task_root/camera-ml-app.json"
+    printf 'PASS task=%s mode=%s root=%s\n' "$task" "$mode" "$task_root"
+    exit 0
+}
+
 if [ "$1" = "2" ]; then
     exec python3 scripts/qa_task_runner.py "$1" "$2" "$task_root"
 fi
 
+if [ "$1" = "5" ]; then
+    run_swift_task 5 "$2" DeviceCapabilityTests
+fi
+
 if [ "$1" = "6" ]; then
-    transcript="$task_root/camera-ml-app.txt"
-    swift test --build-path "$task_root/build" --filter AppStateRestorationTests >"$transcript" 2>&1
-    printf 'PASS task=6 mode=%s root=%s\n' "$2" "$task_root"
-    exit 0
+    run_swift_task 6 "$2" AppStateRestorationTests
 fi
 
 if [ "$1" = "7" ]; then
-    transcript="$task_root/camera-ml-app.txt"
     if [ "$2" = "happy" ]; then
-        swift test --filter HuenitArmPortTests >"$transcript" 2>&1
+        run_swift_task 7 "$2" HuenitArmPortTests
     else
-        swift test --filter forbiddenG28WritesNothing >"$transcript" 2>&1
+        run_swift_task 7 "$2" forbiddenG28WritesNothing
     fi
-    printf 'PASS task=7 mode=%s root=%s\n' "$2" "$task_root"
-    exit 0
 fi
 
 if [ "$1" = "8" ]; then
-    transcript="$task_root/camera-ml-app.txt"
-    swift test --filter EmergencyStopTests >"$transcript" 2>&1
-    printf 'PASS task=8 mode=%s root=%s\n' "$2" "$task_root"
-    exit 0
+    run_swift_task 8 "$2" EmergencyStopTests
 fi
 
 if [ "$1" = "9" ]; then
@@ -66,6 +140,9 @@ if [ "$1" = "9" ]; then
         cd "$validation_root"
         swift test --disable-sandbox --filter ManualArmControlTests
     ) >"$transcript" 2>&1
+    transcript_sha256=$(shasum -a 256 "$transcript" | awk '{print $1}')
+    printf '{"task":9,"mode":"%s","filter":"ManualArmControlTests","validationRoot":"%s","transcript":"%s","transcriptSha256":"%s","outcome":"PASS"}\n' \
+        "$2" "$validation_root" "$transcript" "$transcript_sha256" >"$task_root/camera-ml-app.json"
     printf 'PASS task=9 mode=%s root=%s\n' "$2" "$task_root"
     exit 0
 fi
@@ -90,15 +167,15 @@ if [ "$1" = "10" ]; then
             -only-testing:ArmageddonUITests/AppShellUITests/testCameraDisconnectCancelsWorkAndOffersRescan >>"$transcript" 2>&1
         [ -d "$result" ] || { printf '%s\n' 'ERROR[missing-task-10-xcresult]' >&2; exit 1; }
     fi
+    transcript_sha256=$(shasum -a 256 "$transcript" | awk '{print $1}')
+    printf '{"task":10,"mode":"%s","filter":"%s","validationRoot":"%s","transcript":"%s","transcriptSha256":"%s","result":"%s","outcome":"PASS"}\n' \
+        "$2" "requestThenSelect|unplugAndRecover" "$validation_root" "$transcript" "$transcript_sha256" "${result:-}" >"$task_root/camera-ml-app.json"
     printf 'PASS task=10 mode=%s root=%s\n' "$2" "$task_root"
     exit 0
 fi
 
 if [ "$1" = "4" ]; then
-    transcript="$task_root/camera-ml-app.txt"
-    swift test --filter LocalArtifactStorageTests >"$transcript" 2>&1
-    printf 'PASS task=4 mode=%s root=%s\n' "$2" "$task_root"
-    exit 0
+    run_swift_task 4 "$2" LocalArtifactStorageTests
 fi
 
 if [ "$1" = "11" ]; then
@@ -270,9 +347,12 @@ if [ "$1" = "16" ]; then
         filter='-only-testing:ArmageddonUITests/AppShellUITests/testCameraDisconnectCancelsWorkAndOffersRescan'
         expected='live-workspace-disconnected'
     fi
-    ARMAGEDDON_SCREENSHOT_DIR="$task_root/screenshots" xcodebuild -project Armageddon.xcodeproj -scheme ArmageddonApp \
+    ARMAGEDDON_SCREENSHOT_DIR="$task_root/screenshots" \
+    TEST_RUNNER_ARMAGEDDON_SCREENSHOT_DIR="$task_root/screenshots" \
+        xcodebuild -project Armageddon.xcodeproj -scheme ArmageddonApp \
         -destination 'platform=macOS' -derivedDataPath "$task_root/build" -resultBundlePath "$result" test $filter >"$transcript" 2>&1
     [ -d "$result" ] || { printf '%s\n' 'ERROR[missing-task-16-xcresult]' >&2; exit 1; }
+    extract_named_screenshots "$result" "$task_root/screenshots"
     [ -s "$task_root/screenshots/$expected.png" ] || { printf '%s\n' "ERROR[missing-task-16-screenshot]" >&2; exit 1; }
     if [ "$2" = "happy" ]; then
         for size in 1100x720 1280x800 1440x900; do
@@ -286,6 +366,210 @@ if [ "$1" = "16" ]; then
     printf '{"task":16,"mode":"%s","filter":"%s","screenshot":"%s","transcript":"%s","transcriptSha256":"%s","result":"%s"}\n' \
         "$2" "$filter" "$task_root/screenshots/$expected.png" "$transcript" "$transcript_sha256" "$result" >"$task_root/camera-ml-app.json"
     printf 'PASS task=16 mode=%s root=%s\n' "$2" "$task_root"
+    exit 0
+fi
+
+if [ "$1" = "17" ]; then
+    run_swift_task 17 "$2" CaptureSessionTests
+fi
+
+if [ "$1" = "18" ]; then
+    transcript="$task_root/camera-ml-app.txt"
+    recorded="$task_root/recorded-transcript.txt"
+    probe="$task_root/camera-ml-app.json"
+    printf '%s\n' 'identity=HUENIT_CAM' 'baud=115200' 'frame=0,10,20,30,40' >"$recorded"
+    swift run --disable-sandbox --quiet --scratch-path "$task_root/build" HuenitCameraProbe \
+        --transcript "$recorded" --output "$probe" >"$transcript" 2>&1
+    swift test --disable-sandbox --parallel --scratch-path "$task_root/build-tests" --filter HuenitCameraTests >>"$transcript" 2>&1
+    [ -s "$probe" ] || { printf '%s\n' 'ERROR[missing-task-18-probe]' >&2; exit 1; }
+    printf 'PASS task=18 mode=%s root=%s\n' "$2" "$task_root"
+    exit 0
+fi
+
+if [ "$1" = "19" ]; then
+    run_swift_task 19 "$2" HuenitCameraTests
+fi
+
+if [ "$1" = "20" ]; then
+    run_swift_task 20 "$2" HuenitCameraTests
+fi
+
+if [ "$1" = "21" ]; then
+    run_swift_task 21 "$2" DiagnosticsTests
+fi
+
+if [ "$1" = "22" ]; then
+    transcript="$task_root/camera-ml-app.txt"
+    result="$task_root/camera-ml-app.xcresult"
+    mkdir -m 700 "$task_root/screenshots"
+    ./scripts/check-accessibility-contract.sh >"$transcript" 2>&1
+    if [ "$2" = "happy" ]; then
+        filter='-only-testing:ArmageddonUITests/AppShellUITests/testModelsAndDiagnosticsWorkflowShowsBoundedLocalActions'
+        expected='models-workspace-empty'
+    else
+        filter='-only-testing:ArmageddonUITests/AppShellUITests/testModelsWorkspaceEmptyStateRemainsSafe'
+        expected='models-workspace-empty-safe'
+    fi
+    ARMAGEDDON_SCREENSHOT_DIR="$task_root/screenshots" xcodebuild -project Armageddon.xcodeproj -scheme ArmageddonApp \
+        -destination 'platform=macOS' -parallel-testing-enabled NO \
+        -derivedDataPath "$task_root/build" -resultBundlePath "$result" test $filter >>"$transcript" 2>&1
+    [ -d "$result" ] || { printf '%s\n' 'ERROR[missing-task-22-xcresult]' >&2; exit 1; }
+    [ -s "$task_root/screenshots/$expected.png" ] || { printf '%s\n' "ERROR[missing-task-22-screenshot]: $expected" >&2; exit 1; }
+    transcript_sha256=$(shasum -a 256 "$transcript" | awk '{print $1}')
+    printf '{"task":22,"mode":"%s","filter":"%s","screenshot":"%s","transcript":"%s","transcriptSha256":"%s","result":"%s","outcome":"PASS"}\n' \
+        "$2" "$filter" "$task_root/screenshots/$expected.png" "$transcript" "$transcript_sha256" "$result" >"$task_root/camera-ml-app.json"
+    printf 'PASS task=22 mode=%s root=%s\n' "$2" "$task_root"
+    exit 0
+fi
+
+if [ "$1" = "23" ]; then
+    run_swift_task 23 "$2" PlanarCalibrationTests
+fi
+
+if [ "$1" = "25" ]; then
+    run_swift_task 25 "$2" SafetyPolicyTests
+fi
+
+if [ "$1" = "26" ]; then
+    run_swift_task 26 "$2" TargetProposalTests
+fi
+
+if [ "$1" = "27" ]; then
+    run_swift_task 27 "$2" RunCoordinatorTests
+fi
+
+if [ "$1" = "28" ]; then
+    run_swift_task 28 "$2" AppStateRestorationTests
+fi
+
+if [ "$1" = "29" ]; then
+    transcript="$task_root/camera-ml-app.txt"
+    result="$task_root/camera-ml-app.xcresult"
+    mkdir -m 700 "$task_root/screenshots"
+    ./scripts/check-accessibility-contract.sh >"$transcript" 2>&1
+    if [ "$2" = "happy" ]; then
+        filters='-only-testing:ArmageddonUITests/AppShellUITests/testSidebarAndKeyboardNavigationStopsAndCapturesAppearances -only-testing:ArmageddonUITests/AppShellUITests/testLiveWorkspaceSelectsPausesCapturesAndOpensManualDrawer'
+        expected='app-shell-light-1280x800'
+    else
+        filters='-only-testing:ArmageddonUITests/AppShellUITests/testCameraDisconnectCancelsWorkAndOffersRescan'
+        expected='live-workspace-disconnected'
+    fi
+    ARMAGEDDON_SCREENSHOT_DIR="$task_root/screenshots" xcodebuild -project Armageddon.xcodeproj -scheme ArmageddonApp \
+        -destination 'platform=macOS' -derivedDataPath "$task_root/build" -resultBundlePath "$result" test $filters >>"$transcript" 2>&1
+    [ -d "$result" ] || { printf '%s\n' 'ERROR[missing-task-29-xcresult]' >&2; exit 1; }
+    [ -s "$task_root/screenshots/$expected.png" ] || { printf '%s\n' "ERROR[missing-task-29-screenshot]: $expected" >&2; exit 1; }
+    transcript_sha256=$(shasum -a 256 "$transcript" | awk '{print $1}')
+    printf '{"task":29,"mode":"%s","filter":"%s","screenshot":"%s","transcript":"%s","transcriptSha256":"%s","result":"%s","outcome":"PASS"}\n' \
+        "$2" "$filters" "$task_root/screenshots/$expected.png" "$transcript" "$transcript_sha256" "$result" >"$task_root/camera-ml-app.json"
+    printf 'PASS task=29 mode=%s root=%s\n' "$2" "$task_root"
+    exit 0
+fi
+
+if [ "$1" = "30" ]; then
+    transcript="$task_root/camera-ml-app.txt"
+    result="$task_root/camera-ml-app.xcresult"
+    mkdir -m 700 "$task_root/screenshots"
+    first_build="$task_root/build-first"
+    second_build="$task_root/build-second"
+    swift test --disable-sandbox --parallel --scratch-path "$first_build" >"$transcript" 2>&1
+    swift test --disable-sandbox --parallel --scratch-path "$second_build" >>"$transcript" 2>&1
+    swift run --disable-sandbox --quiet --scratch-path "$task_root/probe-build" PerformanceTelemetryQAProbe "$2" >>"$transcript" 2>&1
+    if [ "$2" = "happy" ]; then
+        filters='-only-testing:ArmageddonUITests/AppShellUITests/testSidebarAndKeyboardNavigationStopsAndCapturesAppearances -only-testing:ArmageddonUITests/AppShellUITests/testLiveWorkspaceSelectsPausesCapturesAndOpensManualDrawer'
+        expected='app-shell-light-1280x800'
+    else
+        filters='-only-testing:ArmageddonUITests/AppShellUITests/testCameraDisconnectCancelsWorkAndOffersRescan'
+        expected='live-workspace-disconnected'
+    fi
+    ARMAGEDDON_SCREENSHOT_DIR="$task_root/screenshots" xcodebuild -project Armageddon.xcodeproj -scheme ArmageddonApp \
+        -destination 'platform=macOS' -derivedDataPath "$task_root/xcode" -resultBundlePath "$result" test $filters >>"$transcript" 2>&1
+    [ -d "$result" ] || { printf '%s\n' 'ERROR[missing-task-30-xcresult]' >&2; exit 1; }
+    [ -s "$task_root/screenshots/$expected.png" ] || { printf '%s\n' "ERROR[missing-task-30-screenshot]: $expected" >&2; exit 1; }
+    transcript_sha256=$(shasum -a 256 "$transcript" | awk '{print $1}')
+    printf '{"task":30,"mode":"%s","filters":"%s","transcript":"%s","transcriptSha256":"%s","result":"%s","screenshot":"%s","outcome":"PASS"}\n' \
+        "$2" "$filters" "$transcript" "$transcript_sha256" "$result" "$task_root/screenshots/$expected.png" >"$task_root/camera-ml-app.json"
+    printf 'PASS task=30 mode=%s root=%s\n' "$2" "$task_root"
+    exit 0
+fi
+
+if [ "$1" = "31" ]; then
+    transcript="$task_root/camera-ml-app.txt"
+    release_root="$task_root/release"
+    if ARMAGEDDON_DEVELOPER_IDENTITY= ARMAGEDDON_NOTARY_PROFILE= ./scripts/package-release.sh "$release_root" >"$transcript" 2>&1; then
+        release_status=0
+    else
+        release_status=$?
+    fi
+    [ "$release_status" -eq 3 ] || { printf '%s\n' "ERROR[release-classification]: expected exit 3, got $release_status" >&2; exit 1; }
+    classification="$release_root/release-classification.json"
+    grep -q 'BLOCKED_MISSING_SIGNING_CREDENTIAL' "$classification" || { printf '%s\n' 'ERROR[release-classification]: missing credential classification' >&2; exit 1; }
+    for artifact in entitlements.plist network-audit.json bundle-manifest.json sbom.json release-artifacts.sha256; do
+        [ -s "$release_root/$artifact" ] || { printf '%s\n' "ERROR[release-artifact]: $artifact" >&2; exit 1; }
+    done
+    if [ "$2" = "failure" ]; then
+        app=$(find "$release_root/DerivedData/Build/Products/Release/Armageddon.app" -type f -not -path '*/_CodeSignature/*' -print | LC_ALL=C sort | head -1)
+        [ -n "$app" ] || { printf '%s\n' 'ERROR[tamper-fixture]: no bundle file' >&2; exit 1; }
+        printf '%s\n' 'tamper' >>"$app"
+        if codesign --verify --deep --strict "$release_root/DerivedData/Build/Products/Release/Armageddon.app" >"$task_root/tamper-verification.txt" 2>&1; then
+            printf '%s\n' 'ERROR[tamper-verification]: modified bundle still verified' >&2
+            exit 1
+        fi
+    fi
+    transcript_sha256=$(shasum -a 256 "$transcript" | awk '{print $1}')
+    printf '{"task":31,"mode":"%s","releaseRoot":"%s","classification":"BLOCKED_MISSING_SIGNING_CREDENTIAL","transcript":"%s","transcriptSha256":"%s","outcome":"PASS"}\n' \
+        "$2" "$release_root" "$transcript" "$transcript_sha256" >"$task_root/camera-ml-app.json"
+    printf 'PASS task=31 mode=%s root=%s\n' "$2" "$task_root"
+    exit 0
+fi
+
+if [ "$1" = "32" ]; then
+    transcript="$task_root/camera-ml-app.txt"
+    ./scripts/validate-docs.sh >"$transcript" 2>&1
+    ./scripts/check-source-boundary.sh >>"$transcript" 2>&1
+    [ -s "$transcript" ] || { printf '%s\n' 'ERROR[empty-task-32-transcript]' >&2; exit 1; }
+    transcript_sha256=$(shasum -a 256 "$transcript" | awk '{print $1}')
+    printf '{"task":32,"mode":"%s","transcript":"%s","transcriptSha256":"%s","outcome":"PASS"}\n' \
+        "$2" "$transcript" "$transcript_sha256" >"$task_root/camera-ml-app.json"
+    printf 'PASS task=32 mode=%s root=%s\n' "$2" "$task_root"
+    exit 0
+fi
+
+if [ "$1" = "33" ]; then
+    transcript="$task_root/camera-ml-app.txt"
+    ./scripts/check-live-guards.sh >"$transcript" 2>&1
+    if env | awk -F= '$1 ~ /^(ARMAGEDDON_LIVE_|ARMAGEDDON_OPERATOR_|HUENIT_LIVE_|ARMAGEDDON_(CAMERA|SERIAL|DEVICE)_|HUENIT_(CAM|ARM)_)/ { found=1 } END { exit found ? 0 : 1 }'; then
+        printf '%s\n' 'ERROR[live-environment-leak]: guarded variables survived the task wrapper' >&2
+        exit 1
+    fi
+    transcript_sha256=$(shasum -a 256 "$transcript" | awk '{print $1}')
+    printf '{"task":33,"mode":"%s","transcript":"%s","transcriptSha256":"%s","outcome":"NOT_RUN_OPERATOR_REQUIRED","hardwareUsed":false}\n' \
+        "$2" "$transcript" "$transcript_sha256" >"$task_root/camera-ml-app.json"
+    printf 'NOT_RUN_OPERATOR_REQUIRED task=33 mode=%s root=%s\n' "$2" "$task_root"
+    exit 0
+fi
+
+if [ "$1" = "24" ]; then
+    transcript="$task_root/camera-ml-app.txt"
+    result="$task_root/camera-ml-app.xcresult"
+    mkdir -m 700 "$task_root/screenshots"
+    if [ "$2" = "happy" ]; then
+        filter='-only-testing:ArmageddonUITests/AppShellUITests/testCalibrationWizardValidEightPointProfile'
+        expected='calibration-valid-profile'
+    else
+        filter='-only-testing:ArmageddonUITests/AppShellUITests/testCalibrationWizardRefusesHighErrorProfile'
+        expected='calibration-high-error-refused'
+    fi
+    ARMAGEDDON_SCREENSHOT_DIR="$task_root/screenshots" \
+    TEST_RUNNER_ARMAGEDDON_SCREENSHOT_DIR="$task_root/screenshots" \
+        xcodebuild -project Armageddon.xcodeproj -scheme ArmageddonApp \
+        -destination 'platform=macOS' -derivedDataPath "$task_root/build" -resultBundlePath "$result" test $filter >"$transcript" 2>&1
+    [ -d "$result" ] || { printf '%s\n' 'ERROR[missing-task-24-xcresult]' >&2; exit 1; }
+    extract_named_screenshots "$result" "$task_root/screenshots"
+    [ -s "$task_root/screenshots/$expected.png" ] || { printf '%s\n' "ERROR[missing-task-24-screenshot]: $expected" >&2; exit 1; }
+    transcript_sha256=$(shasum -a 256 "$transcript" | awk '{print $1}')
+    printf '{"task":24,"mode":"%s","filter":"%s","screenshot":"%s","transcript":"%s","transcriptSha256":"%s","result":"%s"}\n' \
+        "$2" "$filter" "$task_root/screenshots/$expected.png" "$transcript" "$transcript_sha256" "$result" >"$task_root/camera-ml-app.json"
+    printf 'PASS task=24 mode=%s root=%s\n' "$2" "$task_root"
     exit 0
 fi
 
@@ -351,4 +635,7 @@ if [ "$2" = "happy" ]; then
 else
     [ -s "$task_root/screenshots/app-shell-recovered-1100x720.png" ] || { printf '%s\n' 'ERROR[missing-recovery-screenshot]' >&2; exit 1; }
 fi
+transcript_sha256=$(shasum -a 256 "$transcript" | awk '{print $1}')
+printf '{"task":3,"mode":"%s","filter":"%s","transcript":"%s","transcriptSha256":"%s","screenshots":"%s","outcome":"PASS"}\n' \
+    "$2" "$filters" "$transcript" "$transcript_sha256" "$task_root/screenshots" >"$task_root/camera-ml-app.json"
 printf 'PASS task=3 mode=%s root=%s\n' "$2" "$task_root"

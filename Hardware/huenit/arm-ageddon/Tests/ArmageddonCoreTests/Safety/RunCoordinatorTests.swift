@@ -43,8 +43,12 @@ struct RunCoordinatorTests {
         #expect(result.timeline.map(\.kind).first == .reservation)
         #expect(result.timeline.map(\.kind).contains(.intentDurable))
         #expect(result.timeline.map(\.kind).last == .completed)
-        #expect(FileManager.default.fileExists(atPath: root.appendingPathComponent("Executions/\(result.executionID.uuidString)/intent.json").path))
-        #expect(FileManager.default.fileExists(atPath: root.appendingPathComponent("Executions/\(result.executionID.uuidString)/completed.json").path))
+        let executionRoot = root.appendingPathComponent("Executions/\(result.executionID.uuidString)", isDirectory: true)
+        #expect(FileManager.default.fileExists(atPath: executionRoot.appendingPathComponent("intent.json").path))
+        #expect(FileManager.default.fileExists(atPath: executionRoot.appendingPathComponent("completed.json").path))
+        let completedData = try Data(contentsOf: executionRoot.appendingPathComponent("completed.json"))
+        let completed = try JSONDecoder().decode(RunResult.self, from: completedData)
+        #expect(completed.timeline.last?.kind == .completed)
     }
 
     @Test("entry revalidation revokes and writes no bytes when pose is stale")
@@ -84,6 +88,9 @@ struct RunCoordinatorTests {
         } catch {
             let writeCount = await writer.count()
             #expect(writeCount == 0)
+            let timeline = await coordinator.currentTimeline()
+            #expect(timeline.last?.kind == .noWrite)
+            #expect(FileManager.default.fileExists(atPath: root.appendingPathComponent("Executions").path))
         }
     }
 
@@ -133,8 +140,19 @@ private struct FixedPoseReader: RunPoseReader {
     func readPose() async throws -> SafetyPoseReceipt { pose }
 }
 
-private actor RecordingWriter: XYMotionWriter {
+private actor RecordingWriter: SupervisedXYMotionWriter {
     private(set) var writes = 0
-    func writeXY(delta: CalibrationPoint, feedMillimetersPerMinute: Double) async throws { writes += 1 }
+    func writeXY(
+        delta: CalibrationPoint,
+        feedMillimetersPerMinute: Double,
+        executionPermit: MotionExecutionPermit,
+        now: @escaping @Sendable () -> MonotonicInstant
+    ) async throws -> MonotonicInstant {
+        guard let consumedAt = executionPermit.consume(now: now()) else {
+            throw RunCoordinatorError.safetyFailure
+        }
+        writes += 1
+        return consumedAt
+    }
     func count() -> Int { writes }
 }

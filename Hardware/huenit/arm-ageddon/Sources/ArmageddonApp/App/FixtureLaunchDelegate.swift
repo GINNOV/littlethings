@@ -64,6 +64,36 @@ final class FixtureLaunchDelegate: NSObject, NSApplicationDelegate {
         }
         NSApplication.shared.activate()
         window.makeKeyAndOrderFront(nil)
+        Task { @MainActor [weak self] in
+            await self?.loadUITestingFixtures()
+        }
+    }
+
+    private func loadUITestingFixtures() async {
+        guard ProcessInfo.processInfo.arguments.contains("-ui-testing"),
+              let appModel else { return }
+        let arguments = try? LaunchArguments.parse(ProcessInfo.processInfo.arguments)
+        await appModel.restore()
+        await appModel.refreshModels()
+        await appModel.refreshK210Artifacts()
+        await appModel.openCaptures()
+        await appModel.refreshCameraLifecycle()
+        if arguments?.profile != .noDevices,
+           arguments?.profile != .permissionDenied {
+            await appModel.loadFixtureOverlay()
+        }
+        if arguments?.profile == .modelFailed {
+            await appModel.simulateModelFailureFixture()
+        }
+        if arguments?.profile != .cameraDisconnected,
+           arguments?.profile != .permissionDenied,
+           arguments?.profile != .noDevices {
+            await appModel.configureConnectedCameraFixture()
+        }
+        if arguments?.profile == .cameraDisconnected {
+            await appModel.configureDisconnectedCameraFixture()
+        }
+        appModel.startCameraLifecycleMonitoring()
     }
 
     func applicationWillTerminate(_ notification: Notification) {

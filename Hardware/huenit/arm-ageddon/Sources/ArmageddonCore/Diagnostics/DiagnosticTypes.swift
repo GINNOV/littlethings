@@ -17,6 +17,29 @@ public enum DiagnosticSeverity: String, Codable, CaseIterable, Sendable {
     case error
 }
 
+enum DiagnosticRedaction {
+    static func text(_ value: String) -> String {
+        let normalized = value.replacingOccurrences(of: "\n", with: " ")
+        let lowercased = normalized.lowercased()
+        let sensitiveMarkers = [
+            "secret",
+            "token",
+            "password",
+            "credential",
+            "serial=",
+            "serial:",
+            "framebytes",
+            "modelbytes"
+        ]
+        guard !normalized.contains("/"),
+              !normalized.contains("\\"),
+              !sensitiveMarkers.contains(where: lowercased.contains) else {
+            return "redacted"
+        }
+        return normalized.count > 256 ? String(normalized.prefix(256)) : normalized
+    }
+}
+
 public struct DiagnosticEvent: Codable, Equatable, Sendable, Identifiable {
     public let id: UInt64
     public let occurredAt: MonotonicInstant
@@ -42,8 +65,8 @@ public struct DiagnosticEvent: Codable, Equatable, Sendable, Identifiable {
         self.generation = generation
         self.category = category
         self.severity = severity
-        self.code = Self.safeText(code)
-        self.message = Self.safeText(message)
+        self.code = DiagnosticRedaction.text(code)
+        self.message = DiagnosticRedaction.text(message)
         self.metadata = Self.allowlistedMetadata(metadata)
     }
 
@@ -54,14 +77,8 @@ public struct DiagnosticEvent: Codable, Equatable, Sendable, Identifiable {
     private static func allowlistedMetadata(_ metadata: [String: String]) -> [String: String] {
         Dictionary(uniqueKeysWithValues: metadata.compactMap { key, value in
             guard allowedMetadataKeys.contains(key) else { return nil }
-            return (key, safeText(value))
+            return (key, DiagnosticRedaction.text(value))
         })
-    }
-
-    private static func safeText(_ value: String) -> String {
-        let normalized = value.replacingOccurrences(of: "\n", with: " ")
-        guard !normalized.contains("/") && !normalized.contains("\\") else { return "redacted" }
-        return normalized.count > 256 ? String(normalized.prefix(256)) : normalized
     }
 }
 
@@ -72,6 +89,10 @@ public struct DiagnosticSnapshot: Codable, Equatable, Sendable {
     public let metrics: [String: Double]
     public let modelHashes: [String]
 
+    private static let allowedStateKeys: Set<String> = [
+        "device", "camera", "capture", "inference", "calibration", "safety", "arm", "motion", "storage", "run", "model"
+    ]
+
     public init(
         schemaVersion: Int = 1,
         generatedAt: MonotonicInstant,
@@ -81,7 +102,10 @@ public struct DiagnosticSnapshot: Codable, Equatable, Sendable {
     ) {
         self.schemaVersion = schemaVersion
         self.generatedAt = generatedAt
-        self.states = states.filter { $0.key.count <= 64 && $0.value.count <= 256 }
+        self.states = Dictionary(uniqueKeysWithValues: states.compactMap { key, value in
+            guard Self.allowedStateKeys.contains(key), key.count <= 64 else { return nil }
+            return (key, DiagnosticRedaction.text(value))
+        })
         self.metrics = metrics.filter { $0.value.isFinite }
         self.modelHashes = modelHashes.filter { $0.count == 64 && $0.allSatisfy(\.isHexDigit) }
     }

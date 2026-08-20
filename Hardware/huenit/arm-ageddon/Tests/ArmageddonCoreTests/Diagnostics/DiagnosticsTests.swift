@@ -31,7 +31,7 @@ struct DiagnosticsTests {
             category: .storage,
             severity: .warning,
             code: "metadata",
-            message: "secret-token /Users/example/frame.jpg",
+            message: "secret=do-not-export serial=HUENIT-ABC123 frameBytes=raw modelBytes=raw",
             metadata: [
                 "path": "/Users/example/private",
                 "reason": "safe",
@@ -42,6 +42,19 @@ struct DiagnosticsTests {
         #expect(event.metadata["path"] == nil)
         #expect(event.metadata["secret"] == nil)
         #expect(event.metadata["reason"] == "safe")
+    }
+
+    @Test("snapshot allowlists state keys and redacts sensitive values")
+    func snapshotRedaction() {
+        let snapshot = DiagnosticSnapshot(
+            generatedAt: MonotonicInstant(nanoseconds: 1),
+            states: [
+                "capture": "serial=HUENIT-ABC123",
+                "path": "/Users/example/private",
+                "unknown": "secret-value"
+            ]
+        )
+        #expect(snapshot.states == ["capture": "redacted"])
     }
 
     @Test("support export contains only allowlisted hashed members")
@@ -79,6 +92,18 @@ struct DiagnosticsTests {
         #expect(listing.contains("manifest.json"))
         #expect(!listing.localizedCaseInsensitiveContains("frame.jpg"))
         #expect(!listing.localizedCaseInsensitiveContains("secret"))
+
+        let entries = listing.split(separator: "\n").map(String.init)
+        let manifestEntry = try #require(entries.first(where: { $0.hasSuffix("/manifest.json") || $0 == "manifest.json" }))
+        let manifestData = Data(try shell("/usr/bin/unzip", arguments: ["-p", zip.path, manifestEntry]).utf8)
+        let manifest = try JSONDecoder().decode(SupportBundleManifest.self, from: manifestData)
+        #expect(manifest.members.map(\.filename).sorted() == ["events.json", "snapshot.json"])
+        for member in manifest.members {
+            let entry = try #require(entries.first(where: { $0.hasSuffix("/\(member.filename)") || $0 == member.filename }))
+            let data = Data(try shell("/usr/bin/unzip", arguments: ["-p", zip.path, entry]).utf8)
+            #expect(CaptureHashing.sha256(data) == member.sha256)
+            #expect(data.count == member.byteCount)
+        }
     }
 
     private func shell(_ executable: String, arguments: [String]) throws -> String {

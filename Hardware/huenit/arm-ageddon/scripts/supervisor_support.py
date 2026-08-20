@@ -97,13 +97,28 @@ def await_exec(read_fd: int) -> None:
         raise EvidenceError("exec-failed", "child could not exec command")
 
 
-def finalize_receipt(fd: int, child_status: int, launch: Path, exit_path: Path, trace: Path, observation: Path) -> None:
+def finalize_receipt(
+    fd: int,
+    child_status: int,
+    launch: Path,
+    exit_path: Path,
+    trace: Path,
+    observation: Path,
+    pre_exec_child: dict[str, JsonValue],
+    post_exec_child: dict[str, JsonValue],
+    observed_executable: Path,
+    observed_executable_sha256: Sha256,
+) -> None:
     validator = importlib.import_module("validate-execution-receipts")
     runtime = validator.SupervisedRuntime(
         launch=(launch, sha256_file(launch)),
         exit_receipt=(exit_path, sha256_file(exit_path)),
         trace=(trace, sha256_file(trace)),
         observation=(observation, sha256_file(observation)),
+        pre_exec_child=pre_exec_child,
+        post_exec_child=post_exec_child,
+        observed_executable=observed_executable,
+        observed_executable_sha256=observed_executable_sha256,
     )
     with socket.socket(fileno=fd) as control, control.makefile("rwb") as stream:
         stream.write((json.dumps({"status": "ready", "childExitStatus": child_status}) + "\n").encode())

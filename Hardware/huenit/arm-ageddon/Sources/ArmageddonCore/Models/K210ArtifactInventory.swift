@@ -35,6 +35,10 @@ public struct K210ArtifactManifest: Codable, Equatable, Sendable {
 
     public func validated(modelFilename: String, scriptFilename: String) throws -> Self {
         guard schemaVersion == 1, !identifier.isEmpty,
+              identifier == URL(fileURLWithPath: identifier).lastPathComponent,
+              !identifier.contains(".."),
+              !identifier.contains("/"),
+              !identifier.contains("\\"),
               self.modelFilename == modelFilename, self.scriptFilename == scriptFilename else {
             throw K210InventoryError.invalidFilename
         }
@@ -102,6 +106,7 @@ public actor K210ArtifactInventory {
     }
 
     public func importBundle(manifestURL: URL, modelURL: URL, scriptURL: URL) throws -> K210ArtifactRecord {
+        records = try loadRecords()
         let manifest = try JSONDecoder().decode(K210ArtifactManifest.self, from: Data(contentsOf: manifestURL))
         let validated = try manifest.validated(modelFilename: modelURL.lastPathComponent, scriptFilename: scriptURL.lastPathComponent)
         let modelData = try Data(contentsOf: modelURL)
@@ -129,7 +134,78 @@ public actor K210ArtifactInventory {
         return record
     }
 
-    public func all() -> [K210ArtifactRecord] { records }
+    public func all() -> [K210ArtifactRecord] {
+        if let loaded = try? loadRecords() {
+            records = loaded
+        }
+        return records
+    }
+
+    public func exportBundle(identifier: String, to destinationRoot: URL) throws -> URL {
+        guard let record = records.first(where: { $0.id == identifier }) else {
+            throw K210InventoryError.missingArtifact(identifier)
+        }
+        let source = root.appending(path: record.directoryName, directoryHint: .isDirectory)
+        let destination = destinationRoot.appending(path: record.directoryName, directoryHint: .isDirectory)
+        guard !FileManager.default.fileExists(atPath: destination.path) else {
+            throw K210InventoryError.destinationExists
+        }
+        try FileManager.default.createDirectory(at: destinationRoot, withIntermediateDirectories: true, attributes: [.posixPermissions: 0o700])
+        try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: false, attributes: [.posixPermissions: 0o700])
+        let files = [
+            (source.appending(path: "manifest.armk210.json"), destination.appending(path: "manifest.armk210.json")),
+            (source.appending(path: record.manifest.modelFilename), destination.appending(path: record.manifest.modelFilename)),
+            (source.appending(path: record.manifest.scriptFilename), destination.appending(path: record.manifest.scriptFilename))
+        ]
+        for (sourceURL, destinationURL) in files {
+            guard FileManager.default.fileExists(atPath: sourceURL.path) else {
+                throw K210InventoryError.missingArtifact(sourceURL.lastPathComponent)
+            }
+            try FileManager.default.copyItem(at: sourceURL, to: destinationURL)
+        }
+        return destination
+    }
+
+    private func loadRecords() throws -> [K210ArtifactRecord] {
+        guard FileManager.default.fileExists(atPath: root.path) else { return [] }
+        let directories = try FileManager.default.contentsOfDirectory(
+            at: root,
+            includingPropertiesForKeys: [.isDirectoryKey],
+            options: [.skipsHiddenFiles]
+        )
+        return try directories.compactMap { directory in
+            let values = try directory.resourceValues(forKeys: [.isDirectoryKey])
+            guard values.isDirectory == true else { return nil }
+            let manifestURL = directory.appending(path: "manifest.armk210.json")
+            guard FileManager.default.fileExists(atPath: manifestURL.path) else { return nil }
+            let manifest = try JSONDecoder().decode(
+                K210ArtifactManifest.self,
+                from: Data(contentsOf: manifestURL)
+            )
+            let modelURL = directory.appending(path: manifest.modelFilename)
+            let scriptURL = directory.appending(path: manifest.scriptFilename)
+            guard FileManager.default.fileExists(atPath: modelURL.path),
+                  FileManager.default.fileExists(atPath: scriptURL.path) else { return nil }
+            let validated = try manifest.validated(
+                modelFilename: modelURL.lastPathComponent,
+                scriptFilename: scriptURL.lastPathComponent
+            )
+            let modelHash = CaptureHashing.sha256(try Data(contentsOf: modelURL))
+            let scriptHash = CaptureHashing.sha256(try Data(contentsOf: scriptURL))
+            guard validated.modelSHA256 == nil || validated.modelSHA256?.lowercased() == modelHash,
+                  validated.scriptSHA256 == nil || validated.scriptSHA256?.lowercased() == scriptHash else {
+                return nil
+            }
+            return K210ArtifactRecord(
+                id: validated.identifier,
+                manifest: validated,
+                modelSHA256: modelHash,
+                scriptSHA256: scriptHash,
+                directoryName: directory.lastPathComponent,
+                uploadAvailable: decision.canUploadArtifacts
+            )
+        }
+    }
 
     public func deploymentInstruction(for record: K210ArtifactRecord) -> String {
         record.uploadAvailable

@@ -72,6 +72,50 @@ struct HuenitCameraTests {
         #expect(manifest.labels == ["raccoon"])
     }
 
+    @Test("K210 inventory exports a verified bundle without enabling upload")
+    func k210InventoryImportsAndExportsBundle() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: "k210-inventory-\(UUID().uuidString)")
+        let incoming = root.appending(path: "incoming")
+        let exportRoot = root.appending(path: "export")
+        try FileManager.default.createDirectory(at: incoming, withIntermediateDirectories: true)
+        let modelURL = incoming.appending(path: "detector.kmodel")
+        let scriptURL = incoming.appending(path: "detector.py")
+        try Data("kmodel-fixture".utf8).write(to: modelURL)
+        try Data("print('fixture')".utf8).write(to: scriptURL)
+        let manifest = K210ArtifactManifest(
+            identifier: "fixture-k210",
+            modelFilename: modelURL.lastPathComponent,
+            scriptFilename: scriptURL.lastPathComponent,
+            labels: ["target"],
+            anchors: [1, 2, 3, 4],
+            provenance: "recorded fixture",
+            modelSHA256: CaptureHashing.sha256(try Data(contentsOf: modelURL)),
+            scriptSHA256: CaptureHashing.sha256(try Data(contentsOf: scriptURL))
+        )
+        let manifestURL = incoming.appending(path: "manifest.armk210.json")
+        try JSONEncoder().encode(manifest).write(to: manifestURL)
+        let decision = HuenitCameraCapabilityDecision(
+            status: .notMeasured,
+            supported: [],
+            unsupportedReasons: [.artifactUpload: "Upload has not been measured."],
+            profile: nil
+        )
+        let inventory = K210ArtifactInventory(root: root.appending(path: "installed"), decision: decision)
+
+        let record = try await inventory.importBundle(manifestURL: manifestURL, modelURL: modelURL, scriptURL: scriptURL)
+        #expect(record.modelSHA256 == manifest.modelSHA256)
+        #expect(record.scriptSHA256 == manifest.scriptSHA256)
+        #expect(record.uploadAvailable == false)
+        let exported = try await inventory.exportBundle(identifier: record.id, to: exportRoot)
+        #expect(try Data(contentsOf: exported.appending(path: record.manifest.modelFilename)) == Data("kmodel-fixture".utf8))
+        #expect(try Data(contentsOf: exported.appending(path: record.manifest.scriptFilename)) == Data("print('fixture')".utf8))
+        let instruction = await inventory.deploymentInstruction(for: record)
+        #expect(instruction.contains("unsupported"))
+        let reopened = K210ArtifactInventory(root: root.appending(path: "installed"), decision: decision)
+        let restored = await reopened.all()
+        #expect(restored.map(\.id) == [record.id])
+    }
+
     @Test("unmeasured capability decisions never enable preview or upload")
     func unmeasuredCapabilitiesStayDisabled() {
         let decision = HuenitCameraCapabilityDecision(

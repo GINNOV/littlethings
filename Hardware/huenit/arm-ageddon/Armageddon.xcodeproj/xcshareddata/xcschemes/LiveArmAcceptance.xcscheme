@@ -12,7 +12,7 @@
          <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="A60000000000000000000001" BuildableName="Armageddon.app" BlueprintName="ArmageddonApp" ReferencedContainer="container:Armageddon.xcodeproj"/>
       </BuildableProductRunnable>
       <EnvironmentVariables>
-         <EnvironmentVariable key="ARMAGEDDON_LIVE_ARM_ACCEPTED" value="1" isEnabled="YES"/>
+            <EnvironmentVariable key="ARMAGEDDON_LIVE_ARM" value="1" isEnabled="YES"/>
       </EnvironmentVariables>
    </LaunchAction>
    <ArchiveAction buildConfiguration="Release" revealArchiveInOrganizer="YES"/>

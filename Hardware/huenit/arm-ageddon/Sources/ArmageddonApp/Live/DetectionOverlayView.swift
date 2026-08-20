@@ -52,6 +52,7 @@ struct DetectionOverlayView: View {
                 }
             }
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("live.detection-overlays")
     }
 
@@ -86,7 +87,7 @@ struct DetectionOverlayView: View {
         .accessibilityValue(
             "\(observation.confidence, format: .percent.precision(.fractionLength(0))). \(isSelected ? "Selected" : "Detected")"
         )
-        .accessibilityIdentifier("live.detection.\(observation.id)")
+        .accessibilityIdentifier("live.detection.\(observation.label)")
         .zIndex(isSelected ? 2 : 1)
     }
 

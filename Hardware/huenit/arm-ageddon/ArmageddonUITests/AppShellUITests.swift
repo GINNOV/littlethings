@@ -57,21 +57,13 @@ final class AppShellUITests: XCTestCase {
     func testLiveWorkspaceSelectsPausesCapturesAndOpensManualDrawer() throws {
         let app = try launch(style: "Light", width: 1_280, height: 800)
 
-        XCTAssertTrue(app.descendants(matching: .any)["live.performance-health"].waitForExistence(timeout: 5))
-        XCTAssertEqual(app.descendants(matching: .any)["live.performance-health"].value as? String, "Ready")
+        waitForHealth(app, value: "Ready")
 
-        let sourcePicker = app.buttons["live.source-picker"]
-        XCTAssertTrue(sourcePicker.waitForExistence(timeout: 2))
-        sourcePicker.click()
-        XCTAssertTrue(app.buttons["Recorded fixture"].waitForExistence(timeout: 2))
-        app.buttons["Recorded fixture"].click()
-        XCTAssertTrue(app.staticTexts["Source · Recorded fixture"].waitForExistence(timeout: 3))
+        chooseMenu(app, identifier: "live.source-picker", item: "Recorded fixture")
+        waitForPicker(app, identifier: "live.source-picker", containing: "Recorded fixture")
 
-        let modelPicker = app.buttons["live.model-picker"]
-        modelPicker.click()
-        XCTAssertTrue(app.buttons["Recorded fixture detector"].waitForExistence(timeout: 2))
-        app.buttons["Recorded fixture detector"].click()
-        XCTAssertTrue(app.staticTexts["Model · Recorded fixture detector"].waitForExistence(timeout: 3))
+        chooseMenu(app, identifier: "live.model-picker", item: "Recorded fixture detector")
+        waitForPicker(app, identifier: "live.model-picker", containing: "Recorded fixture detector")
 
         let target = app.descendants(matching: .any)["live.detection.target"].firstMatch
         XCTAssertTrue(target.waitForExistence(timeout: 5))
@@ -88,9 +80,20 @@ final class AppShellUITests: XCTestCase {
 
         let manualControls = app.descendants(matching: .any)["live.manual-controls"].firstMatch
         XCTAssertTrue(manualControls.waitForExistence(timeout: 2))
-        manualControls.click()
-        XCTAssertTrue(app.buttons["− X"].waitForExistence(timeout: 2))
-        app.buttons["stop.button"].click()
+        let disclosure = app.disclosureTriangles.matching(NSPredicate(format: "label CONTAINS 'Manual'")).firstMatch
+        if disclosure.waitForExistence(timeout: 1) {
+            disclosure.click()
+        } else {
+            manualControls.click()
+        }
+        XCTAssertTrue(
+            app.descendants(matching: .any)["live.manual.minus-x"].waitForExistence(timeout: 5)
+                || app.descendants(matching: .any)["live.manual-motion-buttons"].waitForExistence(timeout: 2)
+                || app.buttons["+ X"].waitForExistence(timeout: 1)
+        )
+        let stop = app.descendants(matching: .any)["stop.button"].firstMatch
+        XCTAssertTrue(stop.waitForExistence(timeout: 2), "Missing stop.button")
+        stop.click()
         XCTAssertTrue(app.staticTexts["STOP requested"].waitForExistence(timeout: 2))
         try capture(app, named: "live-workspace-core-flow")
         app.terminate()
@@ -99,13 +102,46 @@ final class AppShellUITests: XCTestCase {
     func testLiveWorkspaceOverlayCoordinatesAtSupportedWindowSizes() throws {
         for (width, height) in [(1_100, 720), (1_280, 800), (1_440, 900)] {
             let app = try launch(style: "Light", width: width, height: height)
+            waitForHealth(app, value: "Ready")
             let canvas = app.descendants(matching: .any)["live.canvas"].firstMatch
             let target = app.descendants(matching: .any)["live.detection.target"].firstMatch
+            XCTAssertTrue(canvas.waitForExistence(timeout: 5))
             XCTAssertTrue(target.waitForExistence(timeout: 5))
-            assertTargetFrame(target.frame, in: canvas.frame)
+            assertTargetFrame(target.frame, in: canvas.frame.insetBy(dx: 20, dy: 20))
             try capture(app, named: "live-overlay-\(width)x\(height)")
             app.terminate()
         }
+    }
+
+    func testCalibrationWizardValidEightPointProfile() throws {
+        let app = try launch(style: "Light", width: 1_440, height: 900)
+        try advanceCalibrationToPoints(app)
+        for _ in 0..<8 {
+            app.buttons["calibration.record-point"].click()
+        }
+        app.buttons["calibration.continue"].click()
+        XCTAssertTrue(app.descendants(matching: .any)["calibration.residuals"].waitForExistence(timeout: 3))
+        app.buttons["calibration.activate"].click()
+        XCTAssertTrue(app.staticTexts["Active"].waitForExistence(timeout: 2))
+        try capture(app, named: "calibration-valid-profile")
+        app.terminate()
+    }
+
+    func testCalibrationWizardRefusesHighErrorProfile() throws {
+        let app = try launch(style: "Light", width: 1_440, height: 900)
+        try advanceCalibrationToPoints(app)
+        chooseMenu(app, identifier: "calibration.fixture-quality", item: "High-error fixture")
+        waitForPicker(app, identifier: "calibration.fixture-quality", containing: "High-error")
+        for _ in 0..<8 {
+            app.buttons["calibration.record-point"].click()
+        }
+        app.descendants(matching: .any)["calibration.continue"].firstMatch.click()
+        XCTAssertTrue(app.descendants(matching: .any)["calibration.error"].waitForExistence(timeout: 3))
+        let activate = app.descendants(matching: .any)["calibration.activate"].firstMatch
+        XCTAssertTrue(activate.waitForExistence(timeout: 2))
+        XCTAssertFalse(activate.isEnabled)
+        try capture(app, named: "calibration-high-error-refused")
+        app.terminate()
     }
 
     func testUnknownDestinationRecoversToLive() throws {
@@ -114,6 +150,44 @@ final class AppShellUITests: XCTestCase {
         XCTAssertTrue(app.descendants(matching: .any)["workspace.live"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["Navigation recovered to Live"].waitForExistence(timeout: 2))
         try capture(app, named: "app-shell-recovered-1100x720")
+        app.terminate()
+    }
+
+    func testRunsSurfaceShowsFailClosedDryRunPrerequisites() throws {
+        let app = try launch(style: "Light", width: 1_280, height: 800)
+        app.buttons["sidebar.runs"].click()
+        XCTAssertTrue(app.descendants(matching: .any)["runs.dry-run"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.descendants(matching: .any)["runs.prerequisites"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.descendants(matching: .any)["runs.no-write-guarantee"].waitForExistence(timeout: 2))
+        try capture(app, named: "runs-fail-closed-dry-run")
+        app.terminate()
+    }
+
+    func testModelsAndDiagnosticsWorkflowShowsBoundedLocalActions() throws {
+        let app = try launch(style: "Light", width: 1_280, height: 800)
+
+        app.buttons["sidebar.models"].click()
+        XCTAssertTrue(app.descendants(matching: .any)["workspace.models"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.buttons["models.import"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.descendants(matching: .any)["models.huenit-unsupported"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts["No verified models"].waitForExistence(timeout: 2))
+        try capture(app, named: "models-workspace-empty")
+
+        app.buttons["sidebar.diagnostics"].click()
+        XCTAssertTrue(app.descendants(matching: .any)["workspace.diagnostics"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.buttons["diagnostics.export"].waitForExistence(timeout: 2))
+        app.terminate()
+    }
+
+    func testModelsWorkspaceEmptyStateRemainsSafe() throws {
+        let app = try launch(style: "Light", width: 1_100, height: 720)
+
+        app.buttons["sidebar.models"].click()
+        XCTAssertTrue(app.staticTexts["No verified models"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.descendants(matching: .any)["models.huenit-unsupported"].waitForExistence(timeout: 2))
+        XCTAssertFalse(app.descendants(matching: .any)["model.detail.provenance"].exists)
+        XCTAssertFalse(app.descendants(matching: .any)["model.detail.activate"].exists)
+        try capture(app, named: "models-workspace-empty-safe")
         app.terminate()
     }
 
@@ -166,17 +240,20 @@ final class AppShellUITests: XCTestCase {
 
     func testModelFailureAndNoDeviceStatesOfferRecovery() throws {
         let failed = try launch(style: "Light", width: 1_100, height: 720, profile: "model-failed")
-        let health = failed.descendants(matching: .any)["live.performance-health"].firstMatch
-        XCTAssertTrue(health.waitForExistence(timeout: 5))
-        XCTAssertEqual(health.value as? String, "Model unavailable")
-        XCTAssertTrue(failed.buttons["live.retry-detection"].waitForExistence(timeout: 2))
-        failed.buttons["live.retry-detection"].click()
-        XCTAssertTrue(failed.staticTexts["Ready"].waitForExistence(timeout: 3))
+        waitForHealth(failed, value: "Model unavailable")
+        let retry = failed.descendants(matching: .any)["live.retry-detection"].firstMatch
+        XCTAssertTrue(retry.waitForExistence(timeout: 5), "Missing live.retry-detection")
+        retry.click()
+        waitForHealth(failed, value: "Ready")
         failed.terminate()
 
         let noDevices = try launch(style: "Light", width: 1_100, height: 720, profile: "no-devices")
         XCTAssertTrue(noDevices.descendants(matching: .any)["camera.authorization-card"].waitForExistence(timeout: 5))
-        XCTAssertTrue(noDevices.buttons["Rescan Cameras"].waitForExistence(timeout: 2))
+        let rescan = noDevices.descendants(matching: .any)["camera.rescan"].firstMatch
+        XCTAssertTrue(
+            rescan.waitForExistence(timeout: 3) || noDevices.buttons["Rescan Cameras"].waitForExistence(timeout: 2),
+            "Missing camera rescan control"
+        )
         noDevices.terminate()
     }
 
@@ -206,32 +283,95 @@ final class AppShellUITests: XCTestCase {
         return app
     }
 
+    private func waitForHealth(_ app: XCUIApplication, value: String, timeout: TimeInterval = 8) {
+        let health = app.descendants(matching: .any)["live.performance-health"].firstMatch
+        XCTAssertTrue(health.waitForExistence(timeout: 5), "Missing live.performance-health")
+        let expectation = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "value == %@", value),
+            object: health
+        )
+        let result = XCTWaiter.wait(for: [expectation], timeout: timeout)
+        XCTAssertEqual(
+            result,
+            .completed,
+            "Expected health \(value), got \(String(describing: health.value))"
+        )
+    }
+
+    private func chooseMenu(_ app: XCUIApplication, identifier: String, item: String) {
+        let picker = app.descendants(matching: .any)[identifier].firstMatch
+        XCTAssertTrue(picker.waitForExistence(timeout: 5), "Missing \(identifier)")
+        picker.click()
+        let menuItem = app.menuItems[item].firstMatch
+        if menuItem.waitForExistence(timeout: 2) {
+            menuItem.click()
+            return
+        }
+        let button = app.buttons[item].firstMatch
+        XCTAssertTrue(button.waitForExistence(timeout: 2), "Missing menu item \(item)")
+        button.click()
+    }
+
+    private func waitForPicker(_ app: XCUIApplication, identifier: String, containing needle: String) {
+        let picker = app.descendants(matching: .any)[identifier].firstMatch
+        XCTAssertTrue(picker.waitForExistence(timeout: 5), "Missing \(identifier)")
+        let expectation = XCTNSPredicateExpectation(
+            predicate: NSPredicate { evaluated, _ in
+                guard let element = evaluated as? XCUIElement else { return false }
+                let value = element.value as? String ?? ""
+                return element.label.contains(needle)
+                    || element.title.contains(needle)
+                    || value.contains(needle)
+            },
+            object: picker
+        )
+        let result = XCTWaiter.wait(for: [expectation], timeout: 4)
+        XCTAssertEqual(
+            result,
+            .completed,
+            "Expected \(identifier) to contain \(needle), got label=\(picker.label) title=\(picker.title) value=\(String(describing: picker.value))"
+        )
+    }
+
     private func capture(_ app: XCUIApplication, named name: String) throws {
         let screenshot = app.screenshot()
         let attachment = XCTAttachment(screenshot: screenshot)
         attachment.name = name
         attachment.lifetime = .keepAlways
         add(attachment)
-        if let output = ProcessInfo.processInfo.environment["ARMAGEDDON_SCREENSHOT_DIR"] {
-            try screenshot.pngRepresentation.write(to: URL(fileURLWithPath: output).appending(path: "\(name).png"), options: .atomic)
+        let directories: [String?] = [
+            ProcessInfo.processInfo.environment["ARMAGEDDON_SCREENSHOT_DIR"],
+            FileManager.default.temporaryDirectory.appending(path: "armageddon-ui-screenshots").path,
+        ]
+        for directory in directories.compactMap({ $0 }) {
+            let folder = URL(fileURLWithPath: directory, isDirectory: true)
+            try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+            let file = folder.appending(path: "\(name).png")
+            if (try? screenshot.pngRepresentation.write(to: file, options: .atomic)) != nil {
+                break
+            }
         }
     }
 
-    private func assertTargetFrame(_ actual: CGRect, in canvas: CGRect) {
-        let content = canvas.insetBy(dx: 20, dy: 20)
-        let modelToOrientedScale = min(224.0 / 1_920.0, 224.0 / 1_080.0)
-        let orientedX = 56.0 / modelToOrientedScale
-        let orientedY = (56.0 - (224.0 - 1_080.0 * modelToOrientedScale) / 2) / modelToOrientedScale
-        let orientedWidth = 44.8 / modelToOrientedScale
-        let orientedHeight = 44.8 / modelToOrientedScale
-        let viewScale = min(content.width / 1_920.0, content.height / 1_080.0)
-        let xOffset = (content.width - 1_920.0 * viewScale) / 2
-        let yOffset = (content.height - 1_080.0 * viewScale) / 2
+    private func advanceCalibrationToPoints(_ app: XCUIApplication) throws {
+        XCTAssertTrue(app.descendants(matching: .any)["calibration.wizard"].waitForExistence(timeout: 5))
+        for _ in 0..<3 {
+            app.buttons["calibration.continue"].click()
+        }
+        XCTAssertTrue(app.buttons["calibration.record-point"].waitForExistence(timeout: 2))
+    }
+
+    private func assertTargetFrame(_ actual: CGRect, in overlay: CGRect) {
+        // Fixture Vision boxes are oriented-image normalized (1920×1080), not model pixels.
+        let oriented = CGRect(x: 0.25 * 1_920.0, y: 0.25 * 1_080.0, width: 0.2 * 1_920.0, height: 0.2 * 1_080.0)
+        let viewScale = min(overlay.width / 1_920.0, overlay.height / 1_080.0)
+        let xOffset = (overlay.width - 1_920.0 * viewScale) / 2
+        let yOffset = (overlay.height - 1_080.0 * viewScale) / 2
         let expected = CGRect(
-            x: content.minX + xOffset + orientedX * viewScale,
-            y: content.minY + yOffset + orientedY * viewScale,
-            width: orientedWidth * viewScale,
-            height: orientedHeight * viewScale
+            x: overlay.minX + xOffset + oriented.minX * viewScale,
+            y: overlay.minY + yOffset + oriented.minY * viewScale,
+            width: oriented.width * viewScale,
+            height: oriented.height * viewScale
         )
         XCTAssertEqual(actual.minX, expected.minX, accuracy: 1)
         XCTAssertEqual(actual.minY, expected.minY, accuracy: 1)

@@ -67,25 +67,39 @@ def run(args: argparse.Namespace) -> int:
             os._exit(126)
     os.close(barrier_read)
     os.close(exec_write)
+    started = time.monotonic_ns()
+    pre_exec_child = process_identity(child_pid) if args.preexec_barrier else {"pid": child_pid, "birthAndCommand": "not-captured-without-preexec"}
+    launch_value: JsonValue = {"schemaVersion": 1, "kind": "process-launch", "commandID": args.command_id, "argv": command, "supervisor": process_identity(os.getpid()), "child": pre_exec_child, "processGroup": child_pid, "executable": str(requested_executable), "executableSHA256": executable_sha, "intendedExecutable": str(requested_executable), "intendedExecutableSHA256": executable_sha, "startMonotonicNs": started, "preexecBarrier": args.preexec_barrier}
     if args.preexec_barrier:
+        try:
+            exclusive_json(launch, launch_value)
+        except (EvidenceError, OSError):
+            os.killpg(child_pid, signal.SIGTERM)
+            os.waitpid(child_pid, 0)
+            raise
         os.write(barrier_write, b"1")
     os.close(barrier_write)
     await_exec(exec_read)
-    observed = await_child_identity(child_pid, command, requested_executable, executable, executable_sha, environment)
+    try:
+        observed = await_child_identity(child_pid, command, requested_executable, executable, executable_sha, environment)
+    except EvidenceError as error:
+        if error.code == "live-io-command-mismatch":
+            raise EvidenceError("live-io-process-mismatch", str(child_pid)) from error
+        raise
     if observed is None:
         observed_child: dict[str, JsonValue] = {"pid": child_pid, "birthAndCommand": "exec-success-handshake"}
-        observed_executable = executable
+        observed_executable = requested_executable
+        observed_executable_sha = executable_sha
     else:
-        observed_child, observed_executable, executable_sha = observed
-        executable = observed_executable
-    started = time.monotonic_ns()
-    launch_value: JsonValue = {"schemaVersion": 1, "kind": "process-launch", "commandID": args.command_id, "argv": command, "supervisor": process_identity(os.getpid()), "child": observed_child, "processGroup": child_pid, "executable": str(executable), "executableSHA256": executable_sha, "observedExecutable": str(observed_executable), "observedExecutableSHA256": sha256_file(observed_executable), "startMonotonicNs": started, "preexecBarrier": args.preexec_barrier}
-    try:
-        exclusive_json(launch, launch_value)
-    except (EvidenceError, OSError):
-        os.killpg(child_pid, signal.SIGTERM)
-        os.waitpid(child_pid, 0)
-        raise
+        observed_child, observed_executable, observed_executable_sha = observed
+    if not args.preexec_barrier:
+        launch_value = {**launch_value, "child": observed_child, "observedExecutable": str(observed_executable), "observedExecutableSHA256": observed_executable_sha}
+        try:
+            exclusive_json(launch, launch_value)
+        except (EvidenceError, OSError):
+            os.killpg(child_pid, signal.SIGTERM)
+            os.waitpid(child_pid, 0)
+            raise
     observed_events: list[JsonValue] = []
     sample_count = 1 if observed is None else 0
     observation_error: EvidenceError | None = None
@@ -96,8 +110,8 @@ def run(args: argparse.Namespace) -> int:
         nonlocal observation_error, sample_count
         while not observation_finished.is_set():
             try:
-                identity = child_identity(child_pid, command, requested_executable, executable, executable_sha, environment)
-                if not same_child_identity(observed_child, observed_executable, executable_sha, identity[0], identity[1], identity[2], command, requested_executable, environment):
+                identity = child_identity(child_pid, command, requested_executable, observed_executable, observed_executable_sha, environment)
+                if not same_child_identity(observed_child, observed_executable, observed_executable_sha, identity[0], identity[1], identity[2], command, requested_executable, environment):
                     raise EvidenceError("live-io-process-mismatch", str(child_pid))
             except EvidenceError as error:
                 if error.code == "live-io-command-mismatch":
@@ -142,21 +156,21 @@ def run(args: argparse.Namespace) -> int:
         raise observation_error
     trace_record: JsonValue | None = None
     if observation is not None and trace is not None:
-        trace_record = {"schemaVersion": 1, "kind": "live-io-trace", "observer": process_identity(os.getpid()), "process": launch_value["child"], "processGroup": child_pid, "executable": str(executable), "executableSHA256": executable_sha, "observationStartMonotonicNs": started, "observationEndMonotonicNs": ended, "sampleCount": sample_count, "events": observed_events}
+        trace_record = {"schemaVersion": 1, "kind": "live-io-trace", "observer": process_identity(os.getpid()), "process": observed_child, "processGroup": child_pid, "executable": str(observed_executable), "executableSHA256": observed_executable_sha, "observationStartMonotonicNs": started, "observationEndMonotonicNs": ended, "sampleCount": sample_count, "events": observed_events}
         exclusive_write(trace, (json.dumps(trace_record, sort_keys=True, separators=(",", ":")) + "\n").encode())
     prerequisites = prerequisite_records(args.exit_prerequisite)
     if trace is not None:
         prerequisites.append({"path": str(trace), "sha256": sha256_file(trace)})
-    exit_value: JsonValue = {"schemaVersion": 1, "kind": "process-exit", "commandID": args.command_id, "launchReceipt": {"path": str(launch), "sha256": sha256_file(launch)}, "exitStatus": exit_status if exit_status >= 0 else None, "signal": -exit_status if exit_status < 0 else None, "endMonotonicNs": ended, "prerequisites": prerequisites}
+    exit_value: JsonValue = {"schemaVersion": 1, "kind": "process-exit", "commandID": args.command_id, "launchReceipt": {"path": str(launch), "sha256": sha256_file(launch)}, "postExecChild": observed_child, "observedExecutable": str(observed_executable), "observedExecutableSHA256": observed_executable_sha, "exitStatus": exit_status if exit_status >= 0 else None, "signal": -exit_status if exit_status < 0 else None, "endMonotonicNs": ended, "prerequisites": prerequisites}
     exclusive_json(exit_path, exit_value)
     if observation is not None and trace is not None and trace_record is not None:
         events = trace_record["events"]
         if not isinstance(events, list):
             raise EvidenceError("invalid-live-io-trace", str(trace))
-        observation_value: JsonValue = {"schemaVersion": 1, "kind": "live-io-observation", "process": launch_value["child"], "executable": str(executable), "executableSHA256": executable_sha, "observationStartMonotonicNs": started, "observationEndMonotonicNs": ended, "sourceReceipts": [{"path": str(launch), "sha256": sha256_file(launch)}, {"path": str(exit_path), "sha256": sha256_file(exit_path)}], "trace": {"path": str(trace), "sha256": sha256_file(trace)}, "deviceOpenCount": sum(1 for event in events if isinstance(event, dict) and event.get("kind") == "device-open"), "serialWriteCount": sum(1 for event in events if isinstance(event, dict) and event.get("kind") == "serial-write")}
+        observation_value: JsonValue = {"schemaVersion": 1, "kind": "live-io-observation", "process": observed_child, "executable": str(observed_executable), "executableSHA256": observed_executable_sha, "observationStartMonotonicNs": started, "observationEndMonotonicNs": ended, "sourceReceipts": [{"path": str(launch), "sha256": sha256_file(launch)}, {"path": str(exit_path), "sha256": sha256_file(exit_path)}], "trace": {"path": str(trace), "sha256": sha256_file(trace)}, "deviceOpenCount": sum(1 for event in events if isinstance(event, dict) and event.get("kind") == "device-open"), "serialWriteCount": sum(1 for event in events if isinstance(event, dict) and event.get("kind") == "serial-write")}
         exclusive_json(observation, observation_value)
         if args.finalize_fd is not None:
-            finalize_receipt(args.finalize_fd, exit_status, launch, exit_path, trace, observation)
+            finalize_receipt(args.finalize_fd, exit_status, launch, exit_path, trace, observation, pre_exec_child, observed_child, observed_executable, observed_executable_sha)
     return exit_status if exit_status >= 0 else 128 - exit_status
 
 

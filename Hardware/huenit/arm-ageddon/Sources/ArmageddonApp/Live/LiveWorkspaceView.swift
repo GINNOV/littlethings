@@ -4,7 +4,7 @@ import SwiftUI
 
 struct LiveWorkspaceView: View {
     @Environment(AppModel.self) private var appModel
-    @State private var manualControlsPresented = false
+    @State private var manualControlsPresented = true
 
     var body: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.standard) {
@@ -19,6 +19,10 @@ struct LiveWorkspaceView: View {
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
+                sourceMenu
+                    .frame(maxWidth: 220)
+                modelMenu
+                    .frame(maxWidth: 240)
                 Button(
                     appModel.livePreview.isPaused ? "Resume preview" : "Pause preview",
                     systemImage: appModel.livePreview.isPaused ? "play.fill" : "pause.fill"
@@ -41,7 +45,9 @@ struct LiveWorkspaceView: View {
 
             HStack(alignment: .top, spacing: DesignTokens.Spacing.standard) {
                 previewPanel
+                    .layoutPriority(0)
                 controlPanel
+                    .layoutPriority(1)
             }
         }
         .padding(DesignTokens.Spacing.roomy)
@@ -54,23 +60,11 @@ struct LiveWorkspaceView: View {
             DesignTokens.Colors.canvas
             Group {
                 if appModel.cameraLifecycleSnapshot.authorization == .authorized,
-                   appModel.cameraLifecycleSnapshot.connection == .connected {
-                    if let previewLayer = appModel.livePreview.previewLayer {
-                        ZStack {
-                            CameraPreviewSurface(previewLayer: previewLayer)
-                                .accessibilityIdentifier("camera.preview")
-                            DetectionOverlayView(
-                                observations: appModel.livePreview.observations,
-                                selectedObservationID: appModel.livePreview.selectedObservationID,
-                                sourceFormat: appModel.livePreview.negotiatedFormat,
-                                modelSize: appModel.livePreview.detectorInputSize,
-                                selectObservation: { appModel.livePreview.selectObservation(id: $0) }
-                            )
-                        }
-                    } else {
-                        previewPreparing
-                    }
-                } else {
+                   appModel.cameraLifecycleSnapshot.connection == .connected,
+                   let previewLayer = appModel.livePreview.previewLayer {
+                    CameraPreviewSurface(previewLayer: previewLayer)
+                        .accessibilityIdentifier("camera.preview")
+                } else if appModel.livePreview.observations.isEmpty {
                     CameraAuthorizationView(
                         snapshot: appModel.cameraLifecycleSnapshot,
                         requestPermission: {
@@ -81,10 +75,18 @@ struct LiveWorkspaceView: View {
                             Task { await appModel.rescanCameras() }
                         }
                     )
+                    .multilineTextAlignment(.center)
+                    .padding(DesignTokens.Spacing.roomy)
                 }
             }
-            .multilineTextAlignment(.center)
-            .padding(DesignTokens.Spacing.roomy)
+            DetectionOverlayView(
+                observations: appModel.livePreview.observations,
+                selectedObservationID: appModel.livePreview.selectedObservationID,
+                sourceFormat: appModel.livePreview.negotiatedFormat,
+                modelSize: appModel.livePreview.detectorInputSize,
+                selectObservation: { appModel.livePreview.selectObservation(id: $0) }
+            )
+            .padding(20)
 
             if appModel.livePreview.isPaused {
                 Label("Preview paused", systemImage: "pause.circle.fill")
@@ -106,9 +108,9 @@ struct LiveWorkspaceView: View {
                     .accessibilityIdentifier("live.capture.message")
             }
         }
-        .frame(minWidth: 560, maxWidth: .infinity, minHeight: 410, maxHeight: .infinity)
+        .frame(minWidth: 280, maxWidth: .infinity, minHeight: 280, maxHeight: .infinity)
         .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.standard))
-        .accessibilityLabel("Live camera canvas")
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("live.canvas")
     }
 
@@ -172,74 +174,67 @@ struct LiveWorkspaceView: View {
         .padding(DesignTokens.Spacing.roomy)
         .frame(width: 282, alignment: .leading)
         .background(DesignTokens.Colors.canvas, in: RoundedRectangle(cornerRadius: DesignTokens.Spacing.standard))
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("live.control-panel")
     }
 
     private var sourceMenu: some View {
-        Menu {
-            Button("Native camera", systemImage: "camera.fill") {
-                Task { await appModel.livePreview.selectSource(.nativeCamera) }
-            }
-            Button("Recorded fixture", systemImage: "rectangle.inset.filled") {
-                Task { await appModel.livePreview.selectSource(.recordedFixture) }
-            }
-            Button("Rescan cameras", systemImage: "arrow.clockwise") {
-                Task { await appModel.rescanCameras() }
-            }
-            Divider()
-            Button("HUENIT telemetry · detection only", systemImage: "cable.connector") {}
-                .disabled(true)
-        } label: {
-            Label("Source · \(appModel.livePreview.selectedSource.label)", systemImage: "camera.fill")
-                .frame(maxWidth: .infinity, alignment: .leading)
+        Picker(
+            "Source",
+            selection: Binding(
+                get: { appModel.livePreview.selectedSource },
+                set: { source in
+                    Task { await appModel.livePreview.selectSource(source) }
+                }
+            )
+        ) {
+            Text("Native camera").tag(LivePreviewSource.nativeCamera)
+            Text("Recorded fixture").tag(LivePreviewSource.recordedFixture)
+            Text("HUENIT telemetry · detection only").tag(LivePreviewSource.huenitTelemetry)
         }
-        .buttonStyle(.bordered)
+        .labelsHidden()
+        .pickerStyle(.menu)
+        .accessibilityLabel("Source · \(appModel.livePreview.selectedSource.label)")
         .accessibilityIdentifier("live.source-picker")
     }
 
     private var modelMenu: some View {
-        Menu {
-            Button("Fixture detector", systemImage: "cube") {
-                Task {
-                    await appModel.livePreview.selectFixtureModel(
-                        id: "fixture.constant.detector",
-                        label: "Fixture detector"
-                    )
+        Picker(
+            "Model",
+            selection: Binding(
+                get: { appModel.livePreview.activeModelID },
+                set: { identifier in
+                    Task {
+                        if identifier == "fixture.constant.detector" {
+                            await appModel.livePreview.selectFixtureModel(
+                                id: identifier,
+                                label: "Fixture detector"
+                            )
+                        } else if identifier == "fixture.recorded.detector" {
+                            await appModel.livePreview.selectFixtureModel(
+                                id: identifier,
+                                label: "Recorded fixture detector"
+                            )
+                        } else {
+                            await appModel.activateModel(id: identifier)
+                        }
+                    }
                 }
-            }
-            Button("Recorded fixture detector", systemImage: "rectangle.inset.filled") {
-                Task {
-                    await appModel.livePreview.selectFixtureModel(
-                        id: "fixture.recorded.detector",
-                        label: "Recorded fixture detector"
-                    )
-                }
-            }
+            )
+        ) {
+            Text("Fixture detector").tag("fixture.constant.detector")
+            Text("Recorded fixture detector").tag("fixture.recorded.detector")
             ForEach(appModel.modelRegistrySnapshot.models) { model in
-                Button {
-                    Task { await appModel.activateModel(id: model.id) }
-                } label: {
-                    Label(
-                        model.displayName,
-                        systemImage: model.id == appModel.modelRegistrySnapshot.activeModelID
-                            ? "checkmark.circle.fill"
-                            : "cube"
-                    )
-                }
+                Text(model.displayName).tag(model.id)
             }
-            if appModel.modelRegistrySnapshot.models.isEmpty {
-                Text("No imported model is active")
-                    .foregroundStyle(.secondary)
-            }
-        } label: {
-            Label("Model · \(appModel.livePreview.activeModelLabel)", systemImage: "cube")
-                .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .buttonStyle(.bordered)
+        .labelsHidden()
+        .pickerStyle(.menu)
+        .accessibilityLabel("Model · \(appModel.livePreview.activeModelLabel)")
         .accessibilityIdentifier("live.model-picker")
     }
 
-    private var performanceHealth: some View {
+    private var performanceHealthSummary: some View {
         let snapshot = appModel.livePreview.performanceSnapshot
         let targetingText = snapshot.targetingAvailable ? "Targeting available" : "Targeting inhibited"
         return HStack(alignment: .top, spacing: DesignTokens.Spacing.standard) {
@@ -252,14 +247,6 @@ struct LiveWorkspaceView: View {
                 Text(snapshot.healthReason)
                     .font(DesignTokens.Typography.supporting)
                     .foregroundStyle(.secondary)
-                if snapshot.health != .ready,
-                   snapshot.health != .insufficientData {
-                    Button("Retry detection", systemImage: "arrow.clockwise") {
-                        Task { await appModel.retryLiveDetection() }
-                    }
-                    .buttonStyle(.bordered)
-                    .accessibilityIdentifier("live.retry-detection")
-                }
             }
             Spacer(minLength: DesignTokens.Spacing.standard)
             Text(targetingText)
@@ -275,6 +262,21 @@ struct LiveWorkspaceView: View {
         .accessibilityIdentifier("live.performance-health")
     }
 
+    private var performanceHealth: some View {
+        let snapshot = appModel.livePreview.performanceSnapshot
+        return VStack(alignment: .leading, spacing: DesignTokens.Spacing.compact) {
+            performanceHealthSummary
+            if snapshot.health != .ready,
+               snapshot.health != .insufficientData {
+                Button("Retry detection", systemImage: "arrow.clockwise") {
+                    Task { await appModel.retryLiveDetection() }
+                }
+                .buttonStyle(.bordered)
+                .accessibilityIdentifier("live.retry-detection")
+            }
+        }
+    }
+
     private var manualControls: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.compact) {
             Text("Hardware motion is locked until calibration and a safety profile are loaded.")
@@ -282,11 +284,15 @@ struct LiveWorkspaceView: View {
                 .foregroundStyle(.secondary)
             HStack {
                 Button("− X") {}
+                    .accessibilityIdentifier("live.manual.minus-x")
                 Button("+ X") {}
+                    .accessibilityIdentifier("live.manual.plus-x")
                 Button("+ Y") {}
+                    .accessibilityIdentifier("live.manual.plus-y")
             }
             .buttonStyle(.bordered)
             .disabled(true)
+            .accessibilityElement(children: .contain)
             .accessibilityIdentifier("live.manual-motion-buttons")
         }
         .padding(.top, DesignTokens.Spacing.compact)

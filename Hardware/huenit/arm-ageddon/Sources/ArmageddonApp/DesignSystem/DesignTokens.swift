@@ -9,6 +9,7 @@ enum DesignTokens {
         static let danger = Color("DangerAction")
         static let canvasPrimary = Color.white
         static let canvasSecondary = Color.white.opacity(0.82)
+        static let canvasTertiary = Color.white.opacity(0.62)
     }
 
     enum Spacing {
@@ -31,6 +32,6 @@ enum DesignTokens {
         static let defaultWindowWidth: CGFloat = 1_280
         static let defaultWindowHeight: CGFloat = 800
         static let sidebarWidth: CGFloat = 210
-        static let inspectorWidth: CGFloat = 216
+        static let inspectorWidth: CGFloat = 360
     }
 }

@@ -207,37 +207,44 @@ public final class LivePreviewModel {
             ),
         ])
         let pipeline = try DetectorPipeline(manifest: manifest, engine: engine)
+        let now = telemetryClock.now()
+        let captureInstant = now.adding(nanoseconds: -55_000_000) ?? now
+        let receivedAt = now.adding(nanoseconds: -35_000_000) ?? now
+        let startedAt = now.adding(nanoseconds: -35_000_000) ?? now
+        let finishedAt = now.adding(nanoseconds: -15_000_000) ?? now
         let frame = CameraFrameMetadata(
             id: 1,
             rawPresentationTimestamp: 1,
-            captureInstant: MonotonicInstant(nanoseconds: 1_000_000_000),
+            captureInstant: captureInstant,
             format: CaptureFormat(width: 1_920, height: 1_080, frameRate: 30)
         )
         negotiatedFormat = frame.format
         latestFrame = frame
         observations = try await pipeline.process(
             frame: frame,
-            now: MonotonicInstant(nanoseconds: 2_000_000_000),
+            now: now,
             generation: 1
         )
         selectedObservationID = nil
         if let telemetry {
             try? await telemetry.recordFrame(
                 captureInstant: frame.captureInstant,
-                receivedAt: MonotonicInstant(nanoseconds: 1_020_000_000),
+                receivedAt: receivedAt,
                 negotiatedFPS: frame.format.frameRate,
                 droppedFramesSinceLastSample: 0,
                 queueDepth: 1
             )
             try? await telemetry.recordInference(
                 captureInstant: frame.captureInstant,
-                startedAt: MonotonicInstant(nanoseconds: 1_020_000_000),
-                finishedAt: MonotonicInstant(nanoseconds: 1_040_000_000),
-                overlayAt: MonotonicInstant(nanoseconds: 1_055_000_000),
+                startedAt: startedAt,
+                finishedAt: finishedAt,
+                overlayAt: now,
                 queueDepth: 1
             )
-            performanceSnapshot = await telemetry.snapshot(now: MonotonicInstant(nanoseconds: 1_055_000_000))
-            await persistPerformanceSummary()
+            performanceSnapshot = await telemetry.snapshot(now: now)
+            if let persisted = try? await telemetry.persistSummary(now: now) {
+                performanceSnapshot = persisted
+            }
         }
     }
 

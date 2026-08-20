@@ -10,9 +10,11 @@ final class AppModel {
     private let cameraLifecycle: NativeCameraLifecycleController
     private let cameraLifecycleObserver: AVFoundationCameraLifecycleObserver
     private let modelRegistry: ModelRegistry
+    private let k210Inventory: K210ArtifactInventory
     private let captureStore: CaptureSessionStore?
     private let diagnosticLog: DiagnosticEventLog?
     let livePreview: LivePreviewModel
+    let calibrationWizard: CalibrationWizardModel
 
     private(set) var destination: String
     private(set) var selectedDevice: DeviceIdentity?
@@ -24,6 +26,8 @@ final class AppModel {
     private(set) var cameraLifecycleSnapshot: NativeCameraLifecycleSnapshot
     private(set) var modelRegistrySnapshot: ModelRegistrySnapshot
     private(set) var modelImportError: String?
+    private(set) var k210Artifacts: [K210ArtifactRecord]
+    private(set) var k210InventoryError: String?
     private(set) var captures: [CaptureRecord] = []
     private(set) var captureError: String?
     private(set) var diagnosticEvents: [DiagnosticEvent] = []
@@ -36,15 +40,22 @@ final class AppModel {
         cameraLifecycleObserver: AVFoundationCameraLifecycleObserver = AVFoundationCameraLifecycleObserver(),
         modelRegistry: ModelRegistry? = nil,
         livePreview: LivePreviewModel = LivePreviewModel(),
+        calibrationWizard: CalibrationWizardModel? = nil,
+        calibrationProfileURL: URL? = nil,
         captureRoot: URL? = nil
     ) {
         self.coordinator = coordinator
         self.cameraLifecycle = cameraLifecycle
         self.cameraLifecycleObserver = cameraLifecycleObserver
         self.modelRegistry = modelRegistry ?? ModelRegistry(root: Self.defaultModelRegistryRoot())
+        self.k210Inventory = K210ArtifactInventory(
+            root: Self.defaultK210InventoryRoot(),
+            decision: Self.defaultK210CapabilityDecision()
+        )
         self.captureStore = Self.makeCaptureStore(root: captureRoot ?? Self.defaultCaptureRoot())
         self.diagnosticLog = try? DiagnosticEventLog()
         self.livePreview = livePreview
+        self.calibrationWizard = calibrationWizard ?? CalibrationWizardModel(profileURL: calibrationProfileURL)
         destination = restoredState.destination
         selectedDevice = restoredState.selectedDevice
         selectedModelID = restoredState.selectedModelID
@@ -55,6 +66,8 @@ final class AppModel {
         cameraLifecycleSnapshot = NativeCameraLifecycleSnapshot(authorization: .notDetermined)
         modelRegistrySnapshot = .empty
         modelImportError = nil
+        k210Artifacts = []
+        k210InventoryError = nil
         captureError = nil
         supportBundleURL = nil
     }
@@ -103,10 +116,16 @@ final class AppModel {
 
     func loadFixtureOverlay() async {
         try? await livePreview.loadDeterministicFixtureOverlay()
+        if let format = livePreview.negotiatedFormat {
+            calibrationWizard.updateCurrentFormat(format)
+        }
     }
 
     func retryLiveDetection() async {
         await livePreview.reloadDeterministicFixtureOverlay()
+        if let format = livePreview.negotiatedFormat {
+            calibrationWizard.updateCurrentFormat(format)
+        }
     }
 
     func simulateModelFailureFixture() async {
@@ -121,6 +140,10 @@ final class AppModel {
         } catch {
             modelImportError = modelErrorMessage(error)
         }
+    }
+
+    func refreshK210Artifacts() async {
+        k210Artifacts = await k210Inventory.all()
     }
 
     func openCaptures() async {
@@ -288,9 +311,87 @@ final class AppModel {
         }
     }
 
+    func importK210Bundle(manifestURL: URL, modelURL: URL, scriptURL: URL) async {
+        do {
+            _ = try await k210Inventory.importBundle(
+                manifestURL: manifestURL,
+                modelURL: modelURL,
+                scriptURL: scriptURL
+            )
+            k210Artifacts = await k210Inventory.all()
+            k210InventoryError = nil
+        } catch {
+            k210InventoryError = k210ErrorMessage(error)
+        }
+    }
+
+    func importK210Bundle(urls: [URL]) async {
+        do {
+            guard let manifestURL = urls.first(where: { $0.lastPathComponent.hasSuffix(".armk210.json") }) else {
+                throw K210InventoryError.missingArtifact("manifest.armk210.json")
+            }
+            let manifest = try JSONDecoder().decode(
+                K210ArtifactManifest.self,
+                from: Data(contentsOf: manifestURL)
+            )
+            guard let modelURL = urls.first(where: { $0.lastPathComponent == manifest.modelFilename }) else {
+                throw K210InventoryError.missingArtifact(manifest.modelFilename)
+            }
+            guard let scriptURL = urls.first(where: { $0.lastPathComponent == manifest.scriptFilename }) else {
+                throw K210InventoryError.missingArtifact(manifest.scriptFilename)
+            }
+            await importK210Bundle(manifestURL: manifestURL, modelURL: modelURL, scriptURL: scriptURL)
+        } catch {
+            k210InventoryError = k210ErrorMessage(error)
+        }
+    }
+
+    func importK210Bundle(directoryURL: URL) async {
+        let isAccessingSecurityScopedResource = directoryURL.startAccessingSecurityScopedResource()
+        defer {
+            if isAccessingSecurityScopedResource {
+                directoryURL.stopAccessingSecurityScopedResource()
+            }
+        }
+        do {
+            let urls = try FileManager.default.contentsOfDirectory(
+                at: directoryURL,
+                includingPropertiesForKeys: nil,
+                options: [.skipsHiddenFiles]
+            )
+            await importK210Bundle(urls: urls)
+        } catch {
+            k210InventoryError = k210ErrorMessage(error)
+        }
+    }
+
+    func exportK210Artifact(id: String, to directory: URL) async {
+        do {
+            _ = try await k210Inventory.exportBundle(identifier: id, to: directory)
+            k210InventoryError = nil
+        } catch {
+            k210InventoryError = k210ErrorMessage(error)
+        }
+    }
+
     func activateModel(id: String) async {
         do {
             _ = try await modelRegistry.activate(identifier: id)
+            modelRegistrySnapshot = try await modelRegistry.snapshot()
+            modelImportError = nil
+            selectedModelID = id
+            if let model = modelRegistrySnapshot.models.first(where: { $0.id == id }) {
+                livePreview.setActiveModel(id: model.id, label: model.displayName, hash: model.artifactHash)
+            }
+            await persistSelections()
+        } catch {
+            modelImportError = modelErrorMessage(error)
+        }
+    }
+
+    func rollbackModel(id: String) async {
+        do {
+            _ = try await modelRegistry.rollback(to: id)
             modelRegistrySnapshot = try await modelRegistry.snapshot()
             modelImportError = nil
             selectedModelID = id
@@ -350,6 +451,9 @@ final class AppModel {
         cameraLifecycleSnapshot = await cameraLifecycle.snapshot()
         do {
             try await livePreview.start(device: device)
+            if let format = livePreview.negotiatedFormat {
+                calibrationWizard.updateCurrentFormat(format)
+            }
             await cameraLifecycle.markConnected()
         } catch {
             await livePreview.stop()
@@ -374,6 +478,24 @@ final class AppModel {
         FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("Armageddon", isDirectory: true)
             .appendingPathComponent("Models", isDirectory: true)
+    }
+
+    private static func defaultK210InventoryRoot() -> URL {
+        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("Armageddon", isDirectory: true)
+            .appendingPathComponent("K210", isDirectory: true)
+    }
+
+    private static func defaultK210CapabilityDecision() -> HuenitCameraCapabilityDecision {
+        HuenitCameraCapabilityDecision(
+            status: .notMeasured,
+            supported: [],
+            unsupportedReasons: [
+                .preview: "HUENIT preview has not been measured.",
+                .artifactUpload: "HUENIT artifact upload has not been measured."
+            ],
+            profile: nil
+        )
     }
 
     private static func defaultCaptureRoot() -> URL {
@@ -403,6 +525,21 @@ final class AppModel {
             return registryError.reason
         }
         return "The model could not be activated."
+    }
+
+    private func k210ErrorMessage(_ error: Error) -> String {
+        guard let error = error as? K210InventoryError else {
+            return "The K210 bundle could not be imported."
+        }
+        return switch error {
+        case .invalidFilename: "The K210 bundle contains an unsafe filename or identifier."
+        case .missingLabels: "The K210 manifest must contain unique labels."
+        case .invalidAnchors: "The K210 manifest contains invalid anchors."
+        case let .missingArtifact(name): "The K210 bundle is missing \(name)."
+        case let .hashMismatch(name): "The K210 \(name) hash does not match its manifest."
+        case .destinationExists: "That K210 destination already exists."
+        case .uploadUnsupported: "In-app K210 upload is unsupported; copy the verified bundle manually."
+        }
     }
 
     private func recordDiagnostic(

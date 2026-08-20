@@ -142,7 +142,7 @@ def fsync_parent(path: Path) -> None:
 
 
 def process_identity(pid: int) -> dict[str, JsonValue]:
-    result = subprocess.run(["ps", "-p", str(pid), "-o", "lstart=", "-o", "comm="], check=False, capture_output=True, text=True)
+    result = subprocess.run(["/bin/ps", "-p", str(pid), "-o", "lstart="], check=False, capture_output=True, text=True)
     if result.returncode != 0 or not result.stdout.strip():
         raise EvidenceError("missing-process", f"pid {pid}")
     return {"pid": pid, "birthAndCommand": result.stdout.strip()}

@@ -3,7 +3,6 @@ import SwiftUI
 
 struct DiagnosticsWorkspaceView: View {
     @Environment(AppModel.self) private var appModel
-    let recoveryAction: @MainActor () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.standard) {
@@ -21,7 +20,7 @@ struct DiagnosticsWorkspaceView: View {
                     Task { await appModel.refreshDiagnostics() }
                 }
                 .buttonStyle(.bordered)
-                Button("Export support bundle", systemImage: "square.and.arrow.up") {
+                Button("Export support", systemImage: "square.and.arrow.up") {
                     exportBundle()
                 }
                 .buttonStyle(.borderedProminent)
@@ -39,7 +38,8 @@ struct DiagnosticsWorkspaceView: View {
                 ErrorStateView(
                     title: "No diagnostic events yet",
                     description: "Refresh after using Live, Capture, or Models to see bounded local events.",
-                    recoveryAction: recoveryAction
+                    actionTitle: "Refresh diagnostics",
+                    recoveryAction: { Task { await appModel.refreshDiagnostics() } }
                 )
             } else {
                 List(appModel.diagnosticEvents) { event in
@@ -75,9 +75,10 @@ struct DiagnosticsWorkspaceView: View {
         VStack(alignment: .leading, spacing: 5) {
             Label(title, systemImage: symbol)
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(DesignTokens.Colors.canvasSecondary)
             Text(value.capitalized)
                 .font(DesignTokens.Typography.sectionTitle)
+                .foregroundStyle(DesignTokens.Colors.canvasPrimary)
         }
         .padding(DesignTokens.Spacing.standard)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -86,6 +87,8 @@ struct DiagnosticsWorkspaceView: View {
 
     private func exportBundle() {
         let panel = NSOpenPanel()
+        panel.message = "Choose a destination folder for the support bundle."
+        panel.prompt = "Choose Support Folder"
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
         panel.allowsMultipleSelection = false

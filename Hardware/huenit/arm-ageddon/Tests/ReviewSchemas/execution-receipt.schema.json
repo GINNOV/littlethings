@@ -22,7 +22,10 @@
       "additionalProperties": false
     },
     "observedExecutable": {"type": "string"},
-    "observedExecutableSHA256": {"type": "string", "pattern": "[0-9a-f]{64}"}
+    "observedExecutableSHA256": {"type": "string", "pattern": "[0-9a-f]{64}"},
+    "intendedExecutable": {"type": "string"},
+    "intendedExecutableSHA256": {"type": "string", "pattern": "[0-9a-f]{64}"},
+    "postExecChild": {"type": "object"}
   },
   "allOf": [
     {
@@ -31,7 +34,7 @@
     },
     {
       "if": {"properties": {"kind": {"const": "process-launch"}}},
-      "then": {"required": ["observedExecutable", "observedExecutableSHA256"]}
+      "then": {"required": ["intendedExecutable", "intendedExecutableSHA256", "child", "preexecBarrier"]}
     }
   ]
 }

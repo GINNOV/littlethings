@@ -50,6 +50,7 @@ struct ArmageddonApp: App {
             restoredState: restored,
             cameraLifecycle: cameraLifecycle,
             modelRegistry: ModelRegistry(root: Self.modelRegistryURL(for: result)),
+            calibrationProfileURL: Self.calibrationProfileURL(for: result),
             captureRoot: Self.captureRoot(for: result)
         )
         _appModel = State(initialValue: applicationModel)
@@ -68,11 +69,15 @@ struct ArmageddonApp: App {
             .task {
                 await appModel.restore()
                 await appModel.refreshModels()
+                await appModel.refreshK210Artifacts()
                 await appModel.openCaptures()
                 await appModel.refreshCameraLifecycle()
                 if isUITesting {
-                    await appModel.loadFixtureOverlay()
                     let fixtureProfile = try? launch.get().profile
+                    if fixtureProfile != .noDevices,
+                       fixtureProfile != .permissionDenied {
+                        await appModel.loadFixtureOverlay()
+                    }
                     if fixtureProfile == .modelFailed {
                         await appModel.simulateModelFailureFixture()
                     }
@@ -149,5 +154,13 @@ struct ArmageddonApp: App {
             ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         return root.appendingPathComponent("Armageddon", isDirectory: true)
             .appendingPathComponent("Captures", isDirectory: true)
+    }
+
+    private static func calibrationProfileURL(for launch: Result<LaunchArguments, Error>) -> URL {
+        let root = (try? launch.get().paths?.applicationSupport)
+            ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        return root.appendingPathComponent("Armageddon", isDirectory: true)
+            .appendingPathComponent("Calibration", isDirectory: true)
+            .appendingPathComponent("active-profile.json")
     }
 }

@@ -2,11 +2,13 @@ import ArmageddonCore
 import SwiftUI
 
 struct ContextualInspectorView: View {
+    @Environment(AppModel.self) private var appModel
     let destination: AppDestination
     let selectedObservation: DetectionObservation?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: DesignTokens.Spacing.roomy) {
+        ScrollView {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.roomy) {
             Label("\(destination.title) inspector", systemImage: destination.symbol)
                 .font(DesignTokens.Typography.sectionTitle)
             Divider()
@@ -26,16 +28,20 @@ struct ContextualInspectorView: View {
                 )
                     .foregroundStyle(.secondary)
             }
-            LabeledContent("Calibration") {
-                Label("Not configured", systemImage: "exclamationmark.triangle")
-                    .foregroundStyle(.secondary)
+                if destination == .live {
+                    CalibrationWizardView(model: appModel.calibrationWizard)
+                } else {
+                    LabeledContent("Calibration") {
+                        Label(appModel.calibrationWizard.calibrationStatus, systemImage: "scope")
+                            .foregroundStyle(appModel.calibrationWizard.activeProfile == nil ? Color.secondary : Color.green)
+                    }
+                    Text("Open Live to configure the camera workspace.")
+                        .font(DesignTokens.Typography.supporting)
+                        .foregroundStyle(.secondary)
+                }
             }
-            Spacer()
-            Text("Contextual controls will appear when this workspace has an active selection.")
-                .font(DesignTokens.Typography.supporting)
-                .foregroundStyle(.secondary)
+            .padding(DesignTokens.Spacing.roomy)
         }
-        .padding(DesignTokens.Spacing.roomy)
         .accessibilityIdentifier("inspector.\(destination.accessibilityName)")
     }
 }

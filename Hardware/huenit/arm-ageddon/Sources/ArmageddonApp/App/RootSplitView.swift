@@ -37,8 +37,7 @@ struct RootSplitView: View {
             .accessibilityIdentifier("app.sidebar")
         } detail: {
             DestinationWorkspaceView(
-                destination: model.destination,
-                recoveryAction: actions.requestRecovery
+                destination: model.destination
             )
         }
         .inspector(isPresented: $showInspectorOnLaunch) {
@@ -61,6 +60,7 @@ struct RootSplitView: View {
             minWidth: DesignTokens.Layout.minimumWindowWidth,
             minHeight: DesignTokens.Layout.minimumWindowHeight
         )
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("app.shell")
     }
 }
