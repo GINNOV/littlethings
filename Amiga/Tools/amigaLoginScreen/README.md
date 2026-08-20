@@ -2,7 +2,9 @@
 
 A zero-dependency macOS Droplet and command-line utility that formats and sets classic Commodore Amiga boot screens (or any custom image / animated GIF) as your Mac desktop wallpaper and lock screen.
 
-![AmigaLoginScreen](AppIcon.icns)
+<p align="center">
+  <img src="AppIcon.png" alt="AmigaLoginScreen" width="128" />
+</p>
 
 ---
 
