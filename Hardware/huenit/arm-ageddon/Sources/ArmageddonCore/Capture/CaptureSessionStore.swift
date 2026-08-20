@@ -131,6 +131,7 @@ public actor CaptureSessionStore {
         let id = UUID().uuidString.lowercased()
         let imageID = "capture-\(id)-image"
         let thumbnailID = thumbnail.map { _ in "capture-\(id)-thumbnail" }
+        var indexInsertAttempted = false
         do {
             let imageRecord = try await artifacts.create(id: imageID, bytes: image)
             if let thumbnail, let thumbnailID {
@@ -145,14 +146,17 @@ public actor CaptureSessionStore {
                 imageHash: imageRecord.contentHash,
                 imageByteCount: image.count
             )
+            indexInsertAttempted = true
             try await index.insert(record)
             return record
         } catch {
-            try? await artifacts.trash(id: imageID)
-            try? await artifacts.purge(id: imageID)
-            if let thumbnailID {
-                try? await artifacts.trash(id: thumbnailID)
-                try? await artifacts.purge(id: thumbnailID)
+            if !indexInsertAttempted {
+                try? await artifacts.trash(id: imageID)
+                try? await artifacts.purge(id: imageID)
+                if let thumbnailID {
+                    try? await artifacts.trash(id: thumbnailID)
+                    try? await artifacts.purge(id: thumbnailID)
+                }
             }
             throw error
         }
