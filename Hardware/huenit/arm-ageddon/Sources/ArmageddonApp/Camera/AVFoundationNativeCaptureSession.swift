@@ -34,9 +34,13 @@ public final class AVFoundationNativeCaptureSession {
         requestedFormat: CaptureFormat = CaptureFormat(width: 1_280, height: 720, frameRate: 30)
     ) async throws -> CaptureFormat {
         await stop()
-        try configure(device: device, requested: requestedFormat)
+        let configuredRequestedFormat = try configure(device: device, requested: requestedFormat)
         let input = try AVCaptureDeviceInput(device: device)
-        let actualFormat = negotiatedFormat(for: device, requested: requestedFormat)
+        let actualFormat = negotiatedFormat(
+            for: device,
+            requested: requestedFormat,
+            configuredRequestedFormat: configuredRequestedFormat
+        )
         let videoOutput = AVCaptureVideoDataOutput()
         videoOutput.alwaysDiscardsLateVideoFrames = true
 
@@ -113,10 +117,16 @@ public final class AVFoundationNativeCaptureSession {
         await nativeSession.snapshot()
     }
 
-    private func negotiatedFormat(for device: AVCaptureDevice, requested: CaptureFormat) -> CaptureFormat {
+    private func negotiatedFormat(
+        for device: AVCaptureDevice,
+        requested: CaptureFormat,
+        configuredRequestedFormat: Bool
+    ) -> CaptureFormat {
         let dimensions = CMVideoFormatDescriptionGetDimensions(device.activeFormat.formatDescription)
         let configuredDuration = CMTimeGetSeconds(device.activeVideoMinFrameDuration)
-        let frameRate = configuredDuration.isFinite && configuredDuration > 0
+        let frameRate = configuredRequestedFormat
+            ? requested.frameRate
+            : configuredDuration.isFinite && configuredDuration > 0
             ? 1 / configuredDuration
             : device.activeFormat.videoSupportedFrameRateRanges.first?.maxFrameRate ?? requested.frameRate
         return CaptureFormat(
@@ -145,7 +155,7 @@ public final class AVFoundationNativeCaptureSession {
         }
     }
 
-    private func configure(device: AVCaptureDevice, requested: CaptureFormat) throws {
+    private func configure(device: AVCaptureDevice, requested: CaptureFormat) throws -> Bool {
         let requestedDimensions = CMVideoFormatDescriptionGetDimensions(
             device.activeFormat.formatDescription
         )
@@ -159,10 +169,14 @@ public final class AVFoundationNativeCaptureSession {
             }
         }
 
+        let activeFormatSupportsRequestedRate = device.activeFormat.videoSupportedFrameRateRanges.contains {
+            $0.minFrameRate <= requested.frameRate && requested.frameRate <= $0.maxFrameRate
+        }
         guard selectedFormat != nil ||
                 (requestedDimensions.width == Int32(requested.width) &&
-                 requestedDimensions.height == Int32(requested.height)) else {
-            return
+                 requestedDimensions.height == Int32(requested.height) &&
+                 activeFormatSupportsRequestedRate) else {
+            return false
         }
 
         try device.lockForConfiguration()
@@ -174,6 +188,7 @@ public final class AVFoundationNativeCaptureSession {
         let frameDuration = CMTime(value: 1, timescale: timescale)
         device.activeVideoMinFrameDuration = frameDuration
         device.activeVideoMaxFrameDuration = frameDuration
+        return true
     }
 }
 

@@ -29,8 +29,11 @@ let package = Package(
         .target(
             name: "ArmageddonCaptureAdapter",
             dependencies: ["ArmageddonCore"],
-            path: "Sources/ArmageddonApp/Camera",
-            sources: ["AVFoundationNativeCaptureSession.swift"],
+            path: "Sources/ArmageddonApp",
+            sources: [
+                "Camera/AVFoundationNativeCaptureSession.swift",
+                "Live/LivePreviewModel.swift",
+            ],
             swiftSettings: strictConcurrency,
             linkerSettings: [.linkedFramework("AVFoundation")]
         ),
