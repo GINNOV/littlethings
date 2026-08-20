@@ -139,6 +139,9 @@ public struct ModelRecord: Codable, Equatable, Sendable, Identifiable {
     public let installedRelativePath: String
     public let compiledRelativePath: String
     public let compiledHash: String
+    public let availability: ModelAvailability
+    public let availabilityReason: String?
+    public let benchmarkP95Milliseconds: Double
 
     public init(
         id: String,
@@ -148,7 +151,10 @@ public struct ModelRecord: Codable, Equatable, Sendable, Identifiable {
         detector: DetectorManifest,
         installedRelativePath: String,
         compiledRelativePath: String,
-        compiledHash: String
+        compiledHash: String,
+        availability: ModelAvailability = .ready,
+        availabilityReason: String? = nil,
+        benchmarkP95Milliseconds: Double = 0
     ) {
         self.id = id
         self.displayName = displayName
@@ -158,7 +164,39 @@ public struct ModelRecord: Codable, Equatable, Sendable, Identifiable {
         self.installedRelativePath = installedRelativePath
         self.compiledRelativePath = compiledRelativePath
         self.compiledHash = compiledHash
+        self.availability = availability
+        self.availabilityReason = availabilityReason
+        self.benchmarkP95Milliseconds = benchmarkP95Milliseconds
     }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, displayName, artifactHash, artifactKind, detector
+        case installedRelativePath, compiledRelativePath, compiledHash
+        case availability, availabilityReason, benchmarkP95Milliseconds
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            id: try container.decode(String.self, forKey: .id),
+            displayName: try container.decode(String.self, forKey: .displayName),
+            artifactHash: try container.decode(String.self, forKey: .artifactHash),
+            artifactKind: try container.decode(ModelArtifactKind.self, forKey: .artifactKind),
+            detector: try container.decode(DetectorManifest.self, forKey: .detector),
+            installedRelativePath: try container.decode(String.self, forKey: .installedRelativePath),
+            compiledRelativePath: try container.decode(String.self, forKey: .compiledRelativePath),
+            compiledHash: try container.decode(String.self, forKey: .compiledHash),
+            availability: try container.decodeIfPresent(ModelAvailability.self, forKey: .availability) ?? .ready,
+            availabilityReason: try container.decodeIfPresent(String.self, forKey: .availabilityReason),
+            benchmarkP95Milliseconds: try container.decodeIfPresent(Double.self, forKey: .benchmarkP95Milliseconds) ?? 0
+        )
+    }
+}
+
+public enum ModelAvailability: String, Codable, Equatable, Sendable {
+    case ready
+    case slow
+    case unsupported
 }
 
 public struct ModelRegistrySnapshot: Codable, Equatable, Sendable {
@@ -195,10 +233,52 @@ public enum ModelRegistryError: Error, Equatable, Sendable {
     case noActiveModel
     case corruptRegistry
     case activeModelCorrupt
+    case activationFailed
+
+    public var reason: String {
+        switch self {
+        case .unsupportedManifestSchema: "The model manifest schema is not supported."
+        case .invalidIdentifier: "The model identifier is unsafe."
+        case .invalidDisplayName: "The model name is empty."
+        case .invalidMinimumOS: "The minimum macOS version is malformed."
+        case .unsupportedMinimumOS: "This model requires a newer macOS version."
+        case .unsafeArtifactPath, .symlinkNotAllowed: "The model references an unsafe file path."
+        case .invalidArtifactHash, .manifestHashMismatch, .hashMismatch: "The model hash does not match its manifest."
+        case .unsupportedArtifact: "This model artifact format is unsupported."
+        case .invalidSmokeConfiguration: "The model smoke-test configuration is invalid."
+        case .artifactNotFound: "The model artifact could not be found."
+        case .compilerFailed: "Core ML could not compile the model."
+        case .smokeTestFailed: "The model failed its 30-frame smoke test."
+        case .modelNotFound: "The selected model is no longer installed."
+        case .noActiveModel: "No model is active."
+        case .corruptRegistry, .activeModelCorrupt: "The local model registry is corrupt."
+        case .activationFailed: "The model activation transaction could not be committed."
+        }
+    }
 }
 
 public protocol ModelCompiler: Sendable {
     func compile(artifactURL: URL, kind: ModelArtifactKind, destinationURL: URL) throws
+}
+
+public protocol ModelRegistryStateWriter: Sendable {
+    func replace(data: Data, at destinationURL: URL) throws
+}
+
+public struct AtomicModelRegistryStateWriter: ModelRegistryStateWriter {
+    public init() {}
+
+    public func replace(data: Data, at destinationURL: URL) throws {
+        let temporaryURL = destinationURL.deletingLastPathComponent()
+            .appendingPathComponent(".registry-\(UUID().uuidString).tmp")
+        try data.write(to: temporaryURL, options: [.atomic])
+        _ = try FileManager.default.replaceItemAt(
+            destinationURL,
+            withItemAt: temporaryURL,
+            backupItemName: nil,
+            options: .usingNewMetadataOnly
+        )
+    }
 }
 
 public protocol ModelSmokeTester: Sendable {
@@ -242,17 +322,71 @@ public struct CoreMLModelSmokeTester: ModelSmokeTester {
         guard FileManager.default.fileExists(atPath: compiledModelURL.path) else {
             throw ModelRegistryError.compilerFailed
         }
-        if manifest.artifact.kind == .fixture { return }
+        guard fixtureFrame.count == manifest.detector.input.width * manifest.detector.input.height else {
+            throw ModelRegistryError.smokeTestFailed(frame: frameIndex)
+        }
+        if manifest.artifact.kind == .fixture {
+            guard try Data(contentsOf: compiledModelURL).range(of: Data("constant-output-detector".utf8)) != nil else {
+                throw ModelRegistryError.smokeTestFailed(frame: frameIndex)
+            }
+            return
+        }
 #if canImport(CoreML)
         let model = try MLModel(contentsOf: compiledModelURL)
-        guard !model.modelDescription.inputDescriptionsByName.isEmpty,
-              !fixtureFrame.isEmpty else {
+        guard let input = model.modelDescription.inputDescriptionsByName.first,
+              input.value.type == .image,
+              input.value.imageConstraint?.pixelsWide == manifest.detector.input.width,
+              input.value.imageConstraint?.pixelsHigh == manifest.detector.input.height else {
             throw ModelRegistryError.smokeTestFailed(frame: frameIndex)
+        }
+        let pixelBuffer = try makeFixturePixelBuffer(
+            width: manifest.detector.input.width,
+            height: manifest.detector.input.height,
+            bytes: fixtureFrame
+        )
+        let provider = try MLDictionaryFeatureProvider(dictionary: [
+            input.key: MLFeatureValue(pixelBuffer: pixelBuffer)
+        ])
+        let output = try model.prediction(from: provider)
+        switch manifest.detector.output.kind {
+        case .visionObjects:
+            guard !output.featureNames.isEmpty else { throw ModelRegistryError.smokeTestFailed(frame: frameIndex) }
+        case .multiArray:
+            guard let coordinatesKey = manifest.detector.output.coordinatesKey,
+                  let confidenceKey = manifest.detector.output.confidenceKey,
+                  output.featureValue(for: coordinatesKey)?.multiArrayValue != nil,
+                  output.featureValue(for: confidenceKey)?.multiArrayValue != nil else {
+                throw ModelRegistryError.smokeTestFailed(frame: frameIndex)
+            }
         }
 #else
         throw ModelRegistryError.smokeTestFailed(frame: frameIndex)
 #endif
     }
+
+#if canImport(CoreML)
+    private func makeFixturePixelBuffer(width: Int, height: Int, bytes: Data) throws -> CVPixelBuffer {
+        var pixelBuffer: CVPixelBuffer?
+        let status = CVPixelBufferCreate(
+            kCFAllocatorDefault,
+            width,
+            height,
+            kCVPixelFormatType_32BGRA,
+            nil,
+            &pixelBuffer
+        )
+        guard status == kCVReturnSuccess, let pixelBuffer else {
+            throw ModelRegistryError.smokeTestFailed(frame: 0)
+        }
+        CVPixelBufferLockBaseAddress(pixelBuffer, [])
+        defer { CVPixelBufferUnlockBaseAddress(pixelBuffer, []) }
+        guard let baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer) else {
+            throw ModelRegistryError.smokeTestFailed(frame: 0)
+        }
+        memset(baseAddress, 0, CVPixelBufferGetDataSize(pixelBuffer))
+        return pixelBuffer
+    }
+#endif
 }
 
 public actor ModelRegistry {
@@ -265,6 +399,7 @@ public actor ModelRegistry {
     private let root: URL
     private let compiler: any ModelCompiler
     private let smokeTester: any ModelSmokeTester
+    private let stateWriter: any ModelRegistryStateWriter
     private let operatingSystem: ModelMinimumOS
     private var state = State(activeModelID: nil, activeModelHash: nil, models: [])
     private var isOpen = false
@@ -273,11 +408,13 @@ public actor ModelRegistry {
         root: URL,
         compiler: any ModelCompiler = CoreMLModelCompiler(),
         smokeTester: any ModelSmokeTester = CoreMLModelSmokeTester(),
+        stateWriter: any ModelRegistryStateWriter = AtomicModelRegistryStateWriter(),
         operatingSystem: ModelMinimumOS = .current
     ) {
         self.root = root.standardizedFileURL
         self.compiler = compiler
         self.smokeTester = smokeTester
+        self.stateWriter = stateWriter
         self.operatingSystem = operatingSystem
     }
 
@@ -345,7 +482,9 @@ public actor ModelRegistry {
             throw ModelRegistryError.compilerFailed
         }
         let fixtureFrame = Data(repeating: 0, count: manifest.detector.input.width * manifest.detector.input.height)
+        var frameDurations: [Double] = []
         for frameIndex in 0..<30 {
+            let started = ContinuousClock.now
             do {
                 try smokeTester.run(
                     compiledModelURL: compiledURL,
@@ -358,9 +497,10 @@ public actor ModelRegistry {
             } catch {
                 throw ModelRegistryError.smokeTestFailed(frame: frameIndex)
             }
+            frameDurations.append(milliseconds(since: started))
         }
 
-        let installedName = "\(safeComponent(manifest.identifier))-\(manifest.artifact.sha256.prefix(12))"
+        let installedName = "\(safeComponent(manifest.identifier))-\(manifest.artifact.sha256.prefix(12))-\(transactionID)"
         let installedRoot = installedURL.appendingPathComponent(installedName, isDirectory: true)
         if FileManager.default.fileExists(atPath: installedRoot.path) {
             try FileManager.default.removeItem(at: installedRoot)
@@ -372,6 +512,9 @@ public actor ModelRegistry {
         try copySecure(compiledURL, to: installedCompiled)
         let relativeRoot = relativePath(installedRoot)
         let relativeCompiled = relativePath(installedCompiled)
+        let p95 = percentile95(frameDurations)
+        let availability: ModelAvailability = p95 > 250 ? .slow : .ready
+        let availabilityReason = availability == .slow ? "30-frame smoke p95 exceeded 250 ms." : nil
         let record = ModelRecord(
             id: manifest.identifier,
             displayName: manifest.displayName,
@@ -380,7 +523,10 @@ public actor ModelRegistry {
             detector: manifest.detector,
             installedRelativePath: relativeRoot,
             compiledRelativePath: relativeCompiled,
-            compiledHash: try artifactHash(at: installedCompiled, kind: manifest.artifact.kind == .fixture ? .fixture : .mlmodelc)
+            compiledHash: try artifactHash(at: installedCompiled, kind: manifest.artifact.kind == .fixture ? .fixture : .mlmodelc),
+            availability: availability,
+            availabilityReason: availabilityReason,
+            benchmarkP95Milliseconds: p95
         )
         var next = state
         next.models.removeAll { $0.id == record.id }
@@ -510,9 +656,11 @@ public actor ModelRegistry {
     private func writeState(_ next: State) throws {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys, .prettyPrinted]
-        let temporary = root.appendingPathComponent(".registry-\(UUID().uuidString).tmp")
-        try encoder.encode(next).write(to: temporary, options: [.atomic])
-        _ = try FileManager.default.replaceItemAt(registryURL, withItemAt: temporary, backupItemName: nil, options: .usingNewMetadataOnly)
+        do {
+            try stateWriter.replace(data: try encoder.encode(next), at: registryURL)
+        } catch {
+            throw ModelRegistryError.activationFailed
+        }
     }
 
     private func validateActiveState() throws {
@@ -536,6 +684,19 @@ public actor ModelRegistry {
 
     private func safeComponent(_ value: String) -> String {
         value.map { $0.isLetter || $0.isNumber || $0 == "-" || $0 == "_" ? String($0) : "-" }.joined()
+    }
+
+    private func milliseconds(since start: ContinuousClock.Instant) -> Double {
+        let duration = start.duration(to: .now)
+        return Double(duration.components.seconds) * 1_000
+            + Double(duration.components.attoseconds) / 1_000_000_000_000_000
+    }
+
+    private func percentile95(_ values: [Double]) -> Double {
+        guard let maximum = values.max(), !values.isEmpty else { return 0 }
+        let sorted = values.sorted()
+        let index = min(sorted.count - 1, Int(ceil(Double(sorted.count) * 0.95)) - 1)
+        return max(0, min(maximum, sorted[index]))
     }
 
     public static func sha256(_ data: Data) -> String {

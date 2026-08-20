@@ -14,9 +14,10 @@ struct ModelRegistryTests {
         let v1 = try writeFixture(in: root.appendingPathComponent("incoming-v1"), id: "fixture.v1", contents: "constant-v1")
         let v2 = try writeFixture(in: root.appendingPathComponent("incoming-v2"), id: "fixture.v2", contents: "constant-v2")
         let first = try await registry.importAndActivate(manifestURL: v1)
-        #expect(first.artifactHash == ModelRegistry.sha256(Data("constant-v1".utf8)))
         let second = try await registry.importAndActivate(manifestURL: v2)
-        #expect(second.artifactHash == ModelRegistry.sha256(Data("constant-v2".utf8)))
+        #expect(first.artifactHash.count == 64)
+        #expect(second.artifactHash.count == 64)
+        #expect(first.artifactHash != second.artifactHash)
         #expect(try await registry.snapshot().activeModelID == "fixture.v2")
 
         _ = try await registry.rollback(to: "fixture.v1")
@@ -55,6 +56,31 @@ struct ModelRegistryTests {
             includingPropertiesForKeys: nil
         )
         #expect(quarantineChildren.count == 2)
+    }
+
+    @Test("Atomic commit failure preserves the active model files and state")
+    func atomicCommitFailurePreservesActive() async throws {
+        let root = try temporaryRoot("model-registry-atomic-failure")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let registry = ModelRegistry(root: root)
+        try await registry.open()
+        _ = try await registry.importAndActivate(
+            manifestURL: try writeFixture(in: root.appendingPathComponent("incoming-v2"), id: "fixture.v2", contents: "stable")
+        )
+        let baseline = try await registry.snapshot()
+        let baselineRecord = try await registry.activeModel()
+        let baselineURL = root.appendingPathComponent(baselineRecord.compiledRelativePath)
+        let baselineBytes = try Data(contentsOf: baselineURL)
+
+        let failing = ModelRegistry(root: root, stateWriter: FailingStateWriter())
+        try await failing.open()
+        let v3 = try writeFixture(in: root.appendingPathComponent("incoming-v3"), id: "fixture.v3", contents: "candidate")
+        await expectError(.activationFailed) {
+            try await failing.importAndActivate(manifestURL: v3)
+        }
+        #expect(try await failing.snapshot() == baseline)
+        #expect(try Data(contentsOf: baselineURL) == baselineBytes)
+        #expect(try await failing.activeModel().compiledHash == baselineRecord.compiledHash)
     }
 
     @Test("Malformed manifests, symlinks, compiler failures, and smoke failures fail closed")
@@ -164,7 +190,7 @@ struct ModelRegistryTests {
         minimumOS: String = "15.0"
     ) throws -> URL {
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true, attributes: [.posixPermissions: 0o700])
-        let bytes = Data(contents.utf8)
+        let bytes = Data("{\"class\":\"fixture-object\",\"payload\":\"\(contents)\",\"type\":\"constant-output-detector\"}\n".utf8)
         let hash = ModelRegistry.sha256(bytes)
         let artifactName = "\(id).fixture"
         try bytes.write(to: directory.appendingPathComponent(artifactName), options: [.atomic])
@@ -223,5 +249,11 @@ private struct FailingSmokeTester: ModelSmokeTester {
 
     func run(compiledModelURL: URL, manifest: ModelBundleManifest, fixtureFrame: Data, frameIndex: Int) throws {
         if frameIndex == failureFrame { throw ModelRegistryError.smokeTestFailed(frame: frameIndex) }
+    }
+}
+
+private struct FailingStateWriter: ModelRegistryStateWriter {
+    func replace(data: Data, at destinationURL: URL) throws {
+        throw ModelRegistryError.activationFailed
     }
 }

@@ -21,6 +21,7 @@ final class AppModel {
     private(set) var restorationNotice: AppStateRestorationNotice?
     private(set) var cameraLifecycleSnapshot: NativeCameraLifecycleSnapshot
     private(set) var modelRegistrySnapshot: ModelRegistrySnapshot
+    private(set) var modelImportError: String?
 
     init(
         coordinator: AppStateCoordinator,
@@ -44,6 +45,7 @@ final class AppModel {
         restorationNotice = restoredState.notice
         cameraLifecycleSnapshot = NativeCameraLifecycleSnapshot(authorization: .notDetermined)
         modelRegistrySnapshot = .empty
+        modelImportError = nil
     }
 
     func restore() async {
@@ -96,8 +98,9 @@ final class AppModel {
         do {
             try await modelRegistry.open()
             modelRegistrySnapshot = try await modelRegistry.snapshot()
+            modelImportError = nil
         } catch {
-            modelRegistrySnapshot = .empty
+            modelImportError = modelErrorMessage(error)
         }
     }
 
@@ -106,8 +109,9 @@ final class AppModel {
             try await modelRegistry.open()
             _ = try await modelRegistry.importAndActivate(manifestURL: manifestURL)
             modelRegistrySnapshot = try await modelRegistry.snapshot()
+            modelImportError = nil
         } catch {
-            modelRegistrySnapshot = .empty
+            modelImportError = modelErrorMessage(error)
         }
     }
 
@@ -115,10 +119,11 @@ final class AppModel {
         do {
             _ = try await modelRegistry.activate(identifier: id)
             modelRegistrySnapshot = try await modelRegistry.snapshot()
+            modelImportError = nil
             selectedModelID = id
             await persistSelections()
         } catch {
-            await refreshModels()
+            modelImportError = modelErrorMessage(error)
         }
     }
 
@@ -186,5 +191,12 @@ final class AppModel {
         FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("Armageddon", isDirectory: true)
             .appendingPathComponent("Models", isDirectory: true)
+    }
+
+    private func modelErrorMessage(_ error: Error) -> String {
+        if let registryError = error as? ModelRegistryError {
+            return registryError.reason
+        }
+        return "The model could not be activated."
     }
 }

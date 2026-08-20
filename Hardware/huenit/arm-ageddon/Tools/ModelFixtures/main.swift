@@ -13,7 +13,7 @@ guard arguments.count == 2, arguments[0] == "--output" else {
 }
 
 let manifestURL = URL(fileURLWithPath: arguments[1]).standardizedFileURL
-let artifactURL = manifestURL.deletingLastPathComponent().appendingPathComponent("constant-output.fixture")
+let artifactURL = manifestURL.deletingLastPathComponent().appendingPathComponent("fixture.v2.fixture")
 try? FileManager.default.createDirectory(
     at: manifestURL.deletingLastPathComponent(),
     withIntermediateDirectories: true,
@@ -23,7 +23,7 @@ try? FileManager.default.createDirectory(
 let fixture = Data("{\"class\":\"fixture-object\",\"confidence\":1,\"schemaVersion\":1,\"type\":\"constant-output-detector\"}\n".utf8)
 let hash = SHA256.hash(data: fixture).map { String(format: "%02x", $0) }.joined()
 let manifest = """
-{\"artifact\":{\"fileName\":\"constant-output.fixture\",\"kind\":\"fixture\",\"sha256\":\"\(hash)\"},\"detector\":{\"confidenceThreshold\":0.5,\"identifier\":\"fixture.constant.detector\",\"input\":{\"height\":224,\"kind\":\"image\",\"width\":224},\"kind\":\"objectDetection\",\"labels\":[\"target\",\"other\"],\"nmsIoUThreshold\":0.5,\"output\":{\"kind\":\"visionObjects\"},\"schemaVersion\":1,\"sha256\":\"\(hash)\"},\"displayName\":\"Constant output fixture\",\"identifier\":\"fixture.constant.detector\",\"minimumOS\":\"15.0\",\"schemaVersion\":1,\"smokeFrameCount\":30}
+{\"artifact\":{\"fileName\":\"fixture.v2.fixture\",\"kind\":\"fixture\",\"sha256\":\"\(hash)\"},\"detector\":{\"confidenceThreshold\":0.5,\"identifier\":\"fixture.v2\",\"input\":{\"height\":224,\"kind\":\"image\",\"width\":224},\"kind\":\"objectDetection\",\"labels\":[\"target\",\"other\"],\"nmsIoUThreshold\":0.5,\"output\":{\"kind\":\"visionObjects\"},\"schemaVersion\":1,\"sha256\":\"\(hash)\"},\"displayName\":\"Constant output fixture v2\",\"identifier\":\"fixture.v2\",\"minimumOS\":\"15.0\",\"schemaVersion\":1,\"smokeFrameCount\":30}
 """
 
 func writeExclusive(_ data: Data, to url: URL) -> Bool {

@@ -26,6 +26,16 @@ struct ModelsWorkspaceView: View {
                     .accessibilityIdentifier("models.import")
                 }
 
+                if let error = appModel.modelImportError {
+                    Label(error, systemImage: "exclamationmark.triangle.fill")
+                        .font(DesignTokens.Typography.supporting)
+                        .foregroundStyle(.orange)
+                        .padding(DesignTokens.Spacing.standard)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
+                        .accessibilityIdentifier("models.error")
+                }
+
                 if appModel.modelRegistrySnapshot.models.isEmpty {
                     EmptyStateView(
                         title: "No verified models",
@@ -74,6 +84,17 @@ struct ModelsWorkspaceView: View {
                     Task { await appModel.activateModel(id: model.id) }
                 }
                 .buttonStyle(.bordered)
+            }
+            VStack(alignment: .trailing, spacing: 4) {
+                Text(model.availability.rawValue.capitalized)
+                    .font(DesignTokens.Typography.supporting)
+                    .foregroundStyle(model.availability == .ready ? .green : .orange)
+                if let reason = model.availabilityReason {
+                    Text(reason)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.trailing)
+                }
             }
         }
         .padding(DesignTokens.Spacing.roomy)

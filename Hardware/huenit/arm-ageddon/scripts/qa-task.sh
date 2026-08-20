@@ -172,6 +172,7 @@ if [ "$1" = "13" ]; then
     fixture_dir="$task_root/generated-fixture"
     mkdir -m 700 "$fixture_dir"
     generated_manifest="$fixture_dir/fixture.armmodel.json"
+    probe="$task_root/probe.json"
     validation_root=$(mktemp -d /private/tmp/armageddon-task13.XXXXXX)
     rsync -a --exclude '.git' --exclude '.build' "$project_root/" "$validation_root/"
     if [ "$2" = "happy" ]; then
@@ -182,7 +183,7 @@ if [ "$1" = "13" ]; then
     (
         cd "$validation_root"
         swift run --disable-sandbox --quiet --scratch-path "$task_root/build" ModelFixtureGenerator --output "$generated_manifest"
-        swift run --disable-sandbox --quiet --scratch-path "$task_root/build" ModelRegistryQAProbe --manifest "$generated_manifest" --root "$task_root/registry"
+        swift run --disable-sandbox --quiet --scratch-path "$task_root/build" ModelRegistryQAProbe --manifest "$generated_manifest" --root "$task_root/registry" --mode "$2" >"$probe"
         swift test --disable-sandbox --filter "$filter_target"
     ) >"$transcript" 2>&1
     result="$task_root/camera-ml-app.xcresult"
@@ -192,8 +193,9 @@ if [ "$1" = "13" ]; then
     [ -d "$result" ] || { printf '%s\n' 'ERROR[missing-task-13-xcresult]' >&2; exit 1; }
     transcript_sha256=$(shasum -a 256 "$transcript" | awk '{print $1}')
     generated_sha256=$(shasum -a 256 "$generated_manifest" | awk '{print $1}')
-    printf '{"task":13,"mode":"%s","filter":"%s","generatedManifest":"%s","generatedManifestSha256":"%s","transcript":"%s","transcriptSha256":"%s","result":"%s"}\n' \
-        "$2" "$filter_target" "$generated_manifest" "$generated_sha256" "$transcript" "$transcript_sha256" "$result" >"$task_root/camera-ml-app.json"
+    probe_json=$(tr -d '\n' <"$probe")
+    printf '{"task":13,"mode":"%s","filter":"%s","probe":%s,"generatedManifest":"%s","generatedManifestSha256":"%s","transcript":"%s","transcriptSha256":"%s","result":"%s"}\n' \
+        "$2" "$filter_target" "$probe_json" "$generated_manifest" "$generated_sha256" "$transcript" "$transcript_sha256" "$result" >"$task_root/camera-ml-app.json"
     printf 'PASS task=13 mode=%s root=%s\n' "$2" "$task_root"
     exit 0
 fi
