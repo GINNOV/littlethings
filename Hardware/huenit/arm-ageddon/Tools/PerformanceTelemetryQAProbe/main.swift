@@ -25,6 +25,7 @@ struct PerformanceTelemetryQAProbe {
         let healthReason: String
         let targetingAvailable: Bool
         let previewRemainsAvailable: Bool
+        let summaryPersisted: Bool
     }
 
     static func main() async {
@@ -45,7 +46,11 @@ struct PerformanceTelemetryQAProbe {
     }
 
     private static func run(mode: String) async throws -> Receipt {
-        let telemetry = try PerformanceTelemetry()
+        let summaryURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("armageddon-telemetry-\(UUID().uuidString).json")
+        defer { try? FileManager.default.removeItem(at: summaryURL) }
+        let summaryStore = PerformanceTelemetrySummaryStore(fileURL: summaryURL)
+        let telemetry = try PerformanceTelemetry(summaryStore: summaryStore)
         if mode == "happy" {
             for index in 0..<1_800 {
                 let capture = MonotonicInstant(nanoseconds: UInt64(index) * 2_000_000_000 / 60)
@@ -76,7 +81,9 @@ struct PerformanceTelemetryQAProbe {
                   snapshot.frameAgeP95Milliseconds ?? .greatestFiniteMagnitude <= 100 else {
                 throw ProbeError.healthyPipelineDidNotMeetBudget
             }
-            return receipt(mode: mode, snapshot: snapshot)
+            let summary = try await telemetry.persistSummary(now: MonotonicInstant(nanoseconds: 60_100_000_000))
+            guard try await summaryStore.load() == summary else { throw ProbeError.summaryPersistenceFailed }
+            return receipt(mode: mode, snapshot: summary)
         }
 
         let capture = MonotonicInstant(nanoseconds: 1_000_000_000)
@@ -98,7 +105,9 @@ struct PerformanceTelemetryQAProbe {
         guard snapshot.health == .slow, !snapshot.targetingAvailable else {
             throw ProbeError.slowGateDidNotInhibitTargeting
         }
-        return receipt(mode: mode, snapshot: snapshot)
+        let summary = try await telemetry.persistSummary(now: MonotonicInstant(nanoseconds: 1_340_000_000))
+        guard try await summaryStore.load() == summary else { throw ProbeError.summaryPersistenceFailed }
+        return receipt(mode: mode, snapshot: summary)
     }
 
     private static func receipt(mode: String, snapshot: PerformanceTelemetrySnapshot) -> Receipt {
@@ -122,7 +131,8 @@ struct PerformanceTelemetryQAProbe {
             health: snapshot.health.rawValue,
             healthReason: snapshot.healthReason,
             targetingAvailable: snapshot.targetingAvailable,
-            previewRemainsAvailable: true
+            previewRemainsAvailable: true,
+            summaryPersisted: true
         )
     }
 }
@@ -131,4 +141,5 @@ private enum ProbeError: Error {
     case usage
     case healthyPipelineDidNotMeetBudget
     case slowGateDidNotInhibitTargeting
+    case summaryPersistenceFailed
 }

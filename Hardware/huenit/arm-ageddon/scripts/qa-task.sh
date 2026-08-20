@@ -250,9 +250,9 @@ if [ "$1" = "15" ]; then
         -configuration Debug -destination 'platform=macOS' \
         -derivedDataPath "$task_root/build-xcode" -resultBundlePath "$result" build-for-testing >>"$transcript" 2>&1
     [ -d "$result" ] || { printf '%s\n' 'ERROR[missing-task-15-xcresult]' >&2; exit 1; }
-    transcript_sha256=$(shasum -a 256 "$transcript" | awk '{print $1}')
     probe_json=$(tr -d '\n' <"$probe")
     printf '%s\n' "PERFORMANCE_TELEMETRY_QA_PROBE=$probe_json" >>"$transcript"
+    transcript_sha256=$(shasum -a 256 "$transcript" | awk '{print $1}')
     printf '{"task":15,"mode":"%s","filter":"%s","probe":%s,"transcript":"%s","transcriptSha256":"%s","result":"%s"}\n' \
         "$2" "$filter_target" "$probe_json" "$transcript" "$transcript_sha256" "$result" >"$task_root/camera-ml-app.json"
     printf 'PASS task=15 mode=%s root=%s\n' "$2" "$task_root"

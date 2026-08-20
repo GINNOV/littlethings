@@ -119,6 +119,7 @@ public struct PerformanceTelemetrySnapshot: Codable, Equatable, Sendable {
 public actor PerformanceTelemetry {
     private let capacity: Int
     private let thresholds: PerformanceThresholds
+    private let summaryStore: PerformanceTelemetrySummaryStore?
     private var negotiatedFPS: Double?
     private var producedFrames: UInt64 = 0
     private var deliveredFrames: UInt64 = 0
@@ -128,15 +129,15 @@ public actor PerformanceTelemetry {
     private var frameAges: [UInt64] = []
     private var inferenceDurations: [UInt64] = []
     private var endToOverlayAges: [UInt64] = []
-    private var firstFrameReceivedAt: MonotonicInstant?
-    private var latestFrameReceivedAt: MonotonicInstant?
-    private var latestOverlayAt: MonotonicInstant?
+    private var frameReceiveTimes: [MonotonicInstant] = []
+    private var latestObservationCaptureInstant: MonotonicInstant?
     private var modelFailureCount: UInt64 = 0
     private var consecutiveModelFailures = 0
 
     public init(
         windowCapacity: Int = 120,
-        thresholds: PerformanceThresholds = PerformanceThresholds()
+        thresholds: PerformanceThresholds = PerformanceThresholds(),
+        summaryStore: PerformanceTelemetrySummaryStore? = nil
     ) throws {
         guard windowCapacity > 0 else { throw PerformanceTelemetryError.invalidCapacity }
         guard thresholds.maximumInferenceP95Milliseconds.isFinite,
@@ -150,6 +151,7 @@ public actor PerformanceTelemetry {
         }
         capacity = windowCapacity
         self.thresholds = thresholds
+        self.summaryStore = summaryStore
     }
 
     public func reset() {
@@ -162,9 +164,8 @@ public actor PerformanceTelemetry {
         frameAges.removeAll(keepingCapacity: true)
         inferenceDurations.removeAll(keepingCapacity: true)
         endToOverlayAges.removeAll(keepingCapacity: true)
-        firstFrameReceivedAt = nil
-        latestFrameReceivedAt = nil
-        latestOverlayAt = nil
+        frameReceiveTimes.removeAll(keepingCapacity: true)
+        latestObservationCaptureInstant = nil
         modelFailureCount = 0
         consecutiveModelFailures = 0
     }
@@ -187,8 +188,7 @@ public actor PerformanceTelemetry {
         maximumQueueDepth = max(maximumQueueDepth, queueDepth)
         let frameAge = receivedAt.nanoseconds - captureInstant.nanoseconds
         append(frameAge, to: &frameAges)
-        firstFrameReceivedAt = firstFrameReceivedAt ?? receivedAt
-        latestFrameReceivedAt = receivedAt
+        append(receivedAt, to: &frameReceiveTimes)
     }
 
     public func recordInference(
@@ -206,7 +206,7 @@ public actor PerformanceTelemetry {
         maximumQueueDepth = max(maximumQueueDepth, queueDepth)
         append(finishedAt.nanoseconds - startedAt.nanoseconds, to: &inferenceDurations)
         append(overlayAt.nanoseconds - captureInstant.nanoseconds, to: &endToOverlayAges)
-        latestOverlayAt = overlayAt
+        latestObservationCaptureInstant = captureInstant
         consecutiveModelFailures = 0
     }
 
@@ -220,12 +220,25 @@ public actor PerformanceTelemetry {
     }
 
     public func snapshot(now: MonotonicInstant) -> PerformanceTelemetrySnapshot {
+        makeSnapshot(now: now)
+    }
+
+    public func persistSummary(now: MonotonicInstant) async throws -> PerformanceTelemetrySnapshot {
+        let summary = makeSnapshot(now: now)
+        if let summaryStore {
+            try await summaryStore.save(summary)
+        }
+        return summary
+    }
+
+    private func makeSnapshot(now: MonotonicInstant) -> PerformanceTelemetrySnapshot {
         let health = evaluateHealth(now: now)
         let observedFPS: Double?
-        if let firstFrameReceivedAt, let latestFrameReceivedAt,
+        if let firstFrameReceivedAt = frameReceiveTimes.first,
+           let latestFrameReceivedAt = frameReceiveTimes.last,
            latestFrameReceivedAt > firstFrameReceivedAt {
             let elapsed = Double(latestFrameReceivedAt.nanoseconds - firstFrameReceivedAt.nanoseconds) / 1_000_000_000
-            observedFPS = elapsed > 0 ? Double(max(0, deliveredFrames - 1)) / elapsed : nil
+            observedFPS = elapsed > 0 ? Double(max(0, frameReceiveTimes.count - 1)) / elapsed : nil
         } else {
             observedFPS = nil
         }
@@ -260,11 +273,11 @@ public actor PerformanceTelemetry {
            p95 > thresholds.maximumInferenceP95Milliseconds {
             return .slow
         }
-        if let latestOverlayAt,
-           millisecondsBetween(latestOverlayAt, now) > thresholds.maximumObservationAgeMilliseconds {
+        if let latestObservationCaptureInstant,
+           millisecondsBetween(latestObservationCaptureInstant, now) > thresholds.maximumObservationAgeMilliseconds {
             return .stale
         }
-        if let latestFrameReceivedAt,
+        if let latestFrameReceivedAt = frameReceiveTimes.last,
            millisecondsBetween(latestFrameReceivedAt, now) > thresholds.captureStallMilliseconds {
             return .stalled
         }
@@ -286,6 +299,11 @@ public actor PerformanceTelemetry {
     }
 
     private func append(_ value: UInt64, to values: inout [UInt64]) {
+        values.append(value)
+        if values.count > capacity { values.removeFirst(values.count - capacity) }
+    }
+
+    private func append(_ value: MonotonicInstant, to values: inout [MonotonicInstant]) {
         values.append(value)
         if values.count > capacity { values.removeFirst(values.count - capacity) }
     }

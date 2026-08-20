@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import ArmageddonCore
 
@@ -98,6 +99,25 @@ struct PerformanceTelemetryTests {
         #expect(stale.health == .stale)
         #expect(!stale.targetingAvailable)
 
+        let delayedPublication = try PerformanceTelemetry()
+        try await delayedPublication.recordFrame(
+            captureInstant: capture,
+            receivedAt: MonotonicInstant(nanoseconds: 1_020_000_000),
+            negotiatedFPS: 30,
+            droppedFramesSinceLastSample: 0,
+            queueDepth: 1
+        )
+        try await delayedPublication.recordInference(
+            captureInstant: capture,
+            startedAt: MonotonicInstant(nanoseconds: 1_020_000_000),
+            finishedAt: MonotonicInstant(nanoseconds: 1_030_000_000),
+            overlayAt: MonotonicInstant(nanoseconds: 1_690_000_000),
+            queueDepth: 1
+        )
+        let delayed = await delayedPublication.snapshot(now: MonotonicInstant(nanoseconds: 1_700_000_000))
+        #expect(delayed.health == .stale)
+        #expect(!delayed.targetingAvailable)
+
         await telemetry.recordModelFailure()
         await telemetry.recordModelFailure()
         await telemetry.recordModelFailure()
@@ -105,6 +125,66 @@ struct PerformanceTelemetryTests {
         #expect(failed.health == .modelFailed)
         #expect(failed.consecutiveModelFailures == 3)
         #expect(!failed.targetingAvailable)
+    }
+
+    @Test("observed FPS follows the bounded recent frame window")
+    func observedFPSUsesRollingWindow() async throws {
+        let telemetry = try PerformanceTelemetry(windowCapacity: 4)
+        for index in 0..<4 {
+            let instant = MonotonicInstant(nanoseconds: UInt64(index) * 1_000_000_000)
+            try await telemetry.recordFrame(
+                captureInstant: instant,
+                receivedAt: instant,
+                negotiatedFPS: 30,
+                droppedFramesSinceLastSample: 0,
+                queueDepth: 1
+            )
+        }
+        for index in 0..<4 {
+            let instant = MonotonicInstant(nanoseconds: 3_000_000_000 + UInt64(index) * 33_333_333)
+            try await telemetry.recordFrame(
+                captureInstant: instant,
+                receivedAt: instant,
+                negotiatedFPS: 30,
+                droppedFramesSinceLastSample: 0,
+                queueDepth: 1
+            )
+        }
+
+        let snapshot = await telemetry.snapshot(now: MonotonicInstant(nanoseconds: 3_200_000_000))
+        #expect((snapshot.observedFPS ?? 0) >= 29.9)
+        #expect((snapshot.observedFPS ?? .greatestFiniteMagnitude) <= 30.1)
+    }
+
+    @Test("persists a summary snapshot without raw sample arrays")
+    func persistsSummarySnapshot() async throws {
+        let fileURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("armageddon-telemetry-\(UUID().uuidString).json")
+        defer { try? FileManager.default.removeItem(at: fileURL) }
+
+        let store = PerformanceTelemetrySummaryStore(fileURL: fileURL)
+        let telemetry = try PerformanceTelemetry(summaryStore: store)
+        let capture = MonotonicInstant(nanoseconds: 1_000_000_000)
+        try await telemetry.recordFrame(
+            captureInstant: capture,
+            receivedAt: MonotonicInstant(nanoseconds: 1_020_000_000),
+            negotiatedFPS: 30,
+            droppedFramesSinceLastSample: 0,
+            queueDepth: 1
+        )
+        try await telemetry.recordInference(
+            captureInstant: capture,
+            startedAt: MonotonicInstant(nanoseconds: 1_020_000_000),
+            finishedAt: MonotonicInstant(nanoseconds: 1_040_000_000),
+            overlayAt: MonotonicInstant(nanoseconds: 1_055_000_000),
+            queueDepth: 1
+        )
+        let summary = try await telemetry.persistSummary(now: MonotonicInstant(nanoseconds: 1_060_000_000))
+        let loaded = try await store.load()
+        #expect(loaded == summary)
+        let persistedJSON = try String(contentsOf: fileURL, encoding: .utf8)
+        #expect(!persistedJSON.contains("frameAges"))
+        #expect(!persistedJSON.contains("inferenceDurations"))
     }
 
     @Test("invalid samples and zero-capacity windows fail closed")

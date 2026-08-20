@@ -1,5 +1,6 @@
 import ArmageddonCore
 import AVFoundation
+import Foundation
 import Observation
 
 @MainActor
@@ -7,6 +8,7 @@ import Observation
 public final class LivePreviewModel {
     private let capture: AVFoundationNativeCaptureSession
     private let telemetry: PerformanceTelemetry?
+    private let telemetryClock: any CaptureHostClock
     public private(set) var previewLayer: AVCaptureVideoPreviewLayer?
     public private(set) var snapshot: NativeCaptureSessionSnapshot
     public private(set) var negotiatedFormat: CaptureFormat?
@@ -28,10 +30,11 @@ public final class LivePreviewModel {
 
     public init(
         capture: AVFoundationNativeCaptureSession = AVFoundationNativeCaptureSession(),
-        telemetry: PerformanceTelemetry? = try? PerformanceTelemetry()
+        telemetry: PerformanceTelemetry? = nil
     ) {
         self.capture = capture
-        self.telemetry = telemetry
+        self.telemetry = telemetry ?? Self.makeTelemetry()
+        telemetryClock = ContinuousCaptureHostClock()
         snapshot = NativeCaptureSessionSnapshot(
             state: .idle,
             configuration: nil,
@@ -108,6 +111,7 @@ public final class LivePreviewModel {
                 queueDepth: 1
             )
             performanceSnapshot = await telemetry.snapshot(now: MonotonicInstant(nanoseconds: 1_055_000_000))
+            await persistPerformanceSummary()
         }
     }
 
@@ -160,11 +164,26 @@ public final class LivePreviewModel {
         performanceSnapshot = PerformanceTelemetrySnapshot()
     }
 
+    private func persistPerformanceSummary() async {
+        guard let telemetry,
+              let summary = try? await telemetry.persistSummary(now: telemetryClock.now()) else { return }
+        performanceSnapshot = summary
+    }
+
     public func stop() async {
         await capture.stop()
+        await persistPerformanceSummary()
         await resetPerformanceTelemetry()
         negotiatedFormat = nil
         observations = []
         await refreshSnapshot()
+    }
+
+    private static func makeTelemetry() -> PerformanceTelemetry? {
+        let summaryURL = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("Armageddon", isDirectory: true)
+            .appendingPathComponent("performance-summary.json")
+        let store = PerformanceTelemetrySummaryStore(fileURL: summaryURL)
+        return try? PerformanceTelemetry(summaryStore: store)
     }
 }
