@@ -136,6 +136,13 @@ final class AppModel {
         cameraLifecycleSnapshot = await cameraLifecycle.snapshot()
     }
 
+    func configureConnectedCameraFixture() async {
+        guard cameraLifecycleSnapshot.authorization == .authorized else { return }
+        try? await cameraLifecycle.select(.nativeCamera("fixture-camera"))
+        await cameraLifecycle.markConnected()
+        cameraLifecycleSnapshot = await cameraLifecycle.snapshot()
+    }
+
     func startCameraLifecycleMonitoring() {
         cameraLifecycleObserver.start { [weak self] event in
             Task { @MainActor [weak self] in

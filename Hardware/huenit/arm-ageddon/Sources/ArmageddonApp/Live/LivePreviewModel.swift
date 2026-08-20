@@ -15,6 +15,10 @@ public final class LivePreviewModel {
     public private(set) var observations: [DetectionObservation] = []
     public private(set) var detectorInputSize = PixelSize(width: 224, height: 224)
     public private(set) var performanceSnapshot = PerformanceTelemetrySnapshot()
+    public private(set) var isPaused = false
+    public private(set) var capturedFrameCount = 0
+    public private(set) var lastCaptureMessage: String?
+    public private(set) var selectedObservationID: String?
 
     public var isRunning: Bool {
         capture.isRunning
@@ -26,6 +30,11 @@ public final class LivePreviewModel {
 
     public var targetingAvailable: Bool {
         performanceSnapshot.targetingAvailable
+    }
+
+    public var selectedObservation: DetectionObservation? {
+        guard let selectedObservationID else { return nil }
+        return observations.first { $0.id == selectedObservationID }
     }
 
     public init(
@@ -48,6 +57,8 @@ public final class LivePreviewModel {
     public func start(device: AVCaptureDevice, requestedFormat: CaptureFormat = CaptureFormat(width: 1_280, height: 720, frameRate: 30)) async throws {
         await resetPerformanceTelemetry()
         negotiatedFormat = try await capture.start(device: device, requestedFormat: requestedFormat)
+        isPaused = false
+        lastCaptureMessage = nil
         await refreshSnapshot()
     }
 
@@ -62,6 +73,39 @@ public final class LivePreviewModel {
 
     public func updateObservations(_ observations: [DetectionObservation]) {
         self.observations = observations
+        if let selectedObservationID,
+           !observations.contains(where: { $0.id == selectedObservationID }) {
+            self.selectedObservationID = nil
+        }
+    }
+
+    public func selectObservation(id: String?) {
+        guard let id else {
+            selectedObservationID = nil
+            return
+        }
+        guard observations.contains(where: { $0.id == id }) else { return }
+        selectedObservationID = id
+    }
+
+    public func setPaused(_ paused: Bool) {
+        isPaused = paused
+        lastCaptureMessage = paused
+            ? "Preview paused. Resume to capture a fresh frame."
+            : "Preview resumed."
+    }
+
+    public func captureCurrentFrame() {
+        guard !isPaused else {
+            lastCaptureMessage = "Resume the preview before capturing a frame."
+            return
+        }
+        guard !observations.isEmpty else {
+            lastCaptureMessage = "No detection frame is ready to capture."
+            return
+        }
+        capturedFrameCount += 1
+        lastCaptureMessage = "Frame \(capturedFrameCount) staged for capture review."
     }
 
     public func loadDeterministicFixtureOverlay() async throws {
@@ -82,6 +126,11 @@ public final class LivePreviewModel {
                 confidence: 0.9,
                 boundingBox: NormalizedRect(x: 0.25, y: 0.25, width: 0.2, height: 0.2)
             ),
+            FakeDetection(
+                label: "other",
+                confidence: 0.82,
+                boundingBox: NormalizedRect(x: 0.30, y: 0.28, width: 0.22, height: 0.2)
+            ),
         ])
         let pipeline = try DetectorPipeline(manifest: manifest, engine: engine)
         let frame = CameraFrameMetadata(
@@ -90,6 +139,7 @@ public final class LivePreviewModel {
             captureInstant: MonotonicInstant(nanoseconds: 1_000_000_000),
             format: CaptureFormat(width: 1_920, height: 1_080, frameRate: 30)
         )
+        negotiatedFormat = frame.format
         observations = try await pipeline.process(
             frame: frame,
             now: MonotonicInstant(nanoseconds: 2_000_000_000),
@@ -176,6 +226,10 @@ public final class LivePreviewModel {
         await resetPerformanceTelemetry()
         negotiatedFormat = nil
         observations = []
+        selectedObservationID = nil
+        isPaused = false
+        capturedFrameCount = 0
+        lastCaptureMessage = nil
         await refreshSnapshot()
     }
 

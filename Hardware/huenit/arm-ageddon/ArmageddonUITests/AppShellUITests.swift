@@ -54,6 +54,31 @@ final class AppShellUITests: XCTestCase {
         }
     }
 
+    func testLiveWorkspaceSelectsPausesCapturesAndOpensManualDrawer() throws {
+        let app = try launch(style: "Light", width: 1_280, height: 800)
+
+        XCTAssertTrue(app.descendants(matching: .any)["live.performance-health"].waitForExistence(timeout: 5))
+        XCTAssertEqual(app.descendants(matching: .any)["live.performance-health"].value as? String, "Ready")
+        let target = app.descendants(matching: .any)["live.detection.target"].firstMatch
+        XCTAssertTrue(target.waitForExistence(timeout: 5))
+        target.click()
+        XCTAssertTrue(app.staticTexts["Selected"].waitForExistence(timeout: 2))
+
+        let pauseResume = app.buttons["live.pause-resume"]
+        pauseResume.click()
+        XCTAssertTrue(app.descendants(matching: .any)["live.paused"].waitForExistence(timeout: 2))
+        pauseResume.click()
+        app.buttons["live.capture"].click()
+        XCTAssertTrue(app.staticTexts["Frame 1 staged for capture review."].waitForExistence(timeout: 2))
+
+        let manualControls = app.descendants(matching: .any)["live.manual-controls"].firstMatch
+        XCTAssertTrue(manualControls.waitForExistence(timeout: 2))
+        manualControls.click()
+        XCTAssertTrue(app.buttons["− X"].waitForExistence(timeout: 2))
+        try capture(app, named: "live-workspace-core-flow")
+        app.terminate()
+    }
+
     func testUnknownDestinationRecoversToLive() throws {
         let app = try launch(style: "Light", width: 1_100, height: 720, destination: "unknown.destination")
 
@@ -105,6 +130,7 @@ final class AppShellUITests: XCTestCase {
         XCTAssertTrue(app.descendants(matching: .any)["camera.work-cancelled"].waitForExistence(timeout: 2))
         XCTAssertTrue(app.descendants(matching: .any)["arm.status"].waitForExistence(timeout: 2))
         XCTAssertTrue(app.staticTexts["Arm, Disarmed"].exists)
+        try capture(app, named: "live-workspace-disconnected")
         app.terminate()
     }
 

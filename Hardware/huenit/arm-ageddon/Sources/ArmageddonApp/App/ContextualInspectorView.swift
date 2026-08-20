@@ -1,7 +1,9 @@
+import ArmageddonCore
 import SwiftUI
 
 struct ContextualInspectorView: View {
     let destination: AppDestination
+    let selectedObservation: DetectionObservation?
 
     var body: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.roomy) {
@@ -9,7 +11,17 @@ struct ContextualInspectorView: View {
                 .font(DesignTokens.Typography.sectionTitle)
             Divider()
             LabeledContent("Target") {
-                Text("None selected")
+                if let selectedObservation {
+                    Text("\(selectedObservation.label) · \(selectedObservation.confidence, format: .percent.precision(.fractionLength(0)))")
+                } else {
+                    Text("None selected")
+                }
+            }
+            LabeledContent("Target state") {
+                Label(
+                    selectedObservation == nil ? "Detected only" : "Selected",
+                    systemImage: selectedObservation == nil ? "viewfinder" : "scope"
+                )
                     .foregroundStyle(.secondary)
             }
             LabeledContent("Calibration") {

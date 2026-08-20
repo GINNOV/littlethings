@@ -12,7 +12,7 @@ if [ "$#" -ne 2 ]; then
     printf '%s\n' 'Usage: qa-task.sh <1-33> <happy|failure>' >&2
     exit 2
 fi
-case "$1" in 2|3|4|6|7|8|9|10|11|12|13|14|15) ;; *) printf '%s\n' 'ERROR[unsupported-task]: task manifest has not landed yet' >&2; exit 2 ;; esac
+case "$1" in 2|3|4|6|7|8|9|10|11|12|13|14|15|16) ;; *) printf '%s\n' 'ERROR[unsupported-task]: task manifest has not landed yet' >&2; exit 2 ;; esac
 case "$2" in happy|failure) ;; *) printf '%s\n' 'ERROR[unknown-mode]' >&2; exit 2 ;; esac
 
 if [ -n "${ARMAGEDDON_TASK_ROOT:-}" ]; then
@@ -256,6 +256,28 @@ if [ "$1" = "15" ]; then
     printf '{"task":15,"mode":"%s","filter":"%s","probe":%s,"transcript":"%s","transcriptSha256":"%s","result":"%s"}\n' \
         "$2" "$filter_target" "$probe_json" "$transcript" "$transcript_sha256" "$result" >"$task_root/camera-ml-app.json"
     printf 'PASS task=15 mode=%s root=%s\n' "$2" "$task_root"
+    exit 0
+fi
+
+if [ "$1" = "16" ]; then
+    transcript="$task_root/camera-ml-app.txt"
+    result="$task_root/camera-ml-app.xcresult"
+    mkdir -m 700 "$task_root/screenshots"
+    if [ "$2" = "happy" ]; then
+        filter='-only-testing:ArmageddonUITests/AppShellUITests/testLiveWorkspaceSelectsPausesCapturesAndOpensManualDrawer'
+        expected='live-workspace-core-flow'
+    else
+        filter='-only-testing:ArmageddonUITests/AppShellUITests/testCameraDisconnectCancelsWorkAndOffersRescan'
+        expected='live-workspace-disconnected'
+    fi
+    ARMAGEDDON_SCREENSHOT_DIR="$task_root/screenshots" xcodebuild -project Armageddon.xcodeproj -scheme ArmageddonApp \
+        -destination 'platform=macOS' -derivedDataPath "$task_root/build" -resultBundlePath "$result" test "$filter" >"$transcript" 2>&1
+    [ -d "$result" ] || { printf '%s\n' 'ERROR[missing-task-16-xcresult]' >&2; exit 1; }
+    [ -s "$task_root/screenshots/$expected.png" ] || { printf '%s\n' "ERROR[missing-task-16-screenshot]" >&2; exit 1; }
+    transcript_sha256=$(shasum -a 256 "$transcript" | awk '{print $1}')
+    printf '{"task":16,"mode":"%s","filter":"%s","screenshot":"%s","transcript":"%s","transcriptSha256":"%s","result":"%s"}\n' \
+        "$2" "$filter" "$task_root/screenshots/$expected.png" "$transcript" "$transcript_sha256" "$result" >"$task_root/camera-ml-app.json"
+    printf 'PASS task=16 mode=%s root=%s\n' "$2" "$task_root"
     exit 0
 fi
 

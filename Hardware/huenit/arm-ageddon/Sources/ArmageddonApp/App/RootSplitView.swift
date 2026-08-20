@@ -42,7 +42,10 @@ struct RootSplitView: View {
             )
         }
         .inspector(isPresented: $showInspectorOnLaunch) {
-            ContextualInspectorView(destination: model.destination)
+            ContextualInspectorView(
+                destination: model.destination,
+                selectedObservation: appModel.livePreview.selectedObservation
+            )
                 .inspectorColumnWidth(DesignTokens.Layout.inspectorWidth)
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {

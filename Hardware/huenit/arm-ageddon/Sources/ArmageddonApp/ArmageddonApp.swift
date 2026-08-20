@@ -26,9 +26,9 @@ struct ArmageddonApp: App {
             AVFoundationCameraAuthorizationClient()
         }
         let nativeCameraDiscovery: any NativeCameraDiscovery = if isUITesting {
-            DeterministicNativeCameraDiscovery(cameras: profile == .cameraDisconnected ? [
+            DeterministicNativeCameraDiscovery(cameras: profile == .noDevices || profile == .permissionDenied ? [] : [
                 NativeCameraDevice(stableIdentifier: "fixture-camera", permission: .authorized),
-            ] : [])
+            ])
         } else {
             AVFoundationCameraDiscovery(authorizationClient: authorizationClient)
         }
@@ -70,6 +70,12 @@ struct ArmageddonApp: App {
                 await appModel.refreshCameraLifecycle()
                 if isUITesting {
                     await appModel.loadFixtureOverlay()
+                    let fixtureProfile = try? launch.get().profile
+                    if fixtureProfile != .cameraDisconnected,
+                       fixtureProfile != .permissionDenied,
+                       fixtureProfile != .noDevices {
+                        await appModel.configureConnectedCameraFixture()
+                    }
                 }
                 if isCameraDisconnectedFixture {
                     await appModel.configureDisconnectedCameraFixture()
