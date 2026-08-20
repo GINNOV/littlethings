@@ -12,7 +12,7 @@ if [ "$#" -ne 2 ]; then
     printf '%s\n' 'Usage: qa-task.sh <1-33> <happy|failure>' >&2
     exit 2
 fi
-case "$1" in 2|3|4|6|7|8|9|10|11|12|13) ;; *) printf '%s\n' 'ERROR[unsupported-task]: task manifest has not landed yet' >&2; exit 2 ;; esac
+case "$1" in 2|3|4|6|7|8|9|10|11|12|13|14) ;; *) printf '%s\n' 'ERROR[unsupported-task]: task manifest has not landed yet' >&2; exit 2 ;; esac
 case "$2" in happy|failure) ;; *) printf '%s\n' 'ERROR[unknown-mode]' >&2; exit 2 ;; esac
 
 if [ -n "${ARMAGEDDON_TASK_ROOT:-}" ]; then
@@ -197,6 +197,32 @@ if [ "$1" = "13" ]; then
     printf '{"task":13,"mode":"%s","filter":"%s","probe":%s,"generatedManifest":"%s","generatedManifestSha256":"%s","transcript":"%s","transcriptSha256":"%s","result":"%s"}\n' \
         "$2" "$filter_target" "$probe_json" "$generated_manifest" "$generated_sha256" "$transcript" "$transcript_sha256" "$result" >"$task_root/camera-ml-app.json"
     printf 'PASS task=13 mode=%s root=%s\n' "$2" "$task_root"
+    exit 0
+fi
+
+if [ "$1" = "14" ]; then
+    transcript="$task_root/camera-ml-app.txt"
+    validation_root=$(mktemp -d /private/tmp/armageddon-task14.XXXXXX)
+    rsync -a --exclude '.git' --exclude '.build' "$project_root/" "$validation_root/"
+    if [ "$2" = "happy" ]; then
+        filter_target='VisionInferenceIntegrationTests/constantModel'
+    else
+        filter_target='VisionInferenceIntegrationTests/unloadMidRequest'
+    fi
+    (
+        cd "$validation_root"
+        swift test --disable-sandbox --filter "$filter_target"
+        swift test --disable-sandbox --filter VisionInferenceSchedulerTests/tenThousandFramesKeepQueueDepthOne
+    ) >"$transcript" 2>&1
+    result="$task_root/camera-ml-app.xcresult"
+    GIT_CEILING_DIRECTORIES="$repo_ceiling" xcodebuild -quiet -project Armageddon.xcodeproj -scheme ArmageddonApp \
+        -configuration Debug -destination 'platform=macOS' \
+        -derivedDataPath "$task_root/build-xcode" -resultBundlePath "$result" build-for-testing >>"$transcript" 2>&1
+    [ -d "$result" ] || { printf '%s\n' 'ERROR[missing-task-14-xcresult]' >&2; exit 1; }
+    transcript_sha256=$(shasum -a 256 "$transcript" | awk '{print $1}')
+    printf '{"task":14,"mode":"%s","filter":"%s","stressFilter":"VisionInferenceSchedulerTests/tenThousandFramesKeepQueueDepthOne","stressFrameCount":10000,"expectedQueueDepth":1,"transcript":"%s","transcriptSha256":"%s","result":"%s"}\n' \
+        "$2" "$filter_target" "$transcript" "$transcript_sha256" "$result" >"$task_root/camera-ml-app.json"
+    printf 'PASS task=14 mode=%s root=%s\n' "$2" "$task_root"
     exit 0
 fi
 
