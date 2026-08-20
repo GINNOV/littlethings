@@ -7,32 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.0.1] - 2026-08-20
+## [1.0.1_6] - 2026-08-20
 
 ### Fixed
-- **Offline Preset Bundling**: Bundled all Kickstart boot screen graphics (1.3, 2.04, 3.1) directly inside the `.app` bundle under `Contents/Resources/Presets/` to prevent external network 403 Forbidden errors when setting default presets.
-- **CLI & GUI Dispatching**: Resolved runloop and dispatch queue deadlocks in standalone CLI mode.
-- **Image Destination Path**: Improved output directory creation and robust local fallback resolution.
+- **Multi-Frame Animated GIF Support**: Rebuilt the ImageIO rendering engine to iterate over and pad every single frame in animated GIFs, preserving frame delays, loop counts, and outputting `amiga_lockscreen.gif` alongside a static `amiga_lockscreen.png` fallback.
+- **Full-Screen Integer Scaling**: Removed the artificial `2.0` scale cap, allowing retro artwork to scale to full display height (e.g. 6016x3384 Retina display resolution).
+- **Lock Screen Permissions & Sync**: Ensured generated wallpapers have world-readable `0644` permissions for macOS Lock Screen daemon (`SecurityAgent`).
 
 ---
 
-## [1.0.0] - 2026-08-20
+## [1.0.0_1] - 2026-08-20
 
 ### Added
-- **macOS Droplet & Interactive App**:
-  - Drag-and-drop any image or animated GIF directly onto `AmigaLoginScreen.app` to format and apply it instantly.
-  - Interactive launcher menu when opening the app directly, offering quick presets or a file picker.
-- **Classic Kickstart Presets**:
-  - Built-in one-click support for **Kickstart 1.3** (Iconic hand & floppy), **Kickstart 2.04** (Purple insert-disk screen), and **Kickstart 3.1** (Rainbow disk).
-  - Bundled directly inside the application bundle for 100% offline reliability (no external network dependencies or 403 hotlink errors).
-- **Pixel-Perfect Scaling & Padding**:
-  - Preserves 1:1 crisp pixel art with nearest-neighbor scaling (no bilinear fuzziness or blurry smoothing).
-  - Automatic corner-pixel sampling to seamlessly blend image borders into widescreen and high-DPI displays.
-- **Animated GIF & Multi-Frame Support**:
-  - Decodes GIF frames and renders clean centered backgrounds without distortion.
-- **Universal Binary**:
-  - Native standalone Mach-O binary supporting both Apple Silicon (`arm64`) and Intel (`x86_64`) Macs with zero external dependencies.
-- **CLI & Scripting Interface**:
-  - Full terminal command-line options (`--help`, `--preset <version>`, `<path_or_url>`).
-- **Release Packaging**:
-  - Automated release `.dmg` and `.zip` generation.
+- Initial release of AmigaLoginScreen Droplet and CLI utility.
