@@ -36,6 +36,7 @@ public final class LivePreviewModel {
     public private(set) var selectedSource: LivePreviewSource = .nativeCamera
     public private(set) var activeModelID = "fixture.constant.detector"
     public private(set) var activeModelLabel = "Fixture detector"
+    public private(set) var latestFrame: CameraFrameMetadata?
 
     public var isRunning: Bool {
         capture.isRunning
@@ -69,6 +70,7 @@ public final class LivePreviewModel {
         )
         negotiatedFormat = nil
         previewLayer = capture.previewLayer()
+        latestFrame = nil
     }
 
     public func start(device: AVCaptureDevice, requestedFormat: CaptureFormat = CaptureFormat(width: 1_280, height: 720, frameRate: 30)) async throws {
@@ -163,6 +165,17 @@ public final class LivePreviewModel {
         lastCaptureMessage = "Frame \(capturedFrameCount) staged for capture review."
     }
 
+    public func currentCaptureFrame() async -> CameraFrameMetadata? {
+        if let frame = await capture.consumeLatestFrame() {
+            latestFrame = frame
+        }
+        return latestFrame
+    }
+
+    public func currentCaptureImageData() -> Data? {
+        capture.consumeLatestImageData()
+    }
+
     public func loadDeterministicFixtureOverlay() async throws {
         let manifest = try DetectorManifest(
             identifier: "fixture.constant.detector",
@@ -195,6 +208,7 @@ public final class LivePreviewModel {
             format: CaptureFormat(width: 1_920, height: 1_080, frameRate: 30)
         )
         negotiatedFormat = frame.format
+        latestFrame = frame
         observations = try await pipeline.process(
             frame: frame,
             now: MonotonicInstant(nanoseconds: 2_000_000_000),
@@ -286,6 +300,7 @@ public final class LivePreviewModel {
         isPaused = false
         capturedFrameCount = 0
         lastCaptureMessage = nil
+        latestFrame = nil
         await refreshSnapshot()
     }
 

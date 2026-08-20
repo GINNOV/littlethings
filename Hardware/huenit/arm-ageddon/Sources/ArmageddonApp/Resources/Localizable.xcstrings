@@ -1,0 +1,13 @@
+{
+  "version": "1.0",
+  "sourceLanguage": "en",
+  "strings": {
+    "Armageddon": { "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Armageddon" } } } },
+    "Live workspace": { "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Live workspace" } } } },
+    "Capture library": { "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Capture library" } } } },
+    "Models": { "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Models" } } } },
+    "Diagnostics": { "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Diagnostics" } } } },
+    "Runs": { "localizations": { "en": { "stringUnit": { "state": "translated", "value": "Runs" } } } },
+    "STOP Motion": { "localizations": { "en": { "stringUnit": { "state": "translated", "value": "STOP Motion" } } } }
+  }
+}

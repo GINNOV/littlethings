@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schemaVersion", "captureID", "imageFilename", "imageSHA256", "recordSHA256"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "captureID": { "type": "string", "minLength": 1 },
+    "imageFilename": { "type": "string", "pattern": "^[A-Za-z0-9._-]+$" },
+    "imageSHA256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "thumbnailFilename": { "type": ["string", "null"], "pattern": "^[A-Za-z0-9._-]+$" },
+    "thumbnailSHA256": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" },
+    "recordSHA256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+  },
+  "additionalProperties": false
+}

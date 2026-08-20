@@ -1,5 +1,6 @@
 @preconcurrency import AVFoundation
 import ArmageddonCore
+import CoreImage
 import CoreMedia
 import Foundation
 
@@ -14,6 +15,7 @@ public final class AVFoundationNativeCaptureSession {
     private var delegate: SampleBufferDelegate?
     private var source: CaptureSourceToken?
     private var correlation: CaptureTimestampCorrelation?
+    private let latestImageStore = LatestImageStore()
 
     public init(
         nativeSession: NativeCaptureSession = NativeCaptureSession(),
@@ -34,6 +36,7 @@ public final class AVFoundationNativeCaptureSession {
         requestedFormat: CaptureFormat = CaptureFormat(width: 1_280, height: 720, frameRate: 30)
     ) async throws -> CaptureFormat {
         await stop()
+        latestImageStore.clear()
         let configuredRequestedFormat = try configure(device: device, requested: requestedFormat)
         let input = try AVCaptureDeviceInput(device: device)
         let actualFormat = negotiatedFormat(
@@ -70,7 +73,8 @@ public final class AVFoundationNativeCaptureSession {
                 source: source,
                 format: actualFormat,
                 correlation: correlation!,
-                clock: clock
+                clock: clock,
+                imageStore: latestImageStore
             )
             self.delegate = delegate
             videoOutput.setSampleBufferDelegate(delegate, queue: callbackQueue)
@@ -106,11 +110,16 @@ public final class AVFoundationNativeCaptureSession {
         input = nil
         source = nil
         correlation = nil
+        latestImageStore.clear()
         await nativeSession.stop()
     }
 
     func consumeLatestFrame() async -> CameraFrameMetadata? {
         await nativeSession.consumeLatest()
+    }
+
+    func consumeLatestImageData() -> Data? {
+        latestImageStore.value
     }
 
     func snapshot() async -> NativeCaptureSessionSnapshot {
@@ -202,6 +211,8 @@ private final class SampleBufferDelegate: NSObject, AVCaptureVideoDataOutputSamp
     private let format: CaptureFormat
     private let correlation: CaptureTimestampCorrelation
     private let clock: any CaptureHostClock
+    private let imageStore: LatestImageStore
+    private let imageContext = CIContext()
     private var nextFrameID: UInt64 = 0
 
     init(
@@ -209,13 +220,15 @@ private final class SampleBufferDelegate: NSObject, AVCaptureVideoDataOutputSamp
         source: CaptureSourceToken,
         format: CaptureFormat,
         correlation: CaptureTimestampCorrelation,
-        clock: any CaptureHostClock
+        clock: any CaptureHostClock,
+        imageStore: LatestImageStore
     ) {
         self.session = session
         self.source = source
         self.format = format
         self.correlation = correlation
         self.clock = clock
+        self.imageStore = imageStore
     }
 
     func captureOutput(
@@ -228,6 +241,14 @@ private final class SampleBufferDelegate: NSObject, AVCaptureVideoDataOutputSamp
         guard let captureInstant = try? correlation.map(presentationTimestamp: rawPTS, now: now) else {
             return
         }
+        if let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer),
+           let jpeg = imageContext.jpegRepresentation(
+               of: CIImage(cvPixelBuffer: pixelBuffer),
+               colorSpace: CGColorSpaceCreateDeviceRGB(),
+               options: [:]
+           ) {
+            imageStore.store(jpeg)
+        }
         let frame = CameraFrameMetadata(
             id: nextFrameID,
             rawPresentationTimestamp: rawPTS,
@@ -238,5 +259,28 @@ private final class SampleBufferDelegate: NSObject, AVCaptureVideoDataOutputSamp
         Task {
             try? await session.ingest(frame, source: source)
         }
+    }
+}
+
+private final class LatestImageStore: @unchecked Sendable {
+    private let lock = NSLock()
+    private var data: Data?
+
+    var value: Data? {
+        lock.lock()
+        defer { lock.unlock() }
+        return data
+    }
+
+    func store(_ data: Data) {
+        lock.lock()
+        self.data = data
+        lock.unlock()
+    }
+
+    func clear() {
+        lock.lock()
+        data = nil
+        lock.unlock()
     }
 }

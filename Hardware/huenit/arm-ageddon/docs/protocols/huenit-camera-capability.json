@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "device": "HUENIT_CAM",
+  "firmware": "not-measured",
+  "measuredAt": "not-measured",
+  "status": "not-measured",
+  "attempts": [
+    "No live hardware probe was run in this checkout.",
+    "A redacted recorded transcript was parsed to validate the bounded adapter behavior."
+  ],
+  "supported": [
+    "serialTelemetry"
+  ],
+  "unsupported": {
+    "preview": "not measured; shipping UI must not advertise it",
+    "artifactUpload": "not measured and no verified handshake; use manual external workflow"
+  },
+  "recordedFixture": "Tests/Fixtures/Serial/huenit-camera-recorded.txt",
+  "liveProbeGuard": "ARMAGEDDON_LIVE_CAMERA_PROBE=1"
+}

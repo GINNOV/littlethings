@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schemaVersion", "identifier", "modelFilename", "scriptFilename", "labels", "provenance"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "identifier": { "type": "string", "minLength": 1 },
+    "modelFilename": { "type": "string", "pattern": "^[A-Za-z0-9._-]+$" },
+    "scriptFilename": { "type": "string", "pattern": "^[A-Za-z0-9._-]+$" },
+    "labels": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+    "anchors": { "type": "array", "items": { "type": "number" } },
+    "provenance": { "type": "string", "minLength": 1 },
+    "modelSHA256": { "type": ["string", "null"], "pattern": "^[0-9a-fA-F]{64}$" },
+    "scriptSHA256": { "type": ["string", "null"], "pattern": "^[0-9a-fA-F]{64}$" }
+  },
+  "additionalProperties": false
+}

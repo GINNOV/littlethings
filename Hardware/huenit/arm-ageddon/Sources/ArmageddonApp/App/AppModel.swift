@@ -10,6 +10,8 @@ final class AppModel {
     private let cameraLifecycle: NativeCameraLifecycleController
     private let cameraLifecycleObserver: AVFoundationCameraLifecycleObserver
     private let modelRegistry: ModelRegistry
+    private let captureStore: CaptureSessionStore?
+    private let diagnosticLog: DiagnosticEventLog?
     let livePreview: LivePreviewModel
 
     private(set) var destination: String
@@ -22,6 +24,10 @@ final class AppModel {
     private(set) var cameraLifecycleSnapshot: NativeCameraLifecycleSnapshot
     private(set) var modelRegistrySnapshot: ModelRegistrySnapshot
     private(set) var modelImportError: String?
+    private(set) var captures: [CaptureRecord] = []
+    private(set) var captureError: String?
+    private(set) var diagnosticEvents: [DiagnosticEvent] = []
+    private(set) var supportBundleURL: URL?
 
     init(
         coordinator: AppStateCoordinator,
@@ -29,12 +35,15 @@ final class AppModel {
         cameraLifecycle: NativeCameraLifecycleController,
         cameraLifecycleObserver: AVFoundationCameraLifecycleObserver = AVFoundationCameraLifecycleObserver(),
         modelRegistry: ModelRegistry? = nil,
-        livePreview: LivePreviewModel = LivePreviewModel()
+        livePreview: LivePreviewModel = LivePreviewModel(),
+        captureRoot: URL? = nil
     ) {
         self.coordinator = coordinator
         self.cameraLifecycle = cameraLifecycle
         self.cameraLifecycleObserver = cameraLifecycleObserver
         self.modelRegistry = modelRegistry ?? ModelRegistry(root: Self.defaultModelRegistryRoot())
+        self.captureStore = Self.makeCaptureStore(root: captureRoot ?? Self.defaultCaptureRoot())
+        self.diagnosticLog = try? DiagnosticEventLog()
         self.livePreview = livePreview
         destination = restoredState.destination
         selectedDevice = restoredState.selectedDevice
@@ -46,6 +55,8 @@ final class AppModel {
         cameraLifecycleSnapshot = NativeCameraLifecycleSnapshot(authorization: .notDetermined)
         modelRegistrySnapshot = .empty
         modelImportError = nil
+        captureError = nil
+        supportBundleURL = nil
     }
 
     func restore() async {
@@ -109,6 +120,153 @@ final class AppModel {
             modelImportError = nil
         } catch {
             modelImportError = modelErrorMessage(error)
+        }
+    }
+
+    func openCaptures() async {
+        guard let captureStore else {
+            captureError = "Capture storage is unavailable for this launch."
+            await recordDiagnostic(category: .storage, severity: .error, code: "storage-unavailable", message: captureError ?? "")
+            return
+        }
+        do {
+            try await captureStore.open()
+            await refreshCaptures()
+            captureError = nil
+            await recordDiagnostic(category: .storage, severity: .info, code: "storage-ready", message: "Capture storage is ready.")
+        } catch {
+            captureError = "Capture storage could not be opened."
+            await recordDiagnostic(category: .storage, severity: .error, code: "storage-open-failed", message: captureError ?? "")
+        }
+    }
+
+    func refreshDiagnostics() async {
+        diagnosticEvents = await diagnosticLog?.snapshot() ?? []
+    }
+
+    func exportSupportBundle(to outputURL: URL) async {
+        let events = await diagnosticLog?.snapshot() ?? []
+        let snapshot = DiagnosticSnapshot(
+            generatedAt: ContinuousCaptureHostClock().now(),
+            states: [
+                "camera": cameraLifecycleSnapshot.connection.rawValue,
+                "capture": captureStore == nil ? "unavailable" : "ready",
+                "motion": armed ? "armed" : "disarmed"
+            ],
+            metrics: ["captureCount": Double(captures.count)],
+            modelHashes: modelRegistrySnapshot.models.map(\.artifactHash)
+        )
+        do {
+            supportBundleURL = try SupportBundleExporter.export(
+                to: outputURL,
+                appVersion: "0.1",
+                toolVersion: "Armageddon",
+                events: events,
+                snapshot: snapshot
+            )
+            await recordDiagnostic(category: .storage, severity: .info, code: "support-exported", message: "Support bundle exported.")
+            diagnosticEvents = await diagnosticLog?.snapshot() ?? []
+        } catch {
+            captureError = "Support export was refused because the destination already exists or is invalid."
+        }
+    }
+
+    func refreshCaptures(search: String = "") async {
+        guard let captureStore else { return }
+        do {
+            captures = try await captureStore.query(search: search)
+            captureError = nil
+        } catch {
+            captureError = "Captures could not be loaded."
+        }
+    }
+
+    func captureCurrentFrame(name: String = "Captured frame") async {
+        guard let captureStore else {
+            captureError = "Capture storage is unavailable for this launch."
+            return
+        }
+        guard !livePreview.isPaused, !livePreview.observations.isEmpty else {
+            livePreview.captureCurrentFrame()
+            return
+        }
+        guard let frame = await livePreview.currentCaptureFrame(),
+              let format = livePreview.negotiatedFormat else {
+            captureError = "No camera frame is ready to capture."
+            return
+        }
+        let image = livePreview.currentCaptureImageData() ?? Data("armageddon-fixture-image-\(frame.id)".utf8)
+        let provenance = CaptureProvenance(
+            sourceID: livePreview.selectedSource.rawValue,
+            frameID: frame.id,
+            modelID: livePreview.activeModelID,
+            modelHash: String(repeating: "0", count: 64),
+            observations: livePreview.observations,
+            selectedObservationID: livePreview.selectedObservationID,
+            calibrationID: nil,
+            armPose: nil,
+            runID: nil,
+            captureInstant: frame.captureInstant,
+            imageSize: PixelSize(width: Double(format.width), height: Double(format.height)),
+            imageFormat: .jpeg
+        )
+        do {
+            _ = try await captureStore.capture(image: image, thumbnail: nil, provenance: provenance, name: name)
+            livePreview.captureCurrentFrame()
+            await refreshCaptures()
+            captureError = nil
+            await recordDiagnostic(
+                category: .capture,
+                severity: .info,
+                code: "capture-persisted",
+                message: "Explicit capture persisted.",
+                metadata: ["source": livePreview.selectedSource.rawValue, "count": "1"]
+            )
+        } catch {
+            captureError = "The frame could not be persisted atomically."
+            await recordDiagnostic(category: .capture, severity: .error, code: "capture-failed", message: captureError ?? "")
+        }
+    }
+
+    func reviewCapture(id: String, as review: CaptureReview) async {
+        guard let captureStore else { return }
+        do {
+            try await captureStore.review(id: id, as: review)
+            await refreshCaptures()
+        } catch {
+            captureError = "The capture review could not be saved."
+        }
+    }
+
+    func trashCapture(id: String) async {
+        guard let captureStore else { return }
+        do {
+            try await captureStore.trash(id: id)
+            await refreshCaptures()
+        } catch {
+            captureError = "The capture could not be moved to Trash."
+        }
+    }
+
+    func restoreCapture(id: String) async {
+        guard let captureStore else { return }
+        do {
+            try await captureStore.restore(id: id)
+            await refreshCaptures()
+        } catch {
+            captureError = "The capture could not be restored."
+        }
+    }
+
+    func exportCapture(id: String, to directory: URL) async -> URL? {
+        guard let captureStore else { return nil }
+        do {
+            let manifestURL = try await captureStore.export(id: id, to: directory)
+            captureError = nil
+            return manifestURL
+        } catch {
+            captureError = "Export refused because its destination already exists or is invalid."
+            return nil
         }
     }
 
@@ -211,10 +369,52 @@ final class AppModel {
             .appendingPathComponent("Models", isDirectory: true)
     }
 
+    private static func defaultCaptureRoot() -> URL {
+        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("Armageddon", isDirectory: true)
+            .appendingPathComponent("Captures", isDirectory: true)
+    }
+
+    private static func makeCaptureStore(root: URL) -> CaptureSessionStore? {
+        guard let metadata = try? SwiftDataArtifactMetadataStore(
+            storeURL: root.appendingPathComponent("Metadata", isDirectory: true)
+                .appendingPathComponent("metadata.store")
+        ) else { return nil }
+        let fileSystem = POSIXDurableFileSystem(
+            root: root.appendingPathComponent("Artifacts", isDirectory: true)
+        )
+        let artifacts = LocalArtifactStorage(fileSystem: fileSystem, metadata: metadata)
+        let index = FileCaptureIndexStore(
+            fileURL: root.appendingPathComponent("Index", isDirectory: true)
+                .appendingPathComponent("captures.json")
+        )
+        return CaptureSessionStore(artifacts: artifacts, index: index)
+    }
+
     private func modelErrorMessage(_ error: Error) -> String {
         if let registryError = error as? ModelRegistryError {
             return registryError.reason
         }
         return "The model could not be activated."
+    }
+
+    private func recordDiagnostic(
+        category: DiagnosticCategory,
+        severity: DiagnosticSeverity,
+        code: String,
+        message: String,
+        metadata: [String: String] = [:]
+    ) async {
+        guard let diagnosticLog else { return }
+        _ = await diagnosticLog.append(
+            occurredAt: ContinuousCaptureHostClock().now(),
+            generation: livePreview.latestFrame?.id ?? 0,
+            category: category,
+            severity: severity,
+            code: code,
+            message: message,
+            metadata: metadata
+        )
+        diagnosticEvents = await diagnosticLog.snapshot()
     }
 }

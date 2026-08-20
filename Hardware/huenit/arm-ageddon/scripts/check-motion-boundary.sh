@@ -30,7 +30,8 @@ if grep -REn 'SerialPort|MotionPermit|sendRaw|writeHardwareCommand' "$scratch/mo
     printf '%s\n' 'ERROR[forbidden-symbol]: exported symbol graph exposes raw motion' >&2
     exit 1
 fi
-xcrun swiftc -typecheck -dump-ast -sdk "$sdk" -target arm64-apple-macosx15.0 -I "$module_dir" "$project_root"/Sources/ArmageddonMotionBoundary/*.swift >"$scratch/motion-boundary/production.ast" 2>"$scratch/motion-boundary/ast.stderr"
-references=$(rg -n 'declref_expr.*requestMotion' "$scratch/motion-boundary/production.ast" || true)
+production_sources=$(find "$project_root/Sources/ArmageddonMotionBoundary" -type f -name '*.swift' -print)
+xcrun swiftc -typecheck -dump-ast -sdk "$sdk" -target arm64-apple-macosx15.0 -I "$module_dir" $production_sources >"$scratch/motion-boundary/production.ast" 2>"$scratch/motion-boundary/ast.stderr"
+references=$(cat "$scratch/motion-boundary/production.ast" "$scratch/motion-boundary/ast.stderr" | rg -n 'declref_expr.*requestMotion' | rg -v 'ArmageddonMotionBoundary.swift' || true)
 [ -z "$references" ] || { printf '%s\n' "$references" >&2; printf '%s\n' 'ERROR[unexpected-boundary-callsite]: facade call outside checked-in Safety/Execution allowlist' >&2; exit 1; }
 printf '%s\n' 'PASS: motion boundary compiler, symbol graph, and call-site checks passed'

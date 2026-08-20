@@ -4,6 +4,7 @@ import SwiftUI
 
 struct ModelsWorkspaceView: View {
     @Environment(AppModel.self) private var appModel
+    @State private var searchText = ""
 
     var body: some View {
         ScrollView {
@@ -17,6 +18,11 @@ struct ModelsWorkspaceView: View {
                             .foregroundStyle(.secondary)
                     }
                     Spacer()
+                    TextField("Search models", text: $searchText)
+                        .textFieldStyle(.roundedBorder)
+                        .frame(width: 170)
+                        .accessibilityLabel("Search models")
+                        .accessibilityIdentifier("models.search")
                     Button {
                         importModel()
                     } label: {
@@ -36,6 +42,31 @@ struct ModelsWorkspaceView: View {
                         .accessibilityIdentifier("models.error")
                 }
 
+                HStack(alignment: .top, spacing: DesignTokens.Spacing.standard) {
+                    Image(systemName: "cable.connector")
+                        .foregroundStyle(.secondary)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("HUENIT K210 camera")
+                            .font(DesignTokens.Typography.sectionTitle)
+                        Text("Detection telemetry only · preview and in-app upload unsupported")
+                            .font(DesignTokens.Typography.supporting)
+                            .foregroundStyle(.secondary)
+                        Text("Copy a verified .kmodel bundle through the documented HUENIT workflow. The app never sends guessed serial writes.")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                    }
+                    Spacer()
+                    Text("Unsupported")
+                        .font(DesignTokens.Typography.supporting)
+                        .foregroundStyle(.orange)
+                }
+                .padding(DesignTokens.Spacing.roomy)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(DesignTokens.Colors.canvas, in: RoundedRectangle(cornerRadius: 12))
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("HUENIT K210 camera. Detection telemetry only. Preview and upload unsupported.")
+                .accessibilityIdentifier("models.huenit-unsupported")
+
                 if appModel.modelRegistrySnapshot.models.isEmpty {
                     EmptyStateView(
                         title: "No verified models",
@@ -45,7 +76,7 @@ struct ModelsWorkspaceView: View {
                     .frame(maxWidth: .infinity, minHeight: 280)
                 } else {
                     LazyVStack(spacing: DesignTokens.Spacing.standard) {
-                        ForEach(appModel.modelRegistrySnapshot.models) { model in
+                        ForEach(filteredModels) { model in
                             modelCard(model)
                         }
                     }
@@ -110,5 +141,13 @@ struct ModelsWorkspaceView: View {
         panel.canChooseDirectories = false
         guard panel.runModal() == .OK, let url = panel.url else { return }
         Task { await appModel.importModel(manifestURL: url) }
+    }
+
+    private var filteredModels: [ModelRecord] {
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return appModel.modelRegistrySnapshot.models }
+        return appModel.modelRegistrySnapshot.models.filter {
+            $0.id.localizedStandardContains(query) || $0.displayName.localizedStandardContains(query)
+        }
     }
 }

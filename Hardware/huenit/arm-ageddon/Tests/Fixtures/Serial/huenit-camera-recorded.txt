@@ -1,0 +1,4 @@
+identity=HUENIT_CAM
+baud=115200
+frame=target,256,144,320,180
+frame=other,768,360,128,96

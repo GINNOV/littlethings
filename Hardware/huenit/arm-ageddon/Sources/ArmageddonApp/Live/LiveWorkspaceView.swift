@@ -28,7 +28,9 @@ struct LiveWorkspaceView: View {
                 .buttonStyle(.bordered)
                 .accessibilityIdentifier("live.pause-resume")
                 Button("Capture frame", systemImage: "camera.viewfinder") {
-                    appModel.livePreview.captureCurrentFrame()
+                    Task {
+                        await appModel.captureCurrentFrame(name: "Live frame")
+                    }
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(appModel.livePreview.isPaused || appModel.livePreview.observations.isEmpty)
