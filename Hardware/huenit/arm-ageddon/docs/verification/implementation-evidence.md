@@ -1,10 +1,11 @@
 # Implementation evidence
 
-Source revision: `9f655e9531e2448d3f96825565040f642586c548`
+Source revision: `59f5fd5589cc5917fd13e6cff8374562a4bda56b`
 
 ## Credential-independent checks
 
 - `swift test --disable-sandbox --parallel`: 118 tests in 23 suites passed.
+- Final exact-SHA proof repeated the full 118-test suite and Debug app build successfully.
 - `xcodebuild -project Armageddon.xcodeproj -scheme ArmageddonApp -configuration Debug -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO build`: passed.
 - Release build completed through `scripts/package-release.sh`; Developer ID packaging stopped with `BLOCKED_MISSING_SIGNING_CREDENTIAL` before DMG signing/notarization. The script now includes DMG creation, `notarytool`, stapling, and stapled-artifact validation when credentials are supplied.
 - `scripts/validate-docs.sh`: passed.
