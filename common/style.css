@@ -436,18 +436,32 @@ a.project-button:hover {
 .demo-button { background-color: #10B981; }
 .demo-button:hover { background-color: #059669; }
 
+.quarantine-guide {
+    margin-top: 3.5rem;
+    padding-top: 2rem;
+    border-top: 2px solid #334155;
+}
+
+.quarantine-guide h2 {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 1.25rem;
+    color: #FF8800;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+.quarantine-guide h3 {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.95rem;
+    color: #FF8800;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
 .quarantine-guide ol {
     list-style-type: decimal;
     padding-left: 2rem;
-}
-
-.quarantine-guide h2,
-.quarantine-guide h3 {
-    margin-bottom: 1.5rem;
-}
-
-.quarantine-guide h3 {
-    margin-top: 2.5rem;
 }
 
 .quarantine-guide p {
