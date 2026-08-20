@@ -9,6 +9,7 @@ This folder contains utility apps and experiments built during the Amiga flashba
 | Folder | Purpose |
 | --- | --- |
 | `ADFinder/` | ADF-related macOS utility project. |
+| `amigaLoginScreen/` | macOS Droplet and CLI for Amiga lock screens & wallpapers. |
 | `AmigaROMExplorer/` | Amiga ROM catalog and local firmware explorer. |
 | `AuDeluxe/` | Audio-related macOS utility project. |
 | `IFFViewer/` | IFF viewing and preview tooling. |

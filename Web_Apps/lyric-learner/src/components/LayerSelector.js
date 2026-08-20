@@ -1,0 +1,37 @@
+// FILE: src/components/LayerSelector.js
+// This component is responsible for the dropdown menu and the color legend.
+
+import React from 'react';
+
+const LayerSelector = ({ layers, activeLayer, setActiveLayer }) => {
+  const handleLayerChange = (e) => {
+    const value = e.target.value === 'all' ? 'all' : Number(e.target.value);
+    setActiveLayer(value);
+  };
+
+  return (
+    <div className="controls-container">
+      <div className="selector-wrapper">
+        <label htmlFor="layer-select">Focus on a vocabulary layer to begin:</label>
+        <select id="layer-select" value={activeLayer} onChange={handleLayerChange}>
+          <option value="all">Show All Layers</option>
+          {Object.entries(layers).map(([layerNum, layerData]) => (
+            <option key={layerNum} value={layerNum}>
+              Layer {layerNum}: {layerData.name}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="legend">
+        {Object.entries(layers).map(([layerNum, layerData]) => (
+          <div key={layerNum} className="legend-item">
+            <span className="legend-color-box" style={{ backgroundColor: layerData.color, border: `1px solid ${layerData.textColor}` }}></span>
+            {layerData.name}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default LayerSelector;

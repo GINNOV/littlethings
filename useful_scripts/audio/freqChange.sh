@@ -26,10 +26,10 @@ if [ ! -f "$input_file" ]; then
   exit 1
 fi
 
-# Extract the file name without extension
-output_file="${input_file%.*}_44k_24b.wav"
+# Find ffmpeg binary dynamically or fallback to PATH
+FFMPEG_BIN=$(command -v ffmpeg || echo "/opt/homebrew/bin/ffmpeg")
 
 # Use ffmpeg to convert the file to 44.1 kHz and 24-bit
-/opt/homebrew/bin/ffmpeg -i "$input_file" -ar 44100 -sample_fmt s32 -acodec pcm_s24le "$output_file"
+"$FFMPEG_BIN" -i "$input_file" -ar 44100 -sample_fmt s32 -acodec pcm_s24le "$output_file"
 
 echo "Conversion complete: $output_file" >> "$download_path"

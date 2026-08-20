@@ -24,10 +24,10 @@ myip=`ifconfig $i | grep "inet " | awk 'NR==1 {print $2}'`
 #
 # IPV6 section
 #
-if [ $1 = "-6" ]; then
-	echo "# Scanning..."
+if [ "$1" = "-6" ]; then
+	echo "# Scanning IPv6..."
 	sudo nmap -6 --script=targets-ipv6-multicast-echo.nse --script-args 'newtargets,interface='$i -sL --exclude "$myip"
-	exit
+	exit 0
 fi
 
 #
@@ -37,18 +37,15 @@ fi
 # build CIDR
 cidr=$(while read y; 
 do echo ${y%.*}".0/$(m=0; 
-
-while read -n 1 x && [ $x = f ]; 
-do m=$[m+4]; 
-done < <(ifconfig $i | awk '/mask/             {$4=substr($4,3); print $4}'); 
+while read -n 1 x && [ "$x" = "f" ]; 
+do m=$((m+4)); 
+done < <(ifconfig $i | awk '/mask/ {$4=substr($4,3); print $4}'); 
 echo $m )"; 
-
 done < <(ifconfig $i | awk '/inet[ ]/{print $2}'))
 
-# scan an entire subnet and to do that you need some information about Classes Inter-Domain Routing (CIDR)
-
-echo "# Scanning..."
-sudo nmap -n -T4 -PN -p9091 --exclude "$myip" "$cidr"
+# scan an entire subnet (checks open SSH port 22 and common web ports, or ping scan)
+echo "# Scanning IPv4 network ($cidr)..."
+sudo nmap -n -T4 -PN -p 22,80,443,9091 --exclude "$myip" "$cidr"
 
 # MICRO KNOWLEDGE
 
