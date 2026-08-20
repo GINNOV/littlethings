@@ -14,17 +14,19 @@ struct LiveWorkspaceView: View {
                 Group {
                     if appModel.cameraLifecycleSnapshot.authorization == .authorized,
                        appModel.cameraLifecycleSnapshot.connection == .connected {
-                        VStack(spacing: DesignTokens.Spacing.standard) {
-                            Image(systemName: "viewfinder")
-                                .font(.largeTitle)
-                                .foregroundStyle(DesignTokens.Colors.canvasPrimary)
-                                .accessibilityHidden(true)
-                            Text("Camera preview will appear here")
-                                .font(DesignTokens.Typography.body)
-                                .foregroundStyle(DesignTokens.Colors.canvasPrimary)
-                            Text("Connect a supported source to begin local inspection.")
-                                .font(DesignTokens.Typography.supporting)
-                                .foregroundStyle(DesignTokens.Colors.canvasSecondary)
+                        if let previewLayer = appModel.livePreview.previewLayer {
+                            CameraPreviewSurface(previewLayer: previewLayer)
+                                .accessibilityIdentifier("camera.preview")
+                        } else {
+                            VStack(spacing: DesignTokens.Spacing.standard) {
+                                Image(systemName: "viewfinder")
+                                    .font(.largeTitle)
+                                    .foregroundStyle(DesignTokens.Colors.canvasPrimary)
+                                    .accessibilityHidden(true)
+                                Text("Camera preview is preparing")
+                                    .font(DesignTokens.Typography.body)
+                                    .foregroundStyle(DesignTokens.Colors.canvasPrimary)
+                            }
                         }
                     } else {
                         CameraAuthorizationView(

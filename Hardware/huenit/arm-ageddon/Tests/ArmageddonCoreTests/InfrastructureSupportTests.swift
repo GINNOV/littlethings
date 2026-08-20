@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+@testable import ArmageddonCore
 
 struct InfrastructureSupportTests {
     @Test("Deterministic providers emit only injected values")

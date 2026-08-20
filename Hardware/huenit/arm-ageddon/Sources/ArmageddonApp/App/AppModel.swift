@@ -8,6 +8,7 @@ final class AppModel {
     private let coordinator: AppStateCoordinator
     private let cameraLifecycle: NativeCameraLifecycleController
     private let cameraLifecycleObserver: AVFoundationCameraLifecycleObserver
+    let livePreview: LivePreviewModel
 
     private(set) var destination: String
     private(set) var selectedDevice: DeviceIdentity?
@@ -22,11 +23,13 @@ final class AppModel {
         coordinator: AppStateCoordinator,
         restoredState: RestoredAppState,
         cameraLifecycle: NativeCameraLifecycleController,
-        cameraLifecycleObserver: AVFoundationCameraLifecycleObserver = AVFoundationCameraLifecycleObserver()
+        cameraLifecycleObserver: AVFoundationCameraLifecycleObserver = AVFoundationCameraLifecycleObserver(),
+        livePreview: LivePreviewModel = LivePreviewModel()
     ) {
         self.coordinator = coordinator
         self.cameraLifecycle = cameraLifecycle
         self.cameraLifecycleObserver = cameraLifecycleObserver
+        self.livePreview = livePreview
         destination = restoredState.destination
         selectedDevice = restoredState.selectedDevice
         selectedModelID = restoredState.selectedModelID
@@ -61,7 +64,7 @@ final class AppModel {
         if events.contains(where: {
             if case .selectionBecameStale = $0 { true } else { false }
         }) {
-            cancelCameraWork()
+            await cancelCameraWork()
         }
         cameraLifecycleSnapshot = await cameraLifecycle.snapshot()
     }
@@ -83,7 +86,7 @@ final class AppModel {
         try? await cameraLifecycle.select(.nativeCamera("fixture-camera"))
         await cameraLifecycle.markConnected()
         await cameraLifecycle.markDisconnected()
-        cancelCameraWork()
+        await cancelCameraWork()
         cameraLifecycleSnapshot = await cameraLifecycle.snapshot()
     }
 
@@ -94,11 +97,11 @@ final class AppModel {
                 switch event {
                 case .deviceDisconnected:
                     await cameraLifecycle.markDisconnected()
-                    cancelCameraWork()
+                    await cancelCameraWork()
                     cameraLifecycleSnapshot = await cameraLifecycle.snapshot()
                 case .interrupted:
                     await cameraLifecycle.markInterrupted()
-                    cancelCameraWork()
+                    await cancelCameraWork()
                     cameraLifecycleSnapshot = await cameraLifecycle.snapshot()
                 case .deviceConnected, .interruptionEnded:
                     await refreshCameraLifecycle()
@@ -112,9 +115,10 @@ final class AppModel {
         NSWorkspace.shared.open(url)
     }
 
-    private func cancelCameraWork() {
+    private func cancelCameraWork() async {
         armed = false
         moving = false
         cameraWorkCancelled = true
+        await livePreview.stop()
     }
 }

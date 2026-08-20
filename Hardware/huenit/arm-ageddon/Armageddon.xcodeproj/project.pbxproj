@@ -45,6 +45,9 @@
 		A10000000000000000000036 /* AVFoundationCameraDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000036 /* AVFoundationCameraDiscovery.swift */; };
 		A10000000000000000000037 /* AVFoundationCameraLifecycleObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000039 /* AVFoundationCameraLifecycleObserver.swift */; };
 		A10000000000000000000038 /* CameraAuthorizationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000040 /* CameraAuthorizationView.swift */; };
+		A10000000000000000000039 /* AVFoundationNativeCaptureSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000041 /* AVFoundationNativeCaptureSession.swift */; };
+		A10000000000000000000040 /* LivePreviewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000042 /* LivePreviewModel.swift */; };
+		A10000000000000000000041 /* CameraPreviewSurface.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000043 /* CameraPreviewSurface.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -98,6 +101,9 @@
 		A20000000000000000000038 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		A20000000000000000000039 /* AVFoundationCameraLifecycleObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AVFoundationCameraLifecycleObserver.swift; sourceTree = "<group>"; };
 		A20000000000000000000040 /* CameraAuthorizationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraAuthorizationView.swift; sourceTree = "<group>"; };
+		A20000000000000000000041 /* AVFoundationNativeCaptureSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AVFoundationNativeCaptureSession.swift; sourceTree = "<group>"; };
+		A20000000000000000000042 /* LivePreviewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LivePreviewModel.swift; sourceTree = "<group>"; };
+		A20000000000000000000043 /* CameraPreviewSurface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreviewSurface.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -163,6 +169,7 @@
 				A20000000000000000000036 /* AVFoundationCameraDiscovery.swift */,
 				A20000000000000000000039 /* AVFoundationCameraLifecycleObserver.swift */,
 				A20000000000000000000040 /* CameraAuthorizationView.swift */,
+				A20000000000000000000041 /* AVFoundationNativeCaptureSession.swift */,
 			);
 			path = Camera;
 			sourceTree = "<group>";
@@ -209,7 +216,7 @@
 			path = Components;
 			sourceTree = "<group>";
 		};
-		A50000000000000000000009 /* Live */ = {isa = PBXGroup; children = (A20000000000000000000027 /* LiveWorkspaceView.swift */,); path = Live; sourceTree = "<group>"; };
+		A50000000000000000000009 /* Live */ = {isa = PBXGroup; children = (A20000000000000000000027 /* LiveWorkspaceView.swift */, A20000000000000000000042 /* LivePreviewModel.swift */, A20000000000000000000043 /* CameraPreviewSurface.swift */,); path = Live; sourceTree = "<group>"; };
 		A50000000000000000000010 /* Capture */ = {isa = PBXGroup; children = (A20000000000000000000028 /* CaptureWorkspaceView.swift */,); path = Capture; sourceTree = "<group>"; };
 		A50000000000000000000011 /* Models */ = {isa = PBXGroup; children = (A20000000000000000000029 /* ModelsWorkspaceView.swift */,); path = Models; sourceTree = "<group>"; };
 		A50000000000000000000012 /* Runs */ = {isa = PBXGroup; children = (A20000000000000000000030 /* RunsWorkspaceView.swift */,); path = Runs; sourceTree = "<group>"; };
@@ -361,6 +368,9 @@
 				A10000000000000000000036 /* AVFoundationCameraDiscovery.swift in Sources */,
 				A10000000000000000000037 /* AVFoundationCameraLifecycleObserver.swift in Sources */,
 				A10000000000000000000038 /* CameraAuthorizationView.swift in Sources */,
+				A10000000000000000000039 /* AVFoundationNativeCaptureSession.swift in Sources */,
+				A10000000000000000000040 /* LivePreviewModel.swift in Sources */,
+				A10000000000000000000041 /* CameraPreviewSurface.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

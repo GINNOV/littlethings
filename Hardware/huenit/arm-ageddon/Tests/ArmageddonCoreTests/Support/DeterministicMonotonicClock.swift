@@ -1,6 +1,4 @@
-struct MonotonicInstant: Equatable, Sendable {
-    let nanoseconds: UInt64
-}
+import ArmageddonCore
 
 struct DeterministicMonotonicClock: Sendable {
     private let instants: [MonotonicInstant]
