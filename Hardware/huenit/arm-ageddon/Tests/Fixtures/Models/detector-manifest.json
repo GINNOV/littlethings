@@ -1,1 +1,1 @@
-{"schemaVersion":1,"identifier":"fixture.constant.detector","sha256":"0000000000000000000000000000000000000000000000000000000000000000"}
+{"schemaVersion":1,"identifier":"fixture.constant.detector","sha256":"0000000000000000000000000000000000000000000000000000000000000000","kind":"objectDetection","input":{"kind":"image","width":224,"height":224},"output":{"kind":"visionObjects"},"labels":["target","other"],"confidenceThreshold":0.5,"nmsIoUThreshold":0.5}

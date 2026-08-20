@@ -12,7 +12,7 @@ if [ "$#" -ne 2 ]; then
     printf '%s\n' 'Usage: qa-task.sh <1-33> <happy|failure>' >&2
     exit 2
 fi
-case "$1" in 2|3|4|6|7|8|9|10|11) ;; *) printf '%s\n' 'ERROR[unsupported-task]: task manifest has not landed yet' >&2; exit 2 ;; esac
+case "$1" in 2|3|4|6|7|8|9|10|11|12) ;; *) printf '%s\n' 'ERROR[unsupported-task]: task manifest has not landed yet' >&2; exit 2 ;; esac
 case "$2" in happy|failure) ;; *) printf '%s\n' 'ERROR[unknown-mode]' >&2; exit 2 ;; esac
 
 if [ -n "${ARMAGEDDON_TASK_ROOT:-}" ]; then
@@ -132,6 +132,38 @@ if [ "$1" = "11" ]; then
     printf '{"task":11,"mode":"%s","filter":"%s","probe":%s,"transcript":"%s","transcriptSha256":"%s","result":"%s"}\n' \
         "$2" "$filter_target" "$probe_json" "$transcript" "$transcript_sha256" "$result" >"$task_root/camera-ml-app.json"
     printf 'PASS task=11 mode=%s root=%s\n' "$2" "$task_root"
+    exit 0
+fi
+
+if [ "$1" = "12" ]; then
+    transcript="$task_root/camera-ml-app.txt"
+    validation_root=$(mktemp -d "${TMPDIR:-/tmp}/armageddon-task12.XXXXXX")
+    rsync -a --exclude '.git' --exclude '.build' "$project_root/" "$validation_root/"
+    if [ "$2" = "happy" ]; then
+        filter_target='DetectorContractTests/letterboxedMirrored'
+    else
+        filter_target='DetectorContractTests/normalizerContracts'
+    fi
+    (
+        cd "$validation_root"
+        swift test --disable-sandbox --filter "$filter_target"
+    ) >"$transcript" 2>&1
+    probe="$task_root/probe.json"
+    (
+        cd "$validation_root"
+        swift run --disable-sandbox --quiet DetectorQAProbe "$2"
+    ) >"$probe" 2>>"$transcript"
+    probe_json=$(tr -d '\n' <"$probe")
+    printf '%s\n' "DETECTOR_QA_PROBE=$probe_json" >>"$transcript"
+    result="$task_root/camera-ml-app.xcresult"
+    GIT_CEILING_DIRECTORIES="$repo_ceiling" xcodebuild -quiet -project Armageddon.xcodeproj -scheme ArmageddonApp \
+        -configuration Debug -destination 'platform=macOS' \
+        -derivedDataPath "$task_root/build" -resultBundlePath "$result" build-for-testing >>"$transcript" 2>&1
+    [ -d "$result" ] || { printf '%s\n' 'ERROR[missing-task-12-xcresult]' >&2; exit 1; }
+    transcript_sha256=$(shasum -a 256 "$transcript" | awk '{print $1}')
+    printf '{"task":12,"mode":"%s","filter":"%s","probe":%s,"transcript":"%s","transcriptSha256":"%s","result":"%s"}\n' \
+        "$2" "$filter_target" "$probe_json" "$transcript" "$transcript_sha256" "$result" >"$task_root/camera-ml-app.json"
+    printf 'PASS task=12 mode=%s root=%s\n' "$2" "$task_root"
     exit 0
 fi
 

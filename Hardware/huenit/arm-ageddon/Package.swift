@@ -15,6 +15,7 @@ let package = Package(
         .executable(name: "SandboxLogProbe", targets: ["SandboxLogProbe"]),
         .executable(name: "ModelFixtureGenerator", targets: ["ModelFixtureGenerator"]),
         .executable(name: "CaptureQAProbe", targets: ["CaptureQAProbe"]),
+        .executable(name: "DetectorQAProbe", targets: ["DetectorQAProbe"]),
     ],
     targets: [
         .target(
@@ -63,6 +64,12 @@ let package = Package(
             name: "CaptureQAProbe",
             dependencies: ["ArmageddonCore", "ArmageddonCaptureAdapter"],
             path: "Tools/CaptureQAProbe",
+            swiftSettings: strictConcurrency
+        ),
+        .executableTarget(
+            name: "DetectorQAProbe",
+            dependencies: ["ArmageddonCore"],
+            path: "Tools/DetectorQAProbe",
             swiftSettings: strictConcurrency
         ),
         .testTarget(
