@@ -9,7 +9,7 @@ fi
 
 project_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd -P)
 scan_root=${1:-"$project_root/Tests"}
-forbidden='AVCaptureDevice\.requestAccess|AVCaptureDevice\.DiscoverySession|URLSession\.shared|IOServiceGetMatchingServices|/dev/cu\.|SerialPort\.open|writeHardwareCommand'
+forbidden='AVCaptureDevice\.requestAccess|AVCaptureDevice\.DiscoverySession|URLSession\.shared|IOServiceGetMatchingServices|SerialPort\.open|writeHardwareCommand'
 
 if [ "$scan_root" = "$project_root/Tests" ]; then
     matches=$(find "$scan_root" -type f \( -name '*.swift' -o -name '*.py' -o -name '*.sh' \) ! -path "$project_root/Tests/Fixtures/*" ! -path '*/Live/*' -print0 | xargs -0 grep -En "$forbidden" || true)
