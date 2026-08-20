@@ -423,6 +423,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Armageddon;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Armageddon uses the camera only when you choose a native camera source for local inspection.";
+				ENABLE_HARDENED_RUNTIME = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0.0;
 				CODE_SIGN_ENTITLEMENTS = Sources/ArmageddonApp/App/ArmageddonApp.entitlements;
@@ -438,12 +439,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = arm64;
-				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_ALLOWED = YES;
+				CODE_SIGN_IDENTITY = "-";
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Armageddon;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Armageddon uses the camera only when you choose a native camera source for local inspection.";
+				ENABLE_HARDENED_RUNTIME = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0.0;
 				CODE_SIGN_ENTITLEMENTS = Sources/ArmageddonApp/App/ArmageddonApp.entitlements;

@@ -76,6 +76,7 @@ struct CameraAuthorizationView: View {
                 if snapshot.canRescan {
                     Button("Rescan Cameras", action: rescan)
                         .buttonStyle(.bordered)
+                        .accessibilityIdentifier("camera.rescan")
                 }
             }
         }
