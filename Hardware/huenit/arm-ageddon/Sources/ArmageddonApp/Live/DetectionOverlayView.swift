@@ -21,7 +21,7 @@ struct DetectionOverlayView: View {
                    mirrored: sourceFormat.mirrored,
                    resizeMode: .letterbox
                ),
-               let viewBox = try? transform.modelToView(transform.modelPixels(from: observation.boundingBox)) {
+               let viewBox = viewBox(for: observation, transform: transform) {
                 let width = viewBox.width
                 let height = viewBox.height
                 let x = viewBox.x + viewBox.width / 2
@@ -45,5 +45,17 @@ struct DetectionOverlayView: View {
         }
         .allowsHitTesting(false)
         .accessibilityIdentifier("live.detection-overlays")
+    }
+
+    private func viewBox(
+        for observation: DetectionObservation,
+        transform: DetectorCoordinateTransform
+    ) -> PixelRect? {
+        switch observation.coordinateSpace {
+        case .modelImage:
+            try? transform.modelToView(transform.modelPixels(from: observation.boundingBox))
+        case .orientedImage:
+            try? transform.orientedToView(transform.orientedPixels(from: observation.boundingBox))
+        }
     }
 }

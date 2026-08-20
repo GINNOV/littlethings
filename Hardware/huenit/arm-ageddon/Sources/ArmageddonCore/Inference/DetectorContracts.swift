@@ -183,6 +183,11 @@ public struct NormalizedRect: Codable, Equatable, Sendable {
     }
 }
 
+public enum DetectorCoordinateSpace: String, Codable, Equatable, Sendable {
+    case modelImage
+    case orientedImage
+}
+
 public struct DetectionObservation: Codable, Equatable, Sendable, Identifiable {
     public let id: String
     public let frameID: UInt64
@@ -191,6 +196,7 @@ public struct DetectionObservation: Codable, Equatable, Sendable, Identifiable {
     public let label: String
     public let confidence: Double
     public let boundingBox: NormalizedRect
+    public let coordinateSpace: DetectorCoordinateSpace
 
     public init(
         id: String,
@@ -199,7 +205,8 @@ public struct DetectionObservation: Codable, Equatable, Sendable, Identifiable {
         captureInstant: MonotonicInstant,
         label: String,
         confidence: Double,
-        boundingBox: NormalizedRect
+        boundingBox: NormalizedRect,
+        coordinateSpace: DetectorCoordinateSpace = .modelImage
     ) {
         self.id = id
         self.frameID = frameID
@@ -208,6 +215,7 @@ public struct DetectionObservation: Codable, Equatable, Sendable, Identifiable {
         self.label = label
         self.confidence = confidence
         self.boundingBox = boundingBox
+        self.coordinateSpace = coordinateSpace
     }
 }
 
@@ -292,7 +300,8 @@ public struct DetectorOutputNormalizer: Sendable {
                     captureInstant: frame.captureInstant,
                     label: output.label,
                     confidence: output.confidence,
-                    boundingBox: output.boundingBox
+                    boundingBox: output.boundingBox,
+                    coordinateSpace: .orientedImage
                 )
             }
         case let .multiArray(output):
@@ -318,7 +327,8 @@ public struct DetectorOutputNormalizer: Sendable {
                         y: coordinates[1],
                         width: coordinates[2],
                         height: coordinates[3]
-                    )
+                    ),
+                    coordinateSpace: .modelImage
                 )
             }
         case .classification, .segmentation, .unknown:

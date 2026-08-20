@@ -139,11 +139,26 @@ public struct DetectorCoordinateTransform: Sendable, Equatable {
         )
     }
 
+    public func orientedPixels(from normalized: NormalizedRect) throws -> PixelRect {
+        guard normalized.isUnitBounded else { throw DetectorCoordinateError.invalidRectangle }
+        return PixelRect(
+            x: normalized.x * orientedSize.width,
+            y: normalized.y * orientedSize.height,
+            width: normalized.width * orientedSize.width,
+            height: normalized.height * orientedSize.height
+        )
+    }
+
+    public func orientedToView(_ rect: PixelRect) throws -> PixelRect {
+        try validate(rect)
+        return transformRect(rect, using: orientedPointToView)
+    }
+
     private var orientedSize: PixelSize {
         switch orientation {
-        case .portrait, .landscapeLeft:
+        case .portrait, .portraitUpsideDown:
             PixelSize(width: sourceSize.height, height: sourceSize.width)
-        case .portraitUpsideDown, .landscapeRight, .unknown:
+        case .landscapeLeft, .landscapeRight, .unknown:
             sourceSize
         }
     }
@@ -158,8 +173,8 @@ public struct DetectorCoordinateTransform: Sendable, Equatable {
         let normalized = (point.0 / sourceSize.width, point.1 / sourceSize.height)
         let oriented: (Double, Double) = switch orientation {
         case .portrait: (1 - normalized.1, normalized.0)
-        case .portraitUpsideDown: (1 - normalized.0, 1 - normalized.1)
-        case .landscapeLeft: (normalized.1, 1 - normalized.0)
+        case .portraitUpsideDown: (normalized.1, 1 - normalized.0)
+        case .landscapeLeft: (1 - normalized.0, 1 - normalized.1)
         case .landscapeRight, .unknown: normalized
         }
         let mirroredPoint = mirrored ? (1 - oriented.0, oriented.1) : oriented
@@ -171,8 +186,8 @@ public struct DetectorCoordinateTransform: Sendable, Equatable {
         let unmirrored = mirrored ? (1 - normalized.0, normalized.1) : normalized
         let source: (Double, Double) = switch orientation {
         case .portrait: (unmirrored.1, 1 - unmirrored.0)
-        case .portraitUpsideDown: (1 - unmirrored.0, 1 - unmirrored.1)
-        case .landscapeLeft: (1 - unmirrored.1, unmirrored.0)
+        case .portraitUpsideDown: (1 - unmirrored.1, unmirrored.0)
+        case .landscapeLeft: (1 - unmirrored.0, 1 - unmirrored.1)
         case .landscapeRight, .unknown: unmirrored
         }
         return (source.0 * sourceSize.width, source.1 * sourceSize.height)

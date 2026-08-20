@@ -141,8 +141,8 @@ struct DetectorContractTests {
         let sourceRect = PixelRect(x: 310, y: 190, width: 520, height: 330)
         let fixtures: [(CaptureVideoOrientation, PixelRect)] = [
             (.portrait, PixelRect(x: 203.333333333, y: 103.333333333, width: 110, height: 173.333333333)),
-            (.portraitUpsideDown, PixelRect(x: 103.333333333, y: 326.666666667, width: 173.333333333, height: 110)),
-            (.landscapeLeft, PixelRect(x: 326.666666667, y: 363.333333333, width: 110, height: 173.333333333)),
+            (.portraitUpsideDown, PixelRect(x: 326.666666667, y: 363.333333333, width: 110, height: 173.333333333)),
+            (.landscapeLeft, PixelRect(x: 103.333333333, y: 326.666666667, width: 173.333333333, height: 110)),
             (.landscapeRight, PixelRect(x: 363.333333333, y: 203.333333333, width: 173.333333333, height: 110)),
         ]
 
