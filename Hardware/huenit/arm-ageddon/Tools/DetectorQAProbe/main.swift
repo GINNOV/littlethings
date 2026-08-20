@@ -124,7 +124,7 @@ struct DetectorQAProbe {
                 "outputKind": "multiArray",
                 "coordinates": "1 row",
                 "confidenceRows": "0",
-                "expectedError": "malformedMultiArray",
+                "expectedError": "unsupportedOutputContract",
                 "expected": "objectDetection",
                 "observations": "0",
             ]

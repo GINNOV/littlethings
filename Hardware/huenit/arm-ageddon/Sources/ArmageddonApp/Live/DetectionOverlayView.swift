@@ -3,15 +3,29 @@ import SwiftUI
 
 struct DetectionOverlayView: View {
     let observations: [DetectionObservation]
+    let sourceFormat: CaptureFormat?
+    let modelSize: PixelSize
 
     var body: some View {
         GeometryReader { geometry in
-            if let observation = observations.first {
-                let box = observation.boundingBox
-                let width = box.width * geometry.size.width
-                let height = box.height * geometry.size.height
-                let x = (box.x + box.width / 2) * geometry.size.width
-                let y = (box.y + box.height / 2) * geometry.size.height
+            if let observation = observations.first,
+               let sourceFormat,
+               let transform = try? DetectorCoordinateTransform(
+                   sourceSize: PixelSize(
+                       width: Double(sourceFormat.width),
+                       height: Double(sourceFormat.height)
+                   ),
+                   modelSize: modelSize,
+                   viewSize: PixelSize(width: geometry.size.width, height: geometry.size.height),
+                   orientation: sourceFormat.orientation,
+                   mirrored: sourceFormat.mirrored,
+                   resizeMode: .letterbox
+               ),
+               let viewBox = try? transform.modelToView(transform.modelPixels(from: observation.boundingBox)) {
+                let width = viewBox.width
+                let height = viewBox.height
+                let x = viewBox.x + viewBox.width / 2
+                let y = viewBox.y + viewBox.height / 2
                 ZStack(alignment: .topLeading) {
                     RoundedRectangle(cornerRadius: 6)
                         .stroke(DesignTokens.Colors.danger, lineWidth: 2)

@@ -136,6 +136,33 @@ struct DetectorContractTests {
         }
     }
 
+    @Test("Independent orientation fixtures match expected model pixels")
+    func independentOrientationFixtures() throws {
+        let sourceRect = PixelRect(x: 310, y: 190, width: 520, height: 330)
+        let fixtures: [(CaptureVideoOrientation, PixelRect)] = [
+            (.portrait, PixelRect(x: 203.333333333, y: 103.333333333, width: 110, height: 173.333333333)),
+            (.portraitUpsideDown, PixelRect(x: 103.333333333, y: 326.666666667, width: 173.333333333, height: 110)),
+            (.landscapeLeft, PixelRect(x: 326.666666667, y: 363.333333333, width: 110, height: 173.333333333)),
+            (.landscapeRight, PixelRect(x: 363.333333333, y: 203.333333333, width: 173.333333333, height: 110)),
+        ]
+
+        for (orientation, expected) in fixtures {
+            let transform = try DetectorCoordinateTransform(
+                sourceSize: PixelSize(width: 1_920, height: 1_080),
+                modelSize: PixelSize(width: 640, height: 640),
+                viewSize: PixelSize(width: 1_280, height: 800),
+                orientation: orientation,
+                mirrored: true,
+                resizeMode: .letterbox
+            )
+            let actual = try transform.sourceToModel(sourceRect)
+            #expect(abs(actual.x - expected.x) < 0.5)
+            #expect(abs(actual.y - expected.y) < 0.5)
+            #expect(abs(actual.width - expected.width) < 0.5)
+            #expect(abs(actual.height - expected.height) < 0.5)
+        }
+    }
+
     @Test("Thresholding and NMS are deterministic and label scoped")
     func thresholdAndNMS() throws {
         let instant = MonotonicInstant(nanoseconds: 1_000_000_000)
@@ -296,7 +323,7 @@ struct DetectorContractTests {
         )
         #expect(observations[0].label == "other")
 
-        #expect(throws: DetectionValidationError.malformedMultiArray) {
+        #expect(throws: DetectionValidationError.unsupportedOutputContract) {
             try normalizer.normalize(
                 .multiArray(MultiArrayDetectionOutput(
                     coordinates: [[0.1, 0.2, 0.3, 0.4]],

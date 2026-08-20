@@ -129,6 +129,16 @@ public struct DetectorCoordinateTransform: Sendable, Equatable {
         )
     }
 
+    public func modelPixels(from normalized: NormalizedRect) throws -> PixelRect {
+        guard normalized.isUnitBounded else { throw DetectorCoordinateError.invalidRectangle }
+        return PixelRect(
+            x: normalized.x * modelSize.width,
+            y: normalized.y * modelSize.height,
+            width: normalized.width * modelSize.width,
+            height: normalized.height * modelSize.height
+        )
+    }
+
     private var orientedSize: PixelSize {
         switch orientation {
         case .portrait, .landscapeLeft:

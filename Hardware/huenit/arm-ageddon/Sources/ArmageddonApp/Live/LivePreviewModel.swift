@@ -10,6 +10,7 @@ public final class LivePreviewModel {
     public private(set) var snapshot: NativeCaptureSessionSnapshot
     public private(set) var negotiatedFormat: CaptureFormat?
     public private(set) var observations: [DetectionObservation] = []
+    public private(set) var detectorInputSize = PixelSize(width: 224, height: 224)
 
     public var isRunning: Bool {
         capture.isRunning
@@ -56,6 +57,10 @@ public final class LivePreviewModel {
             input: DetectorInputContract(width: 224, height: 224),
             output: DetectorOutputContract(kind: .visionObjects),
             labels: ["target", "other"]
+        )
+        detectorInputSize = PixelSize(
+            width: Double(manifest.input.width),
+            height: Double(manifest.input.height)
         )
         let engine = DeterministicFakeInferenceEngine(detections: [
             FakeDetection(

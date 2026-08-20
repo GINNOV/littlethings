@@ -299,7 +299,7 @@ public struct DetectorOutputNormalizer: Sendable {
             guard manifest.output.kind == .multiArray,
                   output.coordinates.count == output.confidences.count,
                   output.coordinates.count == output.labelIndices.count else {
-                throw DetectionValidationError.malformedMultiArray
+                throw DetectionValidationError.unsupportedOutputContract
             }
             observations = try output.coordinates.enumerated().map { index, coordinates in
                 guard coordinates.count == 4,

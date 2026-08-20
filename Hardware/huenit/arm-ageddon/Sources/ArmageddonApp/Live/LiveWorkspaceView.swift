@@ -18,7 +18,11 @@ struct LiveWorkspaceView: View {
                             ZStack {
                                 CameraPreviewSurface(previewLayer: previewLayer)
                                     .accessibilityIdentifier("camera.preview")
-                                DetectionOverlayView(observations: appModel.livePreview.observations)
+                                DetectionOverlayView(
+                                    observations: appModel.livePreview.observations,
+                                    sourceFormat: appModel.livePreview.negotiatedFormat,
+                                    modelSize: appModel.livePreview.detectorInputSize
+                                )
                             }
                         } else {
                             VStack(spacing: DesignTokens.Spacing.standard) {
