@@ -9,6 +9,7 @@ final class AVFoundationNativeCaptureSession {
     private let nativeSession: NativeCaptureSession
     private let clock: any CaptureHostClock
     private let callbackQueue = DispatchQueue(label: "com.huenit.armageddon.capture", qos: .userInitiated)
+    private var input: AVCaptureDeviceInput?
     private var output: AVCaptureVideoDataOutput?
     private var delegate: SampleBufferDelegate?
     private var source: CaptureSourceToken?
@@ -40,32 +41,41 @@ final class AVFoundationNativeCaptureSession {
         videoOutput.alwaysDiscardsLateVideoFrames = true
 
         captureSession.beginConfiguration()
-        defer { captureSession.commitConfiguration() }
         guard captureSession.canAddInput(input), captureSession.canAddOutput(videoOutput) else {
+            captureSession.commitConfiguration()
             throw AVFoundationCaptureError.configurationUnavailable
         }
 
         captureSession.addInput(input)
         captureSession.addOutput(videoOutput)
+        self.input = input
+        self.output = videoOutput
+        configure(connection: videoOutput.connection(with: .video), for: actualFormat)
+        captureSession.commitConfiguration()
+
         let anchorPTS = CMTimeGetSeconds(CMClockGetTime(CMClockGetHostTimeClock()))
         correlation = try CaptureTimestampCorrelation(
             anchorPresentationTimestamp: anchorPTS,
             anchorInstant: clock.now()
         )
-        let source = try await nativeSession.start(configuration: actualFormat)
-        self.source = source
-        let delegate = SampleBufferDelegate(
-            session: nativeSession,
-            source: source,
-            format: actualFormat,
-            correlation: correlation!,
-            clock: clock
-        )
-        self.delegate = delegate
-        output = videoOutput
-        videoOutput.setSampleBufferDelegate(delegate, queue: callbackQueue)
-        captureSession.startRunning()
-        return actualFormat
+        do {
+            let source = try await nativeSession.start(configuration: actualFormat)
+            self.source = source
+            let delegate = SampleBufferDelegate(
+                session: nativeSession,
+                source: source,
+                format: actualFormat,
+                correlation: correlation!,
+                clock: clock
+            )
+            self.delegate = delegate
+            videoOutput.setSampleBufferDelegate(delegate, queue: callbackQueue)
+            captureSession.startRunning()
+            return actualFormat
+        } catch {
+            await stop()
+            throw error
+        }
     }
 
     var isRunning: Bool {
@@ -75,8 +85,17 @@ final class AVFoundationNativeCaptureSession {
     func stop() async {
         output?.setSampleBufferDelegate(nil, queue: nil)
         delegate = nil
-        output = nil
         captureSession.stopRunning()
+        captureSession.beginConfiguration()
+        if let output, captureSession.outputs.contains(output) {
+            captureSession.removeOutput(output)
+        }
+        if let input, captureSession.inputs.contains(input) {
+            captureSession.removeInput(input)
+        }
+        captureSession.commitConfiguration()
+        output = nil
+        input = nil
         source = nil
         correlation = nil
         await nativeSession.stop()
@@ -100,6 +119,22 @@ final class AVFoundationNativeCaptureSession {
             orientation: requested.orientation,
             mirrored: requested.mirrored
         )
+    }
+
+    private func configure(connection: AVCaptureConnection?, for format: CaptureFormat) {
+        guard let connection else { return }
+        if connection.isVideoOrientationSupported {
+            connection.videoOrientation = switch format.orientation {
+            case .portrait: .portrait
+            case .portraitUpsideDown: .portraitUpsideDown
+            case .landscapeLeft: .landscapeLeft
+            case .landscapeRight: .landscapeRight
+            case .unknown: connection.videoOrientation
+            }
+        }
+        if connection.isVideoMirroringSupported {
+            connection.isVideoMirrored = format.mirrored
+        }
     }
 
     private func configure(device: AVCaptureDevice, requested: CaptureFormat) throws {

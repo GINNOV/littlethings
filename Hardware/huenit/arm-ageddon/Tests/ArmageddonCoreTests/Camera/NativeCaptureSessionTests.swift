@@ -32,6 +32,7 @@ struct NativeCaptureSessionTests {
         #expect(snapshot.metrics.delivered == 1)
         #expect(snapshot.metrics.dropped == 1_799)
         #expect(snapshot.metrics.maxQueueDepth == 1)
+        #expect(snapshot.metrics.pendingFrameCount == 0)
         #expect(snapshot.metrics.latestFrameAgeNanoseconds == 201_000_000)
     }
 
@@ -166,6 +167,7 @@ struct NativeCaptureSessionTests {
         let snapshot = await session.snapshot()
         #expect(snapshot.state == .stopped)
         #expect(snapshot.metrics.maxQueueDepth == 1)
+        #expect(snapshot.metrics.pendingFrameCount == 0)
     }
 
     @Test("Frame metadata preserves negotiated orientation and mirroring")

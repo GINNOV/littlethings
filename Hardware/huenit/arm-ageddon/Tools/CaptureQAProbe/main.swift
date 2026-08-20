@@ -10,13 +10,17 @@ private struct FixedCaptureClock: CaptureHostClock {
 private struct CaptureQAResult: Codable {
     let mode: String
     let logicalSeconds: Int
+    let measuredDurationSeconds: Double
+    let effectiveFrameRate: Double
     let produced: UInt64
     let delivered: UInt64
     let dropped: UInt64
     let maxQueueDepth: Int
+    let pendingFrameCount: Int
     let stopElapsedNanoseconds: UInt64?
     let postStopFrameRejections: Int
     let previewCycles: Int
+    let previewReleased: Bool
 }
 
 @main
@@ -53,17 +57,24 @@ struct CaptureQAProbe {
                 _ = await session.consumeLatest()
             }
         }
+        let firstTimestamp = 0.0
+        let lastTimestamp = Double(1_799) / format.frameRate
+        let measuredDuration = lastTimestamp - firstTimestamp + (1 / format.frameRate)
         let metrics = (await session.snapshot()).metrics
         try emit(CaptureQAResult(
             mode: "happy",
-            logicalSeconds: 60,
+            logicalSeconds: Int(measuredDuration.rounded()),
+            measuredDurationSeconds: measuredDuration,
+            effectiveFrameRate: Double(metrics.produced) / measuredDuration,
             produced: metrics.produced,
             delivered: metrics.delivered,
             dropped: metrics.dropped,
             maxQueueDepth: metrics.maxQueueDepth,
+            pendingFrameCount: metrics.pendingFrameCount,
             stopElapsedNanoseconds: nil,
             postStopFrameRejections: 0,
-            previewCycles: 0
+            previewCycles: 0,
+            previewReleased: false
         ))
     }
 
@@ -100,13 +111,17 @@ struct CaptureQAProbe {
         try emit(CaptureQAResult(
             mode: "failure",
             logicalSeconds: 0,
+            measuredDurationSeconds: 0,
+            effectiveFrameRate: 0,
             produced: metrics.produced,
             delivered: metrics.delivered,
             dropped: metrics.dropped,
             maxQueueDepth: metrics.maxQueueDepth,
+            pendingFrameCount: metrics.pendingFrameCount,
             stopElapsedNanoseconds: durationNanoseconds(elapsed),
             postStopFrameRejections: postStopFrameRejections,
-            previewCycles: 20
+            previewCycles: 20,
+            previewReleased: metrics.pendingFrameCount == 0
         ))
     }
 

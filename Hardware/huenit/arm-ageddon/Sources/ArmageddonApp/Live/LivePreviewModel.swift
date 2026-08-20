@@ -10,6 +10,10 @@ final class LivePreviewModel {
     private(set) var snapshot: NativeCaptureSessionSnapshot
     private(set) var negotiatedFormat: CaptureFormat?
 
+    var isRunning: Bool {
+        capture.isRunning
+    }
+
     init(capture: AVFoundationNativeCaptureSession = AVFoundationNativeCaptureSession()) {
         self.capture = capture
         snapshot = NativeCaptureSessionSnapshot(

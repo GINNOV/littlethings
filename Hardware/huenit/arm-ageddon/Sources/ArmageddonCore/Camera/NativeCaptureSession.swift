@@ -60,6 +60,7 @@ public actor NativeCaptureSession {
                 delivered: delivered,
                 dropped: queueMetrics.dropped,
                 maxQueueDepth: queueMetrics.maxDepth,
+                pendingFrameCount: queueMetrics.depth,
                 latestFrameAgeNanoseconds: latestFrameAgeNanoseconds
             )
         )

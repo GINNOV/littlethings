@@ -106,7 +106,7 @@ if [ "$1" = "11" ]; then
     validation_root=$(mktemp -d "${TMPDIR:-/tmp}/armageddon-task11.XXXXXX")
     rsync -a --exclude '.git' --exclude '.build' "$project_root/" "$validation_root/"
     if [ "$2" = "happy" ]; then
-        filter='latestFrameQueueIsBounded'
+        filter='sixtySecondsOfCaptureMaintainsBoundedQueue'
     else
         filter='stopCancelsSourceGeneration'
     fi

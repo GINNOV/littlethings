@@ -1,6 +1,7 @@
 import AppKit
 import ArmageddonCore
 import Observation
+@preconcurrency import AVFoundation
 
 @MainActor
 @Observable
@@ -67,15 +68,16 @@ final class AppModel {
             await cancelCameraWork()
         }
         cameraLifecycleSnapshot = await cameraLifecycle.snapshot()
+        await startCameraPreviewIfAvailable()
     }
 
     func requestCameraPermission() async {
-        cameraLifecycleSnapshot = await cameraLifecycle.requestAuthorization()
+        _ = await cameraLifecycle.requestAuthorization()
+        await refreshCameraLifecycle()
     }
 
     func rescanCameras() async {
-        _ = await cameraLifecycle.refresh()
-        cameraLifecycleSnapshot = await cameraLifecycle.snapshot()
+        await refreshCameraLifecycle()
         if cameraLifecycleSnapshot.connection == .available || cameraLifecycleSnapshot.connection == .connected {
             cameraWorkCancelled = false
         }
@@ -108,6 +110,25 @@ final class AppModel {
                 }
             }
         }
+    }
+
+    private func startCameraPreviewIfAvailable() async {
+        guard cameraLifecycleSnapshot.authorization == .authorized,
+              cameraLifecycleSnapshot.connection == .available,
+              case let .selected(.nativeCamera(uniqueID)) = cameraLifecycleSnapshot.selection,
+              let device = AVCaptureDevice(uniqueID: uniqueID),
+              !livePreview.isRunning else { return }
+
+        await cameraLifecycle.markConnecting()
+        cameraLifecycleSnapshot = await cameraLifecycle.snapshot()
+        do {
+            try await livePreview.start(device: device)
+            await cameraLifecycle.markConnected()
+        } catch {
+            await livePreview.stop()
+            await cameraLifecycle.markFailed()
+        }
+        cameraLifecycleSnapshot = await cameraLifecycle.snapshot()
     }
 
     func openCameraSettings() {

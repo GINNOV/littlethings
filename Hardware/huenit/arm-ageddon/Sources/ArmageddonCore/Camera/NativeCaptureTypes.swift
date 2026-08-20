@@ -225,6 +225,7 @@ public struct NativeCaptureSessionMetrics: Codable, Equatable, Sendable {
     public let delivered: UInt64
     public let dropped: UInt64
     public let maxQueueDepth: Int
+    public let pendingFrameCount: Int
     public let latestFrameAgeNanoseconds: UInt64?
 
     public init(
@@ -232,12 +233,14 @@ public struct NativeCaptureSessionMetrics: Codable, Equatable, Sendable {
         delivered: UInt64 = 0,
         dropped: UInt64 = 0,
         maxQueueDepth: Int = 0,
+        pendingFrameCount: Int = 0,
         latestFrameAgeNanoseconds: UInt64? = nil
     ) {
         self.produced = produced
         self.delivered = delivered
         self.dropped = dropped
         self.maxQueueDepth = maxQueueDepth
+        self.pendingFrameCount = pendingFrameCount
         self.latestFrameAgeNanoseconds = latestFrameAgeNanoseconds
     }
 }
