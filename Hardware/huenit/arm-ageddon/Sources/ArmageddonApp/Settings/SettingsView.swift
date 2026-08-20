@@ -3,8 +3,6 @@ import SwiftUI
 
 struct SettingsView: View {
     @AppStorage private var showInspectorOnLaunch: Bool
-    @AppStorage private var computeUnits: String
-    @AppStorage private var captureFormat: String
     @AppStorage private var retentionDays: Int
     @AppStorage private var diagnosticsOptIn: Bool
     @AppStorage private var defaultModelID: String
@@ -17,8 +15,6 @@ struct SettingsView: View {
             store: preferenceSuite.flatMap { UserDefaults(suiteName: $0) }
         )
         let store = preferenceSuite.flatMap { UserDefaults(suiteName: $0) }
-        _computeUnits = AppStorage(wrappedValue: "automatic", "computeUnits", store: store)
-        _captureFormat = AppStorage(wrappedValue: "jpeg", "captureFormat", store: store)
         _retentionDays = AppStorage(wrappedValue: 30, "retentionDays", store: store)
         _diagnosticsOptIn = AppStorage(wrappedValue: false, "diagnosticsOptIn", store: store)
         _defaultModelID = AppStorage(wrappedValue: "fixture.constant.detector", "defaultModelID", store: store)
@@ -31,16 +27,10 @@ struct SettingsView: View {
                     .accessibilityLabel("Show inspector on launch")
                     .accessibilityIdentifier("settings.show-inspector")
             }
-            Section("Capture and compute") {
-                Picker("Compute units", selection: $computeUnits) {
-                    Text("Automatic").tag("automatic")
-                    Text("CPU only").tag("cpu")
-                    Text("GPU / Neural Engine").tag("accelerated")
-                }
-                Picker("Capture format", selection: $captureFormat) {
-                    Text("JPEG").tag("jpeg")
-                    Text("HEIC").tag("heic")
-                }
+            Section("Capture") {
+                Text("Captures are stored locally as JPEG with their source, model, and timing provenance.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
                 Stepper("Keep captures for \(retentionDays) days", value: $retentionDays, in: 1...365)
                 TextField("Default model ID", text: $defaultModelID)
             }
@@ -87,8 +77,6 @@ struct SettingsView: View {
 
     private func resetPreferences() {
         showInspectorOnLaunch = true
-        computeUnits = "automatic"
-        captureFormat = "jpeg"
         retentionDays = 30
         diagnosticsOptIn = false
         defaultModelID = "fixture.constant.detector"

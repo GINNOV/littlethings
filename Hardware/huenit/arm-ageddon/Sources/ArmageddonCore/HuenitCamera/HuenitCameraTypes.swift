@@ -64,8 +64,13 @@ public struct HuenitCameraCapabilityDecision: Codable, Equatable, Sendable {
         try container.encodeIfPresent(profile, forKey: .profile)
     }
 
-    public var canUploadArtifacts: Bool { supported.contains(.artifactUpload) }
-    public var canPreview: Bool { supported.contains(.preview) }
+    public var canUploadArtifacts: Bool {
+        status == .measured && supported.contains(.artifactUpload)
+    }
+
+    public var canPreview: Bool {
+        status == .measured && supported.contains(.preview)
+    }
 }
 
 public struct HuenitTelemetryProfile: Codable, Equatable, Sendable {

@@ -130,7 +130,6 @@ struct ModelsWorkspaceView: View {
         }
         .padding(DesignTokens.Spacing.roomy)
         .background(DesignTokens.Colors.canvas, in: RoundedRectangle(cornerRadius: 12))
-        .accessibilityElement(children: .combine)
         .accessibilityIdentifier("model.\(model.id)")
     }
 

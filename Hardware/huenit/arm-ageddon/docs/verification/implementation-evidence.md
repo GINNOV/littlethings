@@ -4,12 +4,13 @@ Source revision: `9f655e9531e2448d3f96825565040f642586c548`
 
 ## Credential-independent checks
 
-- `swift test --disable-sandbox --parallel`: 116 tests in 23 suites passed.
+- `swift test --disable-sandbox --parallel`: 118 tests in 23 suites passed.
 - `xcodebuild -project Armageddon.xcodeproj -scheme ArmageddonApp -configuration Debug -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO build`: passed.
 - Release build completed through `scripts/package-release.sh`; Developer ID packaging stopped with `BLOCKED_MISSING_SIGNING_CREDENTIAL`.
 - `scripts/validate-docs.sh`: passed.
 - `scripts/verify-no-live-io-in-tests.sh`: passed.
 - `scripts/check-motion-boundary.sh`: passed after compiler-negative, symbol-graph, and AST callsite checks.
+- Independent read-only review findings were fixed for proposal-to-permit binding, workspace inset enforcement, capture rollback, model provenance, measured K210 capabilities, valid fixture JPEGs, empty-detection capture, and model-card accessibility.
 - `xcodebuild -list` resolves the ordinary app scheme and the separately named `LiveCameraAcceptance` and `LiveArmAcceptance` schemes.
 
 ## Measured protocol evidence

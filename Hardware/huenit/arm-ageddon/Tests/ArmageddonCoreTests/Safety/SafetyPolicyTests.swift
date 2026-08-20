@@ -32,15 +32,42 @@ struct SafetyPolicyTests {
         #expect(SafetyPolicyV1.evaluate(unsafeZ, now: now).reasons.contains(.unsafeZ))
     }
 
+    @Test("workspace inset rejects edge-adjacent targets")
+    func workspaceInset() {
+        let now = MonotonicInstant(nanoseconds: 1_000_000_000)
+        let edgeTarget = makeSnapshot(target: CalibrationPoint(x: 5, y: 20), now: now)
+        #expect(SafetyPolicyV1.evaluate(edgeTarget, now: now).reasons.contains(.targetOutsideWorkspace))
+    }
+
     @Test("controller issues one private permit and consumes it once")
     func oneUsePermit() async throws {
         let controller = SafetyController()
         let now = MonotonicInstant(nanoseconds: 1_000_000_000)
-        await controller.update(makeSnapshot(now: now))
+        let snapshot = makeSnapshot(now: now)
+        await controller.update(snapshot)
         try await controller.arm(now: now)
-        _ = try await controller.consumePermit(now: now)
+        let observation = snapshot.observation!
+        let pose = snapshot.pose!
+        let profile = snapshot.profile!
+        let proposal = try TargetProposal(
+            frameID: observation.frameID,
+            generation: observation.generation,
+            detectionID: observation.detectionID,
+            calibrationID: profile.calibrationID,
+            formatIdentity: observation.formatIdentity,
+            modelHash: observation.modelHash,
+            captureInstant: observation.captureInstant,
+            poseInstant: pose.receivedAt,
+            proposedAt: now,
+            armedAt: now,
+            fromXY: pose.xy,
+            targetXY: observation.targetXY,
+            feedMillimetersPerMinute: profile.feedMillimetersPerMinute,
+            policyState: .eligible
+        )
+        _ = try await controller.consumePermit(now: now, proposal: proposal)
         do {
-            _ = try await controller.consumePermit(now: now)
+            _ = try await controller.consumePermit(now: now, proposal: proposal)
             Issue.record("A consumed permit was accepted a second time.")
         } catch let error as SafetyControllerError {
             #expect(error == .inhibited([.armExpired]))
@@ -72,6 +99,7 @@ struct SafetyPolicyTests {
             feedMillimetersPerMinute: 300
         )
         let observation = SafetyObservation(
+            detectionID: "target",
             frameID: 1,
             generation: 1,
             captureInstant: now,

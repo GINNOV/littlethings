@@ -54,15 +54,26 @@ public actor FileCaptureIndexStore: CaptureIndexStore {
     public func insert(_ record: CaptureRecord) async throws {
         guard records.contains(where: { $0.id == record.id }) == false else { throw CaptureError.duplicateID }
         records.append(record)
-        try persist()
+        do {
+            try persist()
+        } catch {
+            records.removeLast()
+            throw error
+        }
     }
 
     public func replace(_ record: CaptureRecord) async throws {
         guard let index = records.firstIndex(where: { $0.id == record.id }) else {
             throw CaptureError.missingRecord(record.id)
         }
+        let previous = records[index]
         records[index] = record
-        try persist()
+        do {
+            try persist()
+        } catch {
+            records[index] = previous
+            throw error
+        }
     }
 
     private func persist() throws {

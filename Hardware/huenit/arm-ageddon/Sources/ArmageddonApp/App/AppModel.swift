@@ -186,7 +186,7 @@ final class AppModel {
             captureError = "Capture storage is unavailable for this launch."
             return
         }
-        guard !livePreview.isPaused, !livePreview.observations.isEmpty else {
+        guard !livePreview.isPaused else {
             livePreview.captureCurrentFrame()
             return
         }
@@ -195,12 +195,15 @@ final class AppModel {
             captureError = "No camera frame is ready to capture."
             return
         }
-        let image = livePreview.currentCaptureImageData() ?? Data("armageddon-fixture-image-\(frame.id)".utf8)
+        guard let image = livePreview.currentCaptureImageData() ?? Self.fixtureJPEGData() else {
+            captureError = "No valid JPEG image is ready to capture."
+            return
+        }
         let provenance = CaptureProvenance(
             sourceID: livePreview.selectedSource.rawValue,
             frameID: frame.id,
             modelID: livePreview.activeModelID,
-            modelHash: String(repeating: "0", count: 64),
+            modelHash: livePreview.activeModelHash,
             observations: livePreview.observations,
             selectedObservationID: livePreview.selectedObservationID,
             calibrationID: nil,
@@ -288,7 +291,7 @@ final class AppModel {
             modelImportError = nil
             selectedModelID = id
             if let model = modelRegistrySnapshot.models.first(where: { $0.id == id }) {
-                livePreview.setActiveModel(id: model.id, label: model.displayName)
+                livePreview.setActiveModel(id: model.id, label: model.displayName, hash: model.artifactHash)
             }
             await persistSelections()
         } catch {
@@ -416,5 +419,23 @@ final class AppModel {
             metadata: metadata
         )
         diagnosticEvents = await diagnosticLog.snapshot()
+    }
+
+    private static func fixtureJPEGData() -> Data? {
+        guard let bitmap = NSBitmapImageRep(
+            bitmapDataPlanes: nil,
+            pixelsWide: 1,
+            pixelsHigh: 1,
+            bitsPerSample: 8,
+            samplesPerPixel: 4,
+            hasAlpha: true,
+            isPlanar: false,
+            colorSpaceName: .deviceRGB,
+            bitmapFormat: [],
+            bytesPerRow: 4,
+            bitsPerPixel: 32
+        ) else { return nil }
+        bitmap.setColor(.white, atX: 0, y: 0)
+        return bitmap.representation(using: NSBitmapImageRep.FileType.jpeg, properties: [:])
     }
 }

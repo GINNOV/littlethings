@@ -35,6 +35,7 @@ public enum SafetyInhibitionReason: String, Codable, CaseIterable, Sendable {
 }
 
 public struct SafetyObservation: Codable, Equatable, Sendable {
+    public let detectionID: String
     public let frameID: UInt64
     public let generation: UInt64
     public let captureInstant: MonotonicInstant
@@ -44,6 +45,7 @@ public struct SafetyObservation: Codable, Equatable, Sendable {
     public let targetXY: CalibrationPoint
 
     public init(
+        detectionID: String,
         frameID: UInt64,
         generation: UInt64,
         captureInstant: MonotonicInstant,
@@ -52,6 +54,7 @@ public struct SafetyObservation: Codable, Equatable, Sendable {
         confidence: Double,
         targetXY: CalibrationPoint
     ) {
+        self.detectionID = detectionID
         self.frameID = frameID
         self.generation = generation
         self.captureInstant = captureInstant
@@ -68,6 +71,7 @@ public struct SafetyObservation: Codable, Equatable, Sendable {
         targetXY: CalibrationPoint
     ) {
         self.init(
+            detectionID: nativeObservation.id,
             frameID: nativeObservation.frameID,
             generation: nativeObservation.generation,
             captureInstant: nativeObservation.captureInstant,
@@ -203,12 +207,13 @@ public enum SafetyPolicyV1 {
             && pose.z < profile.safeZBand.maximum - 0.1) {
             reasons.append(.unsafeZ)
         }
-        if !containsStrictly(profile.computationalWorkspace, pose.xy) || !containsStrictly(profile.computationalWorkspace, observation.targetXY) {
+        if !containsStrictlyInset(profile.computationalWorkspace, pose.xy)
+            || !containsStrictlyInset(profile.computationalWorkspace, observation.targetXY) {
             reasons.append(.targetOutsideWorkspace)
         }
         let delta = hypot(observation.targetXY.x - pose.x, observation.targetXY.y - pose.y)
         if !delta.isFinite || delta > maxMoveMillimeters { reasons.append(.deltaTooLarge) }
-        if !segmentIsStrictlyInside(profile.computationalWorkspace, from: pose.xy, to: observation.targetXY) {
+        if !segmentIsStrictlyInsideInset(profile.computationalWorkspace, from: pose.xy, to: observation.targetXY) {
             reasons.append(.segmentOutsideWorkspace)
         }
         return verdict(reasons)
@@ -250,11 +255,53 @@ public enum SafetyPolicyV1 {
         }
         return true
     }
+
+    private static func containsStrictlyInset(_ polygon: CalibrationPolygon, _ point: CalibrationPoint) -> Bool {
+        guard containsStrictly(polygon, point) else { return false }
+        return polygon.vertices.indices.allSatisfy { index in
+            let next = (index + 1) % polygon.vertices.count
+            return distance(from: point, to: polygon.vertices[index], and: polygon.vertices[next]) > computationalInsetMillimeters
+        }
+    }
+
+    private static func segmentIsStrictlyInsideInset(
+        _ polygon: CalibrationPolygon,
+        from: CalibrationPoint,
+        to: CalibrationPoint
+    ) -> Bool {
+        guard containsStrictlyInset(polygon, from), containsStrictlyInset(polygon, to) else { return false }
+        for step in 1...256 {
+            let t = Double(step) / 256
+            let point = CalibrationPoint(
+                x: from.x + (to.x - from.x) * t,
+                y: from.y + (to.y - from.y) * t
+            )
+            if !containsStrictlyInset(polygon, point) { return false }
+        }
+        return true
+    }
+
+    private static func distance(
+        from point: CalibrationPoint,
+        to start: CalibrationPoint,
+        and end: CalibrationPoint
+    ) -> Double {
+        let dx = end.x - start.x
+        let dy = end.y - start.y
+        let lengthSquared = dx * dx + dy * dy
+        guard lengthSquared > 0 else { return hypot(point.x - start.x, point.y - start.y) }
+        let projection = max(0, min(1, ((point.x - start.x) * dx + (point.y - start.y) * dy) / lengthSquared))
+        return hypot(point.x - (start.x + projection * dx), point.y - (start.y + projection * dy))
+    }
 }
 
 public struct SafetyPermit: Sendable, Equatable {
     fileprivate let id: UUID
-    fileprivate init(id: UUID) { self.id = id }
+    let proposalHash: String
+    fileprivate init(id: UUID, proposalHash: String) {
+        self.id = id
+        self.proposalHash = proposalHash
+    }
 }
 
 public actor SafetyController {
@@ -289,11 +336,27 @@ public actor SafetyController {
         permitID = nil
     }
 
-    public func consumePermit(now: MonotonicInstant) throws -> SafetyPermit {
+    public func consumePermit(now: MonotonicInstant, proposal: TargetProposal) throws -> SafetyPermit {
         guard let armedAt = snapshot.armedAt,
               now.nanoseconds >= armedAt.nanoseconds,
               now.nanoseconds - armedAt.nanoseconds <= SafetyPolicyV1.armLifetimeNanoseconds,
               let permit = self.permitID,
+              let observation = snapshot.observation,
+              let pose = snapshot.pose,
+              let profile = snapshot.profile,
+              proposal.policyState == .eligible,
+              proposal.armedAt == armedAt,
+              proposal.frameID == observation.frameID,
+              proposal.generation == observation.generation,
+              proposal.detectionID == observation.detectionID,
+              proposal.captureInstant == observation.captureInstant,
+              proposal.formatIdentity == observation.formatIdentity,
+              proposal.modelHash == observation.modelHash,
+              pointsMatch(proposal.targetXY, observation.targetXY),
+              proposal.poseInstant == pose.receivedAt,
+              pointsMatch(proposal.fromXY, pose.xy),
+              proposal.calibrationID == profile.calibrationID,
+              proposal.modelHash == profile.modelHash,
               SafetyPolicyV1.evaluate(snapshot, now: now).isEligible else {
             self.permitID = nil
             throw SafetyControllerError.inhibited([.armExpired])
@@ -307,7 +370,11 @@ public actor SafetyController {
             armedAt: armedAt,
             confirmedAt: nil
         )
-        return SafetyPermit(id: permit)
+        return SafetyPermit(id: permit, proposalHash: proposal.proposalHash)
+    }
+
+    private func pointsMatch(_ lhs: CalibrationPoint, _ rhs: CalibrationPoint) -> Bool {
+        abs(lhs.x - rhs.x) <= 0.000_001 && abs(lhs.y - rhs.y) <= 0.000_001
     }
 }
 

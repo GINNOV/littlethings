@@ -104,7 +104,10 @@ public actor RunCoordinator {
             )
             await safety.update(safetySnapshot)
             append(.writerAcquired, executionID: executionID, detail: "writer actor")
-            _ = try await safety.consumePermit(now: clock())
+            let permit = try await safety.consumePermit(now: clock(), proposal: proposal)
+            guard permit.proposalHash == proposal.proposalHash else {
+                throw RunCoordinatorError.safetyFailure
+            }
             append(.permitConsumed, executionID: executionID, detail: "private permit")
             try await writer.writeXY(delta: proposal.deltaXY, feedMillimetersPerMinute: proposal.feedMillimetersPerMinute)
             append(.firstByte, executionID: executionID, detail: "XY writer accepted one move")

@@ -36,6 +36,7 @@ public final class LivePreviewModel {
     public private(set) var selectedSource: LivePreviewSource = .nativeCamera
     public private(set) var activeModelID = "fixture.constant.detector"
     public private(set) var activeModelLabel = "Fixture detector"
+    public private(set) var activeModelHash = String(repeating: "0", count: 64)
     public private(set) var latestFrame: CameraFrameMetadata?
 
     public var isRunning: Bool {
@@ -48,6 +49,10 @@ public final class LivePreviewModel {
 
     public var targetingAvailable: Bool {
         performanceSnapshot.targetingAvailable
+    }
+
+    public var canCaptureCurrentFrame: Bool {
+        latestFrame != nil || !observations.isEmpty
     }
 
     public var selectedObservation: DetectionObservation? {
@@ -133,9 +138,10 @@ public final class LivePreviewModel {
         await reloadDeterministicFixtureOverlay()
     }
 
-    public func setActiveModel(id: String, label: String) {
+    public func setActiveModel(id: String, label: String, hash: String) {
         activeModelID = id
         activeModelLabel = label
+        activeModelHash = hash
     }
 
     public func reloadDeterministicFixtureOverlay() async {

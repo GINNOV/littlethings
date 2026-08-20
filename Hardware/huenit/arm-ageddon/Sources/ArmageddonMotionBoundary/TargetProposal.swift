@@ -2,13 +2,14 @@ import ArmageddonCore
 import CryptoKit
 import Foundation
 
-public struct TargetProposal: Codable, Equatable, Sendable, Identifiable {
+public struct TargetProposal: Equatable, Sendable, Identifiable {
     public let id: UUID
     public let proposalHash: String
     public let frameID: UInt64
     public let generation: UInt64
     public let detectionID: String
     public let calibrationID: String
+    public let formatIdentity: String
     public let modelHash: String
     public let captureInstant: MonotonicInstant
     public let poseInstant: MonotonicInstant
@@ -21,12 +22,13 @@ public struct TargetProposal: Codable, Equatable, Sendable, Identifiable {
     public let policyState: SafetyState
     public let policyReasons: [SafetyInhibitionReason]
 
-    public init(
+    init(
         id: UUID = UUID(),
         frameID: UInt64,
         generation: UInt64,
         detectionID: String,
         calibrationID: String,
+        formatIdentity: String,
         modelHash: String,
         captureInstant: MonotonicInstant,
         poseInstant: MonotonicInstant,
@@ -48,6 +50,7 @@ public struct TargetProposal: Codable, Equatable, Sendable, Identifiable {
         self.generation = generation
         self.detectionID = detectionID
         self.calibrationID = calibrationID
+        self.formatIdentity = formatIdentity
         self.modelHash = modelHash
         self.captureInstant = captureInstant
         self.poseInstant = poseInstant
@@ -64,8 +67,9 @@ public struct TargetProposal: Codable, Equatable, Sendable, Identifiable {
                 id: id,
                 frameID: frameID,
                 generation: generation,
-                detectionID: detectionID,
-                calibrationID: calibrationID,
+            detectionID: detectionID,
+            calibrationID: calibrationID,
+            formatIdentity: formatIdentity,
                 modelHash: modelHash,
                 captureInstant: captureInstant,
                 poseInstant: poseInstant,
@@ -98,6 +102,7 @@ public struct TargetProposal: Codable, Equatable, Sendable, Identifiable {
         let generation: UInt64
         let detectionID: String
         let calibrationID: String
+        let formatIdentity: String
         let modelHash: String
         let captureInstant: MonotonicInstant
         let poseInstant: MonotonicInstant
@@ -114,6 +119,8 @@ public struct TargetProposal: Codable, Equatable, Sendable, Identifiable {
         try CaptureHashing.sha256(payload)
     }
 }
+
+extension TargetProposal: Codable {}
 
 public struct ProposalConfirmation: Sendable, Equatable {
     fileprivate let proposalID: UUID
@@ -190,6 +197,7 @@ public enum TargetProposalBuilder {
             generation: observation.generation,
             detectionID: observation.id,
             calibrationID: profile.id.uuidString,
+            formatIdentity: formatIdentity,
             modelHash: modelHash,
             captureInstant: observation.captureInstant,
             poseInstant: pose.receivedAt,

@@ -71,4 +71,16 @@ struct HuenitCameraTests {
         }
         #expect(manifest.labels == ["raccoon"])
     }
+
+    @Test("unmeasured capability decisions never enable preview or upload")
+    func unmeasuredCapabilitiesStayDisabled() {
+        let decision = HuenitCameraCapabilityDecision(
+            status: .notMeasured,
+            supported: [.preview, .artifactUpload],
+            unsupportedReasons: [:],
+            profile: nil
+        )
+        #expect(!decision.canPreview)
+        #expect(!decision.canUploadArtifacts)
+    }
 }

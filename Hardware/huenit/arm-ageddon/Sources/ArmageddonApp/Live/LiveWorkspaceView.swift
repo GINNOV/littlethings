@@ -33,7 +33,7 @@ struct LiveWorkspaceView: View {
                     }
                 }
                 .buttonStyle(.borderedProminent)
-                .disabled(appModel.livePreview.isPaused || appModel.livePreview.observations.isEmpty)
+                .disabled(appModel.livePreview.isPaused || !appModel.livePreview.canCaptureCurrentFrame)
                 .accessibilityIdentifier("live.capture")
             }
 
