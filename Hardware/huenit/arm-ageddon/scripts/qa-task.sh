@@ -271,7 +271,7 @@ if [ "$1" = "16" ]; then
         expected='live-workspace-disconnected'
     fi
     ARMAGEDDON_SCREENSHOT_DIR="$task_root/screenshots" xcodebuild -project Armageddon.xcodeproj -scheme ArmageddonApp \
-        -destination 'platform=macOS' -derivedDataPath "$task_root/build" -resultBundlePath "$result" test "$filter" >"$transcript" 2>&1
+        -destination 'platform=macOS' -derivedDataPath "$task_root/build" -resultBundlePath "$result" test $filter >"$transcript" 2>&1
     [ -d "$result" ] || { printf '%s\n' 'ERROR[missing-task-16-xcresult]' >&2; exit 1; }
     [ -s "$task_root/screenshots/$expected.png" ] || { printf '%s\n' "ERROR[missing-task-16-screenshot]" >&2; exit 1; }
     if [ "$2" = "happy" ]; then
