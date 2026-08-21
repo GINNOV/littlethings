@@ -1,4 +1,3 @@
-import ArmageddonCore
 import Foundation
 
 public enum SafetyState: String, Codable, CaseIterable, Sendable {

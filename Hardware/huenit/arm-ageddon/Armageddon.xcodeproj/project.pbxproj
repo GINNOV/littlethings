@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		A10000000000000000000001 /* ArmageddonApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000001 /* ArmageddonApp.swift */; };
 		A10000000000000000000002 /* ArmageddonCore in Frameworks */ = {isa = PBXBuildFile; productRef = A90000000000000000000001 /* ArmageddonCore */; };
-		A10000000000000000000047 /* ArmageddonMotionBoundary in Frameworks */ = {isa = PBXBuildFile; productRef = A90000000000000000000003 /* ArmageddonMotionBoundary */; };
 		A10000000000000000000003 /* LaunchProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000004 /* LaunchProfile.swift */; };
 		A10000000000000000000004 /* LaunchArguments.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000005 /* LaunchArguments.swift */; };
 		A10000000000000000000005 /* LaunchPaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000006 /* LaunchPaths.swift */; };
@@ -125,7 +124,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10000000000000000000002 /* ArmageddonCore in Frameworks */,
-				A10000000000000000000047 /* ArmageddonMotionBoundary in Frameworks */,
 				A10000000000000000000034 /* AVFoundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -275,7 +273,6 @@
 			name = ArmageddonApp;
 			packageProductDependencies = (
 				A90000000000000000000001 /* ArmageddonCore */,
-				A90000000000000000000003 /* ArmageddonMotionBoundary */,
 			);
 			productName = Armageddon;
 			productReference = A20000000000000000000002 /* Armageddon.app */;
@@ -567,11 +564,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = A90000000000000000000002 /* XCLocalSwiftPackageReference "." */;
 			productName = ArmageddonCore;
-		};
-		A90000000000000000000003 /* ArmageddonMotionBoundary */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = A90000000000000000000002 /* XCLocalSwiftPackageReference "." */;
-			productName = ArmageddonMotionBoundary;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

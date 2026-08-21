@@ -1,6 +1,5 @@
 import Testing
 @testable import ArmageddonCore
-@testable import ArmageddonMotionBoundary
 
 struct SafetyPolicyTests {
     @Test("valid native snapshot is eligible at conservative limits")

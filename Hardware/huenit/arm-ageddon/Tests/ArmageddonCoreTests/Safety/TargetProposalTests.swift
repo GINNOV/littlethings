@@ -1,6 +1,5 @@
 import Testing
 @testable import ArmageddonCore
-@testable import ArmageddonMotionBoundary
 
 struct TargetProposalTests {
     @Test("selected detection produces an auditable XY-only dry-run proposal")

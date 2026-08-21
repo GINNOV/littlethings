@@ -1,7 +1,6 @@
 import Foundation
 import Testing
 @testable import ArmageddonCore
-@testable import ArmageddonMotionBoundary
 
 struct RunCoordinatorTests {
     @Test("durable intent precedes writer entry and one proposal writes once")

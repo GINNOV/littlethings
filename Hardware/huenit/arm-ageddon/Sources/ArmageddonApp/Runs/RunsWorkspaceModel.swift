@@ -1,5 +1,4 @@
 import ArmageddonCore
-import ArmageddonMotionBoundary
 import Foundation
 import Observation
 
