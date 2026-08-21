@@ -91,7 +91,7 @@ final class FinalFixtureJourney: XCTestCase {
     }
 
     private func completeObservationHold(app: XCUIApplication) throws {
-        guard let rawGate = environment("ARMAGEDDON_QA_OBSERVATION_GATE") else { return }
+        guard let rawGate = environment("ARMAGEDDON_QA_OBSERVATION_GATE"), rawGate.hasPrefix("/") else { return }
         let gate = URL(fileURLWithPath: rawGate).standardizedFileURL
         let childRoot = gate.deletingLastPathComponent()
         let ready = childRoot.appending(path: "observation-ready.json")

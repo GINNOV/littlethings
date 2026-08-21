@@ -8,6 +8,15 @@
       </BuildActionEntries>
    </BuildAction>
    <TestAction buildConfiguration="Debug" selectedDebuggerIdentifier="Xcode.DebuggerFoundation.Debugger.LLDB" selectedLauncherIdentifier="Xcode.DebuggerFoundation.Launcher.LLDB" shouldUseLaunchSchemeArgsEnv="YES">
+      <EnvironmentVariables>
+         <EnvironmentVariable key="ARMAGEDDON_QA_OBSERVATION_GATE" value="$(TEST_RUNNER_ARMAGEDDON_QA_OBSERVATION_GATE)" isEnabled="YES"/>
+         <EnvironmentVariable key="ARMAGEDDON_QA_FIXED_USER_HOME" value="$(TEST_RUNNER_ARMAGEDDON_QA_FIXED_USER_HOME)" isEnabled="YES"/>
+         <EnvironmentVariable key="ARMAGEDDON_QA_APPLICATION_SUPPORT_ROOT" value="$(TEST_RUNNER_ARMAGEDDON_QA_APPLICATION_SUPPORT_ROOT)" isEnabled="YES"/>
+         <EnvironmentVariable key="ARMAGEDDON_QA_CACHE_ROOT" value="$(TEST_RUNNER_ARMAGEDDON_QA_CACHE_ROOT)" isEnabled="YES"/>
+         <EnvironmentVariable key="ARMAGEDDON_QA_TEMP_ROOT" value="$(TEST_RUNNER_ARMAGEDDON_QA_TEMP_ROOT)" isEnabled="YES"/>
+         <EnvironmentVariable key="ARMAGEDDON_QA_FIXTURE_ROOT" value="$(TEST_RUNNER_ARMAGEDDON_QA_FIXTURE_ROOT)" isEnabled="YES"/>
+         <EnvironmentVariable key="ARMAGEDDON_QA_PREFERENCE_SUITE" value="$(TEST_RUNNER_ARMAGEDDON_QA_PREFERENCE_SUITE)" isEnabled="YES"/>
+      </EnvironmentVariables>
       <Testables>
          <TestableReference skipped="NO">
             <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="A60000000000000000000002" BuildableName="ArmageddonUITests.xctest" BlueprintName="ArmageddonUITests" ReferencedContainer="container:Armageddon.xcodeproj"/>
