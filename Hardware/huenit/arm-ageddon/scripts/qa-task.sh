@@ -376,12 +376,16 @@ fi
 if [ "$1" = "18" ]; then
     transcript="$task_root/camera-ml-app.txt"
     recorded="$task_root/recorded-transcript.txt"
-    probe="$task_root/camera-ml-app.json"
+    probe="$task_root/probe.json"
     printf '%s\n' 'identity=HUENIT_CAM' 'baud=115200' 'frame=0,10,20,30,40' >"$recorded"
     swift run --disable-sandbox --quiet --scratch-path "$task_root/build" HuenitCameraProbe \
         --transcript "$recorded" --output "$probe" >"$transcript" 2>&1
     swift test --disable-sandbox --parallel --scratch-path "$task_root/build-tests" --filter HuenitCameraTests >>"$transcript" 2>&1
     [ -s "$probe" ] || { printf '%s\n' 'ERROR[missing-task-18-probe]' >&2; exit 1; }
+    transcript_sha256=$(shasum -a 256 "$transcript" | awk '{print $1}')
+    probe_sha256=$(shasum -a 256 "$probe" | awk '{print $1}')
+    printf '{"task":18,"mode":"%s","probe":"%s","probeSha256":"%s","transcript":"%s","transcriptSha256":"%s","outcome":"PASS"}\n' \
+        "$2" "$probe" "$probe_sha256" "$transcript" "$transcript_sha256" >"$task_root/camera-ml-app.json"
     printf 'PASS task=18 mode=%s root=%s\n' "$2" "$task_root"
     exit 0
 fi
