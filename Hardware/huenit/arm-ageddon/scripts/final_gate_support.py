@@ -59,6 +59,18 @@ def ensure_private_directory(path: Path, label: str) -> Path:
     return path.resolve(strict=True)
 
 
+def render_sandbox_profile(template: Path, qa_root: Path) -> bytes:
+    text = template.read_text(encoding="utf-8")
+    token = '(param "ARMAGEDDON_QA_ROOT")'
+    if token not in text:
+        raise EvidenceError("sandbox-template-param", str(template))
+    quoted = json.dumps(str(qa_root.resolve(strict=True)))
+    rendered = text.replace(token, quoted)
+    if "(param " in rendered:
+        raise EvidenceError("unresolved-sandbox-param", str(template))
+    return rendered.encode("utf-8")
+
+
 def write_source_manifest(path: Path, project_root: Path, commit: str) -> None:
     environment = {
         **os.environ,

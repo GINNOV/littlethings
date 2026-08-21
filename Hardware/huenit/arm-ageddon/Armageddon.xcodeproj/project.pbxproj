@@ -18,6 +18,7 @@
 		A10000000000000000000009 /* FixtureLaunchDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000010 /* FixtureLaunchDelegate.swift */; };
 		A10000000000000000000010 /* FixtureLaunchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000011 /* FixtureLaunchView.swift */; };
 		A10000000000000000000011 /* AppShellUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000012 /* AppShellUITests.swift */; };
+		A10000000000000000000050 /* FinalFixtureJourney.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000050 /* FinalFixtureJourney.swift */; };
 		A10000000000000000000012 /* AppActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000013 /* AppActions.swift */; };
 		A10000000000000000000013 /* AppCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000014 /* AppCommands.swift */; };
 		A10000000000000000000014 /* AppDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000015 /* AppDestination.swift */; };
@@ -79,6 +80,7 @@
 		A20000000000000000000010 /* FixtureLaunchDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FixtureLaunchDelegate.swift; sourceTree = "<group>"; };
 		A20000000000000000000011 /* FixtureLaunchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FixtureLaunchView.swift; sourceTree = "<group>"; };
 		A20000000000000000000012 /* AppShellUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppShellUITests.swift; sourceTree = "<group>"; };
+		A20000000000000000000050 /* FinalFixtureJourney.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinalFixtureJourney.swift; sourceTree = "<group>"; };
 		A20000000000000000000013 /* AppActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppActions.swift; sourceTree = "<group>"; };
 		A20000000000000000000014 /* AppCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCommands.swift; sourceTree = "<group>"; };
 		A20000000000000000000015 /* AppDestination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDestination.swift; sourceTree = "<group>"; };
@@ -242,6 +244,7 @@
 			children = (
 				A20000000000000000000009 /* LaunchProfileTests.swift */,
 				A20000000000000000000012 /* AppShellUITests.swift */,
+				A20000000000000000000050 /* FinalFixtureJourney.swift */,
 			);
 			path = ArmageddonUITests;
 			sourceTree = "<group>";
@@ -393,7 +396,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		A40000000000000000000004 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000008 /* LaunchProfileTests.swift in Sources */, A10000000000000000000011 /* AppShellUITests.swift in Sources */,); runOnlyForDeploymentPostprocessing = 0; };
+		A40000000000000000000004 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000008 /* LaunchProfileTests.swift in Sources */, A10000000000000000000011 /* AppShellUITests.swift in Sources */, A10000000000000000000050 /* FinalFixtureJourney.swift in Sources */,); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */

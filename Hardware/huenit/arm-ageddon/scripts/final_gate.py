@@ -9,7 +9,7 @@ import time
 from pathlib import Path
 
 from evidence_common import EvidenceError, JsonValue, exclusive_json, exclusive_write, sha256_file
-from final_gate_support import absolute_new_directory, archive_sha256, artifact_record, ensure_private_directory, existing_absolute, path_under, parser_for, read_bound_receipt, validate_review_receipts, verify_clean_commit, write_source_manifest
+from final_gate_support import absolute_new_directory, archive_sha256, artifact_record, ensure_private_directory, existing_absolute, path_under, parser_for, read_bound_receipt, render_sandbox_profile, validate_context, validate_review_receipts, verify_clean_commit, write_source_manifest
 from final_gate_validation import validate_task_modes
 
 
@@ -28,12 +28,25 @@ def begin(gate: str, args: argparse.Namespace) -> None:
         raise EvidenceError("manifest-path", "source manifest must be a direct child of isolated-root")
     project_root = Path.cwd().resolve()
     write_source_manifest(source_manifest_path, project_root, args.commit)
+    sandbox_record: dict[str, JsonValue] | None = None
     if args.sandbox_template is not None:
         template = existing_absolute(args.sandbox_template, "sandbox template")
         if args.sandbox_output is None:
             raise EvidenceError("missing-sandbox-output", gate)
         sandbox_output = path_under(root, args.sandbox_output, "sandbox output")
-        exclusive_write(sandbox_output, template.read_bytes())
+        exclusive_write(sandbox_output, render_sandbox_profile(template, root))
+        validation = subprocess.run(
+            ["/usr/bin/sandbox-exec", "-f", str(sandbox_output), "/usr/bin/true"],
+            capture_output=True,
+        )
+        if validation.returncode != 0:
+            detail = validation.stderr.decode(errors="replace") or validation.stdout.decode(errors="replace")
+            raise EvidenceError("invalid-sandbox-profile", detail.strip() or "sandbox-exec rejected profile")
+        sandbox_record = {
+            "path": str(sandbox_output.resolve(strict=True)),
+            "sha256": sha256_file(sandbox_output),
+            "templateSHA256": sha256_file(template),
+        }
     paths = {name: str(path_under(root, value, name).resolve()) for name, value in (("fixedUserHome", args.fixed_user_home), ("applicationSupport", args.application_support_root), ("caches", args.cache_root), ("tempRoot", args.temp_root))}
     context = {
         "schemaVersion": 1,
@@ -50,7 +63,10 @@ def begin(gate: str, args: argparse.Namespace) -> None:
     if args.gui_lease_receipt is not None:
         lease = existing_absolute(args.gui_lease_receipt, "gui lease")
         context["guiLease"] = {"path": str(lease), "sha256": sha256_file(lease)}
-    exclusive_json(root / "runtime-paths.json", {"schemaVersion": 1, "paths": paths, "sourceManifestSHA256": sha256_file(source_manifest_path)})
+    runtime_paths: dict[str, JsonValue] = {"schemaVersion": 1, "paths": paths, "sourceManifestSHA256": sha256_file(source_manifest_path)}
+    if sandbox_record is not None:
+        runtime_paths["sandboxProfile"] = sandbox_record
+    exclusive_json(root / "runtime-paths.json", runtime_paths)
     exclusive_json(root / "context.json", context)
     print(root)
 

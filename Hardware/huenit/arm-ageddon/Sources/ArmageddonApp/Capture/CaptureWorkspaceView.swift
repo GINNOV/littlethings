@@ -153,10 +153,12 @@ struct CaptureWorkspaceView: View {
                     export(captureID: id)
                 }
                 .buttonStyle(.bordered)
+                .accessibilityIdentifier("capture.export")
                 Spacer()
             }
             .padding(DesignTokens.Spacing.standard)
             .background(DesignTokens.Colors.canvas, in: RoundedRectangle(cornerRadius: 12))
+            .accessibilityElement(children: .contain)
             .accessibilityIdentifier("capture.details")
         } else {
             EmptyStateView(
@@ -177,10 +179,18 @@ struct CaptureWorkspaceView: View {
     }
 
     private func export(captureID: String) {
+        let exports = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("Armageddon", isDirectory: true)
+            .appendingPathComponent("Exports", isDirectory: true)
+        try? FileManager.default.createDirectory(at: exports, withIntermediateDirectories: true)
         let panel = NSOpenPanel()
+        panel.title = "Export Capture"
+        panel.message = "Choose a destination folder for the verified capture bundle."
+        panel.prompt = "Export"
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
         panel.allowsMultipleSelection = false
+        panel.directoryURL = exports
         guard panel.runModal() == .OK, let directory = panel.url else { return }
         let destination = directory.appendingPathComponent("capture-\(captureID.prefix(8))", isDirectory: true)
         Task { _ = await appModel.exportCapture(id: captureID, to: destination) }

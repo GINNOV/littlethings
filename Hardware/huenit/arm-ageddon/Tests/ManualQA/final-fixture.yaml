@@ -1,7 +1,19 @@
 schemaVersion: 1
-surface: executable-tools
-requires:
-  - help-output
-  - controlled-exit
-  - receipt-inspection
+surface: live-fixture-journey
 hardwareAllowed: false
+journey:
+  - live-ready
+  - recorded-fixture-source
+  - recorded-fixture-detector
+  - detection-target
+  - explicit-capture
+  - capture-review
+requires:
+  - live.performance-health
+  - live.source-picker
+  - live.model-picker
+  - live.detection.target
+  - live.capture
+  - workspace.capture
+  - capture.details
+  - capture.export
