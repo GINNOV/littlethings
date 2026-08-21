@@ -22,6 +22,8 @@ final class AppShellUITests: XCTestCase {
 
         lightApp.typeKey(.escape, modifierFlags: [])
         XCTAssertTrue(lightApp.staticTexts["STOP requested"].waitForExistence(timeout: 2))
+        lightApp.typeKey("1", modifierFlags: .command)
+        XCTAssertTrue(lightApp.descendants(matching: .any)["workspace.live"].waitForExistence(timeout: 2))
         let performanceHealth = lightApp.descendants(matching: .any)["live.performance-health"].firstMatch
         XCTAssertTrue(performanceHealth.waitForExistence(timeout: 5))
         XCTAssertEqual(performanceHealth.value as? String, "Ready")
@@ -30,7 +32,12 @@ final class AppShellUITests: XCTestCase {
         let canvas = lightApp.descendants(matching: .any)["live.canvas"].firstMatch
         lightApp.typeKey("1", modifierFlags: .command)
         XCTAssertTrue(canvas.waitForExistence(timeout: 2))
-        XCTAssertGreaterThanOrEqual(canvas.frame.width, lightApp.windows.firstMatch.frame.width * 0.60)
+        let sidebar = lightApp.descendants(matching: .any)["app.sidebar"].firstMatch
+        let inspector = lightApp.descendants(matching: .any)["inspector.live"].firstMatch
+        XCTAssertTrue(sidebar.waitForExistence(timeout: 2))
+        XCTAssertTrue(inspector.waitForExistence(timeout: 2))
+        let detailColumnWidth = lightApp.windows.firstMatch.frame.width - sidebar.frame.width - inspector.frame.width
+        XCTAssertGreaterThanOrEqual(canvas.frame.width, detailColumnWidth * 0.60)
         lightApp.terminate()
 
         let darkApp = try launch(style: "Dark", width: 1_280, height: 800)
@@ -51,6 +58,29 @@ final class AppShellUITests: XCTestCase {
             XCTAssertLessThanOrEqual(workspace.frame.maxY, window.frame.maxY)
             try capture(app, named: "app-shell-light-\(width)x\(height)")
             app.terminate()
+        }
+    }
+
+    func testTask30CapturesCompleteAppearanceMatrix() throws {
+        let sizes = [(1_100, 720), (1_280, 800), (1_440, 900), (1_728, 1_117)]
+        let appearances = [
+            (name: "light", style: "Light", increaseContrast: false),
+            (name: "dark", style: "Dark", increaseContrast: false),
+            (name: "contrast", style: "Light", increaseContrast: true),
+        ]
+
+        for appearance in appearances {
+            for (width, height) in sizes {
+                let app = try launch(
+                    style: appearance.style,
+                    width: width,
+                    height: height,
+                    increaseContrast: appearance.increaseContrast
+                )
+                XCTAssertTrue(app.descendants(matching: .any)["workspace.live"].waitForExistence(timeout: 3))
+                try capture(app, named: "task30-\(appearance.name)-\(width)x\(height)")
+                app.terminate()
+            }
         }
     }
 
@@ -163,6 +193,43 @@ final class AppShellUITests: XCTestCase {
         app.terminate()
     }
 
+    func testCalibratedDryRunExecutesOneSupervisedMove() throws {
+        let app = try launch(style: "Light", width: 1_280, height: 800, profile: "calibrated-dry-run")
+        waitForHealth(app, value: "Ready")
+        chooseMenu(app, identifier: "live.source-picker", item: "Recorded fixture")
+        waitForPicker(app, identifier: "live.source-picker", containing: "Recorded fixture")
+
+        let target = app.descendants(matching: .any)["live.detection.target"].firstMatch
+        XCTAssertTrue(target.waitForExistence(timeout: 5))
+        target.click()
+        app.buttons["sidebar.runs"].click()
+        XCTAssertTrue(app.descendants(matching: .any)["runs.dry-run"].waitForExistence(timeout: 3))
+
+        let prepare = app.buttons["runs.prepare"]
+        XCTAssertTrue(prepare.waitForExistence(timeout: 2))
+        XCTAssertTrue(prepare.isEnabled)
+        prepare.click()
+        let status = app.descendants(matching: .any)["runs.status"].firstMatch
+        XCTAssertTrue(status.waitForExistence(timeout: 3))
+        XCTAssertTrue(status.label.contains("Ready for confirmation") || (status.value as? String)?.contains("Ready for confirmation") == true)
+
+        let execute = app.buttons["runs.execute"]
+        XCTAssertTrue(execute.isEnabled)
+        execute.click()
+        let completed = XCTNSPredicateExpectation(
+            predicate: NSPredicate { evaluated, _ in
+                guard let element = evaluated as? XCUIElement else { return false }
+                return element.label.contains("Completed") || (element.value as? String)?.contains("Completed") == true
+            },
+            object: status
+        )
+        XCTAssertEqual(XCTWaiter.wait(for: [completed], timeout: 5), .completed)
+        XCTAssertTrue(app.descendants(matching: .any)["runs.timeline"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts["completed"].waitForExistence(timeout: 2))
+        try capture(app, named: "runs-supervised-fixture-completed")
+        app.terminate()
+    }
+
     func testModelsAndDiagnosticsWorkflowShowsBoundedLocalActions() throws {
         let app = try launch(style: "Light", width: 1_280, height: 800)
 
@@ -175,14 +242,17 @@ final class AppShellUITests: XCTestCase {
 
         app.buttons["sidebar.diagnostics"].click()
         XCTAssertTrue(app.descendants(matching: .any)["workspace.diagnostics"].waitForExistence(timeout: 3))
-        XCTAssertTrue(app.buttons["diagnostics.export"].waitForExistence(timeout: 2))
+        let exportButton = app.descendants(matching: .any)["diagnostics.export"]
+        XCTAssertTrue(exportButton.waitForExistence(timeout: 2))
+        XCTAssertEqual(exportButton.elementType, .button)
         app.terminate()
     }
 
     func testModelsWorkspaceEmptyStateRemainsSafe() throws {
         let app = try launch(style: "Light", width: 1_100, height: 720)
 
-        app.buttons["sidebar.models"].click()
+        app.typeKey("3", modifierFlags: .command)
+        XCTAssertTrue(app.descendants(matching: .any)["workspace.models"].waitForExistence(timeout: 3))
         XCTAssertTrue(app.staticTexts["No verified models"].waitForExistence(timeout: 3))
         XCTAssertTrue(app.descendants(matching: .any)["models.huenit-unsupported"].waitForExistence(timeout: 2))
         XCTAssertFalse(app.descendants(matching: .any)["model.detail.provenance"].exists)
@@ -257,7 +327,14 @@ final class AppShellUITests: XCTestCase {
         noDevices.terminate()
     }
 
-    private func launch(style: String, width: Int, height: Int, destination: String? = nil, profile: String = "all-connected") throws -> XCUIApplication {
+    private func launch(
+        style: String,
+        width: Int,
+        height: Int,
+        destination: String? = nil,
+        profile: String = "all-connected",
+        increaseContrast: Bool = false
+    ) throws -> XCUIApplication {
         let root = try privateRoot()
         addTeardownBlock { try? FileManager.default.removeItem(at: root) }
         let paths = try isolatedPaths(root: root)
@@ -274,6 +351,9 @@ final class AppShellUITests: XCTestCase {
             "-qa-window-height", String(height),
             "-AppleInterfaceStyle", style,
         ]
+        if increaseContrast {
+            app.launchArguments += ["-AppleIncreaseContrast", "YES"]
+        }
         if let destination {
             app.launchArguments += ["-fixture-destination", destination]
         }

@@ -15,6 +15,7 @@ final class AppModel {
     private let diagnosticLog: DiagnosticEventLog?
     let livePreview: LivePreviewModel
     let calibrationWizard: CalibrationWizardModel
+    let runs: RunsWorkspaceModel
 
     private(set) var destination: String
     private(set) var selectedDevice: DeviceIdentity?
@@ -42,7 +43,9 @@ final class AppModel {
         livePreview: LivePreviewModel = LivePreviewModel(),
         calibrationWizard: CalibrationWizardModel? = nil,
         calibrationProfileURL: URL? = nil,
-        captureRoot: URL? = nil
+        captureRoot: URL? = nil,
+        runMode: RunWorkspaceExecutionMode = .unavailable,
+        runJournalRoot: URL? = nil
     ) {
         self.coordinator = coordinator
         self.cameraLifecycle = cameraLifecycle
@@ -56,6 +59,11 @@ final class AppModel {
         self.diagnosticLog = try? DiagnosticEventLog()
         self.livePreview = livePreview
         self.calibrationWizard = calibrationWizard ?? CalibrationWizardModel(profileURL: calibrationProfileURL)
+        runs = RunsWorkspaceModel(
+            mode: runMode,
+            journalRoot: runJournalRoot ?? Self.defaultRunJournalRoot(),
+            clock: livePreview.hostClock
+        )
         destination = restoredState.destination
         selectedDevice = restoredState.selectedDevice
         selectedModelID = restoredState.selectedModelID
@@ -119,6 +127,27 @@ final class AppModel {
         if let format = livePreview.negotiatedFormat {
             calibrationWizard.updateCurrentFormat(format)
         }
+    }
+
+    func configureCalibratedRunFixture() {
+        calibrationWizard.installDeterministicFixtureProfile()
+    }
+
+    func prepareRunProposal() async {
+        if runs.isDeterministicFixture {
+            await livePreview.reloadDeterministicFixtureOverlayPreservingSelection()
+        }
+        await runs.prepare(
+            observation: livePreview.selectedObservation,
+            selectedObservationID: livePreview.selectedObservationID,
+            format: livePreview.negotiatedFormat,
+            modelHash: livePreview.activeModelHash,
+            profile: calibrationWizard.activeProfile
+        )
+    }
+
+    func executePreparedRun() async {
+        await runs.execute()
     }
 
     func retryLiveDetection() async {
@@ -502,6 +531,12 @@ final class AppModel {
         FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("Armageddon", isDirectory: true)
             .appendingPathComponent("Captures", isDirectory: true)
+    }
+
+    private static func defaultRunJournalRoot() -> URL {
+        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("Armageddon", isDirectory: true)
+            .appendingPathComponent("Runs", isDirectory: true)
     }
 
     private static func makeCaptureStore(root: URL) -> CaptureSessionStore? {

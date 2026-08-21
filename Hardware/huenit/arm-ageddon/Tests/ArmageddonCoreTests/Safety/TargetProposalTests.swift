@@ -68,8 +68,8 @@ struct TargetProposalTests {
 
     private func makeProfile() throws -> PlanarCalibrationProfile {
         let correspondences = [
-            point(0, 0, 10, 20), point(1, 0, 30, 20), point(1, 1, 30, 50), point(0, 1, 10, 50),
-            point(0.25, 0.25, 15, 27.5, validation: true), point(0.75, 0.75, 25, 42.5, validation: true)
+            point(0, 0, 10, 20), point(1280, 0, 30, 20), point(1280, 720, 30, 50), point(0, 720, 10, 50),
+            point(320, 180, 15, 27.5, validation: true), point(960, 540, 25, 42.5, validation: true)
         ]
         return try PlanarCalibrationProfile(
             deviceID: "camera",

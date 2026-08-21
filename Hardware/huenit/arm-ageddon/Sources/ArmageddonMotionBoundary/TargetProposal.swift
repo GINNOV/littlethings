@@ -163,8 +163,8 @@ public enum TargetProposalBuilder {
             throw TargetProposalError.staleObservation
         }
         let sourceCenter = CalibrationPoint(
-            x: observation.boundingBox.x + observation.boundingBox.width / 2,
-            y: observation.boundingBox.y + observation.boundingBox.height / 2
+            x: (observation.boundingBox.x + observation.boundingBox.width / 2) * Double(format.width),
+            y: (observation.boundingBox.y + observation.boundingBox.height / 2) * Double(format.height)
         )
         let target = try profile.transform(sourceCenter)
         let formatIdentity = "\(format.width)x\(format.height)@\(format.frameRate)-\(format.orientation.rawValue)-\(format.mirrored)"

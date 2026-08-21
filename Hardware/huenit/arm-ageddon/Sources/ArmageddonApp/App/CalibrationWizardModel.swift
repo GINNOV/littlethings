@@ -188,6 +188,15 @@ final class CalibrationWizardModel {
         resultMessage = nil
     }
 
+    func installDeterministicFixtureProfile() {
+        guard let profile = try? makeProfile() else { return }
+        activeProfile = profile
+        candidateProfile = nil
+        errorMessage = nil
+        resultMessage = "Deterministic calibration profile is active for supervised QA."
+        step = .review
+    }
+
     private var activeProfileIsCurrent: Bool {
         guard let activeProfile else { return false }
         return activeProfile.matches(

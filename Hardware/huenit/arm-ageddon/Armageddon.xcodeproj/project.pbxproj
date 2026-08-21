@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		A10000000000000000000001 /* ArmageddonApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000001 /* ArmageddonApp.swift */; };
 		A10000000000000000000002 /* ArmageddonCore in Frameworks */ = {isa = PBXBuildFile; productRef = A90000000000000000000001 /* ArmageddonCore */; };
+		A10000000000000000000047 /* ArmageddonMotionBoundary in Frameworks */ = {isa = PBXBuildFile; productRef = A90000000000000000000003 /* ArmageddonMotionBoundary */; };
 		A10000000000000000000003 /* LaunchProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000004 /* LaunchProfile.swift */; };
 		A10000000000000000000004 /* LaunchArguments.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000005 /* LaunchArguments.swift */; };
 		A10000000000000000000005 /* LaunchPaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000006 /* LaunchPaths.swift */; };
@@ -53,6 +54,7 @@
 		A10000000000000000000044 /* CalibrationWizardModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000046 /* CalibrationWizardModel.swift */; };
 		A10000000000000000000045 /* CalibrationWizardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000047 /* CalibrationWizardView.swift */; };
 		A10000000000000000000046 /* ModelDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000048 /* ModelDetailView.swift */; };
+		A10000000000000000000048 /* RunsWorkspaceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000049 /* RunsWorkspaceModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -114,6 +116,7 @@
 		A20000000000000000000046 /* CalibrationWizardModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationWizardModel.swift; sourceTree = "<group>"; };
 		A20000000000000000000047 /* CalibrationWizardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationWizardView.swift; sourceTree = "<group>"; };
 		A20000000000000000000048 /* ModelDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelDetailView.swift; sourceTree = "<group>"; };
+		A20000000000000000000049 /* RunsWorkspaceModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunsWorkspaceModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -122,6 +125,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10000000000000000000002 /* ArmageddonCore in Frameworks */,
+				A10000000000000000000047 /* ArmageddonMotionBoundary in Frameworks */,
 				A10000000000000000000034 /* AVFoundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -231,7 +235,7 @@
 		A50000000000000000000009 /* Live */ = {isa = PBXGroup; children = (A20000000000000000000027 /* LiveWorkspaceView.swift */, A20000000000000000000042 /* LivePreviewModel.swift */, A20000000000000000000043 /* CameraPreviewSurface.swift */, A20000000000000000000044 /* DetectionOverlayView.swift */,); path = Live; sourceTree = "<group>"; };
 		A50000000000000000000010 /* Capture */ = {isa = PBXGroup; children = (A20000000000000000000028 /* CaptureWorkspaceView.swift */,); path = Capture; sourceTree = "<group>"; };
 		A50000000000000000000011 /* Models */ = {isa = PBXGroup; children = (A20000000000000000000029 /* ModelsWorkspaceView.swift */, A20000000000000000000048 /* ModelDetailView.swift */,); path = Models; sourceTree = "<group>"; };
-		A50000000000000000000012 /* Runs */ = {isa = PBXGroup; children = (A20000000000000000000030 /* RunsWorkspaceView.swift */,); path = Runs; sourceTree = "<group>"; };
+		A50000000000000000000012 /* Runs */ = {isa = PBXGroup; children = (A20000000000000000000030 /* RunsWorkspaceView.swift */, A20000000000000000000049 /* RunsWorkspaceModel.swift */,); path = Runs; sourceTree = "<group>"; };
 		A50000000000000000000013 /* Diagnostics */ = {isa = PBXGroup; children = (A20000000000000000000031 /* DiagnosticsWorkspaceView.swift */,); path = Diagnostics; sourceTree = "<group>"; };
 		A50000000000000000000014 /* Settings */ = {isa = PBXGroup; children = (A20000000000000000000032 /* SettingsView.swift */,); path = Settings; sourceTree = "<group>"; };
 		A50000000000000000000015 /* Resources */ = {isa = PBXGroup; children = (A20000000000000000000033 /* Assets.xcassets */, A20000000000000000000045 /* Localizable.xcstrings */,); path = Resources; sourceTree = "<group>"; };
@@ -271,6 +275,7 @@
 			name = ArmageddonApp;
 			packageProductDependencies = (
 				A90000000000000000000001 /* ArmageddonCore */,
+				A90000000000000000000003 /* ArmageddonMotionBoundary */,
 			);
 			productName = Armageddon;
 			productReference = A20000000000000000000002 /* Armageddon.app */;
@@ -370,6 +375,7 @@
 				A10000000000000000000027 /* CaptureWorkspaceView.swift in Sources */,
 				A10000000000000000000028 /* ModelsWorkspaceView.swift in Sources */,
 				A10000000000000000000029 /* RunsWorkspaceView.swift in Sources */,
+				A10000000000000000000048 /* RunsWorkspaceModel.swift in Sources */,
 				A10000000000000000000030 /* DiagnosticsWorkspaceView.swift in Sources */,
 				A10000000000000000000031 /* SettingsView.swift in Sources */,
 				A10000000000000000000003 /* LaunchProfile.swift in Sources */,
@@ -561,6 +567,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = A90000000000000000000002 /* XCLocalSwiftPackageReference "." */;
 			productName = ArmageddonCore;
+		};
+		A90000000000000000000003 /* ArmageddonMotionBoundary */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A90000000000000000000002 /* XCLocalSwiftPackageReference "." */;
+			productName = ArmageddonMotionBoundary;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

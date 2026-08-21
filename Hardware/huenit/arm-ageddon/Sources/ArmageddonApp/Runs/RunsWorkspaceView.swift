@@ -11,13 +11,14 @@ struct RunsWorkspaceView: View {
                     Text("Runs")
                         .font(DesignTokens.Typography.workspaceTitle)
                         .bold()
-                    Text("Inspect a proposed XY path before any supervised execution is possible.")
+                    Text("Prepare and confirm one auditable XY move through the supervised boundary.")
                         .font(DesignTokens.Typography.supporting)
                         .foregroundStyle(.secondary)
                 }
 
-                dryRunCard
+                executionCard
                 prerequisites
+                timelineCard
             }
             .padding(DesignTokens.Spacing.section)
         }
@@ -25,9 +26,9 @@ struct RunsWorkspaceView: View {
         .accessibilityIdentifier("workspace.runs")
     }
 
-    private var dryRunCard: some View {
+    private var executionCard: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.standard) {
-            Label("Read-only dry run", systemImage: "point.3.connected.trianglepath.dotted")
+            Label("Supervised execution", systemImage: "checkmark.shield")
                 .font(DesignTokens.Typography.sectionTitle)
             if let target = targetWorkspacePoint {
                 LabeledContent("Selected target") {
@@ -36,21 +37,51 @@ struct RunsWorkspaceView: View {
                         .accessibilityIdentifier("runs.target-xy")
                 }
                 LabeledContent("Path") {
-                    Text("Awaiting a fresh arm pose")
-                        .foregroundStyle(.orange)
+                    if let delta = appModel.runs.proposal?.deltaXY {
+                        Text("ΔX \(delta.x, specifier: "%.2f") mm · ΔY \(delta.y, specifier: "%.2f") mm")
+                            .font(.body.monospacedDigit())
+                    } else {
+                        Text("Prepare a proposal to bind the final pose")
+                            .foregroundStyle(.orange)
+                    }
                 }
-                Text("No proposal can be armed until a fresh pose is revalidated inside the workspace. This view never opens a serial transport.")
+                Text(appModel.runs.statusMessage)
                     .font(DesignTokens.Typography.supporting)
                     .foregroundStyle(.secondary)
+                    .accessibilityIdentifier("runs.status-message")
             } else {
-                Text("Select a detection in Live and activate a matching calibration profile to preview a target path.")
+                Text(appModel.runs.statusMessage)
                     .font(DesignTokens.Typography.body)
                     .foregroundStyle(.secondary)
             }
+            Text(appModel.runs.executionModeDescription)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            HStack {
+                Button("Prepare proposal", systemImage: "scope") {
+                    Task { await appModel.prepareRunProposal() }
+                }
+                .buttonStyle(.bordered)
+                .disabled(!canPrepare)
+                .accessibilityIdentifier("runs.prepare")
+                Button("Confirm and execute one XY move", systemImage: "arrow.right.circle.fill") {
+                    Task { await appModel.executePreparedRun() }
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(!appModel.runs.canExecute)
+                .accessibilityIdentifier("runs.execute")
+            }
+            Text("Status: \(appModel.runs.status.label)")
+                .font(.caption.monospaced())
+                .accessibilityIdentifier("runs.status")
+            Label("No motion is written until the typed boundary validates every prerequisite.", systemImage: "checkmark.shield")
+                .foregroundStyle(.green)
+                .accessibilityIdentifier("runs.no-write-guarantee")
         }
         .padding(DesignTokens.Spacing.roomy)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(DesignTokens.Colors.canvas, in: RoundedRectangle(cornerRadius: 12))
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("runs.dry-run")
     }
 
@@ -60,16 +91,41 @@ struct RunsWorkspaceView: View {
                 .font(DesignTokens.Typography.sectionTitle)
             prerequisite("Calibration", ready: appModel.calibrationWizard.activeProfile != nil)
             prerequisite("Selected detection", ready: appModel.livePreview.selectedObservation != nil)
-            prerequisite("Fresh arm pose", ready: false)
-            prerequisite("Explicit confirmation", ready: false)
-            Label("Motion is disarmed in this workspace.", systemImage: "checkmark.shield")
-                .foregroundStyle(.green)
-                .accessibilityIdentifier("runs.no-write-guarantee")
+            prerequisite("Fresh arm pose", ready: appModel.runs.hasPreparedProposal)
+            prerequisite("Explicit confirmation", ready: appModel.runs.canExecute)
         }
         .padding(DesignTokens.Spacing.roomy)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(DesignTokens.Colors.canvas, in: RoundedRectangle(cornerRadius: 12))
         .accessibilityIdentifier("runs.prerequisites")
+    }
+
+    private var timelineCard: some View {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.compact) {
+            Text("Run timeline")
+                .font(DesignTokens.Typography.sectionTitle)
+            if appModel.runs.timeline.isEmpty {
+                Text("No supervised run has been submitted.")
+                    .foregroundStyle(.secondary)
+            } else {
+                ForEach(Array(appModel.runs.timeline.enumerated()), id: \.offset) { _, event in
+                    LabeledContent(event.kind.rawValue) {
+                        Text(event.detail)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+        }
+        .padding(DesignTokens.Spacing.roomy)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(DesignTokens.Colors.canvas, in: RoundedRectangle(cornerRadius: 12))
+        .accessibilityIdentifier("runs.timeline")
+    }
+
+    private var canPrepare: Bool {
+        appModel.calibrationWizard.activeProfile != nil
+            && appModel.livePreview.selectedObservation != nil
+            && appModel.runs.isDeterministicFixture
     }
 
     private func prerequisite(_ title: String, ready: Bool) -> some View {
@@ -78,6 +134,7 @@ struct RunsWorkspaceView: View {
     }
 
     private var targetWorkspacePoint: CalibrationPoint? {
+        if let proposed = appModel.runs.targetWorkspacePoint { return proposed }
         guard let profile = appModel.calibrationWizard.activeProfile,
               let observation = appModel.livePreview.selectedObservation,
               let format = appModel.livePreview.negotiatedFormat else { return nil }

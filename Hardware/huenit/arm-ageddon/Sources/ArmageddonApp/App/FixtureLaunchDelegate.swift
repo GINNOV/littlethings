@@ -82,6 +82,9 @@ final class FixtureLaunchDelegate: NSObject, NSApplicationDelegate {
            arguments?.profile != .permissionDenied {
             await appModel.loadFixtureOverlay()
         }
+        if arguments?.profile == .calibratedDryRun {
+            appModel.configureCalibratedRunFixture()
+        }
         if arguments?.profile == .modelFailed {
             await appModel.simulateModelFailureFixture()
         }

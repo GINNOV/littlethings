@@ -11,6 +11,7 @@ let package = Package(
     platforms: [.macOS(.v15)],
     products: [
         .library(name: "ArmageddonCore", targets: ["ArmageddonCore"]),
+        .library(name: "ArmageddonMotionBoundary", targets: ["ArmageddonMotionBoundary"]),
         .executable(name: "RuntimeTraceProbe", targets: ["RuntimeTraceProbe"]),
         .executable(name: "SandboxLogProbe", targets: ["SandboxLogProbe"]),
         .executable(name: "ModelFixtureGenerator", targets: ["ModelFixtureGenerator"]),

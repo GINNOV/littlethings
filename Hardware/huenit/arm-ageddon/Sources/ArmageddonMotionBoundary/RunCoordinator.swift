@@ -114,6 +114,7 @@ public actor RunCoordinator {
             append(.firstByte, executionID: executionID, detail: "XY writer accepted one move")
             append(.completed, executionID: executionID, detail: "completed")
             try DurableRunJournal.writeTerminal(root: journalRoot, executionID: executionID, kind: .completed, timeline: timeline)
+            await safety.revoke()
             return RunResult(executionID: executionID, wroteMotion: true, timeline: timeline)
         } catch let error as RunCoordinatorError {
             await safety.revoke(state: .faulted)

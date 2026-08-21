@@ -45,13 +45,21 @@ struct ArmageddonApp: App {
             selectedDevice: nil,
             selectedModelID: nil
         ))
+        let livePreview = LivePreviewModel(
+            hostClock: isUITesting && profile == .calibratedDryRun
+                ? FrozenFixtureCaptureHostClock()
+                : ContinuousCaptureHostClock()
+        )
         let applicationModel = AppModel(
             coordinator: coordinator,
             restoredState: restored,
             cameraLifecycle: cameraLifecycle,
             modelRegistry: ModelRegistry(root: Self.modelRegistryURL(for: result)),
+            livePreview: livePreview,
             calibrationProfileURL: Self.calibrationProfileURL(for: result),
-            captureRoot: Self.captureRoot(for: result)
+            captureRoot: Self.captureRoot(for: result),
+            runMode: isUITesting && profile == .calibratedDryRun ? .deterministicFixture : .unavailable,
+            runJournalRoot: Self.runJournalRoot(for: result)
         )
         _appModel = State(initialValue: applicationModel)
         fixtureLaunchDelegate.configure(appModel: applicationModel)
@@ -77,6 +85,9 @@ struct ArmageddonApp: App {
                     if fixtureProfile != .noDevices,
                        fixtureProfile != .permissionDenied {
                         await appModel.loadFixtureOverlay()
+                    }
+                    if fixtureProfile == .calibratedDryRun {
+                        appModel.configureCalibratedRunFixture()
                     }
                     if fixtureProfile == .modelFailed {
                         await appModel.simulateModelFailureFixture()
@@ -156,6 +167,13 @@ struct ArmageddonApp: App {
             .appendingPathComponent("Captures", isDirectory: true)
     }
 
+    private static func runJournalRoot(for launch: Result<LaunchArguments, Error>) -> URL {
+        let root = (try? launch.get().paths?.applicationSupport)
+            ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        return root.appendingPathComponent("Armageddon", isDirectory: true)
+            .appendingPathComponent("Runs", isDirectory: true)
+    }
+
     private static func calibrationProfileURL(for launch: Result<LaunchArguments, Error>) -> URL {
         let root = (try? launch.get().paths?.applicationSupport)
             ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
@@ -163,4 +181,10 @@ struct ArmageddonApp: App {
             .appendingPathComponent("Calibration", isDirectory: true)
             .appendingPathComponent("active-profile.json")
     }
+}
+
+private struct FrozenFixtureCaptureHostClock: CaptureHostClock {
+    private let instant = MonotonicInstant(nanoseconds: 1_000_000_000)
+
+    func now() -> MonotonicInstant { instant }
 }

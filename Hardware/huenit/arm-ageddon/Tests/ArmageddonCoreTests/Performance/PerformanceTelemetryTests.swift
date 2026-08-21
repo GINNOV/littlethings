@@ -3,6 +3,42 @@ import Testing
 @testable import ArmageddonCore
 
 struct PerformanceTelemetryTests {
+    @Test("one virtual hour of 30 FPS telemetry stays bounded and reports healthy freshness")
+    func sixtyMinutesAtThirtyFPS() async throws {
+        let telemetry = try PerformanceTelemetry(windowCapacity: 120)
+        let frameInterval: UInt64 = 33_333_333
+        let frameCount: UInt64 = 108_000
+
+        for index in 0..<frameCount {
+            let capture = MonotonicInstant(nanoseconds: index * frameInterval)
+            let received = MonotonicInstant(nanoseconds: capture.nanoseconds + 20_000_000)
+            try await telemetry.recordFrame(
+                captureInstant: capture,
+                receivedAt: received,
+                negotiatedFPS: 30,
+                droppedFramesSinceLastSample: 0,
+                queueDepth: 1
+            )
+            try await telemetry.recordInference(
+                captureInstant: capture,
+                startedAt: MonotonicInstant(nanoseconds: received.nanoseconds + 5_000_000),
+                finishedAt: MonotonicInstant(nanoseconds: received.nanoseconds + 25_000_000),
+                overlayAt: MonotonicInstant(nanoseconds: received.nanoseconds + 35_000_000),
+                queueDepth: 1
+            )
+        }
+
+        let snapshot = await telemetry.snapshot(now: MonotonicInstant(nanoseconds: 3_600_000_000_000))
+        #expect(snapshot.producedFrames == frameCount)
+        #expect(snapshot.deliveredFrames == frameCount)
+        #expect(snapshot.maximumQueueDepth == 1)
+        #expect((snapshot.observedFPS ?? 0) >= 29.9)
+        #expect((snapshot.frameAgeP95Milliseconds ?? .greatestFiniteMagnitude) <= 100)
+        #expect((snapshot.inferenceP95Milliseconds ?? .greatestFiniteMagnitude) == 20)
+        #expect(snapshot.health == .ready)
+        #expect(snapshot.targetingAvailable)
+    }
+
     @Test("60 seconds of 30 FPS telemetry stays bounded and reports healthy freshness")
     func sixtySecondsAtThirtyFPS() async throws {
         let telemetry = try PerformanceTelemetry(windowCapacity: 120)

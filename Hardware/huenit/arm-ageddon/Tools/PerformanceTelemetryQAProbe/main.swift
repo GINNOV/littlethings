@@ -4,8 +4,14 @@ import ArmageddonCore
 
 @main
 struct PerformanceTelemetryQAProbe {
+    private static let sustainedFixtureDurationNanoseconds: UInt64 = 3_600_000_000_000
+    private static let sustainedFixtureSampleCount: UInt64 = 108_000
+
     private struct Receipt: Codable {
         let mode: String
+        let simulatedDurationNanoseconds: UInt64
+        let sampleCount: UInt64
+        let windowCapacity: Int
         let negotiatedFPS: Double?
         let observedFPS: Double?
         let producedFrames: UInt64
@@ -50,9 +56,10 @@ struct PerformanceTelemetryQAProbe {
             .appendingPathComponent("armageddon-telemetry-\(UUID().uuidString).json")
         defer { try? FileManager.default.removeItem(at: summaryURL) }
         let summaryStore = PerformanceTelemetrySummaryStore(fileURL: summaryURL)
-        let telemetry = try PerformanceTelemetry(summaryStore: summaryStore)
+        let windowCapacity = 120
+        let telemetry = try PerformanceTelemetry(windowCapacity: windowCapacity, summaryStore: summaryStore)
         if mode == "happy" {
-            for index in 0..<1_800 {
+            for index in 0..<Self.sustainedFixtureSampleCount {
                 let capture = MonotonicInstant(nanoseconds: UInt64(index) * 2_000_000_000 / 60)
                 let received = MonotonicInstant(nanoseconds: capture.nanoseconds + 20_000_000)
                 let started = received
@@ -73,7 +80,7 @@ struct PerformanceTelemetryQAProbe {
                     queueDepth: 1
                 )
             }
-            let snapshot = await telemetry.snapshot(now: MonotonicInstant(nanoseconds: 60_100_000_000))
+            let snapshot = await telemetry.snapshot(now: MonotonicInstant(nanoseconds: Self.sustainedFixtureDurationNanoseconds))
             guard snapshot.health == .ready,
                   snapshot.targetingAvailable,
                   snapshot.maximumQueueDepth <= 1,
@@ -81,9 +88,15 @@ struct PerformanceTelemetryQAProbe {
                   snapshot.frameAgeP95Milliseconds ?? .greatestFiniteMagnitude <= 100 else {
                 throw ProbeError.healthyPipelineDidNotMeetBudget
             }
-            let summary = try await telemetry.persistSummary(now: MonotonicInstant(nanoseconds: 60_100_000_000))
+            let summary = try await telemetry.persistSummary(now: MonotonicInstant(nanoseconds: Self.sustainedFixtureDurationNanoseconds))
             guard try await summaryStore.load() == summary else { throw ProbeError.summaryPersistenceFailed }
-            return receipt(mode: mode, snapshot: summary)
+            return receipt(
+                mode: mode,
+                snapshot: summary,
+                simulatedDurationNanoseconds: Self.sustainedFixtureDurationNanoseconds,
+                sampleCount: Self.sustainedFixtureSampleCount,
+                windowCapacity: windowCapacity
+            )
         }
 
         let capture = MonotonicInstant(nanoseconds: 1_000_000_000)
@@ -107,12 +120,27 @@ struct PerformanceTelemetryQAProbe {
         }
         let summary = try await telemetry.persistSummary(now: MonotonicInstant(nanoseconds: 1_340_000_000))
         guard try await summaryStore.load() == summary else { throw ProbeError.summaryPersistenceFailed }
-        return receipt(mode: mode, snapshot: summary)
+        return receipt(
+            mode: mode,
+            snapshot: summary,
+            simulatedDurationNanoseconds: 0,
+            sampleCount: 1,
+            windowCapacity: windowCapacity
+        )
     }
 
-    private static func receipt(mode: String, snapshot: PerformanceTelemetrySnapshot) -> Receipt {
+    private static func receipt(
+        mode: String,
+        snapshot: PerformanceTelemetrySnapshot,
+        simulatedDurationNanoseconds: UInt64,
+        sampleCount: UInt64,
+        windowCapacity: Int
+    ) -> Receipt {
         Receipt(
             mode: mode,
+            simulatedDurationNanoseconds: simulatedDurationNanoseconds,
+            sampleCount: sampleCount,
+            windowCapacity: windowCapacity,
             negotiatedFPS: snapshot.negotiatedFPS,
             observedFPS: snapshot.observedFPS,
             producedFrames: snapshot.producedFrames,

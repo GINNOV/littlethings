@@ -67,6 +67,7 @@ struct DiagnosticsWorkspaceView: View {
         .padding(DesignTokens.Spacing.roomy)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(DesignTokens.Colors.workspace)
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("workspace.diagnostics")
         .task { await appModel.refreshDiagnostics() }
     }

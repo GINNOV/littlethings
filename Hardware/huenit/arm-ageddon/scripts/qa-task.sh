@@ -410,10 +410,13 @@ if [ "$1" = "22" ]; then
         filter='-only-testing:ArmageddonUITests/AppShellUITests/testModelsWorkspaceEmptyStateRemainsSafe'
         expected='models-workspace-empty-safe'
     fi
-    ARMAGEDDON_SCREENSHOT_DIR="$task_root/screenshots" xcodebuild -project Armageddon.xcodeproj -scheme ArmageddonApp \
+    ARMAGEDDON_SCREENSHOT_DIR="$task_root/screenshots" \
+    TEST_RUNNER_ARMAGEDDON_SCREENSHOT_DIR="$task_root/screenshots" \
+        xcodebuild -project Armageddon.xcodeproj -scheme ArmageddonApp \
         -destination 'platform=macOS' -parallel-testing-enabled NO \
         -derivedDataPath "$task_root/build" -resultBundlePath "$result" test $filter >>"$transcript" 2>&1
     [ -d "$result" ] || { printf '%s\n' 'ERROR[missing-task-22-xcresult]' >&2; exit 1; }
+    extract_named_screenshots "$result" "$task_root/screenshots"
     [ -s "$task_root/screenshots/$expected.png" ] || { printf '%s\n' "ERROR[missing-task-22-screenshot]: $expected" >&2; exit 1; }
     transcript_sha256=$(shasum -a 256 "$transcript" | awk '{print $1}')
     printf '{"task":22,"mode":"%s","filter":"%s","screenshot":"%s","transcript":"%s","transcriptSha256":"%s","result":"%s","outcome":"PASS"}\n' \
@@ -435,7 +438,31 @@ if [ "$1" = "26" ]; then
 fi
 
 if [ "$1" = "27" ]; then
-    run_swift_task 27 "$2" RunCoordinatorTests
+    transcript="$task_root/camera-ml-app.txt"
+    result="$task_root/camera-ml-app.xcresult"
+    mkdir -m 700 "$task_root/screenshots"
+    swift test --disable-sandbox --scratch-path "$task_root/package-build" --filter RunCoordinatorTests >"$transcript" 2>&1
+    if [ "$2" = "happy" ]; then
+        ui_filter='-only-testing:ArmageddonUITests/AppShellUITests/testCalibratedDryRunExecutesOneSupervisedMove'
+        expected='runs-supervised-fixture-completed'
+    else
+        ui_filter='-only-testing:ArmageddonUITests/AppShellUITests/testRunsSurfaceShowsFailClosedDryRunPrerequisites'
+        expected='runs-fail-closed-dry-run'
+    fi
+    ARMAGEDDON_SCREENSHOT_DIR="$task_root/screenshots" \
+    TEST_RUNNER_ARMAGEDDON_SCREENSHOT_DIR="$task_root/screenshots" \
+        xcodebuild -project Armageddon.xcodeproj -scheme ArmageddonApp \
+        -destination 'platform=macOS' -parallel-testing-enabled NO \
+        -derivedDataPath "$task_root/xcode" -resultBundlePath "$result" test "$ui_filter" >>"$transcript" 2>&1
+    [ -d "$result" ] || { printf '%s\n' 'ERROR[missing-task-27-xcresult]' >&2; exit 1; }
+    extract_named_screenshots "$result" "$task_root/screenshots"
+    [ -s "$task_root/screenshots/$expected.png" ] || { printf '%s\n' "ERROR[missing-task-27-screenshot]: $expected" >&2; exit 1; }
+    transcript_sha256=$(shasum -a 256 "$transcript" | awk '{print $1}')
+    screenshot_sha256=$(shasum -a 256 "$task_root/screenshots/$expected.png" | awk '{print $1}')
+    printf '{"task":27,"mode":"%s","swiftFilter":"RunCoordinatorTests","uiFilter":"%s","transcript":"%s","transcriptSha256":"%s","result":"%s","screenshot":"%s","screenshotSha256":"%s","outcome":"PASS"}\n' \
+        "$2" "$ui_filter" "$transcript" "$transcript_sha256" "$result" "$task_root/screenshots/$expected.png" "$screenshot_sha256" >"$task_root/camera-ml-app.json"
+    printf 'PASS task=27 mode=%s root=%s\n' "$2" "$task_root"
+    exit 0
 fi
 
 if [ "$1" = "28" ]; then
@@ -454,9 +481,12 @@ if [ "$1" = "29" ]; then
         filters='-only-testing:ArmageddonUITests/AppShellUITests/testCameraDisconnectCancelsWorkAndOffersRescan'
         expected='live-workspace-disconnected'
     fi
-    ARMAGEDDON_SCREENSHOT_DIR="$task_root/screenshots" xcodebuild -project Armageddon.xcodeproj -scheme ArmageddonApp \
+    ARMAGEDDON_SCREENSHOT_DIR="$task_root/screenshots" \
+    TEST_RUNNER_ARMAGEDDON_SCREENSHOT_DIR="$task_root/screenshots" \
+        xcodebuild -project Armageddon.xcodeproj -scheme ArmageddonApp \
         -destination 'platform=macOS' -derivedDataPath "$task_root/build" -resultBundlePath "$result" test $filters >>"$transcript" 2>&1
     [ -d "$result" ] || { printf '%s\n' 'ERROR[missing-task-29-xcresult]' >&2; exit 1; }
+    extract_named_screenshots "$result" "$task_root/screenshots"
     [ -s "$task_root/screenshots/$expected.png" ] || { printf '%s\n' "ERROR[missing-task-29-screenshot]: $expected" >&2; exit 1; }
     transcript_sha256=$(shasum -a 256 "$transcript" | awk '{print $1}')
     printf '{"task":29,"mode":"%s","filter":"%s","screenshot":"%s","transcript":"%s","transcriptSha256":"%s","result":"%s","outcome":"PASS"}\n' \
@@ -471,23 +501,69 @@ if [ "$1" = "30" ]; then
     mkdir -m 700 "$task_root/screenshots"
     first_build="$task_root/build-first"
     second_build="$task_root/build-second"
-    swift test --disable-sandbox --parallel --scratch-path "$first_build" >"$transcript" 2>&1
-    swift test --disable-sandbox --parallel --scratch-path "$second_build" >>"$transcript" 2>&1
-    swift run --disable-sandbox --quiet --scratch-path "$task_root/probe-build" PerformanceTelemetryQAProbe "$2" >>"$transcript" 2>&1
+    probe_build="$task_root/probe-build"
+    probe_warmup="$task_root/performance-probe-warmup.json"
+    probe_measured="$task_root/performance-probe-measured.json"
+    resource_warmup="$task_root/performance-resource-warmup.txt"
+    resource_measured="$task_root/performance-resource-measured.txt"
+    resource_receipt="$task_root/performance-resource.json"
+    swift test --disable-sandbox --scratch-path "$first_build" >"$transcript" 2>&1
+    swift test --disable-sandbox --scratch-path "$second_build" >>"$transcript" 2>&1
+    swift build --disable-sandbox --quiet --scratch-path "$probe_build" --product PerformanceTelemetryQAProbe >>"$transcript" 2>&1
+    performance_probe=$(find "$probe_build" -type f -path '*/debug/PerformanceTelemetryQAProbe' -perm -111 -print -quit)
+    [ -n "$performance_probe" ] || { printf '%s\n' 'ERROR[missing-task-30-performance-probe]' >&2; exit 1; }
+    /usr/bin/time -l "$performance_probe" "$2" >"$probe_warmup" 2>"$resource_warmup"
+    /usr/bin/time -l "$performance_probe" "$2" >"$probe_measured" 2>"$resource_measured"
+    warmup_rss=$(awk '$2 == "maximum" && $3 == "resident" && $4 == "set" { print $1; exit }' "$resource_warmup")
+    measured_rss=$(awk '$2 == "maximum" && $3 == "resident" && $4 == "set" { print $1; exit }' "$resource_measured")
+    [ -n "$warmup_rss" ] || { printf '%s\n' 'ERROR[missing-task-30-warmup-rss]' >&2; exit 1; }
+    [ -n "$measured_rss" ] || { printf '%s\n' 'ERROR[missing-task-30-measured-rss]' >&2; exit 1; }
+    rss_growth=$((measured_rss - warmup_rss))
+    rss_growth_budget=33554432
+    absolute_rss_budget=268435456
+    rss_within_budget=true
+    [ "$rss_growth" -le "$rss_growth_budget" ] || rss_within_budget=false
+    [ "$measured_rss" -le "$absolute_rss_budget" ] || rss_within_budget=false
+    [ "$rss_within_budget" = true ] || { printf '%s\n' 'ERROR[task-30-rss-budget]' >&2; exit 1; }
     if [ "$2" = "happy" ]; then
-        filters='-only-testing:ArmageddonUITests/AppShellUITests/testSidebarAndKeyboardNavigationStopsAndCapturesAppearances -only-testing:ArmageddonUITests/AppShellUITests/testLiveWorkspaceSelectsPausesCapturesAndOpensManualDrawer'
+        jq -e '.simulatedDurationNanoseconds == 3600000000000 and .sampleCount == 108000 and .windowCapacity == 120 and .maximumQueueDepth <= 1 and .targetingAvailable == true' "$probe_measured" >/dev/null
+    else
+        jq -e '.simulatedDurationNanoseconds == 0 and .sampleCount == 1 and .windowCapacity == 120 and .health == "slow" and .targetingAvailable == false' "$probe_measured" >/dev/null
+    fi
+    printf '{"mode":"%s","warmupMaxRSSBytes":%s,"measuredMaxRSSBytes":%s,"rssGrowthBytes":%s,"rssGrowthBudgetBytes":%s,"absoluteMaxRSSBytes":%s,"rssWithinBudget":%s,"warmupProbe":"%s","measuredProbe":"%s"}\n' \
+        "$2" "$warmup_rss" "$measured_rss" "$rss_growth" "$rss_growth_budget" "$absolute_rss_budget" "$rss_within_budget" "$probe_warmup" "$probe_measured" >"$resource_receipt"
+    printf 'PERFORMANCE_PROBE_WARMUP=%s\n' "$(cat "$probe_warmup")" >>"$transcript"
+    printf 'PERFORMANCE_PROBE_MEASURED=%s\n' "$(cat "$probe_measured")" >>"$transcript"
+    printf 'PERFORMANCE_RESOURCE=%s\n' "$(cat "$resource_receipt")" >>"$transcript"
+    if [ "$2" = "happy" ]; then
+        filters='-only-testing:ArmageddonUITests/AppShellUITests/testSidebarAndKeyboardNavigationStopsAndCapturesAppearances -only-testing:ArmageddonUITests/AppShellUITests/testLiveWorkspaceSelectsPausesCapturesAndOpensManualDrawer -only-testing:ArmageddonUITests/AppShellUITests/testTask30CapturesCompleteAppearanceMatrix'
         expected='app-shell-light-1280x800'
     else
         filters='-only-testing:ArmageddonUITests/AppShellUITests/testCameraDisconnectCancelsWorkAndOffersRescan'
         expected='live-workspace-disconnected'
     fi
-    ARMAGEDDON_SCREENSHOT_DIR="$task_root/screenshots" xcodebuild -project Armageddon.xcodeproj -scheme ArmageddonApp \
+    ARMAGEDDON_SCREENSHOT_DIR="$task_root/screenshots" \
+    TEST_RUNNER_ARMAGEDDON_SCREENSHOT_DIR="$task_root/screenshots" \
+        xcodebuild -project Armageddon.xcodeproj -scheme ArmageddonApp \
         -destination 'platform=macOS' -derivedDataPath "$task_root/xcode" -resultBundlePath "$result" test $filters >>"$transcript" 2>&1
     [ -d "$result" ] || { printf '%s\n' 'ERROR[missing-task-30-xcresult]' >&2; exit 1; }
+    extract_named_screenshots "$result" "$task_root/screenshots"
     [ -s "$task_root/screenshots/$expected.png" ] || { printf '%s\n' "ERROR[missing-task-30-screenshot]: $expected" >&2; exit 1; }
+    if [ "$2" = "happy" ]; then
+        for appearance in light dark contrast; do
+            for size in 1100x720 1280x800 1440x900 1728x1117; do
+                [ -s "$task_root/screenshots/task30-$appearance-$size.png" ] || {
+                    printf '%s\n' "ERROR[missing-task-30-matrix-screenshot]: task30-$appearance-$size" >&2
+                    exit 1
+                }
+            done
+        done
+    fi
     transcript_sha256=$(shasum -a 256 "$transcript" | awk '{print $1}')
-    printf '{"task":30,"mode":"%s","filters":"%s","transcript":"%s","transcriptSha256":"%s","result":"%s","screenshot":"%s","outcome":"PASS"}\n' \
-        "$2" "$filters" "$transcript" "$transcript_sha256" "$result" "$task_root/screenshots/$expected.png" >"$task_root/camera-ml-app.json"
+    probe_sha256=$(shasum -a 256 "$probe_measured" | awk '{print $1}')
+    resource_sha256=$(shasum -a 256 "$resource_receipt" | awk '{print $1}')
+    printf '{"task":30,"mode":"%s","filters":"%s","transcript":"%s","transcriptSha256":"%s","result":"%s","screenshot":"%s","performanceProbe":"%s","performanceProbeSha256":"%s","resourceReceipt":"%s","resourceReceiptSha256":"%s","outcome":"PASS"}\n' \
+        "$2" "$filters" "$transcript" "$transcript_sha256" "$result" "$task_root/screenshots/$expected.png" "$probe_measured" "$probe_sha256" "$resource_receipt" "$resource_sha256" >"$task_root/camera-ml-app.json"
     printf 'PASS task=30 mode=%s root=%s\n' "$2" "$task_root"
     exit 0
 fi

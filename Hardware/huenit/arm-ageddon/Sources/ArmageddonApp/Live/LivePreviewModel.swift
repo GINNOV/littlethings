@@ -43,6 +43,10 @@ public final class LivePreviewModel {
         capture.isRunning
     }
 
+    public var hostClock: any CaptureHostClock {
+        telemetryClock
+    }
+
     public var attachedResourceCount: Int {
         capture.attachedResourceCount
     }
@@ -62,11 +66,12 @@ public final class LivePreviewModel {
 
     public init(
         capture: AVFoundationNativeCaptureSession = AVFoundationNativeCaptureSession(),
-        telemetry: PerformanceTelemetry? = nil
+        telemetry: PerformanceTelemetry? = nil,
+        hostClock: any CaptureHostClock = ContinuousCaptureHostClock()
     ) {
         self.capture = capture
         self.telemetry = telemetry ?? Self.makeTelemetry()
-        telemetryClock = ContinuousCaptureHostClock()
+        telemetryClock = hostClock
         snapshot = NativeCaptureSessionSnapshot(
             state: .idle,
             configuration: nil,
@@ -148,6 +153,15 @@ public final class LivePreviewModel {
         await resetPerformanceTelemetry()
         try? await loadDeterministicFixtureOverlay()
         lastCaptureMessage = "Detection model ready: \(activeModelLabel)."
+    }
+
+    public func reloadDeterministicFixtureOverlayPreservingSelection() async {
+        let selectedLabel = selectedObservation?.label
+        await reloadDeterministicFixtureOverlay()
+        if let selectedLabel,
+           let replacement = observations.first(where: { $0.label == selectedLabel }) {
+            selectedObservationID = replacement.id
+        }
     }
 
     public func simulateModelFailureFixture() async {

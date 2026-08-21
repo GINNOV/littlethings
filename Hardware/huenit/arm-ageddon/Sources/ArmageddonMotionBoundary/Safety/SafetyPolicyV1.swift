@@ -295,6 +295,11 @@ public enum SafetyPolicyV1 {
     }
 }
 
+private func pointsMatch(_ lhs: CalibrationPoint, _ rhs: CalibrationPoint?) -> Bool {
+    guard let rhs else { return false }
+    return abs(lhs.x - rhs.x) <= 0.000_001 && abs(lhs.y - rhs.y) <= 0.000_001
+}
+
 public struct SafetyPermit: Sendable, Equatable {
     fileprivate let id: UUID
     let proposalHash: String
@@ -318,12 +323,13 @@ public final class MotionExecutionPermit: @unchecked Sendable {
         self.snapshot = snapshot
     }
 
-    func consume(now: MonotonicInstant) -> MonotonicInstant? {
+    public func consume(now: MonotonicInstant) -> MonotonicInstant? {
         lock.lock()
         defer { lock.unlock() }
         guard active, !consumed,
               SafetyPolicyV1.evaluate(snapshot, now: now).isEligible,
-              proposal.policyState == .eligible else { return nil }
+              proposal.policyState == .eligible,
+              pointsMatch(proposal.fromXY, snapshot.pose?.xy) else { return nil }
         consumed = true
         return now
     }
@@ -397,7 +403,7 @@ public actor SafetyController {
               proposal.captureInstant == snapshot.observation?.captureInstant,
               proposal.formatIdentity == snapshot.observation?.formatIdentity,
               proposal.modelHash == snapshot.observation?.modelHash,
-              proposal.poseInstant == snapshot.pose?.receivedAt,
+              pointsMatch(proposal.fromXY, snapshot.pose?.xy),
               proposal.calibrationID == snapshot.profile?.calibrationID,
               proposal.modelHash == snapshot.profile?.modelHash else {
             permitID = nil
@@ -443,7 +449,6 @@ public actor SafetyController {
               proposal.formatIdentity == observation.formatIdentity,
               proposal.modelHash == observation.modelHash,
               pointsMatch(proposal.targetXY, observation.targetXY),
-              proposal.poseInstant == pose.receivedAt,
               pointsMatch(proposal.fromXY, pose.xy),
               proposal.calibrationID == profile.calibrationID,
               proposal.modelHash == profile.modelHash,
@@ -461,10 +466,6 @@ public actor SafetyController {
             confirmedAt: nil
         )
         return SafetyPermit(id: permit, proposalHash: proposal.proposalHash)
-    }
-
-    private func pointsMatch(_ lhs: CalibrationPoint, _ rhs: CalibrationPoint) -> Bool {
-        abs(lhs.x - rhs.x) <= 0.000_001 && abs(lhs.y - rhs.y) <= 0.000_001
     }
 }
 
