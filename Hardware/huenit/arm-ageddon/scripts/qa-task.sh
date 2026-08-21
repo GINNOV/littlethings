@@ -206,7 +206,7 @@ if [ "$1" = "11" ]; then
         -derivedDataPath "$task_root/build" -resultBundlePath "$result" build-for-testing >>"$transcript" 2>&1
     [ -d "$result" ] || { printf '%s\n' 'ERROR[missing-task-11-xcresult]' >&2; exit 1; }
     transcript_sha256=$(shasum -a 256 "$transcript" | awk '{print $1}')
-    printf '{"task":11,"mode":"%s","filter":"%s","probe":%s,"transcript":"%s","transcriptSha256":"%s","result":"%s"}\n' \
+    printf '{"task":11,"mode":"%s","filter":"%s","probe":%s,"transcript":"%s","transcriptSha256":"%s","result":"%s","outcome":"PASS"}\n' \
         "$2" "$filter_target" "$probe_json" "$transcript" "$transcript_sha256" "$result" >"$task_root/camera-ml-app.json"
     printf 'PASS task=11 mode=%s root=%s\n' "$2" "$task_root"
     exit 0
@@ -238,7 +238,7 @@ if [ "$1" = "12" ]; then
         -derivedDataPath "$task_root/build" -resultBundlePath "$result" build-for-testing >>"$transcript" 2>&1
     [ -d "$result" ] || { printf '%s\n' 'ERROR[missing-task-12-xcresult]' >&2; exit 1; }
     transcript_sha256=$(shasum -a 256 "$transcript" | awk '{print $1}')
-    printf '{"task":12,"mode":"%s","filter":"%s","probe":%s,"transcript":"%s","transcriptSha256":"%s","result":"%s"}\n' \
+    printf '{"task":12,"mode":"%s","filter":"%s","probe":%s,"transcript":"%s","transcriptSha256":"%s","result":"%s","outcome":"PASS"}\n' \
         "$2" "$filter_target" "$probe_json" "$transcript" "$transcript_sha256" "$result" >"$task_root/camera-ml-app.json"
     printf 'PASS task=12 mode=%s root=%s\n' "$2" "$task_root"
     exit 0
@@ -271,7 +271,7 @@ if [ "$1" = "13" ]; then
     transcript_sha256=$(shasum -a 256 "$transcript" | awk '{print $1}')
     generated_sha256=$(shasum -a 256 "$generated_manifest" | awk '{print $1}')
     probe_json=$(tr -d '\n' <"$probe")
-    printf '{"task":13,"mode":"%s","filter":"%s","probe":%s,"generatedManifest":"%s","generatedManifestSha256":"%s","transcript":"%s","transcriptSha256":"%s","result":"%s"}\n' \
+    printf '{"task":13,"mode":"%s","filter":"%s","probe":%s,"generatedManifest":"%s","generatedManifestSha256":"%s","transcript":"%s","transcriptSha256":"%s","result":"%s","outcome":"PASS"}\n' \
         "$2" "$filter_target" "$probe_json" "$generated_manifest" "$generated_sha256" "$transcript" "$transcript_sha256" "$result" >"$task_root/camera-ml-app.json"
     printf 'PASS task=13 mode=%s root=%s\n' "$2" "$task_root"
     exit 0
@@ -301,7 +301,7 @@ if [ "$1" = "14" ]; then
     [ -d "$result" ] || { printf '%s\n' 'ERROR[missing-task-14-xcresult]' >&2; exit 1; }
     transcript_sha256=$(shasum -a 256 "$transcript" | awk '{print $1}')
     probe_json=$(tr -d '\n' <"$probe")
-    printf '{"task":14,"mode":"%s","filter":"%s","probe":%s,"transcript":"%s","transcriptSha256":"%s","result":"%s"}\n' \
+    printf '{"task":14,"mode":"%s","filter":"%s","probe":%s,"transcript":"%s","transcriptSha256":"%s","result":"%s","outcome":"PASS"}\n' \
         "$2" "$filter_target" "$probe_json" "$transcript" "$transcript_sha256" "$result" >"$task_root/camera-ml-app.json"
     printf 'PASS task=14 mode=%s root=%s\n' "$2" "$task_root"
     exit 0
@@ -330,7 +330,7 @@ if [ "$1" = "15" ]; then
     probe_json=$(tr -d '\n' <"$probe")
     printf '%s\n' "PERFORMANCE_TELEMETRY_QA_PROBE=$probe_json" >>"$transcript"
     transcript_sha256=$(shasum -a 256 "$transcript" | awk '{print $1}')
-    printf '{"task":15,"mode":"%s","filter":"%s","probe":%s,"transcript":"%s","transcriptSha256":"%s","result":"%s"}\n' \
+    printf '{"task":15,"mode":"%s","filter":"%s","probe":%s,"transcript":"%s","transcriptSha256":"%s","result":"%s","outcome":"PASS"}\n' \
         "$2" "$filter_target" "$probe_json" "$transcript" "$transcript_sha256" "$result" >"$task_root/camera-ml-app.json"
     printf 'PASS task=15 mode=%s root=%s\n' "$2" "$task_root"
     exit 0
@@ -363,7 +363,7 @@ if [ "$1" = "16" ]; then
         done
     fi
     transcript_sha256=$(shasum -a 256 "$transcript" | awk '{print $1}')
-    printf '{"task":16,"mode":"%s","filter":"%s","screenshot":"%s","transcript":"%s","transcriptSha256":"%s","result":"%s"}\n' \
+    printf '{"task":16,"mode":"%s","filter":"%s","screenshot":"%s","transcript":"%s","transcriptSha256":"%s","result":"%s","outcome":"PASS"}\n' \
         "$2" "$filter" "$task_root/screenshots/$expected.png" "$transcript" "$transcript_sha256" "$result" >"$task_root/camera-ml-app.json"
     printf 'PASS task=16 mode=%s root=%s\n' "$2" "$task_root"
     exit 0
@@ -643,7 +643,7 @@ if [ "$1" = "24" ]; then
     extract_named_screenshots "$result" "$task_root/screenshots"
     [ -s "$task_root/screenshots/$expected.png" ] || { printf '%s\n' "ERROR[missing-task-24-screenshot]: $expected" >&2; exit 1; }
     transcript_sha256=$(shasum -a 256 "$transcript" | awk '{print $1}')
-    printf '{"task":24,"mode":"%s","filter":"%s","screenshot":"%s","transcript":"%s","transcriptSha256":"%s","result":"%s"}\n' \
+    printf '{"task":24,"mode":"%s","filter":"%s","screenshot":"%s","transcript":"%s","transcriptSha256":"%s","result":"%s","outcome":"PASS"}\n' \
         "$2" "$filter" "$task_root/screenshots/$expected.png" "$transcript" "$transcript_sha256" "$result" >"$task_root/camera-ml-app.json"
     printf 'PASS task=24 mode=%s root=%s\n' "$2" "$task_root"
     exit 0
