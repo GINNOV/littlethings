@@ -101,7 +101,7 @@ def run(args: argparse.Namespace) -> int:
             os.waitpid(child_pid, 0)
             raise
     observed_events: list[JsonValue] = []
-    sample_count = 1 if observed is None else 0
+    sample_count = 1
     observation_error: EvidenceError | None = None
     observation_finished = threading.Event()
     observation_started = threading.Event()

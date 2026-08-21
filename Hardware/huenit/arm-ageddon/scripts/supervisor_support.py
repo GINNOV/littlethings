@@ -42,10 +42,25 @@ def trusted_xcodebuild_shim(command: list[str], requested: Path, observed: Path,
     return developer == Path("/Applications/Xcode.app/Contents/Developer") and observed == (developer / "usr/bin/xcodebuild").resolve(strict=True)
 
 
+def trusted_posix_sh_shim(command: list[str], requested: Path, observed: Path) -> bool:
+    if Path(command[0]).name != "sh":
+        return False
+    try:
+        requested_resolved = requested.resolve(strict=True)
+        observed_resolved = observed.resolve(strict=True)
+    except OSError:
+        return False
+    return requested_resolved == Path("/bin/sh") and observed_resolved == Path("/bin/bash")
+
+
 def same_child_identity(observed: dict[str, JsonValue], observed_executable: Path, observed_sha: Sha256, current: dict[str, JsonValue], current_executable: Path, current_sha: Sha256, command: list[str], requested: Path, environment: dict[str, str]) -> bool:
     if observed == current:
         return True
-    return trusted_xcodebuild_shim(command, requested, current_executable, environment) and observed.get("pid") == current.get("pid") and observed_executable == current_executable and observed_sha == current_sha
+    if observed.get("pid") != current.get("pid"):
+        return False
+    if trusted_xcodebuild_shim(command, requested, current_executable, environment) and observed_executable == current_executable and observed_sha == current_sha:
+        return True
+    return trusted_posix_sh_shim(command, requested, current_executable) or trusted_posix_sh_shim(command, observed_executable, current_executable)
 
 
 def child_executable(pid: int, command: list[str], requested: Path, executable: Path, executable_sha: Sha256, environment: dict[str, str]) -> tuple[Path, Sha256]:
@@ -57,7 +72,7 @@ def child_executable(pid: int, command: list[str], requested: Path, executable: 
         observed = paths[0].resolve(strict=True)
     except OSError as error:
         raise EvidenceError("live-io-command-mismatch", f"pid {pid}: {paths[0]}") from error
-    if observed != executable.resolve(strict=True) and not trusted_xcodebuild_shim(command, requested, observed, environment):
+    if observed != executable.resolve(strict=True) and not trusted_xcodebuild_shim(command, requested, observed, environment) and not trusted_posix_sh_shim(command, requested, observed):
         raise EvidenceError("live-io-command-mismatch", f"pid {pid}: {observed} != {executable}")
     observed_sha = sha256_file(observed)
     if observed == executable.resolve(strict=True) and observed_sha != executable_sha:
