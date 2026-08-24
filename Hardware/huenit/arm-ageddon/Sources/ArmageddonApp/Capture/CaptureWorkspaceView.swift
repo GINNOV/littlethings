@@ -186,6 +186,7 @@ struct CaptureWorkspaceView: View {
         .frame(height: height)
         .clipped()
         .clipShape(RoundedRectangle(cornerRadius: 10))
+        .accessibilityIdentifier("capture.preview")
         .accessibilityHidden(true)
     }
 

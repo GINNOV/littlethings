@@ -190,6 +190,28 @@ final class AppShellUITests: XCTestCase {
         XCTAssertTrue(app.descendants(matching: .any)["runs.prerequisites"].waitForExistence(timeout: 2))
         XCTAssertTrue(app.descendants(matching: .any)["runs.no-write-guarantee"].waitForExistence(timeout: 2))
         try capture(app, named: "runs-fail-closed-dry-run")
+        let runsCard = app.descendants(matching: .any)["runs.dry-run"].firstMatch
+        try ScreenshotContrast.assertLightOnDarkCanvas(runsCard.screenshot().pngRepresentation)
+        app.terminate()
+    }
+
+    func testCaptureLibraryShowsFixtureFrameAndReadableLabels() throws {
+        let app = try launch(style: "Light", width: 1_280, height: 800)
+        chooseMenu(app, identifier: "live.source-picker", item: "Recorded fixture")
+        waitForPicker(app, identifier: "live.source-picker", containing: "Recorded fixture")
+        app.buttons["live.capture"].click()
+        XCTAssertTrue(app.staticTexts["Frame 1 staged for capture review."].waitForExistence(timeout: 2))
+        app.buttons["sidebar.capture"].click()
+        XCTAssertTrue(app.descendants(matching: .any)["workspace.capture"].waitForExistence(timeout: 3))
+        let captureCard = app.descendants(matching: .any).matching(
+            NSPredicate(format: "identifier BEGINSWITH 'capture.' AND identifier != 'capture.details' AND identifier != 'capture.export' AND identifier != 'capture.preview'")
+        ).firstMatch
+        XCTAssertTrue(captureCard.waitForExistence(timeout: 3), "Missing capture card")
+        try capture(app, named: "capture-library-fixture-frame")
+        let png = captureCard.screenshot().pngRepresentation
+        let metrics = try ScreenshotContrast.metrics(png: png)
+        try ScreenshotContrast.assertLightOnDarkCanvas(png)
+        XCTAssertGreaterThan(metrics.meanLuma, 0.08, "fixture capture tile is still a black placeholder")
         app.terminate()
     }
 
