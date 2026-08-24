@@ -96,12 +96,13 @@ struct CaptureWorkspaceView: View {
                     DesignTokens.Colors.canvas
                     Image(systemName: capture.isTrashed ? "trash" : "photo")
                         .font(.largeTitle)
-                        .foregroundStyle(capture.isTrashed ? .secondary : Color.accentColor)
+                        .foregroundStyle(capture.isTrashed ? DesignTokens.Colors.canvasSecondary : Color.accentColor)
                 }
                 .frame(height: 115)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
                 Text(capture.name)
                     .font(DesignTokens.Typography.sectionTitle)
+                    .foregroundStyle(DesignTokens.Colors.canvasPrimary)
                     .lineLimit(1)
                 HStack {
                     Label(capture.review.rawValue.capitalized, systemImage: reviewSymbol(capture.review))
@@ -109,7 +110,7 @@ struct CaptureWorkspaceView: View {
                     Text("\(capture.provenance.observations.count) detections")
                 }
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(DesignTokens.Colors.canvasSecondary)
             }
             .padding(DesignTokens.Spacing.standard)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -120,6 +121,7 @@ struct CaptureWorkspaceView: View {
             }
         }
         .buttonStyle(.plain)
+        .tint(DesignTokens.Colors.canvasPrimary)
         .accessibilityLabel("Capture \(capture.name), \(capture.review.rawValue)")
         .accessibilityIdentifier("capture.\(capture.id)")
     }
@@ -131,6 +133,7 @@ struct CaptureWorkspaceView: View {
             VStack(alignment: .leading, spacing: DesignTokens.Spacing.standard) {
                 Text("Capture details")
                     .font(DesignTokens.Typography.sectionTitle)
+                    .foregroundStyle(DesignTokens.Colors.canvasPrimary)
                 LabeledContent("Name", value: capture.name)
                 LabeledContent("Source", value: capture.provenance.sourceID)
                 LabeledContent("Model", value: capture.provenance.modelID)
