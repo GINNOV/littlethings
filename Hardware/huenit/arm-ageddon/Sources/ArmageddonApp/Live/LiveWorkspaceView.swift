@@ -173,7 +173,7 @@ struct LiveWorkspaceView: View {
         }
         .padding(DesignTokens.Spacing.roomy)
         .frame(width: 282, alignment: .leading)
-        .background(DesignTokens.Colors.canvas, in: RoundedRectangle(cornerRadius: DesignTokens.Spacing.standard))
+        .canvasCard(cornerRadius: DesignTokens.Spacing.standard)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("live.control-panel")
     }

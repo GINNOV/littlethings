@@ -80,7 +80,7 @@ struct RunsWorkspaceView: View {
         }
         .padding(DesignTokens.Spacing.roomy)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(DesignTokens.Colors.canvas, in: RoundedRectangle(cornerRadius: 12))
+        .canvasCard()
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("runs.dry-run")
     }
@@ -96,7 +96,7 @@ struct RunsWorkspaceView: View {
         }
         .padding(DesignTokens.Spacing.roomy)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(DesignTokens.Colors.canvas, in: RoundedRectangle(cornerRadius: 12))
+        .canvasCard()
         .accessibilityIdentifier("runs.prerequisites")
     }
 
@@ -118,7 +118,7 @@ struct RunsWorkspaceView: View {
         }
         .padding(DesignTokens.Spacing.roomy)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(DesignTokens.Colors.canvas, in: RoundedRectangle(cornerRadius: 12))
+        .canvasCard()
         .accessibilityIdentifier("runs.timeline")
     }
 

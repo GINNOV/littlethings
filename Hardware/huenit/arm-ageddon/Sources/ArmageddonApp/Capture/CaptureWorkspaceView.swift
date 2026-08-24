@@ -113,7 +113,7 @@ struct CaptureWorkspaceView: View {
             }
             .padding(DesignTokens.Spacing.standard)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(DesignTokens.Colors.canvas, in: RoundedRectangle(cornerRadius: 12))
+            .canvasCard()
             .overlay {
                 RoundedRectangle(cornerRadius: 12)
                     .stroke(isSelected ? Color.accentColor : .clear, lineWidth: 2)
@@ -157,7 +157,7 @@ struct CaptureWorkspaceView: View {
                 Spacer()
             }
             .padding(DesignTokens.Spacing.standard)
-            .background(DesignTokens.Colors.canvas, in: RoundedRectangle(cornerRadius: 12))
+            .canvasCard()
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier("capture.details")
         } else {

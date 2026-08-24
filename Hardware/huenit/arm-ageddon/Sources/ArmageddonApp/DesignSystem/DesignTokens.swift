@@ -35,3 +35,10 @@ enum DesignTokens {
         static let inspectorWidth: CGFloat = 360
     }
 }
+
+extension View {
+    func canvasCard(cornerRadius: CGFloat = 12) -> some View {
+        environment(\.colorScheme, .dark)
+            .background(DesignTokens.Colors.canvas, in: RoundedRectangle(cornerRadius: cornerRadius))
+    }
+}
