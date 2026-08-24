@@ -3,23 +3,25 @@ import SwiftUI
 
 struct SourceHelpDialog: View {
     @Environment(\.dismiss) private var dismiss
+    let title: String
+    let identifierPrefix: String
     let markdown: String
     var onDismiss: () -> Void = {}
 
     var body: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.standard) {
             HStack {
-                Label("Live source manual", systemImage: "questionmark.circle")
+                Label(title, systemImage: "questionmark.circle")
                     .font(DesignTokens.Typography.workspaceTitle)
                     .bold()
-                    .accessibilityIdentifier("live.source-manual.title")
+                    .accessibilityIdentifier("\(identifierPrefix).title")
                 Spacer()
                 Button("Close") {
                     onDismiss()
                     dismiss()
                 }
                     .keyboardShortcut(.cancelAction)
-                    .accessibilityIdentifier("live.source-manual.close")
+                    .accessibilityIdentifier("\(identifierPrefix).close")
             }
 
             ScrollView {
@@ -35,7 +37,7 @@ struct SourceHelpDialog: View {
         .frame(minWidth: 540, idealWidth: 600, minHeight: 420, idealHeight: 520)
         .background(DesignTokens.Colors.workspace)
         .accessibilityElement(children: .contain)
-        .accessibilityIdentifier("live.source-manual")
+        .accessibilityIdentifier(identifierPrefix)
     }
 
     @ViewBuilder
@@ -83,8 +85,14 @@ enum BundledDocumentation {
         guard let url = bundle.url(forResource: "documentation", withExtension: "md"),
               let text = try? MarkdownManual.load(from: url),
               text.isEmpty == false else {
-            return "Live source help could not be loaded from documentation.md."
+            return "Help could not be loaded from documentation.md."
         }
         return text
+    }
+
+    static func section(_ title: String, in bundle: Bundle = .main) -> String {
+        let loaded = markdown(in: bundle)
+        let section = MarkdownManual.section(named: title, in: loaded)
+        return section.isEmpty ? loaded : section
     }
 }

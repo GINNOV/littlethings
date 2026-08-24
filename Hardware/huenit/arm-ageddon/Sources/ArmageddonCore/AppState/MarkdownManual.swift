@@ -43,4 +43,21 @@ public enum MarkdownManual {
     public static func load(from url: URL) throws -> String {
         try String(contentsOf: url, encoding: .utf8)
     }
+
+    public static func section(named title: String, in markdown: String) -> String {
+        var collecting = false
+        var lines: [String] = []
+        for rawLine in markdown.split(separator: "\n", omittingEmptySubsequences: false) {
+            let line = String(rawLine)
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            if trimmed.hasPrefix("# ") {
+                if collecting { break }
+                collecting = String(trimmed.dropFirst(2)) == title
+            }
+            if collecting {
+                lines.append(line)
+            }
+        }
+        return lines.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
+    }
 }

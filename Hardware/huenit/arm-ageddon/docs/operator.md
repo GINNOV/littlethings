@@ -20,6 +20,5 @@ priority stop frame; `G28` is forbidden.
 HUENIT K210 serial telemetry is detection-only. It cannot mint a motion
 proposal or write to the arm.
 
-The Live **Source** menu has a **(?)** control that opens the bundled
-`documentation.md` manual for Native camera, Recorded fixture, and HUENIT
-telemetry.
+The Live **Source** and **Model** menus each have a **(?)** control that opens
+the matching section of the bundled `documentation.md` manual.

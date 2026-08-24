@@ -42,6 +42,35 @@ struct MarkdownManualTests {
         #expect(headings.contains("Recorded fixture"))
         #expect(headings.contains("HUENIT telemetry · detection only"))
         #expect(markdown.contains("does not send video"))
+
+        let sources = MarkdownManual.section(named: "Live sources", in: markdown)
+        let models = MarkdownManual.section(named: "Detection models", in: markdown)
+        #expect(sources.contains("Native camera"))
+        #expect(sources.contains("HUENIT telemetry"))
+        let modelHeadings = MarkdownManual.parse(models).compactMap { block -> String? in
+            if case .heading(let text) = block { return text }
+            return nil
+        }
+        #expect(modelHeadings.contains("Fixture detector"))
+        #expect(modelHeadings.contains("Recorded fixture detector"))
+        #expect(modelHeadings.contains("Imported models"))
+        #expect(sources.contains("Fixture detector") == false)
+    }
+
+    @Test("Section extraction stops at the next top-level title")
+    func sectionStopsAtNextTitle() {
+        let markdown = """
+        # Live sources
+
+        Source body.
+
+        # Detection models
+
+        Model body.
+        """
+        #expect(MarkdownManual.section(named: "Live sources", in: markdown) == "# Live sources\n\nSource body.")
+        #expect(MarkdownManual.section(named: "Detection models", in: markdown) == "# Detection models\n\nModel body.")
+        #expect(MarkdownManual.section(named: "Missing", in: markdown).isEmpty)
     }
 
     private static func documentationURL() -> URL? {

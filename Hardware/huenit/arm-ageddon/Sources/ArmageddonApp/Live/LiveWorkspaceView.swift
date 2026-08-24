@@ -5,7 +5,7 @@ import SwiftUI
 struct LiveWorkspaceView: View {
     @Environment(AppModel.self) private var appModel
     @State private var manualControlsPresented = true
-    @State private var sourceHelpPresented = false
+    @State private var presentedHelp: LiveHelpTopic?
 
     var body: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.standard) {
@@ -26,8 +26,8 @@ struct LiveWorkspaceView: View {
                     cameraDeviceMenu
                         .frame(maxWidth: 220)
                 }
-                modelMenu
-                    .frame(maxWidth: 240)
+                modelRow
+                    .frame(maxWidth: 272)
                 Button(
                     appModel.livePreview.isPaused ? "Resume preview" : "Pause preview",
                     systemImage: appModel.livePreview.isPaused ? "play.fill" : "pause.fill"
@@ -58,9 +58,13 @@ struct LiveWorkspaceView: View {
         .padding(DesignTokens.Spacing.roomy)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(DesignTokens.Colors.workspace)
-        .sheet(isPresented: $sourceHelpPresented) {
-            SourceHelpDialog(markdown: BundledDocumentation.markdown()) {
-                sourceHelpPresented = false
+        .sheet(item: $presentedHelp) { topic in
+            SourceHelpDialog(
+                title: topic.manualTitle,
+                identifierPrefix: topic.identifierPrefix,
+                markdown: BundledDocumentation.section(topic.sectionTitle)
+            ) {
+                presentedHelp = nil
             }
         }
     }
@@ -133,7 +137,7 @@ struct LiveWorkspaceView: View {
             if appModel.livePreview.selectedSource == .nativeCamera {
                 cameraDeviceMenu
             }
-            modelMenu
+            modelRow
 
             Divider()
 
@@ -215,7 +219,7 @@ struct LiveWorkspaceView: View {
         HStack(spacing: DesignTokens.Spacing.compact) {
             sourceMenu
             Button {
-                sourceHelpPresented = true
+                presentedHelp = .sources
             } label: {
                 Image(systemName: "questionmark.circle")
             }
@@ -223,6 +227,21 @@ struct LiveWorkspaceView: View {
             .help("Live source manual")
             .accessibilityLabel("Live source manual")
             .accessibilityIdentifier("live.source-help")
+        }
+    }
+
+    private var modelRow: some View {
+        HStack(spacing: DesignTokens.Spacing.compact) {
+            modelMenu
+            Button {
+                presentedHelp = .models
+            } label: {
+                Image(systemName: "questionmark.circle")
+            }
+            .buttonStyle(.borderless)
+            .help("Detection model manual")
+            .accessibilityLabel("Detection model manual")
+            .accessibilityIdentifier("live.model-help")
         }
     }
 
@@ -397,6 +416,34 @@ struct LiveWorkspaceView: View {
             Spacer()
             Text(value)
                 .font(.caption.monospacedDigit())
+        }
+    }
+}
+
+private enum LiveHelpTopic: String, Identifiable {
+    case sources
+    case models
+
+    var id: String { rawValue }
+
+    var manualTitle: String {
+        switch self {
+        case .sources: "Live source manual"
+        case .models: "Detection model manual"
+        }
+    }
+
+    var identifierPrefix: String {
+        switch self {
+        case .sources: "live.source-manual"
+        case .models: "live.model-manual"
+        }
+    }
+
+    var sectionTitle: String {
+        switch self {
+        case .sources: "Live sources"
+        case .models: "Detection models"
         }
     }
 }

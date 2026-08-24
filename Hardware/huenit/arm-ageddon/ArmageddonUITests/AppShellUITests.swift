@@ -323,6 +323,21 @@ final class AppShellUITests: XCTestCase {
         app.terminate()
     }
 
+    func testModelHelpDialogLoadsDocumentation() throws {
+        let app = try launch(style: "Light", width: 1_280, height: 800)
+        let help = app.descendants(matching: .any)["live.model-help"].firstMatch
+        XCTAssertTrue(help.waitForExistence(timeout: 5), "Missing detection model manual button")
+        help.click()
+        XCTAssertTrue(app.descendants(matching: .any)["live.model-manual"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.staticTexts["Fixture detector"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts["Recorded fixture detector"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts["Imported models"].waitForExistence(timeout: 2))
+        let dialog = app.descendants(matching: .any)["live.model-manual"].firstMatch
+        app.buttons["live.model-manual.close"].click()
+        XCTAssertTrue(dialog.waitForNonExistence(timeout: 3))
+        app.terminate()
+    }
+
     func testNativeCameraPickerListsDiscoveredFixtureCamera() throws {
         let app = try launch(style: "Light", width: 1_280, height: 800)
         XCTAssertTrue(app.descendants(matching: .any)["live.camera-device"].waitForExistence(timeout: 5))
