@@ -92,14 +92,7 @@ struct CaptureWorkspaceView: View {
             selectedCaptureID = capture.id
         } label: {
             VStack(alignment: .leading, spacing: DesignTokens.Spacing.compact) {
-                ZStack {
-                    DesignTokens.Colors.canvas
-                    Image(systemName: capture.isTrashed ? "trash" : "photo")
-                        .font(.largeTitle)
-                        .foregroundStyle(capture.isTrashed ? DesignTokens.Colors.canvasSecondary : Color.accentColor)
-                }
-                .frame(height: 115)
-                .clipShape(RoundedRectangle(cornerRadius: 10))
+                framePreview(capture, height: 115)
                 Text(capture.name)
                     .font(DesignTokens.Typography.sectionTitle)
                     .foregroundStyle(DesignTokens.Colors.canvasPrimary)
@@ -134,6 +127,7 @@ struct CaptureWorkspaceView: View {
                 Text("Capture details")
                     .font(DesignTokens.Typography.sectionTitle)
                     .foregroundStyle(DesignTokens.Colors.canvasPrimary)
+                framePreview(capture, height: 160)
                 LabeledContent("Name", value: capture.name)
                 LabeledContent("Source", value: capture.provenance.sourceID)
                 LabeledContent("Model", value: capture.provenance.modelID)
@@ -171,6 +165,28 @@ struct CaptureWorkspaceView: View {
             )
             .padding(DesignTokens.Spacing.standard)
         }
+    }
+
+    private func framePreview(_ capture: CaptureRecord, height: CGFloat) -> some View {
+        Group {
+            if let data = appModel.captureImageData[capture.id], let image = NSImage(data: data) {
+                Image(nsImage: image)
+                    .resizable()
+                    .scaledToFill()
+            } else {
+                ZStack {
+                    DesignTokens.Colors.canvas
+                    Image(systemName: capture.isTrashed ? "trash" : "photo")
+                        .font(.largeTitle)
+                        .foregroundStyle(capture.isTrashed ? DesignTokens.Colors.canvasSecondary : Color.accentColor)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: height)
+        .clipped()
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .accessibilityHidden(true)
     }
 
     private func reviewSymbol(_ review: CaptureReview) -> String {

@@ -190,6 +190,10 @@ public actor CaptureSessionStore {
         try await index.all().first { $0.id == id }
     }
 
+    public func imageData(for record: CaptureRecord) async throws -> Data {
+        try await artifacts.bytes(id: record.imageArtifactID)
+    }
+
     public func review(id: String, as review: CaptureReview) async throws {
         let record = try await required(id: id)
         try await index.replace(record.reviewed(as: review))
