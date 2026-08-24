@@ -53,6 +53,7 @@ public enum AppStateRestorationNotice: String, Codable, Equatable, Sendable {
 
 public enum AppStateRestorer {
     public static let validDestinations: Set<String> = [
+        "go.workspace",
         "live.workspace",
         "capture.library",
         "models.library",

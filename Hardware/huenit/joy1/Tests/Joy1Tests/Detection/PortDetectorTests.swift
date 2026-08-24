@@ -18,4 +18,12 @@ struct PortDetectorTests {
         ]
         #expect(PortDetector.pickArm(from: ports) == nil)
     }
+
+    @Test func prefersUsbmodemOverUnnamedFtdiCameraPort() {
+        let ports = [
+            SerialCandidate(path: "/dev/cu.usbserial-834430", product: nil, serial: nil, vid: 0x0403, pid: 0x6015),
+            SerialCandidate(path: "/dev/cu.usbmodem2105", product: nil, serial: nil, vid: nil, pid: nil),
+        ]
+        #expect(PortDetector.pickArm(from: ports)?.path == "/dev/cu.usbmodem2105")
+    }
 }

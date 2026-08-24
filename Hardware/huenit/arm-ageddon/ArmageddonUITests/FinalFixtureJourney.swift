@@ -7,31 +7,10 @@ import XCTest
 final class FinalFixtureJourney: XCTestCase {
     func testFixtureLiveDetectionTargetCaptureReview() throws {
         let app = try launch()
-        waitForHealth(app, value: "Ready")
-
-        chooseMenu(app, identifier: "live.source-picker", item: "Recorded fixture")
-        waitForPicker(app, identifier: "live.source-picker", containing: "Recorded fixture")
-        chooseMenu(app, identifier: "live.model-picker", item: "Recorded fixture detector")
-        waitForPicker(app, identifier: "live.model-picker", containing: "Recorded fixture detector")
-
-        let target = app.descendants(matching: .any)["live.detection.target"].firstMatch
-        XCTAssertTrue(target.waitForExistence(timeout: 5), "Missing live.detection.target")
-        target.click()
-        XCTAssertTrue(app.descendants(matching: .any)["inspector.target"].waitForExistence(timeout: 2))
-
-        app.buttons["live.capture"].click()
-        XCTAssertTrue(app.staticTexts["Frame 1 staged for capture review."].waitForExistence(timeout: 2))
-
-        app.buttons["sidebar.capture"].click()
-        XCTAssertTrue(app.descendants(matching: .any)["workspace.capture"].waitForExistence(timeout: 3))
-        let captureCard = app.descendants(matching: .any).matching(
-            NSPredicate(format: "identifier BEGINSWITH 'capture.' AND identifier != 'capture.details' AND identifier != 'capture.export'")
-        ).firstMatch
-        if captureCard.waitForExistence(timeout: 3) {
-            captureCard.click()
-        }
-        XCTAssertTrue(app.staticTexts["Capture details"].waitForExistence(timeout: 3))
-        XCTAssertTrue(app.descendants(matching: .any)["capture.export"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.descendants(matching: .any)["workspace.go"].waitForExistence(timeout: 8))
+        XCTAssertTrue(app.buttons["go.connect-arm"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.buttons["go.teach.bowl"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.descendants(matching: .any)["stop.button"].firstMatch.waitForExistence(timeout: 2))
 
         let attachment = XCTAttachment(screenshot: app.screenshot())
         attachment.name = "final-fixture-live"

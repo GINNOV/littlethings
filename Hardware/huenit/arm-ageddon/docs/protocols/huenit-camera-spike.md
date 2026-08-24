@@ -13,3 +13,5 @@ The current decision is deliberately narrow:
 - line size, buffering, malformed input, and reconnect generation are bounded.
 
 No guessed serial writes, firmware flashing, network transport, or camera artifact download is included. A future live spike must use an explicitly reviewed transport and replace `not-measured` with a separately hashed transcript; until then the app must not advertise preview or upload support.
+
+Go play next measurement (see `docs/go-play.md`): a **board-grid UART schema**, not a webcam or framed preview. Rectangle telemetry remains the only checked-in fixture today.

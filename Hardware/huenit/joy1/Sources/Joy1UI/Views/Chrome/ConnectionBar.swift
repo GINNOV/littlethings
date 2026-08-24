@@ -48,7 +48,9 @@ struct ConnectionBar: View {
                         }
                     }
                     .buttonStyle(.borderedProminent)
+                    .accessibilityIdentifier(model.isConnected ? "joy1.disconnect" : "go.connect-arm")
                     Button("Rescan") { model.refreshPorts() }
+                    .accessibilityIdentifier("go.rescan")
                     Spacer(minLength: 0)
                     Circle()
                         .fill(model.isConnected ? PendantChrome.connected : Color.secondary.opacity(0.35))

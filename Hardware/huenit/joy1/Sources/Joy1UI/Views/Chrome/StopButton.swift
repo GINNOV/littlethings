@@ -16,7 +16,8 @@ struct StopButton: View {
         }
         .buttonStyle(.plain)
         .background(PendantChrome.stop, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .keyboardShortcut(.cancelAction)
-        .accessibilityLabel("Stop")
+        .keyboardShortcut(.escape, modifiers: [])
+        .accessibilityLabel("STOP motion")
+        .accessibilityIdentifier("stop.button")
     }
 }

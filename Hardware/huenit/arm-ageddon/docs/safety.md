@@ -1,22 +1,31 @@
 # Safety boundary
 
-The motion boundary is fail-closed. The default policy requires confidence of
-at least 0.70, detection age at most 500 ms, pose age at most 750 ms, a valid
-calibration with RMS error at most 3 mm and held-out maximum error at most
-5 mm, a nonempty 10 mm-inset workspace, a complete commanded XY segment inside
-that inset, a delta no larger than 20 mm, a configured safe Z band, and a feed
-between 0 and 300 mm/min.
+Fail-closed. Software STOP cancels work and independently attempts vacuum-off
+and `M410`. A dispatch acknowledgement is not firmware confirmation. When STOP
+is unconfirmed, use the physical power cutoff.
 
-Arming expires after 30 seconds. A target proposal confirmation expires after
-5 seconds and is single-use. Proposals contain XY only; no Z, suction, or
-automatic retry is generated from a detection.
+Never send `G28`.
 
-Only trusted native-camera detections with a mapped host monotonic timestamp,
-matching frame/format identity, and the active Mac model hash can enter this
-boundary. K210 serial telemetry remains detection-only because its protocol
-does not yet provide the required shared frame identity and trusted source
-timestamp.
+## Go play (current product)
 
-Software STOP cancels pending work and independently attempts vacuum-off and
-`M410` through the priority path. A dispatch acknowledgement is not firmware
-confirmation. When STOP is unconfirmed, use the physical power cutoff.
+Motion that places a stone is a **confirmed recipe**, not an unattended
+detection-to-motor loop:
+
+- Human signals **I moved** (no intersection name).
+- Arm is at a taught survey pose; K210 emits a board grid (detection-only).
+- Cappella Qwen returns one intersection; the Mac legal-checks it against the
+  grid.
+- Arming expires; confirmation is one-use and short-lived.
+- Recipe may include Z and vacuum on/off (`M1400`). Workspace polygon, safe Z
+  band, and feed cap still apply.
+- The K210 never writes the arm port. The DGX never receives raw G-code.
+
+First board is 9×9. Bowl pose and intersection map are taught, not guessed.
+
+## Legacy inspector policy (do not extend)
+
+`SafetyPolicyV1` in code still describes the dead camera-ml path: confidence
+≥0.70, detection age ≤500 ms, pose age ≤750 ms, planar calibration RMS ≤3 mm,
+≤20 mm XY-only, no suction, native-camera frames only. That policy must not
+be used as the Go recipe. Replace it when the pick-place path lands; until
+then do not mint motion from webcam boxes or from K210 rectangles.

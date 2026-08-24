@@ -7,6 +7,8 @@
 - Verified compiler: Apple Swift 6.3.3 supplied by Xcode 26.6.
 - Concurrency: complete strict-concurrency checking in SwiftPM and Xcode.
 - Runtime dependencies: Apple SDKs and the local `ArmageddonCore` product only.
+  Go play additionally uses LAN HTTP to cappella Qwen; that client must be
+  injectable so ordinary tests never hit the network.
 - Release architecture: arm64.
 
 `Package.swift` owns `ArmageddonCore`, the non-product

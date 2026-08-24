@@ -1,5 +1,7 @@
 import AppKit
+import ArmageddonArm
 import ArmageddonCore
+import Joy1
 import Observation
 @preconcurrency import AVFoundation
 
@@ -35,6 +37,19 @@ final class AppModel {
     private(set) var diagnosticEvents: [DiagnosticEvent] = []
     private(set) var supportBundleURL: URL?
     private(set) var availableNativeCameras: [NativeCameraDevice] = []
+    private let goPlay: GoPlaySession
+    private var armOperator: any ArmOperatorControlling
+    private let makeArmOperator: () throws -> any ArmOperatorControlling
+    private let allowLiveArm: Bool
+    let pendant: PendantModel
+    private(set) var workspace: GoWorkspace
+    private(set) var armPose: ArmCartesianPose?
+    var armConnected: Bool { pendant.isConnected }
+    private(set) var serialPorts: [DiscoveredArmPort] = []
+    var selectedSerialPath: String?
+    private(set) var goPlayState: GoPlayState = .idle
+    private(set) var lastGoTurn: GoPlayTurn?
+    private(set) var goPlayMessage: String?
 
     init(
         coordinator: AppStateCoordinator,
@@ -47,7 +62,13 @@ final class AppModel {
         calibrationProfileURL: URL? = nil,
         captureRoot: URL? = nil,
         runMode: RunWorkspaceExecutionMode = .unavailable,
-        runJournalRoot: URL? = nil
+        runJournalRoot: URL? = nil,
+        armOperator: (any ArmOperatorControlling)? = nil,
+        goPlaySource: (any BoardGridSourcing)? = nil,
+        goPlayPoster: (any HTTPPosting)? = nil,
+        workspace: GoWorkspace? = nil,
+        makeArmOperator: (() throws -> any ArmOperatorControlling)? = nil,
+        allowLiveArm: Bool = false
     ) {
         self.coordinator = coordinator
         self.cameraLifecycle = cameraLifecycle
@@ -81,6 +102,230 @@ final class AppModel {
         k210InventoryError = nil
         captureError = nil
         supportBundleURL = nil
+        let poster = goPlayPoster ?? Self.makePoster()
+        let source = goPlaySource ?? Self.makeGridSource()
+        let canned = CappellaGoClient(
+            baseURL: Self.cappellaBaseURL(),
+            model: ProcessInfo.processInfo.environment["CAPPELLA_SGLANG_MODEL"] ?? "qwen3.8-27b-sglang",
+            poster: poster
+        )
+        goPlay = GoPlaySession(source: source, client: canned)
+        self.makeArmOperator = makeArmOperator ?? { throw ArmOperatorError.rejected("not attached") }
+        self.armOperator = armOperator ?? NullArmOperator()
+        self.workspace = workspace ?? (try? GoWorkspace.load(from: Self.goWorkspaceURL())) ?? .fixture
+        self.allowLiveArm = allowLiveArm
+        let live = allowLiveArm
+        let pendantModel = PendantModel(
+            arm: HuenitArm(transport: FakeSerial()),
+            detector: {
+                live ? PortDetector.scan() : [SerialCandidate]()
+            }
+        )
+        pendantModel.makeTransport = { path in
+            if live {
+                return SerialPort(path: path)
+            }
+            return FakeSerial()
+        }
+        self.pendant = pendantModel
+        goPlayMessage = "Auto Connect with the Joy1 pendant, jog to the bowl and board, then save poses. Never G28."
+    }
+
+    func startGoGame() async {
+        do {
+            _ = try await goPlay.startGame()
+            goPlayState = await goPlay.state
+            lastGoTurn = nil
+            goPlayMessage = "Baseline grid stored. Play a stone, then tap I moved."
+        } catch {
+            goPlayState = await goPlay.state
+            goPlayMessage = "Could not start: \(error)"
+        }
+    }
+
+    func humanMovedOnBoard() async {
+        do {
+            let turn = try await goPlay.humanMoved()
+            lastGoTurn = turn
+            goPlayState = await goPlay.state
+            goPlayMessage =
+                "Human \(turn.human.stone.rawValue) at \(turn.human.row),\(turn.human.column). Reply \(turn.reply.row),\(turn.reply.column). Confirm to place."
+        } catch {
+            goPlayState = await goPlay.state
+            goPlayMessage = "I moved failed: \(error)"
+        }
+    }
+
+    func confirmGoPlace() async {
+        guard let turn = lastGoTurn else {
+            goPlayMessage = "Nothing to confirm."
+            return
+        }
+        do {
+            let xy = try workspace.cartesian(for: turn.reply)
+            if pendant.isConnected {
+                try await pendant.placeStone(
+                    bowlX: workspace.bowlX,
+                    bowlY: workspace.bowlY,
+                    bowlZ: workspace.bowlZ,
+                    targetX: xy.x,
+                    targetY: xy.y,
+                    safeZ: workspace.safeZ,
+                    pickZ: workspace.pickZ,
+                    placeZ: workspace.placeZ,
+                    feedMmPerMin: workspace.feedMmPerMin
+                )
+            } else {
+                try await armOperator.placeStone(
+                    bowl: workspace.bowl,
+                    targetX: xy.x,
+                    targetY: xy.y,
+                    safeZ: workspace.safeZ,
+                    pickZ: workspace.pickZ,
+                    placeZ: workspace.placeZ,
+                    feedMmPerMin: workspace.feedMmPerMin
+                )
+            }
+            try await goPlay.acknowledgePlace()
+            goPlayState = await goPlay.state
+            goPlayMessage = "Placed at \(turn.reply.row),\(turn.reply.column) → \(xy.x),\(xy.y)."
+        } catch {
+            goPlayState = await goPlay.state
+            goPlayMessage = "Confirm failed: \(error)"
+        }
+    }
+
+    func refreshSerialPorts() {
+        pendant.refreshPorts()
+        serialPorts = pendant.candidates.map { candidate in
+            let name = [candidate.product, candidate.path.components(separatedBy: "/").last]
+                .compactMap { $0 }
+                .joined(separator: " ")
+            return DiscoveredArmPort(path: candidate.path, label: name)
+        }
+        if let preferred = ProcessInfo.processInfo.environment["ARMAGEDDON_ARM_SERIAL"], !preferred.isEmpty {
+            selectedSerialPath = preferred
+        } else {
+            selectedSerialPath = pendant.portPath ?? serialPorts.first?.path
+        }
+    }
+
+    func connectArm() async {
+        if !allowLiveArm {
+            goPlayMessage = "Live arm is disabled in this launch."
+            return
+        }
+        refreshSerialPorts()
+        goPlayMessage = "Opening \(selectedSerialPath ?? "arm") (FTDI/CDC reset ~2s)…"
+        await pendant.connect(path: selectedSerialPath)
+        if pendant.isConnected {
+            syncPoseFromPendant()
+            goPlayMessage = "Arm connected on \(pendant.portPath ?? ""). Jog with the Joy1 pad, then save poses."
+        } else {
+            goPlayMessage = pendant.lastError ?? "Arm connect failed."
+        }
+    }
+
+    func refreshArmPose() async throws {
+        if let cartesian = pendant.pose?.cartesian {
+            armPose = ArmCartesianPose(x: cartesian.x, y: cartesian.y, z: cartesian.z)
+            return
+        }
+        armPose = try await armOperator.pose()
+    }
+
+    private func syncPoseFromPendant() {
+        if let cartesian = pendant.pose?.cartesian {
+            armPose = ArmCartesianPose(x: cartesian.x, y: cartesian.y, z: cartesian.z)
+        }
+    }
+
+    func nudgeArm(dx: Double, dy: Double, dz: Double) {
+        Task { await stepArm(dx: dx, dy: dy, dz: dz) }
+    }
+
+    func stepArm(dx: Double, dy: Double, dz: Double) async {
+        if pendant.isConnected {
+            await pendant.step(dx: dx, dy: dy, dz: dz)
+            syncPoseFromPendant()
+            if let armPose {
+                goPlayMessage = String(format: "Pose X %.1f  Y %.1f  Z %.1f", armPose.x, armPose.y, armPose.z)
+            }
+            return
+        }
+        do {
+            try await armOperator.step(dx: dx, dy: dy, dz: dz, feedMmPerMin: workspace.feedMmPerMin)
+            try await refreshArmPose()
+            if let armPose {
+                goPlayMessage = String(format: "Pose X %.1f  Y %.1f  Z %.1f", armPose.x, armPose.y, armPose.z)
+            }
+        } catch {
+            goPlayMessage = "Jog failed: \(error)"
+        }
+    }
+
+    func setArmVacuum(_ on: Bool) async {
+        if pendant.isConnected {
+            await pendant.setVacuum(on)
+            goPlayMessage = on ? "Vacuum on" : "Vacuum off"
+            return
+        }
+        do {
+            try await armOperator.setVacuum(on)
+            goPlayMessage = on ? "Vacuum on" : "Vacuum off"
+        } catch {
+            goPlayMessage = "Vacuum failed: \(error)"
+        }
+    }
+
+    func stopArm() async {
+        await pendant.stop()
+        await armOperator.emergencyStop()
+        goPlayMessage = "STOP sent (vacuum off + M410)."
+    }
+
+    func teachBowl() async {
+        await teach { $0.recordingBowl($1) }
+    }
+
+    func teachOrigin() async {
+        await teach { $0.recordingOrigin($1) }
+    }
+
+    func teachFarCorner() async {
+        await teach { $0.recordingFarCorner($1, row: $0.size - 1, column: $0.size - 1) }
+    }
+
+    func teachSafeZ() async {
+        await teach { $0.recordingSafeZ($1.z) }
+    }
+
+    func teachPickZ() async {
+        await teach { $0.recordingPickZ($1.z) }
+    }
+
+    func teachPlaceZ() async {
+        await teach { $0.recordingPlaceZ($1.z) }
+    }
+
+    private func teach(_ transform: (GoWorkspace, ArmCartesianPose) -> GoWorkspace) async {
+        do {
+            try await refreshArmPose()
+            guard let armPose else {
+                goPlayMessage = "No pose. Auto Connect and jog first."
+                return
+            }
+            workspace = transform(workspace, armPose)
+            try workspace.save(to: Self.goWorkspaceURL())
+            goPlayMessage = String(
+                format: "Saved. Bowl (%.1f, %.1f, %.1f) origin (%.1f, %.1f) step (%.1f, %.1f) Z safe %.1f pick %.1f place %.1f",
+                workspace.bowlX, workspace.bowlY, workspace.bowlZ,
+                workspace.originX, workspace.originY, workspace.stepX, workspace.stepY,
+                workspace.safeZ, workspace.pickZ, workspace.placeZ
+            )
+        } catch {
+            goPlayMessage = "Teach failed: \(error)"
+        }
     }
 
     func restore() async {
@@ -610,6 +855,12 @@ final class AppModel {
         )
     }
 
+    private static func goWorkspaceURL() -> URL {
+        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("Armageddon", isDirectory: true)
+            .appendingPathComponent("go-workspace.json")
+    }
+
     private static func defaultCaptureRoot() -> URL {
         FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("Armageddon", isDirectory: true)
@@ -680,4 +931,27 @@ final class AppModel {
         diagnosticEvents = await diagnosticLog.snapshot()
     }
 
+}
+
+extension AppModel {
+    private static var liveCappellaEnabled: Bool {
+        ProcessInfo.processInfo.environment["ARMAGEDDON_CAPPELLA_LIVE"] == "1"
+    }
+
+    private static func cappellaBaseURL() -> URL {
+        let raw = ProcessInfo.processInfo.environment["CAPPELLA_SGLANG_BASE_URL"]
+            ?? "http://192.168.0.69:8888/v1"
+        return URL(string: raw) ?? URL(string: "http://192.168.0.69:8888/v1")!
+    }
+
+    private static func makePoster() -> any HTTPPosting {
+        liveCappellaEnabled ? URLSessionHTTPPoster() : CannedGoHTTPPoster()
+    }
+
+    private static func makeGridSource() -> any BoardGridSourcing {
+        if let path = ProcessInfo.processInfo.environment["ARMAGEDDON_GO_GRID_FILE"], !path.isEmpty {
+            return FileBoardGridSource(url: URL(fileURLWithPath: path))
+        }
+        return DemoGoBoardSource()
+    }
 }

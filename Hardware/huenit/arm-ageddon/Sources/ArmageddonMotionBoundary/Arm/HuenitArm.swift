@@ -29,7 +29,7 @@ actor HuenitArm {
             await transport.discardInput()
             let identity = try await transact("M115")
             guard FirmwareIdentity.parse(identity).isHuenitMarlin else {
-                throw ArmError.connectFailed("not HUENIT Marlin")
+                throw ArmError.connectFailed("not HUENIT Marlin: \(identity)")
             }
             _ = try await transact("G21")
             _ = try await transact("G91")

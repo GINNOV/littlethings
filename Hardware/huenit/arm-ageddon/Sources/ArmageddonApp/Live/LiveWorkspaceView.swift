@@ -176,6 +176,8 @@ struct LiveWorkspaceView: View {
                 .foregroundStyle(.secondary)
             }
 
+            goPlayControls
+
             DisclosureGroup(isExpanded: $manualControlsPresented) {
                 manualControls
             } label: {
@@ -353,21 +355,57 @@ struct LiveWorkspaceView: View {
         }
     }
 
-    private var manualControls: some View {
+    private var goPlayControls: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.compact) {
-            Text("Hardware motion is locked until calibration and a safety profile are loaded.")
+            Text("Go play")
+                .font(DesignTokens.Typography.supporting.weight(.semibold))
+            Text("K210 looks; cappella decides; this Mac will place. Demo source until UART is attached.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
             HStack {
-                Button("− X") {}
+                Button("Connect arm") {
+                    Task { await appModel.connectArm() }
+                }
+                .accessibilityIdentifier("live.go.connect-arm")
+                Button("Start game") {
+                    Task { await appModel.startGoGame() }
+                }
+                .accessibilityIdentifier("live.go.start")
+                Button("I moved") {
+                    Task { await appModel.humanMovedOnBoard() }
+                }
+                .accessibilityIdentifier("live.go.i-moved")
+                Button("Confirm place") {
+                    Task { await appModel.confirmGoPlace() }
+                }
+                .accessibilityIdentifier("live.go.confirm")
+            }
+            .buttonStyle(.bordered)
+            if let goPlayMessage = appModel.goPlayMessage {
+                Text(goPlayMessage)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .accessibilityIdentifier("live.go.message")
+            }
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("live.go-play")
+    }
+
+    private var manualControls: some View {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.compact) {
+            Text("Hardware motion is locked until an arm operator is attached. Buttons record intent only.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            HStack {
+                Button("− X") { appModel.nudgeArm(dx: -2, dy: 0, dz: 0) }
                     .accessibilityIdentifier("live.manual.minus-x")
-                Button("+ X") {}
+                Button("+ X") { appModel.nudgeArm(dx: 2, dy: 0, dz: 0) }
                     .accessibilityIdentifier("live.manual.plus-x")
-                Button("+ Y") {}
+                Button("+ Y") { appModel.nudgeArm(dx: 0, dy: 2, dz: 0) }
                     .accessibilityIdentifier("live.manual.plus-y")
             }
             .buttonStyle(.bordered)
-            .disabled(true)
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier("live.manual-motion-buttons")
         }

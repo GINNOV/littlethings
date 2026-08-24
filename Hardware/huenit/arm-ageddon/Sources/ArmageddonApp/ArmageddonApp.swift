@@ -1,3 +1,4 @@
+import ArmageddonArm
 import ArmageddonCore
 import SwiftUI
 
@@ -45,7 +46,7 @@ struct ArmageddonApp: App {
             catalog: cameraCatalog
         )
         let restored = AppStateRestorer.restore(AppStateSnapshot(
-            destination: "live.workspace",
+            destination: "go.workspace",
             selectedDevice: nil,
             selectedModelID: nil
         ))
@@ -63,7 +64,10 @@ struct ArmageddonApp: App {
             calibrationProfileURL: Self.calibrationProfileURL(for: result),
             captureRoot: Self.captureRoot(for: result),
             runMode: isUITesting && profile == .calibratedDryRun ? .deterministicFixture : .unavailable,
-            runJournalRoot: Self.runJournalRoot(for: result)
+            runJournalRoot: Self.runJournalRoot(for: result),
+            armOperator: NullArmOperator(),
+            makeArmOperator: isUITesting ? { NullArmOperator() } : { try LiveArm.makeOperator() },
+            allowLiveArm: !isUITesting
         )
         _appModel = State(initialValue: applicationModel)
         fixtureLaunchDelegate.configure(appModel: applicationModel)
@@ -124,12 +128,17 @@ struct ArmageddonApp: App {
         AppActions(
             navigate: shellModel.select,
             requestRecovery: shellModel.requestRecovery,
-            stop: shellModel.stop
+            stop: {
+                shellModel.stop()
+                Task { await appModel.stopArm() }
+            }
         )
     }
 
     private var shellModel: AppShellModel {
-        fixtureLaunchDelegate.model(requestedDestination: try? launch.get().requestedDestination)
+        fixtureLaunchDelegate.model(
+            requestedDestination: (try? launch.get().requestedDestination) ?? "go.workspace"
+        )
     }
 
     private var isUITesting: Bool {

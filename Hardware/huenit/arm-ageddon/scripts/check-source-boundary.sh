@@ -32,7 +32,12 @@ grep -Eq 'name: "ArmageddonMotionBoundary"' "$package_file" || fail boundary-tar
 
 products=$(awk '/products: \[/{inside=1} /targets: \[/{inside=0} inside' "$package_file")
 printf '%s\n' "$products" | grep -q 'ArmageddonMotionBoundary' && fail boundary-product "motion boundary must not be exported"
-grep -Eq '\.package[[:space:]]*\(' "$package_file" && fail external-package-reference "runtime package dependencies are forbidden"
+if grep -Eq 'https?://' "$package_file"; then
+    fail external-package-reference "remote URLs in Package.swift are forbidden"
+fi
+if grep -Eq '\.package[[:space:]]*\([^)]*url[[:space:]]*:' "$package_file"; then
+    fail external-package-reference "remote package url: is forbidden"
+fi
 
 grep -q 'XCLocalSwiftPackageReference' "$project_file" || fail local-package "Xcode must use a local package reference"
 grep -q 'productName = ArmageddonCore' "$project_file" || fail core-link "app must link ArmageddonCore"

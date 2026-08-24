@@ -207,6 +207,39 @@ struct PendantModelTests {
         #expect(written.contains("G1 X10.0000 Y10.0000 F600.0"))
         #expect(written.contains("G1 X0.0000 Y180.0000 Z0.0000 F600.0"))
     }
+
+    @Test @MainActor func placeStonePicksBowlThenPlacesTarget() async throws {
+        let serial = FakeSerial()
+        await serial.setReplies([
+            marlinIdentity(),
+            "ok\n",
+            "ok\n",
+            "X:0.00 Y:180.00 Z:80.00\nok\n",
+            "A:0.00 B:0.00 C:0.00\nok\n",
+            "X:0.00 Y:180.00 Z:80.00 E:0.00 motor_status:1\nok\n",
+        ] + Array(repeating: "ok\n", count: 40))
+        let model = PendantModel(arm: HuenitArm(transport: FakeSerial()), detector: { [] })
+        model.makeTransport = { _ in serial }
+        model.settleAfterOpen = .zero
+        await model.connect(path: "/dev/cu.test")
+        try await model.placeStone(
+            bowlX: 20,
+            bowlY: -90,
+            bowlZ: 80,
+            targetX: 42,
+            targetY: -48,
+            safeZ: 80,
+            pickZ: 18,
+            placeZ: 18,
+            feedMmPerMin: 300
+        )
+        let written = await serial.written
+        #expect(written.contains("G1 X20.0000 Y-90.0000 Z18.0000 F300.0"))
+        #expect(written.contains("M1400 A1023"))
+        #expect(written.contains("G1 X42.0000 Y-48.0000 Z18.0000 F300.0"))
+        #expect(written.contains("M1400 A0"))
+        #expect(!model.vacuumOn)
+    }
 }
 
 private final class PathBox: @unchecked Sendable {

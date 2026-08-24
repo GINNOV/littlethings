@@ -28,8 +28,10 @@ struct ContextualInspectorView: View {
                 )
                     .foregroundStyle(.secondary)
             }
-                if destination == .live {
-                    CalibrationWizardView(model: appModel.calibrationWizard)
+                if destination == .go {
+                    Text("Teach bowl and board poses on the Go workspace. The inspector is unused.")
+                        .font(DesignTokens.Typography.supporting)
+                        .foregroundStyle(.secondary)
                 } else {
                     LabeledContent("Calibration") {
                         Label(appModel.calibrationWizard.calibrationStatus, systemImage: "scope")

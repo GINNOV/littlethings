@@ -9,6 +9,9 @@
 /* Begin PBXBuildFile section */
 		A10000000000000000000001 /* ArmageddonApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000001 /* ArmageddonApp.swift */; };
 		A10000000000000000000002 /* ArmageddonCore in Frameworks */ = {isa = PBXBuildFile; productRef = A90000000000000000000001 /* ArmageddonCore */; };
+		A10000000000000000000091 /* ArmageddonArm in Frameworks */ = {isa = PBXBuildFile; productRef = A90000000000000000000003 /* ArmageddonArm */; };
+		A10000000000000000000092 /* Joy1 in Frameworks */ = {isa = PBXBuildFile; productRef = A90000000000000000000005 /* Joy1 */; };
+		A10000000000000000000093 /* Joy1UI in Frameworks */ = {isa = PBXBuildFile; productRef = A90000000000000000000006 /* Joy1UI */; };
 		A10000000000000000000003 /* LaunchProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000004 /* LaunchProfile.swift */; };
 		A10000000000000000000004 /* LaunchArguments.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000005 /* LaunchArguments.swift */; };
 		A10000000000000000000005 /* LaunchPaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000006 /* LaunchPaths.swift */; };
@@ -26,6 +29,7 @@
 		A10000000000000000000014 /* AppDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000015 /* AppDestination.swift */; };
 		A10000000000000000000015 /* AppShellModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000016 /* AppShellModel.swift */; };
 		A10000000000000000000033 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000034 /* AppModel.swift */; };
+		A10000000000000000000061 /* GoWorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000061 /* GoWorkspaceView.swift */; };
 		A10000000000000000000016 /* ContextualInspectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000017 /* ContextualInspectorView.swift */; };
 		A10000000000000000000017 /* DestinationSidebarRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000018 /* DestinationSidebarRow.swift */; };
 		A10000000000000000000018 /* DestinationWorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000019 /* DestinationWorkspaceView.swift */; };
@@ -92,6 +96,7 @@
 		A20000000000000000000015 /* AppDestination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDestination.swift; sourceTree = "<group>"; };
 		A20000000000000000000016 /* AppShellModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppShellModel.swift; sourceTree = "<group>"; };
 		A20000000000000000000034 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		A20000000000000000000061 /* GoWorkspaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoWorkspaceView.swift; sourceTree = "<group>"; };
 		A20000000000000000000017 /* ContextualInspectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextualInspectorView.swift; sourceTree = "<group>"; };
 		A20000000000000000000018 /* DestinationSidebarRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DestinationSidebarRow.swift; sourceTree = "<group>"; };
 		A20000000000000000000019 /* DestinationWorkspaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DestinationWorkspaceView.swift; sourceTree = "<group>"; };
@@ -134,6 +139,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10000000000000000000002 /* ArmageddonCore in Frameworks */,
+				A10000000000000000000091 /* ArmageddonArm in Frameworks */,
+				A10000000000000000000092 /* Joy1 in Frameworks */,
+				A10000000000000000000093 /* Joy1UI in Frameworks */,
 				A10000000000000000000034 /* AVFoundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -170,6 +178,7 @@
 			children = (
 				A20000000000000000000001 /* ArmageddonApp.swift */,
 				A50000000000000000000005 /* App */,
+				A50000000000000000000017 /* Go */,
 				A50000000000000000000016 /* Camera */,
 				A50000000000000000000007 /* DesignSystem */,
 				A50000000000000000000008 /* Components */,
@@ -240,6 +249,7 @@
 			path = Components;
 			sourceTree = "<group>";
 		};
+		A50000000000000000000017 /* Go */ = {isa = PBXGroup; children = (A20000000000000000000061 /* GoWorkspaceView.swift */,); path = Go; sourceTree = "<group>"; };
 		A50000000000000000000009 /* Live */ = {isa = PBXGroup; children = (A20000000000000000000027 /* LiveWorkspaceView.swift */, A20000000000000000000042 /* LivePreviewModel.swift */, A20000000000000000000043 /* CameraPreviewSurface.swift */, A20000000000000000000044 /* DetectionOverlayView.swift */, A20000000000000000000055 /* SourceHelpDialog.swift */,); path = Live; sourceTree = "<group>"; };
 		A50000000000000000000010 /* Capture */ = {isa = PBXGroup; children = (A20000000000000000000028 /* CaptureWorkspaceView.swift */,); path = Capture; sourceTree = "<group>"; };
 		A50000000000000000000011 /* Models */ = {isa = PBXGroup; children = (A20000000000000000000029 /* ModelsWorkspaceView.swift */, A20000000000000000000048 /* ModelDetailView.swift */,); path = Models; sourceTree = "<group>"; };
@@ -286,6 +296,9 @@
 			name = ArmageddonApp;
 			packageProductDependencies = (
 				A90000000000000000000001 /* ArmageddonCore */,
+				A90000000000000000000003 /* ArmageddonArm */,
+				A90000000000000000000005 /* Joy1 */,
+				A90000000000000000000006 /* Joy1UI */,
 			);
 			productName = Armageddon;
 			productReference = A20000000000000000000002 /* Armageddon.app */;
@@ -340,6 +353,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				A90000000000000000000002 /* XCLocalSwiftPackageReference "." */,
+				A90000000000000000000004 /* XCLocalSwiftPackageReference "../joy1" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A50000000000000000000004 /* Products */;
@@ -381,6 +395,7 @@
 				A10000000000000000000023 /* ErrorStateView.swift in Sources */,
 				A10000000000000000000024 /* StatusItemView.swift in Sources */,
 				A10000000000000000000025 /* StatusStripView.swift in Sources */,
+				A10000000000000000000061 /* GoWorkspaceView.swift in Sources */,
 				A10000000000000000000026 /* LiveWorkspaceView.swift in Sources */,
 				A10000000000000000000027 /* CaptureWorkspaceView.swift in Sources */,
 				A10000000000000000000028 /* ModelsWorkspaceView.swift in Sources */,
@@ -571,6 +586,10 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = .;
 		};
+		A90000000000000000000004 /* XCLocalSwiftPackageReference "../joy1" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../joy1;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -578,6 +597,21 @@
 			isa = XCSwiftPackageProductDependency;
 			package = A90000000000000000000002 /* XCLocalSwiftPackageReference "." */;
 			productName = ArmageddonCore;
+		};
+		A90000000000000000000003 /* ArmageddonArm */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A90000000000000000000002 /* XCLocalSwiftPackageReference "." */;
+			productName = ArmageddonArm;
+		};
+		A90000000000000000000005 /* Joy1 */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A90000000000000000000004 /* XCLocalSwiftPackageReference "../joy1" */;
+			productName = Joy1;
+		};
+		A90000000000000000000006 /* Joy1UI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A90000000000000000000004 /* XCLocalSwiftPackageReference "../joy1" */;
+			productName = Joy1UI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

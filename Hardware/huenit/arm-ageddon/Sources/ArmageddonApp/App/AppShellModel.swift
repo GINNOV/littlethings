@@ -11,19 +11,16 @@ final class AppShellModel {
             self.destination = destination
             notice = nil
         } else if requestedDestination != nil {
-            destination = .live
-            notice = "Navigation recovered to Live"
+            destination = .go
+            notice = "Navigation recovered to Go"
         } else {
-            destination = .live
+            destination = .go
             notice = nil
         }
     }
 
     func select(_ destination: AppDestination) {
         self.destination = destination
-        if notice == "Navigation recovered to Live" {
-            notice = nil
-        }
     }
 
     func stop() {

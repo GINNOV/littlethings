@@ -11,6 +11,7 @@ let package = Package(
     platforms: [.macOS(.v15)],
     products: [
         .library(name: "ArmageddonCore", targets: ["ArmageddonCore"]),
+        .library(name: "ArmageddonArm", targets: ["ArmageddonArm"]),
         .executable(name: "RuntimeTraceProbe", targets: ["RuntimeTraceProbe"]),
         .executable(name: "SandboxLogProbe", targets: ["SandboxLogProbe"]),
         .executable(name: "ModelFixtureGenerator", targets: ["ModelFixtureGenerator"]),
@@ -21,6 +22,9 @@ let package = Package(
         .executable(name: "PerformanceTelemetryQAProbe", targets: ["PerformanceTelemetryQAProbe"]),
         .executable(name: "HuenitCameraProbe", targets: ["HuenitCameraProbe"]),
     ],
+    dependencies: [
+        .package(path: "../joy1"),
+    ],
     targets: [
         .target(
             name: "ArmageddonCore",
@@ -29,6 +33,11 @@ let package = Package(
         .target(
             name: "ArmageddonMotionBoundary",
             dependencies: ["ArmageddonCore"],
+            swiftSettings: strictConcurrency
+        ),
+        .target(
+            name: "ArmageddonArm",
+            dependencies: ["ArmageddonCore", "ArmageddonMotionBoundary"],
             swiftSettings: strictConcurrency
         ),
         .target(

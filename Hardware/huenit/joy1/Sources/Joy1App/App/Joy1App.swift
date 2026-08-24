@@ -1,4 +1,7 @@
 import Joy1
+#if canImport(Joy1UI)
+import Joy1UI
+#endif
 import SwiftUI
 
 @main

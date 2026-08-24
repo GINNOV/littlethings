@@ -215,4 +215,24 @@ struct HuenitArmPortTests {
         #expect(PortDetector.pickArm(from: [camera]) == nil)
         #expect(PortDetector.pickArm(from: [camera, arm]) == arm)
     }
+
+    @Test("Unnamed usbmodem arm wins over unnamed FTDI usbserial camera")
+    func usbmodemPreferredWhenIOKitNamesMissing() {
+        let serial = SerialCandidate(
+            path: "/dev/cu.usbserial-834430",
+            product: nil,
+            serial: nil,
+            vid: 0x0403,
+            pid: 0x6015
+        )
+        let modem = SerialCandidate(
+            path: "/dev/cu.usbmodem2105",
+            product: nil,
+            serial: nil,
+            vid: nil,
+            pid: nil
+        )
+        #expect(PortDetector.pickArm(from: [serial, modem])?.path == "/dev/cu.usbmodem2105")
+        #expect(PortDetector.pickArm(from: [serial])?.path == "/dev/cu.usbserial-834430")
+    }
 }

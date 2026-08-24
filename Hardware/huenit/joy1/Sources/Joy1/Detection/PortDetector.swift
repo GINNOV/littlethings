@@ -31,6 +31,8 @@ public struct SerialCandidate: Equatable, Sendable {
         if isCamera { return -100 }
         var s = 0
         if isArm { s += 10 }
+        // FYSETC E4 enumerates as cu.usbmodem. The K210 camera is cu.usbserial.
+        if path.contains("usbmodem") { s += 8 }
         if vid == 0x0403 && pid == 0x6015 { s += 3 }
         if path.contains("usbserial") { s += 1 }
         return s

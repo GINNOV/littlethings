@@ -269,6 +269,30 @@ public final class PendantModel {
         }
     }
 
+    public func placeStone(
+        bowlX: Double,
+        bowlY: Double,
+        bowlZ: Double,
+        targetX: Double,
+        targetY: Double,
+        safeZ: Double,
+        pickZ: Double,
+        placeZ: Double,
+        feedMmPerMin: Double
+    ) async throws {
+        guard isConnected else { throw ArmError.disconnected }
+        try await arm.moveAbsolute(x: bowlX, y: bowlY, z: safeZ, feedMmPerMin: feedMmPerMin)
+        try await arm.moveAbsolute(x: bowlX, y: bowlY, z: pickZ, feedMmPerMin: feedMmPerMin)
+        try await arm.setVacuum(true)
+        vacuumOn = true
+        try await arm.moveAbsolute(x: bowlX, y: bowlY, z: safeZ, feedMmPerMin: feedMmPerMin)
+        try await arm.moveAbsolute(x: targetX, y: targetY, z: safeZ, feedMmPerMin: feedMmPerMin)
+        try await arm.moveAbsolute(x: targetX, y: targetY, z: placeZ, feedMmPerMin: feedMmPerMin)
+        try await arm.setVacuum(false)
+        vacuumOn = false
+        try await arm.moveAbsolute(x: targetX, y: targetY, z: safeZ, feedMmPerMin: feedMmPerMin)
+    }
+
     public func jogModule(sign: Sign) async {
         guard isConnected else { return }
         do {

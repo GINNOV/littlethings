@@ -2,10 +2,18 @@ import AppKit
 import Joy1
 import SwiftUI
 
-struct ContentView: View {
+public struct ContentView: View {
     @Bindable var model: PendantModel
+    var embedded: Bool
+    var onStop: (() -> Void)?
 
-    var body: some View {
+    public init(model: PendantModel, embedded: Bool = false, onStop: (() -> Void)? = nil) {
+        self.model = model
+        self.embedded = embedded
+        self.onStop = onStop
+    }
+
+    public var body: some View {
         HStack(alignment: .top, spacing: 16) {
             VStack(spacing: 16) {
                 ConnectionBar(model: model)
@@ -17,6 +25,7 @@ struct ContentView: View {
                 HStack(alignment: .top, spacing: 12) {
                     PoseHUD(pose: model.pose)
                     StopButton {
+                        onStop?()
                         Task { await model.stop() }
                     }
                 }
@@ -26,7 +35,7 @@ struct ContentView: View {
         }
         .padding(20)
         .background(PendantChrome.canvas)
-        .frame(minWidth: 980, minHeight: 640)
+        .frame(minWidth: embedded ? 720 : 980, minHeight: embedded ? 560 : 640)
         .onAppear {
             model.refreshPorts()
             model.startJogLoop()

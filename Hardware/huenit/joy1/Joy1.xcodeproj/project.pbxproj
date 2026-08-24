@@ -32,6 +32,7 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		SYN000000000000000000001 /* Sources/Joy1 */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Sources/Joy1; sourceTree = "<group>"; };
 		SYN000000000000000000002 /* Sources/Joy1App */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {App/Joy1App.entitlements = text.plist.entitlements; }; explicitFolders = (); path = Sources/Joy1App; sourceTree = "<group>"; };
+		SYN000000000000000000004 /* Sources/Joy1UI */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Sources/Joy1UI; sourceTree = "<group>"; };
 		SYN000000000000000000003 /* Tests/Joy1Tests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Tests/Joy1Tests; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
@@ -65,6 +66,7 @@
 			children = (
 				SYN000000000000000000001 /* Sources/Joy1 */,
 				SYN000000000000000000002 /* Sources/Joy1App */,
+				SYN000000000000000000004 /* Sources/Joy1UI */,
 				SYN000000000000000000003 /* Tests/Joy1Tests */,
 				GRP000000000000000000002 /* Products */,
 			);
@@ -116,6 +118,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				SYN000000000000000000002 /* Sources/Joy1App */,
+				SYN000000000000000000004 /* Sources/Joy1UI */,
 			);
 			name = Joy1App;
 			productName = Joy1App;

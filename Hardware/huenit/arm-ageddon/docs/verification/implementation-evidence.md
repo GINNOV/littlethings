@@ -1,5 +1,8 @@
 # Implementation evidence
 
+Historical record of the **dead camera-ml-app inspector** (webcam + F-gates).
+It is not proof of Go play. Product spec is `docs/go-play.md`.
+
 Source revision: `59f5fd5589cc5917fd13e6cff8374562a4bda56b`
 
 ## Credential-independent checks
