@@ -39,7 +39,7 @@ def run(args: argparse.Namespace) -> int:
         trace = trace.parent.resolve(strict=True) / trace.name
     environment = clean_environment(os.environ, ALLOWLIST)
     for key, value in os.environ.items():
-        if key.startswith("ARMAGEDDON_QA_") or key.startswith("TEST_RUNNER_ARMAGEDDON_QA_"):
+        if key.startswith("ARMAGEDDON_QA_") or key.startswith("TEST_RUNNER_ARMAGEDDON_QA_") or key == "CFFIXED_USER_HOME":
             environment[key] = value
     try:
         requested_executable, executable_sha = executable_hash(command[0], environment)

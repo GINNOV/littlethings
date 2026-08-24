@@ -83,7 +83,7 @@ def finalize(gate: str, args: argparse.Namespace) -> None:
     if gate == "manual-fixture":
         required.extend([args.scenario, args.xcresult, args.tested_app, args.build_receipt, args.runtime_paths, args.screenshots, args.observer_report, args.xctest_launch_receipt, args.ready_receipt, args.hold_receipt, args.release_receipt, args.xctest_exit_receipt])
     else:
-        required.extend([args.release_app, args.build_receipt, args.runtime_paths, args.app_launch_receipt, args.app_ready_receipt, args.gate_release_receipt, args.app_exit_receipt, args.requirements, args.filesystem_events, args.pre_manifests, args.post_manifests, args.sandbox_events, args.sandbox_profile, args.barrier_receipts, args.stopped_receipts, args.fsevents_ready, args.sandbox_ready, args.static_network_audit, args.bundle_manifest, args.signature_receipt, args.entitlements])
+        required.extend([args.release_app, args.build_receipt, args.runtime_paths, args.app_launch_receipt, args.app_ready_receipt, args.gate_release_receipt, args.app_exit_receipt, args.requirements, args.filesystem_events, args.pre_manifests, args.post_manifests, args.sandbox_events, args.sandbox_profile, args.barrier_receipts, args.fsevents_ready, args.sandbox_ready, args.static_network_audit, args.bundle_manifest, args.signature_receipt, args.entitlements])
     resolved_required: list[Path] = []
     for value in required:
         if value is None:
