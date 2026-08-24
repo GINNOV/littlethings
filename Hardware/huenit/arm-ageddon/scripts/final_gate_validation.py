@@ -28,7 +28,9 @@ def validate_task_modes(evidence_root: Path, expected: int) -> list[Path]:
         if not allowed:
             raise EvidenceError("task-mode-outcome", str(path))
         records[key] = path.resolve(strict=True)
-    expected_keys = {(task, mode) for task in range(1, 34) for mode in ("happy", "failure")}
+    if expected % 2 != 0:
+        raise EvidenceError("task-modes-incomplete", f"expected even task-mode count, found {expected}")
+    expected_keys = {(task, mode) for task in range(1, expected // 2 + 1) for mode in ("happy", "failure")}
     if expected != len(expected_keys) or len(records) != expected or set(records) != expected_keys:
         raise EvidenceError("task-modes-incomplete", f"expected {expected} distinct task/mode receipts, found {len(records)}")
     return [records[key] for key in sorted(records)]
