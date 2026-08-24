@@ -11,14 +11,14 @@ repo_root=$(/usr/bin/git -C "$project_root" rev-parse --show-toplevel)
 repo_ceiling=$(CDPATH= cd -- "$repo_root/.." && pwd -P)
 export GIT_CEILING_DIRECTORIES="$repo_ceiling"
 if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
-    printf '%s\n' 'Usage: qa-task.sh <1-33> <happy|failure>'
+    printf '%s\n' 'Usage: qa-task.sh <1-34> <happy|failure>'
     exit 0
 fi
 if [ "$#" -ne 2 ]; then
-    printf '%s\n' 'Usage: qa-task.sh <1-33> <happy|failure>' >&2
+    printf '%s\n' 'Usage: qa-task.sh <1-34> <happy|failure>' >&2
     exit 2
 fi
-case "$1" in 2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33) ;; *) printf '%s\n' 'ERROR[unsupported-task]: task manifest has not landed yet' >&2; exit 2 ;; esac
+case "$1" in 2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34) ;; *) printf '%s\n' 'ERROR[unsupported-task]: task manifest has not landed yet' >&2; exit 2 ;; esac
 case "$2" in happy|failure) ;; *) printf '%s\n' 'ERROR[unknown-mode]' >&2; exit 2 ;; esac
 
 for variable in $(env | awk -F= '$1 ~ /^(ARMAGEDDON_LIVE_|ARMAGEDDON_OPERATOR_|HUENIT_LIVE_|ARMAGEDDON_(CAMERA|SERIAL|DEVICE)_|HUENIT_(CAM|ARM)_)/ { print $1 }'); do
@@ -625,6 +625,36 @@ if [ "$1" = "33" ]; then
     printf '{"task":33,"mode":"%s","transcript":"%s","transcriptSha256":"%s","outcome":"NOT_RUN_OPERATOR_REQUIRED","hardwareUsed":false}\n' \
         "$2" "$transcript" "$transcript_sha256" >"$task_root/camera-ml-app.json"
     printf 'NOT_RUN_OPERATOR_REQUIRED task=33 mode=%s root=%s\n' "$2" "$task_root"
+    exit 0
+fi
+
+if [ "$1" = "34" ]; then
+    transcript="$task_root/camera-ml-app.txt"
+    validation_root=$(mktemp -d "${TMPDIR:-/tmp}/armageddon-task34.XXXXXX")
+    rsync -a --exclude '.git' --exclude '.build' "$project_root/" "$validation_root/"
+    (
+        cd "$validation_root"
+        if [ "$2" = "happy" ]; then
+            swift test --disable-sandbox --filter NativeCameraSelectionPolicyTests
+            swift test --disable-sandbox --filter nativeCameraJPEGPersistsAsDisplayableFrame
+        else
+            swift test --disable-sandbox --filter unplugAndRecover
+        fi
+    ) >"$transcript" 2>&1
+    result="$task_root/camera-ml-app.xcresult"
+    if [ "$2" = "happy" ]; then
+        filter='-only-testing:ArmageddonUITests/AppShellUITests/testNativeCameraPickerListsDiscoveredFixtureCamera'
+    else
+        filter='-only-testing:ArmageddonUITests/AppShellUITests/testCameraPermissionDeniedOffersRecoveryAction -only-testing:ArmageddonUITests/AppShellUITests/testModelFailureAndNoDeviceStatesOfferRecovery'
+    fi
+    GIT_CEILING_DIRECTORIES="$repo_ceiling" xcodebuild -project Armageddon.xcodeproj -scheme ArmageddonApp \
+        -destination 'platform=macOS' -derivedDataPath "$task_root/build" -resultBundlePath "$result" \
+        ENABLE_DEBUG_DYLIB=NO test $filter >>"$transcript" 2>&1
+    [ -d "$result" ] || { printf '%s\n' 'ERROR[missing-task-34-xcresult]' >&2; exit 1; }
+    transcript_sha256=$(shasum -a 256 "$transcript" | awk '{print $1}')
+    printf '{"task":34,"mode":"%s","filter":"%s","validationRoot":"%s","transcript":"%s","transcriptSha256":"%s","result":"%s","outcome":"PASS"}\n' \
+        "$2" "$filter" "$validation_root" "$transcript" "$transcript_sha256" "$result" >"$task_root/camera-ml-app.json"
+    printf 'PASS task=34 mode=%s root=%s\n' "$2" "$task_root"
     exit 0
 fi
 

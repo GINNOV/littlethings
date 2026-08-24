@@ -16,7 +16,11 @@ struct AVFoundationCameraDiscovery: NativeCameraDiscovery {
             position: .unspecified
         )
         return session.devices.map {
-            NativeCameraDevice(stableIdentifier: $0.uniqueID, permission: .authorized)
+            NativeCameraDevice(
+                stableIdentifier: $0.uniqueID,
+                permission: .authorized,
+                displayName: $0.localizedName
+            )
         }
     }
 }

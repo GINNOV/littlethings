@@ -204,7 +204,7 @@ final class AppShellUITests: XCTestCase {
         app.buttons["sidebar.capture"].click()
         XCTAssertTrue(app.descendants(matching: .any)["workspace.capture"].waitForExistence(timeout: 3))
         let captureCard = app.descendants(matching: .any).matching(
-            NSPredicate(format: "identifier BEGINSWITH 'capture.' AND identifier != 'capture.details' AND identifier != 'capture.export' AND identifier != 'capture.preview'")
+            NSPredicate(format: "identifier MATCHES %@", "capture\\.[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}")
         ).firstMatch
         XCTAssertTrue(captureCard.waitForExistence(timeout: 3), "Missing capture card")
         try capture(app, named: "capture-library-fixture-frame")
@@ -305,6 +305,17 @@ final class AppShellUITests: XCTestCase {
         showInspector.click()
         XCTAssertFalse(inspector.waitForExistence(timeout: 2), "Disabling the setting should dismiss the inspector")
         try capture(app, named: "app-shell-settings-inspector-hidden")
+        app.terminate()
+    }
+
+    func testNativeCameraPickerListsDiscoveredFixtureCamera() throws {
+        let app = try launch(style: "Light", width: 1_280, height: 800)
+        XCTAssertTrue(app.descendants(matching: .any)["live.camera-device"].waitForExistence(timeout: 5))
+        waitForPicker(app, identifier: "live.camera-device", containing: "Fixture camera")
+        chooseMenu(app, identifier: "live.source-picker", item: "Recorded fixture")
+        waitForPicker(app, identifier: "live.source-picker", containing: "Recorded fixture")
+        XCTAssertFalse(app.descendants(matching: .any)["live.camera-device"].firstMatch.exists)
+        try capture(app, named: "native-camera-picker-fixture")
         app.terminate()
     }
 

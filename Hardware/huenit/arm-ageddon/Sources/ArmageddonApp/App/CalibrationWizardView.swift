@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct CalibrationWizardView: View {
+    @Environment(AppModel.self) private var appModel
     @Bindable var model: CalibrationWizardModel
 
     var body: some View {
@@ -57,11 +58,8 @@ struct CalibrationWizardView: View {
             switch model.step {
             case .hardware:
                 instruction(title: "Confirm the camera", detail: "Use the connected camera and keep the negotiated format unchanged.")
-                Picker("Camera", selection: $model.selectedCameraID) {
-                    Text("Fixture camera").tag("fixture-camera")
-                    Text("Changed camera").tag("changed-camera")
-                }
-                .accessibilityIdentifier("calibration.camera")
+                cameraPicker
+                    .accessibilityIdentifier("calibration.camera")
                 statusRow("Camera", value: model.selectedCameraID)
                 statusRow(
                     "Format",
@@ -103,10 +101,7 @@ struct CalibrationWizardView: View {
                 VStack(alignment: .leading, spacing: DesignTokens.Spacing.compact) {
                     Text("Current binding")
                         .font(DesignTokens.Typography.supporting.weight(.semibold))
-                    Picker("Camera", selection: $model.selectedCameraID) {
-                        Text("Fixture camera").tag("fixture-camera")
-                        Text("Changed camera").tag("changed-camera")
-                    }
+                    cameraPicker
                     .accessibilityIdentifier("calibration.review-camera")
                     Picker("Tool", selection: $model.selectedToolID) {
                         Text("Standard tool").tag("standard-tool")
@@ -134,6 +129,18 @@ struct CalibrationWizardView: View {
             }
         }
         .padding(.vertical, DesignTokens.Spacing.compact)
+    }
+
+    private var cameraPicker: some View {
+        Picker("Camera", selection: $model.selectedCameraID) {
+            if appModel.availableNativeCameras.isEmpty {
+                Text("Fixture camera").tag("fixture-camera")
+            }
+            ForEach(appModel.availableNativeCameras, id: \.stableIdentifier) { camera in
+                Text(camera.displayName).tag(camera.stableIdentifier)
+            }
+            Text("Changed camera").tag("changed-camera")
+        }
     }
 
     private var footer: some View {

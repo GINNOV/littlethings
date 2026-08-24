@@ -33,10 +33,16 @@ public enum SerialDeviceRole: String, Codable, Hashable, Sendable {
 public struct NativeCameraDevice: Codable, Hashable, Sendable {
     public let stableIdentifier: String
     public let permission: DevicePermissionState
+    public let displayName: String
 
-    public init(stableIdentifier: String, permission: DevicePermissionState) {
+    public init(
+        stableIdentifier: String,
+        permission: DevicePermissionState,
+        displayName: String = "Camera"
+    ) {
         self.stableIdentifier = stableIdentifier
         self.permission = permission
+        self.displayName = displayName
     }
 }
 
@@ -62,6 +68,7 @@ public struct DeviceRecord: Hashable, Sendable {
 
     private let serialNumber: String?
     private let registryPath: String?
+    public let displayName: String
 
     public init(
         identity: DeviceIdentity,
@@ -69,7 +76,8 @@ public struct DeviceRecord: Hashable, Sendable {
         capabilities: [DeviceCapability],
         permission: DevicePermissionState = .unknown,
         serialNumber: String? = nil,
-        registryPath: String? = nil
+        registryPath: String? = nil,
+        displayName: String = "Camera"
     ) {
         self.identity = identity
         self.kind = kind
@@ -77,14 +85,20 @@ public struct DeviceRecord: Hashable, Sendable {
         self.permission = permission
         self.serialNumber = serialNumber
         self.registryPath = registryPath
+        self.displayName = displayName
     }
 
-    public static func nativeCamera(stableIdentifier: String, permission: DevicePermissionState) -> Self {
+    public static func nativeCamera(
+        stableIdentifier: String,
+        permission: DevicePermissionState,
+        displayName: String = "Camera"
+    ) -> Self {
         DeviceRecord(
             identity: .nativeCamera(stableIdentifier),
             kind: .camera,
             capabilities: permission == .authorized ? [.videoFrames] : [],
-            permission: permission
+            permission: permission,
+            displayName: displayName
         )
     }
 

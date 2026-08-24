@@ -56,6 +56,18 @@ public actor NativeCameraLifecycleController {
         currentState
     }
 
+    public func availableNativeCameras() async -> [NativeCameraDevice] {
+        await catalog.devices().compactMap { record in
+            guard case .nativeCamera(let identifier) = record.identity else { return nil }
+            return NativeCameraDevice(
+                stableIdentifier: identifier,
+                permission: record.permission,
+                displayName: record.displayName
+            )
+        }
+        .sorted { $0.displayName.localizedStandardCompare($1.displayName) == .orderedAscending }
+    }
+
     @discardableResult
     public func requestAuthorization() async -> NativeCameraLifecycleSnapshot {
         _ = await authorizationClient.requestAccess()

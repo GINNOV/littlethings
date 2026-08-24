@@ -193,8 +193,8 @@ def compliance_or_quality(gate: str, args: argparse.Namespace) -> None:
         validate_review_receipts(receipts, args.commit)
         artifacts.extend(artifact_record(path, "review receipt") for path in receipts)
     else:
-        if args.require_task_modes != 66:
-            raise EvidenceError("task-modes-incomplete", "compliance requires --require-task-modes 66")
+        if args.require_task_modes != 68:
+            raise EvidenceError("task-modes-incomplete", "compliance requires --require-task-modes 68")
         task_receipts = validate_task_modes(args.evidence_root, args.require_task_modes)
         artifacts.extend(artifact_record(path, "task receipt") for path in task_receipts)
         if args.process_receipt is None or not args.process_receipt.exists():

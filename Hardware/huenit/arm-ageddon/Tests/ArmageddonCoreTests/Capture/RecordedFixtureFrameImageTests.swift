@@ -67,6 +67,38 @@ struct RecordedFixtureFrameImageTests {
         #expect(CaptureHashing.sha256(loaded) == record.imageHash)
     }
 
+    @Test("Native camera JPEG persists as a displayable capture frame")
+    func nativeCameraJPEGPersistsAsDisplayableFrame() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: "armageddon-native-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let artifactRoot = root.appending(path: "artifacts")
+        let fileSystem = POSIXDurableFileSystem(root: artifactRoot)
+        let metadata = try SwiftDataArtifactMetadataStore(storeURL: artifactRoot.appending(path: "Metadata/metadata.store"))
+        let store = CaptureSessionStore(
+            artifacts: LocalArtifactStorage(fileSystem: fileSystem, metadata: metadata),
+            index: FileCaptureIndexStore(fileURL: root.appending(path: "captures/index.json"))
+        )
+        try await store.open()
+        let frame = try #require(RecordedFixtureFrameImage.jpeg())
+        let provenance = CaptureProvenance(
+            sourceID: "nativeCamera",
+            frameID: 7,
+            modelID: "fixture.constant.detector",
+            modelHash: String(repeating: "0", count: 64),
+            observations: [],
+            selectedObservationID: nil,
+            calibrationID: nil,
+            armPose: nil,
+            runID: nil,
+            captureInstant: MonotonicInstant(nanoseconds: 1_000_000_000),
+            imageSize: PixelSize(width: 1_920, height: 1_080)
+        )
+        let record = try await store.capture(image: frame, thumbnail: nil, provenance: provenance, name: "Native")
+        #expect(record.provenance.sourceID == "nativeCamera")
+        let loaded = try await store.imageData(for: record)
+        #expect(RecordedFixtureFrameImage.isDisplayableFrame(loaded))
+    }
+
     private func jpeg(width: Int, height: Int) -> Data? {
         guard let context = CGContext(
             data: nil,

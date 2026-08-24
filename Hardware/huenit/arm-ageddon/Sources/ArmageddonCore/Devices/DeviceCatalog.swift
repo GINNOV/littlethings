@@ -20,7 +20,8 @@ public actor DeviceCatalog {
         for camera in discoveredNative {
             let record = DeviceRecord.nativeCamera(
                 stableIdentifier: camera.stableIdentifier,
-                permission: camera.permission
+                permission: camera.permission,
+                displayName: camera.displayName
             )
             next[record.identity] = record
         }

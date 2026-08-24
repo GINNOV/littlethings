@@ -34,6 +34,7 @@ final class AppModel {
     private(set) var captureError: String?
     private(set) var diagnosticEvents: [DiagnosticEvent] = []
     private(set) var supportBundleURL: URL?
+    private(set) var availableNativeCameras: [NativeCameraDevice] = []
 
     init(
         coordinator: AppStateCoordinator,
@@ -73,6 +74,7 @@ final class AppModel {
         cameraWorkCancelled = false
         restorationNotice = restoredState.notice
         cameraLifecycleSnapshot = NativeCameraLifecycleSnapshot(authorization: .notDetermined)
+        availableNativeCameras = []
         modelRegistrySnapshot = .empty
         modelImportError = nil
         k210Artifacts = []
@@ -108,7 +110,42 @@ final class AppModel {
             await cancelCameraWork()
         }
         cameraLifecycleSnapshot = await cameraLifecycle.snapshot()
+        await reconcileNativeCameraSelection()
         await startCameraPreviewIfAvailable()
+    }
+
+    var selectedNativeCameraID: String {
+        if case .nativeCamera(let identifier) = selectedDevice {
+            return identifier
+        }
+        if case .selected(.nativeCamera(let identifier)) = cameraLifecycleSnapshot.selection {
+            return identifier
+        }
+        return ""
+    }
+
+    func selectLiveSource(_ source: LivePreviewSource) async {
+        await livePreview.selectSource(source)
+        if source == .nativeCamera {
+            await startCameraPreviewIfAvailable()
+        }
+    }
+
+    func selectNativeCamera(id: String) async {
+        guard !id.isEmpty, id != "changed-camera" else { return }
+        do {
+            try await cameraLifecycle.select(.nativeCamera(id))
+            selectedDevice = .nativeCamera(id)
+            calibrationWizard.selectedCameraID = id
+            await persistSelections()
+            cameraLifecycleSnapshot = await cameraLifecycle.snapshot()
+            if livePreview.selectedSource == .nativeCamera {
+                await livePreview.stop()
+                await startCameraPreviewIfAvailable()
+            }
+        } catch {
+            captureError = "The selected camera is unavailable."
+        }
     }
 
     func requestCameraPermission() async {
@@ -264,7 +301,8 @@ final class AppModel {
             captureError = "No camera frame is ready to capture."
             return
         }
-        guard let image = livePreview.currentCaptureImageData() else {
+        guard let image = livePreview.currentCaptureImageData(),
+              RecordedFixtureFrameImage.isDisplayableFrame(image) else {
             captureError = "No valid JPEG image is ready to capture."
             return
         }
@@ -483,8 +521,39 @@ final class AppModel {
         }
     }
 
+    private func reconcileNativeCameraSelection() async {
+        let cameras = await cameraLifecycle.availableNativeCameras()
+        availableNativeCameras = cameras
+        let snapshot = await cameraLifecycle.snapshot()
+        if case .selected(.nativeCamera(let identifier)) = snapshot.selection {
+            selectedDevice = .nativeCamera(identifier)
+            if calibrationWizard.selectedCameraID != "changed-camera" {
+                calibrationWizard.selectedCameraID = identifier
+            }
+            cameraLifecycleSnapshot = snapshot
+            return
+        }
+        guard snapshot.authorization == .authorized,
+              let preferred = NativeCameraSelectionPolicy.preferredUniqueID(
+                discovered: cameras,
+                restored: selectedDevice,
+                current: snapshot.selection
+              ) else {
+            cameraLifecycleSnapshot = snapshot
+            return
+        }
+        try? await cameraLifecycle.select(.nativeCamera(preferred))
+        selectedDevice = .nativeCamera(preferred)
+        if calibrationWizard.selectedCameraID != "changed-camera" {
+            calibrationWizard.selectedCameraID = preferred
+        }
+        await persistSelections()
+        cameraLifecycleSnapshot = await cameraLifecycle.snapshot()
+    }
+
     private func startCameraPreviewIfAvailable() async {
-        guard cameraLifecycleSnapshot.authorization == .authorized,
+        guard livePreview.selectedSource == .nativeCamera,
+              cameraLifecycleSnapshot.authorization == .authorized,
               cameraLifecycleSnapshot.connection == .available,
               case let .selected(.nativeCamera(uniqueID)) = cameraLifecycleSnapshot.selection,
               let device = AVCaptureDevice(uniqueID: uniqueID),

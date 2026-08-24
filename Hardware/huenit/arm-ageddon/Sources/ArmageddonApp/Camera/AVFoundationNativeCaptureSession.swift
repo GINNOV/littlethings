@@ -122,6 +122,10 @@ public final class AVFoundationNativeCaptureSession {
         latestImageStore.value
     }
 
+    var hasLatestImage: Bool {
+        latestImageStore.value != nil
+    }
+
     func snapshot() async -> NativeCaptureSessionSnapshot {
         await nativeSession.snapshot()
     }

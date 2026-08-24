@@ -27,7 +27,11 @@ struct ArmageddonApp: App {
         }
         let nativeCameraDiscovery: any NativeCameraDiscovery = if isUITesting {
             DeterministicNativeCameraDiscovery(cameras: profile == .noDevices || profile == .permissionDenied ? [] : [
-                NativeCameraDevice(stableIdentifier: "fixture-camera", permission: .authorized),
+                NativeCameraDevice(
+                    stableIdentifier: "fixture-camera",
+                    permission: .authorized,
+                    displayName: "Fixture camera"
+                ),
             ])
         } else {
             AVFoundationCameraDiscovery(authorizationClient: authorizationClient)

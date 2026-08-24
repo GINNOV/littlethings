@@ -57,7 +57,11 @@ public final class LivePreviewModel {
     }
 
     public var canCaptureCurrentFrame: Bool {
-        latestFrame != nil || !observations.isEmpty
+        guard !isPaused else { return false }
+        if selectedSource == .nativeCamera {
+            return isRunning || capture.hasLatestImage || latestFrame != nil
+        }
+        return latestFrame != nil || !observations.isEmpty
     }
 
     public var selectedObservation: DetectionObservation? {
@@ -130,12 +134,14 @@ public final class LivePreviewModel {
             lastCaptureMessage = "HUENIT telemetry is detection-only until its protocol is measured."
             return
         }
-        selectedSource = source
         if source == .recordedFixture {
+            await stop()
+            selectedSource = source
             await reloadDeterministicFixtureOverlay()
-        } else {
-            lastCaptureMessage = "Source switched to Native camera."
+            return
         }
+        selectedSource = source
+        lastCaptureMessage = "Source switched to Native camera."
     }
 
     public func selectFixtureModel(id: String, label: String) async {

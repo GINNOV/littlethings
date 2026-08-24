@@ -21,6 +21,10 @@ struct LiveWorkspaceView: View {
                 Spacer()
                 sourceMenu
                     .frame(maxWidth: 220)
+                if appModel.livePreview.selectedSource == .nativeCamera {
+                    cameraDeviceMenu
+                        .frame(maxWidth: 220)
+                }
                 modelMenu
                     .frame(maxWidth: 240)
                 Button(
@@ -120,6 +124,9 @@ struct LiveWorkspaceView: View {
                 .font(DesignTokens.Typography.sectionTitle)
 
             sourceMenu
+            if appModel.livePreview.selectedSource == .nativeCamera {
+                cameraDeviceMenu
+            }
             modelMenu
 
             Divider()
@@ -184,7 +191,7 @@ struct LiveWorkspaceView: View {
             selection: Binding(
                 get: { appModel.livePreview.selectedSource },
                 set: { source in
-                    Task { await appModel.livePreview.selectSource(source) }
+                    Task { await appModel.selectLiveSource(source) }
                 }
             )
         ) {
@@ -196,6 +203,35 @@ struct LiveWorkspaceView: View {
         .pickerStyle(.menu)
         .accessibilityLabel("Source · \(appModel.livePreview.selectedSource.label)")
         .accessibilityIdentifier("live.source-picker")
+    }
+
+    private var cameraDeviceMenu: some View {
+        Picker(
+            "Camera",
+            selection: Binding(
+                get: { appModel.selectedNativeCameraID },
+                set: { identifier in
+                    Task { await appModel.selectNativeCamera(id: identifier) }
+                }
+            )
+        ) {
+            if appModel.availableNativeCameras.isEmpty {
+                Text("No camera selected").tag("")
+            }
+            ForEach(appModel.availableNativeCameras, id: \.stableIdentifier) { camera in
+                Text(camera.displayName).tag(camera.stableIdentifier)
+            }
+        }
+        .labelsHidden()
+        .pickerStyle(.menu)
+        .accessibilityLabel("Camera · \(cameraDeviceLabel)")
+        .accessibilityIdentifier("live.camera-device")
+    }
+
+    private var cameraDeviceLabel: String {
+        appModel.availableNativeCameras.first {
+            $0.stableIdentifier == appModel.selectedNativeCameraID
+        }?.displayName ?? "Choose a camera"
     }
 
     private var modelMenu: some View {
