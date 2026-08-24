@@ -5,6 +5,7 @@ import SwiftUI
 struct LiveWorkspaceView: View {
     @Environment(AppModel.self) private var appModel
     @State private var manualControlsPresented = true
+    @State private var sourceHelpPresented = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.standard) {
@@ -19,8 +20,8 @@ struct LiveWorkspaceView: View {
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
-                sourceMenu
-                    .frame(maxWidth: 220)
+                sourceRow
+                    .frame(maxWidth: 252)
                 if appModel.livePreview.selectedSource == .nativeCamera {
                     cameraDeviceMenu
                         .frame(maxWidth: 220)
@@ -57,6 +58,11 @@ struct LiveWorkspaceView: View {
         .padding(DesignTokens.Spacing.roomy)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(DesignTokens.Colors.workspace)
+        .sheet(isPresented: $sourceHelpPresented) {
+            SourceHelpDialog(markdown: BundledDocumentation.markdown()) {
+                sourceHelpPresented = false
+            }
+        }
     }
 
     private var previewPanel: some View {
@@ -123,7 +129,7 @@ struct LiveWorkspaceView: View {
             Text("Live controls")
                 .font(DesignTokens.Typography.sectionTitle)
 
-            sourceMenu
+            sourceRow
             if appModel.livePreview.selectedSource == .nativeCamera {
                 cameraDeviceMenu
             }
@@ -203,6 +209,21 @@ struct LiveWorkspaceView: View {
         .pickerStyle(.menu)
         .accessibilityLabel("Source · \(appModel.livePreview.selectedSource.label)")
         .accessibilityIdentifier("live.source-picker")
+    }
+
+    private var sourceRow: some View {
+        HStack(spacing: DesignTokens.Spacing.compact) {
+            sourceMenu
+            Button {
+                sourceHelpPresented = true
+            } label: {
+                Image(systemName: "questionmark.circle")
+            }
+            .buttonStyle(.borderless)
+            .help("Live source manual")
+            .accessibilityLabel("Live source manual")
+            .accessibilityIdentifier("live.source-help")
+        }
     }
 
     private var cameraDeviceMenu: some View {

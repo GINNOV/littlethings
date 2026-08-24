@@ -308,6 +308,21 @@ final class AppShellUITests: XCTestCase {
         app.terminate()
     }
 
+    func testSourceHelpDialogLoadsDocumentation() throws {
+        let app = try launch(style: "Light", width: 1_280, height: 800)
+        let help = app.descendants(matching: .any)["live.source-help"].firstMatch
+        XCTAssertTrue(help.waitForExistence(timeout: 5), "Missing live source manual button")
+        help.click()
+        XCTAssertTrue(app.descendants(matching: .any)["live.source-manual"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.staticTexts["Native camera"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts["Recorded fixture"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts["HUENIT telemetry · detection only"].waitForExistence(timeout: 2))
+        let dialog = app.descendants(matching: .any)["live.source-manual"].firstMatch
+        app.buttons["live.source-manual.close"].click()
+        XCTAssertTrue(dialog.waitForNonExistence(timeout: 3))
+        app.terminate()
+    }
+
     func testNativeCameraPickerListsDiscoveredFixtureCamera() throws {
         let app = try launch(style: "Light", width: 1_280, height: 800)
         XCTAssertTrue(app.descendants(matching: .any)["live.camera-device"].waitForExistence(timeout: 5))
