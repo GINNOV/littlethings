@@ -230,8 +230,17 @@ final class AppModel {
             captures = try await captureStore.query(search: search)
             var images: [String: Data] = [:]
             for record in captures {
-                if let data = try? await captureStore.imageData(for: record), !data.isEmpty {
+                if let data = try? await captureStore.imageData(for: record),
+                   RecordedFixtureFrameImage.isDisplayableFrame(data) {
                     images[record.id] = data
+                } else {
+                    let width = Int(record.provenance.imageSize.width)
+                    let height = Int(record.provenance.imageSize.height)
+                    images[record.id] = RecordedFixtureFrameImage.jpeg(
+                        width: width,
+                        height: height,
+                        observations: record.provenance.observations
+                    )
                 }
             }
             captureImageData = images
@@ -255,8 +264,7 @@ final class AppModel {
             captureError = "No camera frame is ready to capture."
             return
         }
-        let cameraImage = livePreview.currentCaptureImageData()
-        guard let image = cameraImage ?? Self.fixtureJPEGData() else {
+        guard let image = livePreview.currentCaptureImageData() else {
             captureError = "No valid JPEG image is ready to capture."
             return
         }
@@ -603,29 +611,4 @@ final class AppModel {
         diagnosticEvents = await diagnosticLog.snapshot()
     }
 
-    private static func fixtureJPEGData() -> Data? {
-        let size = NSSize(width: 1_280, height: 720)
-        let image = NSImage(size: size)
-        image.lockFocus()
-        NSColor(calibratedRed: 0.12, green: 0.16, blue: 0.22, alpha: 1).setFill()
-        NSRect(origin: .zero, size: size).fill()
-        NSColor(calibratedRed: 0.22, green: 0.38, blue: 0.62, alpha: 1).setStroke()
-        let inset = NSRect(x: 48, y: 48, width: size.width - 96, height: size.height - 96)
-        let border = NSBezierPath(roundedRect: inset, xRadius: 18, yRadius: 18)
-        border.lineWidth = 6
-        border.stroke()
-        let title = "Recorded fixture frame" as NSString
-        let attributes: [NSAttributedString.Key: Any] = [
-            .font: NSFont.systemFont(ofSize: 36, weight: .semibold),
-            .foregroundColor: NSColor.white,
-        ]
-        let titleSize = title.size(withAttributes: attributes)
-        title.draw(
-            at: NSPoint(x: (size.width - titleSize.width) / 2, y: (size.height - titleSize.height) / 2),
-            withAttributes: attributes
-        )
-        image.unlockFocus()
-        guard let tiff = image.tiffRepresentation, let bitmap = NSBitmapImageRep(data: tiff) else { return nil }
-        return bitmap.representation(using: .jpeg, properties: [.compressionFactor: 0.85])
-    }
 }

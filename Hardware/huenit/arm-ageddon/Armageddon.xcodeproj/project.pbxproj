@@ -36,6 +36,7 @@
 		A10000000000000000000025 /* StatusStripView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000026 /* StatusStripView.swift */; };
 		A10000000000000000000026 /* LiveWorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000027 /* LiveWorkspaceView.swift */; };
 		A10000000000000000000027 /* CaptureWorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000028 /* CaptureWorkspaceView.swift */; };
+		A10000000000000000000051 /* RecordedFixtureFrameImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000051 /* RecordedFixtureFrameImage.swift */; };
 		A10000000000000000000028 /* ModelsWorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000029 /* ModelsWorkspaceView.swift */; };
 		A10000000000000000000029 /* RunsWorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000030 /* RunsWorkspaceView.swift */; };
 		A10000000000000000000030 /* DiagnosticsWorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000031 /* DiagnosticsWorkspaceView.swift */; };
@@ -98,6 +99,7 @@
 		A20000000000000000000026 /* StatusStripView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusStripView.swift; sourceTree = "<group>"; };
 		A20000000000000000000027 /* LiveWorkspaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveWorkspaceView.swift; sourceTree = "<group>"; };
 		A20000000000000000000028 /* CaptureWorkspaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureWorkspaceView.swift; sourceTree = "<group>"; };
+		A20000000000000000000051 /* RecordedFixtureFrameImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordedFixtureFrameImage.swift; sourceTree = "<group>"; };
 		A20000000000000000000029 /* ModelsWorkspaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelsWorkspaceView.swift; sourceTree = "<group>"; };
 		A20000000000000000000030 /* RunsWorkspaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunsWorkspaceView.swift; sourceTree = "<group>"; };
 		A20000000000000000000031 /* DiagnosticsWorkspaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsWorkspaceView.swift; sourceTree = "<group>"; };
@@ -233,7 +235,7 @@
 			sourceTree = "<group>";
 		};
 		A50000000000000000000009 /* Live */ = {isa = PBXGroup; children = (A20000000000000000000027 /* LiveWorkspaceView.swift */, A20000000000000000000042 /* LivePreviewModel.swift */, A20000000000000000000043 /* CameraPreviewSurface.swift */, A20000000000000000000044 /* DetectionOverlayView.swift */,); path = Live; sourceTree = "<group>"; };
-		A50000000000000000000010 /* Capture */ = {isa = PBXGroup; children = (A20000000000000000000028 /* CaptureWorkspaceView.swift */,); path = Capture; sourceTree = "<group>"; };
+		A50000000000000000000010 /* Capture */ = {isa = PBXGroup; children = (A20000000000000000000028 /* CaptureWorkspaceView.swift */, A20000000000000000000051 /* RecordedFixtureFrameImage.swift */,); path = Capture; sourceTree = "<group>"; };
 		A50000000000000000000011 /* Models */ = {isa = PBXGroup; children = (A20000000000000000000029 /* ModelsWorkspaceView.swift */, A20000000000000000000048 /* ModelDetailView.swift */,); path = Models; sourceTree = "<group>"; };
 		A50000000000000000000012 /* Runs */ = {isa = PBXGroup; children = (A20000000000000000000030 /* RunsWorkspaceView.swift */, A20000000000000000000049 /* RunsWorkspaceModel.swift */,); path = Runs; sourceTree = "<group>"; };
 		A50000000000000000000013 /* Diagnostics */ = {isa = PBXGroup; children = (A20000000000000000000031 /* DiagnosticsWorkspaceView.swift */,); path = Diagnostics; sourceTree = "<group>"; };
@@ -373,6 +375,7 @@
 				A10000000000000000000025 /* StatusStripView.swift in Sources */,
 				A10000000000000000000026 /* LiveWorkspaceView.swift in Sources */,
 				A10000000000000000000027 /* CaptureWorkspaceView.swift in Sources */,
+				A10000000000000000000051 /* RecordedFixtureFrameImage.swift in Sources */,
 				A10000000000000000000028 /* ModelsWorkspaceView.swift in Sources */,
 				A10000000000000000000029 /* RunsWorkspaceView.swift in Sources */,
 				A10000000000000000000048 /* RunsWorkspaceModel.swift in Sources */,

@@ -38,6 +38,7 @@ public final class LivePreviewModel {
     public private(set) var activeModelLabel = "Fixture detector"
     public private(set) var activeModelHash = String(repeating: "0", count: 64)
     public private(set) var latestFrame: CameraFrameMetadata?
+    private var recordedFixtureJPEG: Data?
 
     public var isRunning: Bool {
         capture.isRunning
@@ -193,7 +194,10 @@ public final class LivePreviewModel {
     }
 
     public func currentCaptureImageData() -> Data? {
-        capture.consumeLatestImageData()
+        if selectedSource == .recordedFixture {
+            return recordedFixtureJPEG
+        }
+        return capture.consumeLatestImageData()
     }
 
     public func loadDeterministicFixtureOverlay() async throws {
@@ -238,6 +242,11 @@ public final class LivePreviewModel {
             frame: frame,
             now: now,
             generation: 1
+        )
+        recordedFixtureJPEG = RecordedFixtureFrameImage.jpeg(
+            width: frame.format.width,
+            height: frame.format.height,
+            observations: observations
         )
         selectedObservationID = nil
         if let telemetry {
