@@ -122,6 +122,7 @@ final class FinalFixtureJourney: XCTestCase {
             ],
             to: hold
         )
+        try writeJourneyScreenshot(app: app, to: childRoot)
         let gateDescriptor = open(gate.path, O_RDONLY)
         guard gateDescriptor >= 0 else { throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO) }
         defer { close(gateDescriptor) }
@@ -131,8 +132,24 @@ final class FinalFixtureJourney: XCTestCase {
         }
     }
 
+    private func writeJourneyScreenshot(app: XCUIApplication, to childRoot: URL) throws {
+        let directory = childRoot.appending(path: "screenshots")
+        if mkdir(directory.path, 0o700) != 0, errno != EEXIST {
+            throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
+        }
+        try exclusiveData(app.screenshot().pngRepresentation, to: directory.appending(path: "final-fixture-live.png"))
+    }
+
     private func appIdentity(_ app: XCUIApplication) throws -> [String: Any] {
-        guard let running = NSRunningApplication.runningApplications(withBundleIdentifier: "com.huenit.ArmageddonApp").first else {
+        _ = app
+        let suite = environment("ARMAGEDDON_QA_PREFERENCE_SUITE")
+        let candidates = NSRunningApplication.runningApplications(withBundleIdentifier: "com.huenit.ArmageddonApp")
+        let running: NSRunningApplication
+        if let suite, let match = candidates.first(where: { processArguments($0.processIdentifier)?.contains(suite) == true }) {
+            running = match
+        } else if candidates.count == 1, let only = candidates.first {
+            running = only
+        } else {
             throw POSIXError(.ESRCH)
         }
         let pid = running.processIdentifier
@@ -204,6 +221,10 @@ final class FinalFixtureJourney: XCTestCase {
 
     private func exclusiveJSON(_ value: [String: Any], to url: URL) throws {
         let data = try JSONSerialization.data(withJSONObject: value, options: [.sortedKeys]) + Data("\n".utf8)
+        try exclusiveData(data, to: url)
+    }
+
+    private func exclusiveData(_ data: Data, to url: URL) throws {
         let descriptor = open(url.path, O_WRONLY | O_CREAT | O_EXCL, 0o600)
         guard descriptor >= 0 else { throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO) }
         defer { close(descriptor) }
@@ -222,6 +243,24 @@ final class FinalFixtureJourney: XCTestCase {
 
     private func monotonicNanos() -> UInt64 {
         clock_gettime_nsec_np(CLOCK_UPTIME_RAW)
+    }
+
+    private func processArguments(_ pid: pid_t) -> String? {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/bin/ps")
+        process.arguments = ["-p", String(pid), "-o", "args="]
+        let stdout = Pipe()
+        process.standardOutput = stdout
+        process.standardError = FileHandle.nullDevice
+        do {
+            try process.run()
+        } catch {
+            return nil
+        }
+        process.waitUntilExit()
+        let data = stdout.fileHandleForReading.readDataToEndOfFile()
+        let text = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
+        return text?.isEmpty == false ? text : nil
     }
 
     private func processPath(_ pid: pid_t) -> String? {
