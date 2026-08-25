@@ -1,0 +1,44 @@
+Total Amiga Assembler
+---------------------
+System Requirements: Commodore Amiga with at least 512K 
+of RAM. Whilst some programs will run on all versions of
+the Amiga's operating system those which use GadTools,
+the ASL file requester etc., require Release 2 or greater.
+To edit/assemble the examples the user should have a 
+suitable text editor, assembler and linker available. 
+These items are available from both commercial and 
+public domain sources.
+
+The Official Amiga Include Files
+--------------------------------
+One thing that A68k users do need to be aware of is 
+the fact that they will NOT get the official Amiga
+include files with their assembler. It is possible however 
+that some high-level language users will already have 
+suitable include files, SAS C for instance provides
+these as part of the compiler package, but if not two options 
+are available: Firstly, the files can be purchased from Amiga
+Technologies. Secondly, the appropriate definitions etc.,
+can be typed in from sources such the Addison Wesley RKM
+Includes & Autodocs reference manual. 
+
+I've used this latter approach for a number of programs in this
+book in order to allow the examples to be assembled without the
+official includes. You'll find details in the text file called
+ImportantNotes!
+
+
+The HelpLine
+------------
+Never be afraid to ask for help. After all at one time 
+every assembler programmer was assembler-illiterate! 
+If you know someone who has overcome the initial Amiga 
+hurdles then cultivate them as a friend. 
+
+By the way, thanks for taking an interest in the 
+book and good luck with your Amiga programming,
+
+Paul Overaa
+October 1995
+
+

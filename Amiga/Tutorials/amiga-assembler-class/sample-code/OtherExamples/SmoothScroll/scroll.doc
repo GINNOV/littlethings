@@ -1,0 +1,554 @@
+Smooth Scroll Displays
+
+It's a well known fact that assembler code, even when reasonably well 
+documented, is rarely easy to understand unless you have a good idea of 
+what the code is supposed to be doing in the first place. Needless to say 
+this makes many of the tricks used by assembly language coders look far 
+more difficult than they really are. A typical case in point is the job 
+of making an Amiga display 'smooth scroll' and since it seemed to me that 
+this would be an area that many of you would be interested in I've chosen 
+to provide an additional folder on just this subject containing both 
+these notes and a demo that vertically smooth scrolls an Intuition 
+screen. 
+
+Before explaining how this type of smooth scrolling is actually done 
+however let me kill off one false trail. Those of you who have the 
+Amiga's graphics library documentation may have seen that there is a 
+library routine called ScrollVPort() that can be used to produce display 
+scrolling effects. The plain truth is that whilst, in theory, this 
+routine could conceivably be used to produce smooth scrolls the results 
+obtained by using this function are just not good enough. The autodocs 
+themselves mention that the ScrollVPort() function is slow and can 
+produce visible 'hashing' of the display. So, if ScrollVPort() can't be 
+used is there an alternative course of action available to us? The answer 
+here is very definitely yes, but in order to appreciate it it's necessary 
+to be clear in your mind how Amiga displays are generated. 
+
+All displays are created by allocating blocks of memory called 
+'bitplanes' in which each 'bit' represents a pixel position on the 
+display. Normal displays will contain a number of separate bitplanes and 
+by taking the appropriate pixel bit from each bitplane the Amiga's 
+display hardware is able to generate a colour register number. Values 
+stored in each colour register determine the actual colours seen on the 
+screen and it's because a screen's colour register number range depends 
+on the number of bitplanes being used that the colours available with 
+different screen types varies. A one bitplane screen can only have two 
+colours (corresponding to any single bit in the bitplane being either a 0 
+or a 1). Two bitplane screens can have four colours (each bit from each 
+bitplane is combined to produce one of four values 00, 01, 10, or 11) and 
+so on. 
+
+Although display bitplanes have to be stored in chip memory (because they 
+need to be accessible to the custom chips) they do not have fixed 
+positions as such. In fact when a screen is opened the bitplanes will be 
+allocated in any convenient area of chip memory available. Needless to 
+say this means that the graphics system needs to have some way of 
+identifying the position of these bitplanes and the structure used is 
+called a BitMap. This structure can be found in the graphics/gfx.i 
+include file and you'll notice from the description below that it 
+contains space for up to eight bitplane pointers...
+
+   STRUCTURE BitMap,0
+   WORD     bm_BytesPerRow
+   WORD     bm_Rows
+   BYTE     bm_Flags
+   BYTE     bm_Depth
+   WORD     bm_pad
+   STRUCT   bm_Planes, 8*4    ;pointers to the bitplanes
+   LABEL bm_SIZEOF
+
+
+Because the BitMap's bitplane pointers define the memory locations used 
+to produce the display that appears on your monitor you might expect 
+that, by arranging for a display's bitplane pointers to be increased by 
+an amount which corresponds to the pixel-width of the screen, it would be 
+possible to shift the display memory downwards by one line. Similarly 
+decreasing those pointers by the same amount the display might be 
+expected to shift upwards by one line. Although very close to the truth 
+this doesn't work because a part of the story is still missing. Whilst 
+the BitMap structure certainly defines the initial display memory being 
+used the Amiga's graphics co-processor (the 'Copper') which handles the 
+display generation doesn't actually collect its bitplane information from 
+this source. Instead it uses copies of the bitplane pointers that have 
+been embedded into a series of instructions called a 'copper list'. 
+
+Once Intuition has opened a screen and generated these copper 
+instructions then the bitplane pointers held in the BitMap structure's 
+are essentially redundant as far as the display generation process is 
+concerned. The important bitplane pointer values are those in the 
+hardware copper list and so if bitplane pointer adjustment needs to be 
+done quickly then this is the place to do it. In short we need to search 
+this list, find the instructions which set up the bitplane pointers at 
+the start of each display frame, and alter these. 
+
+To avoid visible display disturbance it's pretty obvious that such 
+adjustments need to be made at times when the Copper itself is not 
+actually trying to read the bitplane addresses itself. The secret here 
+lies in realising that the Copper re-initialisation occurs as part of the 
+housekeeping that goes on during vertical blanking intervals. A number of 
+options are available but I'll discuss these when I deal with the scroll 
+code itself.
+
+
+Screen Characteristics
+
+As you increase (or decrease) a screen's bitplane pointers the effect 
+will be to bring new bitplane memory into the visible display area. If 
+therefore you set up a normal sized screen the result of any bitplane 
+pointer adjustment will be to move the memory area being used for the 
+real display outside of the memory holding valid screen graphics 
+information. This usually means that rubbish gets displayed on the screen 
+and so the secret is to create an oversized display-memory area so that 
+you only ever scroll within the bounds of whatever valid graphics data 
+you've set up. 
+
+I am going to be using one of the 'invisible' borderless backdrop variety 
+windows and to do this I set the WA_Borderless and WA_Backdrop tags to 
+true. These tags, along with others that I use, are defined in the system 
+headers but I'll be defining my own versions so that those of you without 
+the official includes can still assemble the code. The end result is that 
+you'll find these tag definitions incorporated into the example's window 
+tag list...
+
+   dc.l  WA_DragBar,FALSE
+   dc.l  WA_Title,NULL
+   dc.l  WA_Borderless,TRUE
+   dc.l  WA_Backdrop,TRUE
+   dc.l  WA_DepthGadget, FALSE
+   dc.l  WA_CloseGadget, FALSE
+
+I've chosen to use a high-res 640 pixel wide screen with a height of 600 
+lines. The resulting arrangement of the screen's bitplanes in memory, 
+relative to what you as a viewer would see on your monitor, is shown 
+below....
+
+< -------------- 640 pixels wide -------------->
+ ----------------------------------------------
+|                                              |
+|                 Top part                     |
+|                 of display will not          |
+|                 be visible when              |
+|                 screen first opens           |
+|                                              |
+ ---------------------------------------------- 
+|                                              |
+|                 This lower part              |
+|                 of display will              |
+|                 be visible when              |
+|                  screen opens                |
+|                                              |
+ ---------------------------------------------- < -- bitplane start 
+                                                     identified
+                                                     by original
+                                                     bitplane 
+                                                     pointer
+
+Only the lower part of each bitplane will be visible when the screen 
+first opens!
+
+
+Searching The Hardware Copper List
+
+Within the screen data that Intuition sets up there is a pointer to a 
+View structure and the first thing we need to do is get the address of 
+this using Intuition's ViewAddress() function. The result comes back in 
+d0 and can be used immediately because within the View structure there is 
+a field called v_LOFCprList. This points to a cprlist structure which 
+provides a pointer to the copper list that the hardware actually 
+executes. The end result is that we identify the start of the required 
+hardware list using this sort of code...
+
+      CALLSYS  ViewAddress,_IntuitionBase
+      move.l   d0,a0               copy to an address register
+      move.l   v_LOFCprList(a0),a0
+      move.l   crl_start(a0),a0    pointer to start of list now in a0
+
+
+Once we've got to this stage a loop needs to be used to locate the 
+appropriate bitplane instructions. Copper instructions consist of two 16 
+bit words where the first word specifies the instruction type and the 
+second specifies a data item. The instruction that we need to locate is 
+the first of a series of 'move' instructions that copy bitplane pointer 
+values into the Amiga's bitplane hardware registers. 
+
+Because the hardware registers can only hold 16 bit values it actually 
+requires a pair of registers, and therefore two separate copper 
+instructions, to store a full 32 bit memory pointer. Now it just so 
+happens that the first pair of high and low bitplane registers set up in 
+Intuition created copper lists are those of the lowest numbered bitplane, 
+conventionally known as bitplane 1. The corresponding registers, called 
+BPL1PTH and BPL1PTL, have absolute addresses of $00e0 and $00e2 above the 
+custom chips base address so what we need is a search loop which moves 
+through a hardware copper list two words at a time comparing the first 
+word of each instruction until it finds one which starts with $e0...
+
+.search  cmpi.w   #$e0,(a0)      look at instruction
+         beq.s    .searchend     found e0 instruction
+         addq.l   #4,a0          move to next instruction
+         bra.s    .search        and keep searching
+
+When the loop terminates the first bitplane oriented copper instruction 
+has been found so we just add two to it, so that a0 is pointing to the 
+second word (the data word) of the instruction, and store the result for 
+future use...
+
+.searchend  addq.l   #2,a0             move to 2nd instruction word
+            move.l   a0,copperlist_p   and save pointer
+
+
+If we put all these ideas together we end up with this piece of code...
+
+
+
+      CALLSYS  ViewAddress,_IntuitionBase
+      move.l   d0,a0             copy to an address register
+      move.l   v_LOFCprList(a0),a0
+      move.l   crl_start(a0),a0  start of list now in a0
+
+.search  cmpi.w  #$e0,(a0)       look at instruction
+      beq.s    .searchend        found e0 instruction
+      addq.l   #4,a0             move to next instruction
+      bra.s    .search           and keep searching
+
+.searchend     addq.l   #2,a0    move to 2nd instruction word
+               move.l   a0,copperlist_p      and save pointer
+
+
+Don't worry if some of the ideas seem like magic to start with - just 
+concentrate on understanding the basis of what we're doing. The important 
+thing is that this code fragment enables us to find out whereabouts in 
+the copper list Intuition places the instructions which set up those 
+bitplane addresses.
+
+So far we've opened an oversized Intuition window in a custom screen and 
+used a loop to search the associated hardware copper list for the 
+instructions holding the screen's bitplane pointers. To smooth scroll 
+this screen we are going to need to modify these bitplane pointers so 
+that a slightly different area of screen memory is brought into use. The 
+bottom line here is that to move the displayed screen upwards by one 
+screen line we need to add the 'bytes per row' field held in the screen's 
+BitMap structure to each of the associated bitplane pointers. By using a 
+loop which does this for a number of times equal to half the number of 
+display lines we can scroll between the upper and lower parts of our 
+oversized display. Similarly successively subtracting the same value from 
+a display that has already been scrolled will reverse the process, ie it 
+will scroll the screen downwards. 
+
+Since it is not a particularly good idea to mess around with the bitplane 
+pointer values that Intuition places into the BitMap structure I've 
+chosen to work with copies of those pointers and in the example code 
+space for these copies is created using this statement...
+
+   bitplane_copies   ds.l  8
+
+with the pointers themselves being copied using this short dbra 
+autoincrementing loop...
+
+   .loop    move.l   (a4)+,(a3)+    copy all bitplane pointers
+            dbra  d2,.loop
+
+
+Whenever the screen is scrolled by one line all bitplane pointers 
+associated with the screen will need to be adjusted but rather than use a 
+hard-coded value for the number of bitplanes I've opted for a more 
+general arrangement. Namely using the bitplane count obtained from the 
+screen's BitMap structure! Having modified the copies of the bitplane 
+pointers the next step is to use them to replace the existing values in 
+the hardware copper list. What we need however is a way of ensuring that 
+we perform this updating at a time when the hardware copper list bitplane 
+pointer values are not being used. There are various possibilities 
+available here but the one I've opted for involves the graphics library 
+WaitTOF() function. WaitTOF() returns immediately the next vertical 
+blanking period is complete and by this time the current frame's vertical 
+blanking initialisation has been done and the Copper will have already 
+started re-executing the instructions for the current display frame. At 
+this point you need to be aware of the fact that the bitplane pointer 
+values will be very near the start of the copper list so that as the 
+Copper gets restarted during the vertical blanking period these bitplane 
+values get used almost immediately. This means that by the time WaitTOF() 
+returns we have effectively got the time related to a whole display frame 
+to do any bitplane adjustments needed.
+
+The calculations and poking operations are surprisingly simple. First we 
+add the bytes per row value (in my example routine this is being stored 
+in register d3) to each of the bitplane pointer copies like this...
+
+.calculate  add.l d3,(a3)+    adjust bitplane addresses
+      dbra  d2,.calculate
+
+and then having re-initialised the appropriate pointers we just use a 
+loop to read the modified 32-bit bitplane pointers and move them into the 
+copper list. 
+
+Notice how in the following code fragment I'm using the 680x0 swap 
+instruction to get the upper word of the bitplane pointer address into 
+the data register's lower word. This allows both address poking 
+operations to be done using move.w instructions...
+
+.loop    move.l   (a3)+,d4    get full bitplane pointer
+         swap     d4
+         move.w   d4,(a4)     store pointer upper word
+         addq.l   #4,a4       move to next copper instruction
+         swap     d4
+         move.w   d4,(a4)     store pointer lower word
+         addq.l   #4,a4       move to next copper instruction
+         dbra     d2,.loop
+
+
+The final combined results of this jiggery-pokery are shown below and 
+this code represents the completed upward scrolling routine. Downward 
+scrolling, as you'll see when you examine the full example source code, 
+is primarily just a matter of subtracting the BytesPerRow field from the 
+bitplane pointers rather than adding it. Note however that because I've 
+assumed that a ScrollUp() operation will have already been performed the 
+bitplane pointer copies are not initialised to their respective 'scrolled 
+up' values from within the ScrollDown() routine itself.
+
+
+
+;ScrollUp() on entry... needs no register parameters!
+
+; Register Use: d2 used as a loop counter
+;     d3 holds bytes per row
+;     d4 holds modified bitplane pointers
+;     d5 used as screenline scroll loop counter
+;     a2 holds bitmap pointer 
+;     a3 holds successive bitplane pointers 
+;     a4 after initial temporary use holds copperlist pointer
+
+ScrollUp movem.l  a0-a4/d0-d5,-(a7) preserve regs
+
+      move.l   bitmap_p,a2
+      move.l   a2,a4       temporary copy
+      addq.l   #bm_Planes,a4  a2 now points to bitplanes
+      moveq    #0,d2
+      move.b   bm_Depth(a2),d2   initialise loop counter
+      subq.b   #1,d2       counter goes to -1
+      moveq    #0,d3
+      move.w   bm_BytesPerRow(a2),d3
+      lea      bitplane_copies,a3   points to bitplane copy area
+.loop    move.l   (a4)+,(a3)+    copy all bitplane pointers
+      dbra     d2,.loop
+
+      move.l   #SCREEN_HEIGHT/2,d5        
+do_next_line   move.l   viewport_p,a0
+      CALLSYS  WaitTOF,_GfxBase
+      moveq    #0,d2
+      move.b   bm_Depth(a2),d2      
+      subq.b   #1,d2    
+      lea      bitplane_copies,a3   
+
+.calculate  add.l    d3,(a3)+    adjust bitplane addresses
+      dbra     d2,.calculate
+
+      moveq    #0,d2
+      move.b   bm_Depth(a2),d2   re-initialise pointers  
+      subq.b   #1,d2    
+      lea      bitplane_copies,a3   
+      move.l   copperlist_p,a4
+
+.loop    move.l   (a3)+,d4    get full bitplane pointer
+      swap     d4
+      move.w   d4,(a4)     store pointer upper word
+      addq.l   #4,a4       move to next copper instruction
+      swap     d4
+      move.w   d4,(a4)     store pointer lower word
+      addq.l   #4,a4       move to next copper instruction
+      dbra     d2,.loop
+
+      move.l   #SCROLL_DELAY,d1  load time delay value
+      CALLSYS  Delay,_DOSBase
+
+      dbra     d5,do_next_line
+      
+      movem.l  (a7)+,a0-a4/d0-d5 restore regs
+      rts
+
+
+
+
+Drawing Some Graphics
+
+There would be little point in producing an example that scrolled an 
+empty screen because you wouldn't see anything. This being so I've 
+included a DrawBlock() drawing routine in the code which allows me to 
+place some visible graphics in the screen area. The routine takes a 
+specified image and creates an M row by N column set of copies of the 
+image on the screen and, as you'll see when you examine the associated 
+code, it requires pointers to the image and window rastport, the initial 
+(x,y) offset co-ordinates, and the horizontal and vertical block count 
+values to be used. The routine starts by copying those parameters that it 
+will need to re-use and then extracts the width and height of the image 
+using this pair of indirect addressing with displacement instructions...
+
+   move.w   ig_Width(a1),d4      image width in d4
+   move.w   ig_Height(a1),d5     image height in d5
+
+
+Having done that it then simply uses a twin loop to draw all the required 
+rows of images in turn. The complete routine follows but do note that, 
+although this simple array based approach is good enough for our 
+purposes, there are far more sophisticated and efficient ways of 
+producing these tiling effects.
+
+
+
+DrawBlocks:
+;     Requires following parameters on entry...
+;     a0 = window rastport pointer
+;     a1 = image pointer
+;     d0 = starting left offset value
+;     d1 = starting top offset value
+;     d2 = required horizontal block count
+;     d3 = required vertical block count
+
+      movem.l  d0-d7/a0-a6,-(sp)    preserve regs
+      move.l   _IntuitionBase,a6    library base
+      move.l   a0,a2          rastport pointer
+      move.l   a1,a3          image pointer
+      move.w   d0,d6          d6 = current left offset
+      move.w   d0,d7          left offset for reuse
+      move.w   d1,a4          top offset
+      move.w   d2,a5          column count for reuse
+      move.w   ig_Width(a1),d4      image width in d4
+      move.w   ig_Height(a1),d5     image height in d5
+draw_row jsr      _LVODrawImage(a6)    
+      subq     #1,d2          decrease count
+      beq      next_row
+      move.w   a4,d1          set top offset
+      add.w    d4,d6          form new left offset
+draw_row2   move.w   d6,d0          needed for library function 
+call
+      move.l   a2,a0          restore rastport pointer
+      move.l   a3,a1          restore image pointer
+      bra      draw_row       keep going
+next_row subq     #1,d3          decrease count
+      beq      draw_end
+      move.w   d7,d6          reset start left offset for 
+row
+      move.w   a5,d2          reset column count
+      move.w   a4,d1
+      add.w    d5,d1
+      move.w   d1,a4          top offset for next row
+      bra      draw_row2
+draw_end movem.l  (sp)+,d0-d7/a0-a6    restore regs
+      rts
+
+
+
+There is incidentally nothing special about the graphics themselves. I 
+just knocked up a couple of simple images using DPaint, saved them as IFF 
+brushes and converted those brushes to assembler style image structures. 
+There are plenty of programs that can do the brush to image conversion 
+but I actually loaded them into Inovatronic's PowerWindows as gadget 
+images, generated the corresponding assembler code, and then copied the 
+680x0 image data statements from the code that was produced.
+
+Image data does of course need to be placed in chip memory and the 
+easiest way of doing this is to include a chip memory section directive 
+just before the image structures. The following listing shows how this is 
+done with HiSoft's Devpac assembler... 
+
+
+         SECTION Image,DATA_C
+Image1:
+   dc.w  0,0   ;XY origin relative to container TopLeft
+   dc.w  320,60   ;Image width and height in pixels
+   dc.w  3  ;number of bitplanes in Image
+   dc.l  ImageData1  ;pointer to ImageData
+   dc.b  $0007,$0000 ;PlanePick and PlaneOnOff
+   dc.l  NULL  ;next Image structure
+
+ImageData1:
+   dc.w  $0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000
+   dc.w  $0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000
+   dc.w  .... etc.
+
+
+
+
+
+Those of you using Charlie Gibb's A68k assembler will in fact need to use 
+this slightly modified version in order to get the code to assemble 
+without error...
+
+         SECTION Image,DATA,CHIP
+
+Image1:
+   dc.w  0,0   ;XY origin relative to container TopLeft
+   dc.w  320,60   ;Image width and height in pixels
+   dc.w  3  ;number of bitplanes in Image
+   dc.l  ImageData1  ;pointer to ImageData
+   dc.b  $0007,$0000 ;PlanePick and PlaneOnOff
+   dc.l  NULL  ;next Image structure
+
+ImageData1:
+   dc.w  $0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000
+   dc.w  $0000,$0000,$0000,$0000,$0000,$0000,$0000,$0000
+   dc.w  .... etc.
+
+
+
+The Overall Structure Of The Code
+
+You'll find the source code and a Workbench 2+ runable version of the 
+example program in this drawer. Much of the code will doubtless be 
+familiar from material covered in Total Amiga Assembler but to help you 
+find your way around here are some additional notes. At the start of the 
+example you'll find the various EQUates used by the program. As usual 
+I've included my own versions of the relevant Amiga system header file 
+definitions so that the code will assemble without needing the official 
+includes. You'll also find the LINKLIB and CALLSYS macros that I use for 
+making library calls. The main code opens the dos, intuition and graphics 
+libraries, opens a custom screen and window, and then  executes the 
+copperlist searching code that I discussed initially. This locates the 
+bitplane pointers. 
+
+Immediately after this I've drawn some images into the top area of the 
+window and the made a call to the ScrollUp() routine. Since this is in 
+part of the window that is visible when the window is first opened you 
+not only see the first set of images but you see them moving up as the 
+scroll routine alters the copperlist bitplane pointers. By the time the 
+upward scroll has been completed however those images, though still 
+present in the window, will have been moved off the screen. At this point 
+all you'll be seeing is the lowest (empty) part of the screen memory so 
+anything written into the top part of the display memory will not affect 
+the visible display at all. All I've done in this example is to re-use 
+the DrawBocks() routine to fill the upper part of the bitplane memory 
+with another set of images before reversing the scroll by calling 
+ScrollDown(). The overall effect then is that immediately after the first 
+set of images scroll off the screen a completely different set of images 
+come into view as the screen is scrolled down. The fragment of code which 
+performs this drawing and scrolling is shown below...
+
+set_display move.l   window_p,a1  window address in a1
+      move.l   wd_RPort(a1),a0   copy rastport pointer into a0
+      lea      Image1,a1         pointer to image
+      moveq    #0,d0             left offset
+      moveq    #0,d1             top offset
+      moveq    #2,d2             columns count
+      moveq    #5,d3             rows count
+      jsr      DrawBlocks
+      jsr      ScrollUp
+change_display move.l   window_p,a1 window address in a1
+      move.l   wd_RPort(a1),a0      copy rastport pointer into a0
+      lea      Image1,a1            pointer to image
+      moveq    #0,d0                left offset
+      moveq    #10,d1               top offset
+      moveq    #2,d2                columns count
+      moveq    #5,d3                rows count
+      jsr      DrawBlocks
+      jsr      ScrollDown
+
+
+
+
+There are of course quite a variety of scroll methods available but 
+almost all will, at the end of the day, rely on 'poking' hardware copper 
+lists to achieve their effects. As you doubtless realise by now, the 
+underlying ideas of copper list bitplane pointer adjustment are actually 
+quite straightforward so once you have a reasonable grasp of how a simple 
+vertical smooth scroll, such as the one I've described, is performed the 
+more complicated tricks that you may read about will hopefully become 
+that much easier to understand!
+

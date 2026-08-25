@@ -1,0 +1,350 @@
+Filename:   ImportantNotes  
+Reference:  TAA/1.00
+File Date:  14-10-95
+
+***************************************************
+**                                               **
+** IMPORTANT - PRINT THIS FILE OUT FOR REFERENCE **
+** ---------   BEFORE ATTEMPTING TO ASSEMBLE OR  **
+**             RUN ANY OF THE EXAMPLE PROGRAMS!  **
+**                                               **
+**                                               **
+***************************************************
+
+The first point to make is that before attempting 
+to edit/assemble any of these examples you should 
+not only have started reading 'Total Amiga
+Assembler' (and these disk notes) but you should 
+have looked at the documentation and any example 
+code which comes with your assembler. Don't worry 
+too much about some things initially appearing 
+incomprehensible - things will fall naturally 
+into place providing you persevere. 
+
+This file contains notes that relate to the 
+assembling and running of the examples on this 
+disk. Skim through them once to acquaint yourself 
+with the general contents and then refer to then 
+again before assembling specific examples. 
+
+
+CLI/Shell versus WorkBench
+==========================
+Many of the examples on this disk have been assembled 
+WITHOUT the start-up code necessary for WorkBench 
+icon based execution. With many of the simpler programs 
+it would have served no useful purpose to make the 
+code WorkBench runable!
+
+In general however programs can be made 'WorkBench 
+runable' by two pathways: Firstly they can be 
+assembled as LINKABLE code modules and these  
+can then be linked with some standard start-up 
+code. Such pieces of code are provided as part 
+of most Amiga assemblers, Amiga C compilers, 
+and as part of the official Commodore include 
+file package (ie the Native Developer Update 
+Files). Often start-up code modules will expect 
+the start of the program to be given a specific 
+label, the modules distributed with (or suitable 
+for use with) most C compilers for instance expect 
+to see an entry point labelled '_main'. If you are 
+using such a module you should add the appropriate 
+label to the source code. Don't forget that if 
+you are explicitly linking start-up code which is 
+going to look for a particular starting label then 
+your assembler code should not only include that 
+label but should use XDEF to ensure that the label 
+is visible to the linker at link time. For example, 
+to make the label _main visible this directive 
+must be included near the start of the assembler 
+code...
+
+   XDEF _main
+
+
+_main:   -> this is where your code would start!
+
+
+The second approach for creating WorkBench 
+runable programs is to include the source for 
+the appropriate start-up code immediately 
+before the start of your real program code.
+A number of packages, including Devpac, 
+provide start-ups in source code form and 
+the benefit here is simplicity - it allows 
+a WorkBench runable program to be produced 
+directly, ie without having to go through 
+an explicit linking stage.
+
+The exact details of what is, and what isn't, 
+available start-up-wise is of course going to 
+be assembler-package specific - nowadays you 
+will find start-up code which opens default 
+console windows and sets up the standard I/O 
+handles, code which enables suitable programs 
+to be made resident etc. You will almost 
+certainly find notes and guidelines about 
+such issues within the assembler documentation 
+itself.
+
+
+Additional Chapter Notes
+========================
+
+Chapter 3 
+---------
+These examples have where possible been included 
+as both source and CLI/Shell runable forms but 
+remember that they don't do anything visible. 
+Users who have a debugger program might care to 
+trace the execution of these programs and see 
+the effects on the various 680x0 registers/flags.
+
+You will notice that in the disk versions of the 
+programs I have added the instruction clr.l d0 
+(prior to the terminal return statement). This 
+is an AmigaDOS 'no error' return convention.
+
+
+Chapter 10
+----------
+To assemble the first two examples in this chapter
+without needing the official includes you will need
+to remove the include file references at the start
+of the examples and insert instead the line...
+	
+	include CH10include.i
+
+Needless to say the file CH10include.i, which you'll 
+find in the chapter 10 examples drawer, provides all 
+required definitions.
+
+
+To assemble the third example make the same changes
+but additionally change the program lines which 
+read...
+
+	EXTERN_LIB OpenLibrary
+	EXTERN_LIB DisplayBeep
+	EXTERN_LIB CloseLibrary
+
+to...
+
+	XREF _LVOOpenLibrary
+	XREF _LVODisplayBeep
+	XREF _LVOCloseLibrary
+
+The function call LVO values will again still be 
+resolved when the assembled code is linked with the 
+amiga.lib library. The only difference is that you
+will have added the _LVO prefix manually rather than
+having the EXTERN_LIB system macro do it!
+
+
+Chapter 12
+----------
+To assemble the first six examples in this chapter
+without needing the official includes you will again 
+need to remove the include file references at the 
+start of the examples, this time inserting the line...
+	
+	include CH12include.i
+
+The file CH12include.i is provided in the chapter 12 
+examples drawer and provides all definitions required
+by the program.
+
+
+To assemble the seventh and eigth examples make the 
+same changes but additionally change the program line 
+which reads...
+
+	EXTERN_LIB SPExp
+
+to...
+
+	XREF _LVOSPExp
+
+The difference again is that you will have added the 
+_LVO prefix manually rather than having the EXTERN_LIB 
+macro do it!
+
+
+Chapter 13
+----------
+ExampleCH13-1.s is the WaitForExitMessage() 
+routine and, since it is only runable as part 
+of another program, only the source code has 
+been given. 
+
+
+Chapter 14
+----------
+To assemble the example in this chapter without the 
+official includes you will again need to remove the 
+include file references at the start of the source 
+file. This time inserting the line...
+	
+	include CH14include.i
+
+The file CH14include.i is provided in the chapter 14 
+examples drawer and provides all definitions required
+by the program.
+
+
+The runable example from this chapter has been linked 
+with start-up code and may therefore be run either from 
+a CLI/Shell window or by double clicking on the program's
+icon!
+
+
+Chapter 15
+----------
+To assemble the example in this chapter without the 
+official includes you will yet again need to remove the 
+include file references at the start of the source. This 
+time inserting the line...
+	
+	include CH15include.i
+
+The file CH15include.i is provided in the chapter 15 
+examples drawer and provides all definitions required
+by the program.
+
+
+The runable example from this chapter has also been linked 
+with start-up code and may therefore be run either from 
+a CLI/Shell window or by double clicking on the program's
+icon!
+
+
+Chapter 16
+----------
+To assemble the example in this chapter without the 
+official includes you will yet again need to remove the 
+include file references at the start of the source. This 
+time inserting the line...
+	
+	include CH16include.i
+
+The file CH16include.i is provided in the chapter 16 
+examples drawer and provides all definitions required
+by the program.
+
+
+The runable example from this chapter has also been linked 
+with start-up code and may therefore be run either from 
+a CLI/Shell window or by double clicking on the program's
+icon!
+
+
+Chapter17
+---------
+ExampleCH17-4.s is the final version of the word-count routine. 
+Since it is only runable as part of another program
+only the source code has been given. 
+
+
+Chapter 18
+----------
+To assemble the example in this chapter without the 
+official includes you will yet again need to remove the 
+include file references at the start of the source code. 
+This time inserting the line...
+	
+	include CH18include.i
+
+The file CH18include.i is provided in the chapter 18 
+examples drawer and provides all definitions required
+by the program.
+
+
+The runable example from this chapter has also been linked 
+with start-up code and may therefore be run either from 
+a CLI/Shell window or by double clicking on the program's
+icon!
+
+ 
+
+Chapter 19
+----------
+To assemble the two examples in this chapter without the 
+official includes you will yet again need to remove the 
+include file references at the start of the file. This 
+time inserting the line...
+	
+	include CH19include.i
+
+The file CH19include.i is provided in the chapter 19 
+examples drawer and provides all definitions required
+by the program.
+
+
+The runable example from this chapter has also been linked 
+with start-up code and may therefore be run either from 
+a CLI/Shell window or by double clicking on the program's
+icon!
+
+
+Chapter 20
+----------
+This chapter deals with some difficult aspects of Exec 
+style libraries. Whilst some of the material provides just 
+a general introduction to the layout of the Amiga's run-time 
+libraries the more detailed sections are directly aimed at 
+the more advanced coder. Quite simply no-one gets involved 
+with this sort of stuff without having access to the official 
+Amiga includes. For this reason, plus the fact that the 
+example library in usable form has been provided in the 
+chapter 20 drawer, an alternative include file has not 
+been provided. 
+
+
+
+Chapter21
+---------
+You will find all the files relating to the first two 
+chapter examples in a sub-directory called Chapter21. 
+No Amiga includes are needed to assemble the two 68k 
+code patches (those of you who wish to recompile the
+C source code should use the appropriate header files
+provided with your compiler). Link files for Lattice C
+(now SAS C) have been provided just to illustrate the
+general Blink command lines needed to produce the
+final runable code. The final linkable code for
+the assembler patches, namely ExampleCH21-1.s and 
+ExampleCH21-2.s, have been renamed as Patch1.o and 
+Patch2.o to avoid name clashes with the associated 
+compiled C modules. Note that although these examples 
+have been linked with WorkBench/CLI code they use C's 
+printf() function and should be run from a CLI/Shell 
+environment.
+
+
+The third example has been placed in a separate 
+directory called Chapter21_Flash and again the
+linkable code for assembler patch ExampleCH21-3.s
+has been named as Patch3.o. I've provided an include
+file called CH21flash_include.i that contains the
+definitions needed to compile the assembler code without 
+the official includes. Just remove the include file 
+references at the start of the file and insert the 
+line...
+	
+	include CH21Flash_include.i
+
+This provides all definitions required by the assembler
+patch. Notice that within this file I've defined my own 
+versions of the Devpac CALLEXEC and CALLGRAF macros (in 
+terms of the CALLSYS macro I've used throughout the book).
+
+The runable example has been linked with start-up 
+code and may therefore be run either from a CLI/Shell 
+window or by double clicking on the program's icon. 
+
+
+
+
+
+

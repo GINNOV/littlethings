@@ -223,7 +223,20 @@ struct ContentView: View {
     @State private var selectedTutorialID: String = ""
     @State private var isLoadingTutorial: Bool = false
     @State private var didApplyStartupEditorState: Bool = false
+    @State private var selectedLessonID: String = "why-assembly"
+    @State private var isLessonPanelVisible = true
+    @AppStorage("assemblySchoolCompletedLessonIDs") private var completedLessonIDsStorage: String = ""
 
+    private let assemblyCourse = AssemblyCourseCatalog.bundledCourse() ?? AssemblyCourse(
+        id: "amiga-68000",
+        title: "Amiga 68000 Assembly School",
+        subtitle: "Learn by editing, assembling, and running real code.",
+        lessons: []
+    )
+
+    private var completedLessonIDs: Set<String> {
+        Set(completedLessonIDsStorage.split(separator: ",").map(String.init))
+    }
     private var selectedBackend: EmulatorBackend {
         EmulatorBackend(rawValue: emulatorBackend) ?? .fsUAE
     }
@@ -520,6 +533,15 @@ SineWave:
                         .accessibilityIdentifier("exportADFButton")
                         .help("Export a bootable ADF")
 
+                        Button {
+                            isLessonPanelVisible.toggle()
+                        } label: {
+                            Label("Lesson Panel", systemImage: "sidebar.right")
+                        }
+                        .buttonStyle(.bordered)
+                        .accessibilityIdentifier("lessonPanelButton")
+                        .help("Show or hide the Assembly School lesson panel")
+
                         Picker(selection: $selectedTutorialID) {
                             Text("Tutorials").tag("")
                             if tutorialCatalog.isLoading && tutorialCatalog.tutorials.isEmpty {
@@ -740,8 +762,8 @@ SineWave:
                 .frame(minWidth: 260, idealWidth: 340, maxWidth: 420)
                 .background(Color(red: 0.08, green: 0.08, blue: 0.1))
 
-                // RIGHT: Split Code Editor + VASM Console output
-                VSplitView {
+                HSplitView {
+                    VSplitView {
                     // UPPER: Retro Custom Assembly Code Editor
                     VStack(spacing: 0) {
                         HStack(spacing: 12) {
@@ -892,8 +914,22 @@ SineWave:
                         }
                     }
                     .frame(minHeight: 180, maxHeight: 400)
+                    }
+                    .frame(minWidth: 420)
+
+                    if isLessonPanelVisible {
+                        AssemblyLessonPanel(
+                            course: assemblyCourse,
+                            selectedLessonID: $selectedLessonID,
+                            completedLessonIDs: completedLessonIDs,
+                            onLoadCode: loadAssemblyLesson,
+                            onAssemble: runCompilation,
+                            onRun: runAssemblyLesson,
+                            onComplete: completeAssemblyLesson
+                        )
+                    }
                 }
-                .frame(minWidth: 420)
+                .frame(minWidth: 760)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
@@ -945,6 +981,43 @@ SineWave:
         codeText = ""
         selectedTutorialID = ""
         outputConsole = "Editor Cleared."
+    }
+
+    private func loadAssemblyLesson(_ lesson: AssemblyLesson) {
+        let loadState = AssemblyLessonLoader.load(lesson)
+        codeText = loadState.codeText
+        selectedTutorialID = loadState.selectedTutorialID
+        if let presetID = loadState.emulatorPresetID,
+           let preset = HardwarePreset.presets.first(where: { $0.id == presetID }) {
+            applyAssemblyLessonHardwarePreset(preset)
+        }
+    }
+
+    private func runAssemblyLesson(_ lesson: AssemblyLesson) {
+        if let presetID = lesson.emulatorPresetID,
+           let preset = HardwarePreset.presets.first(where: { $0.id == presetID }) {
+            applyAssemblyLessonHardwarePreset(preset)
+        }
+        runInEmulator()
+    }
+
+    private func applyAssemblyLessonHardwarePreset(_ preset: HardwarePreset) {
+        emulatorModel = preset.model
+        emulatorCpu = preset.cpu
+        emulatorChipRam = preset.chipRam
+        emulatorFastRam = preset.fastRam
+        emulatorJit = preset.jit
+
+        let availableRoms = EmulatorService.shared.getAvailableRoms()
+        if let matchingRom = HardwarePresetResolver.bestRomFilename(for: preset, availableRoms: availableRoms) {
+            selectedRomFilename = matchingRom
+        }
+    }
+
+    private func completeAssemblyLesson(_ lessonID: String) {
+        var completed = completedLessonIDs
+        completed.insert(lessonID)
+        completedLessonIDsStorage = completed.sorted().joined(separator: ",")
     }
 
     private func loadExample(named key: String) {
@@ -1200,6 +1273,7 @@ SineWave:
             self.outputConsole = resultMessage
 
             if success {
+                self.activeOutputTab = .emulator
                 // Increment trigger to notify WKWebView updateNSView to inject ADF file
                 self.adfTrigger += 1
             }
@@ -1695,58 +1769,9 @@ struct SettingsView: View {
         emulatorFastRam = preset.fastRam
         emulatorJit = preset.jit
 
-        if let matchingRom = bestRom(for: preset) {
+        if let matchingRom = HardwarePresetResolver.bestRomFilename(for: preset, availableRoms: availableRoms) {
             selectedRomFilename = matchingRom
         }
-    }
-
-    private func bestRom(for preset: HardwarePreset) -> String? {
-        let matches = availableRoms.compactMap { rom -> (rom: RomEntry, score: Int)? in
-            let name = rom.relativePath.lowercased()
-            guard preset.requiredRomTerms.allSatisfy(name.contains),
-                  preset.anyRomTerms.isEmpty || preset.anyRomTerms.contains(where: name.contains),
-                  !preset.excludedRomTerms.contains(where: name.contains)
-            else {
-                return nil
-            }
-
-            let fileSize = romFileSize(rom)
-            if let minimumRomSize = preset.minimumRomSize, fileSize < minimumRomSize {
-                return nil
-            }
-
-            var score = preset.preferredRomTerms.reduce(0) {
-                $0 + (name.contains($1) ? 10 : 0)
-            }
-            if fileSize == preset.idealRomSize {
-                score += 5
-            }
-            if name.contains("[!]") {
-                score += 2
-            }
-            return (rom, score)
-        }
-
-        return matches
-            .sorted {
-                if $0.score == $1.score {
-                    return $0.rom.displayName.localizedStandardCompare($1.rom.displayName) == .orderedAscending
-                }
-                return $0.score > $1.score
-            }
-            .first?
-            .rom
-            .relativePath
-    }
-
-    private func romFileSize(_ rom: RomEntry) -> Int {
-        guard
-            let attributes = try? FileManager.default.attributesOfItem(atPath: rom.absolutePath),
-            let size = attributes[.size] as? NSNumber
-        else {
-            return 0
-        }
-        return size.intValue
     }
 
     private func chooseRomsDirectory() {
@@ -2245,6 +2270,57 @@ private struct HardwarePreset: Identifiable {
             minimumRomSize: 524_288, idealRomSize: 524_288
         )
     ]
+}
+
+private enum HardwarePresetResolver {
+    static func bestRomFilename(for preset: HardwarePreset, availableRoms: [RomEntry]) -> String? {
+        let matches = availableRoms.compactMap { rom -> (rom: RomEntry, score: Int)? in
+            let name = rom.relativePath.lowercased()
+            guard preset.requiredRomTerms.allSatisfy(name.contains),
+                  preset.anyRomTerms.isEmpty || preset.anyRomTerms.contains(where: name.contains),
+                  !preset.excludedRomTerms.contains(where: name.contains)
+            else {
+                return nil
+            }
+
+            let fileSize = fileSize(of: rom)
+            if let minimumRomSize = preset.minimumRomSize, fileSize < minimumRomSize {
+                return nil
+            }
+
+            var score = preset.preferredRomTerms.reduce(0) {
+                $0 + (name.contains($1) ? 10 : 0)
+            }
+            if fileSize == preset.idealRomSize {
+                score += 5
+            }
+            if name.contains("[!]") {
+                score += 2
+            }
+            return (rom, score)
+        }
+
+        return matches
+            .sorted {
+                if $0.score == $1.score {
+                    return $0.rom.displayName.localizedStandardCompare($1.rom.displayName) == .orderedAscending
+                }
+                return $0.score > $1.score
+            }
+            .first?
+            .rom
+            .relativePath
+    }
+
+    private static func fileSize(of rom: RomEntry) -> Int {
+        guard
+            let attributes = try? FileManager.default.attributesOfItem(atPath: rom.absolutePath),
+            let size = attributes[.size] as? NSNumber
+        else {
+            return 0
+        }
+        return size.intValue
+    }
 }
 
 struct SettingsPickerField<SelectionValue: Hashable, Content: View>: View {

@@ -1,0 +1,38 @@
+Filename:   Contents   
+Reference:  TAA/1.00
+File Date:  14-10-95
+
+
+Total Amiga Assembler
+---------------------
+The examples on this disk are stored in two main directories 
+with examples relating to (or taken from) the main text of 
+'Total Amiga Assembler' being held within sub-directories
+of the directory called ChapterExamples. Each chapter has 
+its own sub-directory containing the source listings, runable 
+code and other associated files. If the example is a runable 
+program then both the source code and an assembled version 
+will be given. The examples from chapter 21 all consist of
+a number of related files and to avoid confusion these file
+sets have been placed in two sub-directories (Chapter21 and
+Chapter21_Flash). Document files for the examples have not
+been provided since the examples are fully discussed within 
+the book itself. 
+
+A number of other pieces of code have been provided in the 
+OtherExamples directory. These do have document files!
+
+IMPORTANT: You should note that most early executable examples 
+are CLI/Shell based and so they do NOT have a corresponding icon 
+file. To run these programs you need to open a CLI/Shell window 
+and execute them as you would any other CLI/Shell program, ie 
+type their name. Later chapter examples have been linked with 
+suitable start-up code and are therefore both CLI/Shell and 
+WorkBench runable (icons have been provided). You will find 
+more details about CLI/Shell versus WorkBench running, 
+start-up code, and other things in the document file called 
+'ImportantNotes'. Needless to say it is important for you 
+to read this BEFORE assembling and running the disk examples!
+
+
+

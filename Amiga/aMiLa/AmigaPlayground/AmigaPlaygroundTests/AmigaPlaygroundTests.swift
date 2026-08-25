@@ -1399,6 +1399,74 @@ CopperList:
         }
     }
 
+    func testAssemblyCourseParsesLessonsAndQuizContract() throws {
+        let json = Data("""
+        {
+          "id": "amiga-68000",
+          "title": "Amiga 68000 Assembly School",
+          "subtitle": "Learn by editing and running real code.",
+          "lessons": [
+            {
+              "id": "move",
+              "title": "MOVE: your first instruction",
+              "subtitle": "Constants, registers, and sizes",
+              "tag": "Simulator",
+              "goal": "Make D0 contain 42.",
+              "theory": ["MOVE copies data."],
+              "analogy": "A register is an explicit variable.",
+              "keyIdea": "The destination is on the right.",
+              "starterCode": "moveq #42,d0\\nrts",
+              "quiz": {
+                "question": "What does MOVE do?",
+                "options": ["Copy", "Jump"],
+                "answer": 0,
+                "feedback": "MOVE copies the source value."
+              }
+            }
+          ]
+        }
+        """.utf8)
+
+        let course = try AssemblyCourseCatalog.parse(json)
+
+        XCTAssertEqual(course.id, "amiga-68000")
+        XCTAssertEqual(course.lessons.count, 1)
+        XCTAssertEqual(course.lessons[0].starterCode, "moveq #42,d0\nrts")
+        XCTAssertEqual(course.lessons[0].quiz.answer, 0)
+    }
+
+    func testAssemblyLessonLoadStateOnlyTargetsTheEditor() {
+        let lesson = AssemblyLesson(
+            id: "move",
+            title: "MOVE: your first instruction",
+            subtitle: "Constants, registers, and sizes",
+            tag: "Practice",
+            goal: "Make D0 contain 42.",
+            emulatorPresetID: "a500-kickstart-13",
+            emulatorPresetName: "A500 Kickstart 1.3",
+            theory: [],
+            analogy: "A register is an explicit variable.",
+            keyIdea: "The destination is on the right.",
+            starterCode: "    MOVEQ #42,D0\n    RTS",
+            quiz: AssemblyQuiz(
+                question: "What does MOVE do?",
+                options: ["Copy", "Jump"],
+                answer: 0,
+                feedback: "MOVE copies the source value."
+            )
+        )
+
+        let loadState = AssemblyLessonLoader.load(lesson)
+
+        XCTAssertEqual(loadState.codeText, lesson.starterCode)
+        XCTAssertEqual(loadState.selectedTutorialID, "")
+        XCTAssertEqual(
+            loadState.emulatorPresetID,
+            "a500-kickstart-13",
+            "Loading a lesson must carry its emulator profile into the editor state."
+        )
+    }
+
     func testDockerBackendDisplayNameAndArgs() {
         XCTAssertEqual(EmulatorBackend.docker.displayName, "Docker (vamos)")
         let service = EmulatorService.shared

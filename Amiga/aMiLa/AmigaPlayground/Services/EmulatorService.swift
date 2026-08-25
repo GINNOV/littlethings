@@ -1,4 +1,5 @@
 import Foundation
+import AppKit
 
 enum EmulatorBackend: String, CaseIterable, Identifiable {
     case fsUAE = "fsUAE"
@@ -346,6 +347,26 @@ class EmulatorService {
         }
     }
 
+    private func activate(process: Process) {
+        guard let application = NSRunningApplication(processIdentifier: process.processIdentifier) else { return }
+        application.activate(options: [.activateAllWindows])
+    }
+
+    private func activateApplication(at bundlePath: String) {
+        let bundleURL = URL(fileURLWithPath: bundlePath)
+        let bundleIdentifier = Bundle(url: bundleURL)?.bundleIdentifier
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+            let application: NSRunningApplication?
+            if let bundleIdentifier {
+                application = NSRunningApplication.runningApplications(withBundleIdentifier: bundleIdentifier).last
+            } else {
+                application = NSWorkspace.shared.runningApplications.first { $0.bundleURL == bundleURL }
+            }
+            application?.activate(options: [.activateAllWindows])
+        }
+    }
+
     func buildFSUAEArguments(config: EmulatorLaunchConfig) -> [String] {
         let chipMemKb = mapRamToKb(ramStr: config.chipRamMb, isChip: true)
         let fastMemKb = mapRamToKb(ramStr: config.fastRamMb, isChip: false)
@@ -500,6 +521,7 @@ class EmulatorService {
 
             do {
                 try process.run()
+                self.activate(process: process)
                 DispatchQueue.main.async {
                     completion(EmulatorLaunchResult(
                         success: true,
@@ -562,6 +584,11 @@ class EmulatorService {
                 errorPipe.fileHandleForReading.readabilityHandler = outputHandler
 
                 try process.run()
+                if let appBundlePath = self.vAmigaAppBundlePath(from: executablePath), invocation.executablePath == "/usr/bin/open" {
+                    self.activateApplication(at: appBundlePath)
+                } else {
+                    self.activate(process: process)
+                }
 
                 DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 1.0) {
                     outputPipe.fileHandleForReading.readabilityHandler = nil

@@ -1,0 +1,73 @@
+Filename:   Assemblers  
+Reference:  TAA/1.00
+File Date:   14-10-95
+
+
+
+One of the good things about 680x0 assembler coding
+is that you will meet surprisingly few 'environmental 
+problems'. If a piece of Amiga code can be assembled 
+without errors on one standard 680x0 assembler then
+the chances are high that, with little or no change, 
+it will assemble correctly with another standard 680x0
+assembler. The examples in this book were assembled 
+using Devpac but can for instance easily be modified 
+to assemble under A68k.
+
+A68k is a freely distributable assembler that is 
+available from almost all public domain libraries. 
+It is found both as a separate package and as a 
+component of a variety of public domain high-level 
+languages. If, for example, you have a copy of Steve 
+Hawtin's NorthC compiler then you'll find that you 
+have A68k and Blink (and their documentation files) 
+in the 'bin' directory of the main compiling disk.
+
+A68k however does require that source files contain 
+an explicit END statement at the end of the source code 
+so a small change is necessary before most of the examples 
+listed in this book can be assembled using A68k. This 
+is easily done and if you read the source file into 
+any available ASCII text editor (ED or Memacs will do), 
+move to the end of the text file and insert a terminal 
+END statement as the last line of the source code you 
+will then find that most of the examples will assemble 
+without problem.
+
+With one or two examples, namely those that use the 
+SECTION directive to ensure that graphics data gets 
+placed in chip memory, another small change will be 
+necessary. For A68k users the source code line...
+
+SECTION IMAGE,DATA_C
+
+which appears just before the graphics data itself 
+will need to be changed to...
+
+SECTION IMAGE,DATA,CHIP
+
+
+The A68k and Blink usage options themselves are well 
+explained in the associated document files (which are 
+always distributed along with these  programs) and for 
+the examples in this book only simple command lines 
+will be needed. If, for example, a source file called 
+test.s is present in the ram disk and your include files 
+are present in the include directory of the disk in df0 
+then the CLI/Shell command line to assemble the program 
+test.s would be... 
+
+a68k ram:test.s -oram:test.o -idf0:include
+
+
+This would produce in the ram disk an object file, test.o, 
+which could subsequently be linked using Blink. In the 
+simple case where no start-up code or linker libraries 
+were being specified the Blink command line...
+
+blink ram:test.o to ram:test
+
+would result in an executable (runable) program called 
+'test' being placed in the ram disk.
+
+

@@ -26,6 +26,8 @@
 		A11100002E8000D200000000 /* Services/MLXServerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E8000D100000000 /* Services/MLXServerController.swift */; };
 		A11100002E8000E200000000 /* App/UpdaterController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E8000E100000000 /* App/UpdaterController.swift */; };
 		A11100002E8000E400000000 /* App/UpdaterCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E8000E300000000 /* App/UpdaterCommands.swift */; };
+		A11100002E8000F600000000 /* Services/AssemblyCourseCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E8000F500000000 /* Services/AssemblyCourseCatalog.swift */; };
+		A11100002E8000F800000000 /* Views/AssemblyLessonPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E8000F700000000 /* Views/AssemblyLessonPanel.swift */; };
 		A11100002E8000E600000000 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = A11100002E8000E500000000 /* Sparkle */; };
 /* End PBXBuildFile section */
 
@@ -69,6 +71,8 @@
 		A11100002E8000D100000000 /* Services/MLXServerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/MLXServerController.swift; sourceTree = "<group>"; };
 		A11100002E8000E100000000 /* App/UpdaterController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/UpdaterController.swift; sourceTree = "<group>"; };
 		A11100002E8000E300000000 /* App/UpdaterCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/UpdaterCommands.swift; sourceTree = "<group>"; };
+		A11100002E8000F500000000 /* Services/AssemblyCourseCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/AssemblyCourseCatalog.swift; sourceTree = "<group>"; };
+		A11100002E8000F700000000 /* Views/AssemblyLessonPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/AssemblyLessonPanel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -144,6 +148,7 @@
 				A11100002E80001200000000 /* Views/BoingBallView.swift */,
 				A11100002E8000C300000000 /* Views/PromptLibraryView.swift */,
 				A11100002E80001700000000 /* Views/WebEmulatorView.swift */,
+				A11100002E8000F700000000 /* Views/AssemblyLessonPanel.swift */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -152,6 +157,7 @@
 			isa = PBXGroup;
 			children = (
 				A11100002E8000B100000000 /* Services/AssistantChatSession.swift */,
+				A11100002E8000F500000000 /* Services/AssemblyCourseCatalog.swift */,
 				A11100002E80001300000000 /* Services/CompilerService.swift */,
 				A11100002E80001600000000 /* Services/EmulatorService.swift */,
 				A11100002E8000F100000000 /* Services/TutorialCatalogService.swift */,
@@ -332,6 +338,8 @@
 				A11100002E80002700000000 /* Views/WebEmulatorView.swift in Sources */,
 				A11100002E8000E400000000 /* App/UpdaterCommands.swift in Sources */,
 				A11100002E8000E200000000 /* App/UpdaterController.swift in Sources */,
+				A11100002E8000F600000000 /* Services/AssemblyCourseCatalog.swift in Sources */,
+				A11100002E8000F800000000 /* Views/AssemblyLessonPanel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

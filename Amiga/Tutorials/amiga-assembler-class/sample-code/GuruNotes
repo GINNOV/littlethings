@@ -1,0 +1,85 @@
+Filename:   GuruNotes
+Reference:  TAA/1.00
+File Date:   14-10-95
+
+
+The Dreaded Guru
+----------------
+Amiga programs, especially during development, will 
+crash from time to time and when they do several things 
+can happen. Sometimes the machine just freezes, ie it 
+stops responding to keyboard or mouse commands, very 
+occasionally you will see some weird and wonderful 
+screen displays but more often or not you'll just be 
+given a 'Guru message'.  These messages can't be missed  
+- a big red alert box tells you that something is 
+seriously wrong.  Usually you get a preliminary 
+message first saying...
+
+         SOFTWARE ERROR - task held
+         Cancel ALL disk activity
+         Select CANCEL to reset/debug
+
+and following this comes the Guru message itself...
+
+  Software Failure - Press left mouse button to contine
+     Guru Meditation   (here you'll see some number)
+
+
+When you see one of these messages it means that one 
+of the programs which was in use at the time either 
+developed, or caused, a fault and as a safety precaution 
+the operating system responded by stopping that program 
+from running. There are a million reasons why such an 
+event could occur... the program itself may have got 
+into difficulties, perhaps overwritting memory locations 
+used by the system or another program, or it may have 
+asked the operating system to do something which cannot be 
+done. Providing the damage is limited to the program in 
+question any other programs will still be able to function 
+and by clicking on the appropriate windows you'll be able 
+to continue with the other tasks long enough to save any 
+data etc. Unfortunately AmigDOS cannot stop a program 
+from writing to memory locations outside of its allotted 
+space and it is when this type of problem occurs that the 
+situation is more serious. It means of course that no 
+matter how robust a given individual piece of software 
+is... it can always be brought down by another rogue 
+task running at the same time. 
+
+As a programmer the meditation number can help you identify 
+the type of error,  show where it occured and indicate which 
+task was involved.  When you are reporting a problem with a 
+piece of commercial software the meditation number could 
+help identify potential causes. The number you'll see 
+displayed will be in hexadecimal (base 16) form and will 
+look a bit like this...
+
+ Guru Meditation   #  0 2 0 1 0 0 0 9 . 0 0 0 0 A 2 1 0
+
+The numbers to the right of the decimal point specify the 
+address of the task that caused the alert... advanced 
+programmers can use debugging tools to investigate the 
+task but this type of fault finding is a specialised area 
+which is definitely not recommended for the faint hearted.  
+The numbers on the left of the decimal point provide some 
+details about the error which has occured. The first two 
+characters for instance identify both the area where the 
+problem occured and indicate whether the alert is 
+recoverable or not. These disk notes are not really the 
+place to go into detail but the 02 in the above example 
+tells us that the problem concerned the graphics library.  
+The next two characters are a general code which indicates 
+the type of problem,  eg the 01 in the example means 
+'insufficient memory'. The interpretation of the last four 
+digits give extra help although the exact meaning is 
+dependent on the other code values.  
+
+For those who do want the full 'messy details' the place 
+to look is in the exec/alerts.i include file. Programmers 
+get this file (and many other standard include files) 
+with software development packages and it is of course 
+also listed in the Includes & Autodocs Amiga ROM Kernel 
+Reference manual (published by Addison Wesley).
+
+

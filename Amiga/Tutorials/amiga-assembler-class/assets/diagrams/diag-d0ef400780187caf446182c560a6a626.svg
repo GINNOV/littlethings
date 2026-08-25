@@ -1,0 +1,287 @@
+<svg class="bob" font-family="arial" font-size="14" height="512" width="792" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<marker id="triangle" markerHeight="8" markerWidth="8" orient="auto" refX="4" refY="2" viewBox="0 0 8 4">
+<polygon class="fg_fill" points="0,0 0,4 8,2 0,0"/>
+</marker>
+<marker id="clear_triangle" markerHeight="10" markerWidth="10" orient="auto" refX="1" refY="7" viewBox="0 0 20 14">
+<polygon class="bg_fill" points="2,2 2,12 18,7 2,2"/>
+</marker>
+<marker id="circle" markerHeight="5" markerWidth="5" orient="auto" refX="10" refY="10" viewBox="0 0 20 20">
+<circle class="fg_fill" cx="10" cy="10" r="8"/>
+</marker>
+<marker id="square" markerHeight="5" markerWidth="5" orient="auto" refX="10" refY="10" viewBox="0 0 20 20">
+<rect class="fg_fill" height="20" width="20" x="0" y="0"/>
+</marker>
+<marker id="open_circle" markerHeight="10" markerWidth="10" orient="auto" refX="10" refY="10" viewBox="0 0 20 20">
+<circle class="bg_fill" cx="10" cy="10" r="4"/>
+</marker>
+<marker id="big_open_circle" markerHeight="20" markerWidth="20" orient="auto" refX="20" refY="20" viewBox="0 0 40 40">
+<circle class="bg_fill" cx="20" cy="20" r="6"/>
+</marker>
+</defs>
+<style type="text/css">
+
+rect.backdrop {
+    fill: white;
+}
+text{
+    fill: black;
+}
+
+circle {
+    fill: none;
+    stroke: black;
+    stroke-width: 2;
+}
+
+line {
+    stroke: black;
+    stroke-width: 2;
+    stroke-opacity: 1;
+    fill-opacity: 1;
+    stroke-linecap: round;
+    stroke-linejoin: miter;
+}
+
+path {
+    fill: none;
+    stroke: black;
+    stroke-width: 2;
+    stroke-opacity: 1;
+    fill-opacity: 1;
+    stroke-linecap: round;
+    stroke-linejoin: miter;
+}
+
+line.dashed {
+    stroke-dasharray: 5;
+}
+
+.fg_fill {
+    fill: black;
+}
+
+
+.bg_fill {
+    fill: white;
+    stroke: black;
+    stroke-width: 2;
+}
+
+tspan.head{
+    fill: none;
+    stroke: none;
+}
+    
+</style>
+<rect class="backdrop" height="512" width="792" x="0" y="0"/>
+<g>
+<line x1="136" x2="140" y1="144" y2="136"/>
+<line x1="136" x2="140" y1="144" y2="152"/>
+<line x1="140" x2="140" y1="8" y2="136"/>
+<line x1="140" x2="144" y1="8" y2="0"/>
+<line x1="140" x2="140" y1="152" y2="504"/>
+<line x1="144" x2="140" y1="512" y2="504"/>
+</g>
+<g>
+<line x1="288" x2="292" y1="336" y2="328"/>
+<line x1="288" x2="292" y1="336" y2="344"/>
+<line x1="292" x2="292" y1="216" y2="328"/>
+<line x1="292" x2="296" y1="216" y2="208"/>
+<line x1="292" x2="292" y1="344" y2="504"/>
+<line x1="296" x2="292" y1="512" y2="504"/>
+</g>
+<g>
+<line x1="456" x2="460" y1="400" y2="392"/>
+<line x1="456" x2="460" y1="400" y2="408"/>
+<line x1="460" x2="460" y1="360" y2="392"/>
+<line x1="460" x2="464" y1="360" y2="352"/>
+<line x1="460" x2="460" y1="408" y2="440"/>
+<line x1="464" x2="460" y1="448" y2="440"/>
+</g>
+<g>
+<text x="9" y="140">
+CONTROL
+</text>
+</g>
+<g>
+<text x="9" y="156">
+CHARACTER
+</text>
+</g>
+<g>
+<text x="17" y="172">
+(0,1 time)
+</text>
+</g>
+<g>
+<text x="153" y="28">
+ASCII CODE = 8  &lt; Move cursor to left
+</text>
+</g>
+<g>
+<text x="153" y="60">
+ASCII CODE = 16 &lt; Move cursor to left
+</text>
+</g>
+<g>
+<text x="153" y="92">
+ASCII CODE = 10 &lt; Move cursor to left
+</text>
+</g>
+<g>
+<text x="153" y="124">
+ASCII CODE = 11 &lt; Move cursor to left
+</text>
+</g>
+<g>
+<text x="153" y="156">
+ASCII CODE = 9  &lt; Move cursor to left
+</text>
+</g>
+<g>
+<text x="153" y="188">
+ASCII CODE = 12 &lt; Move cursor to left
+</text>
+</g>
+<g>
+<text x="169" y="332">
+OTHER ASCII
+</text>
+</g>
+<g>
+<text x="169" y="348">
+CODES
+</text>
+</g>
+<g>
+<text x="177" y="364">
+(0,1 time)
+</text>
+</g>
+<g>
+<text x="193" y="44">
+(+)
+</text>
+</g>
+<g>
+<text x="193" y="76">
+(+)
+</text>
+</g>
+<g>
+<text x="193" y="108">
+(+)
+</text>
+</g>
+<g>
+<text x="193" y="140">
+(+)
+</text>
+</g>
+<g>
+<text x="193" y="172">
+(+)
+</text>
+</g>
+<g>
+<text x="193" y="252">
+(+)
+</text>
+</g>
+<g>
+<text x="305" y="236">
+INFORM USER &#39;KEY HAS NO FUNCTION&#39;
+</text>
+</g>
+<g>
+<text x="305" y="268">
+ASK USER &#39;DO YOU WANT MENU Y/N?&#39;
+</text>
+</g>
+<g>
+<text x="305" y="300">
+COLLECT REPLY
+</text>
+</g>
+<g>
+<text x="305" y="316">
+(1 time)
+</text>
+</g>
+<g>
+<text x="305" y="380">
+USER WANTS MENU
+</text>
+</g>
+<g>
+<text x="305" y="460">
+_______________
+</text>
+</g>
+<g>
+<text x="305" y="476">
+USER WANTS MENU  &lt; SKIP, ie do something
+</text>
+</g>
+<g>
+<text x="305" y="492">
+(0,1 time)
+</text>
+</g>
+<g>
+<text x="313" y="252">
+(1 time)
+</text>
+</g>
+<g>
+<text x="313" y="284">
+(1 time)
+</text>
+</g>
+<g>
+<text x="313" y="396">
+(0,1 time)
+</text>
+</g>
+<g>
+<text x="345" y="428">
+(+)
+</text>
+</g>
+<g>
+<text x="457" y="300">
+&lt;
+</text>
+</g>
+<g>
+<text x="473" y="300">
+SYSTEM INPUT ROUTINE
+</text>
+</g>
+<g>
+<text x="473" y="364">
+SAVE CONTENTS OF SCREEN
+</text>
+</g>
+<g>
+<text x="473" y="380">
+DISPLAY MENU OF CONTROL OPTIONS
+</text>
+</g>
+<g>
+<text x="473" y="396">
+INFORM USER &#39;PRESS ANY KEY TO CONTINUE
+</text>
+</g>
+<g>
+<text x="473" y="412">
+COLLECT INPUT CHARACTER
+</text>
+</g>
+<g>
+<text x="473" y="428">
+RESTORE CONTENTS OF SCREEN
+</text>
+</g>
+</svg>

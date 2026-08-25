@@ -1,0 +1,147 @@
+DataTypes- a brief introduction along with a simple example!
+
+Datatypes were introduced with Workbench 3.0,to provide a way 
+for an applications program to both recognise and read/write various 
+data file formats without having to learn all the messy details abut 
+how the data in the files is stored. 
+
+The datatypes library implementation is 'object oriented' and based 
+on the BOOPSI-related ideas of Intuition. In short a datatype can be 
+regarded as a program that hides the file format details. An application 
+can open the datatypes library, pass a filename to it, and ask whether 
+it recognises the format. 
+
+The datatypes library has a look at the file, consults its list of 
+installed datatypes, and then comes back either with a suitable block 
+of data identifying the file, or a 'not recognised' indicator. Once a 
+file datatype has been identified there are various other datatype 
+library functions that can be used  for reading/using the file and 
+identifying the various 'methods' (ie associated functions) that can 
+be used with that datatype. 
+
+Although this area is outside the scope of the Total Amiga Assembler 
+book I thought a simple example example might be a useful extra. For 
+the purpose of this folder's example I'm setting my sights just on 
+using the datatypes library to identify the general characteristics of 
+a specified file using two functions called ObtainDataTypeA() and 
+ReleaseDataType(). If the call to ObtainDataTypeA() is successful 
+a pointer to a Datatype structure will be obtained and the dtn_Header 
+field of this structure points to a block of information containing 
+these fields...
+
+    STRUCTURE DataTypeHeader,0
+   ULONG    dth_Name Descriptive name of the data type
+   ULONG    dth_BaseName   Base name of the data type
+   ULONG    dth_Pattern Match pattern for the file name.
+   APTR     dth_Mask Comparision mask
+   ULONG    dth_GroupID Group that the data type is in
+   ULONG    dth_ID      ID for data type
+   WORD     dth_MaskLen Length of comparision mask
+   WORD     dth_Pad     Unused (must be 0)
+   UWORD    dth_Flags   Flags
+   UWORD    dth_Priority   Priority
+    LABEL DataTypeHeader_SIZEOF
+
+
+All I'll be doing is printing the dth_Name field to provide a 
+general description of the datatype. Now this may seem a relatively 
+simple task but there are still quite a number of operations which 
+need to be performed. I've marked each of the main steps taken by 
+the program in the accompanying source code and many operations, 
+opening libraries, printing text messages using the WRITEDOS macro 
+and the amiga.lib printf() function etc., will be familiar from 
+material provided in Total Amiga Assembler. 
+
+There are however one or two other areas of the code that do need
+some additional explanation...
+
+
+Collecting An Argument From The Command Line 
+
+When a program is started via the Shell register a0 will be pointing
+to the start of the command line arguments and d0 will be holding 
+the associated character count. The example program, datatype,
+will expect a filename to be provided so it needs this sort of 
+usage template... 
+
+                datatype <somefilename> 
+                
+What is needed therefore is a loop to copy the filename argument and, 
+for safety (in case a user wrongly provides more than one argument) 
+I'm using the following loop that copies the argument to a buffer but 
+exits immediately if a space separator is found (since this would 
+indicate that two or more arguments were provided)...
+
+
+getarg1    lea filename,a1
+           subq.l   #1,d0          needed because loop goes to -1
+copy       move.b   (a0),(a1)+
+           cmpi.b   #SPACE,(a0)+
+           dbeq     d0,copy
+           subq.l   #1,a1
+           move.b   #NULL,(a1)     add terminal null 
+
+
+
+Locking and Identifying a File
+
+In order to use the ObtainDataTypeA() function it is necessary to have 
+a lock on the file. This is achieved using the dos Lock() function 
+and it is important that a shareable lock (ie an ACCESS_READ lock) is 
+asked for because the datatypes library will subsequently also need to 
+be able to read from the file. Once the lock is available a call to 
+ObtainDataTypeA() can be made and the datatype header structure address 
+obtained from the returned datatype pointer. 
+
+The contents of the first longword of the header structure can be used 
+as part of a printf() call to output the datatype's general name. You 
+will find the complete source in this folder (the file is called 
+datatype.s). A Shell runable version is also provided and remember that
+this will only run on Workbench 3 based machines!
+
+If you reassemble this example don't forget that, because the code is 
+using the printf() function, you will need to link with the amiga.lib 
+library using this sort of command line...
+
+   blink datatype.o to datatype library amiga.lib
+
+Running the program is easy: Just open a Shell window and type datatype 
+followed by a space and then the path/filename of the file you wish to
+examine. Try using the example code to identify IFF picture files, 
+sound samples, other text files and so on but, as you run it, do bear 
+one thing in mind -  it's not my code that's doing all the hard 
+identification work... it's the datatypes library!
+
+
+
+Function: ObtainDataTypeA()
+
+Purpose: To identify the data type of a file
+
+dt = ObtainDataTypeA(type, handle, attributes)
+d0                    d0    a0      a1
+
+Input data...  type       -  for files this should be DTST_FILE
+               handle     -  for files this should be a BPTR lock
+               attributes -  must be NULL at present
+
+Return value:  dt = pointer to a DataType structure or NULL if
+                    routine fails
+
+
+
+
+Function: ReleaseDataType()
+
+Purpose: Free a datatype node and all associated memory
+
+ReleaseDataType(dt)
+                a0
+
+Input data...  dt    -  pointer to DataType structure
+
+Return value:  none
+
+
+
+

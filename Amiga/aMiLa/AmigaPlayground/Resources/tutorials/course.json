@@ -1,0 +1,370 @@
+{
+  "id": "amiga-68000",
+  "title": "Amiga 68000 Assembly School",
+  "subtitle": "Learn 68000 assembly, Amiga custom chips, and system-friendly programs by running real code.",
+  "lessons": [
+    {
+      "id": "why-assembly",
+      "title": "What is assembly, and why 68000?",
+      "subtitle": "Build the mental model",
+      "tag": "Theory",
+      "goal": "Understand how assembly maps directly to CPU actions.",
+      "emulatorPresetID": "a500-kickstart-13",
+      "emulatorPresetName": "A500 Kickstart 1.3",
+      "theory": [
+        "In Swift, the compiler translates your intent into machine instructions. In assembly, you write that translation yourself.",
+        "The Motorola 68000 is a friendly first CPU because its instructions are regular and readable."
+      ],
+      "analogy": "Swift asks for array.sort(). Assembly writes the comparisons, swaps, and storage choices by hand.",
+      "keyIdea": "Computation happens in registers first. Memory is where data waits.",
+      "starterCode": "; The smallest useful program\n    moveq #0,d0\n    rts",
+      "quiz": {
+        "question": "Where does computation happen first on the 68000?",
+        "options": ["System memory", "Registers", "The Copper", "The stack"],
+        "answer": 1,
+        "feedback": "Correct. The CPU mostly computes in registers, then stores results back to memory or hardware."
+      }
+    },
+    {
+      "id": "register-file",
+      "title": "The register file",
+      "subtitle": "D0-D7 and A0-A7",
+      "tag": "Core",
+      "goal": "Use data registers for values and address registers for pointers.",
+      "emulatorPresetID": "a500-kickstart-13",
+      "emulatorPresetName": "A500 Kickstart 1.3",
+      "theory": [
+        "The 68000 gives you eight data registers, D0 through D7, and eight address registers, A0 through A7.",
+        "A7 is also the stack pointer, so it has a special role in every subroutine call."
+      ],
+      "analogy": "A Swift variable such as total becomes a deliberate register choice such as D0.",
+      "keyIdea": "MOVE source,destination is the basic assembly rhythm; destination is on the right.",
+      "starterCode": "; Put the result in D0\n    moveq #10,d0\n    moveq #7,d1\n    add.l d1,d0\n    subq.l #2,d0\n    rts",
+      "quiz": {
+        "question": "Which register is normally the stack pointer?",
+        "options": ["D0", "A0", "A7", "D7"],
+        "answer": 2,
+        "feedback": "Correct. A7 is the stack pointer, also written as SP."
+      }
+    },
+    {
+      "id": "move",
+      "title": "MOVE: your first instruction",
+      "subtitle": "Constants, registers, and sizes",
+      "tag": "Practice",
+      "goal": "Make D0 contain 42 by moving and adding values.",
+      "emulatorPresetID": "a500-kickstart-13",
+      "emulatorPresetName": "A500 Kickstart 1.3",
+      "theory": [
+        "MOVE copies data. It does not destroy the source.",
+        "MOVEQ is a compact form for loading small immediate values into data registers.",
+        "Instruction suffixes matter: .b is a byte, .w is a word, and .l is a longword."
+      ],
+      "analogy": "Swift hides integer width most of the time. Assembly makes the width visible.",
+      "keyIdea": "Always know which operand is the destination because that is the value that changes.",
+      "starterCode": "; Predict D0, then run it\n    moveq #5,d0\n    move.l d0,d1\n    addq.l #3,d1\n    move.l d1,d0\n    rts",
+      "quiz": {
+        "question": "After move.l d0,d1, what happens to D0?",
+        "options": ["It becomes zero", "It keeps its value", "It points to D1", "It becomes an address"],
+        "answer": 1,
+        "feedback": "Exactly. MOVE copies the source value; it does not consume it."
+      }
+    },
+    {
+      "id": "arithmetic",
+      "title": "Arithmetic: ADD, SUB, MULS",
+      "subtitle": "Do math one instruction at a time",
+      "tag": "Practice",
+      "goal": "Combine arithmetic instructions and inspect the result in D0.",
+      "emulatorPresetID": "a500-kickstart-13",
+      "emulatorPresetName": "A500 Kickstart 1.3",
+      "theory": [
+        "ADD and SUB modify the destination operand.",
+        "MULS multiplies signed values and produces a 32-bit result in a data register."
+      ],
+      "analogy": "score += 300 becomes an ADD instruction after score has been loaded into D0.",
+      "keyIdea": "A register is both your workspace and your result, so track every mutation.",
+      "starterCode": "; Make D0 equal 42\n    moveq #6,d0\n    moveq #7,d1\n    muls d1,d0\n    rts",
+      "quiz": {
+        "question": "Which side changes in add.l d1,d0?",
+        "options": ["D1", "D0", "Both registers", "Neither register"],
+        "answer": 1,
+        "feedback": "Right. D0 receives D0 + D1 because it is the destination."
+      }
+    },
+    {
+      "id": "branches",
+      "title": "Branching and loops",
+      "subtitle": "BEQ, BNE, DBRA",
+      "tag": "Control",
+      "goal": "Build loop behavior from labels, flags, and branches.",
+      "emulatorPresetID": "a500-kickstart-13",
+      "emulatorPresetName": "A500 Kickstart 1.3",
+      "theory": [
+        "Assembly has no if or while keyword. You make control flow with labels and branches.",
+        "CMP sets CPU flags, and conditional branches read those flags.",
+        "DBRA decrements a data register and branches while it has not reached -1."
+      ],
+      "analogy": "A Swift loop has a hidden test and jump. Assembly makes both explicit.",
+      "keyIdea": "Branches are how code stops being a straight line.",
+      "starterCode": "; Add 5 + 4 + 3 + 2 + 1\n    moveq #0,d0\n    moveq #5,d1\nloop:\n    add.w d1,d0\n    subq.w #1,d1\n    bne loop\n    rts",
+      "quiz": {
+        "question": "What makes bne loop jump?",
+        "options": ["The previous result was not zero", "D0 is positive", "The label stores true", "The stack is empty"],
+        "answer": 0,
+        "feedback": "Yes. BNE branches when the zero flag is clear."
+      }
+    },
+    {
+      "id": "memory",
+      "title": "Memory and addressing",
+      "subtitle": "Labels, pointers, and offsets",
+      "tag": "Memory",
+      "goal": "Recognize labels as addresses and use address registers as pointers.",
+      "emulatorPresetID": "a500-kickstart-13",
+      "emulatorPresetName": "A500 Kickstart 1.3",
+      "theory": [
+        "A label is a readable name for an address.",
+        "LEA loads the address of a label, not the bytes stored there.",
+        "Offset addressing such as 2(a0) means memory at A0 plus 2."
+      ],
+      "analogy": "A Swift array access hides address math. In 68k, the address math is visible in the operand.",
+      "keyIdea": "Memory only becomes meaningful when you know its layout.",
+      "starterCode": "; A tiny struct-like layout\n    moveq #0,d0\n    move.w #1200,d0\n    add.w #300,d0\n    rts",
+      "quiz": {
+        "question": "What does lea player,a0 load?",
+        "options": ["The first byte of player", "The address of player", "The score field", "Zero"],
+        "answer": 1,
+        "feedback": "Correct. LEA means load effective address."
+      }
+    },
+    {
+      "id": "subroutines",
+      "title": "Subroutines: JSR and RTS",
+      "subtitle": "Calls, returns, and the stack",
+      "tag": "Control",
+      "goal": "Call a helper routine and return with the result in D0.",
+      "emulatorPresetID": "a500-kickstart-13",
+      "emulatorPresetName": "A500 Kickstart 1.3",
+      "theory": [
+        "BSR and JSR call subroutines. RTS returns to the saved address.",
+        "The return address is saved on the stack, which uses A7."
+      ],
+      "analogy": "A Swift function call has a calling convention too. Assembly makes that contract visible.",
+      "keyIdea": "Every routine should document its inputs, outputs, and preserved registers.",
+      "starterCode": "; Double D0 with a helper\n    moveq #21,d0\n    bsr double_d0\n    rts\n\ndouble_d0:\n    add.l d0,d0\n    rts",
+      "quiz": {
+        "question": "What instruction returns from a 68k subroutine?",
+        "options": ["RET", "END", "RTS", "BRA"],
+        "answer": 2,
+        "feedback": "Right. RTS restores the saved return address and continues after the call."
+      }
+    },
+    {
+      "id": "amiga-program",
+      "title": "Your first Amiga program",
+      "subtitle": "Write to hardware",
+      "tag": "Amiga",
+      "goal": "Write a color value directly to the Amiga COLOR00 register.",
+      "emulatorPresetID": "a500-kickstart-13",
+      "emulatorPresetName": "A500 Kickstart 1.3",
+      "theory": [
+        "Amiga custom chips are mapped into memory, so writing to a hardware address changes hardware state.",
+        "$DFF180 is COLOR00, the background color register."
+      ],
+      "analogy": "Swift calls an API. Classic Amiga code can write directly to a hardware register.",
+      "keyIdea": "The CPU, Copper, Blitter, Paula, and Agnus form the Amiga personality.",
+      "starterCode": "; Conceptual hardware write\n    move.w #$0f00,$dff180\n    rts",
+      "quiz": {
+        "question": "What is special about $DFF180?",
+        "options": ["It is D0 in memory", "It is the background color register", "It starts every program", "It is the stack"],
+        "answer": 1,
+        "feedback": "Yes. COLOR00 lives at $DFF180, so writing a color word changes the background color."
+      }
+    },
+    {
+      "id": "interrupts",
+      "title": "Interrupts and the vertical blank",
+      "subtitle": "Let the hardware call your code",
+      "tag": "Timing",
+      "goal": "Understand how interrupt requests, masks, and return-from-interrupt work together.",
+      "emulatorPresetID": "a500-kickstart-13",
+      "emulatorPresetName": "A500 Kickstart 1.3",
+      "theory": [
+        "An interrupt lets hardware pause normal code and request a short service routine.",
+        "The Amiga interrupt registers separate requests from enables, so software can acknowledge an event and decide which events are allowed through.",
+        "A level-3 handler returns with RTE, which restores the saved status register as well as the program counter."
+      ],
+      "analogy": "A Swift callback runs when an event arrives. An interrupt is the CPU-level version, with the processor saving enough state to resume later.",
+      "keyIdea": "A request is not the same thing as an enabled interrupt; both sides of the handshake matter.",
+      "starterCode": "; Enable the vertical blank interrupt bit\n            move.w     #$c020,$dff09a\n            move.w     #$0020,$dff09c\n            rte",
+      "quiz": {
+        "question": "Which instruction returns from an interrupt handler?",
+        "options": ["RTS", "RTE", "BRA", "RESET"],
+        "answer": 1,
+        "feedback": "Correct. RTE restores the interrupted status and continues the suspended program."
+      }
+    },
+    {
+      "id": "copper",
+      "title": "The Copper coprocessor",
+      "subtitle": "Change hardware during the display beam",
+      "tag": "Custom chip",
+      "goal": "Build a Copper list that changes a color register at a chosen raster position.",
+      "emulatorPresetID": "a500-kickstart-13",
+      "emulatorPresetName": "A500 Kickstart 1.3",
+      "theory": [
+        "The Copper is a tiny display-synchronized coprocessor that executes MOVE, WAIT, and SKIP instructions.",
+        "A Copper list lives in chip memory and can update custom-chip registers without spending CPU instructions on every scanline.",
+        "The list ends with a WAIT that never becomes true, commonly written as $ffff,$fffe."
+      ],
+      "analogy": "Instead of scheduling every frame update from Swift, you hand the video hardware a tiny timeline to replay alongside the beam.",
+      "keyIdea": "The Copper turns beam position into a programmable event source.",
+      "starterCode": "; Install a tiny Copper list\n            SECTION    Code,CODE,CHIP\n            lea        $dff000,a5\n            lea        CopperList(pc),a0\n            move.l     a0,$80(a5)\n            move.w     #$0000,$88(a5)\n            move.w     #$8280,$96(a5)\n            rts\nCopperList:\n            dc.w       $0180,$0000\n            dc.w       $0180,$0f00\n            dc.w       $ffff,$fffe",
+      "quiz": {
+        "question": "What does a Copper WAIT synchronize with?",
+        "options": ["The CPU stack", "The display beam position", "The Paula sample counter", "The disk motor"],
+        "answer": 1,
+        "feedback": "Exactly. A WAIT pauses the Copper until the programmed beam position is reached."
+      }
+    },
+    {
+      "id": "bitplanes",
+      "title": "Bitplanes and playfields",
+      "subtitle": "How Amiga pixels become colors",
+      "tag": "Graphics",
+      "goal": "Explain planar graphics and connect a bitplane pointer to the display hardware.",
+      "emulatorPresetID": "a500-kickstart-13",
+      "emulatorPresetName": "A500 Kickstart 1.3",
+      "theory": [
+        "Amiga OCS graphics are planar: each bitplane contributes one bit to the final color index at each pixel.",
+        "One bitplane gives two colors, two give four, and so on. The playfield hardware combines the planes with the color registers.",
+        "The bitplane pointers, display window, data fetch, and BPLCON0 must agree about where and how the screen is drawn."
+      ],
+      "analogy": "A chunky pixel stores one color value. A planar pixel is more like several Swift Bool arrays whose bits are combined into an index.",
+      "keyIdea": "The screen is not a bitmap of color values; it is a stack of synchronized one-bit images.",
+      "starterCode": "; Point one bitplane at chip memory and enable it\n            SECTION    Code,CODE,CHIP\n            lea        $dff000,a5\n            lea        Plane0(pc),a0\n            move.l     a0,$e0(a5)\n            move.w     #$1200,$100(a5)\n            move.w     #$8300,$96(a5)\n            rts\nPlane0:\n            dc.w       %1111000011110000,%0000111100001111\n            dc.w       %1111111111111111,%0000000000000000",
+      "quiz": {
+        "question": "How many color choices can two enabled bitplanes represent?",
+        "options": ["Two", "Three", "Four", "Sixteen"],
+        "answer": 2,
+        "feedback": "Right. Two binary planes combine into four possible color indexes."
+      }
+    },
+    {
+      "id": "sprites",
+      "title": "Hardware sprites",
+      "subtitle": "Objects the display draws for you",
+      "tag": "Graphics",
+      "goal": "Recognize the sprite data structure and install a hardware sprite pointer.",
+      "emulatorPresetID": "a500-kickstart-13",
+      "emulatorPresetName": "A500 Kickstart 1.3",
+      "theory": [
+        "A hardware sprite is a separate display object with position/control words followed by two bitplanes of sprite data.",
+        "The sprite pointer registers tell the custom chips where the structure lives in chip memory.",
+        "A terminating zero control pair ends the sprite, and the sprite DMA channel must be enabled before it appears."
+      ],
+      "analogy": "A sprite is a small hardware-managed view layer: you provide its data and coordinates, and the display system composites it over the playfield.",
+      "keyIdea": "Hardware sprites do not need to be copied into the playfield every frame.",
+      "starterCode": "; Install sprite 0\n            SECTION    Code,CODE,CHIP\n            lea        $dff000,a5\n            lea        Sprite0(pc),a0\n            move.l     a0,$120(a5)\n            move.w     #$8220,$96(a5)\n            rts\nSprite0:\n            dc.b       $40,$80,$60,$00\n            dc.w       %0001100000011000,%0011110000111100\n            dc.w       %0111111001111110,%1111111111111111\n            dc.w       0,0",
+      "quiz": {
+        "question": "Where does a hardware sprite's image data live?",
+        "options": ["Only in the CPU registers", "In a chip-memory sprite structure", "Inside the Copper instruction word", "In the Paula FIFO"],
+        "answer": 1,
+        "feedback": "Correct. The sprite pointer targets a chip-memory structure containing position, control, and image words."
+      }
+    },
+    {
+      "id": "blitter",
+      "title": "The Blitter",
+      "subtitle": "Copy, combine, fill, and draw",
+      "tag": "Custom chip",
+      "goal": "Set up an A-to-D Blitter copy and understand its minterm and size controls.",
+      "emulatorPresetID": "a500-kickstart-13",
+      "emulatorPresetName": "A500 Kickstart 1.3",
+      "theory": [
+        "The Blitter moves and combines chip-memory words using up to three sources, A, B, and C, and one destination, D.",
+        "BLTCON0's minterm describes the Boolean function while its USE bits select active channels.",
+        "Pointers, masks, modulos, and BLTSIZE define the exact rectangle. The CPU can continue other work while the Blitter runs."
+      ],
+      "analogy": "A Blitter is a dedicated memory kernel: instead of looping over every pixel in Swift, you configure the operation and let the custom chip stream the block.",
+      "keyIdea": "The Blitter is a programmable Boolean engine, not just a fast memcpy.",
+      "starterCode": "; Copy a one-word-wide block from A to D\n            SECTION    Code,CODE,CHIP\n            lea        $dff000,a5\n            lea        Source(pc),a0\n            lea        Destination(pc),a1\n            move.l     a0,$50(a5)\n            move.l     a1,$54(a5)\n            move.w     #$09f0,$40(a5)\n            move.w     #$ffff,$44(a5)\n            move.w     #$ffff,$46(a5)\n            move.w     #$4041,$58(a5)\n            rts\nSource:\n            ds.w       64\nDestination:\n            ds.w       64",
+      "quiz": {
+        "question": "What does the Blitter minterm control?",
+        "options": ["The audio pitch", "The Boolean combination of A, B, and C", "The Copper beam position", "The CPU interrupt level"],
+        "answer": 1,
+        "feedback": "Yes. The minterm is the eight-entry truth-table function applied to the enabled source channels."
+      }
+    },
+    {
+      "id": "paula-audio",
+      "title": "Paula audio DMA",
+      "subtitle": "Play a waveform without a CPU loop",
+      "tag": "Audio",
+      "goal": "Configure an audio channel pointer, length, period, volume, and DMA enable.",
+      "emulatorPresetID": "a500-kickstart-13",
+      "emulatorPresetName": "A500 Kickstart 1.3",
+      "theory": [
+        "Paula's audio channels stream signed waveform bytes from chip memory using DMA.",
+        "The channel needs a data pointer, a word length, a period that sets the sample rate, and a volume from 0 through 64.",
+        "Audio DMA is enabled through DMACON, alongside the global DMA enable bit."
+      ],
+      "analogy": "The CPU does not call a play-sample function for every byte. It submits a buffer and playback parameters to a hardware queue.",
+      "keyIdea": "DMA turns a memory buffer into a time-based hardware stream.",
+      "starterCode": "; Start a short tone on audio channel 0\n            SECTION    Code,CODE,CHIP\n            lea        $dff000,a5\n            lea        Wave(pc),a0\n            move.l     a0,$a0(a5)\n            move.w     #4,$a4(a5)\n            move.w     #$0070,$a6(a5)\n            move.w     #$0040,$a8(a5)\n            move.w     #$8201,$96(a5)\n            rts\nWave:\n            dc.b       $00,$40,$7f,$40,$00,$c0,$81,$c0",
+      "quiz": {
+        "question": "Which value controls the audio channel's sample playback rate?",
+        "options": ["AUDxPER", "AUDxVOL", "AUDxLEN", "COLOR00"],
+        "answer": 0,
+        "feedback": "Correct. AUDxPER sets the period between samples; a smaller period means a higher playback rate."
+      }
+    },
+    {
+      "id": "system-libraries",
+      "title": "System-friendly Amiga programming",
+      "subtitle": "Use Exec and graphics.library",
+      "tag": "Operating system",
+      "goal": "Understand library bases, negative offsets, and why programs should cooperate with the Amiga OS.",
+      "emulatorPresetID": "a500-kickstart-13",
+      "emulatorPresetName": "A500 Kickstart 1.3",
+      "theory": [
+        "AmigaOS exposes services through library bases and jump tables rather than a modern object method call.",
+        "ExecBase is available at address 4, and library calls use negative offsets from the library base in A6.",
+        "System-friendly code saves registers, opens libraries, uses OS APIs, and restores the display before returning."
+      ],
+      "analogy": "Direct hardware access is like reaching behind a Swift framework's public API. Library calls are the supported interface that lets other tasks and the OS keep working.",
+      "keyIdea": "Takeover demos can own the machine; applications should cooperate with the machine.",
+      "starterCode": "; Open graphics.library and wait for a frame\n            SECTION    Code,CODE\n            XDEF       _Start\n_Start:\n            move.l     $4.w,a6\n            lea        GraphicsName(pc),a1\n            moveq      #0,d0\n            jsr        -408(a6)\n            move.l     d0,a6\n            beq.s      .done\n            jsr        -270(a6)\n.done:\n            rts\nGraphicsName:\n            dc.b       'graphics.library',0\n            even",
+      "quiz": {
+        "question": "Where does an Amiga program find ExecBase?",
+        "options": ["At address 4", "In D0 after reset", "At COLOR00", "Inside the Copper list"],
+        "answer": 0,
+        "feedback": "Right. The longword at address 4 points to the ExecBase library structure."
+      }
+    },
+    {
+      "id": "complete-program",
+      "title": "Build a complete Amiga executable",
+      "subtitle": "From source file to runnable Hunk",
+      "tag": "Capstone",
+      "goal": "Connect assembly sections, exported symbols, startup code, linking, and a clean return path.",
+      "emulatorPresetID": "a500-kickstart-13",
+      "emulatorPresetName": "A500 Kickstart 1.3",
+      "theory": [
+        "An executable is more than instructions: it has sections, symbols, relocation information, and an entry point understood by the linker and loader.",
+        "A typical Amiga build assembles source into an object or Hunk file, links it with startup code and libraries, then produces an executable that the OS can load.",
+        "A real program documents its calling contract, preserves registers it does not own, and returns a meaningful result or exits through the appropriate startup layer."
+      ],
+      "analogy": "Swift source becomes an app through compilation and linking. The Amiga workflow exposes those same stages, so you can see where symbols and libraries enter the final program.",
+      "keyIdea": "Assembly is one stage of a program’s build pipeline, not the whole executable format.",
+      "starterCode": "; A linkable entry point with a preserved register set\n            SECTION    Code,CODE\n            XDEF       _main\n_main:\n            MOVEM.L    D2-D7/A2-A6,-(SP)\n            MOVEQ      #0,D0\n            MOVEM.L    (SP)+,D2-D7/A2-A6\n            RTS",
+      "quiz": {
+        "question": "What does the linker add that a single assembly source file does not provide by itself?",
+        "options": ["The CPU registers", "Symbol resolution and final layout", "The Copper beam", "The Paula waveform"],
+        "answer": 1,
+        "feedback": "Exactly. The linker resolves symbols and lays sections out into a loadable program."
+      }
+    }
+  ]
+}
