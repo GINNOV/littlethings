@@ -2,14 +2,14 @@
 <rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
   <channel>
     <item><title>Version 1.8</title><description><![CDATA[
-<h4>Metadata and library presentation</h4>
+<h4>AI playlists and macOS integration</h4>
 <ul>
-    <li>Reworked the header into a full-width AuDeluxe artwork banner.</li>
-    <li>Added a dedicated Artist column to the library list.</li>
-    <li>Cleaned up module metadata presentation and added structural module details.</li>
-    <li>Suppressed repetitive cached-library completion notices.</li>
+    <li>Moved AI playlist creation into a dedicated toolbar action.</li>
+    <li>Added inference-server availability checks and provider-mismatch guidance.</li>
+    <li>Made the menu-bar player appear only while AuDeluxe is minimized, with reliable window and Dock restoration.</li>
+    <li>Presented Settings modally and clarified the automatic app-release check.</li>
 </ul>
-]]></description><pubDate>Sat, 29 Aug 2026 20:05:34 +0200</pubDate><enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/AuDeluxe-1.8_81.zip" sparkle:version="81" sparkle:shortVersionString="1.8" length="11837353" type="application/octet-stream" sparkle:edSignature="8SKrJdgmX9L6rfXmvTwPzAmZoEFw+Aql2An6CL34gsnhcWU+sdL4kA9LRR9WKKZ37+qt4KHdvL7CXoORjQw6BA==" /></item><item><title>Version 1.7</title><description>
+]]></description><pubDate>Sat, 29 Aug 2026 20:54:37 +0200</pubDate><enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/AuDeluxe-1.8_82.zip" sparkle:version="82" sparkle:shortVersionString="1.8" length="11852841" type="application/octet-stream" sparkle:edSignature="NWxP309kCJRYS24x6B5BnKBQLXbTCEPwTgeQHiv6T9xWtmnKnhJLo232rJ0N9mfbG9thStXlnviQZOFCzWTXAg==" /></item><item><title>Version 1.7</title><description>
 &lt;h4&gt;Sparkle installation bridge&lt;/h4&gt;
 &lt;ul&gt;
     &lt;li&gt;Completed Sparkle&amp;apos;s sandboxed installer configuration for future automatic updates.&lt;/li&gt;
