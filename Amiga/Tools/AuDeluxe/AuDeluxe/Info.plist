@@ -21,6 +21,8 @@
 			</array>
 		</dict>
 	</array>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>AuDeluxe connects to AI models running on computers on your local network.</string>
 		<key>SUFeedURL</key>
 		<string>https://raw.githubusercontent.com/GINNOV/littlethings/master/Amiga/Tools/releases/appcast-audeluxe.xml</string>
 		<key>SUEnableInstallerLauncherService</key>
