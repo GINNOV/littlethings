@@ -41,6 +41,8 @@ struct ContentView: View {
                         }
                     }
                 }
+
+                LibraryScanStatusView()
                 
                 if settings.musicFolderURL != nil {
                     if showingTrackerView {

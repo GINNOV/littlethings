@@ -21,6 +21,7 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     @Published var isShuffling = false
     @Published var searchText: String = ""
     @Published var presentedError: FileOperationError?
+    @Published private(set) var scanStatus: LibraryScanStatus = .idle
 
     @Published var sortOrder: SortOrder = .name {
         didSet { Task { await applySort() } }
@@ -122,16 +123,15 @@ final class OpenMPTEngine: ObservableObject, Sendable {
 
     // MARK: - Public Control Methods
     func clearAllSongs() {
-        scanTask?.cancel()
-        scanTask = nil
-        scanGeneration &+= 1
+        cancelMusicFolderScan(showCancelledStatus: false)
+        scanStatus = .idle
         self.allPlaylistItems = []
         self.activePlaylist = nil
         self.objectWillChange.send()
     }
 
     func requestMusicFolderScan(for musicFolderURL: URL?) {
-        scanTask?.cancel()
+        cancelMusicFolderScan(showCancelledStatus: false)
         guard let musicFolderURL else {
             clearAllSongs()
             return
@@ -141,16 +141,26 @@ final class OpenMPTEngine: ObservableObject, Sendable {
         }
     }
 
+    func cancelMusicFolderScan() {
+        cancelMusicFolderScan(showCancelledStatus: true)
+    }
+
+    func dismissScanStatus() {
+        guard !scanStatus.isActive else { return }
+        scanStatus = .idle
+    }
+
     func scanMusicFolder(for musicFolderURL: URL) async {
         self.scannedMusicFolderURL = musicFolderURL
         scanGeneration &+= 1
         let generation = scanGeneration
         let cacheURL = self.cacheURL
+        scanStatus = .discovering
 
         do {
-            let result = try await Task.detached(priority: .userInitiated) { [ratingKey, titleKey, artistKey] in
+            let worker = Task.detached(priority: .userInitiated) { [weak self, ratingKey, titleKey, artistKey] in
                 guard musicFolderURL.startAccessingSecurityScopedResource() else {
-                    return (items: [PlaylistItem](), fingerprint: LibraryFingerprint(entries: []), usedCache: false)
+                    throw FileOperationError.accessDenied
                 }
                 defer { musicFolderURL.stopAccessingSecurityScopedResource() }
 
@@ -159,11 +169,27 @@ final class OpenMPTEngine: ObservableObject, Sendable {
                    let data = try? Data(contentsOf: cacheURL),
                    let cache = try? JSONDecoder().decode(PlaylistCache.self, from: data),
                    cache.fingerprint == discovery.fingerprint {
-                    return (cache.items, discovery.fingerprint, true)
+                    return (
+                        items: cache.items,
+                        fingerprint: discovery.fingerprint,
+                        usedCache: true
+                    )
                 }
 
                 var items: [PlaylistItem] = []
-                for fileURL in discovery.moduleURLs {
+                let total = discovery.moduleURLs.count
+                await self?.publishScanProgress(
+                    .processing(
+                        processed: 0,
+                        total: total,
+                        loaded: 0,
+                        skipped: 0,
+                        currentFile: ""
+                    ),
+                    generation: generation
+                )
+
+                for (index, fileURL) in discovery.moduleURLs.enumerated() {
                     try Task.checkCancellation()
                     if let metadata = getMetadata(
                         for: fileURL,
@@ -173,9 +199,31 @@ final class OpenMPTEngine: ObservableObject, Sendable {
                     ) {
                         items.append(metadata)
                     }
+                    let processed = index + 1
+                    if processed.isMultiple(of: 25) || processed == total {
+                        await self?.publishScanProgress(
+                            .processing(
+                                processed: processed,
+                                total: total,
+                                loaded: items.count,
+                                skipped: processed - items.count,
+                                currentFile: discovery.fingerprint.entries[index].relativePath
+                            ),
+                            generation: generation
+                        )
+                    }
                 }
-                return (items, discovery.fingerprint, false)
-            }.value
+                return (
+                    items: items,
+                    fingerprint: discovery.fingerprint,
+                    usedCache: false
+                )
+            }
+            let result = try await withTaskCancellationHandler {
+                try await worker.value
+            } onCancel: {
+                worker.cancel()
+            }
 
             guard generation == scanGeneration, !Task.isCancelled else { return }
             allPlaylistItems = result.items
@@ -184,13 +232,37 @@ final class OpenMPTEngine: ObservableObject, Sendable {
             if !result.usedCache {
                 savePlaylistToCache(items: result.items, fingerprint: result.fingerprint)
             }
+            scanStatus = .completed(
+                loaded: result.items.count,
+                skipped: result.fingerprint.entries.count - result.items.count,
+                usedCache: result.usedCache
+            )
+            scanTask = nil
         } catch is CancellationError {
+            guard generation == scanGeneration else { return }
+            scanStatus = .cancelled
+            scanTask = nil
             return
         } catch {
             guard generation == scanGeneration else { return }
-            allPlaylistItems = []
-            activePlaylist = nil
+            scanStatus = .failed(message: error.localizedDescription)
+            scanTask = nil
         }
+    }
+
+    private func cancelMusicFolderScan(showCancelledStatus: Bool) {
+        let wasActive = scanStatus.isActive
+        scanTask?.cancel()
+        scanTask = nil
+        scanGeneration &+= 1
+        if showCancelledStatus, wasActive {
+            scanStatus = .cancelled
+        }
+    }
+
+    private func publishScanProgress(_ status: LibraryScanStatus, generation: UInt64) {
+        guard generation == scanGeneration, !Task.isCancelled else { return }
+        scanStatus = status
     }
 
     func play(fileURL: URL, musicFolderURL: URL) async {

@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.8 (build 80) - 2026-08-29
+
+- Added visible progress while recursively discovering and processing tracker
+  modules, including the current nested filename and completed file count.
+- Added cancellation and dismiss controls with clear completion, cancellation,
+  skipped-file, and failure feedback.
+- Fixed scan cancellation so the background worker stops promptly while the
+  existing playlist remains available until a new scan completes successfully.
+
 ## 1.7 (build 79) - 2026-07-29
 
 - Completed Sparkle's sandboxed installer configuration so future

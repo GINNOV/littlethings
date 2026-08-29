@@ -9,12 +9,11 @@ SCHEME="AuDeluxe - Release"
 CONFIGURATION="Release"
 
 RELEASE_NOTES_CONTENT='
-<h4>Sparkle installation bridge</h4>
+<h4>Recursive library scan progress</h4>
 <ul>
-    <li>Completed Sparkle&apos;s sandboxed installer configuration for future automatic updates.</li>
-    <li>Rotated the Sparkle update key and added a release-time key consistency check.</li>
-    <li>Documented Sentinel as a free first-install workaround for macOS quarantine.</li>
-    <li>This build is a one-time manual update; automatic updates resume after build 79 is installed.</li>
+    <li>Added visible progress, processed counts, and the current nested filename while scanning.</li>
+    <li>Added cancellation plus completion, skipped-file, and failure feedback.</li>
+    <li>Kept the existing playlist available until a replacement scan completes successfully.</li>
 </ul>
 '
 # --- END: Configuration for AuDeluxe ---

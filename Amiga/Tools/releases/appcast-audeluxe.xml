@@ -1,15 +1,22 @@
 <?xml version='1.0' encoding='utf-8'?>
 <rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
   <channel>
-    <item><title>Version 1.7</title><description><![CDATA[
-<h4>Sparkle installation bridge</h4>
+    <item><title>Version 1.8</title><description><![CDATA[
+<h4>Recursive library scan progress</h4>
 <ul>
-    <li>Completed Sparkle&apos;s sandboxed installer configuration for future automatic updates.</li>
-    <li>Rotated the Sparkle update key and added a release-time key consistency check.</li>
-    <li>Documented Sentinel as a free first-install workaround for macOS quarantine.</li>
-    <li>This build is a one-time manual update; automatic updates resume after build 79 is installed.</li>
+    <li>Added visible progress, processed counts, and the current nested filename while scanning.</li>
+    <li>Added cancellation plus completion, skipped-file, and failure feedback.</li>
+    <li>Kept the existing playlist available until a replacement scan completes successfully.</li>
 </ul>
-]]></description><pubDate>Wed, 29 Jul 2026 16:28:23 +0200</pubDate><enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/AuDeluxe-1.7_79.zip" sparkle:version="79" sparkle:shortVersionString="1.7" length="12217184" type="application/octet-stream" sparkle:edSignature="bJozw6uwEXF5Vcl08ZKiWpLQUnbEwdhl0on64quTbwmf65ojjqgp9/GbBZ3dzCPjdj6rCIHh8x62Afuk9sxqBQ==" /></item><item><title>Version 1.6</title><description>
+]]></description><pubDate>Sat, 29 Aug 2026 16:46:15 +0200</pubDate><enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/AuDeluxe-1.8_80.zip" sparkle:version="80" sparkle:shortVersionString="1.8" length="12246831" type="application/octet-stream" sparkle:edSignature="fQypobwJrr5rpuL9EhjCTMPDj4Yxg/XFC4CqhMMVXlTm/su6GhV7VUfiu3LoJWDfh34XvCyP6SmK/FKRBGGmAQ==" /></item><item><title>Version 1.7</title><description>
+&lt;h4&gt;Sparkle installation bridge&lt;/h4&gt;
+&lt;ul&gt;
+    &lt;li&gt;Completed Sparkle&amp;apos;s sandboxed installer configuration for future automatic updates.&lt;/li&gt;
+    &lt;li&gt;Rotated the Sparkle update key and added a release-time key consistency check.&lt;/li&gt;
+    &lt;li&gt;Documented Sentinel as a free first-install workaround for macOS quarantine.&lt;/li&gt;
+    &lt;li&gt;This build is a one-time manual update; automatic updates resume after build 79 is installed.&lt;/li&gt;
+&lt;/ul&gt;
+</description><pubDate>Wed, 29 Jul 2026 16:28:23 +0200</pubDate><enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/AuDeluxe-1.7_79.zip" sparkle:version="79" sparkle:shortVersionString="1.7" length="12217184" type="application/octet-stream" sparkle:edSignature="bJozw6uwEXF5Vcl08ZKiWpLQUnbEwdhl0on64quTbwmf65ojjqgp9/GbBZ3dzCPjdj6rCIHh8x62Afuk9sxqBQ==" /></item><item><title>Version 1.6</title><description>
 &lt;h4&gt;New Features&lt;/h4&gt;
 &lt;ul&gt;
     &lt;li&gt;Added Sparkle for automatic application updates.&lt;/li&gt;
