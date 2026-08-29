@@ -5,6 +5,7 @@
 //  Created by Mario Esposito on 7/14/25.
 //
 
+import AppKit
 import SwiftUI
 
 // MARK: - Main App Structure
@@ -46,6 +47,15 @@ struct AuDeluxeApp: App {
                 }
             }
             UpdaterCommands(updaterController: updaterController)
+            CommandGroup(after: .help) {
+                Button("Supported Module Formats") {
+                    guard let documentURL = Bundle.main.url(forResource: "formatypes", withExtension: "md") else {
+                        NSSound.beep()
+                        return
+                    }
+                    NSWorkspace.shared.open(documentURL)
+                }
+            }
         }
         
         MenuBarExtra {

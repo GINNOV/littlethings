@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B20000012F00000000000001 /* formatypes.md in Resources */ = {isa = PBXBuildFile; fileRef = B20000022F00000000000002 /* formatypes.md */; };
 		AC681E7B2E2A350F0082D5AC /* libopenmpt.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AC681E7A2E2A34F50082D5AC /* libopenmpt.a */; };
 		AC681E7C2E2A35200082D5AC /* libopenmpt.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AC681E7A2E2A34F50082D5AC /* libopenmpt.a */; };
 		AC681EBA2E2A38570082D5AC /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = AC681EB92E2A38570082D5AC /* libc++.tbd */; };
@@ -49,6 +50,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		B20000022F00000000000002 /* formatypes.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = formatypes.md; sourceTree = "<group>"; };
 		AC0BF6632E2965820096670E /* CoreAudioTypes.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudioTypes.framework; path = System/Library/Frameworks/CoreAudioTypes.framework; sourceTree = SDKROOT; };
 		AC681E7A2E2A34F50082D5AC /* libopenmpt.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libopenmpt.a; path = Libraries/libopenmpt.a; sourceTree = "<group>"; };
 		AC681EB92E2A38570082D5AC /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
@@ -148,6 +150,7 @@
 		AC7C05202E253580007F777F = {
 			isa = PBXGroup;
 			children = (
+				B20000022F00000000000002 /* formatypes.md */,
 				AC7C053C2E253643007F777F /* AuDeluxe-Bridging-Header.h */,
 				AC7C052B2E253580007F777F /* AuDeluxe */,
 				ACAD810E2E29417F002E64E7 /* AuDeluxeQL */,
@@ -306,6 +309,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B20000012F00000000000001 /* formatypes.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
