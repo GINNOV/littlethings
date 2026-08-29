@@ -23,6 +23,7 @@ struct AISettingsView: View {
                 Button("Use Provider Default", systemImage: "arrow.counterclockwise", action: useProviderDefault)
                     .disabled(!settings.localAIEnabled)
             }
+            AIPlaylistBuilderView()
             Section {
                 Label("Requests stay on your Mac when the configured endpoint is local. AuDeluxe does not start or install an AI server.", systemImage: "lock.shield")
                     .foregroundStyle(.secondary)

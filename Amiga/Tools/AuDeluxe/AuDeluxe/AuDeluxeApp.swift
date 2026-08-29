@@ -73,6 +73,7 @@ struct AuDeluxeApp: App {
         Settings {
             SettingsView()
                 .environmentObject(settings)
+                .environmentObject(engine)
         }
     }
 
