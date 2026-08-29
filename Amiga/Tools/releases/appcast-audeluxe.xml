@@ -9,28 +9,6 @@
     <li>Made the menu-bar player appear only while AuDeluxe is minimized, with reliable window and Dock restoration.</li>
     <li>Presented Settings modally and clarified the automatic app-release check.</li>
 </ul>
-]]></description><pubDate>Sat, 29 Aug 2026 20:54:37 +0200</pubDate><enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/AuDeluxe-1.8_82.zip" sparkle:version="82" sparkle:shortVersionString="1.8" length="11852841" type="application/octet-stream" sparkle:edSignature="NWxP309kCJRYS24x6B5BnKBQLXbTCEPwTgeQHiv6T9xWtmnKnhJLo232rJ0N9mfbG9thStXlnviQZOFCzWTXAg==" /></item><item><title>Version 1.7</title><description>
-&lt;h4&gt;Sparkle installation bridge&lt;/h4&gt;
-&lt;ul&gt;
-    &lt;li&gt;Completed Sparkle&amp;apos;s sandboxed installer configuration for future automatic updates.&lt;/li&gt;
-    &lt;li&gt;Rotated the Sparkle update key and added a release-time key consistency check.&lt;/li&gt;
-    &lt;li&gt;Documented Sentinel as a free first-install workaround for macOS quarantine.&lt;/li&gt;
-    &lt;li&gt;This build is a one-time manual update; automatic updates resume after build 79 is installed.&lt;/li&gt;
-&lt;/ul&gt;
-</description><pubDate>Wed, 29 Jul 2026 16:28:23 +0200</pubDate><enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/AuDeluxe-1.7_79.zip" sparkle:version="79" sparkle:shortVersionString="1.7" length="12217184" type="application/octet-stream" sparkle:edSignature="bJozw6uwEXF5Vcl08ZKiWpLQUnbEwdhl0on64quTbwmf65ojjqgp9/GbBZ3dzCPjdj6rCIHh8x62Afuk9sxqBQ==" /></item><item><title>Version 1.6</title><description>
-&lt;h4&gt;New Features&lt;/h4&gt;
-&lt;ul&gt;
-    &lt;li&gt;Added Sparkle for automatic application updates.&lt;/li&gt;
-    &lt;li&gt;Implemented a caching system for faster startup times.&lt;/li&gt;
-    &lt;li&gt;Added a search bar to the playlist view.&lt;/li&gt;
-    &lt;li&gt;Added a jump link for the currently playing song.&lt;/li&gt;
-    &lt;li&gt;Added a menu bar to control music without switching to the app.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h4&gt;Bug Fixes&lt;/h4&gt;
-&lt;ul&gt;
-    &lt;li&gt;Fixed an issue where the default sort order was not applied on launch.&lt;/li&gt;
-    &lt;li&gt;Loopback worked but the timeline was not moving.&lt;/li&gt;
-&lt;/ul&gt;
-</description><pubDate>Mon, 18 Aug 2025 19:36:40 +0200</pubDate><enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/AuDeluxe-1.6_77.zip" sparkle:version="77" sparkle:shortVersionString="1.6" length="10008814" type="application/octet-stream" sparkle:edSignature="pDxZ/yofCupAUFEGcQrAXR7Bwz7spRK67/CjeyQQODtoz8e5S9DaheChKkzP44XcO9xg49YOZ0SbhRuFCiJUDQ==" /></item><title>AuDeluxe Changelog</title>
+]]></description><pubDate>Sat, 29 Aug 2026 20:54:37 +0200</pubDate><enclosure url="https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/AuDeluxe-1.8_82.zip" sparkle:version="82" sparkle:shortVersionString="1.8" length="11852841" type="application/octet-stream" sparkle:edSignature="NWxP309kCJRYS24x6B5BnKBQLXbTCEPwTgeQHiv6T9xWtmnKnhJLo232rJ0N9mfbG9thStXlnviQZOFCzWTXAg==" /></item><title>AuDeluxe Changelog</title>
   </channel>
 </rss>
