@@ -18,7 +18,6 @@ struct ContentView: View {
     @State private var fileToRename: PlaylistItem?
     
     // State to manage sheets and view switching
-    @State private var isShowingAboutSheet = false
     @State private var fileToInspect: PlaylistItem?
     @State private var showingTrackerView = false
     @State private var isShowingManagePlaylists = false
@@ -86,17 +85,11 @@ struct ContentView: View {
                     fileToDelete: $fileToDelete,
                     isShowingRenameAlert: $isShowingRenameAlert,
                     fileToRename: $fileToRename,
-                    isShowingAboutSheet: $isShowingAboutSheet,
                     fileToInspect: $fileToInspect,
                     showingTrackerView: $showingTrackerView,
                     isShowingManagePlaylists: $isShowingManagePlaylists,
                     isShowingSelectPlaylist: $isShowingSelectPlaylist
                 )
-            }
-            .sheet(isPresented: $isShowingAboutSheet) {
-                AboutView(closeAction: {
-                    isShowingAboutSheet = false
-                })
             }
             .sheet(item: $fileToInspect) { item in
                 InspectorView(item: item)
@@ -163,10 +156,19 @@ struct ContentView: View {
             return
         }
 
-        let fileExtension = item.fileURL.pathExtension
-        let newURL = item.fileURL.deletingLastPathComponent()
-                                 .appendingPathComponent(newFilename)
-                                 .appendingPathExtension(fileExtension)
+        let newURL: URL
+        do {
+            newURL = try EditedFilename.destinationURL(
+                for: item.fileURL,
+                editedFilename: newFilename
+            )
+        } catch let error as FileOperationError {
+            engine.presentedError = error
+            return
+        } catch {
+            engine.presentedError = .mutationFailed(error.localizedDescription)
+            return
+        }
 
         let success = await engine.updateFile(from: item.fileURL, to: newURL, newTitle: newTitle, newArtist: newArtist, musicFolderURL: musicFolderURL)
         if success {

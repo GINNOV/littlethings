@@ -38,6 +38,20 @@ enum PlaybackQueue {
             items.sorted { $0.duration < $1.duration }
         case .rating:
             items.sorted { $0.rating > $1.rating }
+        case .folder:
+            items.sorted {
+                let comparison = $0.folderName.localizedCaseInsensitiveCompare($1.folderName)
+                return comparison == .orderedSame
+                    ? $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending
+                    : comparison == .orderedAscending
+            }
+        case .fileType:
+            items.sorted {
+                let comparison = $0.fileType.localizedCaseInsensitiveCompare($1.fileType)
+                return comparison == .orderedSame
+                    ? $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending
+                    : comparison == .orderedAscending
+            }
         }
     }
 }

@@ -16,7 +16,6 @@ struct ToolbarItems: ToolbarContent {
     @Binding var fileToDelete: PlaylistItem?
     @Binding var isShowingRenameAlert: Bool
     @Binding var fileToRename: PlaylistItem?
-    @Binding var isShowingAboutSheet: Bool
     @Binding var fileToInspect: PlaylistItem?
     @Binding var showingTrackerView: Bool
     @Binding var isShowingManagePlaylists: Bool
@@ -25,7 +24,7 @@ struct ToolbarItems: ToolbarContent {
     var body: some ToolbarContent {
         ToolbarItemGroup {
             Button(action: openSingleFile) {
-                Label("Open File", systemImage: "doc")
+                Label("Add Song", systemImage: "plus")
             }
             
             Spacer()
@@ -96,11 +95,6 @@ struct ToolbarItems: ToolbarContent {
             }
             .disabled(selectedFileID == nil)
             
-            Button(action: {
-                isShowingAboutSheet = true
-            }) {
-                Label("About", systemImage: "info.circle")
-            }
         }
     }
     

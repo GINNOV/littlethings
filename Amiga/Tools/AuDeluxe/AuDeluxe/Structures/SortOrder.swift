@@ -14,6 +14,8 @@ enum SortOrder: String, CaseIterable, Identifiable {
     case name = "Name"
     case duration = "Duration"
     case rating = "Rating"
+    case folder = "Folder"
+    case fileType = "File Type"
     
     var id: String { self.rawValue }
 }

@@ -55,10 +55,6 @@ struct AuDeluxeApp: App {
                 } label: {
                     // The icon changes based on the playback state.
                     Image(systemName: engine.isPlaying ? "speaker.wave.2.fill" : "speaker.slash.fill")
-                        .onTapGesture {
-                            // This allows a single-click on the menu bar icon to also act as a play/pause button.
-                            handlePlayPause(engine: engine, settings: settings, selectedFileID: selectedFileID)
-                        }
                 }
                 .menuBarExtraStyle(.window) // This style provides a popover window.
 

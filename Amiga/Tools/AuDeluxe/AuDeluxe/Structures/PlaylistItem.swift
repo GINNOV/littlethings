@@ -26,4 +26,12 @@ struct PlaylistItem: Identifiable, Hashable, Codable {
     var duration: TimeInterval {
         Double(metadata["duration"] ?? "0") ?? 0
     }
+
+    var folderName: String {
+        fileURL.deletingLastPathComponent().lastPathComponent
+    }
+
+    var fileType: String {
+        fileURL.pathExtension.uppercased()
+    }
 }

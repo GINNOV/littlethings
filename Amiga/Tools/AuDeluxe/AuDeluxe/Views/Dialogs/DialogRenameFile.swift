@@ -34,17 +34,24 @@ struct DialogRenameFile: View {
                 .font(.title3)
                 .fontWeight(.bold)
 
-            // Editable Info
-            VStack(alignment: .leading, spacing: 12) {
-                TextField("Title", text: $newTitle)
-                    .textFieldStyle(.roundedBorder)
-                
-                TextField("Artist", text: $newArtist)
-                    .textFieldStyle(.roundedBorder)
+            Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 12) {
+                GridRow {
+                    Text("Title")
+                    TextField("Title", text: $newTitle)
+                }
 
-                TextField("Filename", text: $newFilename)
+                GridRow {
+                    Text("Artist")
+                    TextField("Artist", text: $newArtist)
+                }
+
+                GridRow {
+                    Text("Filename")
+                    TextField("Filename", text: $newFilename)
                     .textFieldStyle(.roundedBorder)
+                }
             }
+            .textFieldStyle(.roundedBorder)
             .padding(.horizontal)
             
             Spacer()
@@ -67,7 +74,7 @@ struct DialogRenameFile: View {
         .onAppear {
             newTitle = file.title
             newArtist = file.artist
-            newFilename = file.fileURL.deletingPathExtension().lastPathComponent
+            newFilename = file.fileURL.lastPathComponent
         }
         .padding()
         .frame(width: 400, height: 300)

@@ -18,8 +18,14 @@ struct PlaylistView: View {
             Section(header: HStack {
                 Text("Title")
                 Spacer()
+                Text("Folder")
+                    .frame(width: 140, alignment: .leading)
+                Text("Type")
+                    .frame(width: 50, alignment: .leading)
                 Text("Rating")
+                    .frame(width: 70, alignment: .leading)
                 Text("Duration")
+                    .frame(width: 58, alignment: .trailing)
             }.font(.caption.weight(.semibold))) {
                 ForEach(engine.playlistItems, id: \.id) { item in
                     HStack {
@@ -34,15 +40,27 @@ struct PlaylistView: View {
                             }
                         }
                         Spacer()
+                        Text(item.folderName)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                            .frame(width: 140, alignment: .leading)
+                        Text(item.fileType)
+                            .font(.caption.monospaced())
+                            .foregroundStyle(.secondary)
+                            .frame(width: 50, alignment: .leading)
                         HStack {
                             ForEach(0..<item.rating, id: \.self) { _ in
                                 Image(systemName: "star.fill")
                             }
                         }
-                        .foregroundColor(.yellow)
+                        .foregroundStyle(.yellow)
+                        .frame(width: 70, alignment: .leading)
                         Text(formatTime(item.duration))
                             .font(.caption.monospacedDigit())
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
+                            .frame(width: 58, alignment: .trailing)
                     }
                     .padding(.vertical, 4)
                     .tag(item.id)

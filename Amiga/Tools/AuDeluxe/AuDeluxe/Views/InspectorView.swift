@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct InspectorView: View {
+    @Environment(\.dismiss) private var dismiss
+
     let item: PlaylistItem
     
     @State private var didCopy = false
@@ -57,6 +59,8 @@ struct InspectorView: View {
                 }
                 
                 Divider()
+                InfoRow(label: "Folder", value: item.folderName)
+                Divider()
                 InfoRow(label: "Duration", value: formatTime(item.duration))
             }
             .padding()
@@ -100,6 +104,14 @@ struct InspectorView: View {
         .padding(30)
         .frame(minWidth: 550, minHeight: 450)
         .background(.regularMaterial)
+        .overlay(alignment: .topTrailing) {
+            Button("Close", systemImage: "xmark", action: dismiss.callAsFunction)
+                .labelStyle(.iconOnly)
+                .buttonStyle(.plain)
+                .font(.title3)
+                .padding()
+                .accessibilityHint("Closes song information")
+        }
     }
 
     private func copyPath() {

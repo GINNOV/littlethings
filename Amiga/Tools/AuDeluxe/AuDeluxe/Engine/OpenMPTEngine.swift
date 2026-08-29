@@ -646,6 +646,20 @@ final class OpenMPTEngine: ObservableObject, Sendable {
         case .name: return items.sorted { $0.title.lowercased() < $1.title.lowercased() }
         case .duration: return items.sorted { $0.duration < $1.duration }
         case .rating: return items.sorted { $0.rating > $1.rating }
+        case .folder:
+            return items.sorted {
+                let comparison = $0.folderName.localizedCaseInsensitiveCompare($1.folderName)
+                return comparison == .orderedSame
+                    ? $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending
+                    : comparison == .orderedAscending
+            }
+        case .fileType:
+            return items.sorted {
+                let comparison = $0.fileType.localizedCaseInsensitiveCompare($1.fileType)
+                return comparison == .orderedSame
+                    ? $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending
+                    : comparison == .orderedAscending
+            }
         }
     }
     

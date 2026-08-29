@@ -42,6 +42,44 @@ struct PlaybackQueueTests {
         #expect(queue.map(\.id) == [short.id, long.id])
     }
 
+    @Test("A queue can be sorted by containing folder")
+    func queueSortsByFolder() {
+        // Given
+        let later = item(named: "Alpha", folder: "Zulu", fileExtension: "mod")
+        let earlier = item(named: "Zulu", folder: "Alpha", fileExtension: "xm")
+
+        // When
+        let queue = PlaybackQueue.make(
+            items: [later, earlier],
+            activePlaylist: nil,
+            searchText: "",
+            sortOrder: .folder,
+            shuffledIDs: nil
+        )
+
+        // Then
+        #expect(queue.map(\.id) == [earlier.id, later.id])
+    }
+
+    @Test("A queue can be sorted by file type")
+    func queueSortsByFileType() {
+        // Given
+        let module = item(named: "Zulu", folder: "Music", fileExtension: "mod")
+        let instrument = item(named: "Alpha", folder: "Music", fileExtension: "xm")
+
+        // When
+        let queue = PlaybackQueue.make(
+            items: [instrument, module],
+            activePlaylist: nil,
+            searchText: "",
+            sortOrder: .fileType,
+            shuffledIDs: nil
+        )
+
+        // Then
+        #expect(queue.map(\.id) == [module.id, instrument.id])
+    }
+
     @Test("An active playlist and search filter constrain the queue")
     func activePlaylistAndSearchConstrainQueue() {
         // Given
@@ -68,6 +106,13 @@ struct PlaybackQueueTests {
             fileURL: URL(fileURLWithPath: "/tmp/\(title).mod"),
             metadata: ["title": title, "duration": String(duration)],
             rating: rating
+        )
+    }
+
+    private func item(named title: String, folder: String, fileExtension: String) -> PlaylistItem {
+        PlaylistItem(
+            fileURL: URL(fileURLWithPath: "/tmp/\(folder)/\(title).\(fileExtension)"),
+            metadata: ["title": title]
         )
     }
 }
