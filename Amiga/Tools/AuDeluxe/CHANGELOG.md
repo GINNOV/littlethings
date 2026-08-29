@@ -6,16 +6,10 @@
 - Added inference-server availability checks and actionable provider-mismatch guidance before playlist generation.
 - Made the menu-bar player appear only while AuDeluxe is minimized, reliably hiding and restoring both the main window and Dock icon.
 - Presented Settings as a modal sheet and clarified that the startup update check looks for a new AuDeluxe app release.
-
-## 1.8 (build 81) - 2026-08-29
-
 - Reworked the header into a full-width AuDeluxe artwork banner.
 - Added a dedicated Artist column to the library list.
 - Cleaned up module metadata presentation and added structural module details.
 - Suppressed repetitive cached-library completion notices.
-
-## 1.8 (build 80) - 2026-08-29
-
 - Added visible progress while recursively discovering and processing tracker
   modules, including the current nested filename and completed file count.
 - Added cancellation and dismiss controls with clear completion, cancellation,
