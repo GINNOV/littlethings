@@ -14,12 +14,50 @@ struct InspectorView: View {
     
     @State private var didCopy = false
 
-    // Keys that have special handling or are displayed prominently.
-    private let excludedKeys = ["title", "artist", "duration"]
-    
-    // The remaining metadata keys, sorted for a consistent display order.
-    private var sortedMetadataKeys: [String] {
-        item.metadata.keys.filter { !excludedKeys.contains($0) }.sorted()
+    private let technicalKeys = ["channels", "patterns", "orders", "instruments", "samples", "subsongs"]
+
+    private var technicalMetadata: [(String, String)] {
+        technicalKeys.compactMap { key in
+            guard let value = item.metadata[key], !value.isEmpty else { return nil }
+            return (metadataLabel(for: key), value)
+        }
+    }
+
+    private var descriptiveMetadata: [(String, String)] {
+        let keys = ["type_long", "tracker", "date", "originaltype_long", "container_long"]
+        return keys.compactMap { key in
+            guard let value = item.metadata[key], !value.isEmpty else { return nil }
+            return (metadataLabel(for: key), value)
+        }
+    }
+
+    private var moduleMessage: String? {
+        let message = item.metadata["message"]?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let rawMessage = item.metadata["message_raw"]?.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let message = (message?.isEmpty == false ? message : rawMessage), !message.isEmpty else { return nil }
+        return message
+    }
+
+    private var warningMessage: String? {
+        guard let warning = item.metadata["warnings"]?.trimmingCharacters(in: .whitespacesAndNewlines), !warning.isEmpty else { return nil }
+        return warning
+    }
+
+    private func metadataLabel(for key: String) -> String {
+        switch key {
+        case "type_long": "Format"
+        case "tracker": "Tracker"
+        case "date": "Date"
+        case "originaltype_long": "Original Format"
+        case "container_long": "Container"
+        case "channels": "Channels"
+        case "patterns": "Patterns"
+        case "orders": "Orders"
+        case "instruments": "Instruments"
+        case "samples": "Samples"
+        case "subsongs": "Subsongs"
+        default: key
+        }
     }
 
     var body: some View {
@@ -71,20 +109,45 @@ struct InspectorView: View {
                     .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
             )
 
-            // --- Full Metadata ScrollView ---
-            if !sortedMetadataKeys.isEmpty {
+            if !descriptiveMetadata.isEmpty || !technicalMetadata.isEmpty || moduleMessage != nil || warningMessage != nil {
                 VStack(alignment: .leading) {
-                    Text("Full Metadata")
+                    Text("Module Metadata")
                         .font(.caption.weight(.semibold))
                         .foregroundColor(.secondary)
                         .padding(.leading)
                     
                     ScrollView {
                         VStack(alignment: .leading, spacing: 12) {
-                            ForEach(sortedMetadataKeys, id: \.self) { key in
-                                InfoRow(label: key.capitalized, value: item.metadata[key] ?? "N/A")
-                                if key != sortedMetadataKeys.last {
-                                    Divider()
+                            ForEach(Array(descriptiveMetadata.enumerated()), id: \.offset) { index, entry in
+                                InfoRow(label: entry.0, value: entry.1)
+                                if index < descriptiveMetadata.count - 1 { Divider() }
+                            }
+                            if !technicalMetadata.isEmpty {
+                                if !descriptiveMetadata.isEmpty { Divider() }
+                                ForEach(Array(technicalMetadata.enumerated()), id: \.offset) { index, entry in
+                                    InfoRow(label: entry.0, value: entry.1)
+                                    if index < technicalMetadata.count - 1 { Divider() }
+                                }
+                            }
+                            if let moduleMessage {
+                                Divider()
+                                VStack(alignment: .leading, spacing: 6) {
+                                    Text("Module Notes")
+                                        .font(.headline)
+                                    Text(moduleMessage)
+                                        .font(.body)
+                                        .textSelection(.enabled)
+                                }
+                            }
+                            if let warningMessage {
+                                Divider()
+                                VStack(alignment: .leading, spacing: 6) {
+                                    Label("Warnings", systemImage: "exclamationmark.triangle.fill")
+                                        .font(.headline)
+                                        .foregroundStyle(.orange)
+                                    Text(warningMessage)
+                                        .font(.body)
+                                        .textSelection(.enabled)
                                 }
                             }
                         }
@@ -129,7 +192,9 @@ struct InspectorView: View {
     private func formatTime(_ time: TimeInterval) -> String {
         let minutes = Int(time) / 60
         let seconds = Int(time) % 60
-        return String(format: "%02d:%02d", minutes, seconds)
+        let minuteText = minutes < 10 ? "0\(minutes)" : "\(minutes)"
+        let secondText = seconds < 10 ? "0\(seconds)" : "\(seconds)"
+        return "\(minuteText):\(secondText)"
     }
 }
 

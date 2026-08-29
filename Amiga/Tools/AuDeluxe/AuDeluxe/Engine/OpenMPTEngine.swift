@@ -168,6 +168,7 @@ final class OpenMPTEngine: ObservableObject, Sendable {
                 if let cacheURL,
                    let data = try? Data(contentsOf: cacheURL),
                    let cache = try? JSONDecoder().decode(PlaylistCache.self, from: data),
+                   cache.metadataVersion == 2,
                    cache.fingerprint == discovery.fingerprint {
                     return (
                         items: cache.items,

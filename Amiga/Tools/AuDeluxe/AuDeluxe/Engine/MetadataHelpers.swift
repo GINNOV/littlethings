@@ -24,11 +24,18 @@ nonisolated func getMetadata(for fileURL: URL, ratingKey: String, titleKey: Stri
         for key in keys {
             if let valueCString = openmpt_module_get_metadata(mod, key) {
                 metadataDict[key] = String(cString: valueCString)
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
                 openmpt_free_string(valueCString)
             }
         }
     }
     metadataDict["duration"] = "\(openmpt_module_get_duration_seconds(mod))"
+    metadataDict["channels"] = "\(openmpt_module_get_num_channels(mod))"
+    metadataDict["orders"] = "\(openmpt_module_get_num_orders(mod))"
+    metadataDict["patterns"] = "\(openmpt_module_get_num_patterns(mod))"
+    metadataDict["instruments"] = "\(openmpt_module_get_num_instruments(mod))"
+    metadataDict["samples"] = "\(openmpt_module_get_num_samples(mod))"
+    metadataDict["subsongs"] = "\(openmpt_module_get_num_subsongs(mod))"
     if let customTitle = getStringAttribute(key: titleKey, forFileAt: fileURL) {
         metadataDict["title"] = customTitle
     } else if metadataDict["title"] == nil || metadataDict["title"]!.isEmpty {
