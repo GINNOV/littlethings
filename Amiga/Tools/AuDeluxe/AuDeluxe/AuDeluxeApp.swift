@@ -13,7 +13,7 @@ import SwiftUI
 @main
 struct AuDeluxeApp: App {
     @StateObject private var settings = SettingsStore()
-    @StateObject private var engine = OpenMPTEngine()
+    private let engine = OpenMPTEngine()
     
     private let updaterController = UpdaterController()
     @State private var selectedFileID: PlaylistItem.ID?
@@ -63,8 +63,7 @@ struct AuDeluxeApp: App {
                         .environmentObject(settings)
                         .environmentObject(engine)
                 } label: {
-                    // The icon changes based on the playback state.
-                    Image(systemName: engine.isPlaying ? "speaker.wave.2.fill" : "speaker.slash.fill")
+                    PlaybackMenuBarLabel(engine: engine)
                 }
                 .menuBarExtraStyle(.window) // This style provides a popover window.
 
@@ -73,5 +72,13 @@ struct AuDeluxeApp: App {
             SettingsView()
                 .environmentObject(settings)
         }
+    }
+}
+
+private struct PlaybackMenuBarLabel: View {
+    @ObservedObject var engine: OpenMPTEngine
+
+    var body: some View {
+        Image(systemName: engine.isPlaying ? "speaker.wave.2.fill" : "speaker.slash.fill")
     }
 }
