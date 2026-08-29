@@ -5,6 +5,19 @@ struct LibraryFingerprint: Codable, Equatable {
         let relativePath: String
         let size: Int
         let modificationTime: TimeInterval
+        let metadataAttributes: [String: Data]
+
+        init(
+            relativePath: String,
+            size: Int,
+            modificationTime: TimeInterval,
+            metadataAttributes: [String: Data] = [:]
+        ) {
+            self.relativePath = relativePath
+            self.size = size
+            self.modificationTime = modificationTime
+            self.metadataAttributes = metadataAttributes
+        }
     }
 
     struct Discovery {
@@ -45,7 +58,8 @@ struct LibraryFingerprint: Codable, Equatable {
                 Entry(
                     relativePath: relativePath,
                     size: values.fileSize ?? 0,
-                    modificationTime: values.contentModificationDate?.timeIntervalSince1970 ?? 0
+                    modificationTime: values.contentModificationDate?.timeIntervalSince1970 ?? 0,
+                    metadataAttributes: audeluxeMetadataAttributes(for: fileURL)
                 ),
                 fileURL
             ))
@@ -56,5 +70,12 @@ struct LibraryFingerprint: Codable, Equatable {
             fingerprint: LibraryFingerprint(entries: discovered.map(\.entry)),
             moduleURLs: discovered.map(\.url)
         )
+    }
+
+    private static func audeluxeMetadataAttributes(for fileURL: URL) -> [String: Data] {
+        let keys = ["com.audeluxe.title", "com.audeluxe.artist", "com.audeluxe.rating"]
+        return Dictionary(uniqueKeysWithValues: keys.compactMap { key in
+            getAttribute(key: key, forFileAt: fileURL).map { (key, $0) }
+        })
     }
 }

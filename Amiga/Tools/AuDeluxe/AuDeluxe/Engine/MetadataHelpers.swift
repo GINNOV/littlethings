@@ -75,7 +75,7 @@ nonisolated func setAttribute(key: String, value: Any, forFileAt fileURL: URL) t
     }
 }
 
-nonisolated private func getAttribute(key: String, forFileAt fileURL: URL) -> Data? {
+nonisolated func getAttribute(key: String, forFileAt fileURL: URL) -> Data? {
     fileURL.path.withCString { cPath in
         key.withCString { cKey in
             let size = getxattr(cPath, cKey, nil, 0, 0, 0)

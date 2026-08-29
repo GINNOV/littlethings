@@ -38,4 +38,25 @@ struct LibraryFingerprintTests {
         // Then
         #expect(updated == original)
     }
+
+    @Test("Editing an AuDeluxe title invalidates cached library metadata")
+    func titleEditAltersFingerprint() throws {
+        // Given
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        let module = root.appendingPathComponent("song.mod")
+        try Data("module".utf8).write(to: module)
+        let modificationDate = Date(timeIntervalSince1970: 1_000)
+        try FileManager.default.setAttributes([.modificationDate: modificationDate], ofItemAtPath: module.path)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let original = try LibraryFingerprint.discover(in: root).fingerprint
+
+        // When
+        try setAttribute(key: "com.audeluxe.title", value: "Song", forFileAt: module)
+        try FileManager.default.setAttributes([.modificationDate: modificationDate], ofItemAtPath: module.path)
+        let updated = try LibraryFingerprint.discover(in: root).fingerprint
+
+        // Then
+        #expect(updated != original)
+    }
 }
