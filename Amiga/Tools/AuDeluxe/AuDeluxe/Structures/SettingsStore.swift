@@ -26,7 +26,6 @@ final class SettingsStore: ObservableObject {
     @Published var checkForUpdatesOnLaunch: Bool { didSet { persist(checkForUpdatesOnLaunch, key: "checkForUpdatesOnLaunch") } }
     @Published var playPlaylistOnLaunch: Bool { didSet { persist(playPlaylistOnLaunch, key: "playPlaylistOnLaunch") } }
     @Published var startupPlaylistID: UUID? { didSet { persist(startupPlaylistID?.uuidString, key: "startupPlaylistID") } }
-    @Published var hideDockIconWhenMinimized: Bool { didSet { persist(hideDockIconWhenMinimized, key: "hideDockIconWhenMinimized") } }
     @Published var localAIEnabled: Bool { didSet { persist(localAIEnabled, key: "localAIEnabled") } }
     @Published var localAIProvider: LocalAIProvider { didSet { persist(localAIProvider.rawValue, key: "localAIProvider") } }
     @Published var localAIModelName: String { didSet { persist(localAIModelName, key: "localAIModelName") } }
@@ -54,7 +53,6 @@ final class SettingsStore: ObservableObject {
         self.checkForUpdatesOnLaunch = userDefaults.object(forKey: "checkForUpdatesOnLaunch") as? Bool ?? true
         self.playPlaylistOnLaunch = userDefaults.object(forKey: "playPlaylistOnLaunch") as? Bool ?? false
         self.startupPlaylistID = userDefaults.string(forKey: "startupPlaylistID").flatMap(UUID.init(uuidString:))
-        self.hideDockIconWhenMinimized = userDefaults.object(forKey: "hideDockIconWhenMinimized") as? Bool ?? false
         self.localAIEnabled = userDefaults.object(forKey: "localAIEnabled") as? Bool ?? false
         self.localAIProvider = LocalAIProvider(rawValue: userDefaults.string(forKey: "localAIProvider") ?? "") ?? .lmStudio
         self.localAIModelName = userDefaults.string(forKey: "localAIModelName") ?? ""

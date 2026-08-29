@@ -45,4 +45,35 @@ enum LocalAIRequest {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         return request
     }
+
+    static func availabilityRequest(configuration: LocalAIConfiguration) throws -> URLRequest {
+        guard let baseURL = URL(string: configuration.endpoint), baseURL.host != nil else {
+            throw AIPlaylistError.invalidEndpoint
+        }
+
+        var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false)
+        let path = components?.path ?? ""
+        switch configuration.provider {
+        case .ollama:
+            if path.hasSuffix("/api/chat") {
+                components?.path = String(path.dropLast("/api/chat".count)) + "/api/tags"
+            } else if path.hasSuffix("/api") {
+                components?.path = path + "/tags"
+            } else {
+                components?.path = path.hasSuffix("/") ? path + "api/tags" : path + "/api/tags"
+            }
+        case .lmStudio, .openAICompatible:
+            let modelsBase = path.hasSuffix("/chat/completions")
+                ? String(path.dropLast("/chat/completions".count))
+                : path
+            components?.path = modelsBase.hasSuffix("/") ? modelsBase + "models" : modelsBase + "/models"
+        }
+
+        guard let url = components?.url else { throw AIPlaylistError.invalidEndpoint }
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.timeoutInterval = 3
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        return request
+    }
 }

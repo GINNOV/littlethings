@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.8 (build 82) - 2026-08-29
+
+- Moved AI playlist creation out of Settings and into a dedicated toolbar action.
+- Added inference-server availability checks and actionable provider-mismatch guidance before playlist generation.
+- Made the menu-bar player appear only while AuDeluxe is minimized, reliably hiding and restoring both the main window and Dock icon.
+- Presented Settings as a modal sheet and clarified that the startup update check looks for a new AuDeluxe app release.
+
 ## 1.8 (build 81) - 2026-08-29
 
 - Reworked the header into a full-width AuDeluxe artwork banner.

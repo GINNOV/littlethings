@@ -1,22 +1,35 @@
 import AppKit
 
 @MainActor
-final class DockVisibilityController {
+final class DockVisibilityController: ObservableObject {
     static let shared = DockVisibilityController()
 
-    private weak var hiddenWindow: NSWindow?
+    @Published private(set) var isMinimized = false
 
-    private init() {}
+    private(set) weak var hiddenWindow: NSWindow?
+    private let setActivationPolicy: (NSApplication.ActivationPolicy) -> Void
 
-    func handleMinimize(_ notification: Notification, enabled: Bool) {
-        guard enabled, let window = notification.object as? NSWindow else { return }
+    init(setActivationPolicy: @escaping (NSApplication.ActivationPolicy) -> Void = { policy in
+        NSApplication.shared.setActivationPolicy(policy)
+    }) {
+        self.setActivationPolicy = setActivationPolicy
+    }
+
+    func handleMinimize(_ notification: Notification) {
+        guard let window = notification.object as? NSWindow else { return }
         hiddenWindow = window
+        isMinimized = true
         window.orderOut(nil)
-        NSApplication.shared.setActivationPolicy(.accessory)
+        setActivationPolicy(.accessory)
+    }
+
+    func handleRestore() {
+        isMinimized = false
     }
 
     func showMainWindow() {
-        NSApplication.shared.setActivationPolicy(.regular)
+        isMinimized = false
+        setActivationPolicy(.regular)
         let window = hiddenWindow ?? NSApplication.shared.windows.first { $0.canBecomeMain }
         window?.deminiaturize(nil)
         window?.makeKeyAndOrderFront(nil)

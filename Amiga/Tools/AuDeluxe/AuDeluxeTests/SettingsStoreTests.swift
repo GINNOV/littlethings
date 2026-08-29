@@ -15,7 +15,6 @@ struct SettingsStoreTests {
         settings.checkForUpdatesOnLaunch = false
         settings.playPlaylistOnLaunch = true
         settings.startupPlaylistID = playlistID
-        settings.hideDockIconWhenMinimized = true
         settings.localAIEnabled = true
         settings.localAIProvider = .ollama
         settings.localAIModelName = "qwen2.5"
@@ -25,7 +24,6 @@ struct SettingsStoreTests {
         #expect(restored.checkForUpdatesOnLaunch == false)
         #expect(restored.playPlaylistOnLaunch)
         #expect(restored.startupPlaylistID == playlistID)
-        #expect(restored.hideDockIconWhenMinimized)
         #expect(restored.localAIEnabled)
         #expect(restored.localAIProvider == .ollama)
         #expect(restored.localAIModelName == "qwen2.5")

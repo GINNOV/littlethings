@@ -20,6 +20,7 @@ struct ToolbarItems: ToolbarContent {
     @Binding var showingTrackerView: Bool
     @Binding var isShowingManagePlaylists: Bool
     @Binding var isShowingSelectPlaylist: Bool
+    @Binding var isShowingAIPlaylistBuilder: Bool
 
     var body: some ToolbarContent {
         ToolbarItemGroup {
@@ -50,6 +51,11 @@ struct ToolbarItems: ToolbarContent {
                 Button("Select Playlist...") { isShowingSelectPlaylist = true }
             } label: {
                 Label("Playlists", systemImage: "music.note.list")
+            }
+            .disabled(showingTrackerView)
+
+            Button("Create Playlist with AI", systemImage: "sparkles") {
+                isShowingAIPlaylistBuilder = true
             }
             .disabled(showingTrackerView)
 

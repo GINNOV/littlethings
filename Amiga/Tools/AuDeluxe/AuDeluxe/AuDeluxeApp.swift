@@ -18,11 +18,12 @@ struct AuDeluxeApp: App {
     private let updaterController = UpdaterController()
     @State private var selectedFileID: PlaylistItem.ID?
     @State private var didCheckForUpdates = false
+    @State private var isShowingSettings = false
     
     var body: some Scene {
         WindowGroup {
             // Inject both the settings and the engine into the environment.
-            ContentView(selectedFileID: $selectedFileID)
+            ContentView(selectedFileID: $selectedFileID, isShowingSettings: $isShowingSettings)
                 .environmentObject(settings)
                 .environmentObject(engine)
                 .onAppear(perform: checkForUpdatesOnLaunch)
@@ -48,6 +49,12 @@ struct AuDeluxeApp: App {
                     window.makeKeyAndOrderFront(nil)
                 }
             }
+            CommandGroup(replacing: .appSettings) {
+                Button("Settings…") {
+                    isShowingSettings = true
+                }
+                .keyboardShortcut(",", modifiers: .command)
+            }
             UpdaterCommands(updaterController: updaterController)
             CommandGroup(after: .help) {
                 Button("Supported Module Formats") {
@@ -65,16 +72,10 @@ struct AuDeluxeApp: App {
                         .environmentObject(settings)
                         .environmentObject(engine)
                 } label: {
-                    PlaybackMenuBarLabel(engine: engine)
+                    PlaybackMenuBarLabel(engine: engine, dockVisibility: DockVisibilityController.shared)
                 }
                 .menuBarExtraStyle(.window) // This style provides a popover window.
 
-        
-        Settings {
-            SettingsView()
-                .environmentObject(settings)
-                .environmentObject(engine)
-        }
     }
 
     private func checkForUpdatesOnLaunch() {
@@ -88,8 +89,11 @@ struct AuDeluxeApp: App {
 
 private struct PlaybackMenuBarLabel: View {
     @ObservedObject var engine: OpenMPTEngine
+    @ObservedObject var dockVisibility: DockVisibilityController
 
     var body: some View {
-        Image(systemName: engine.isPlaying ? "speaker.wave.2.fill" : "speaker.slash.fill")
+        if dockVisibility.isMinimized {
+            Image(systemName: engine.isPlaying ? "speaker.wave.2.fill" : "speaker.slash.fill")
+        }
     }
 }

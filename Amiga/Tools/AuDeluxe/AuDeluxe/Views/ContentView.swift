@@ -11,6 +11,7 @@ struct ContentView: View {
     @EnvironmentObject private var engine: OpenMPTEngine
     @EnvironmentObject private var settings: SettingsStore
     @Binding var selectedFileID: PlaylistItem.ID?
+    @Binding var isShowingSettings: Bool
     
     @State private var isShowingDeleteAlert = false
     @State private var fileToDelete: PlaylistItem?
@@ -22,6 +23,7 @@ struct ContentView: View {
     @State private var showingTrackerView = false
     @State private var isShowingManagePlaylists = false
     @State private var isShowingSelectPlaylist = false
+    @State private var isShowingAIPlaylistBuilder = false
     
     @State private var scrollToSongID: PlaylistItem.ID?
     @State private var didApplyStartupPlayback = false
@@ -81,7 +83,10 @@ struct ContentView: View {
             }
             .onChange(of: settings.musicFolderURL) { scanMusicFolder() }
             .onReceive(NotificationCenter.default.publisher(for: NSWindow.didMiniaturizeNotification)) { notification in
-                DockVisibilityController.shared.handleMinimize(notification, enabled: settings.hideDockIconWhenMinimized)
+                DockVisibilityController.shared.handleMinimize(notification)
+            }
+            .onReceive(NotificationCenter.default.publisher(for: NSWindow.didDeminiaturizeNotification)) { _ in
+                DockVisibilityController.shared.handleRestore()
             }
             .toolbar {
                 ToolbarItems(
@@ -93,7 +98,8 @@ struct ContentView: View {
                     fileToInspect: $fileToInspect,
                     showingTrackerView: $showingTrackerView,
                     isShowingManagePlaylists: $isShowingManagePlaylists,
-                    isShowingSelectPlaylist: $isShowingSelectPlaylist
+                    isShowingSelectPlaylist: $isShowingSelectPlaylist,
+                    isShowingAIPlaylistBuilder: $isShowingAIPlaylistBuilder
                 )
             }
             .sheet(item: $fileToInspect) { item in
@@ -106,6 +112,19 @@ struct ContentView: View {
             }
             .sheet(isPresented: $isShowingSelectPlaylist) {
                 SelectPlaylistView()
+                    .environmentObject(settings)
+                    .environmentObject(engine)
+            }
+            .sheet(isPresented: $isShowingAIPlaylistBuilder) {
+                Form {
+                    AIPlaylistBuilderView()
+                }
+                .formStyle(.grouped)
+                .padding()
+                .frame(width: 720, height: 700)
+            }
+            .sheet(isPresented: $isShowingSettings) {
+                SettingsView()
                     .environmentObject(settings)
                     .environmentObject(engine)
             }

@@ -22,6 +22,18 @@ struct LocalAIService {
         let cleanRequest = request.trimmingCharacters(in: .whitespacesAndNewlines)
         guard cleanRequest.isEmpty == false else { throw AIPlaylistError.emptyRequest }
 
+        let availabilityRequest = try LocalAIRequest.availabilityRequest(configuration: configuration)
+        do {
+            let (_, response) = try await client.data(for: availabilityRequest)
+            guard let httpResponse = response as? HTTPURLResponse,
+                  200..<300 ~= httpResponse.statusCode else {
+                throw AIPlaylistError.serverUnavailable
+            }
+        } catch {
+            if let error = error as? AIPlaylistError { throw error }
+            throw AIPlaylistError.serverUnavailable
+        }
+
         let prompt = AIPlaylistPrompt.make(request: cleanRequest, items: items)
         let urlRequest = try LocalAIRequest.make(configuration: configuration, prompt: prompt)
         let (data, response) = try await client.data(for: urlRequest)

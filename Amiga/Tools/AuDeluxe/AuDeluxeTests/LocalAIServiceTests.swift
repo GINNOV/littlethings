@@ -12,6 +12,21 @@ struct LocalAIServiceTests {
         }
     }
 
+    private struct UnavailableHTTPClient: LocalAIHTTPClient {
+        func data(for request: URLRequest) async throws -> (Data, URLResponse) {
+            throw URLError(.cannotConnectToHost)
+        }
+    }
+
+    private struct UnhealthyHTTPClient: LocalAIHTTPClient {
+        let endpoint: URL
+
+        func data(for request: URLRequest) async throws -> (Data, URLResponse) {
+            let response = try #require(HTTPURLResponse(url: endpoint, statusCode: 404, httpVersion: nil, headerFields: nil))
+            return (Data(), response)
+        }
+    }
+
     @Test("Generated criteria are applied to indexed songs")
     func generatedCriteriaApplyToIndexedSongs() async throws {
         // Given
@@ -31,5 +46,38 @@ struct LocalAIServiceTests {
         // Then
         #expect(draft.criteria.name == "Jazz Pair")
         #expect(draft.items == [jazz])
+    }
+
+    @Test("Generation stops before posting when the local server is offline")
+    func generationStopsWhenServerIsUnavailable() async throws {
+        // Given
+        let service = LocalAIService(client: UnavailableHTTPClient())
+        let item = PlaylistItem(fileURL: URL(fileURLWithPath: "/Music/Jazz/one.mod"), metadata: [:])
+        let configuration = LocalAIConfiguration(provider: .lmStudio, modelName: "local", endpoint: "http://localhost:1234/v1")
+
+        // When
+        let error = await #expect(throws: AIPlaylistError.self) {
+            try await service.generatePlaylist(request: "Jazz", items: [item], configuration: configuration)
+        }
+
+        // Then
+        #expect(error == .serverUnavailable)
+    }
+
+    @Test("Generation stops when the local server health endpoint is unsuccessful")
+    func generationStopsWhenServerIsUnhealthy() async throws {
+        // Given
+        let endpoint = try #require(URL(string: "http://localhost:1234/v1/models"))
+        let service = LocalAIService(client: UnhealthyHTTPClient(endpoint: endpoint))
+        let item = PlaylistItem(fileURL: URL(fileURLWithPath: "/Music/Jazz/one.mod"), metadata: [:])
+        let configuration = LocalAIConfiguration(provider: .lmStudio, modelName: "local", endpoint: "http://localhost:1234/v1")
+
+        // When
+        let error = await #expect(throws: AIPlaylistError.self) {
+            try await service.generatePlaylist(request: "Jazz", items: [item], configuration: configuration)
+        }
+
+        // Then
+        #expect(error == .serverUnavailable)
     }
 }

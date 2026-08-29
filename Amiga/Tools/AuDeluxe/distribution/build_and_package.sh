@@ -9,12 +9,12 @@ SCHEME="AuDeluxe - Release"
 CONFIGURATION="Release"
 
 RELEASE_NOTES_CONTENT='
-<h4>Metadata and library presentation</h4>
+<h4>AI playlists and macOS integration</h4>
 <ul>
-    <li>Reworked the header into a full-width AuDeluxe artwork banner.</li>
-    <li>Added a dedicated Artist column to the library list.</li>
-    <li>Cleaned up module metadata presentation and added structural module details.</li>
-    <li>Suppressed repetitive cached-library completion notices.</li>
+    <li>Moved AI playlist creation into a dedicated toolbar action.</li>
+    <li>Added inference-server availability checks and provider-mismatch guidance.</li>
+    <li>Made the menu-bar player appear only while AuDeluxe is minimized, with reliable window and Dock restoration.</li>
+    <li>Presented Settings modally and clarified the automatic app-release check.</li>
 </ul>
 '
 # --- END: Configuration for AuDeluxe ---

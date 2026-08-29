@@ -21,7 +21,7 @@ struct GeneralSettingsView: View {
                 Picker("Default sort order", selection: $settings.defaultSortOrder) {
                     ForEach(SortOrder.allCases) { order in Text(order.rawValue).tag(order) }
                 }
-                Toggle("Check for new versions when AuDeluxe starts", isOn: $settings.checkForUpdatesOnLaunch)
+                Toggle("Check for a new AuDeluxe app release when the app starts", isOn: $settings.checkForUpdatesOnLaunch)
             }
         }
         .formStyle(.grouped)
