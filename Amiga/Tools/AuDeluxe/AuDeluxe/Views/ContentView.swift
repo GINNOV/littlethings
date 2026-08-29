@@ -24,6 +24,7 @@ struct ContentView: View {
     @State private var isShowingSelectPlaylist = false
     
     @State private var scrollToSongID: PlaylistItem.ID?
+    @State private var didApplyStartupPlayback = false
 
     var body: some View {
         ZStack {
@@ -75,9 +76,13 @@ struct ContentView: View {
                 engine.onSongChange = { newID in
                     self.selectedFileID = newID
                 }
+                engine.onLibraryReady = startConfiguredPlaylist
                 scanMusicFolder()
             }
             .onChange(of: settings.musicFolderURL) { scanMusicFolder() }
+            .onReceive(NotificationCenter.default.publisher(for: NSWindow.didMiniaturizeNotification)) { notification in
+                DockVisibilityController.shared.handleMinimize(notification, enabled: settings.hideDockIconWhenMinimized)
+            }
             .toolbar {
                 ToolbarItems(
                     selectedFileID: $selectedFileID,
@@ -142,6 +147,19 @@ struct ContentView: View {
     // MARK: - Logic
     private func scanMusicFolder() {
         engine.requestMusicFolderScan(for: settings.musicFolderURL)
+    }
+
+    private func startConfiguredPlaylist() {
+        guard !didApplyStartupPlayback,
+              settings.playPlaylistOnLaunch,
+              let playlist = settings.startupPlaylist,
+              let item = engine.allPlaylistItems.first(where: { playlist.fileURLs.contains($0.fileURL) }),
+              let musicFolderURL = settings.musicFolderURL else { return }
+
+        didApplyStartupPlayback = true
+        engine.setActivePlaylist(playlist)
+        selectedFileID = item.id
+        Task { await engine.play(fileURL: item.fileURL, musicFolderURL: musicFolderURL) }
     }
     
     private func deleteFile(item: PlaylistItem) {

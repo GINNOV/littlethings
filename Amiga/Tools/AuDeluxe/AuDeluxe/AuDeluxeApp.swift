@@ -17,6 +17,7 @@ struct AuDeluxeApp: App {
     
     private let updaterController = UpdaterController()
     @State private var selectedFileID: PlaylistItem.ID?
+    @State private var didCheckForUpdates = false
     
     var body: some Scene {
         WindowGroup {
@@ -24,6 +25,7 @@ struct AuDeluxeApp: App {
             ContentView(selectedFileID: $selectedFileID)
                 .environmentObject(settings)
                 .environmentObject(engine)
+                .onAppear(perform: checkForUpdatesOnLaunch)
         }
         .commands {
             CommandGroup(replacing: .appInfo) {
@@ -72,6 +74,14 @@ struct AuDeluxeApp: App {
             SettingsView()
                 .environmentObject(settings)
         }
+    }
+
+    private func checkForUpdatesOnLaunch() {
+        guard !didCheckForUpdates else { return }
+        didCheckForUpdates = true
+        updaterController.configureAutomaticChecks(enabled: settings.checkForUpdatesOnLaunch)
+        guard settings.checkForUpdatesOnLaunch else { return }
+        updaterController.checkForUpdatesInBackground()
     }
 }
 

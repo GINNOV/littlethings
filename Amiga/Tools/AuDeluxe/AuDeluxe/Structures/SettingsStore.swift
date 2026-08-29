@@ -23,15 +23,24 @@ final class SettingsStore: ObservableObject {
             userDefaults.set(automaticallyPlayNext, forKey: automaticallyPlayNextKey)
         }
     }
+    @Published var checkForUpdatesOnLaunch: Bool { didSet { persist(checkForUpdatesOnLaunch, key: "checkForUpdatesOnLaunch") } }
+    @Published var playPlaylistOnLaunch: Bool { didSet { persist(playPlaylistOnLaunch, key: "playPlaylistOnLaunch") } }
+    @Published var startupPlaylistID: UUID? { didSet { persist(startupPlaylistID?.uuidString, key: "startupPlaylistID") } }
+    @Published var hideDockIconWhenMinimized: Bool { didSet { persist(hideDockIconWhenMinimized, key: "hideDockIconWhenMinimized") } }
+    @Published var localAIEnabled: Bool { didSet { persist(localAIEnabled, key: "localAIEnabled") } }
+    @Published var localAIProvider: LocalAIProvider { didSet { persist(localAIProvider.rawValue, key: "localAIProvider") } }
+    @Published var localAIModelName: String { didSet { persist(localAIModelName, key: "localAIModelName") } }
+    @Published var localAIEndpoint: String { didSet { persist(localAIEndpoint, key: "localAIEndpoint") } }
 
     // MARK: - Private Properties
-    private let userDefaults = UserDefaults.standard
+    private let userDefaults: UserDefaults
     private let musicFolderBookmarkKey = "musicFolderBookmark"
     private let defaultSortOrderKey = "defaultSortOrder"
     private let playlistsKey = "customPlaylists"
     private let automaticallyPlayNextKey = "automaticallyPlayNext"
 
-    init() {
+    init(userDefaults: UserDefaults = .standard) {
+        self.userDefaults = userDefaults
         self.musicFolderBookmark = userDefaults.data(forKey: musicFolderBookmarkKey)
         if let savedSortOrder = userDefaults.string(forKey: defaultSortOrderKey),
            let sortOrder = SortOrder(rawValue: savedSortOrder) {
@@ -42,9 +51,22 @@ final class SettingsStore: ObservableObject {
         
         // Default to 'true' if the key doesn't exist yet.
         self.automaticallyPlayNext = userDefaults.object(forKey: automaticallyPlayNextKey) as? Bool ?? true
+        self.checkForUpdatesOnLaunch = userDefaults.object(forKey: "checkForUpdatesOnLaunch") as? Bool ?? true
+        self.playPlaylistOnLaunch = userDefaults.object(forKey: "playPlaylistOnLaunch") as? Bool ?? false
+        self.startupPlaylistID = userDefaults.string(forKey: "startupPlaylistID").flatMap(UUID.init(uuidString:))
+        self.hideDockIconWhenMinimized = userDefaults.object(forKey: "hideDockIconWhenMinimized") as? Bool ?? false
+        self.localAIEnabled = userDefaults.object(forKey: "localAIEnabled") as? Bool ?? false
+        self.localAIProvider = LocalAIProvider(rawValue: userDefaults.string(forKey: "localAIProvider") ?? "") ?? .lmStudio
+        self.localAIModelName = userDefaults.string(forKey: "localAIModelName") ?? ""
+        self.localAIEndpoint = userDefaults.string(forKey: "localAIEndpoint") ?? LocalAIProvider.lmStudio.defaultEndpoint
         
         loadPlaylists()
         print("SettingsStore initialized.")
+    }
+
+    var startupPlaylist: Playlist? {
+        guard let startupPlaylistID else { return nil }
+        return playlists.first { $0.id == startupPlaylistID }
     }
 
     // MARK: - Computed URL
@@ -82,6 +104,10 @@ final class SettingsStore: ObservableObject {
     
     func deletePlaylist(_ playlist: Playlist) {
         playlists.removeAll { $0.id == playlist.id }
+        if startupPlaylistID == playlist.id {
+            startupPlaylistID = nil
+            playPlaylistOnLaunch = false
+        }
         persistPlaylists()
     }
     
@@ -102,6 +128,14 @@ final class SettingsStore: ObservableObject {
             userDefaults.set(data, forKey: playlistsKey)
         } catch {
             print("Error encoding playlists: \(error)")
+        }
+    }
+
+    private func persist(_ value: Any?, key: String) {
+        if let value {
+            userDefaults.set(value, forKey: key)
+        } else {
+            userDefaults.removeObject(forKey: key)
         }
     }
 

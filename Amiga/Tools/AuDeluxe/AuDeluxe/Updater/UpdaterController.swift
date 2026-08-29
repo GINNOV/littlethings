@@ -23,4 +23,12 @@ final class UpdaterController {
     func checkForUpdates() {
         updaterController.checkForUpdates(nil)
     }
+
+    func checkForUpdatesInBackground() {
+        updaterController.updater.checkForUpdatesInBackground()
+    }
+
+    func configureAutomaticChecks(enabled: Bool) {
+        updaterController.updater.automaticallyChecksForUpdates = enabled
+    }
 }

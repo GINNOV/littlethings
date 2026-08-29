@@ -78,6 +78,7 @@ final class OpenMPTEngine: ObservableObject, Sendable {
     weak var settingsStore: SettingsStore?
     private var scannedMusicFolderURL: URL?
     var onSongChange: ((PlaylistItem.ID) -> Void)?
+    var onLibraryReady: (() -> Void)?
     private var configChangeObserver: Any?
     
     private var cacheURL: URL? {
@@ -238,6 +239,7 @@ final class OpenMPTEngine: ObservableObject, Sendable {
                 skipped: result.fingerprint.entries.count - result.items.count,
                 usedCache: result.usedCache
             )
+            onLibraryReady?()
             scanTask = nil
         } catch is CancellationError {
             guard generation == scanGeneration else { return }

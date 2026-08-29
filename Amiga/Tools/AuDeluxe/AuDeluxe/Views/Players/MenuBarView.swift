@@ -54,6 +54,10 @@ struct MenuBarView: View {
             .buttonStyle(.plain)
 
             Divider()
+
+            Button("Show AuDeluxe", systemImage: "macwindow", action: DockVisibilityController.shared.showMainWindow)
+
+            Divider()
             
             Button("Quit AuDeluxe") {
                 NSApplication.shared.terminate(nil)
