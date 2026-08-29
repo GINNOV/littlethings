@@ -18,6 +18,8 @@ struct PlaylistView: View {
             Section(header: HStack {
                 Text("Title")
                 Spacer()
+                Text("Artist")
+                    .frame(width: 160, alignment: .leading)
                 Text("Folder")
                     .frame(width: 140, alignment: .leading)
                 Text("Type")
@@ -29,17 +31,16 @@ struct PlaylistView: View {
             }.font(.caption.weight(.semibold))) {
                 ForEach(engine.playlistItems, id: \.id) { item in
                     HStack {
-                        VStack(alignment: .leading) {
-                            Text(item.title)
-                                .fontWeight(item.id == selectedFileID ? .bold : .regular)
-                                .foregroundColor(item.fileURL.lastPathComponent == engine.currentSongInfo ? .accentColor : .primary)
-                            if !item.artist.isEmpty {
-                                Text(item.artist)
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                        }
+                        Text(item.title)
+                            .fontWeight(item.id == selectedFileID ? .bold : .regular)
+                            .foregroundColor(item.fileURL.lastPathComponent == engine.currentSongInfo ? .accentColor : .primary)
                         Spacer()
+                        Text(item.artist.isEmpty ? "—" : item.artist)
+                            .font(.caption)
+                            .foregroundStyle(item.artist.isEmpty ? .tertiary : .secondary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                            .frame(width: 160, alignment: .leading)
                         Text(item.folderName)
                             .font(.caption)
                             .foregroundStyle(.secondary)
