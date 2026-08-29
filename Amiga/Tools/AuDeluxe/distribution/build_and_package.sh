@@ -9,11 +9,12 @@ SCHEME="AuDeluxe - Release"
 CONFIGURATION="Release"
 
 RELEASE_NOTES_CONTENT='
-<h4>Recursive library scan progress</h4>
+<h4>Metadata and library presentation</h4>
 <ul>
-    <li>Added visible progress, processed counts, and the current nested filename while scanning.</li>
-    <li>Added cancellation plus completion, skipped-file, and failure feedback.</li>
-    <li>Kept the existing playlist available until a replacement scan completes successfully.</li>
+    <li>Reworked the header into a full-width AuDeluxe artwork banner.</li>
+    <li>Added a dedicated Artist column to the library list.</li>
+    <li>Cleaned up module metadata presentation and added structural module details.</li>
+    <li>Suppressed repetitive cached-library completion notices.</li>
 </ul>
 '
 # --- END: Configuration for AuDeluxe ---

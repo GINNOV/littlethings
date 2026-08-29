@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.8 (build 81) - 2026-08-29
+
+- Reworked the header into a full-width AuDeluxe artwork banner.
+- Added a dedicated Artist column to the library list.
+- Cleaned up module metadata presentation and added structural module details.
+- Suppressed repetitive cached-library completion notices.
+
 ## 1.8 (build 80) - 2026-08-29
 
 - Added visible progress while recursively discovering and processing tracker

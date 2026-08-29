@@ -198,55 +198,28 @@ struct ContentView: View {
 // MARK: - Subviews in separate files
 
 struct HeaderView: View {
-    @EnvironmentObject private var engine: OpenMPTEngine
     var onTitleClick: (() -> Void)?
 
-    private var statusText: String {
-        if let songInfo = engine.currentSongInfo {
-            return songInfo
-        } else {
-            if engine.allPlaylistItems.isEmpty {
-                return "Select a music folder in Settings"
-            } else {
-                return "Select a song to play (out of \(engine.allPlaylistItems.count))"
-            }
-        }
-    }
-
     var body: some View {
-        HStack {
+        ZStack {
             Image("screamer")
                 .resizable()
-                .scaledToFit()
-                .frame(width: 64, height: 64)
-                .padding(.leading)
-            
-            Spacer()
-            
-            VStack {
-                Text("AuDeluxe").font(.largeTitle).fontWeight(.thin)
-                
-                Button(action: { onTitleClick?() }) {
-                    Text(statusText)
-                        .font(.headline)
-                        .foregroundColor(engine.isPlaying ? .accentColor : .secondary)
-                        .lineLimit(1)
-                }
-                .buttonStyle(.plain)
-                .disabled(!engine.isPlaying)
-                
-                Text(engine.songDetails ?? " ").font(.caption).foregroundColor(.secondary).padding(.top, 1)
-            }
-            
-            Spacer()
-            
-            Rectangle()
-                .fill(Color.clear)
-                .frame(width: 64, height: 64)
-                .padding(.trailing)
+                .scaledToFill()
+                .frame(maxWidth: .infinity, minHeight: 170, maxHeight: 170)
+                .overlay(Color.black.opacity(0.18))
+                .clipped()
+                .accessibilityHidden(true)
 
+            Button("AuDeluxe", action: { onTitleClick?() })
+                .font(.system(size: 36, weight: .thin, design: .rounded))
+                .foregroundStyle(.white)
+                .shadow(color: .black.opacity(0.55), radius: 5, y: 2)
+                .buttonStyle(.plain)
+                .focusEffectDisabled()
+                .accessibilityHint("Shows the current song in the library")
         }
-        .padding(.vertical, 8)
+        .frame(maxWidth: .infinity, minHeight: 170, maxHeight: 170)
+        .background(.black)
     }
 }
 

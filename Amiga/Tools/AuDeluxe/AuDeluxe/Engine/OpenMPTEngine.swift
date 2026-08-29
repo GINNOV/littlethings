@@ -234,11 +234,15 @@ final class OpenMPTEngine: ObservableObject, Sendable {
             if !result.usedCache {
                 savePlaylistToCache(items: result.items, fingerprint: result.fingerprint)
             }
-            scanStatus = .completed(
-                loaded: result.items.count,
-                skipped: result.fingerprint.entries.count - result.items.count,
-                usedCache: result.usedCache
-            )
+            if result.usedCache {
+                scanStatus = .idle
+            } else {
+                scanStatus = .completed(
+                    loaded: result.items.count,
+                    skipped: result.fingerprint.entries.count - result.items.count,
+                    usedCache: false
+                )
+            }
             onLibraryReady?()
             scanTask = nil
         } catch is CancellationError {
