@@ -48,6 +48,10 @@ jobs:
         with:
           ref: master
           persist-credentials: false
+          sparse-checkout: |
+            .github
+            Amiga/Tools
+          sparse-checkout-cone-mode: true
       - name: Require reviewed automation authority before loading settings credentials
         run: |
           set -euo pipefail
@@ -125,6 +129,10 @@ jobs:
           ref: ${{ needs.preflight.outputs.default_sha }}
           fetch-depth: 0
           persist-credentials: false
+          sparse-checkout: |
+            .github
+            Amiga/Tools
+          sparse-checkout-cone-mode: true
       - id: resolve
         env:
           MODE: ${{ needs.preflight.outputs.mode }}
@@ -209,6 +217,10 @@ jobs:
           ref: ${{ needs.preflight.outputs.default_sha }}
           fetch-depth: 0
           persist-credentials: false
+          sparse-checkout: |
+            .github
+            Amiga/Tools
+          sparse-checkout-cone-mode: true
       - env:
           APP_TOKEN: ${{ steps.token.outputs.token }}
         run: |
@@ -244,6 +256,10 @@ jobs:
           ref: ${{ needs.preflight.outputs.default_sha }}
           path: controls
           persist-credentials: false
+          sparse-checkout: |
+            .github
+            Amiga/Tools
+          sparse-checkout-cone-mode: true
       - id: create
         env:
           APP_TOKEN: ${{ steps.token.outputs.token }}
@@ -308,6 +324,10 @@ jobs:
         with:
           ref: ${{ needs.preflight.outputs.default_sha }}
           persist-credentials: false
+          sparse-checkout: |
+            .github
+            Amiga/Tools
+          sparse-checkout-cone-mode: true
       - env:
           APP_TOKEN: ${{ steps.token.outputs.token }}
         run: |
@@ -360,6 +380,10 @@ jobs:
           ref: ${{ needs.preflight.outputs.default_sha }}
           fetch-depth: 0
           persist-credentials: false
+          sparse-checkout: |
+            .github
+            Amiga/Tools
+          sparse-checkout-cone-mode: true
       - env:
           APP_TOKEN: ${{ steps.token.outputs.token }}
         run: |
@@ -393,6 +417,10 @@ jobs:
         with:
           ref: ${{ needs.preflight.outputs.default_sha }}
           persist-credentials: false
+          sparse-checkout: |
+            .github
+            Amiga/Tools
+          sparse-checkout-cone-mode: true
       - env:
           APP_TOKEN: ${{ steps.token.outputs.token }}
           PRE_RUN_IDS: ${{ needs.snapshot-pr-runs.outputs.run_ids }}
@@ -430,6 +458,10 @@ jobs:
         with:
           ref: ${{ needs.preflight.outputs.default_sha }}
           persist-credentials: false
+          sparse-checkout: |
+            .github
+            Amiga/Tools
+          sparse-checkout-cone-mode: true
       - env:
           APP_TOKEN: ${{ steps.token.outputs.token }}
         run: |
