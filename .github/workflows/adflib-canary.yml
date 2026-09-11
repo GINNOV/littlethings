@@ -64,7 +64,6 @@ jobs:
         with:
           ref: ${{ steps.trusted.outputs.sha }}
           path: trusted-controls
-          persist-credentials: false
           sparse-checkout: |
             .github
             Amiga/Tools
@@ -127,7 +126,6 @@ jobs:
         with:
           ref: ${{ needs.preflight.outputs.trusted_sha }}
           path: trusted-controls
-          persist-credentials: false
           sparse-checkout: |
             .github
             Amiga/Tools
@@ -175,7 +173,6 @@ jobs:
         with:
           ref: ${{ needs.preflight.outputs.trusted_sha }}
           path: trusted-controls
-          persist-credentials: false
           sparse-checkout: |
             .github
             Amiga/Tools

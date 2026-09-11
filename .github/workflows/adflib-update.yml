@@ -47,7 +47,6 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           ref: master
-          persist-credentials: false
           sparse-checkout: |
             .github
             Amiga/Tools
@@ -128,7 +127,6 @@ jobs:
         with:
           ref: ${{ needs.preflight.outputs.default_sha }}
           fetch-depth: 0
-          persist-credentials: false
           sparse-checkout: |
             .github
             Amiga/Tools
@@ -216,7 +214,6 @@ jobs:
         with:
           ref: ${{ needs.preflight.outputs.default_sha }}
           fetch-depth: 0
-          persist-credentials: false
           sparse-checkout: |
             .github
             Amiga/Tools
@@ -255,7 +252,6 @@ jobs:
         with:
           ref: ${{ needs.preflight.outputs.default_sha }}
           path: controls
-          persist-credentials: false
           sparse-checkout: |
             .github
             Amiga/Tools
@@ -323,7 +319,6 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           ref: ${{ needs.preflight.outputs.default_sha }}
-          persist-credentials: false
           sparse-checkout: |
             .github
             Amiga/Tools
@@ -379,7 +374,6 @@ jobs:
         with:
           ref: ${{ needs.preflight.outputs.default_sha }}
           fetch-depth: 0
-          persist-credentials: false
           sparse-checkout: |
             .github
             Amiga/Tools
@@ -416,7 +410,6 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           ref: ${{ needs.preflight.outputs.default_sha }}
-          persist-credentials: false
           sparse-checkout: |
             .github
             Amiga/Tools
@@ -457,7 +450,6 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           ref: ${{ needs.preflight.outputs.default_sha }}
-          persist-credentials: false
           sparse-checkout: |
             .github
             Amiga/Tools

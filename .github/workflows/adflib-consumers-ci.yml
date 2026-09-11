@@ -126,7 +126,6 @@ jobs:
         with:
           ref: ${{ steps.trusted.outputs.sha }}
           path: trusted-controls
-          persist-credentials: false
           sparse-checkout: |
             .github
             Amiga/Tools
@@ -206,7 +205,6 @@ jobs:
         with:
           ref: ${{ steps.route.outputs.candidate_sha }}
           path: candidate
-          persist-credentials: false
           sparse-checkout: |
             .github
             Amiga/Tools
@@ -269,7 +267,6 @@ jobs:
         with:
           ref: ${{ needs.resolve-identity.outputs.trusted_sha }}
           path: trusted-controls
-          persist-credentials: false
           sparse-checkout: |
             .github
             Amiga/Tools
@@ -305,7 +302,6 @@ jobs:
         with:
           ref: ${{ needs.resolve-identity.outputs.candidate_sha }}
           path: candidate
-          persist-credentials: false
           sparse-checkout: |
             .github
             Amiga/Tools
@@ -409,7 +405,6 @@ jobs:
         with:
           ref: ${{ needs.resolve-identity.outputs.trusted_sha }}
           path: trusted-controls
-          persist-credentials: false
           sparse-checkout: |
             .github
             Amiga/Tools
@@ -445,7 +440,6 @@ jobs:
         with:
           ref: ${{ needs.resolve-identity.outputs.candidate_sha }}
           path: candidate
-          persist-credentials: false
           sparse-checkout: |
             .github
             Amiga/Tools
