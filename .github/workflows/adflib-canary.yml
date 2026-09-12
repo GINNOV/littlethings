@@ -64,7 +64,10 @@ jobs:
         with:
           ref: ${{ steps.trusted.outputs.sha }}
           path: trusted-controls
-          persist-credentials: false
+          sparse-checkout: |
+            .github
+            Amiga/Tools
+          sparse-checkout-cone-mode: true
       - name: Authorize exact default-branch invocation
         id: authorize
         env:
@@ -123,7 +126,10 @@ jobs:
         with:
           ref: ${{ needs.preflight.outputs.trusted_sha }}
           path: trusted-controls
-          persist-credentials: false
+          sparse-checkout: |
+            .github
+            Amiga/Tools
+          sparse-checkout-cone-mode: true
       - name: Resolve and verify upstream master once
         id: resolve
         run: |
@@ -167,7 +173,10 @@ jobs:
         with:
           ref: ${{ needs.preflight.outputs.trusted_sha }}
           path: trusted-controls
-          persist-credentials: false
+          sparse-checkout: |
+            .github
+            Amiga/Tools
+          sparse-checkout-cone-mode: true
       - name: Prove production state remained unchanged
         env:
           EXPECTED_MANIFEST_SHA256: ${{ needs.preflight.outputs.manifest_sha256 }}

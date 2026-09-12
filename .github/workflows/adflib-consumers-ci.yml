@@ -126,7 +126,10 @@ jobs:
         with:
           ref: ${{ steps.trusted.outputs.sha }}
           path: trusted-controls
-          persist-credentials: false
+          sparse-checkout: |
+            .github
+            Amiga/Tools
+          sparse-checkout-cone-mode: true
       - name: Verify fixture authority and route candidate
         id: route
         env:
@@ -202,7 +205,10 @@ jobs:
         with:
           ref: ${{ steps.route.outputs.candidate_sha }}
           path: candidate
-          persist-credentials: false
+          sparse-checkout: |
+            .github
+            Amiga/Tools
+          sparse-checkout-cone-mode: true
       - name: Resolve complete candidate identity
         id: identity
         env:
@@ -261,7 +267,10 @@ jobs:
         with:
           ref: ${{ needs.resolve-identity.outputs.trusted_sha }}
           path: trusted-controls
-          persist-credentials: false
+          sparse-checkout: |
+            .github
+            Amiga/Tools
+          sparse-checkout-cone-mode: true
       - name: Download immutable candidate bundle
         if: needs.resolve-identity.outputs.candidate_transport == 'bundle'
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
@@ -293,7 +302,10 @@ jobs:
         with:
           ref: ${{ needs.resolve-identity.outputs.candidate_sha }}
           path: candidate
-          persist-credentials: false
+          sparse-checkout: |
+            .github
+            Amiga/Tools
+          sparse-checkout-cone-mode: true
       - name: Enforce compatibility fixture contract
         env:
           EFFECTIVE_CHANNEL: ${{ needs.resolve-identity.outputs.channel }}
@@ -393,7 +405,10 @@ jobs:
         with:
           ref: ${{ needs.resolve-identity.outputs.trusted_sha }}
           path: trusted-controls
-          persist-credentials: false
+          sparse-checkout: |
+            .github
+            Amiga/Tools
+          sparse-checkout-cone-mode: true
       - name: Download immutable candidate bundle
         if: needs.resolve-identity.outputs.candidate_transport == 'bundle'
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
@@ -425,7 +440,10 @@ jobs:
         with:
           ref: ${{ needs.resolve-identity.outputs.candidate_sha }}
           path: candidate
-          persist-credentials: false
+          sparse-checkout: |
+            .github
+            Amiga/Tools
+          sparse-checkout-cone-mode: true
       - name: Enforce compatibility fixture contract
         env:
           EFFECTIVE_CHANNEL: ${{ needs.resolve-identity.outputs.channel }}
