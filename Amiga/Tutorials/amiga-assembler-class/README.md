@@ -43,7 +43,9 @@ The course explains how to use OpenMPT for classic four-channel Amiga MOD files,
 ## Project layout
 
 - [`sample-code`](sample-code) contains the readable assembler, C, and supporting documentation used by the book, organized by chapter.
+- [`sample-code/Debugging`](sample-code/Debugging) contains the vAmiga and FS-UAE debugging labs and the reusable emulator configuration template.
 - [`assets`](assets) contains the original figures, editable EPUB diagrams, Amiga-native IFF data, and dedicated folders for audio and music samples.
+- [`source`](source) contains the maintained AsciiDoc companion source used to extend the preserved book.
 - [`tools`](tools) contains modern converters for preparing assets for an Amiga build.
 
 The preserved checkout remains under `tmp/upstream-total-amiga-assembler`. The organized folders above are working copies for the course and keep generated teaching material separate from the preserved source.

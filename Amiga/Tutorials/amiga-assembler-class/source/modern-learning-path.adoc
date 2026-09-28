@@ -1,0 +1,335 @@
+== Modern Learning Path
+
+This companion section expands *Total AMIGA assembler* for programmers who know a modern language such as Swift or Python but have never learned assembly language. It preserves the original book as the technical foundation and adds a practical route toward building a small Amiga game.
+
+=== How to use this path
+
+Read the companion section first, then use the linked chapters as reference and deeper explanation. The original book is broad: it teaches the processor, the Amiga operating system, libraries, Intuition, and advanced program construction. This path narrows the first steps to the concepts needed to understand and build a game.
+
+The recommended target is an Amiga 500-compatible machine using the 68000 processor and the original chipset. That target keeps the lessons concrete and makes every memory, timing, and graphics decision visible. The same ideas can later be extended to ECS and AGA systems.
+
+=== Stage 0: Build and run one example
+
+Before studying instructions, establish a repeatable edit-build-run loop:
+
+. Edit an example source file.
+. Assemble it with the project toolchain.
+. Run it in an Amiga emulator.
+. Inspect the output or debugger state.
+. Change one instruction and repeat.
+
+The historical examples use period assembler conventions. Keep those examples for study, but label modern replacements with the assembler and emulator they require. A learner should never have to guess whether an example is expected to run on an original Amiga, an emulator, or only the historical Devpac environment.
+
+=== Stage 0.5: Debug before adding graphics
+
+Debugging is part of the edit-build-run loop. Use it before you add graphics, sound, or custom-chip timing. A small CPU-only program gives you fewer moving parts and makes each instruction visible.
+
+This course uses two complementary debuggers:
+
+* **vAmiga** provides a visual debugger on macOS. Its CPU Inspector can stop, single-step, inspect registers and memory, and set breakpoints or watchpoints. Its Monitor Panel and RetroShell are useful when a game starts using DMA and the custom chips. See the https://dirkwhoffmann.github.io/vAmiga/docs/Tutorials/Exploring.html[vAmiga user interface guide].
+* **FS-UAE** provides a portable console debugger. It can mount a host directory as an Amiga volume, which keeps the edit-build-run loop short. See the https://fs-uae.net/docs/options/console-debugger[FS-UAE console debugger] and the https://fs-uae.net/docs/hard-drives[FS-UAE hard-drive options].
+
+Use an Amiga 500, 68000, OCS, and PAL configuration for the first labs. Record the model, chipset, timing mode, assembler, and build command before you start. Keep JIT disabled while you learn to relate an instruction to the state you observe.
+
+==== Lab 1: Find an off-by-one loop
+
+This program is meant to add one to D0 five times. The bug is in the value loaded into D1:
+
+[source,M68k]
+----
+        section code,code
+
+start:
+        moveq   #0,d0          ; expected result: 5
+        moveq   #5,d1          ; DBRA executes the body six times
+
+count_loop:
+        addq.l  #1,d0
+        dbra    d1,count_loop
+
+        rts
+----
+
+Assemble the program with a 68000-compatible assembler. The following command uses vasm and keeps line information in the executable when the installed vasm version supports it:
+
+[source,shell]
+----
+vasm -m68000 -Fhunkexe -linedebug -L debug-loop.lst -o debug-loop debug-loop.s
+----
+
+The important options are the 68000 target and Amiga hunk-executable output. If your assembler uses different option names, keep those two requirements and enable its source-line or symbol information option.
+
+The `DBRA` instruction tests the low word of D1, decrements it, and branches while the result is not `-1`. Loading `5` therefore runs the body for `5`, `4`, `3`, `2`, `1`, and `0`: six times. Change the instruction to `moveq #4,d1`, rebuild, and verify that D0 ends at `5`.
+
+==== Lab 2: Single-step the loop in vAmiga
+
+vAmiga can turn a pure Amiga executable into a temporary bootable disk, which is useful for small experiments. Its documentation lists pure executables among the supported file formats. See the https://dirkwhoffmann.github.io/vAmiga/docs/References/FileFormats.html[vAmiga file-format reference].
+
+. Start vAmiga with a legal Kickstart ROM or an AROS replacement.
+. Select an A500-compatible OCS configuration.
+. Drag `debug-loop` into the emulator.
+. Open the CPU Inspector.
+. Set a breakpoint on `count_loop`. If the symbol is not available, use the program counter and the disassembly view.
+. Run to the breakpoint and record D0, D1, the program counter, and the status flags.
+. Single-step `ADDQ` and `DBRA`. D0 reaches `6` before the loop exits.
+. Change `moveq #5,d1` to `moveq #4,d1`, rebuild, and repeat the trace.
+. Confirm that D0 reaches `5` and that the loop exits after the fifth addition.
+
+Write down the state after each `DBRA`. The goal is to explain the result from the register values, not to guess from the final number.
+
+==== Lab 3: Repeat the same trace in FS-UAE
+
+Create a copy of `sample-code/Debugging/fs-uae-debug.fs-uae.example` and replace its two placeholder paths. The configuration mounts the directory that contains `debug-loop` as `DH0:` and enables the console debugger:
+
+[source,ini]
+----
+amiga_model = A500
+kickstart_file = /path/to/kickstart-1.3.rom
+hard_drive_0 = /path/to/amiga-build
+console_debugger = 1
+----
+
+Launch the configuration from a terminal:
+
+[source,shell]
+----
+fs-uae /path/to/debug.fs-uae
+----
+
+Run `DH0:debug-loop` from the Amiga Shell. Enter the debugger with the configured debugger shortcut. FS-UAE documents `F12+D` for the console debugger, while some configurations use the emulator modifier plus `D`; type `?` after entering the debugger if the shortcut or command set differs.
+
+Use these commands for the trace:
+
+[source,text]
+----
+?              show the command list
+r              show registers and processor status
+t              execute one instruction
+d              disassemble near the current PC
+m $address 1   inspect memory near an address
+g              resume execution
+----
+
+Stop at `count_loop`, step through the loop, and record the same D0, D1, PC, and status values you recorded in vAmiga. The two debuggers may format the values differently, but the CPU state must agree.
+
+==== Lab 4: Stop on a memory write
+
+A watchpoint answers a different question from a breakpoint: **which instruction changed this address?** Use this isolated program to watch one word in memory:
+
+[source,M68k]
+----
+        section code,code
+
+start:
+        moveq   #7,d0
+        move.w  d0,$100       ; debugger watchpoint target
+        rts
+----
+
+In FS-UAE, enter the debugger before running the program and set a write watchpoint:
+
+[source,text]
+----
+w 1 $100 2 W
+g
+----
+
+The debugger should stop on the `MOVE.W` instruction or on the write it performs, depending on the build. Inspect the PC and disassembly, then clear the watchpoint with `w 1`.
+
+Address `$100` is used only for this throwaway lab. It overlaps the 68000 exception-vector area, so do not use it in a real game. Reset the emulator after the exercise. In vAmiga, add a write watchpoint for the same address in the CPU Inspector and inspect the memory view when execution stops.
+
+==== Use a fixed debugging worksheet
+
+For every bug, record these six items:
+
+. State the expected result.
+. State the observed result.
+. Reduce the problem to the smallest program that still fails.
+. Choose one register, memory address, instruction, or hardware register to watch.
+. Step one instruction, one frame, or one Copper wait and record what changed.
+. Apply the smallest fix and repeat the observation.
+
+When a game grows beyond CPU-only code, use the same method. For a crash, record the PC, A7, SR, and the top words on the stack. For graphics, inspect bitplane pointers, modulo values, the display window, and the Copper list. For sprites, inspect the sprite pointers, position and control words, DMA enable, and the raster position. For the Blitter, inspect its pointers, modulo values, masks, minterms, and busy state. For Paula, inspect the sample address, length, period, volume, and channel enable. For timing faults, record PAL or NTSC mode, DMA settings, and whether JIT is disabled.
+
+=== Stage 1: Build the CPU mental model
+
+Start with <<chapter1>> and <<chapter2>>. Learn to answer these questions before memorising instructions:
+
+* What is stored in a data register?
+* What is stored in an address register?
+* Which values are in memory and which are in the CPU?
+* What do the condition flags describe?
+* How does a byte, word, and longword differ?
+* How does an address become an array element or structure field?
+
+The first exercises should translate short Swift or Python fragments into register-and-memory diagrams. For example, a loop should be shown as a counter register, a comparison, a conditional branch, and an update.
+
+=== Stage 2: Learn control flow and reusable code
+
+Use <<chapter3>> for data movement, arithmetic, comparisons, and loops, then <<chapter4>> for subroutines, parameters, the stack, and register preservation.
+
+The learner should implement small routines before touching Amiga hardware:
+
+* Add two integers.
+* Find the largest value in an array.
+* Copy a zero-terminated string.
+* Convert a number to hexadecimal text.
+* Detect a collision between two rectangles.
+
+Each routine should state its inputs, outputs, registers it may change, and the memory it reads or writes. This is the assembly equivalent of a function contract.
+
+=== Stage 3: Connect the CPU to the Amiga
+
+Read <<chapter7>>, <<chapter8>>, and <<chapter10>> for the Amiga environment, include files, libraries, and library calls. Treat the Devpac material in <<chapter2>> as historical background and add a current toolchain note beside each build-dependent example.
+
+The key distinction is:
+
+* System-friendly programs use Exec, graphics, Intuition, and other libraries.
+* Games and demos may use the custom chips directly, accepting stricter timing and resource constraints.
+
+The course should teach both approaches, but should make the trade-off explicit before presenting direct hardware access.
+
+=== Stage 4: First graphics milestone
+
+Use the custom-chip discussion in <<chapter7>> and the graphics references in <<chapter8>> as preparation for a small display program. Add practical lessons for:
+
+* Chip memory and fast memory.
+* Bitplane layout and pixel addressing.
+* Colour registers and display dimensions.
+* The Copper and Copper lists.
+* The Blitter and rectangular data movement.
+* Waiting for vertical blanking.
+
+The milestone is a program that displays a background and moves one bitmap without corrupting the display.
+
+=== Stage 4.5: Build a practical asset pipeline
+
+Games are not made from assembly source alone. A game also needs images, samples, music, level data, and a reliable way to turn modern source assets into the byte layouts that the Amiga program expects. This stage makes that boundary explicit:
+
+    modern asset -> conversion tool -> Amiga file or packed data -> loader -> chip or fast memory
+
+The course tools in `Tutorials/amiga-assembler-class/tools` provide small, readable reference converters. They deliberately generate uncompressed files first. That makes the file headers and the loader visible to a beginner; compression and packing can be added after the uncompressed version works.
+
+==== Images: PNG to ILBM
+
+Use a modern image editor or Python/Pillow to create the source image. Pillow's `quantize` operation can reduce an image to a fixed palette; the course converter then writes an OCS-compatible, palette-indexed `FORM ILBM` with `BMHD`, `CMAP`, and `BODY` chunks. See the https://pillow.readthedocs.io/en/stable/reference/Image.html[Pillow image documentation] and the https://wiki.amigaos.net/wiki/IFFParse_Library[Amiga IFF documentation] when extending the example.
+
+Install Pillow and convert a player image:
+
+[source,shell]
+----
+python3 -m pip install Pillow
+python3 tools/png_to_ilbm.py assets/player.png build/player.ilbm --colors 16
+----
+
+The converter is intentionally conservative: it accepts 2, 4, 8, 16, or 32 colours, writes interleaved bitplanes, pads each bitplane row to an even number of bytes, and does not use ByteRun1 compression. That makes it suitable for a first loader. The Amiga-side program should:
+
+. Read the `FORM` and `ILBM` identifiers.
+. Find `BMHD` and obtain the width, height, and plane count.
+. Copy `CMAP` into the colour registers or translate it into the project's palette format.
+. Allocate chip memory for the `BODY` and point the bitplane pointers at it.
+. Add ByteRun1 support only after the uncompressed path is understood.
+
+For a first static asset, a Devpac/A68K-style source file can embed the generated bytes directly:
+
+[source,M68k]
+----
+        section data,data
+player_asset:
+        incbin  "build/player.ilbm"
+player_asset_end:
+        even
+----
+
+This is not yet a display routine. It is a useful intermediate milestone because the learner can inspect the file in a hex viewer, locate the `BMHD`, `CMAP`, and `BODY` chunks, and then compare those bytes with the values used by the renderer.
+
+==== Sound effects: WAV to 8SVX
+
+For short sound effects, use a modern editor or synthesiser to make a WAV file, use FFmpeg to convert it to a small mono PCM source, and then use the course converter to write `FORM 8SVX`. FFmpeg documents the `-ar`, `-ac`, and audio codec/sample-format output options in its https://ffmpeg.org/ffmpeg.html[audio options reference].
+
+[source,shell]
+----
+ffmpeg -i assets/laser.wav -ar 11025 -ac 1 -c:a pcm_u8 build/laser.wav
+python3 tools/wav_to_8svx.py build/laser.wav build/laser.8svx
+----
+
+The resulting file contains:
+
+* `VHDR`, which describes the number of samples, nominal sample rate, and volume.
+* `NAME`, which identifies the source sample.
+* `BODY`, which contains signed 8-bit sample bytes.
+
+The important Amiga lesson is that the file's sample rate is descriptive. Paula plays a sample using a period value, so the playback routine must convert the desired pitch or rate into the correct channel period. A first exercise should load one `8SVX` sound into chip memory, set up one Paula channel, trigger it, and stop it cleanly before adding mixing or looping.
+
+==== Music: MOD files and tracker source
+
+Music is a different problem from a one-shot sound effect. A classic Amiga `MOD` file contains patterns, sample descriptions, and sample data; the game normally needs a tracker replay routine as well as the file. For a beginner-friendly workflow:
+
+. Compose or import samples in OpenMPT.
+. In the song properties, choose `MOD (Amiga)`, not `MOD (PC)`.
+. Keep the first experiment to four channels, short 8-bit samples, and ordinary ProTracker effects.
+. Save the `.mod` file as the source asset and test it with the same replay routine that the game will use.
+. If the game embeds the module, use `incbin`; if it loads it from disk, write a loader that validates the signature and bounds before calling the replay routine.
+
+The https://wiki.openmpt.org/Manual%3A_Module_formats[OpenMPT module-format guide] explains the difference between the Amiga and PC MOD profiles. Furnace is also useful for designing and rendering tracker music; its https://github.com/tildearrow/furnace/blob/master/doc/README.md[manual] documents its native module format and audio export. Treat a rendered WAV as an intermediate asset unless the selected replay driver explicitly supports the track format.
+
+==== Utility data and game data
+
+Not every asset needs a historical format. For levels, collision rectangles, enemy tables, and save data, define a small project-owned format with a magic value, version, count, and big-endian fields. Generate it with a modern language and validate it on the Amiga before using any offset:
+
+[source,python]
+----
+import struct
+
+records = [(32, 80, 12), (120, 48, 20)]
+with open("build/level.dat", "wb") as output:
+    output.write(struct.pack(">4sHH", b"LVL1", 1, len(records)))
+    for x, y, kind in records:
+        output.write(struct.pack(">HHH", x, y, kind))
+----
+
+The corresponding assembly loader should check the four-byte magic, reject an unsupported version, check that the record count fits the allocated buffer, and only then read the records. This is the same discipline used for an IFF loader, but the format is owned by the game rather than by the Amiga ecosystem.
+
+==== Asset exercises
+
+The learner should complete these in order:
+
+. Generate an ILBM, inspect its chunks, and display its first bitplane.
+. Load the `CMAP` and compare the result with a hard-coded palette.
+. Generate an 8SVX laser sound and trigger it from a joystick button.
+. Replace the embedded asset with a file loaded through AmigaDOS.
+. Create a level file with Python, load it into a checked assembly data structure, and reject a bad version.
+. Add one MOD song only after the sound-effect path and replay timing are understood.
+
+=== Stage 5: Turn the display into a game
+
+Build the game in small, observable steps:
+
+. Read joystick input.
+. Update player position.
+. Clamp the player to the playfield.
+. Draw one enemy.
+. Detect a collision.
+. Add a score and lives.
+. Add sound or music.
+. Add a title screen and restart state.
+
+The first complete game should be a single-screen game such as Breakout, Pong, or a small fixed-screen shooter. Scrolling and more advanced Copper or Blitter effects should follow only after the fixed-screen game works.
+
+=== Stage 6: Make the examples teachable
+
+Every code example intended for learners should identify:
+
+* The assembler syntax it uses.
+* The Amiga model or chipset assumptions.
+* Required include files and libraries.
+* Registers used for inputs, outputs, and scratch values.
+* How to build and run it.
+* What the learner should observe.
+* One deliberate exercise or modification.
+
+This information turns a reference listing into a lesson without changing the original historical example.
+
+=== Suggested final project
+
+Build a small OCS-compatible arcade game with a fixed playfield, one player-controlled object, moving enemies, collision detection, a score, and one sound effect. The project should be split into modules for startup, input, game state, rendering, collision, and audio. The learner should be able to explain which parts use the CPU, which use the custom chips, and where timing affects behaviour.

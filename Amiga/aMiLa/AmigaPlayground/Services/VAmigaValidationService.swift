@@ -90,6 +90,15 @@ struct VAmigaServerConfigPatcher {
         )
     }
 
+    func restore(config: VAmigaServerConfig) throws {
+        guard let backupPath = config.backupPath else { return }
+        let fileManager = FileManager.default
+        guard fileManager.fileExists(atPath: backupPath) else { return }
+        let original = try String(contentsOfFile: backupPath, encoding: .utf8)
+        try original.write(toFile: config.configPath, atomically: true, encoding: .utf8)
+        try fileManager.removeItem(atPath: backupPath)
+    }
+
     private func patchServerSection(in text: String, config: VAmigaServerConfig) -> String {
         let normalized = text.replacingOccurrences(of: "\r\n", with: "\n")
         var lines = normalized.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)

@@ -411,6 +411,43 @@ CopperList:
         XCTAssertTrue(text.contains("PORT4=8085"))
     }
 
+    func testVAmigaServerConfigPatcherRestoresOriginalConfiguration() throws {
+        let tempRoot = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try FileManager.default.createDirectory(at: tempRoot, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: tempRoot) }
+
+        let iniURL = tempRoot.appendingPathComponent("vAmiga.ini")
+        let original = "[SRV]\nPORT0=9000\n"
+        try original.write(to: iniURL, atomically: true, encoding: .utf8)
+
+        let patcher = VAmigaServerConfigPatcher()
+        let patched = try patcher.apply(config: VAmigaServerConfig(configPath: iniURL.path))
+        XCTAssertNotEqual(try String(contentsOf: iniURL, encoding: .utf8), original)
+
+        try patcher.restore(config: patched)
+
+        XCTAssertEqual(try String(contentsOf: iniURL, encoding: .utf8), original)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: patched.backupPath ?? ""))
+    }
+
+    func testPlaygroundDebugContextDefaultsToInspectableStartupCommands() {
+        XCTAssertEqual(PlaygroundDebugLaunchContext.defaultStartupCommands, [
+            "amiga reset",
+            "amiga run",
+            "r cpu",
+            "disassemble"
+        ])
+    }
+
+    func testPlaygroundDebugStateSeparatesConnectionFromExecution() {
+        XCTAssertFalse(PlaygroundDebugState.idle.isActive)
+        XCTAssertTrue(PlaygroundDebugState.connected.isActive)
+        XCTAssertTrue(PlaygroundDebugState.sending.isActive)
+        XCTAssertFalse(PlaygroundDebugState.disconnected.isActive)
+        XCTAssertEqual(PlaygroundDebugState.failed("RPC unavailable").label, "Needs attention")
+    }
+
     func testVAmigaRPCClientBuildsAndParsesRetroShellRequests() throws {
         let payload = try VAmigaRPCClient.makeRequest(command: "r cpu", id: 42)
         let json = try JSONSerialization.jsonObject(with: payload.data(using: .utf8) ?? Data()) as? [String: Any]

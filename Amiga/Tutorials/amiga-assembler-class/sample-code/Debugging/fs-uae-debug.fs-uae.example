@@ -1,0 +1,4 @@
+amiga_model = A500
+kickstart_file = /path/to/kickstart-1.3.rom
+hard_drive_0 = /path/to/amiga-build
+console_debugger = 1

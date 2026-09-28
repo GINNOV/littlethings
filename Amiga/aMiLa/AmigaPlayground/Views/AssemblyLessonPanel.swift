@@ -7,6 +7,7 @@ struct AssemblyLessonPanel: View {
     let onLoadCode: (AssemblyLesson) -> Void
     let onAssemble: () -> Void
     let onRun: (AssemblyLesson) -> Void
+    let onDebug: (AssemblyLesson) -> Void
     let onComplete: (String) -> Void
 
     @State private var selectedQuizAnswer: Int?
@@ -167,7 +168,13 @@ struct AssemblyLessonPanel: View {
                 Button("Run", systemImage: "play.fill") {
                     onRun(lesson)
                 }
-                    .buttonStyle(.bordered)
+                .buttonStyle(.bordered)
+
+                Button("Debug", systemImage: "ladybug.fill") {
+                    onDebug(lesson)
+                }
+                .buttonStyle(.bordered)
+                .tint(.cyan)
             }
             .controlSize(.small)
         }

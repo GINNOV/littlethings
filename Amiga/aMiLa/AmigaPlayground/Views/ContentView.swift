@@ -10,6 +10,7 @@ struct AmigaPlaygroundActions {
     let saveCode: () -> Void
     let indentCode: () -> Void
     let runDefaultEmulator: () -> Void
+    let debugVAmiga: () -> Void
     let validateVAmiga: () -> Void
     let runWebEmulator: () -> Void
     let exportADF: () -> Void
@@ -97,6 +98,12 @@ struct AmigaPlaygroundCommands: Commands {
                 .disabled(!actions.canRun)
                 .keyboardShortcut("r", modifiers: .command)
 
+                Button("Debug Current Source with vAmiga") {
+                    actions.debugVAmiga()
+                }
+                .disabled(!actions.canRun)
+                .keyboardShortcut("d", modifiers: [.command, .shift])
+
                 Divider()
 
                 Button("Validate with vAmiga") {
@@ -118,6 +125,7 @@ enum OutputTab: String, CaseIterable, Identifiable {
     case console = "Console"
     case thinking = "Thinking Process"
     case emulator = "Web Emulator"
+    case debugger = "Debugger"
     
     var id: String { self.rawValue }
 }
@@ -217,6 +225,10 @@ struct ContentView: View {
     @State private var buildStatus: BuildStatus = .idle
     @State private var adfTrigger: Int = 0
     @State private var activeOutputTab: OutputTab = .console
+    @State private var vAmigaDebugState: PlaygroundDebugState = .idle
+    @State private var vAmigaDebugSession: VAmigaDebugSession?
+    @State private var vAmigaDebugRecords: [VAmigaCommandRecord] = []
+    @State private var vAmigaDebugCommand: String = ""
     @State private var didCopyConsole: Bool = false
     @State private var lastSavedCodeURL: URL?
     @StateObject private var tutorialCatalog = TutorialCatalogService.shared
@@ -252,6 +264,23 @@ struct ContentView: View {
             prometheusPort: vAmigaPrometheusPort,
             serialPort: vAmigaSerialPort,
             autoConfigure: vAmigaAutoConfigureServers
+        )
+    }
+
+    private func makeEmulatorLaunchConfig(backend: EmulatorBackend, adfPath: String) -> EmulatorLaunchConfig {
+        EmulatorLaunchConfig(
+            backend: backend,
+            adfPath: adfPath,
+            romRelativePath: selectedRomFilename,
+            model: emulatorModel,
+            chipRamMb: emulatorChipRam,
+            fastRamMb: emulatorFastRam,
+            cpu: emulatorCpu,
+            jit: emulatorJit,
+            customArgs: emulatorCustomArgs,
+            vAmigaExecutablePath: vAmigaExecutablePath,
+            vAmigaCustomArgs: vAmigaCustomArgs,
+            vAmigaServerConfig: vAmigaServerConfig
         )
     }
 
@@ -438,6 +467,7 @@ SineWave:
             saveCode: saveCode,
             indentCode: indentCode,
             runDefaultEmulator: runInEmulator,
+            debugVAmiga: startVAmigaDebug,
             validateVAmiga: validateInVAmiga,
             runWebEmulator: runInWebEmulator,
             exportADF: exportToADF,
@@ -480,6 +510,20 @@ SineWave:
                         .accessibilityIdentifier("runDefaultEmulatorButton")
                         .accessibilityLabel("Run")
                         .help("Assemble and run in the selected emulator (⌘R)")
+
+                        Button(action: startVAmigaDebug) {
+                            HStack {
+                                Image(systemName: "ladybug.fill")
+                                Text("Debug")
+                            }
+                        }
+                        .disabled(isCompiling || isExportingADF || isLoadingTutorial)
+                        .keyboardShortcut(.init("d"), modifiers: [.command, .shift])
+                        .buttonStyle(.bordered)
+                        .tint(.cyan)
+                        .accessibilityIdentifier("debugVAmigaButton")
+                        .accessibilityLabel("Debug current source with vAmiga")
+                        .help("Assemble the current source and debug it in vAmiga (⇧⌘D)")
 
                         Button(action: fixCompileErrorsWithAssistant) {
                             HStack {
@@ -822,10 +866,11 @@ SineWave:
                                 Label("Console", systemImage: "terminal.fill").tag(OutputTab.console)
                                 Label("Thinking Process", systemImage: "brain").tag(OutputTab.thinking)
                                 Label("Web Emulator", systemImage: "safari.fill").tag(OutputTab.emulator)
+                                Label("Debugger", systemImage: "ladybug.fill").tag(OutputTab.debugger)
                             }
                             .pickerStyle(.segmented)
                             .labelsHidden()
-                            .frame(width: 380)
+                            .frame(width: 500)
                             .accessibilityIdentifier("outputPanePicker")
 
                             Spacer()
@@ -911,6 +956,20 @@ SineWave:
                         case .emulator:
                             WebEmulatorView(adfTrigger: $adfTrigger, adfPath: "/tmp/amiga_playground_temp.adf")
                                 .background(Color.black)
+                        case .debugger:
+                            PlaygroundDebugPanel(
+                                state: vAmigaDebugState,
+                                backendName: "vAmiga RetroShell",
+                                records: vAmigaDebugRecords,
+                                command: $vAmigaDebugCommand,
+                                onStart: startVAmigaDebug,
+                                onContinue: { sendVAmigaDebugCommand("run") },
+                                onStep: { sendVAmigaDebugCommand("step") },
+                                onReset: { sendVAmigaDebugCommand("amiga reset") },
+                                onDisconnect: disconnectVAmigaDebug,
+                                onClearHistory: { vAmigaDebugRecords.removeAll() },
+                                onSubmit: { sendVAmigaDebugCommand(vAmigaDebugCommand) }
+                            )
                         }
                     }
                     .frame(minHeight: 180, maxHeight: 400)
@@ -925,6 +984,7 @@ SineWave:
                             onLoadCode: loadAssemblyLesson,
                             onAssemble: runCompilation,
                             onRun: runAssemblyLesson,
+                            onDebug: debugAssemblyLesson,
                             onComplete: completeAssemblyLesson
                         )
                     }
@@ -999,6 +1059,14 @@ SineWave:
             applyAssemblyLessonHardwarePreset(preset)
         }
         runInEmulator()
+    }
+
+    private func debugAssemblyLesson(_ lesson: AssemblyLesson) {
+        if let presetID = lesson.emulatorPresetID,
+           let preset = HardwarePreset.presets.first(where: { $0.id == presetID }) {
+            applyAssemblyLessonHardwarePreset(preset)
+        }
+        startVAmigaDebug()
     }
 
     private func applyAssemblyLessonHardwarePreset(_ preset: HardwarePreset) {
@@ -1162,20 +1230,7 @@ SineWave:
 
             self.outputConsole = resultMessage + "\n\nLaunching vAmiga and connecting to RPC/Prometheus servers..."
 
-            let launchConfig = EmulatorLaunchConfig(
-                backend: .vAmiga,
-                adfPath: tempADFPath,
-                romRelativePath: self.selectedRomFilename,
-                model: self.emulatorModel,
-                chipRamMb: self.emulatorChipRam,
-                fastRamMb: self.emulatorFastRam,
-                cpu: self.emulatorCpu,
-                jit: self.emulatorJit,
-                customArgs: self.emulatorCustomArgs,
-                vAmigaExecutablePath: self.vAmigaExecutablePath,
-                vAmigaCustomArgs: self.vAmigaCustomArgs,
-                vAmigaServerConfig: self.vAmigaServerConfig
-            )
+            let launchConfig = self.makeEmulatorLaunchConfig(backend: .vAmiga, adfPath: tempADFPath)
 
             VAmigaValidationService.shared.validate(config: launchConfig) { result in
                 self.isCompiling = false
@@ -1185,6 +1240,108 @@ SineWave:
                     self.outputConsole += "\n\nFailures:\n" + result.failures.map { "- \($0)" }.joined(separator: "\n")
                 }
                 self.outputConsole += "\n\nValidation artifacts:\n\(result.artifactDirectory)\nTrace:\n\(result.tracePath)\nMetrics:\n\(result.metricsPath)"
+            }
+        }
+    }
+
+    private func startVAmigaDebug() {
+        guard !isCompiling && !isExportingADF else { return }
+
+        if let session = vAmigaDebugSession {
+            vAmigaDebugSession = nil
+            vAmigaDebugState = .disconnected
+            session.disconnect { error in
+                if let error {
+                    self.vAmigaDebugState = .failed("Could not close the previous session: \(error.localizedDescription)")
+                    self.outputConsole = "Could not restart the vAmiga debugger safely.\n\(error.localizedDescription)"
+                    return
+                }
+                self.beginVAmigaDebugBuild()
+            }
+            return
+        }
+
+        beginVAmigaDebugBuild()
+    }
+
+    private func beginVAmigaDebugBuild() {
+        isCompiling = true
+        buildStatus = .running
+        activeOutputTab = .debugger
+        vAmigaDebugState = .starting
+        vAmigaDebugRecords.removeAll()
+        vAmigaDebugCommand = ""
+        outputConsole = "Building the current editor source for an interactive vAmiga session...\n"
+
+        let tempADFPath = "/tmp/amiga_playground_temp.adf"
+        CompilerService.shared.generateBootableADF(assemblyCode: codeText, targetADFPath: tempADFPath) { success, resultMessage in
+            guard success else {
+                self.isCompiling = false
+                self.buildStatus = .failure
+                self.vAmigaDebugState = .failed(resultMessage)
+                self.outputConsole = resultMessage
+                return
+            }
+
+            let launchConfig = self.makeEmulatorLaunchConfig(backend: .vAmiga, adfPath: tempADFPath)
+            let context = PlaygroundDebugLaunchContext(
+                backend: .vAmiga,
+                displayName: "vAmiga RetroShell",
+                launchConfig: launchConfig,
+                startupCommands: PlaygroundDebugLaunchContext.defaultStartupCommands
+            )
+            self.outputConsole = resultMessage + "\n\nStarting vAmiga RetroShell and loading the fresh editor artifact..."
+
+            VAmigaInteractiveDebugService.shared.start(context: context) { result in
+                self.isCompiling = false
+                switch result {
+                case .success(let startResult):
+                    self.vAmigaDebugSession = startResult.session
+                    self.vAmigaDebugRecords = Array(startResult.bootstrapRecords.suffix(100))
+                    self.vAmigaDebugState = .connected
+                    self.buildStatus = .success
+                    self.outputConsole += "\n\nInteractive debugger ready.\n\(startResult.launchMessage)"
+                case .failure(let error):
+                    self.vAmigaDebugState = .failed(error.localizedDescription)
+                    self.buildStatus = .failure
+                    self.outputConsole += "\n\nCould not start the interactive vAmiga debugger:\n\(error.localizedDescription)"
+                }
+            }
+        }
+    }
+
+    private func sendVAmigaDebugCommand(_ rawCommand: String) {
+        let command = rawCommand.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !command.isEmpty, let session = vAmigaDebugSession, vAmigaDebugState.canExecute else { return }
+
+        vAmigaDebugState = .sending
+        session.send(command: command) { result in
+            switch result {
+            case .success(let record):
+                self.vAmigaDebugRecords = Array((self.vAmigaDebugRecords + [record]).suffix(100))
+                self.vAmigaDebugCommand = ""
+                self.vAmigaDebugState = .connected
+            case .failure(let error):
+                self.vAmigaDebugState = .failed(error.localizedDescription)
+                self.outputConsole = "vAmiga debugger connection failed:\n\(error.localizedDescription)"
+            }
+        }
+    }
+
+    private func disconnectVAmigaDebug() {
+        guard let session = vAmigaDebugSession else {
+            vAmigaDebugState = .disconnected
+            return
+        }
+
+        vAmigaDebugSession = nil
+        vAmigaDebugState = .disconnected
+        session.disconnect { error in
+            if let error {
+                self.vAmigaDebugState = .failed("Disconnected, but the vAmiga configuration could not be restored: \(error.localizedDescription)")
+                self.outputConsole = "The vAmiga session disconnected, but configuration restore failed:\n\(error.localizedDescription)"
+            } else {
+                self.outputConsole = "Disconnected from vAmiga. The emulator remains running so you can inspect it or close it separately."
             }
         }
     }
@@ -1208,20 +1365,7 @@ SineWave:
 
             self.outputConsole = resultMessage + "\n\nLaunching \(label) with selected ROM and configuration..."
 
-            let launchConfig = EmulatorLaunchConfig(
-                backend: backend,
-                adfPath: tempADFPath,
-                romRelativePath: self.selectedRomFilename,
-                model: self.emulatorModel,
-                chipRamMb: self.emulatorChipRam,
-                fastRamMb: self.emulatorFastRam,
-                cpu: self.emulatorCpu,
-                jit: self.emulatorJit,
-                customArgs: self.emulatorCustomArgs,
-                vAmigaExecutablePath: self.vAmigaExecutablePath,
-                vAmigaCustomArgs: self.vAmigaCustomArgs,
-                vAmigaServerConfig: self.vAmigaServerConfig
-            )
+            let launchConfig = self.makeEmulatorLaunchConfig(backend: backend, adfPath: tempADFPath)
 
             EmulatorService.shared.launchEmulator(config: launchConfig) { result in
                 self.isCompiling = false

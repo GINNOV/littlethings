@@ -15,3 +15,14 @@ source tree.
 
 The material is credited in the course-level [README](../README.md). This folder is
 an expanded, learner-friendly working copy; it does not replace the preserved source.
+
+## Debugging labs
+
+[`Debugging`](Debugging) contains the modern vAmiga and FS-UAE exercises:
+
+- `debug-loop.s` demonstrates a `DBRA` off-by-one error.
+- `debug-watchpoint.s` demonstrates stopping on a memory write.
+- `fs-uae-debug.fs-uae.example` is a starting configuration for the FS-UAE console debugger.
+
+The companion learning path explains the same labs step by step and includes the
+expected register values before and after the fix.

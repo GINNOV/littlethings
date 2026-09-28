@@ -28,6 +28,8 @@
 		A11100002E8000E400000000 /* App/UpdaterCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E8000E300000000 /* App/UpdaterCommands.swift */; };
 		A11100002E8000F600000000 /* Services/AssemblyCourseCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E8000F500000000 /* Services/AssemblyCourseCatalog.swift */; };
 		A11100002E8000F800000000 /* Views/AssemblyLessonPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E8000F700000000 /* Views/AssemblyLessonPanel.swift */; };
+		A11100002E80010000000000 /* Services/VAmigaInteractiveDebugService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E80010200000000 /* Services/VAmigaInteractiveDebugService.swift */; };
+		A11100002E80010100000000 /* Views/PlaygroundDebugPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11100002E80010300000000 /* Views/PlaygroundDebugPanel.swift */; };
 		A11100002E8000E600000000 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = A11100002E8000E500000000 /* Sparkle */; };
 /* End PBXBuildFile section */
 
@@ -73,6 +75,8 @@
 		A11100002E8000E300000000 /* App/UpdaterCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/UpdaterCommands.swift; sourceTree = "<group>"; };
 		A11100002E8000F500000000 /* Services/AssemblyCourseCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/AssemblyCourseCatalog.swift; sourceTree = "<group>"; };
 		A11100002E8000F700000000 /* Views/AssemblyLessonPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/AssemblyLessonPanel.swift; sourceTree = "<group>"; };
+		A11100002E80010200000000 /* Services/VAmigaInteractiveDebugService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/VAmigaInteractiveDebugService.swift; sourceTree = "<group>"; };
+		A11100002E80010300000000 /* Views/PlaygroundDebugPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/PlaygroundDebugPanel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -149,6 +153,7 @@
 				A11100002E8000C300000000 /* Views/PromptLibraryView.swift */,
 				A11100002E80001700000000 /* Views/WebEmulatorView.swift */,
 				A11100002E8000F700000000 /* Views/AssemblyLessonPanel.swift */,
+				A11100002E80010300000000 /* Views/PlaygroundDebugPanel.swift */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -165,6 +170,7 @@
 				A11100002E80001500000000 /* Services/OllamaService.swift */,
 				A11100002E8000C100000000 /* Services/PromptLibraryStore.swift */,
 				A11100002E80001900000000 /* Services/VAmigaValidationService.swift */,
+				A11100002E80010200000000 /* Services/VAmigaInteractiveDebugService.swift */,
 			);
 			name = Services;
 			sourceTree = "<group>";
@@ -340,6 +346,8 @@
 				A11100002E8000E200000000 /* App/UpdaterController.swift in Sources */,
 				A11100002E8000F600000000 /* Services/AssemblyCourseCatalog.swift in Sources */,
 				A11100002E8000F800000000 /* Views/AssemblyLessonPanel.swift in Sources */,
+				A11100002E80010000000000 /* Services/VAmigaInteractiveDebugService.swift in Sources */,
+				A11100002E80010100000000 /* Views/PlaygroundDebugPanel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
