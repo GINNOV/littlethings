@@ -1,0 +1,9 @@
+platform :ios, '17.0'
+
+project 'PivoPilot.xcodeproj'
+
+target 'PivoPilot' do
+  use_frameworks!
+
+  pod 'PivoProSDK', :git => 'https://github.com/pivo-inc/pivo-pro-sdk-ios.git', :tag => '1.0.3'
+end

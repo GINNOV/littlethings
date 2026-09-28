@@ -1,5 +1,4 @@
 import AppKit
-import ArmageddonArm
 import ArmageddonCore
 import Joy1
 import Observation
@@ -38,8 +37,6 @@ final class AppModel {
     private(set) var supportBundleURL: URL?
     private(set) var availableNativeCameras: [NativeCameraDevice] = []
     private let goPlay: GoPlaySession
-    private var armOperator: any ArmOperatorControlling
-    private let makeArmOperator: () throws -> any ArmOperatorControlling
     private let allowLiveArm: Bool
     let pendant: PendantModel
     private(set) var workspace: GoWorkspace
@@ -63,11 +60,9 @@ final class AppModel {
         captureRoot: URL? = nil,
         runMode: RunWorkspaceExecutionMode = .unavailable,
         runJournalRoot: URL? = nil,
-        armOperator: (any ArmOperatorControlling)? = nil,
         goPlaySource: (any BoardGridSourcing)? = nil,
         goPlayPoster: (any HTTPPosting)? = nil,
         workspace: GoWorkspace? = nil,
-        makeArmOperator: (() throws -> any ArmOperatorControlling)? = nil,
         allowLiveArm: Bool = false
     ) {
         self.coordinator = coordinator
@@ -110,8 +105,6 @@ final class AppModel {
             poster: poster
         )
         goPlay = GoPlaySession(source: source, client: canned)
-        self.makeArmOperator = makeArmOperator ?? { throw ArmOperatorError.rejected("not attached") }
-        self.armOperator = armOperator ?? NullArmOperator()
         self.workspace = workspace ?? (try? GoWorkspace.load(from: Self.goWorkspaceURL())) ?? .fixture
         self.allowLiveArm = allowLiveArm
         let live = allowLiveArm
@@ -163,29 +156,17 @@ final class AppModel {
         }
         do {
             let xy = try workspace.cartesian(for: turn.reply)
-            if pendant.isConnected {
-                try await pendant.placeStone(
-                    bowlX: workspace.bowlX,
-                    bowlY: workspace.bowlY,
-                    bowlZ: workspace.bowlZ,
-                    targetX: xy.x,
-                    targetY: xy.y,
-                    safeZ: workspace.safeZ,
-                    pickZ: workspace.pickZ,
-                    placeZ: workspace.placeZ,
-                    feedMmPerMin: workspace.feedMmPerMin
-                )
-            } else {
-                try await armOperator.placeStone(
-                    bowl: workspace.bowl,
-                    targetX: xy.x,
-                    targetY: xy.y,
-                    safeZ: workspace.safeZ,
-                    pickZ: workspace.pickZ,
-                    placeZ: workspace.placeZ,
-                    feedMmPerMin: workspace.feedMmPerMin
-                )
-            }
+            try await pendant.placeStone(
+                bowlX: workspace.bowlX,
+                bowlY: workspace.bowlY,
+                bowlZ: workspace.bowlZ,
+                targetX: xy.x,
+                targetY: xy.y,
+                safeZ: workspace.safeZ,
+                pickZ: workspace.pickZ,
+                placeZ: workspace.placeZ,
+                feedMmPerMin: workspace.feedMmPerMin
+            )
             try await goPlay.acknowledgePlace()
             goPlayState = await goPlay.state
             goPlayMessage = "Placed at \(turn.reply.row),\(turn.reply.column) → \(xy.x),\(xy.y)."
@@ -227,11 +208,10 @@ final class AppModel {
     }
 
     func refreshArmPose() async throws {
-        if let cartesian = pendant.pose?.cartesian {
-            armPose = ArmCartesianPose(x: cartesian.x, y: cartesian.y, z: cartesian.z)
-            return
+        guard let cartesian = pendant.pose?.cartesian else {
+            throw ArmError.disconnected
         }
-        armPose = try await armOperator.pose()
+        armPose = ArmCartesianPose(x: cartesian.x, y: cartesian.y, z: cartesian.z)
     }
 
     private func syncPoseFromPendant() {
@@ -245,42 +225,20 @@ final class AppModel {
     }
 
     func stepArm(dx: Double, dy: Double, dz: Double) async {
-        if pendant.isConnected {
-            await pendant.step(dx: dx, dy: dy, dz: dz)
-            syncPoseFromPendant()
-            if let armPose {
-                goPlayMessage = String(format: "Pose X %.1f  Y %.1f  Z %.1f", armPose.x, armPose.y, armPose.z)
-            }
-            return
-        }
-        do {
-            try await armOperator.step(dx: dx, dy: dy, dz: dz, feedMmPerMin: workspace.feedMmPerMin)
-            try await refreshArmPose()
-            if let armPose {
-                goPlayMessage = String(format: "Pose X %.1f  Y %.1f  Z %.1f", armPose.x, armPose.y, armPose.z)
-            }
-        } catch {
-            goPlayMessage = "Jog failed: \(error)"
+        await pendant.step(dx: dx, dy: dy, dz: dz)
+        syncPoseFromPendant()
+        if let armPose {
+            goPlayMessage = String(format: "Pose X %.1f  Y %.1f  Z %.1f", armPose.x, armPose.y, armPose.z)
         }
     }
 
     func setArmVacuum(_ on: Bool) async {
-        if pendant.isConnected {
-            await pendant.setVacuum(on)
-            goPlayMessage = on ? "Vacuum on" : "Vacuum off"
-            return
-        }
-        do {
-            try await armOperator.setVacuum(on)
-            goPlayMessage = on ? "Vacuum on" : "Vacuum off"
-        } catch {
-            goPlayMessage = "Vacuum failed: \(error)"
-        }
+        await pendant.setVacuum(on)
+        goPlayMessage = on ? "Vacuum on" : "Vacuum off"
     }
 
     func stopArm() async {
         await pendant.stop()
-        await armOperator.emergencyStop()
         goPlayMessage = "STOP sent (vacuum off + M410)."
     }
 

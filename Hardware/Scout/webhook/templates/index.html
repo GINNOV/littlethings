@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+    <title>Sp1ONE Camera View</title>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="glow">SP1ONE Snapshot</h1>
+      <img
+        id="camera_image"
+        src="{{ url_for('image') }}"
+        alt="Latest Camera Shot"
+      />
+      <br /><br />
+      <form action="{{ url_for('screenshot') }}" method="get">
+        <button type="submit">Take A Snap</button>
+      </form>
+      <div class="directional-pad">
+        <button
+          class="dir-button"
+          id="up-button"
+          onclick="sendMoveRequest(0.1, 0.2, 'Turned North')"
+        >
+          &#8593;
+        </button>
+        <div class="horizontal-buttons">
+          <button
+            class="dir-button"
+            id="left-button"
+            onclick="sendMoveRequest(0.1, 0.2, 'Turned North East')"
+          >
+            &#8592;
+          </button>
+          <button
+            class="dir-button"
+            id="down-button"
+            onclick="sendMoveRequest(0.1, 0.2, 'Turned Somewhere')"
+          >
+            &#8595;
+          </button>
+          <button
+            class="dir-button"
+            id="right-button"
+            onclick="sendMoveRequest(0.1, -0.2)"
+          >
+            &#8594;
+          </button>
+        </div>
+      </div>
+      <div><input type="checkbox" id="auto-shot" /> Auto Shot</div>
+      <!-- Status Message -->
+      <div id="status-message" class="status-message"></div>
+    </div>
+    <div></div>
+    <div id="compass">
+      <img
+        src="{{ url_for('static_images', filename='compass.jpg') }}"
+        alt="compass"
+        class="small-image"
+      />
+    </div>
+  </body>
+</html>

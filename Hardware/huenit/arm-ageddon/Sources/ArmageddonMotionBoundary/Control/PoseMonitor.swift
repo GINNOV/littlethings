@@ -1,3 +1,5 @@
+import Joy1
+
 actor PoseMonitor {
     private let arm: HuenitArm
     private var task: Task<Void, Never>?

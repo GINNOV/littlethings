@@ -1,0 +1,472 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0D0F961CF9260C24F4E57037 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8E0FF7822E8FD5E65C7D671 /* AppModel.swift */; };
+		0E726F122D4356F575450A61 /* WatchOrientationReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E0F1314C002B042789876BE /* WatchOrientationReceiver.swift */; };
+		108C3FD33C2EFB739DD384FD /* AirPodsHeadTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = C893DD0AFC298B17D637B324 /* AirPodsHeadTracker.swift */; };
+		26D7CB51E807534C5B0C1E45 /* MotorMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01866FE81CA8EAD454139697 /* MotorMapper.swift */; };
+		321D717DE71D106D070A809B /* PivoBLEController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CA99F553D76DA8DF38896D8 /* PivoBLEController.swift */; };
+		3FBD624623FC50C65BF81BE9 /* QuaternionMath.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF929E510FD6A5A20B0812E8 /* QuaternionMath.swift */; };
+		5D0CABC70056BDB89A842188 /* PhoneMotionTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF18D40778F6411BA28483EF /* PhoneMotionTracker.swift */; };
+		65F679EB6D5A536F179175BE /* licenseKey.json.template in Resources */ = {isa = PBXBuildFile; fileRef = 9E525D2F8457B7BF475ACDDA /* licenseKey.json.template */; };
+		7B23BB6B057A5FAA56FBC6BE /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 18E163C6DB00360E599D0367 /* CoreMotion.framework */; };
+		856F3467C13DB009AD1BF4AF /* PivoPilotApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 341853F8D595A228554009DC /* PivoPilotApp.swift */; };
+		AD988FFCB0D1EEEDB28418F4 /* Pods_PivoPilot.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 22B067B7DDFDCAB4BEC73D0D /* Pods_PivoPilot.framework */; };
+		B8B81536C799FCC32069BDA8 /* SmoothingFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45F48997053FC551D202CEB0 /* SmoothingFilter.swift */; };
+		C740296F8B287C1CD1D38199 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5FFDD9550098D6A07B44A35 /* DashboardView.swift */; };
+		D6464E92E5C6560CADDFA09B /* OrientationFusion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BACA6D02390CA15FCBB9BFD /* OrientationFusion.swift */; };
+		D9F21A0A069E2BE5A2E41021 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0EA1C9BE3813C0E957E4527E /* Foundation.framework */; };
+		E4E863120F5A48AEFDB65B90 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EAF9B9E5062B3DE415BF5711 /* CoreBluetooth.framework */; };
+		EC766787ADDA8083DF1D0F42 /* MotorCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6FFF0E422DADA609F2BB67C /* MotorCommand.swift */; };
+		FC04053457610363F1FCE5E4 /* WatchConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 909E164BF6AC3A1B4C6551F3 /* WatchConnectivity.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		01866FE81CA8EAD454139697 /* MotorMapper.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MotorMapper.swift; path = Motor/MotorMapper.swift; sourceTree = "<group>"; };
+		035CDA8BE48AB5F59524C0ED /* PivoPilot.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PivoPilot.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0EA1C9BE3813C0E957E4527E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		18E163C6DB00360E599D0367 /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/CoreMotion.framework; sourceTree = DEVELOPER_DIR; };
+		22B067B7DDFDCAB4BEC73D0D /* Pods_PivoPilot.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PivoPilot.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		2CA99F553D76DA8DF38896D8 /* PivoBLEController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PivoBLEController.swift; path = Motor/PivoBLEController.swift; sourceTree = "<group>"; };
+		2E0F1314C002B042789876BE /* WatchOrientationReceiver.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WatchOrientationReceiver.swift; path = Sensors/WatchOrientationReceiver.swift; sourceTree = "<group>"; };
+		2F538CDB49F31DE6AF73B684 /* Pods-PivoPilot.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PivoPilot.debug.xcconfig"; path = "Target Support Files/Pods-PivoPilot/Pods-PivoPilot.debug.xcconfig"; sourceTree = "<group>"; };
+		341853F8D595A228554009DC /* PivoPilotApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PivoPilotApp.swift; path = App/PivoPilotApp.swift; sourceTree = "<group>"; };
+		3BACA6D02390CA15FCBB9BFD /* OrientationFusion.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OrientationFusion.swift; path = Tracking/OrientationFusion.swift; sourceTree = "<group>"; };
+		45F48997053FC551D202CEB0 /* SmoothingFilter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SmoothingFilter.swift; path = Tracking/SmoothingFilter.swift; sourceTree = "<group>"; };
+		909E164BF6AC3A1B4C6551F3 /* WatchConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WatchConnectivity.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/WatchConnectivity.framework; sourceTree = DEVELOPER_DIR; };
+		9E525D2F8457B7BF475ACDDA /* licenseKey.json.template */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = licenseKey.json.template; sourceTree = "<group>"; };
+		A8E0FF7822E8FD5E65C7D671 /* AppModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AppModel.swift; path = App/AppModel.swift; sourceTree = "<group>"; };
+		AF929E510FD6A5A20B0812E8 /* QuaternionMath.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = QuaternionMath.swift; path = Tracking/QuaternionMath.swift; sourceTree = "<group>"; };
+		B1AD567DF201A64ABA07B6F9 /* PivoPilot-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "PivoPilot-Info.plist"; sourceTree = "<group>"; };
+		BF18D40778F6411BA28483EF /* PhoneMotionTracker.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PhoneMotionTracker.swift; path = Sensors/PhoneMotionTracker.swift; sourceTree = "<group>"; };
+		C893DD0AFC298B17D637B324 /* AirPodsHeadTracker.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AirPodsHeadTracker.swift; path = Sensors/AirPodsHeadTracker.swift; sourceTree = "<group>"; };
+		D6FFF0E422DADA609F2BB67C /* MotorCommand.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MotorCommand.swift; path = Motor/MotorCommand.swift; sourceTree = "<group>"; };
+		DFFD1EA035E8A127217AEA6C /* Pods-PivoPilot.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PivoPilot.release.xcconfig"; path = "Target Support Files/Pods-PivoPilot/Pods-PivoPilot.release.xcconfig"; sourceTree = "<group>"; };
+		E5FFDD9550098D6A07B44A35 /* DashboardView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DashboardView.swift; path = UI/DashboardView.swift; sourceTree = "<group>"; };
+		EAF9B9E5062B3DE415BF5711 /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/CoreBluetooth.framework; sourceTree = DEVELOPER_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		41FA23A128BAD9511B889A3C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D9F21A0A069E2BE5A2E41021 /* Foundation.framework in Frameworks */,
+				7B23BB6B057A5FAA56FBC6BE /* CoreMotion.framework in Frameworks */,
+				E4E863120F5A48AEFDB65B90 /* CoreBluetooth.framework in Frameworks */,
+				FC04053457610363F1FCE5E4 /* WatchConnectivity.framework in Frameworks */,
+				AD988FFCB0D1EEEDB28418F4 /* Pods_PivoPilot.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0C91BFD98642C28EC504F166 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				DFFD1EA035E8A127217AEA6C /* Pods-PivoPilot.release.xcconfig */,
+				2F538CDB49F31DE6AF73B684 /* Pods-PivoPilot.debug.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		319C5F4F79237CBFF661EB12 = {
+			isa = PBXGroup;
+			children = (
+				3C78F2D02DF02D6C23B605C5 /* Products */,
+				C9F0C44915DF83950FFBA766 /* Frameworks */,
+				E29D6EAE7DF8ECDC0F4AC926 /* Sources */,
+				8D9E2DE632CF5606B5354EB4 /* Config */,
+				5967DD423071F505A2B5DB65 /* Resources */,
+				0C91BFD98642C28EC504F166 /* Pods */,
+			);
+			sourceTree = "<group>";
+		};
+		3C78F2D02DF02D6C23B605C5 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				035CDA8BE48AB5F59524C0ED /* PivoPilot.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		5967DD423071F505A2B5DB65 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				9E525D2F8457B7BF475ACDDA /* licenseKey.json.template */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		8D9E2DE632CF5606B5354EB4 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				B1AD567DF201A64ABA07B6F9 /* PivoPilot-Info.plist */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
+		C9F0C44915DF83950FFBA766 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				D5658211CDA6BA0EA2601ECB /* iOS */,
+				22B067B7DDFDCAB4BEC73D0D /* Pods_PivoPilot.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		D5658211CDA6BA0EA2601ECB /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				0EA1C9BE3813C0E957E4527E /* Foundation.framework */,
+				18E163C6DB00360E599D0367 /* CoreMotion.framework */,
+				EAF9B9E5062B3DE415BF5711 /* CoreBluetooth.framework */,
+				909E164BF6AC3A1B4C6551F3 /* WatchConnectivity.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
+		E29D6EAE7DF8ECDC0F4AC926 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				A8E0FF7822E8FD5E65C7D671 /* AppModel.swift */,
+				341853F8D595A228554009DC /* PivoPilotApp.swift */,
+				D6FFF0E422DADA609F2BB67C /* MotorCommand.swift */,
+				01866FE81CA8EAD454139697 /* MotorMapper.swift */,
+				2CA99F553D76DA8DF38896D8 /* PivoBLEController.swift */,
+				C893DD0AFC298B17D637B324 /* AirPodsHeadTracker.swift */,
+				BF18D40778F6411BA28483EF /* PhoneMotionTracker.swift */,
+				2E0F1314C002B042789876BE /* WatchOrientationReceiver.swift */,
+				3BACA6D02390CA15FCBB9BFD /* OrientationFusion.swift */,
+				AF929E510FD6A5A20B0812E8 /* QuaternionMath.swift */,
+				45F48997053FC551D202CEB0 /* SmoothingFilter.swift */,
+				E5FFDD9550098D6A07B44A35 /* DashboardView.swift */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		1E4710AFF3BECF32938DCFC9 /* PivoPilot */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A432349ADB828EE5CAB3C553 /* Build configuration list for PBXNativeTarget "PivoPilot" */;
+			buildPhases = (
+				0EC0B95FBC02955D5C09D0F6 /* [CP] Check Pods Manifest.lock */,
+				44CB5CD6DCB2BA4F6F192DC5 /* Sources */,
+				41FA23A128BAD9511B889A3C /* Frameworks */,
+				23CBC08DCBA6FCE7667213C8 /* Resources */,
+				638B2186AE4143060EA97028 /* [CP] Embed Pods Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PivoPilot;
+			productName = PivoPilot;
+			productReference = 035CDA8BE48AB5F59524C0ED /* PivoPilot.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		06F578033FFA68ADAAA198CC /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 2600;
+				LastUpgradeCheck = 2600;
+				TargetAttributes = {
+					1E4710AFF3BECF32938DCFC9 = {
+						DevelopmentTeam = QQ9PTQU945;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 6F7F7E77DDF5621F61BFB287 /* Build configuration list for PBXProject "PivoPilot" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 319C5F4F79237CBFF661EB12;
+			productRefGroup = 3C78F2D02DF02D6C23B605C5 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				1E4710AFF3BECF32938DCFC9 /* PivoPilot */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		23CBC08DCBA6FCE7667213C8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				65F679EB6D5A536F179175BE /* licenseKey.json.template in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		0EC0B95FBC02955D5C09D0F6 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-PivoPilot-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		638B2186AE4143060EA97028 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-PivoPilot/Pods-PivoPilot-frameworks.sh",
+				"${PODS_ROOT}/PivoProSDK/PivoProSDK.framework",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/PivoProSDK.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-PivoPilot/Pods-PivoPilot-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		44CB5CD6DCB2BA4F6F192DC5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0D0F961CF9260C24F4E57037 /* AppModel.swift in Sources */,
+				856F3467C13DB009AD1BF4AF /* PivoPilotApp.swift in Sources */,
+				EC766787ADDA8083DF1D0F42 /* MotorCommand.swift in Sources */,
+				26D7CB51E807534C5B0C1E45 /* MotorMapper.swift in Sources */,
+				321D717DE71D106D070A809B /* PivoBLEController.swift in Sources */,
+				108C3FD33C2EFB739DD384FD /* AirPodsHeadTracker.swift in Sources */,
+				5D0CABC70056BDB89A842188 /* PhoneMotionTracker.swift in Sources */,
+				0E726F122D4356F575450A61 /* WatchOrientationReceiver.swift in Sources */,
+				D6464E92E5C6560CADDFA09B /* OrientationFusion.swift in Sources */,
+				3FBD624623FC50C65BF81BE9 /* QuaternionMath.swift in Sources */,
+				B8B81536C799FCC32069BDA8 /* SmoothingFilter.swift in Sources */,
+				C740296F8B287C1CD1D38199 /* DashboardView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		23ECAFB179F1B7DBE0391DA6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 2F538CDB49F31DE6AF73B684 /* Pods-PivoPilot.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = QQ9PTQU945;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
+				INFOPLIST_FILE = "Config/PivoPilot-Info.plist";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.metools.PivoPilot;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		43AEC6059DF25941671A9484 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		8E51A53E37E83FB3977C7F06 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		A7B6A86D9D213D2ED030840E /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = DFFD1EA035E8A127217AEA6C /* Pods-PivoPilot.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = QQ9PTQU945;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
+				INFOPLIST_FILE = "Config/PivoPilot-Info.plist";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.metools.PivoPilot;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		6F7F7E77DDF5621F61BFB287 /* Build configuration list for PBXProject "PivoPilot" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				43AEC6059DF25941671A9484 /* Debug */,
+				8E51A53E37E83FB3977C7F06 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A432349ADB828EE5CAB3C553 /* Build configuration list for PBXNativeTarget "PivoPilot" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A7B6A86D9D213D2ED030840E /* Release */,
+				23ECAFB179F1B7DBE0391DA6 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 06F578033FFA68ADAAA198CC /* Project object */;
+}

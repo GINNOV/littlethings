@@ -1,4 +1,3 @@
-import ArmageddonArm
 import ArmageddonCore
 import SwiftUI
 
@@ -65,8 +64,6 @@ struct ArmageddonApp: App {
             captureRoot: Self.captureRoot(for: result),
             runMode: isUITesting && profile == .calibratedDryRun ? .deterministicFixture : .unavailable,
             runJournalRoot: Self.runJournalRoot(for: result),
-            armOperator: NullArmOperator(),
-            makeArmOperator: isUITesting ? { NullArmOperator() } : { try LiveArm.makeOperator() },
             allowLiveArm: !isUITesting
         )
         _appModel = State(initialValue: applicationModel)

@@ -1,0 +1,102 @@
+      @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap");
+
+      body {
+        font-family: "Orbitron", sans-serif;
+        background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+        color: #00ffcc;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+
+      .container {
+        text-align: center;
+        background: rgba(0, 0, 0, 0.8);
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 0 20px rgba(0, 255, 204, 0.5);
+        margin-right: 100px;
+      }
+
+      img {
+        border: 2px solid #00ffcc;
+        border-radius: 10px;
+        max-width: 100%;
+        height: auto;
+        box-shadow: 0 0 15px rgba(0, 255, 204, 0.5);
+      }
+
+      button {
+        margin-top: 20px;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        background: #00ffcc;
+        border: none;
+        color: #0f2027;
+        border-radius: 5px;
+        transition: background 0.3s;
+      }
+
+      button:hover {
+        background: #00cca3;
+      }
+
+      h1 {
+        margin-bottom: 20px;
+        color: #00ffcc;
+        text-shadow: 0 0 10px rgba(0, 255, 204, 0.7);
+      }
+
+      .glow {
+        color: #00ffcc;
+        text-shadow: 0 0 5px #00ffcc, 0 0 10px #00ffcc, 0 0 15px #00ffcc,
+          0 0 20px #00ffcc, 0 0 25px #00ffcc;
+      }
+      
+      .directional-pad {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 20px;
+    }
+    
+    .horizontal-buttons {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .dir-button {
+        background-color: #0f2027;
+        border: 2px solid #00ffcc;
+        color: #00ffcc;
+        font-size: 24px;
+        padding: 10px 20px;
+        margin: 5px;
+        cursor: pointer;
+        border-radius: 5px;
+        transition: background 0.3s, transform 0.1s;
+    }
+    
+    .dir-button:hover {
+        background-color: #00cca3;
+    }
+    
+    .dir-button:active {
+        transform: translateY(2px);
+    }
+
+    .status-message {
+      margin-top: 100px;
+      font-size: 100px;
+      color: #00ffcc;
+      text-align: center;
+  }
+
+  .small-image {
+    width: 200px; /* Adjust the width as needed */
+    height: auto; /* Maintain aspect ratio */
+  }

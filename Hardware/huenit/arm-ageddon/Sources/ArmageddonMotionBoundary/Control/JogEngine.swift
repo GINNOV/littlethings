@@ -1,12 +1,9 @@
+import Joy1
+
 struct JogStep: Equatable, Sendable {
     let axis: Axis
     let delta: Double
     let feedMmPerMin: Double
-}
-
-enum Sign: Int, Sendable {
-    case neg = -1
-    case pos = 1
 }
 
 struct JogEngine: Sendable {

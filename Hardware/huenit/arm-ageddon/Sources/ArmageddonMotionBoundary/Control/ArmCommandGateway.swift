@@ -1,3 +1,5 @@
+import Joy1
+
 actor ArmCommandGateway {
     enum ControlMode: Equatable, Sendable {
         case hold

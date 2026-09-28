@@ -1,4 +1,5 @@
 import ArmageddonCore
+@_exported import Joy1
 
 public actor MotionBoundaryFacade {
     public init() {}

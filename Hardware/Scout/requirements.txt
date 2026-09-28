@@ -1,0 +1,6 @@
+rospy
+opencv-python
+opencv-contrib-python
+pygame
+tabulate
+numpy

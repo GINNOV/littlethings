@@ -5,4 +5,6 @@ public enum ArmError: Error, Equatable, Sendable {
     case parseFailed(String)
     case disconnected
     case portBusy(String)
+    case invalidControlMode
+    case motionInvalidated
 }

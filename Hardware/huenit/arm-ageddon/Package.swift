@@ -32,7 +32,18 @@ let package = Package(
         ),
         .target(
             name: "ArmageddonMotionBoundary",
-            dependencies: ["ArmageddonCore"],
+            dependencies: [
+                "ArmageddonCore",
+                .product(name: "Joy1", package: "joy1"),
+            ],
+            exclude: [
+                "Arm/HuenitArm.swift",
+                "Pose/Pose.swift",
+                "Serial/ArmError.swift",
+                "Serial/FakeSerial.swift",
+                "Serial/SerialPort.swift",
+                "Serial/SerialTransport.swift",
+            ],
             swiftSettings: strictConcurrency
         ),
         .target(
