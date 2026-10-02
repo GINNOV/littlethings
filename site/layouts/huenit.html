@@ -68,7 +68,7 @@
       </div>
 
       <!-- Hub Header -->
-      <header class="text-center max-w-3xl mx-auto mb-16 space-y-4">
+      <header class="text-center max-w-3xl mx-auto mb-10 space-y-4">
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-xs font-semibold text-cyan-400 uppercase tracking-wider mb-2">
           <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
           Garage Innovation · Hardware
@@ -80,6 +80,19 @@
           The company never delivered on their promise of a macOS app. So I fixed that and added some more. No more paperweight robotic arm.
         </p>
       </header>
+
+      <!-- Hardware Overview Showcase -->
+      <div class="flex justify-center mb-16">
+        <div class="glass-card rounded-2xl p-2 sm:p-3 max-w-xl w-full border border-slate-800/80 shadow-2xl relative group overflow-hidden">
+          <div class="overflow-hidden rounded-xl bg-white p-3 sm:p-5 flex items-center justify-center">
+            <img
+              src="{{ "images/huenit/huenit-arm.png" | relURL }}"
+              alt="HUENIT AI Camera & modular robot arm"
+              class="w-full h-auto object-contain mx-auto transition-transform duration-500 group-hover:scale-[1.02]"
+            />
+          </div>
+        </div>
+      </div>
 
       <!-- Apps Showcase Grid -->
       <section class="grid gap-8 md:grid-cols-2 lg:grid-cols-3 mb-12">
