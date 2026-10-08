@@ -3,10 +3,19 @@ name: Validate ADFinder packages
 on:
   push:
     branches: [master]
+    paths:
+      - 'Amiga/Tools/ADFinder/**'
+      - 'Amiga/Tools/build-support/**'
+      - 'LICENSE'
+      - '.github/workflows/build-adfinder.yml'
   workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-adfinder:
@@ -48,4 +57,5 @@ jobs:
         with:
           name: adfinder-${{ matrix.runner }}
           path: .artifacts/adfinder-packages
+          retention-days: 7
           if-no-files-found: error
