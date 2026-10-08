@@ -60,7 +60,7 @@ def workflow_contract(case: str) -> tuple[bool, str]:
         )
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            (root / "repository.json").write_text(json.dumps({"default_branch": "master"}), encoding="utf-8")
+            (root / "repository.json").write_text(json.dumps({"default_branch": "master", "owner": {"type": "Organization"}}), encoding="utf-8")
             (root / "environment.json").write_text(
                 json.dumps(
                     {

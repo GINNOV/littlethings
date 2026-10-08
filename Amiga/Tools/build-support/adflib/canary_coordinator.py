@@ -109,11 +109,21 @@ def preflight(arguments: argparse.Namespace) -> None:
     if isinstance(protection_rules, list):
         reviewer_rules = [rule for rule in protection_rules if isinstance(rule, dict) and rule.get("type") == "required_reviewers"]
     reviewers = reviewer_rules[0].get("reviewers") if len(reviewer_rules) == 1 else None
-    expected_reviewer = {"type": "Team", "reviewer": {"slug": expected_team}}
+    owner = repository.get("owner")
+    owner_type = owner.get("type") if isinstance(owner, dict) else None
+    # Teams exist only in organizations; a user-owned repository can only name User reviewers.
+    match owner_type:
+        case "Organization":
+            reviewer_type, identity_key = "Team", "slug"
+        case "User":
+            reviewer_type, identity_key = "User", "login"
+        case _:
+            raise CoordinatorError("repository_owner_type_invalid")
+    expected_reviewer = {"type": reviewer_type, "reviewer": {identity_key: expected_team}}
     observed_reviewers = []
     if isinstance(reviewers, list):
         observed_reviewers = [
-            {"type": reviewer.get("type"), "reviewer": {"slug": nested.get("slug")}}
+            {"type": reviewer.get("type"), "reviewer": {identity_key: nested.get(identity_key)}}
             for reviewer in reviewers
             if isinstance(reviewer, dict) and isinstance((nested := reviewer.get("reviewer")), dict)
         ]
