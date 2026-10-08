@@ -68,11 +68,11 @@ jobs:
       producer_job: ${{ inputs.platform }}-${{ inputs.architecture }}
       receipt_json: ${{ steps.receipt.outputs.receipt_json }}
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ inputs.target_sha }}
           persist-credentials: false
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
           artifact-ids: ${{ inputs.source_artifact_id }}
           path: source-transport
@@ -100,7 +100,7 @@ jobs:
           mkdir release-triplet; cp "$RUNNER_TEMP/pass-1/$name" release-triplet/
           printf 'archive_sha256=%s\nfilename=%s\n' "$(shasum -a 256 "release-triplet/$name" | cut -d' ' -f1)" "$name" >> "$GITHUB_OUTPUT"
       - id: upload
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: send2adf-${{ inputs.platform }}-${{ inputs.architecture }}-${{ github.run_id }}
           path: release-triplet

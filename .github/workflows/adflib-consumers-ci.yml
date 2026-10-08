@@ -122,7 +122,7 @@ jobs:
           [[ "$default_sha" =~ ^[0-9a-f]{40}$ ]]
           echo "sha=$default_sha" >> "$GITHUB_OUTPUT"
       - name: Check out trusted controls
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ steps.trusted.outputs.sha }}
           path: trusted-controls
@@ -176,7 +176,7 @@ jobs:
           python3 trusted-controls/Amiga/Tools/build-support/adflib/tests/consumer_workflow_contract.py verify-artifact-metadata "$RUNNER_TEMP/candidate-artifacts.json"
       - name: Download immutable candidate bundle
         if: steps.route.outputs.candidate_transport == 'bundle'
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: ${{ inputs.candidate_bundle_artifact }}
           run-id: ${{ inputs.candidate_bundle_run_id }}
@@ -201,7 +201,7 @@ jobs:
         run: python3 trusted-controls/Amiga/Tools/build-support/adflib/tests/consumer_workflow_contract.py materialize-bundle candidate-transport candidate
       - name: Check out immutable candidate ref
         if: steps.route.outputs.candidate_transport == 'ref'
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ steps.route.outputs.candidate_sha }}
           path: candidate
@@ -263,7 +263,7 @@ jobs:
       contents: read
     steps:
       - name: Check out trusted controls
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ needs.resolve-identity.outputs.trusted_sha }}
           path: trusted-controls
@@ -273,7 +273,7 @@ jobs:
           sparse-checkout-cone-mode: true
       - name: Download immutable candidate bundle
         if: needs.resolve-identity.outputs.candidate_transport == 'bundle'
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: ${{ inputs.candidate_bundle_artifact }}
           run-id: ${{ inputs.candidate_bundle_run_id }}
@@ -298,7 +298,7 @@ jobs:
         run: python3 trusted-controls/Amiga/Tools/build-support/adflib/tests/consumer_workflow_contract.py materialize-bundle candidate-transport candidate
       - name: Check out immutable candidate ref
         if: needs.resolve-identity.outputs.candidate_transport == 'ref'
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ needs.resolve-identity.outputs.candidate_sha }}
           path: candidate
@@ -312,7 +312,7 @@ jobs:
           ADFLIB_COMPATIBILITY_FIXTURE: ${{ needs.resolve-identity.outputs.compatibility_fixture }}
         run: python3 trusted-controls/Amiga/Tools/build-support/adflib/tests/consumer_workflow_contract.py compatibility-preflight
       - name: Restore verified dependency cache
-        uses: actions/cache/restore@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ runner.temp }}/adflib-readonly-cache
           key: adflib-${{ needs.resolve-identity.outputs.effective_commit }}-${{ needs.resolve-identity.outputs.transport_sha256 }}-${{ matrix.runner }}-${{ matrix.arch }}
@@ -377,7 +377,7 @@ jobs:
           python3 "$GITHUB_WORKSPACE/trusted-controls/Amiga/Tools/build-support/adflib/tests/consumer_workflow_contract.py" compare-builder "$RUNNER_TEMP/send2adf-identity.json"
       - name: Upload failure logs
         if: failure() && needs.resolve-identity.outputs.upload_failure_logs == 'true'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: send2adf-failure-${{ matrix.os }}
           path: ${{ runner.temp }}/send2adf-architecture.log
@@ -401,7 +401,7 @@ jobs:
       contents: read
     steps:
       - name: Check out trusted controls
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ needs.resolve-identity.outputs.trusted_sha }}
           path: trusted-controls
@@ -411,7 +411,7 @@ jobs:
           sparse-checkout-cone-mode: true
       - name: Download immutable candidate bundle
         if: needs.resolve-identity.outputs.candidate_transport == 'bundle'
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: ${{ inputs.candidate_bundle_artifact }}
           run-id: ${{ inputs.candidate_bundle_run_id }}
@@ -436,7 +436,7 @@ jobs:
         run: python3 trusted-controls/Amiga/Tools/build-support/adflib/tests/consumer_workflow_contract.py materialize-bundle candidate-transport candidate
       - name: Check out immutable candidate ref
         if: needs.resolve-identity.outputs.candidate_transport == 'ref'
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ needs.resolve-identity.outputs.candidate_sha }}
           path: candidate
@@ -450,7 +450,7 @@ jobs:
           ADFLIB_COMPATIBILITY_FIXTURE: ${{ needs.resolve-identity.outputs.compatibility_fixture }}
         run: python3 trusted-controls/Amiga/Tools/build-support/adflib/tests/consumer_workflow_contract.py compatibility-preflight
       - name: Restore verified dependency cache
-        uses: actions/cache/restore@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ runner.temp }}/adflib-readonly-cache
           key: adflib-${{ needs.resolve-identity.outputs.effective_commit }}-${{ needs.resolve-identity.outputs.transport_sha256 }}-${{ matrix.runner }}-${{ matrix.arch }}
@@ -517,7 +517,7 @@ jobs:
           python3 "$GITHUB_WORKSPACE/trusted-controls/Amiga/Tools/build-support/adflib/tests/consumer_workflow_contract.py" compare-builder "$identity"
       - name: Upload failure logs
         if: failure() && needs.resolve-identity.outputs.upload_failure_logs == 'true'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: adfinder-failure-${{ matrix.os }}
           path: ${{ runner.temp }}/adfinder-architecture.log

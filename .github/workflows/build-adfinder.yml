@@ -27,7 +27,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: brew install create-dmg
       - name: Provision immutable dependencies
         shell: bash
@@ -53,7 +53,7 @@ jobs:
           arch="$(uname -m)"
           xcodebuild test -project Amiga/Tools/ADFinder/ADFinder.xcodeproj -scheme ADFinder -configuration Debug -destination 'platform=macOS' -derivedDataPath "$PWD/.artifacts/adfinder-derived" ARCHS="$arch" ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO ADFLIB_PYTHON="$ADFLIB_PYTHON" ADFLIB_VERIFIED_SOURCE_ROOT="$ADFLIB_SOURCE_ROOT" -clonedSourcePackagesDirPath "$SPM_ROOT" -disableAutomaticPackageResolution
           ADFLIB_VERIFIED_SOURCE_ROOT="$ADFLIB_SOURCE_ROOT" ADFLIB_SWIFTPM_SOURCE_PACKAGES="$SPM_ROOT" bash Amiga/Tools/ADFinder/distribution/build_and_package.sh --unsigned --output "$PWD/.artifacts/adfinder-packages" --include-source
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: adfinder-${{ matrix.runner }}
           path: .artifacts/adfinder-packages
